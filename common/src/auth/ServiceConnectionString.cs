@@ -14,8 +14,8 @@ namespace Microsoft.Azure.Devices.Common.Authorization
     ///
     /// A valid connection string shall be in one of the following formats:
     /// <code>
-    /// HostName=[repo host name];RepositoryId=[repo ID];SharedAccessKeyName={[repo key ID];SharedAccessKey=[repo key secret]
-    /// HostName=[repo host name];SharedAccessKeyName=[keyName];SharedAccessSignature=[Signature]
+    /// HostName=[repositoryHostName];RepositoryId=[repositoryId];SharedAccessKeyName=[keyName];SharedAccessKey=[keyValue]
+    /// HostName=[repositoryHostName];SharedAccessKeyName=[keyName];SharedAccessSignature=[signature]
     /// </code>
     ///
     /// This object parses and stores the connection string. It is responsible to provide the authorization token too.
@@ -31,7 +31,12 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// <exception cref="ArgumentNullException">if the provided parser is null.</exception>
         public ServiceConnectionString(ServiceConnectionStringParser parser)
         {
-            HostName = parser.HostName ?? throw new ArgumentNullException(nameof(parser));
+            if (parser == null)
+            {
+                throw new ArgumentNullException(nameof(parser));
+            }
+
+            HostName = parser.HostName;
             SharedAccessKeyName = parser.SharedAccessKeyName;
             SharedAccessKey = parser.SharedAccessKey;
             SharedAccessSignature = parser.SharedAccessSignatureString;

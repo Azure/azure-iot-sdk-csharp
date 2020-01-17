@@ -19,21 +19,21 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         protected string _expiry;
         protected string _keyName;
 
-        public SharedAccessSignature(string shareAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
+        public SharedAccessSignature(string sharedAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
         {
-            if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
+            if (string.IsNullOrWhiteSpace(sharedAccessSignatureName))
             {
-                throw new ArgumentNullException(nameof(shareAccessSignatureName));
+                throw new ArgumentNullException(nameof(sharedAccessSignatureName));
             }
 
-            ExpiresOn = expiresOn;
+            ExpiresOnUtc = expiresOn;
 
             if (IsExpired())
             {
                 throw new UnauthorizedAccessException("The specified SAS token is expired");
             }
 
-            _shareAccessSignatureName = shareAccessSignatureName;
+            _shareAccessSignatureName = sharedAccessSignatureName;
             _signature = signature;
             _audience = WebUtility.UrlDecode(encodedAudience);
             _encodedAudience = encodedAudience;
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             }
         }
 
-        public DateTime ExpiresOn
+        public DateTime ExpiresOnUtc
         {
             get;
             private set;
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         public bool IsExpired()
         {
-            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
+            return ExpiresOnUtc + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
 
         protected static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)

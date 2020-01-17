@@ -9,7 +9,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
     /// </summary>
     public class ModelSharedAccessKeyCredentials : IoTServiceClientCredentials
     {
-        private static ModelServiceConnectionString _serviceConnectionString;
+        private ModelServiceConnectionString _serviceConnectionString;
 
         /// <summary>
         /// Create a new instance of <code>SharedAccessKeyCredentials</code> using
@@ -23,7 +23,6 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// <summary>
         /// Return the SAS token
         /// </summary>
-        /// <returns></returns>
         protected override string GetSasToken()
         {
             return _serviceConnectionString.GetSasToken();

@@ -44,7 +44,8 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         ///
         /// A valid connection string shall be in the following format:
         /// <code>
-        /// HostName={repo host name};RepositoryId={repo ID};SharedAccessKeyName={repo key ID};SharedAccessKey={repo key secret}
+        /// HostName=[repositoryHostName];RepositoryId=[repositoryId];SharedAccessKeyName=[keyName];SharedAccessKey=[keyValue]
+        /// HostName=[repositoryHostName];SharedAccessKeyName=[keyName];SharedAccessSignature=[signature]
         /// </code>
         ///
         /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
@@ -58,10 +59,10 @@ namespace Microsoft.Azure.Devices.Common.Authorization
                 throw new ArgumentNullException(nameof(serviceConnectionString));
             }
 
-            var ServiceConnectionStringParser = new ServiceConnectionStringParser();
-            ServiceConnectionStringParser.Parse(serviceConnectionString);
+            var serviceConnectionStringParser = new ServiceConnectionStringParser();
+            serviceConnectionStringParser.Parse(serviceConnectionString);
 
-            return ServiceConnectionStringParser;
+            return serviceConnectionStringParser;
         }
 
         /// <summary>
@@ -103,18 +104,18 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// <summary>
         /// Returns the Service Connection string
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             Validate();
 
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, HostName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignatureString);
             if (stringBuilder.Length > 0)
             {
+                // Removing delimiter at end of string
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
             }
 
@@ -196,8 +197,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         protected static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
         {
-            string value;
-            if (!map.TryGetValue(propertyName, out value))
+            if (!map.TryGetValue(propertyName, out string value))
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName),

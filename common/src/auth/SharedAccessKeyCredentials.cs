@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
     /// </summary>
     public class ModelSharedAccessKeyCredentials : IoTServiceClientCredentials
     {
-        private static ServiceConnectionString _serviceConnectionString;
+        private ServiceConnectionString _serviceConnectionString;
 
         /// <summary>
         /// Create a new instance of <code>SharedAccessKeyCredentials</code> using
