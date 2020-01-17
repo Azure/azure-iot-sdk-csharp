@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using (ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
-                _log.WriteLine($"Testing ServiceClient SendAsync() timeout={timeout}");
+                _log.WriteLine($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
                 await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
             }
         }
