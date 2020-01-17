@@ -473,7 +473,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     TimeSpan maxLatency = TimeSpan.FromMilliseconds(dc.OperationTimeoutInMilliseconds) + bufferTime;
                     if (sw.Elapsed > maxLatency)
                     {
-                        Assert.Fail($"ReceiveAsync did not return in {maxLatency}.");
+                        Assert.Fail($"ReceiveAsync did not return in {maxLatency}, instead it took {sw.Elapsed}.");
                     }
                 }
             }
