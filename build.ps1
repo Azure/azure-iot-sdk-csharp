@@ -187,7 +187,7 @@ Function RunTests($path, $message, $framework="*", $filterTestCategory="*") {
     }
 
     if ($LASTEXITCODE -ne 0) {
-        $testsFailed = $true
+        throw "Tests failed: $label"
     }
 }
 
@@ -211,7 +211,6 @@ $localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
 $buildFailed = $true
 $errorMessage = ""
-$testsFailed = $false
 
 try {
     if ($sign)
@@ -325,11 +324,6 @@ try {
         if ($xamarintests)
         {
             # TODO #335 - create new Xamarin automated samples/tests
-        }
-
-        if ($testsFailed)
-        {
-            throw "Tests failed."
         }
     }
 
