@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Samples
 {
     public class CleanUpDevicesSample
     {
-        private const int QueryBatchSize = 1000;
+        private const int QueryBatchSize = 10000;
         private const int DeleteBatchSize = 100;
         private RegistryManager _rm;
         private List<string> _deleteDeviceWithPrefix =

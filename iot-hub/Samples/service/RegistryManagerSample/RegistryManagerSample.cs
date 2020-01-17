@@ -16,6 +16,9 @@ namespace Microsoft.Azure.Devices.Samples
         private static string s_primaryThumbprint = Environment.GetEnvironmentVariable("IOTHUB_PFX_X509_THUMBPRINT");
         private static string s_secondaryThumbprint = Environment.GetEnvironmentVariable("IOTHUB_PFX_X509_THUMBPRINT2");
 
+        // Maximum number of elements per query.
+        private const int QueryPageSize = 100;
+
         private readonly RegistryManager _registryManager;
 
         public RegistryManagerSample(RegistryManager registryManager)
@@ -63,7 +66,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             Console.WriteLine("Querying devices:");
 
-            var query = _registryManager.CreateQuery("select * from devices");
+            var query = _registryManager.CreateQuery("select * from devices", QueryPageSize);
 
             while (query.HasMoreResults)
             {
