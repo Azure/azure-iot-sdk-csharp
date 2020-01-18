@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task FastTimeout()
         {
-            TimeSpan? timeout = TimeSpan.FromTicks(1);
+            TimeSpan? timeout = TimeSpan.FromTicks(5);
             await TestTimeout(timeout).ConfigureAwait(false);
         }
 
