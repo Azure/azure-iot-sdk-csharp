@@ -12,13 +12,6 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 {
     public class SharedAccessSignature
     {
-        protected string _shareAccessSignatureName;
-        protected string _signature;
-        protected string _audience;
-        protected string _encodedAudience;
-        protected string _expiry;
-        protected string _keyName;
-
         public SharedAccessSignature(string sharedAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
         {
             if (string.IsNullOrWhiteSpace(sharedAccessSignatureName))
@@ -32,51 +25,12 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             {
                 throw new UnauthorizedAccessException("The specified SAS token is expired");
             }
-
-            _shareAccessSignatureName = sharedAccessSignatureName;
-            _signature = signature;
-            _audience = WebUtility.UrlDecode(encodedAudience);
-            _encodedAudience = encodedAudience;
-            _expiry = expiry;
-            _keyName = keyName ?? string.Empty;
-        }
-
-        public string ShareAccessSignatureName
-        {
-            get
-            {
-                return _shareAccessSignatureName;
-            }
         }
 
         public DateTime ExpiresOnUtc
         {
             get;
             private set;
-        }
-
-        public string KeyName
-        {
-            get
-            {
-                return _keyName;
-            }
-        }
-
-        public string Audience
-        {
-            get
-            {
-                return _audience;
-            }
-        }
-
-        public string Signature
-        {
-            get
-            {
-                return _signature;
-            }
         }
 
         public static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)

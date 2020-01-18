@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,
                 TimeToLive = DefaultTokenTimeToLive,
-                HostName = Audience,
+                hostName = Audience,
             };
 
             ttl = builder.TimeToLive;

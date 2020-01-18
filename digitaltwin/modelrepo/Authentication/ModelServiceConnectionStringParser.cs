@@ -14,19 +14,14 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
     /// </summary>
     public class ModelServiceConnectionStringParser : ServiceConnectionStringParser
     {
-
         private const string RepositoryIdPropertyName = nameof(RespositoryId);
 
         private static readonly Regex RepositoryIdRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
-
-        private string _hostName;
-        private string _serviceName;
 
         /// <summary>
         /// The Repository Id for private/Company repository
         /// </summary>
         public string RespositoryId { get; internal set; }
-
 
         /// <summary>
         /// Factory for new Connection String object.
@@ -50,10 +45,10 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
                 throw new ArgumentNullException(nameof(modelServiceConnectionString));
             }
 
-            var ServiceConnectionStringParser = new ModelServiceConnectionStringParser();
-            ServiceConnectionStringParser.Parse(modelServiceConnectionString);
+            var serviceConnectionStringParser = new ModelServiceConnectionStringParser();
+           serviceConnectionStringParser.Parse(modelServiceConnectionString);
 
-            return ServiceConnectionStringParser;
+            return serviceConnectionStringParser;
         }
 
         /// <summary>

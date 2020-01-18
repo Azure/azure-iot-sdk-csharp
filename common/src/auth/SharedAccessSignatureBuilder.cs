@@ -21,22 +21,24 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         public string Key { get; set; }
 
-        public string HostName { get; set; }
+        public string hostName { get; set; }
 
         public TimeSpan TimeToLive { get; set; }
 
         public virtual string ToSignature()
         {
-            return BuildSignature(KeyName, Key, HostName, TimeToLive).ToString();
+            return BuildSignature(KeyName, Key, hostName).ToString();
         }
 
-        protected StringBuilder BuildSignature(string keyName, string key, string Hostname, TimeSpan timeToLive)
+        protected StringBuilder BuildSignature(string keyName, string key, string hostName)
         {
             string expiresOn = BuildExpiresOn(TimeToLive);
-            string audience = WebUtility.UrlEncode(Hostname);
-            List<string> fields = new List<string>();
-            fields.Add(audience);
-            fields.Add(expiresOn);
+            string audience = WebUtility.UrlEncode(hostName);
+            var fields = new List<string>
+            {
+                audience,
+                expiresOn,
+            };
 
             // Example string to be signed:
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a

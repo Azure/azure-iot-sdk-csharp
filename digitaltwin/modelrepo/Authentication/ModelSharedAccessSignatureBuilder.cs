@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         public override string ToSignature()
         {
-            return BuildSignatureForModelRepo(KeyName, Key, HostName, RepositoryId, TimeToLive).ToString();
+            return BuildSignatureForModelRepo(KeyName, Key, hostName, RepositoryId, TimeToLive).ToString();
         }
 
         public StringBuilder BuildSignatureForModelRepo(string keyName, string key, string Hostname, string repositoryId, TimeSpan timeToLive)

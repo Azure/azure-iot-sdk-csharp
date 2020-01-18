@@ -50,7 +50,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,
                 TimeToLive = DefaultTokenTimeToLive,
-                HostName = Audience,
+                hostName = Audience,
                 RepositoryId = RepositoryId,
             };
 
