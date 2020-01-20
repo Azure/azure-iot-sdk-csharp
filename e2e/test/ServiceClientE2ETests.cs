@@ -65,6 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 finally
                 {
+                    sw.Stop();
                     _log.WriteLine($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
                 }
             }
