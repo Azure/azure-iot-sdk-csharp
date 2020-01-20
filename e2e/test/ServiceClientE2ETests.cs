@@ -4,6 +4,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,8 +55,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using (ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+
                 _log.WriteLine($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
-                await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
+                try
+                {
+                    await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
+                }
+                finally
+                {
+                    _log.WriteLine($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
+                }
             }
         }
 
