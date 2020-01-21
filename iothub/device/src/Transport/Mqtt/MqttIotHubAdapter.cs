@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System.Diagnostics.Contracts;
     using System.Globalization;
     using System.IO;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -50,6 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string IotHubTrueString = "true";
         private const string SegmentSeparator = "/";
         private const int MaxPayloadSize = 0x3ffff;
+        private const int MaxTopicNameLength = 0xffff;
 
         private static readonly Action<object> PingServerCallback = PingServer;
         private static readonly Action<object> CheckConnAckTimeoutCallback = ShutdownIfNotReady;
@@ -1168,6 +1170,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             else
             {
                 msg = topicName;
+            }
+
+            if (Encoding.UTF8.GetByteCount(msg) > MaxTopicNameLength)
+            {
+                throw new MessageTooLargeException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, current length is {Encoding.UTF8.GetByteCount(msg)}. The probable cause is the list of message.Properties and/or message.systemProperties is too long. Please use AMQP or HTTP.");
             }
 
             return msg;

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -187,6 +188,28 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_DeviceSendBatchMessages_Http()
         {
             await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_ClientThrowsForMqttTopicNameTooLong()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+
+                Client.Message msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
+                //Mqtt topic name consists of, among other things, system properties and user properties
+                // setting lots of very long user properties should cause a MessageTooLargeException explaining 
+                // that the topic name is too long to publish over mqtt
+                for (int i = 0; i < 100; i++)
+                { 
+                    msg.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
+                }
+
+                await deviceClient.SendEventAsync(msg).ConfigureAwait(false);
+            }
         }
 
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)
