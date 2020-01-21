@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Constructor which uses the input byte array as the body
         /// </summary>
-        /// <param name="status">an integer code contianing a method call status.</param>
+        /// <param name="status">an integer code containing a method call status.</param>
         public MethodResponse(int status)
         {
             this.Status = status;
