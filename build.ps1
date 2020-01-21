@@ -211,6 +211,7 @@ $rootDir = (Get-Item -Path ".\" -Verbose).FullName
 $localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
 $buildFailed = $true
+$testsFailed = $false
 $errorMessage = ""
 
 try {
@@ -322,7 +323,7 @@ try {
 
         if ($testsFailed)
         {
-            throw "Tests failed: $label"
+            throw "E2E Tests failed."
         }
 
         # Samples
