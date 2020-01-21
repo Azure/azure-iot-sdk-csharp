@@ -588,6 +588,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 });
             }
 
+            if (this.channel == null)
+            {
+                throw new IotHubCommunicationException("MQTT channel was not opened");
+            }
+
             await this.connectCompletion.Task.ConfigureAwait(true);
 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
@@ -911,6 +916,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                             return false; // Let anything else stop the application.
                         });
+                    }
+                    catch (ConnectException ex)
+                    {
+                        //same as above, we will handle DotNetty.Transport.Channels.ConnectException
+                        if (Logging.IsEnabled) Logging.Error(this, $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}", nameof(CreateChannelFactory));
                     }
                 }
 

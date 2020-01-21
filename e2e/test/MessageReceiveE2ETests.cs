@@ -362,7 +362,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     if (transport == Client.TransportType.Amqp || transport == Client.TransportType.Amqp_Tcp_Only || transport == Client.TransportType.Amqp_WebSocket_Only)
                     {
                         // For AMQP because of static 1 min interval check the cancellation token, in worst case it will block upto extra 1 min to return
-                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
+                        TimeSpan bufferForAmqp = TIMESPAN_ONE_MINUTE.Add(TIMESPAN_ONE_SECOND);
+                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, bufferForAmqp).ConfigureAwait(false);
                     }
                     else
                     {
@@ -473,7 +474,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     TimeSpan maxLatency = TimeSpan.FromMilliseconds(dc.OperationTimeoutInMilliseconds) + bufferTime;
                     if (sw.Elapsed > maxLatency)
                     {
-                        Assert.Fail($"ReceiveAsync did not return in {maxLatency}.");
+                        Assert.Fail($"ReceiveAsync did not return in {maxLatency}, instead it took {sw.Elapsed}.");
                     }
                 }
             }
