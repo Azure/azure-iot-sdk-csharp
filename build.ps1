@@ -190,6 +190,8 @@ Function RunTests($path, $message, $framework="*", $filterTestCategory="*") {
         Write-Host -ForegroundColor Cyan "*******Tests failed: $label"
         $testsFailed = $true
     }
+    Write-Host -ForegroundColor Cyan "*******End of RunTests for: $label"
+    Write-Host -ForegroundColor Cyan "*******testsFailed is: $testsFailed**************"
 }
 
 Function RunApp($path, $message, $framework="netcoreapp2.1") {
