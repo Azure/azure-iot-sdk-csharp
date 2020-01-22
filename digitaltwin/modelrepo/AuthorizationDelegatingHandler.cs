@@ -7,15 +7,15 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
 {
     internal class AuthorizationDelegatingHandler : DelegatingHandler
     {
-        IoTServiceClientCredentials ioTServiceClientCredentials;
+        private IoTServiceClientCredentials _iotServiceClientCredentials;
         public AuthorizationDelegatingHandler(IoTServiceClientCredentials ioTServiceClientCredentials)
         {
-            this.ioTServiceClientCredentials = ioTServiceClientCredentials;
+            _iotServiceClientCredentials = ioTServiceClientCredentials;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            await ioTServiceClientCredentials.ProcessHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+            await _iotServiceClientCredentials.ProcessHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
     }

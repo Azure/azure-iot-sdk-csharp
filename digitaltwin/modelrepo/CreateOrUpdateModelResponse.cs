@@ -12,6 +12,5 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         public string ETag { get; set; }
 
         public HttpStatusCode StatusCode { get; set; }
-
     }
 }

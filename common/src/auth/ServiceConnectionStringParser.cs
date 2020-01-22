@@ -19,16 +19,16 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         protected const char ValuePairSeparator = '=';
         protected const string HostNameSeparator = ".";
 
-        protected string HostNamePropertyName = "HostName";
-        protected string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
-        protected string SharedAccessKeyPropertyName = "SharedAccessKey";
-        protected string SharedAccessSignaturePropertyName = "SharedAccessSignature";
+        protected const string HostNamePropertyName = "HostName";
+        protected const string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
+        protected const string SharedAccessKeyPropertyName = "SharedAccessKey";
+        protected const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
 
         protected static TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        protected Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
-        protected Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
-        protected Regex SharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
-        protected Regex SharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        protected readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        protected readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        protected readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        protected readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
 
         private string _hostName;
 

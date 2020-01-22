@@ -1,8 +1,10 @@
 namespace Microsoft.Azure.DigitalTwin.Model.Service
 {
+    /// <summary>
+    /// Defines headers for SearchModel operation.
+    /// </summary>
     public partial class SearchModelOptions
     {
-
         /// <summary>
         /// Initializes a new instance of the SearchOptions class.
         /// </summary>
@@ -15,14 +17,9 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             ContinuationToken = continuationToken;
             PageSize = pageSize;
         }
-
         public string SearchKeyword { get; set; }
-
         public string ModelFilterType { get; set; }
-
         public string ContinuationToken { get; set; }
-
         public int? PageSize { get; set; }
-
     }
 }

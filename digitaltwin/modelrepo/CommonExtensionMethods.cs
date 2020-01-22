@@ -14,7 +14,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         {
             if (string.IsNullOrWhiteSpace(valuePairString))
             {
-                throw new ArgumentException("Malformed Token");
+                throw new ArgumentException("Missing Token");
             }
 
             IEnumerable<string[]> parts = valuePairString.Split(kvpDelimiter).
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
 
             if (parts.Any((part) => part.Length != 2))
             {
-                throw new FormatException("Malformed Token");
+                throw new FormatException("Incorrect Token");
             }
 
             IDictionary<string, string> map = parts.ToDictionary((kvp) => kvp[0], (kvp) => kvp[1], StringComparer.OrdinalIgnoreCase);
@@ -30,9 +30,9 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             return map;
         }
 
-        public static void AppendKeyValuePairIfNotEmpty(this StringBuilder builder, string name, object value)
+        public static void AppendKeyValuePairIfNotEmpty(this StringBuilder builder, string name, string value)
         {
-            if (value != null)
+            if (!string.IsNullOrWhiteSpace(value))
             {
                 builder.Append(name);
                 builder.Append(ValuePairSeparator);

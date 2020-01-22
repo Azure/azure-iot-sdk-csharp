@@ -3,6 +3,9 @@ using System.Globalization;
 
 namespace Microsoft.Azure.DigitalTwin.Model.Service
 {
+    /// <summary>
+    /// Helper class for null checks, empty string, white spaces
+    /// </summary>
     internal static class GuardHelper
     {
         public const string ParameterNullErrorMessageFormat = "The parameter named {0} can't be null.";

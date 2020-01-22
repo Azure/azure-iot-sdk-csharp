@@ -94,17 +94,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// </summary>
         public string GetSasToken()
         {
-            string password;
-            if (string.IsNullOrWhiteSpace(SharedAccessSignature))
-            {
-                password = BuildToken(out TimeSpan timeToLive);
-            }
-            else
-            {
-                password = SharedAccessSignature;
-            }
-
-            return password;
+            return string.IsNullOrWhiteSpace(SharedAccessSignature) ? BuildToken(out TimeSpan timeToLive) : SharedAccessSignature;
         }
 
         public virtual string BuildToken(out TimeSpan ttl)

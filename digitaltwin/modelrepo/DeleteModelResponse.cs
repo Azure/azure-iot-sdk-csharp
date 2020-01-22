@@ -10,6 +10,5 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         public string RequestId { get; set; }
 
         public HttpStatusCode StatusCode { get; set; }
-
     }
 }
