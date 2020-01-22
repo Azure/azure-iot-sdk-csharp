@@ -44,9 +44,9 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             }
 
             string repositoryId;
-            if (!parsedFields.TryGetValue(ModelSharedAccessSignatureConstants.repositoryIdFiledName, out repositoryId))
+            if (!parsedFields.TryGetValue(ModelSharedAccessSignatureConstants.RepositoryIdFiledName, out repositoryId))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", ModelSharedAccessSignatureConstants.repositoryIdFiledName));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", ModelSharedAccessSignatureConstants.RepositoryIdFiledName));
             }
 
             string expiry;
