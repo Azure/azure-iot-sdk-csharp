@@ -347,6 +347,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             {
+                _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling OpenAsync() for transport={transport}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 if (transport == Client.TransportType.Mqtt_Tcp_Only ||
@@ -359,11 +360,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 try
                 {
                     deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(TIMESPAN_ONE_MINUTE.TotalMilliseconds);
+                    _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - setting device client default operation timeout={deviceClient.OperationTimeoutInMilliseconds} ms");
+
                     if (transport == Client.TransportType.Amqp || transport == Client.TransportType.Amqp_Tcp_Only || transport == Client.TransportType.Amqp_WebSocket_Only)
                     {
                         // For AMQP because of static 1 min interval check the cancellation token, in worst case it will block upto extra 1 min to return
-                        TimeSpan bufferForAmqp = TIMESPAN_ONE_MINUTE.Add(TIMESPAN_ONE_SECOND);
-                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, bufferForAmqp).ConfigureAwait(false);
+                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                     }
                     else
                     {
@@ -372,6 +374,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 finally
                 {
+                    _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling CloseAsync() for transport={transport}");
                     deviceClient.OperationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
                     await deviceClient.CloseAsync().ConfigureAwait(false);
                 }
@@ -453,20 +456,24 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task ReceiveMessageWithoutTimeoutCheck(DeviceClient dc, TimeSpan bufferTime)
         {
+            Stopwatch sw = new Stopwatch();
             while (true)
             {
-                Stopwatch sw = new Stopwatch();
                 try
                 {
-                    sw.Start();
+                    _log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheck)} - Calling ReceiveAsync()");
+
+                    sw.Restart();
                     Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
                     sw.Stop();
+
+                    _log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheck)} - Received message={message}; time taken={sw.ElapsedMilliseconds} ms");
 
                     if (message == null)
                     {
                         break;
                     }
-                    
+
                     await dc.CompleteAsync(message).ConfigureAwait(false);
                 }
                 finally
