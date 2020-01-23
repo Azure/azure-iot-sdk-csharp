@@ -142,6 +142,26 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return transport;
         }
 
+        MqttTransportHandler CreateTransportHandlerWithRealChannel(out IChannel channel, string connectionString = DummyConnectionString)
+        {
+            var _channel = Substitute.For<IChannel>();
+            channel = _channel;
+            return new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(IotHubCommunicationException))]
+        public async Task MqttTransportHandler_OpenAsync_OpenHandlesConnectExceptionAndThrowsWhenChannelIsNotInitialized()
+        {
+            // arrange
+            IChannel channel;
+            var transport = CreateTransportHandlerWithRealChannel(out channel);
+
+            //act
+            //Open will attempt to connect to localhost, and get a connect exception. Expected behavior is for this exception to be ignored.
+            //However, later in the open call, the lack of an opened channel should throw an IotHubCommunicationException.
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+        }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
         [TestMethod]
@@ -579,7 +599,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, WaitForTransportClosedAsync shall be invoked.
         [TestMethod]
-        [ExpectedException(typeof(IotHubCommunicationException))]
+        [ExpectedException(typeof(OperationCanceledException))]
         public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerReceiving()
         {
             // arrange
