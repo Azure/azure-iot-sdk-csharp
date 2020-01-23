@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodName = "MethodE2ETest";
         private static TestLogging _log = TestLogging.GetInstance();
 
-        private const double defaultMethodTimeoutMinutes = 1;
+        private static TimeSpan DefaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);
 
         private readonly ConsoleEventListener _listener;
 
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Method_ServiceSendsMethodThroughProxyWithDefaultTimeout()
         {
-            ServiceClientTransportSettings serviceClientTransportSettings = new ServiceClientTransportSettings()
+            ServiceClientTransportSettings serviceClientTransportSettings = new ServiceClientTransportSettings
             {
                 HttpProxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
             };
@@ -119,12 +119,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Method_ServiceSendsMethodThroughProxyWithCustomTimeout()
         {
-            ServiceClientTransportSettings serviceClientTransportSettings = new ServiceClientTransportSettings()
+            ServiceClientTransportSettings serviceClientTransportSettings = new ServiceClientTransportSettings
             {
                 HttpProxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
             };
 
-            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethod, 5, serviceClientTransportSettings).ConfigureAwait(false);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethod, TimeSpan.FromMinutes(5), serviceClientTransportSettings).ConfigureAwait(false);
         }
 
         public static async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson)
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 CloudToDeviceMethodResult response =
                     await serviceClient.InvokeDeviceMethodAsync(
                         deviceName,
-                        new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(defaultMethodTimeoutMinutes)).SetPayloadJson(reqJson)).ConfigureAwait(false);
+                        new CloudToDeviceMethod(methodName, DefaultMethodTimeoutMinutes).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
                 _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
                 Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, double responseTimeoutMinutes, ServiceClientTransportSettings serviceClientTransportSettings)
+        public static async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, TimeSpan responseTimeout, ServiceClientTransportSettings serviceClientTransportSettings)
         {
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings))
             {
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 CloudToDeviceMethodResult response =
                     await serviceClient.InvokeDeviceMethodAsync(
                         deviceName,
-                        new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(responseTimeoutMinutes)).SetPayloadJson(reqJson)).ConfigureAwait(false);
+                        new CloudToDeviceMethod(methodName, responseTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
                 _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
                 Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
@@ -257,10 +257,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMethodAndRespond(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, ServiceClientTransportSettings serviceClientTransportSettings)
         {
-            await SendMethodAndRespond(transport, setDeviceReceiveMethod, defaultMethodTimeoutMinutes, serviceClientTransportSettings).ConfigureAwait(false);
+            await SendMethodAndRespond(transport, setDeviceReceiveMethod, DefaultMethodTimeoutMinutes, serviceClientTransportSettings).ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespond(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, double responseTimeoutMinutes, ServiceClientTransportSettings serviceClientTransportSettings)
+        private async Task SendMethodAndRespond(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout, ServiceClientTransportSettings serviceClientTransportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
 
                 await Task.WhenAll(
-                    ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson, responseTimeoutMinutes, serviceClientTransportSettings),
+                    ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson, responseTimeout, serviceClientTransportSettings),
                     methodReceivedTask).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);

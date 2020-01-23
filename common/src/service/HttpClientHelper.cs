@@ -122,10 +122,10 @@ namespace Microsoft.Azure.Devices
                 }
                 else
                 {
-                    using (var httpClient = buildHttpClient(defaultOperationTimeout))
+                    using (var httpClient = BuildHttpClient(defaultOperationTimeout))
                     {
                         await this.ExecuteAsync(
-                            httpClient,
+                           httpClient,
                            HttpMethod.Get,
                            new Uri(this.baseAddress, requestUri),
                            (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
@@ -674,7 +674,7 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
-            using (var httpClient = buildHttpClient(this.defaultOperationTimeout))
+            using (var httpClient = BuildHttpClient(this.defaultOperationTimeout))
             {
                 await this.ExecuteAsync(
                     httpClient,
@@ -700,7 +700,7 @@ namespace Microsoft.Azure.Devices
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var httpClient = buildHttpClient(Timeout.InfiniteTimeSpan))
+            using (var httpClient = BuildHttpClient(Timeout.InfiniteTimeSpan))
             {
                 var cts = new CancellationTokenSource(operationTimeout);
                 CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
@@ -845,7 +845,7 @@ namespace Microsoft.Azure.Devices
             return await exception.ConfigureAwait(false);
         }
 
-        private HttpClient buildHttpClient(TimeSpan timeout)
+        private HttpClient BuildHttpClient(TimeSpan timeout)
         {
             HttpClient httpClient;
             if (customHttpProxy != DefaultWebProxySettings.Instance)
