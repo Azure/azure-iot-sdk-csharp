@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ValidateEvent(deviceId, eventId, payload, p1Value, logAnalticsTestClient).ConfigureAwait(false);
         }
 
-        private Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+        private async Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
