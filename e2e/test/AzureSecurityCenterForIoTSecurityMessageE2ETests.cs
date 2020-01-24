@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-            return ValidateEvent(deviceId, eventId, payload, p1Value, logAnalticsTestClient);
+            await ValidateEvent(deviceId, eventId, payload, p1Value, logAnalticsTestClient);
         }
 
         private async Task ValidateEvent(string deviceId, string eventId, string payload, string p1Value,
