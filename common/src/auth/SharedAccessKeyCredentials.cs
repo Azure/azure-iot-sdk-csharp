@@ -22,7 +22,6 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// <summary>
         /// Return the SAS token
         /// </summary>
-        /// <returns></returns>
         protected override string GetSasToken()
         {
             return _serviceConnectionString.GetSasToken();

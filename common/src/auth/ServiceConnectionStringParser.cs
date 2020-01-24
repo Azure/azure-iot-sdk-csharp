@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         protected const string SharedAccessKeyPropertyName = "SharedAccessKey";
         protected const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
 
-        protected static TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        protected static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         protected static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
         protected static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
         protected static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
@@ -210,8 +210,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         protected static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
         {
-            string value;
-            map.TryGetValue(propertyName, out value);
+            map.TryGetValue(propertyName, out string value);
             return value;
         }
 

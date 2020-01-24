@@ -57,17 +57,17 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// <summary>
         /// The Service Name
         /// </summary>
-        public string ServiceName { get; private set; }
+        public string ServiceName { get; }
 
         /// <summary>
         /// The Service Client Hostname
         /// </summary>
-        public string HostName { get; private set; }
+        public string HostName { get; }
 
         /// <summary>
         /// The Service Client Https Endpoint
         /// </summary>
-        public Uri HttpsEndpoint { get; private set; }
+        public Uri HttpsEndpoint { get; }
 
         /// <summary>
         /// The Service Audience
@@ -77,24 +77,26 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// <summary>
         /// The Service Access Key Name
         /// </summary>
-        public string SharedAccessKeyName { get; private set; }
+        public string SharedAccessKeyName { get; }
 
         /// <summary>
         /// The Service Shared Access Key for the specified access policy
         /// </summary>
-        public string SharedAccessKey { get; private set; }
+        public string SharedAccessKey { get; }
 
         /// <summary>
         /// The Service Shared Access Signature
         /// </summary>
-        public string SharedAccessSignature { get; private set; }
+        public string SharedAccessSignature { get; }
 
         /// <summary>
         /// Returns the shared access signature for authorization
         /// </summary>
         public string GetSasToken()
         {
-            return string.IsNullOrWhiteSpace(SharedAccessSignature) ? BuildToken(out TimeSpan timeToLive) : SharedAccessSignature;
+            return string.IsNullOrWhiteSpace(SharedAccessSignature) 
+                ? BuildToken(out TimeSpan timeToLive) 
+                : SharedAccessSignature;
         }
 
         public virtual string BuildToken(out TimeSpan ttl)

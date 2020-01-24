@@ -27,11 +27,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             }
         }
 
-        public DateTime ExpiresOnUtc
-        {
-            get;
-            private set;
-        }
+        public DateTime ExpiresOnUtc { get; }
 
         public static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
         {
@@ -47,24 +43,20 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
-            string signature;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.SignatureFieldName));
             }
 
-            string expiry;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out expiry))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out string expiry))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.ExpiryFieldName));
             }
 
             // KeyName (skn) is optional .
-            string keyName;
-            parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out keyName);
+            parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out string keyName);
 
-            string encodedAudience;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out encodedAudience))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out string encodedAudience))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.AudienceFieldName));
             }
