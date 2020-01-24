@@ -231,14 +231,14 @@ namespace Microsoft.Azure.Devices.Shared
                         twin.StatusReason = reader.Value as string;
                         break;
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedTime = serializer.Deserialize<DateTime>(reader);
+                        twin.StatusUpdatedTime = serializer.Deserialize<DateTimeOffset>(reader);
                         break;
                     case ConnectionStateTag:
                         string connectionState = reader.Value as string;
                         twin.ConnectionState = connectionState?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState) : serializer.Deserialize<DeviceConnectionState>(reader);
                         break;
                     case LastActivityTimeTag:
-                        twin.LastActivityTime = serializer.Deserialize<DateTime>(reader);
+                        twin.LastActivityTime = serializer.Deserialize<DateTimeOffset>(reader);
                         break;
                     case CloudToDeviceMessageCountTag:
                         twin.CloudToDeviceMessageCount = serializer.Deserialize<int>(reader);

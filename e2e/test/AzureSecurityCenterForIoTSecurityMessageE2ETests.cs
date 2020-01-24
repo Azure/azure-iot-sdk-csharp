@@ -125,18 +125,16 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task TestSecurityMessage(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
-
+            
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             {
                 try
                 {
-                    await SendSingleSecurityMessage(deviceClient, testDevice.Id, testListener, _logAnalyticsClient).ConfigureAwait(false);
+                    await SendSingleSecurityMessage(deviceClient, testDevice.Id, _logAnalyticsClient).ConfigureAwait(false);
                 }
                 finally
                 {
                     await deviceClient.CloseAsync().ConfigureAwait(false);
-                    await testListener.CloseAsync().ConfigureAwait(false);
                 }
             }
         }
@@ -144,46 +142,44 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task TestSecurityMessageModule(Client.TransportType transport)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
-            EventHubTestListener testListener = await EventHubTestListener.CreateListener(testModule.Id).ConfigureAwait(false);
-
+            
             using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport))
             {
                 try
                 {
-                    await SendSingleSecurityMessageModule(moduleClient, testModule.DeviceId, testListener, _logAnalyticsClient).ConfigureAwait(false);
+                    await SendSingleSecurityMessageModule(moduleClient, testModule.DeviceId, _logAnalyticsClient).ConfigureAwait(false);
                 }
                 finally
                 {
                     await moduleClient.CloseAsync().ConfigureAwait(false);
-                    await testListener.CloseAsync().ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task SendSingleSecurityMessage(DeviceClient deviceClient, string deviceId, EventHubTestListener testListener, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+        private async Task SendSingleSecurityMessage(DeviceClient deviceClient, string deviceId, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-            await ValidateEvent(deviceId, eventId, payload, p1Value, testListener, logAnalticsTestClient).ConfigureAwait(false);
+            await ValidateEvent(deviceId, eventId, payload, p1Value, logAnalticsTestClient).ConfigureAwait(false);
         }
-        
-        private async Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, EventHubTestListener testListener, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+
+        private Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-            await ValidateEvent(deviceId, eventId, payload, p1Value, testListener, logAnalticsTestClient).ConfigureAwait(false);
+            return ValidateEvent(deviceId, eventId, payload, p1Value, logAnalticsTestClient);
         }
 
         private async Task ValidateEvent(string deviceId, string eventId, string payload, string p1Value,
-            EventHubTestListener testListener, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+            AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
-            bool isReceivedEventHub = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
+            bool isReceivedEventHub = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value);
             Assert.IsFalse(isReceivedEventHub, "Security message received in customer event hub.");
             bool isReceivedOms = await logAnalticsTestClient.IsRawEventExist(deviceId, eventId).ConfigureAwait(false);
             Assert.IsTrue(isReceivedOms, "Security message was not recived in customer log analytics");

@@ -349,14 +349,14 @@ using System.Net.Http;
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => this.internalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -409,7 +409,7 @@ using System.Net.Http;
 
         /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
-        /// it will be replaced with the new delegate.
+        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
