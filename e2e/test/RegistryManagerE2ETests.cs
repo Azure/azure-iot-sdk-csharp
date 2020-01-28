@@ -5,6 +5,7 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.Tracing;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -67,6 +68,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
 
                 Assert.IsTrue(actual.Capabilities != null && actual.Capabilities.IotEdge);
+            }
+        }
+
+        [TestMethod]
+        public async Task RegistryManager_AddDeviceWithProxy()
+        {
+            string deviceId = DevicePrefix + Guid.NewGuid();
+            HttpTransportSettings transportSettings = new HttpTransportSettings
+            {
+                Proxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
+            };
+            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, transportSettings))
+            {
+                Device device = new Device(deviceId);
+                await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
             }
         }
     }
