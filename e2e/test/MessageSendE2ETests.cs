@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ProvisioningFact]
         public void provisioningTest()
         {
-            //throw new IllegalReferenceCountException(1);
+            throw new IllegalReferenceCountException(1);
         }
     }
 }
