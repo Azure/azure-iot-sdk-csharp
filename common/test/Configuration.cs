@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public static partial class Configuration
     {
-        private static string GetValue(string envName, string defaultValue=null)
+        public static string GetValue(string envName, string defaultValue=null)
         {
             string envValue = Environment.GetEnvironmentVariable(envName);
 

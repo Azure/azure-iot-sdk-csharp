@@ -5,16 +5,16 @@
 # For all other builds (nightly builds, for instance), this script will set environment variables to run all e2e tests.
 
 Write-Host "Determining tests to run..."
-$Env:runIotHubTests = "false"
-$Env:runProvisioningTests = "false"
+$Env:RUN_IOTHUB_TESTS = "false"
+$Env:RUN_PROVISIONING_TESTS = "false"
 
 $targetBranch = ($env:TARGET_BRANCH)
 if (($env:TARGET_BRANCH).toLower().Contains("system.pullrequest.targetbranch"))
 {
     Write-Host "Assuming this build is not a pull request build, running all tests"
 
-    $Env:runIotHubTests = "true"
-    $Env:runProvisioningTests = "true"
+    $Env:RUN_IOTHUB_TESTS = "true"
+    $Env:RUN_PROVISIONING_TESTS = "true"
 
     exit 0
 }
@@ -35,33 +35,33 @@ ForEach ($line in $($GitDiff -split "`r`n"))
 	    # If code changes were made to provisioning package, only need to run provisioning tests
 		if ($line.toLower().Contains("provisioning") -or $line.toLower().Contains("security"))
 		{
-			$Env:runProvisioningTests = "true"
+			$Env:RUN_PROVISIONING_TESTS = "true"
 		}
 
         # If code changes were made to iot hub clients
 		if ($line.toLower().Contains("iothub"))
 		{
-            $Env:runIotHubTests = "true"
-            $Env:runProvisioningTests = "true"
+            $Env:RUN_IOTHUB_TESTS = "true"
+            $Env:RUN_PROVISIONING_TESTS = "true"
 		}
 
         # Both provisioning and iot hub depend on shared package, so run all tests
 		if ($line.toLower().Contains("shared"))
 		{
-			$Env:runIotHubTests = "true"
-			$Env:runProvisioningTests = "true"
+			$Env:RUN_IOTHUB_TESTS = "true"
+			$Env:RUN_PROVISIONING_TESTS = "true"
 		}
 
         # Any changes to e2e test folder should run all tests
 		if ($line.toLower().Contains("e2e"))
         {
-            $Env:runIotHubTests = "true"
-            $Env:runProvisioningTests = "true"
+            $Env:RUN_IOTHUB_TESTS = "true"
+            $Env:RUN_PROVISIONING_TESTS = "true"
         }
 	}
 }
 
-if ($Env:runIotHubTests -eq "true")
+if ($Env:RUN_IOTHUB_TESTS -eq "true")
 {
     Write-Host "Will run iot hub tests"
 }
@@ -70,7 +70,7 @@ else
     Write-Host "Will not run iot hub tests"
 }
 
-if ($Env:runProvisioningTests -eq "true")
+if ($Env:RUN_PROVISIONING_TESTS -eq "true")
 {
     Write-Host "Will run provisioning tests"
 }

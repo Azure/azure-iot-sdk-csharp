@@ -7,6 +7,8 @@ dotnet new
 Write-Host List active docker containers
 docker ps -a
 
+.\vsts\determine_tests_to_run.ps1
+
 .\build.ps1 -clean -configuration Debug
 
 .\build.ps1 -clean -configuration Release -e2etests
