@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [IotHubFact]
         public void iothubTest()
         {
-            //throw new IllegalReferenceCountException(1);
+            throw new IllegalReferenceCountException(1);
         }
 
         [ProvisioningFact]
