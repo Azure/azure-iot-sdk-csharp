@@ -61,6 +61,11 @@ ForEach ($line in $($GitDiff -split "`r`n"))
 	}
 }
 
+Write-Host "  .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-"
+Write-Host " / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \"
+Write-Host "`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'"
+
+
 if ($Env:RUN_IOTHUB_TESTS -eq "true")
 {
     Write-Host "Will run iot hub tests"
@@ -79,3 +84,6 @@ else
     Write-Host "Will not run provisioning tests"
 }
 
+Write-Host "  .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-"
+Write-Host " / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \"
+Write-Host "`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'"
