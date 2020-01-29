@@ -1,68 +1,72 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-
     /// <summary>
     /// contains Amqp Connection Pool settings for DeviceClient
     /// </summary>
-
     public sealed class AmqpConnectionPoolSettings
     {
-        static readonly TimeSpan DefaultConnectionIdleTimeout = TimeSpan.FromMinutes(2);
-        static readonly TimeSpan MinConnectionIdleTimeout = TimeSpan.FromSeconds(5);
-        const uint DefaultPoolSize = 100; // This will allow upto 100000 devices
-        const uint MaxNumberOfPools = ushort.MaxValue;
+        private static readonly TimeSpan s_defaultConnectionIdleTimeout = TimeSpan.FromMinutes(2);
+        private uint _maxPoolSize;
         internal const uint MaxDevicesPerConnection = 995; // IotHub allows upto 999 tokens per connection. Setting the threshold just below that.
 
-        uint maxPoolSize;
-        TimeSpan connectionIdleTimeout;
+        /// <summary>
+        /// The default size of the pool
+        /// </summary>
+        /// <remarks>
+        /// Allows up to 100,000 devices
+        /// </remarks>
+        private const uint DefaultPoolSize = 100;
 
+        /// <summary>
+        /// The maximum value that can be used for the MaxPoolSize property
+        /// </summary>
+        public const uint AbsoluteMaxPoolSize = ushort.MaxValue;
+
+        /// <summary>
+        /// Creates an instance of AmqpConnecitonPoolSettings with default properties
+        /// </summary>
         public AmqpConnectionPoolSettings()
         {
-            this.maxPoolSize = DefaultPoolSize;
-            this.Pooling = false;
-            this.connectionIdleTimeout = DefaultConnectionIdleTimeout;
+            _maxPoolSize = DefaultPoolSize;
+            Pooling = false;
         }
 
+        /// <summary>
+        /// The maximum pool size
+        /// </summary>
         public uint MaxPoolSize
         {
-            get { return this.maxPoolSize; }
+            get => _maxPoolSize;
 
             set
             {
-                if (value > 0 && value <= MaxNumberOfPools)
-                {
-                    this.maxPoolSize = value;
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value));
-                }
+                _maxPoolSize = value > 0 && value <= AbsoluteMaxPoolSize
+                    ? value
+                    : throw new ArgumentOutOfRangeException(nameof(value));
             }
         }
 
+        /// <summary>
+        /// Whether or not to use connection pooling
+        /// </summary>
         public bool Pooling { get; set; }
 
-        public TimeSpan ConnectionIdleTimeout
-        {
-            get { return this.connectionIdleTimeout; }
+        /// <summary>
+        /// An unused property. Do not reference.
+        /// </summary>
+        [Obsolete("This property is not used and will be removed in a future update.")]
+        public TimeSpan ConnectionIdleTimeout { get; set; }
 
-            set
-            {
-                if (value >= MinConnectionIdleTimeout)
-                {
-                    this.connectionIdleTimeout = value;
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-            }
-        }
-
+        /// <summary>
+        /// Compares the properties of this instance to another's
+        /// </summary>
+        /// <param name="other">The other instance to compare to</param>
+        /// <returns>True if equal</returns>
         public bool Equals(AmqpConnectionPoolSettings other)
         {
             if (other == null)
@@ -70,12 +74,10 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            if (object.ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return (this.Pooling == other.Pooling && this.MaxPoolSize == other.MaxPoolSize && this.ConnectionIdleTimeout == other.ConnectionIdleTimeout);
+            return ReferenceEquals(this, other)
+                ? true
+                : Pooling == other.Pooling
+                    && MaxPoolSize == other.MaxPoolSize;
         }
     }
 }
