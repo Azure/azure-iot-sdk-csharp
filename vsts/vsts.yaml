@@ -68,6 +68,7 @@ phases:
       LA_AAD_APP_ID: $(LA-AAD-APP-ID)
       LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
       LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+      TARGET_BRANCH: $(System.PullRequest.TargetBranch)
 
   - task: CopyFiles@2
     displayName: 'Copy files to the artifacts folder'
@@ -158,6 +159,7 @@ phases:
       LA_AAD_APP_ID: $(LA-AAD-APP-ID)
       LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
       LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+      TARGET_BRANCH: $(System.PullRequest.TargetBranch)
 
   - task: CopyFiles@2
     displayName: 'Copy TRX files to the artifacts folder'
