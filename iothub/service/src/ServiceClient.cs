@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
     using System.Net;
     using System.Threading;
@@ -34,9 +35,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ServiceClient()
         {
-#if NET451
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-#endif
+            TlsVersions.SetLegacyAcceptableVersions();
         }
 
         /// <summary>

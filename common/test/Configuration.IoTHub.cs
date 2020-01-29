@@ -25,12 +25,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
 
-            public static string DeviceConnectionString => GetValue("IOTHUB_DEVICE_CONN_STRING");
-
-            public static string DeviceConnectionString2 => GetValue("IOTHUB_DEVICE_CONN_STRING2");
-            
-            public static string ModuleConnectionString => GetValue("IOTHUB_MODULE_CONN_STRING");
-
             public static string ProxyServerAddress => GetValue("IOTHUB_PROXY_SERVER_ADDRESS");
 
             public class DeviceConnectionStringParser

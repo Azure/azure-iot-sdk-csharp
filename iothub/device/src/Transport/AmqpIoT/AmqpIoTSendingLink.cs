@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     var data = new Data()
                     {
-                        Value = amqpMessage.DataBody
+                        Value = AmqpIoTMessageConverter.ReadStream(amqpMessage.ToStream())
                     };
                     messageList.Add(data);
                 }

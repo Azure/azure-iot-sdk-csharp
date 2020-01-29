@@ -179,8 +179,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ((SecurityProviderX509)message.Security).GetAuthenticationCertificate();
 
             var tlsSettings = new ClientTlsSettings(
-                message.GlobalDeviceEndpoint,
-                new List<X509Certificate> { clientCertificate });
+                TlsVersions.Preferred,
+                true,
+                new List<X509Certificate> { clientCertificate },
+                message.GlobalDeviceEndpoint);
+
             return ProvisionOverTcpCommonAsync(message, tlsSettings, cancellationToken);
         }
 
@@ -192,6 +195,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             cancellationToken.ThrowIfCancellationRequested();
 
             var tlsSettings = new ClientTlsSettings(
+                TlsVersions.Preferred,
+                false,
+                new List<X509Certificate>(0),
                 message.GlobalDeviceEndpoint);
 
             return ProvisionOverTcpCommonAsync(message, tlsSettings, cancellationToken);
