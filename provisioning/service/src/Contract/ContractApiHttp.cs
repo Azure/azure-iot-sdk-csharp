@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,20 +43,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
 
+            var httpClientHandler = new HttpClientHandler
+            {
+                // Cannot specify a specific protocol here, as desired due to an error:
+                //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
+                // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
+
+                //SslProtocols = TlsVersions.Preferred,
+            };
+
             IWebProxy webProxy = httpTransportSettings.Proxy;
             if (webProxy != DefaultWebProxySettings.Instance)
             {
-                HttpClientHandler httpClientHandler = new HttpClientHandler();
                 httpClientHandler.UseProxy = (webProxy != null);
                 httpClientHandler.Proxy = webProxy;
-                _httpClientObj = new HttpClient(httpClientHandler);
             }
-            else
+
+            _httpClientObj = new HttpClient(httpClientHandler)
             {
-                _httpClientObj = new HttpClient();
-            }
-            _httpClientObj.BaseAddress = _baseAddress;
-            _httpClientObj.Timeout = s_defaultOperationTimeout;
+                BaseAddress = _baseAddress,
+                Timeout = s_defaultOperationTimeout,
+            };
             _httpClientObj.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue(MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
@@ -120,7 +128,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                             httpResponse.ReasonPhrase);
                     }
                 }
-                catch(AggregateException ex)
+                catch (AggregateException ex)
                 {
                     var innerExceptions = ex.Flatten().InnerExceptions;
                     if (innerExceptions.Any(e => e is TimeoutException))

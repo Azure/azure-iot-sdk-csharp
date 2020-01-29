@@ -3,6 +3,9 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Provisioning.Service;
+
 //This function will return the iot hub hostname to provision to based on which of the list of hub names has the longest host name
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
 {
@@ -12,14 +15,17 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     log.Info(req.Content.ReadAsStringAsync().Result);
 
     // Get request body
-    dynamic data = await req.Content.ReadAsAsync<object>();
+    dynamic data = await req.Content.ReadAsAsync<object>().ConfigureAwait(true);
 
     // Get registration ID of the device
     string regId = data?.deviceRuntimeContext?.registrationId;
 
     string message = "Uncaught error";
     bool fail = false;
-    ResponseObj obj = new ResponseObj();
+    var obj = new ResponseObj
+    {
+        initialTwin = new TwinState(new TwinCollection(), new TwinCollection()),
+    };
 
     if (regId == null)
     {
@@ -42,13 +48,14 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         }
         else
         {
-            
             //find hub name with longest hostname
             obj.iotHubHostName = "";
-            foreach(string hubString in hubs)
+            foreach (string hubString in hubs)
             {
                 if (hubString.Length > obj.iotHubHostName.Length)
+                {
                     obj.iotHubHostName = hubString;
+                }
             }
 
             if (String.IsNullOrEmpty(obj.iotHubHostName))
@@ -63,22 +70,17 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     return (fail)
         ? req.CreateResponse(HttpStatusCode.BadRequest)
         : new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(JsonConvert.SerializeObject(obj, Formatting.Indented), Encoding.UTF8, "application/json")
-        };
+            {
+                Content = new StringContent(
+                    JsonConvert.SerializeObject(obj, Formatting.Indented),
+                    Encoding.UTF8,
+                    "application/json")
+            };
 }    
-
-public class DeviceTwinObj
-{
-    public string deviceId {get; set;}
-}
 
 public class ResponseObj
 {
     public string iotHubHostName {get; set;}
-    public string IoTHub {get; set;}
-    public DeviceTwinObj initialTwin {get; set;}
-    public string[] linkedHubs {get; set;}
-    public string enrollment {get; set;}
+    public TwinState initialTwin {get; set;}
     public dynamic payload {get; set;}
 }

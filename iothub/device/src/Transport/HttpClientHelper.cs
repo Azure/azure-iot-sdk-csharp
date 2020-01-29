@@ -57,6 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
 #if NET451
+            TlsVersions.SetLegacyAcceptableVersions();
+
             WebRequestHandler handler = httpClientHandler as WebRequestHandler;
             if (clientCert != null)
             {
@@ -82,29 +84,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
+            if (httpClientHandler == null)
+            {
+                httpClientHandler = new HttpClientHandler();
+            }
+            httpClientHandler.SslProtocols = TlsVersions.Preferred;
+
             if (clientCert != null)
             {
-                if (httpClientHandler == null)
-                {
-                    httpClientHandler = new HttpClientHandler();
-                }
-
                 httpClientHandler.ClientCertificates.Add(clientCert);
                 this.usingX509ClientCert = true;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
             {
-                if (httpClientHandler == null)
-                {
-                    httpClientHandler = new HttpClientHandler();
-                }
-
                 httpClientHandler.UseProxy = (proxy != null);
                 httpClientHandler.Proxy = proxy;
             }
 
-            this.httpClientObj = httpClientHandler != null ? new HttpClient(httpClientHandler) : new HttpClient();
+            this.httpClientObj = new HttpClient(httpClientHandler);
 #endif
 
             this.httpClientObj.BaseAddress = this.baseAddress;

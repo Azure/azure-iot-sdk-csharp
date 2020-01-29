@@ -5,7 +5,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
 #if !NET451
     using System.Net.Http;
@@ -111,9 +110,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled) Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-#if NET451
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-#endif
+            TlsVersions.SetLegacyAcceptableVersions();
 
             this.IotHubConnectionString = iotHubConnectionString;
 
@@ -423,7 +420,8 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(lockToken));
             }
 
-            try{
+            try
+            {
                 return InnerHandler.CompleteAsync(lockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
@@ -620,7 +618,8 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(message));
             }
 
-            try{
+            try
+            {
                 return RejectAsync(message.LockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
