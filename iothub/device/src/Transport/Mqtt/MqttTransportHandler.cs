@@ -21,20 +21,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+//using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-
     sealed class MqttTransportHandler : TransportHandler, IMqttIotHubEventHandler
     {
         const int ProtocolGatewayPort = 8883;
@@ -220,7 +221,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await this.SubscribeAsync().ConfigureAwait(true);
             }
 
-            bool hasMessage = await this.ReceiveMessageArrivalAsync(cancellationToken).ConfigureAwait(true);
+            // -1 millisecond represents for SemaphoreSlim to wait indefinitely
+            bool hasMessage = await this.ReceiveMessageArrivalAsync(TimeSpan.FromMilliseconds(-1), cancellationToken).ConfigureAwait(true);
             message = ProcessMessage(message, hasMessage);
 
             return message;
@@ -270,51 +272,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task<bool> ReceiveMessageArrivalAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            bool hasMessage = false;
             cancellationToken.ThrowIfCancellationRequested();
             var disconnectToken = this.disconnectAwaitersCancellationSource.Token;
             this.EnsureValidState();
 
             using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken))
             {
-                try
-                {
-                    hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
-                }
-                catch (OperationCanceledException)
-                {
-                    if (disconnectToken.IsCancellationRequested)
-                    {
-                        throw new IotHubCommunicationException("MQTT is disconnected");
-                    }
-                }
+                return await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
             }
 
-            return hasMessage;
-        }
-
-        async Task<bool> ReceiveMessageArrivalAsync(CancellationToken cancellationToken)
-        {
-            bool hasMessage = false;
-            cancellationToken.ThrowIfCancellationRequested();
-            this.EnsureValidState();
-
-            using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
-            {
-                try
-                {
-                    await this.receivingSemaphore.WaitAsync(linkedCts.Token).ConfigureAwait(true);
-                }
-                catch (OperationCanceledException)
-                {
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        throw new IotHubCommunicationException("MQTT is disconnected");
-                    }
-                }
-            }
-
-            return hasMessage;
         }
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
@@ -334,12 +300,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     throw new IotHubException(
                         "Lock token is stale or never existed. The message will be redelivered, please discard this lock token and do not retry operation.",
-                        isTransient:false);
+                        isTransient: false);
                 }
 
                 if (this.completionQueue.Count == 0)
                 {
-                    throw new IotHubException("Unknown lock token.", isTransient:false);
+                    throw new IotHubException("Unknown lock token.", isTransient: false);
                 }
 
                 string actualLockToken = this.completionQueue.Peek();
@@ -348,7 +314,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     throw new IotHubException(
                         $"Client MUST send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. Expected lock token: '{actualLockToken}'; actual lock token: '{lockToken}'.",
-                        isTransient:false);
+                        isTransient: false);
                 }
 
                 this.completionQueue.Dequeue();
@@ -452,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, regexTimeoutMilliseconds);
 
                 var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.GetBodyStream(), CancellationToken.None);
-                await Task.Run(() =>this.messageListener(mr)).ConfigureAwait(true);
+                await Task.Run(() => this.messageListener(mr)).ConfigureAwait(true);
             }
             finally
             {
@@ -491,7 +457,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.OnError(ex);
             }
@@ -564,7 +530,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled) Logging.Error(this, ex.ToString(), nameof(OnError));
             }
         }
-        
+
         TransportState MoveToStateIfPossible(TransportState destination, TransportState illegalStates)
         {
             TransportState previousState = this.State;
@@ -584,7 +550,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             while (true);
         }
 
-#endregion
+        #endregion
 
         async Task OpenAsyncInternal(CancellationToken cancellationToken)
         {
@@ -621,6 +587,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         await this.channel.CloseAsync().ConfigureAwait(true);
                     }
                 });
+            }
+
+            if (this.channel == null)
+            {
+                throw new IotHubCommunicationException("MQTT channel was not opened");
             }
 
             await this.connectCompletion.Task.ConfigureAwait(true);
@@ -660,7 +631,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStateTransition(TransportState.Open, TransportState.Subscribing))
             {
                 await this.channel.WriteAsync(new SubscribePacket()).ConfigureAwait(true);
-                
+
                 if (this.TryStateTransition(TransportState.Subscribing, TransportState.Receiving))
                 {
                     if (this.subscribeCompletionSource.TryComplete())
@@ -786,7 +757,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             if (status >= 300)
                             {
-                                throw new IotHubException("request " + rid + " returned status " + status.ToString(), isTransient:false);
+                                throw new IotHubException("request " + rid + " returned status " + status.ToString(), isTransient: false);
                             }
                             else
                             {
@@ -905,9 +876,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 IChannel channel = null;
 
                 Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
-                var clientTlsSettings = settings.ClientCertificate != null ?
-                    new ClientTlsSettings(iotHubConnectionString.HostName, new List<X509Certificate> { settings.ClientCertificate }) :
-                    new ClientTlsSettings(iotHubConnectionString.HostName);
+
+                var certs = settings.ClientCertificate == null
+                    ? new List<X509Certificate>(0)
+                    : new List<X509Certificate> { settings.ClientCertificate };
+
+                SslProtocols protocols = TlsVersions.Preferred;
+#if NET451
+                // Requires hardcoding in NET451 otherwise yields error:
+                //    Microsoft.Azure.Devices.Client.Exceptions.IotHubCommunicationException: Transient network error occurred, please retry.
+                //    DotNetty.Transport.Channels.ClosedChannelException: I/O error occurred.
+                if (settings.GetTransportType() == TransportType.Mqtt_Tcp_Only
+                    && protocols == SslProtocols.None)
+                {
+                    protocols = TlsVersions.MinimumTlsVersions;
+                }
+#endif
+
+                var clientTlsSettings = new ClientTlsSettings(
+                     protocols,
+                     certs.Any(),
+                     certs,
+                     iotHubConnectionString.HostName);
+
                 Bootstrap bootstrap = new Bootstrap()
                     .Group(s_eventLoopGroup.Value)
                     .Channel<TcpSocketChannel>()
@@ -920,8 +911,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         ch.Pipeline
                             .AddLast(
                                 tlsHandler,
-                                MqttEncoder.Instance, 
-                                new MqttDecoder(false, MaxMessageSize), 
+                                MqttEncoder.Instance,
+                                new MqttDecoder(false, MaxMessageSize),
                                 new LoggingHandler(LogLevel.DEBUG),
                                 this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
                     }));
@@ -946,6 +937,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                             return false; // Let anything else stop the application.
                         });
+                    }
+                    catch (ConnectException ex)
+                    {
+                        //same as above, we will handle DotNetty.Transport.Channels.ConnectException
+                        if (Logging.IsEnabled) Logging.Error(this, $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}", nameof(CreateChannelFactory));
                     }
                 }
 
@@ -1088,7 +1084,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         if (Logging.IsEnabled) Logging.Info(null, $"EventLoopGroup threads count {processorThreadCount}.");
                         return processorThreadCount <= 0 ? new MultithreadEventLoopGroup() :
-                            processorThreadCount == 1 ? (IEventLoopGroup) new SingleThreadEventLoop() :
+                            processorThreadCount == 1 ? (IEventLoopGroup)new SingleThreadEventLoop() :
                             new MultithreadEventLoopGroup(processorThreadCount);
                     }
                 }

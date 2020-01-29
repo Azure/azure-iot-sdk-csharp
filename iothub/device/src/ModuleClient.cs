@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.Client
 using System.Net.Http;
 #endif
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
@@ -331,7 +330,6 @@ using System.Net.Http;
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message, CancellationToken cancellationToken) => this.internalClient.AbandonAsync(message, cancellationToken);
 
-
         /// <summary>
         /// Sends an event to device hub
         /// </summary>
@@ -349,14 +347,14 @@ using System.Net.Http;
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => this.internalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
-        /// <param name="message">The message.</param>
+        /// <param name="messages">The messages.</param>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -409,7 +407,7 @@ using System.Net.Http;
 
         /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
-        /// it will be replaced with the new delegate.
+        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
@@ -494,7 +492,7 @@ using System.Net.Http;
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken) =>
             this.internalClient.SendEventAsync(outputName, message, cancellationToken);
-        
+
         /// <summary>
         /// Sends a batch of events to device hub
         /// </summary>
@@ -565,7 +563,7 @@ using System.Net.Http;
         /// <returns>The task containing the event</returns>
         public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, CancellationToken cancellationToken) =>
             this.internalClient.SetMessageHandlerAsync(messageHandler, userContext, cancellationToken);
-        
+
         /// <summary>
         /// Interactively invokes a method on device
         /// </summary>
@@ -594,7 +592,7 @@ using System.Net.Http;
         /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest) => 
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest) =>
             InvokeMethodAsync(deviceId, moduleId, methodRequest, CancellationToken.None);
 
         /// <summary>
@@ -606,39 +604,44 @@ using System.Net.Http;
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken) => 
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken) =>
             InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
 
         private async Task<MethodResponse> InvokeMethodAsync(Uri uri, MethodRequest methodRequest, CancellationToken cancellationToken)
         {
             HttpClientHandler httpClientHandler = null;
-            var customCertificateValidation =  this.certValidator.GetCustomCertificateValidation();
+            var customCertificateValidation = this.certValidator.GetCustomCertificateValidation();
 
             if (customCertificateValidation != null)
             {
-#if NETSTANDARD1_3 || NETSTANDARD2_0
-                httpClientHandler = new HttpClientHandler();
-                httpClientHandler.ServerCertificateCustomValidationCallback = customCertificateValidation;
+                TlsVersions.SetLegacyAcceptableVersions();
+
+#if !NET451
+                httpClientHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = customCertificateValidation,
+                    SslProtocols = TlsVersions.Preferred,
+                };
 #else
-            httpClientHandler = new WebRequestHandler();
-            ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-            {
-                return customCertificateValidation(sender, certificate, chain, errors);
-            };
+                httpClientHandler = new WebRequestHandler();
+                ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+                {
+                    return customCertificateValidation(sender, certificate, chain, errors);
+                };
 #endif
             }
 
             var context = new PipelineContext();
-            context.Set(new ProductInfo() { Extra = this.InternalClient.ProductInfo });
+            context.Set(new ProductInfo { Extra = this.InternalClient.ProductInfo });
 
-            Http1TransportSettings transportSettings = new Http1TransportSettings();
+            var transportSettings = new Http1TransportSettings();
             //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
             if (this.internalClient.Certificate != null)
             {
                 transportSettings.ClientCertificate = this.internalClient.Certificate;
             }
 
-            HttpTransportHandler httpTransport = new HttpTransportHandler(context, this.internalClient.IotHubConnectionString, transportSettings, httpClientHandler);
+            var httpTransport = new HttpTransportHandler(context, this.internalClient.IotHubConnectionString, transportSettings, httpClientHandler);
             var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
             var result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
             return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
