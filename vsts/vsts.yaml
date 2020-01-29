@@ -13,31 +13,6 @@ phases:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 180
   steps:
-  - task: Docker@1
-    displayName: 'Start TPM Simulator'
-    inputs:
-      containerregistrytype: 'Container Registry'
-      command: 'Run an image'
-      imageName: aziotbld/testtpm
-      containerName: 'testtpm-instance'
-
-      ports: |
-       127.0.0.1:2321:2321
-       127.0.0.1:2322:2322
-
-      restartPolicy: unlessStopped
-
-
-  - task: Docker@1
-    displayName: 'Start Test Proxy'
-    inputs:
-      containerregistrytype: 'Container Registry'
-      command: 'Run an image'
-      imageName: aziotbld/testproxy
-      containerName: 'testproxy-instance'
-      ports: '127.0.0.1:8888:8888'
-      restartPolicy: unlessStopped
-
   - powershell: ./vsts/linuxBuild.ps1
     condition: always()
     displayName: build
@@ -112,23 +87,7 @@ phases:
        sn -Vr *,31bf3856ad364e35
 
     displayName: 'Disable strong name validation'
-
-  - script: |
-       choco install -y squid
-
-    displayName: 'Install Squid'
-
-  - script: |
-       choco install -y netfx-4.5.2-devpack
-
-    displayName: 'Install .NET 4.5.2 Targetting Pack'
-
-  - powershell: ./vsts/start_tpm_windows.ps1
-    displayName: 'Start TPM Simulator'
-    env:
-      COMMIT_FROM: $(COMMIT_FROM)
-    condition: always()
-
+    
   - powershell: ./vsts/windowsBuild.ps1
     condition: always()
     displayName: build
