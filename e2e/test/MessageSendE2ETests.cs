@@ -61,6 +61,25 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            amqpTransportSettings.IdleTimeout = TimeSpan.FromMinutes(2);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+            await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSendSingleMessage_AmqpWs_WithHeartbeats()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            amqpTransportSettings.IdleTimeout = TimeSpan.FromMinutes(2);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
         {

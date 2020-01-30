@@ -17,8 +17,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpIoTConnector : IDisposable
     {
-        // 1 min of AMQP connection idle timeout
-        private const uint s_idleTimeOut = 60000;
         #region Members-Constructor
 #if NET451
         const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
@@ -52,9 +50,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
                 ContainerId = CommonResources.GetNewStringGuid(),
-                HostName = _hostName,
-                IdleTimeOut = s_idleTimeOut
+                HostName = _hostName
             };
+
+            TimeSpan idleTimeout = _amqpTransportSettings.IdleTimeout;
+            if (idleTimeout != null)
+            {
+                amqpConnectionSettings.IdleTimeOut = Convert.ToUInt32(idleTimeout.TotalMilliseconds);
+            }
 
             var amqpIoTTransport = new AmqpIoTTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
