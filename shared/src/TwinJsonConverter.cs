@@ -6,7 +6,9 @@ namespace Microsoft.Azure.Devices.Shared
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Reflection;
+    using System.Runtime.Serialization;
     using Microsoft.Azure.Devices.Common;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
@@ -231,21 +233,25 @@ namespace Microsoft.Azure.Devices.Shared
                         twin.StatusReason = reader.Value as string;
                         break;
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedTime = serializer.Deserialize<DateTimeOffset>(reader);
+                        twin.StatusUpdatedTime = ConvertToDateTime(reader.Value);
                         break;
                     case ConnectionStateTag:
                         string connectionState = reader.Value as string;
-                        twin.ConnectionState = connectionState?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState) : serializer.Deserialize<DeviceConnectionState>(reader);
+                        twin.ConnectionState = connectionState?[0] == '\"'
+                            ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState)
+                            : serializer.Deserialize<DeviceConnectionState>(reader);
                         break;
                     case LastActivityTimeTag:
-                        twin.LastActivityTime = serializer.Deserialize<DateTimeOffset>(reader);
+                        twin.LastActivityTime = ConvertToDateTime(reader.Value);
                         break;
                     case CloudToDeviceMessageCountTag:
                         twin.CloudToDeviceMessageCount = serializer.Deserialize<int>(reader);
                         break;
                     case AuthenticationTypeTag:
                         string authenticationType = reader.Value as string;
-                        twin.AuthenticationType = authenticationType?[0] == '\"' ? JsonConvert.DeserializeObject<AuthenticationType>(authenticationType) : serializer.Deserialize<AuthenticationType>(reader);
+                        twin.AuthenticationType = authenticationType?[0] == '\"'
+                            ? JsonConvert.DeserializeObject<AuthenticationType>(authenticationType)
+                            : serializer.Deserialize<AuthenticationType>(reader);
                         break;
                     case X509ThumbprintTag:
                         twin.X509Thumbprint = serializer.Deserialize<X509Thumbprint>(reader);
@@ -305,6 +311,31 @@ namespace Microsoft.Azure.Devices.Shared
             }
 
             return dict;
+        }
+
+        private static DateTime? ConvertToDateTime(object obj)
+        {
+            if (obj is DateTime)
+            {
+                return ((DateTime)obj).ToUniversalTime();
+            }
+            else if (obj is DateTimeOffset)
+            {
+                return ((DateTimeOffset)obj).UtcDateTime;
+            } 
+            else
+            {
+                return ParseToDateTime(obj as string);
+            }
+        }
+
+        private static DateTime? ParseToDateTime(string value)
+        {
+            if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime))
+            {
+                return dateTime.ToUniversalTime();
+            }
+            return null;
         }
 
         private static void PopulatePropertiesForTwin(Twin twin, JsonReader reader)
