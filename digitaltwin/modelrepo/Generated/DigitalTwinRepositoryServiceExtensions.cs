@@ -85,7 +85,7 @@ namespace Azure.IoT.DigitalTwin.Model.Service.Generated
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<CreateOrUpdateModelHeaders> CreateOrUpdateModelAsync(this IDigitalTwinRepositoryService operations, string modelId, string apiVersion, object content, string repositoryId = default(string), string xMsClientRequestId = default(string), string ifMatch = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<CreateOrUpdateModelHeaders> CreateOrUpdateModelAsync(this IDigitalTwinRepositoryService operations, string modelId, string apiVersion, string content, string repositoryId = default(string), string xMsClientRequestId = default(string), string ifMatch = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.CreateOrUpdateModelWithHttpMessagesAsync(modelId, apiVersion, content, repositoryId, xMsClientRequestId, ifMatch, null, cancellationToken).ConfigureAwait(false))
                 {

@@ -255,7 +255,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             IMapper iMapper = config.CreateMapper();
 
             var _result = new HttpOperationHeaderResponse<CreateOrUpdateModelHeaders>();
-            _result = await digitalTwinRepositoryService.CreateOrUpdateModelWithHttpMessagesAsync(modelId, _apiVersion, (object)content, this.RepositoryId, clientRequestId, ifMatchEtag, null, cancellationToken).ConfigureAwait(false);
+            _result = await digitalTwinRepositoryService.CreateOrUpdateModelWithHttpMessagesAsync(modelId, _apiVersion, content, this.RepositoryId, clientRequestId, ifMatchEtag, null, cancellationToken).ConfigureAwait(false);
 
             var updateModelResponse = iMapper.Map<CreateOrUpdateModelHeaders, CreateOrUpdateModelResponse>(_result.Headers);
             updateModelResponse.StatusCode = _result.Response.StatusCode;

@@ -14,7 +14,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
     /// </summary>
     public class ModelServiceConnectionStringParser : ServiceConnectionStringParser
     {
-        private const string RepositoryIdPropertyName = nameof(RespositoryId);
+        protected const string RepositoryIdPropertyName = "RepositoryId";
 
         private static readonly Regex RepositoryIdRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
 
