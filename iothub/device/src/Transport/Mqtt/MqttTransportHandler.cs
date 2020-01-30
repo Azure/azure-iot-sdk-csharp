@@ -21,20 +21,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+//using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-
     sealed class MqttTransportHandler : TransportHandler, IMqttIotHubEventHandler
     {
         const int ProtocolGatewayPort = 8883;
@@ -875,9 +876,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 IChannel channel = null;
 
                 Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
-                var clientTlsSettings = settings.ClientCertificate != null ?
-                    new ClientTlsSettings(iotHubConnectionString.HostName, new List<X509Certificate> { settings.ClientCertificate }) :
-                    new ClientTlsSettings(iotHubConnectionString.HostName);
+
+                var certs = settings.ClientCertificate == null
+                    ? new List<X509Certificate>(0)
+                    : new List<X509Certificate> { settings.ClientCertificate };
+
+                SslProtocols protocols = TlsVersions.Preferred;
+#if NET451
+                // Requires hardcoding in NET451 otherwise yields error:
+                //    Microsoft.Azure.Devices.Client.Exceptions.IotHubCommunicationException: Transient network error occurred, please retry.
+                //    DotNetty.Transport.Channels.ClosedChannelException: I/O error occurred.
+                if (settings.GetTransportType() == TransportType.Mqtt_Tcp_Only
+                    && protocols == SslProtocols.None)
+                {
+                    protocols = TlsVersions.MinimumTlsVersions;
+                }
+#endif
+
+                var clientTlsSettings = new ClientTlsSettings(
+                     protocols,
+                     certs.Any(),
+                     certs,
+                     iotHubConnectionString.HostName);
+
                 Bootstrap bootstrap = new Bootstrap()
                     .Group(s_eventLoopGroup.Value)
                     .Channel<TcpSocketChannel>()
