@@ -32,72 +32,76 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+
 //using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    sealed class MqttTransportHandler : TransportHandler, IMqttIotHubEventHandler
+    internal sealed class MqttTransportHandler : TransportHandler, IMqttIotHubEventHandler
     {
-        const int ProtocolGatewayPort = 8883;
-        const int MaxMessageSize = 256 * 1024;
-        const string ProcessorThreadCountVariableName = "MqttEventsProcessorThreadCount";
+        private const int ProtocolGatewayPort = 8883;
+        private const int MaxMessageSize = 256 * 1024;
+        private const string ProcessorThreadCountVariableName = "MqttEventsProcessorThreadCount";
 
-        static readonly int GenerationPrefixLength = Guid.NewGuid().ToString().Length;
+        private static readonly int GenerationPrefixLength = Guid.NewGuid().ToString().Length;
 
-        readonly string generationId = Guid.NewGuid().ToString();
+        private readonly string generationId = Guid.NewGuid().ToString();
 
         private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
 
-        readonly string hostName;
-        readonly Func<IPAddress[], int, Task<IChannel>> channelFactory;
-        readonly Queue<string> completionQueue;
-        readonly MqttIotHubAdapterFactory mqttIotHubAdapterFactory;
-        readonly QualityOfService qos;
+        private readonly string hostName;
+        private readonly Func<IPAddress[], int, Task<IChannel>> channelFactory;
+        private readonly Queue<string> completionQueue;
+        private readonly MqttIotHubAdapterFactory mqttIotHubAdapterFactory;
+        private readonly QualityOfService qos;
 
-        readonly object syncRoot = new object();
-        readonly CancellationTokenSource disconnectAwaitersCancellationSource = new CancellationTokenSource();
-        readonly RetryPolicy closeRetryPolicy;
+        private readonly object syncRoot = new object();
+        private readonly CancellationTokenSource disconnectAwaitersCancellationSource = new CancellationTokenSource();
+        private readonly RetryPolicy closeRetryPolicy;
 
-        readonly SemaphoreSlim receivingSemaphore = new SemaphoreSlim(0);
-        readonly ConcurrentQueue<Message> messageQueue;
+        private readonly SemaphoreSlim receivingSemaphore = new SemaphoreSlim(0);
+        private readonly ConcurrentQueue<Message> messageQueue;
 
-        readonly TaskCompletionSource connectCompletion = new TaskCompletionSource();
-        readonly TaskCompletionSource subscribeCompletionSource = new TaskCompletionSource();
-        Func<Task> cleanupFunc;
-        IChannel channel;
-        ExceptionDispatchInfo fatalException;
-        IPAddress[] serverAddresses;
+        private readonly TaskCompletionSource connectCompletion = new TaskCompletionSource();
+        private readonly TaskCompletionSource subscribeCompletionSource = new TaskCompletionSource();
+        private Func<Task> cleanupFunc;
+        private IChannel channel;
+        private ExceptionDispatchInfo fatalException;
+        private IPAddress[] serverAddresses;
 
-        int state = (int)TransportState.NotInitialized;
+        private int state = (int)TransportState.NotInitialized;
         public TransportState State => (TransportState)Volatile.Read(ref this.state);
 
         // incoming topic names
-        const string methodPostTopicFilter = "$iothub/methods/POST/#";
-        const string methodPostTopicPrefix = "$iothub/methods/POST/";
-        const string twinResponseTopicFilter = "$iothub/twin/res/#";
-        const string twinResponseTopicPrefix = "$iothub/twin/res/";
-        const string twinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
-        const string twinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
-        const string receiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
-        const string receiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
+        private const string methodPostTopicFilter = "$iothub/methods/POST/#";
+
+        private const string methodPostTopicPrefix = "$iothub/methods/POST/";
+        private const string twinResponseTopicFilter = "$iothub/twin/res/#";
+        private const string twinResponseTopicPrefix = "$iothub/twin/res/";
+        private const string twinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
+        private const string twinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
+        private const string receiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
+        private const string receiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
         // outgoing topic names
-        const string methodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
-        const string twinGetTopic = "$iothub/twin/GET/?$rid={0}";
-        const string twinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";
+        private const string methodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
+
+        private const string twinGetTopic = "$iothub/twin/GET/?$rid={0}";
+        private const string twinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";
 
         // incoming topic regexp
-        const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
+        private const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
+
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.Compiled, regexTimeoutMilliseconds);
+        private Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.Compiled, regexTimeoutMilliseconds);
 
-        Func<MethodRequestInternal, Task> messageListener;
-        Action<TwinCollection> onDesiredStatePatchListener;
-        Action<Message> twinResponseEvent;
-        Func<string, Message, Task> messageReceivedListener;
+        private Func<MethodRequestInternal, Task> messageListener;
+        private Action<TwinCollection> onDesiredStatePatchListener;
+        private Action<Message> twinResponseEvent;
+        private Func<string, Message, Task> messageReceivedListener;
 
-        string receiveEventMessageFilter;
-        string receiveEventMessagePrefix;
+        private string receiveEventMessageFilter;
+        private string receiveEventMessagePrefix;
 
         public TimeSpan TwinTimeout = TimeSpan.FromSeconds(60);
 
@@ -140,9 +144,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case TransportType.Mqtt_Tcp_Only:
                         this.channelFactory = this.CreateChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>());
                         break;
+
                     case TransportType.Mqtt_WebSocket_Only:
                         this.channelFactory = this.CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>());
                         break;
+
                     default:
                         throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(settings.GetTransportType()));
                 }
@@ -158,6 +164,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public override bool IsUsable => this.State != TransportState.Closed && this.State != TransportState.Error;
 
         #region Client operations
+
         public override Task OpenAsync(TimeoutHelper timeoutHelper)
         {
             return OpenAsync(new CancellationTokenSource(timeoutHelper.RemainingTime()).Token);
@@ -270,7 +277,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return message;
         }
 
-        async Task<bool> ReceiveMessageArrivalAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        private async Task<bool> ReceiveMessageArrivalAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var disconnectToken = this.disconnectAwaitersCancellationSource.Token;
@@ -280,7 +287,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 return await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
             }
-
         }
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
@@ -380,9 +386,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        #endregion
+        #endregion Client operations
 
         #region MQTT callbacks
+
         public void OnConnected()
         {
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
@@ -391,7 +398,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async Task HandleIncomingTwinPatch(Message message)
+        private async Task HandleIncomingTwinPatch(Message message)
         {
             try
             {
@@ -411,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async Task HandleIncomingMethodPost(Message message)
+        private async Task HandleIncomingMethodPost(Message message)
         {
             try
             {
@@ -463,7 +470,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async Task HandleIncomingEventMessage(Message message)
+        private async Task HandleIncomingEventMessage(Message message)
         {
             try
             {
@@ -501,23 +508,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case TransportState.Error:
                     case TransportState.Closed:
                         return;
+
                     case TransportState.NotInitialized:
                     case TransportState.Opening:
                         this.fatalException = ExceptionDispatchInfo.Capture(exception);
                         this.connectCompletion.TrySetException(exception);
                         this.subscribeCompletionSource.TrySetException(exception);
                         break;
+
                     case TransportState.Open:
                     case TransportState.Subscribing:
                         this.fatalException = ExceptionDispatchInfo.Capture(exception);
                         this.subscribeCompletionSource.TrySetException(exception);
                         OnTransportDisconnected();
                         break;
+
                     case TransportState.Receiving:
                         this.fatalException = ExceptionDispatchInfo.Capture(exception);
                         this.disconnectAwaitersCancellationSource.Cancel();
                         OnTransportDisconnected();
                         break;
+
                     default:
                         Debug.Fail($"Unknown transport state: {previousState}");
                         throw new InvalidOperationException();
@@ -531,7 +542,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        TransportState MoveToStateIfPossible(TransportState destination, TransportState illegalStates)
+        private TransportState MoveToStateIfPossible(TransportState destination, TransportState illegalStates)
         {
             TransportState previousState = this.State;
             do
@@ -550,9 +561,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             while (true);
         }
 
-        #endregion
+        #endregion MQTT callbacks
 
-        async Task OpenAsyncInternal(CancellationToken cancellationToken)
+        private async Task OpenAsyncInternal(CancellationToken cancellationToken)
         {
 #if NET451
             this.serverAddresses = Dns.GetHostEntry(this.hostName).AddressList;
@@ -600,7 +611,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await this.SubscribeTwinResponsesAsync().ConfigureAwait(true);
         }
 
-        bool TryStop()
+        private bool TryStop()
         {
             TransportState previousState = this.MoveToStateIfPossible(TransportState.Closed, TransportState.Error);
             switch (previousState)
@@ -608,17 +619,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 case TransportState.Closed:
                 case TransportState.Error:
                     return false;
+
                 case TransportState.NotInitialized:
                 case TransportState.Opening:
                     this.connectCompletion.TrySetCanceled();
                     break;
+
                 case TransportState.Open:
                 case TransportState.Subscribing:
                     this.subscribeCompletionSource.TrySetCanceled();
                     break;
+
                 case TransportState.Receiving:
                     this.disconnectAwaitersCancellationSource.Cancel();
                     break;
+
                 default:
                     Debug.Fail($"Unknown transport state: {previousState}");
                     throw new InvalidOperationException();
@@ -626,7 +641,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return true;
         }
 
-        async Task SubscribeAsync()
+        private async Task SubscribeAsync()
         {
             if (this.TryStateTransition(TransportState.Open, TransportState.Subscribing))
             {
@@ -643,7 +658,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await this.subscribeCompletionSource.Task.ConfigureAwait(true);
         }
 
-        async Task SubscribeTwinResponsesAsync()
+        private async Task SubscribeTwinResponsesAsync()
         {
             await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinResponseTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
         }
@@ -653,9 +668,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_001:  `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter. 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_002:  `EnableMethodsAsync` shall wait for a SUBACK for the subscription request. 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_003:  `EnableMethodsAsync` shall return failure if the subscription request fails. 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_001:  `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter.
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_002:  `EnableMethodsAsync` shall wait for a SUBACK for the subscription request.
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_003:  `EnableMethodsAsync` shall return failure if the subscription request fails.
             await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(methodPostTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
         }
 
@@ -675,9 +690,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_021:  `EnableEventReceiveAsync` shall subscribe using the 'devices/{0}/modules/{1}/' topic filter. 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_022:  `EnableEventReceiveAsync` shall wait for a SUBACK for the subscription request. 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_023:  `EnableEventReceiveAsync` shall return failure if the subscription request fails. 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_021:  `EnableEventReceiveAsync` shall subscribe using the 'devices/{0}/modules/{1}/' topic filter.
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_022:  `EnableEventReceiveAsync` shall wait for a SUBACK for the subscription request.
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_023:  `EnableEventReceiveAsync` shall return failure if the subscription request fails.
             await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(this.receiveEventMessageFilter, this.qos))).ConfigureAwait(true);
         }
 
@@ -697,10 +712,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_005:  `SendMethodResponseAsync` shall allocate a `Message` object containing the method response. 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_006:  `SendMethodResponseAsync` shall set the message topic to '$iothub/methods/res/<STATUS>/?$rid=<REQUEST_ID>' where STATUS is the return status for the method and REQUEST_ID is the request ID received from the service in the original method call. 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_007:  `SendMethodResponseAsync` shall set the message body to the response payload of the `Method` object. 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_008:  `SendMethodResponseAsync` shall send the message to the service. 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_005:  `SendMethodResponseAsync` shall allocate a `Message` object containing the method response.
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_006:  `SendMethodResponseAsync` shall set the message topic to '$iothub/methods/res/<STATUS>/?$rid=<REQUEST_ID>' where STATUS is the return status for the method and REQUEST_ID is the request ID received from the service in the original method call.
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_007:  `SendMethodResponseAsync` shall set the message body to the response payload of the `Method` object.
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_008:  `SendMethodResponseAsync` shall send the message to the service.
             var message = new Message(methodResponse.BodyStream);
 
             message.MqttTopicName = methodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
@@ -719,7 +734,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinPatchTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
         }
 
-        Boolean ParseResponseTopic(string topicName, out string rid, out Int32 status)
+        private Boolean ParseResponseTopic(string topicName, out string rid, out Int32 status)
         {
             var match = this.twinResponseTopicRegex.Match(topicName);
             if (match.Success)
@@ -736,7 +751,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async Task<Message> SendTwinRequestAsync(Message request, string rid, CancellationToken cancellationToken)
+        private async Task<Message> SendTwinRequestAsync(Message request, string rid, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -806,20 +821,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Twin twin = null;
             this.EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_014:  `SendTwinGetAsync` shall allocate a `Message` object to hold the `GET` request 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_014:  `SendTwinGetAsync` shall allocate a `Message` object to hold the `GET` request
             var request = new Message();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_015:  `SendTwinGetAsync` shall generate a GUID to use as the $rid property on the request 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_016:  `SendTwinGetAsync` shall set the `Message` topic to '$iothub/twin/GET/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_015:  `SendTwinGetAsync` shall generate a GUID to use as the $rid property on the request
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_016:  `SendTwinGetAsync` shall set the `Message` topic to '$iothub/twin/GET/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated
             string rid = Guid.NewGuid().ToString(); ;
             request.MqttTopicName = "$iothub/twin/GET/?$rid=" + rid;
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_017:  `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_017:  `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_019:  If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_020:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_020:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error
             using (var response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(true))
             {
-                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_021:  If the response contains a success code, `SendTwinGetAsync` shall return success to the caller  
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_021:  If the response contains a success code, `SendTwinGetAsync` shall return success to the caller
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_018:  When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller
                 using (StreamReader reader = new StreamReader(response.GetBodyStream(), System.Text.Encoding.UTF8))
                 {
@@ -848,28 +863,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_025:  `SendTwinPatchAsync` shall serialize the `reported` object into a JSON string 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_025:  `SendTwinPatchAsync` shall serialize the `reported` object into a JSON string
             var body = JsonConvert.SerializeObject(reportedProperties);
             var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_022:  `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_026:  `SendTwinPatchAsync` shall set the body of the message to the JSON string 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_022:  `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_026:  `SendTwinPatchAsync` shall set the body of the message to the JSON string
             using (var request = new Message(bodyStream))
             {
-                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_023:  `SendTwinPatchAsync` shall generate a GUID to use as the $rid property on the request 
-                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_024:  `SendTwinPatchAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated 
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_023:  `SendTwinPatchAsync` shall generate a GUID to use as the $rid property on the request
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_024:  `SendTwinPatchAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated
                 var rid = Guid.NewGuid().ToString();
                 request.MqttTopicName = twinPatchTopic.FormatInvariant(rid);
 
-                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_027:  `SendTwinPatchAsync` shall wait for a response from the service with a matching $rid value 
-                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_028:  If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller. 
-                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_029:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.  
-                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_030:  If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller. 
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_027:  `SendTwinPatchAsync` shall wait for a response from the service with a matching $rid value
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_028:  If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller.
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_029:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_030:  If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller.
                 await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(true);
             }
         }
 
-        Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
+        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
         {
             return async (addresses, port) =>
             {
@@ -881,7 +896,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     ? new List<X509Certificate>(0)
                     : new List<X509Certificate> { settings.ClientCertificate };
 
-                SslProtocols protocols = TlsVersions.Preferred;
+                SslProtocols protocols = TlsVersions.Instance.Preferred;
 #if NET451
                 // Requires hardcoding in NET451 otherwise yields error:
                 //    Microsoft.Azure.Devices.Client.Exceptions.IotHubCommunicationException: Transient network error occurred, please retry.
@@ -889,7 +904,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (settings.GetTransportType() == TransportType.Mqtt_Tcp_Only
                     && protocols == SslProtocols.None)
                 {
-                    protocols = TlsVersions.MinimumTlsVersions;
+                    protocols = TlsVersions.Instance.MinimumTlsVersions;
                 }
 #endif
 
@@ -949,7 +964,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
+        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
         {
             return async (address, port) =>
             {
@@ -1015,7 +1030,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        void ScheduleCleanup(Func<Task> cleanupTask)
+        private void ScheduleCleanup(Func<Task> cleanupTask)
         {
             Func<Task> currentCleanupFunc = this.cleanupFunc;
             this.cleanupFunc = async () =>
@@ -1029,7 +1044,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        async void Cleanup()
+        private async void Cleanup()
         {
             try
             {
@@ -1040,7 +1055,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        Task CleanupAsync()
+        private Task CleanupAsync()
         {
             if (this.cleanupFunc != null)
             {
@@ -1050,7 +1065,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return TaskHelpers.CompletedTask;
         }
 
-        bool TryStateTransition(TransportState fromState, TransportState toState)
+        private bool TryStateTransition(TransportState fromState, TransportState toState)
         {
             return (TransportState)Interlocked.CompareExchange(ref this.state, (int)toState, (int)fromState) == fromState;
         }
@@ -1072,7 +1087,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        static IEventLoopGroup GetEventLoopGroup()
+        private static IEventLoopGroup GetEventLoopGroup()
         {
             try
             {

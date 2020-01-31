@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
         /// <returns> An RegistryManager instance. </returns>
         public static RegistryManager CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
         {
-            TlsVersions.SetLegacyAcceptableVersions();
+            TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             return new HttpRegistryManager(iotHubConnectionString, transportSettings);

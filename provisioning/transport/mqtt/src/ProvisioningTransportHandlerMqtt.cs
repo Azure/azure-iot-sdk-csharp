@@ -35,6 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         // TODO: Unify these constants with IoT Hub Device client.
         private const int MaxMessageSize = 256 * 1024;
+
         private const int MqttTcpPort = 8883;
         private const int ReadTimeoutSeconds = 60;
 
@@ -84,7 +85,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try
             {
-
                 if (message.Security is SecurityProviderX509)
                 {
                     SecurityProviderX509 x509Security = (SecurityProviderX509)message.Security;
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ((SecurityProviderX509)message.Security).GetAuthenticationCertificate();
 
             var tlsSettings = new ClientTlsSettings(
-                TlsVersions.Preferred,
+                TlsVersions.Instance.Preferred,
                 true,
                 new List<X509Certificate> { clientCertificate },
                 message.GlobalDeviceEndpoint);
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             cancellationToken.ThrowIfCancellationRequested();
 
             var tlsSettings = new ClientTlsSettings(
-                TlsVersions.Preferred,
+                TlsVersions.Instance.Preferred,
                 false,
                 new List<X509Certificate>(0),
                 message.GlobalDeviceEndpoint);
@@ -258,7 +258,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                         return false; // Let anything else stop the application.
                     });
-
                 }
             }
 

@@ -12,8 +12,9 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
-    [Ignore("Enable once the log analytics client can be created (needs a certificate).")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
+    [TestCategory("LongRunning")]
     public class AzureSecurityCenterForIoTSecurityMessageE2ETests : IDisposable
     {
         private readonly string _devicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
@@ -126,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task TestSecurityMessage(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            
+
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             {
                 try
@@ -143,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task TestSecurityMessageModule(Client.TransportType transport)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
-            
+
             using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport))
             {
                 try
@@ -180,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task ValidateEvent(string deviceId, string eventId, string payload, string p1Value,
             AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
-            bool isReceivedEventHub = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value);
+            bool isReceivedEventHub = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value, TimeSpan.FromSeconds(10));
             Assert.IsFalse(isReceivedEventHub, "Security message received in customer event hub.");
             bool isReceivedOms = await logAnalticsTestClient.IsRawEventExist(deviceId, eventId).ConfigureAwait(false);
             Assert.IsTrue(isReceivedOms, "Security message was not recived in customer log analytics");

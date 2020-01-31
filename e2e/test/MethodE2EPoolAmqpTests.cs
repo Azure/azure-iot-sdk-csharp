@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class MethodE2EPoolAmqpTests : IDisposable
     {
         private const string MethodName = "MethodE2EPoolAmqpTests";
