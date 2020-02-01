@@ -18,17 +18,51 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             return BuildSignatureForModelRepo(KeyName, Key, hostName, RepositoryId).ToString();
         }
 
-        public StringBuilder BuildSignatureForModelRepo(string keyName, string key, string Hostname, string repositoryId)
+        protected StringBuilder BuildSignatureForModelRepo(string keyName, string key, string hostName, string repositoryId)
         {
-            var buffer = BuildSignature(keyName, key, Hostname);
+            string expiresOn = BuildExpiresOn(TimeToLive);
+            string hostNameEncoded = WebUtility.UrlEncode(hostName);
+            string repositoryIdEncoded = WebUtility.UrlEncode(repositoryId);
+            var fields = new List<string>
+            {
+                repositoryIdEncoded,
+                hostNameEncoded,
+                expiresOn,
+            };
+
+            // Example string to be signed:
+            // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
+            // <Value for ExpiresOn>
+
+            string signature = Sign(string.Join("\n", fields).ToLower(), key);
+
+            // Example returned string:
+            // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]&rid=<RepositoryId>
+
+            var buffer = new StringBuilder();
             buffer.AppendFormat(
                 CultureInfo.InvariantCulture,
-                "&{0}={1}",
+                "{0} {1}={2}&{3}={4}&{5}={6}&{7}={8}",
+                SharedAccessSignatureConstants.SharedAccessSignature,
+                SharedAccessSignatureConstants.AudienceFieldName,
+                hostNameEncoded,
+                SharedAccessSignatureConstants.SignatureFieldName,
+                WebUtility.UrlEncode(signature),
+                SharedAccessSignatureConstants.ExpiryFieldName,
+                WebUtility.UrlEncode(expiresOn),
                 ModelSharedAccessSignatureConstants.RepositoryIdFiledName,
-                repositoryId);
+                repositoryIdEncoded);
+
+            if (!string.IsNullOrEmpty(KeyName))
+            {
+                buffer.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    "&{0}={1}",
+                    SharedAccessSignatureConstants.KeyNameFieldName,
+                    WebUtility.UrlEncode(keyName));
+            }
 
             return buffer;
-
         }
     }
 }

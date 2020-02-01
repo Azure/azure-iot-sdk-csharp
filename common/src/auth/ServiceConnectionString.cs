@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
     /// </remarks>
     public class ServiceConnectionString
     {
-        protected static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromMinutes(5);
+        protected static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromMinutes(30);
 
         /// <summary>
         /// Creates an instance based on a supplied parser

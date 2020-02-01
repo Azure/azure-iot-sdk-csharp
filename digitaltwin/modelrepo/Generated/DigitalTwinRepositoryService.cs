@@ -316,7 +316,7 @@ namespace Azure.IoT.DigitalTwin.Model.Service.Generated
         /// </summary>
         /// <param name='modelId'>
         /// Digital twin model id Ex:
-        /// &lt;example&gt;urn:contoso:com:temparaturesensor:1&lt;/example&gt;
+        /// &lt;example&gt;urn:contoso:com:temperaturesensor:1&lt;/example&gt;
         /// </param>
         /// <param name='apiVersion'>
         /// Api version string.
@@ -560,7 +560,7 @@ namespace Azure.IoT.DigitalTwin.Model.Service.Generated
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationHeaderResponse<CreateOrUpdateModelHeaders>> CreateOrUpdateModelWithHttpMessagesAsync(string modelId, string apiVersion, string content, string repositoryId = default(string), string xMsClientRequestId = default(string), string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationHeaderResponse<CreateOrUpdateModelHeaders>> CreateOrUpdateModelWithHttpMessagesAsync(string modelId, string apiVersion, object content, string repositoryId = default(string), string xMsClientRequestId = default(string), string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (modelId == null)
             {
@@ -643,9 +643,12 @@ namespace Azure.IoT.DigitalTwin.Model.Service.Generated
                 }
             }
 
+            // Serialize Request
+            string _requestContent = null;
             if(content != null)
             {
-                _httpRequest.Content = new StringContent(content, System.Text.Encoding.UTF8);
+                _requestContent = SafeJsonConvert.SerializeObject(content, SerializationSettings);
+                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
                 _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
             // Set Credentials
@@ -677,7 +680,7 @@ namespace Azure.IoT.DigitalTwin.Model.Service.Generated
                 else {
                     _responseContent = string.Empty;
                 }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, content);
+                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
                 ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
                 if (_shouldTrace)
                 {

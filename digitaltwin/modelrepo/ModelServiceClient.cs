@@ -16,7 +16,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
     {
         private DigitalTwinRepositoryService digitalTwinRepositoryService;
 
-        private const string _apiVersion = "v1";
+        private const string _apiVersion = "2019-07-01-Preview";
         public string RepositoryId { get; set; }
 
         /// <summary> Initializes a new instance of the <see cref="ModelServiceClient"/> class.</summary>

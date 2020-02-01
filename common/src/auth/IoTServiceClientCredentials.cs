@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         {
             if (!request.Headers.Contains(HttpRequestHeader.Authorization.ToString()))
             {
-                request.Headers.Add(HttpRequestHeader.Authorization.ToString(), GetSasToken());
+                 request.Headers.Add(HttpRequestHeader.Authorization.ToString(), GetSasToken());
             }
             return base.ProcessHttpRequestAsync(request, cancellationToken);
         }
