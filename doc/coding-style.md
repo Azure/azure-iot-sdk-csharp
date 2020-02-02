@@ -1,6 +1,7 @@
 # C# Coding Style
 
 The general rule we follow is "use Visual Studio defaults".
+To enforce this, we make use of an .editorconfig file, and [CodeMaid](https://marketplace.visualstudio.com/items?itemName=SteveCadwallader.CodeMaid) with some rules exported.
 
 ## Specific Rules
 
@@ -33,7 +34,7 @@ Last, if there's a completely new component, anything that is reasonably broadly
 
 ## Example Files
 
-``ObservableLinkedList`1.cs:``
+ObservableLinkedList`1.cs:
 
 ```C#
 using System;
@@ -54,7 +55,9 @@ namespace System.Collections.Generic
         public ObservableLinkedList(IEnumerable<T> items)
         {
             if (items == null)
+            {
                 throw new ArgumentNullException(nameof(items));
+            }
 
             foreach (T item in items)
             {
@@ -64,10 +67,7 @@ namespace System.Collections.Generic
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        public int Count
-        {
-            get { return _count; }
-        }
+        public int Count => _count;
 
         public ObservableLinkedListNode AddLast(T value) 
         {
@@ -95,7 +95,7 @@ namespace System.Collections.Generic
 }
 ```
 
-``ObservableLinkedList`1.ObservableLinkedListNode.cs:``
+ObservableLinkedList`1.ObservableLinkedListNode.cs:
 
 ```C#
 using System;
@@ -117,10 +117,7 @@ namespace System.Collections.Generics
                 _value = value;
             }
             
-            public T Value
-            {
-               get { return _value; }
-            }
+            public T Value => _value;
         }
 
         ...
