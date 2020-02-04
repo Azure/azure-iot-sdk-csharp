@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.Common
             Task task = asyncResult as Task;
             if (task == null)
             {
-                throw Fx.Exception.AsError(new ArgumentException(CommonResources.InvalidAsyncResult));
+                throw Fx.Exception.AsError(new ArgumentException(Resources.InvalidAsyncResult));
             }
 
             try
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices.Common
             Task<TResult> task = asyncResult as Task<TResult>;
             if (task == null)
             {
-                throw Fx.Exception.AsError(new ArgumentException(CommonResources.InvalidAsyncResult));
+                throw Fx.Exception.AsError(new ArgumentException(Resources.InvalidAsyncResult));
             }
 
             try

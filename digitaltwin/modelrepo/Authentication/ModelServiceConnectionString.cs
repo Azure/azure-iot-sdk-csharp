@@ -23,7 +23,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
     public class ModelServiceConnectionString : ServiceConnectionString
     {
         /// <summary>
-        /// CONSTRUCOR
+        /// Creates an instance based on a supplied parser
         /// </summary>
         /// <param name="parser">the <see cref="ModelServiceConnectionStringParser"/> with the connection string content.</param>
         /// <exception cref="ArgumentNullException">if the provided parser is null.</exception>
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         }
 
         /// <summary>
-        /// The Repository Id for private/Company repository
+        /// The Repository Id for private/company repository
         /// </summary>
         public string RepositoryId { get; private set; }
 

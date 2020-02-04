@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Common
     class AssertionFailedException : Exception
     {
         public AssertionFailedException(string description)
-            : base(CommonResources.GetString(CommonResources.ShipAssertExceptionMessage, description))
+            : base(ResourceHelper.TruncateFormattedArgs(Resources.ShipAssertExceptionMessage, description))
         {
         }
 

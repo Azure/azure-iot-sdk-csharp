@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Common
         // This is factored out to allow Signal and Unlock to be inlined.
         static void ThrowInvalidSignalGateState()
         {
-            throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.InvalidSemaphoreExit));
+            throw Fx.Exception.AsError(new InvalidOperationException(Resources.InvalidSemaphoreExit));
         }
 
         static class GateState

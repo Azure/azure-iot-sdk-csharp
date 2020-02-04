@@ -33,14 +33,9 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         protected StringBuilder BuildSignature(string keyName, string key, string hostName)
         {
             string expiresOn = BuildExpiresOn(TimeToLive);
-            //string expiresOn = WebUtility.UrlDecode("1580511818");
             string audience = WebUtility.UrlEncode(hostName);
-            //string audience = WebUtility.UrlEncode("72f988bf-86f1-41af-91ab-2d7cd011db47");
-            // Change later
-            string repositoryId = WebUtility.UrlEncode("8594dc7436a54c4492216728a1c01ed6");
             var fields = new List<string>
             {
-                repositoryId,
                 audience,
                 expiresOn,
             };

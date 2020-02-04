@@ -11,18 +11,25 @@ namespace Microsoft.Azure.Devices.Common.Authorization
     {
         internal string _repositoryId;
 
-        private ModelSharedAccessSignature(string shareAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience, string repositoryId) : base(shareAccessSignatureName, expiresOn, expiry, keyName, signature, encodedAudience)
+        private ModelSharedAccessSignature(
+            string shareAccessSignatureName, 
+            DateTime expiresOn, 
+            string expiry, 
+            string keyName, 
+            string signature, 
+            string encodedAudience, 
+            string repositoryId) 
+            : base(
+                  shareAccessSignatureName, 
+                  expiresOn, 
+                  expiry, 
+                  keyName, 
+                  signature, 
+                  encodedAudience)
         {
             _repositoryId = repositoryId;
         }
 
-        public string RepositoryId
-        {
-            get
-            {
-                return _repositoryId;
-            }
-        }
         public static ModelSharedAccessSignature ParseForModel(string shareAccessSignatureName, string rawToken)
         {
             if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
@@ -37,30 +44,25 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
-            string signature;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.SignatureFieldName));
             }
 
-            string repositoryId;
-            if (!parsedFields.TryGetValue(ModelSharedAccessSignatureConstants.RepositoryIdFiledName, out repositoryId))
+            if (!parsedFields.TryGetValue(ModelSharedAccessSignatureConstants.RepositoryIdFieldName, out string repositoryId))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", ModelSharedAccessSignatureConstants.RepositoryIdFiledName));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", ModelSharedAccessSignatureConstants.RepositoryIdFieldName));
             }
 
-            string expiry;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out expiry))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out string expiry))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.ExpiryFieldName));
             }
 
             // KeyName (skn) is optional .
-            string keyName;
-            parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out keyName);
+            parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out string keyName);
 
-            string encodedAudience;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out encodedAudience))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out string encodedAudience))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.AudienceFieldName));
             }

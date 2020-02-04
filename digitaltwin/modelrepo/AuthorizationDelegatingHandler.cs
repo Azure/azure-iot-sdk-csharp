@@ -8,6 +8,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
     internal class AuthorizationDelegatingHandler : DelegatingHandler
     {
         private IoTServiceClientCredentials _iotServiceClientCredentials;
+
         public AuthorizationDelegatingHandler(IoTServiceClientCredentials ioTServiceClientCredentials)
         {
             _iotServiceClientCredentials = ioTServiceClientCredentials;

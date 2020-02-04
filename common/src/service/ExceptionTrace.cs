@@ -60,12 +60,12 @@ namespace Microsoft.Azure.Devices.Common
 
         public ArgumentException ArgumentNullOrEmpty(string paramName)
         {
-            return this.Argument(paramName, CommonResources.GetString(CommonResources.ArgumentNullOrEmpty, paramName));
+            return this.Argument(paramName, ResourceHelper.TruncateFormattedArgs(Resources.ArgumentNullOrEmpty, paramName));
         }
 
         public ArgumentException ArgumentNullOrWhiteSpace(string paramName)
         {
-            return this.Argument(paramName, CommonResources.GetString(CommonResources.ArgumentNullOrWhiteSpace, paramName));
+            return this.Argument(paramName, ResourceHelper.TruncateFormattedArgs(Resources.ArgumentNullOrWhiteSpace, paramName));
         }
 
         public ArgumentOutOfRangeException ArgumentOutOfRange(string paramName, object actualValue, string message)

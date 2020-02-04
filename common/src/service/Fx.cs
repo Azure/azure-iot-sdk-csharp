@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Common
         public static Exception AssertAndFailFastService(string description)
         {
             Fx.Assert(description);
-            string failFastMessage = CommonResources.GetString(CommonResources.FailFastMessage, description);
+            string failFastMessage = ResourceHelper.TruncateFormattedArgs(Resources.FailFastMessage, description);
 
             // The catch is here to force the finally to run, as finallys don't run until the stack walk gets to a catch.  
             // The catch makes sure that the finally will run before the stack-walk leaves the frame, but the code inside is impossible to reach.

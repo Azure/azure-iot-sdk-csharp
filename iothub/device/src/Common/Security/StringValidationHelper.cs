@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using Microsoft.Azure.Devices.Client.Common;
+    using Microsoft.Azure.Devices.Common;
     using System;
     using System.Collections.Generic;
 
@@ -20,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!IsBase64StringValid(value))
             {
-                throw new ArgumentException(CommonResources.GetString(Resources.StringIsNotBase64, value), paramName);
+                throw new ArgumentException(ResourceHelper.TruncateFormattedArgs(Resources.StringIsNotBase64, value), paramName);
             }
         }
 
@@ -38,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!IsNullOrBase64String(value))
             {
-                throw new ArgumentException(CommonResources.GetString(Resources.StringIsNotBase64, value), paramName);
+                throw new ArgumentException(ResourceHelper.TruncateFormattedArgs(Resources.StringIsNotBase64, value), paramName);
             }
         }
 

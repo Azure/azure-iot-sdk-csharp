@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
                 WebUtility.UrlEncode(signature),
                 SharedAccessSignatureConstants.ExpiryFieldName,
                 WebUtility.UrlEncode(expiresOn),
-                ModelSharedAccessSignatureConstants.RepositoryIdFiledName,
+                ModelSharedAccessSignatureConstants.RepositoryIdFieldName,
                 repositoryIdEncoded);
 
             if (!string.IsNullOrEmpty(KeyName))

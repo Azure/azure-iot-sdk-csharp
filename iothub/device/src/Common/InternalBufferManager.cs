@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
     using System.Runtime.InteropServices;
     using System.Collections.Concurrent;
+    using Microsoft.Azure.Devices.Client.Common;
 
     abstract class InternalBufferManager
     {
@@ -329,7 +330,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (buffer.Length != bufferPool.BufferSize)
                     {
-                        throw Fx.Exception.Argument("buffer", CommonResources.BufferIsNotRightSizeForBufferManager);
+                        throw Fx.Exception.Argument("buffer", Resources.BufferIsNotRightSizeForBufferManager);
                     }
 
                     if (bufferPool.Return(buffer))

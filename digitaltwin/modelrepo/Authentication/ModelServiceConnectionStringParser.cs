@@ -54,7 +54,6 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// <summary>
         /// Returns the Service Connection string
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             Validate();

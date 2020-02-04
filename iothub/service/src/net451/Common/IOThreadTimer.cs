@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (timeFromNow == TimeSpan.MaxValue)
             {
-                throw Fx.Exception.Argument("timeFromNow", CommonResources.IOThreadTimerCannotAcceptMaxTimeSpan);
+                throw Fx.Exception.Argument("timeFromNow", Resources.IOThreadTimerCannotAcceptMaxTimeSpan);
             }
 
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromTimeSpan(timeFromNow)));
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Common
                 throw Fx.Exception.ArgumentOutOfRange(
                     "newDueTime",
                     newDueTimeInTicks,
-                    CommonResources.GetString(CommonResources.ArgumentOutOfRange, 0, TimeSpan.MaxValue.Ticks - 1));
+                    ResourceHelper.TruncateFormattedArgs(Resources.ArgumentOutOfRange, 0, TimeSpan.MaxValue.Ticks - 1));
             }
 
             TimerManager.Value.Set(this, newDueTimeInTicks);

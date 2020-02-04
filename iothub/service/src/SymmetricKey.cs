@@ -95,12 +95,12 @@ namespace Microsoft.Azure.Devices
                 int keyLength;
                 if (!Utils.IsValidBase64(key, out keyLength))
                 {
-                    throw new ArgumentException(CommonResources.GetString(Resources.StringIsNotBase64, key), paramName);
+                    throw new ArgumentException(ResourceHelper.TruncateFormattedArgs(Resources.StringIsNotBase64, key), paramName);
                 }
 
                 if (keyLength < SecurityConstants.MinKeyLengthInBytes || keyLength > SecurityConstants.MaxKeyLengthInBytes)
                 {
-                    throw new ArgumentException(CommonResources.GetString(Resources.DeviceKeyLengthInvalid, SecurityConstants.MinKeyLengthInBytes, SecurityConstants.MaxKeyLengthInBytes));
+                    throw new ArgumentException(ResourceHelper.TruncateFormattedArgs(Resources.DeviceKeyLengthInvalid, SecurityConstants.MinKeyLengthInBytes, SecurityConstants.MaxKeyLengthInBytes));
                 }
             }
         }

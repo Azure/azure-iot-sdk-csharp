@@ -8,6 +8,7 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Common;
 
 #if !NETSTANDARD1_3
 using System.Configuration;
@@ -49,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             var amqpConnectionSettings = new AmqpConnectionSettings()
             {
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
-                ContainerId = CommonResources.GetNewStringGuid(),
+                ContainerId = ResourceHelper.GetNewStringGuid(),
                 HostName = _hostName
             };
 

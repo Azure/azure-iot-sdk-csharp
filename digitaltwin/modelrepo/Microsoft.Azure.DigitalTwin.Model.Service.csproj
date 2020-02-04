@@ -18,7 +18,6 @@
     <Compile Include="$(common)\auth\SharedAccessSignatureBuilder.cs" Link="common\SharedAccessSignatureBuilder.cs" />
     <Compile Include="$(common)\auth\SharedAccessSignatureConstants.cs" Link="common\SharedAccessSignatureConstants.cs" />
     <Compile Include="$(common)\auth\SharedAccessSignatureCredentials.cs" Link="common\SharedAccessSignatureCredentials.cs" />
-    <Compile Include="$(common)\service\CommonResources.cs" Link="common\CommonResources.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (isScheduled)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
+                throw Fx.Exception.AsError(new InvalidOperationException(Resources.ActionItemIsAlreadyScheduled));
             }
 
             this.isScheduled = true;
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Common
             }
             if (isScheduled)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
+                throw Fx.Exception.AsError(new InvalidOperationException(Resources.ActionItemIsAlreadyScheduled));
             }
 
             this.isScheduled = true;
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (isScheduled)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
+                throw Fx.Exception.AsError(new InvalidOperationException(Resources.ActionItemIsAlreadyScheduled));
             }
 
             this.isScheduled = true;

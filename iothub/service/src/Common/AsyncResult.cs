@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.Common
                         throw;
                     }
 
-                    throw Fx.Exception.AsError(new CallbackException(CommonResources.AsyncCallbackThrewException, e));
+                    throw Fx.Exception.AsError(new CallbackException(Resources.AsyncCallbackThrewException, e));
                 }
 #pragma warning restore 1634
             }
@@ -229,14 +229,16 @@ namespace Microsoft.Azure.Devices.Common
 
         protected void Complete(bool didCompleteSynchronously)
         {
-            this.Complete(didCompleteSynchronously, null);
+            Complete(didCompleteSynchronously, null);
         }
 
         protected void Complete(bool didCompleteSynchronously, Exception e)
         {
-            if (!this.TryComplete(didCompleteSynchronously, e))
+            if (!TryComplete(didCompleteSynchronously, e))
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.GetString(CommonResources.AsyncResultCompletedTwice, this.GetType())));
+                throw Fx.Exception.AsError(
+                    new InvalidOperationException(
+                        ResourceHelper.TruncateFormattedArgs(Resources.AsyncResultCompletedTwice, GetType())));
             }
         }
 
@@ -244,7 +246,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (result == null)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.InvalidNullAsyncResult));
+                throw Fx.Exception.AsError(new InvalidOperationException(Resources.InvalidNullAsyncResult));
             }
             if (result.CompletedSynchronously)
             {
@@ -333,7 +335,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (result == null)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.InvalidNullAsyncResult));
+                throw Fx.Exception.AsError(new InvalidOperationException(Resources.InvalidNullAsyncResult));
             }
 
             callback = null;
@@ -396,12 +398,12 @@ namespace Microsoft.Azure.Devices.Common
 
         protected static void ThrowInvalidAsyncResult(IAsyncResult result)
         {
-            throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.GetString(CommonResources.InvalidAsyncResultImplementation, result.GetType())));
+            throw Fx.Exception.AsError(new InvalidOperationException(ResourceHelper.TruncateFormattedArgs(Resources.InvalidAsyncResultImplementation, result.GetType())));
         }
 
         protected static void ThrowInvalidAsyncResult(string debugText)
         {
-            string message = CommonResources.InvalidAsyncResultImplementationGeneric;
+            string message = Resources.InvalidAsyncResultImplementationGeneric;
             if (debugText != null)
             {
 #if DEBUG
@@ -424,12 +426,12 @@ namespace Microsoft.Azure.Devices.Common
 
             if (asyncResult == null)
             {
-                throw Fx.Exception.Argument("result", CommonResources.InvalidAsyncResult);
+                throw Fx.Exception.Argument("result", Resources.InvalidAsyncResult);
             }
 
             if (asyncResult.endCalled)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.AsyncResultAlreadyEnded));
+                throw Fx.Exception.AsError(new InvalidOperationException(Resources.AsyncResultAlreadyEnded));
             }
 
             asyncResult.endCalled = true;
@@ -544,7 +546,7 @@ namespace Microsoft.Azure.Devices.Common
                         }
 
                         // Complete and Dispose are not expected to throw.  If they do it can mess up the AsyncResult state machine.
-                        throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.AsyncTransactionException));
+                        throw Fx.Exception.AsError(new InvalidOperationException(Resources.AsyncTransactionException));
                     }
 
                     // This will release the callback to run, or tell us that we need to defer the callback to Check/SyncContinue.

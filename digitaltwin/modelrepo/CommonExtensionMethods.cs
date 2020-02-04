@@ -7,17 +7,17 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
 {
     internal static class CommonExtensionMethods
     {
-        private const char ValuePairDelimiter = ';';
-        private const char ValuePairSeparator = '=';
+        private const char KeyValuePairDelimiter = ';';
+        private const char KeyValuePairSeparator = '=';
 
-        public static IDictionary<string, string> ToDictionary(this string valuePairString, char kvpDelimiter, char kvpSeparator)
+        public static IDictionary<string, string> ToDictionary(this string keyValuePairString, char kvpDelimiter, char kvpSeparator)
         {
-            if (string.IsNullOrWhiteSpace(valuePairString))
+            if (string.IsNullOrWhiteSpace(keyValuePairString))
             {
                 throw new ArgumentException("Missing Token");
             }
 
-            IEnumerable<string[]> parts = valuePairString.Split(kvpDelimiter).
+            IEnumerable<string[]> parts = keyValuePairString.Split(kvpDelimiter).
                 Select((part) => part.Split(new char[] { kvpSeparator }, 2));
 
             if (parts.Any((part) => part.Length != 2))
@@ -35,9 +35,9 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             if (!string.IsNullOrWhiteSpace(value))
             {
                 builder.Append(name);
-                builder.Append(ValuePairSeparator);
+                builder.Append(KeyValuePairSeparator);
                 builder.Append(value);
-                builder.Append(ValuePairDelimiter);
+                builder.Append(KeyValuePairDelimiter);
             }
         }
     }

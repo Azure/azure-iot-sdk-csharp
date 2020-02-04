@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (timeout < TimeSpan.Zero)
             {
-                throw Fx.Exception.ArgumentOutOfRange(argumentName, timeout, CommonResources.GetString(CommonResources.TimeoutMustBeNonNegative, argumentName, timeout));
+                throw Fx.Exception.ArgumentOutOfRange(argumentName, timeout, ResourceHelper.TruncateFormattedArgs(Resources.TimeoutMustBeNonNegative, argumentName, timeout));
             }
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (timeout <= TimeSpan.Zero)
             {
-                throw Fx.Exception.ArgumentOutOfRange(argumentName, timeout, CommonResources.GetString(CommonResources.TimeoutMustBePositive, argumentName, timeout));
+                throw Fx.Exception.ArgumentOutOfRange(argumentName, timeout, ResourceHelper.TruncateFormattedArgs(Resources.TimeoutMustBePositive, argumentName, timeout));
             }
         }
     }

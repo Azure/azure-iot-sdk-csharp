@@ -5,6 +5,6 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 {
     public class ModelSharedAccessSignatureConstants : SharedAccessSignatureConstants
     {
-        public const string RepositoryIdFiledName = "rid";
+        public const string RepositoryIdFieldName = "rid";
     }
 }
