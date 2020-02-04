@@ -27,6 +27,8 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             }
         }
 
+        public static readonly string[] SeparatorArray = new string[] { SharedAccessSignatureConstants.KeyValueSeparator };
+
         public DateTime ExpiresOnUtc { get; }
 
         public static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
@@ -102,7 +104,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             {
                 if (!string.IsNullOrEmpty(field))
                 {
-                    string[] fieldParts = field.Split(new string[]{ SharedAccessSignatureConstants.KeyValueSeparator }, StringSplitOptions.None);
+                    string[] fieldParts = field.Split(SeparatorArray, StringSplitOptions.None);
                     if (string.Equals(fieldParts[0], SharedAccessSignatureConstants.AudienceFieldName, StringComparison.OrdinalIgnoreCase))
                     {
                         // We need to preserve the casing of the escape characters in the audience,
