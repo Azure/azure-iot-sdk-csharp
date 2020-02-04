@@ -1,22 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
-using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
+    [TestCategory("LongRunning")]
     public partial class MessageReceiveE2ETests : IDisposable
     {
         private static readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             while (!received && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
-                
+
                 if (transport == Client.TransportType.Http1)
                 {
                     // timeout on HTTP is not supported
@@ -308,9 +308,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
 
-                
                 receivedMessage = await dc.ReceiveAsync(new CancellationTokenSource(TIMESPAN_ONE_MINUTE).Token).ConfigureAwait(false);
-                
+
                 if (receivedMessage == null)
                 {
                     Assert.Fail($"No message is received for device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
@@ -381,7 +380,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.OperationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
                     await deviceClient.CloseAsync().ConfigureAwait(false);
                 }
-                
             }
         }
 
@@ -489,7 +487,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
         }
-        
+
         private static async Task ReceiveMessageWithTimeoutCheck(DeviceClient dc, TimeSpan timeout)
         {
             while (true)
@@ -505,7 +503,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         break;
                     }
-                   
+
                     await dc.CompleteAsync(message).ConfigureAwait(false);
                 }
                 finally

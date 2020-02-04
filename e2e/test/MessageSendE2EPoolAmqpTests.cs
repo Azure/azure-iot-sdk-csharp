@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class MessageSendE2EPoolAmqpTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2EPoolAmqpTests)}_";

@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class DeviceClientX509AuthenticationE2ETests : IDisposable
     {
         private static readonly string DevicePrefix = $"E2E_{nameof(DeviceClientX509AuthenticationE2ETests)}_";
@@ -53,6 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Mqtt_Tcp()
         {
             await X509InvalidDeviceIdOpenAsyncTest(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
@@ -89,6 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt_Tcp()
         {
             await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);

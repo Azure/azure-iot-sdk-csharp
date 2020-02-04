@@ -18,22 +18,22 @@ namespace Microsoft.Azure.Devices
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
+
 #if NET451
     using System.Net.Http.Formatting;
 #endif
 
-    sealed class HttpClientHelper : IHttpClientHelper
+    internal sealed class HttpClientHelper : IHttpClientHelper
     {
 #if !NETSTANDARD1_3 && !NETSTANDARD2_0
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
-        readonly Uri baseAddress;
-        readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
-        readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
-        readonly TimeSpan defaultOperationTimeout;
-        readonly IWebProxy customHttpProxy;
-        readonly Action<HttpClient> preRequestActionForAllRequests;
-
+        private readonly Uri baseAddress;
+        private readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
+        private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
+        private readonly TimeSpan defaultOperationTimeout;
+        private readonly IWebProxy customHttpProxy;
+        private readonly Action<HttpClient> preRequestActionForAllRequests;
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -48,9 +48,7 @@ namespace Microsoft.Azure.Devices
             this.defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             this.defaultOperationTimeout = timeout;
-            TlsVersions.SetLegacyAcceptableVersions();
-
-
+            TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 
         public Task<T> GetAsync<T>(
@@ -308,7 +306,7 @@ namespace Microsoft.Azure.Devices
             return result;
         }
 
-        static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)
+        private static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)
         {
             if (typeof(T) == typeof(HttpResponseMessage))
             {
@@ -335,7 +333,7 @@ namespace Microsoft.Azure.Devices
             return entity;
         }
 
-        static Task AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
+        private static Task AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
         {
             if (customHeaders != null)
             {
@@ -348,7 +346,7 @@ namespace Microsoft.Azure.Devices
             return Task.FromResult(0);
         }
 
-        static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
+        private static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
         {
             if (operationType == PutOperationType.CreateEntity)
             {
@@ -366,7 +364,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        static void InsertEtag(HttpRequestMessage requestMessage, string etag, PutOperationType operationType)
+        private static void InsertEtag(HttpRequestMessage requestMessage, string etag, PutOperationType operationType)
         {
             if (operationType == PutOperationType.CreateEntity)
             {
@@ -384,7 +382,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        static void InsertEtag(HttpRequestMessage requestMessage, string etag)
+        private static void InsertEtag(HttpRequestMessage requestMessage, string etag)
         {
             if (string.IsNullOrWhiteSpace(etag))
             {
@@ -404,7 +402,7 @@ namespace Microsoft.Azure.Devices
             requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(etag));
         }
 
-        IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> MergeErrorMapping(
+        private IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> MergeErrorMapping(
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides)
         {
             var mergedMapping = this.defaultErrorMapping.ToDictionary(mapping => mapping.Key, mapping => mapping.Value);
@@ -550,7 +548,7 @@ namespace Microsoft.Azure.Devices
             return result;
         }
 
-        Task PostAsyncHelper<T1>(
+        private Task PostAsyncHelper<T1>(
             Uri requestUri,
             T1 entity,
             TimeSpan operationTimeout,
@@ -667,7 +665,7 @@ namespace Microsoft.Azure.Devices
             return result;
         }
 
-        async Task ExecuteAsync(
+        private async Task ExecuteAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
@@ -689,7 +687,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        async Task ExecuteWithCustomOperationTimeoutAsync(
+        private async Task ExecuteWithCustomOperationTimeoutAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             TimeSpan operationTimeout,
@@ -737,7 +735,7 @@ namespace Microsoft.Azure.Devices
             return isMappedToException;
         }
 
-        async Task ExecuteAsync(
+        private async Task ExecuteAsync(
             HttpClient httpClient,
             HttpMethod httpMethod,
             Uri requestUri,
@@ -829,7 +827,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        static async Task<Exception> MapToExceptionAsync(
+        private static async Task<Exception> MapToExceptionAsync(
             HttpResponseMessage response,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMapping)
         {
@@ -851,7 +849,7 @@ namespace Microsoft.Azure.Devices
             var httpClientHandler = new HttpClientHandler
             {
 #if !NET451
-                SslProtocols = TlsVersions.Preferred,
+                SslProtocols = TlsVersions.Instance.Preferred,
 #endif
             };
 

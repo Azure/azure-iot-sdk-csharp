@@ -37,14 +37,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Port = AmqpConstants.DefaultSecurePort,
             };
 
-            SslProtocols protocols = TlsVersions.Preferred;
+            SslProtocols protocols = TlsVersions.Instance.Preferred;
 #if NET451
             // Requires hardcoding in NET451 otherwise yields error:
             //    System.ArgumentException: The specified value is not valid in the 'SslProtocolType' enumeration.
             if (amqpTransportSettings.GetTransportType() == TransportType.Amqp_Tcp_Only
             && protocols == SslProtocols.None)
             {
-                protocols = TlsVersions.MinimumTlsVersions;
+                protocols = TlsVersions.Instance.MinimumTlsVersions;
             }
 #endif
 
@@ -72,10 +72,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 case TransportType.Amqp_WebSocket_Only:
                     transport = await CreateClientWebSocketTransportAsync(timeout).ConfigureAwait(false);
                     break;
+
                 case TransportType.Amqp_Tcp_Only:
                     var amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
                     transport = await amqpTransportInitiator.ConnectTaskAsync(timeout).ConfigureAwait(false);
                     break;
+
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
@@ -185,6 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(CreateClientWebSocketAsync)}");
             }
         }
+
         private bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)

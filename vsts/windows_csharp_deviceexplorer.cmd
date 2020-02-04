@@ -10,7 +10,7 @@ for %%i in ("%build-root%") do set build-root=%%~fi
 cd %build-root%
 
 pushd tools\DeviceExplorer
-call build.cmd -clean -configuration Release
+call build.cmd -clean -build -configuration Release
 if errorlevel 1 goto :err
 
 echo.
