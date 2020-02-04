@@ -110,6 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
+
         private async Task ReceiveMessagePoolOverAmqp(
             Client.TransportType transport,
             int poolSize,
@@ -162,7 +163,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 initOperation,
                 testOperation,
                 cleanupOperation,
-                authScope).ConfigureAwait(false);
+                authScope,
+                true).ConfigureAwait(false);
         }
 
         public void Dispose()

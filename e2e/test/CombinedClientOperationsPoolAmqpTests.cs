@@ -214,7 +214,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 initOperation,
                 testOperation,
                 cleanupOperation,
-                authScope).ConfigureAwait(false);
+                authScope,
+                false).ConfigureAwait(false);
         }
 
         public void Dispose()
