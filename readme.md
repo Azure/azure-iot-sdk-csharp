@@ -16,7 +16,7 @@ For IoT Hub Management SDK in .NET, please visit [azure-sdk-for-net](https://git
 * Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”
 * Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/en-us/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time.  Consider submitting a ticket and get assistance from Microsoft support team.
 * Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
-
+asdfasdfas
 ## Developing applications for Azure IoT
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
 
