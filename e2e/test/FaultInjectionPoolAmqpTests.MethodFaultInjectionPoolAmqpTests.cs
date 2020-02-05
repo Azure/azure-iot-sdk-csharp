@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodTcpConnRecovery_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodAmqpConnLostRecovery_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodSessionLostRecovery_SingleConnection_Amqp()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodSessionLostRecovery_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodReqLinkDropRecovery_SingleConnection_Amqp()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodReqLinkDropRecovery_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodRespLinkDropRecovery_SingleConnection_Amqp()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodRespLinkDropRecovery_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodGracefulShutdownRecovery_SingleConnection_Amqp()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
@@ -359,7 +359,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceMethodGracefulShutdownRecovery_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqp(
-                TestDeviceType.Sasl, 
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,

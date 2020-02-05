@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class NoRetryE2ETests
     {
         private readonly string DevicePrefix = $"E2E_{nameof(NoRetryE2ETests)}_";
@@ -21,6 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("FaultInjection")]
         public async Task FaultInjection_NoRecovery()
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);

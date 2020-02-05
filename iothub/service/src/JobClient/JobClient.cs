@@ -3,11 +3,10 @@
 
 namespace Microsoft.Azure.Devices
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
-    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Job management
@@ -32,9 +31,7 @@ namespace Microsoft.Azure.Devices
         /// <returns> A JobClient instance. </returns>
         public static JobClient CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
         {
-#if NET451
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-#endif
+            TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             return new HttpJobClient(iotHubConnectionString, transportSettings);

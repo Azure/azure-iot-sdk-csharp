@@ -5,7 +5,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
 #if !NET451
     using System.Net.Http;
@@ -111,9 +110,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled) Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-#if NET451
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-#endif
+            TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             this.IotHubConnectionString = iotHubConnectionString;
 
@@ -423,7 +420,8 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(lockToken));
             }
 
-            try{
+            try
+            {
                 return InnerHandler.CompleteAsync(lockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
@@ -620,7 +618,8 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(message));
             }
 
-            try{
+            try
+            {
                 return RejectAsync(message.LockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
@@ -1028,7 +1027,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled) Logging.Error(this, ex, nameof(OnMethodCalled));
 
                 // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) ]
-                methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.BadRequest);
+                methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.BadRequest);
 
                 await this.SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
                 if (Logging.IsEnabled) Logging.Error(this, ex, nameof(OnMethodCalled));
@@ -1042,7 +1041,7 @@ namespace Microsoft.Azure.Devices.Client
             if (m == null)
             {
                 // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) ]
-                methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.MethodNotImplemented);
+                methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.MethodNotImplemented);
             }
             else
             {
@@ -1068,7 +1067,7 @@ namespace Microsoft.Azure.Devices.Client
                     if (Logging.IsEnabled) Logging.Error(this, ex, nameof(OnMethodCalled));
 
                     // codes_SRS_DEVICECLIENT_28_021: [ If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) ]
-                    methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.UserCodeException);
+                    methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.UserCodeException);
                 }
             }
 

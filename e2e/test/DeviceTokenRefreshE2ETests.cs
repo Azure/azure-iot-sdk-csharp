@@ -16,7 +16,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class DeviceTokenRefreshE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(DeviceTokenRefreshE2ETests)}_";
@@ -60,6 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("Flaky")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Http()
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
@@ -72,6 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
             // The IoT Hub service allows tokens expired < 5 minutes ago to be used during CONNECT.

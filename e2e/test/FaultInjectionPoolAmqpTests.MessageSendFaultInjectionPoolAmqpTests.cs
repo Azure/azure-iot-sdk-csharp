@@ -642,6 +642,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqp(
@@ -778,7 +779,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjection.FaultType_Auth,
                 FaultInjection.FaultCloseReason_Boom,
-                authScope:ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -806,14 +807,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = FaultInjection.DefaultDurationInSec,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            Dictionary<string, EventHubTestListener> eventHubListeners = new Dictionary<string, EventHubTestListener>();
-
-            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
-            {
-                EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
-                eventHubListeners.Add(testDevice.Id, testListener);
-            };
-
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
@@ -824,17 +817,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-                EventHubTestListener testListener = eventHubListeners[testDevice.Id];
-                bool isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, payload, p1Value);
                 Assert.IsTrue(isReceived, $"Message is not received for device {testDevice.Id}.");
             };
 
             Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
             {
-                foreach (var listener in eventHubListeners)
-                {
-                    await listener.Value.CloseAsync().ConfigureAwait(false);
-                }
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     deviceClient.Dispose();
@@ -850,7 +838,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 durationInSec,
-                initOperation,
+                (d, t) => { return Task.FromResult<bool>(false); },
                 testOperation,
                 cleanupOperation,
                 authScope).ConfigureAwait(false);

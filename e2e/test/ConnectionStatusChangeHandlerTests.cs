@@ -11,7 +11,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     using System.Threading.Tasks;
 
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class ConnectionStatusChangeHandlerTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}_Device";
@@ -26,6 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -64,6 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -71,6 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -105,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }).ConfigureAwait(false);
         }
 
-        async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+        private async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
             Client.TransportType protocol, Func<RegistryManager, string, Task> registryManagerOperation)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
@@ -164,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+        private async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
             Client.TransportType protocol, Func<RegistryManager, string, Task> registryManagerOperation)
         {
             AmqpTransportSettings amqpTransportSettings = new AmqpTransportSettings(protocol);

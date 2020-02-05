@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -73,18 +75,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found.");
 
             // Delete existing devices named this way and create a new one.
-            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using (var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
                 Client.IAuthenticationMethod auth = null;
 
-                Device requestDevice = new Device(deviceName);
+                var requestDevice = new Device(deviceName);
                 if (type == TestDeviceType.X509)
                 {
-                    requestDevice.Authentication = new AuthenticationMechanism()
+                    requestDevice.Authentication = new AuthenticationMechanism
                     {
-                        X509Thumbprint = new X509Thumbprint()
+                        X509Thumbprint = new X509Thumbprint
                         {
                             PrimaryThumbprint = Configuration.IoTHub.GetCertificateWithPrivateKey().Thumbprint
                         }
