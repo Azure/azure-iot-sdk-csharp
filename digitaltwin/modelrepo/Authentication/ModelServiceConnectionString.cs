@@ -41,7 +41,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// <summary>
         /// The Repository Id for private/company repository
         /// </summary>
-        public string RepositoryId { get; private set; }
+        public string RepositoryId { get; }
 
         public override string BuildToken(out TimeSpan ttl)
         {
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
                 Key = SharedAccessKey,
                 TimeToLive = DefaultTokenTimeToLive,
                 hostName = Audience,
-                RepositoryId = RepositoryId,
+                ModelRepositoryId = RepositoryId,
             };
 
             ttl = builder.TimeToLive;

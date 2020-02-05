@@ -9,7 +9,6 @@ namespace Microsoft.Azure.Devices.Client
     using System.ComponentModel;
     using System.Security;
     using System.Threading;
-    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Win32.SafeHandles;
 
     // IOThreadTimer has several characterstics that are important for performance:
@@ -102,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (timeFromNow == TimeSpan.MaxValue)
             {
-                throw Fx.Exception.Argument("timeFromNow", Resources.IOThreadTimerCannotAcceptMaxTimeSpan);
+                throw Fx.Exception.Argument("timeFromNow", Common.Resources.IOThreadTimerCannotAcceptMaxTimeSpan);
             }
 
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromTimeSpan(timeFromNow)));
@@ -120,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw Fx.Exception.ArgumentOutOfRange(
                     "newDueTime",
                     newDueTimeInTicks,
-                    ResourceHelper.TruncateFormattedArgs(Resources.ArgumentOutOfRange, 0, TimeSpan.MaxValue.Ticks - 1));
+                    ResourceHelper.TruncateFormattedArgs(Common.Resources.ArgumentOutOfRange, 0, TimeSpan.MaxValue.Ticks - 1));
             }
 
             TimerManager.Value.Set(this, newDueTimeInTicks);

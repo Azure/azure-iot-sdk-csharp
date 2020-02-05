@@ -15,7 +15,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
     public class ModelServiceClient
     {
         private DigitalTwinRepositoryService digitalTwinRepositoryService;
-        public const string _apiVersion = "2019-07-01-Preview";
+        public const string _ApiVersion = "2019-07-01-Preview";
         public string RepositoryId { get; set; }
 
         /// <summary> Initializes a new instance of the <see cref="ModelServiceClient"/> class.</summary>
@@ -31,11 +31,11 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(connectionString, nameof(connectionString));
 
-            var modelConnectionStringParser = ModelServiceConnectionStringParser.CreateForModel(connectionString);
-            this.RepositoryId = modelConnectionStringParser.RespositoryId;
+            ModelServiceConnectionStringParser modelConnectionStringParser = ModelServiceConnectionStringParser.CreateForModel(connectionString);
+            RepositoryId = modelConnectionStringParser.RespositoryId;
             ModelServiceConnectionString modelServiceConnectionString = new ModelServiceConnectionString(modelConnectionStringParser);
             IoTServiceClientCredentials serviceClientCredentials = new ModelSharedAccessKeyCredentials(modelServiceConnectionString);
-            this.SetupModelServiceClient(modelServiceConnectionString.HttpsEndpoint, serviceClientCredentials);
+            SetupModelServiceClient(modelServiceConnectionString.HttpsEndpoint, serviceClientCredentials);
         }
 
         /// <summary>
@@ -50,14 +50,14 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             GuardHelper.ThrowIfNull(endpoint, nameof(endpoint));
             GuardHelper.ThrowIfNull(credentials, nameof(credentials));
             GuardHelper.ThrowIfNull(repositoryId, nameof(repositoryId));
-            this.RepositoryId = repositoryId;
-            this.SetupModelServiceClient(endpoint, credentials);
+            RepositoryId = repositoryId;
+            SetupModelServiceClient(endpoint, credentials);
         }
 
         private void SetupModelServiceClient(Uri endpoint, IoTServiceClientCredentials credentials)
         {
-            DelegatingHandler[] handlers = new DelegatingHandler[1] { new AuthorizationDelegatingHandler(credentials) };
-            this.digitalTwinRepositoryService = new DigitalTwinRepositoryService(credentials, handlers)
+            DelegatingHandler[] handlers = new DelegatingHandler[] { new AuthorizationDelegatingHandler(credentials) };
+            digitalTwinRepositoryService = new DigitalTwinRepositoryService(credentials, handlers)
             {
                 BaseUri = endpoint,
             };
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// </return>
         public virtual Response<GetModelResponse> GetModel(string modelId, bool expand = false, string clientRequestId = default, CancellationToken cancellationToken = default)
         {
-            return this.GetModelAsync(modelId, expand, clientRequestId, cancellationToken).Result;
+            return GetModelAsync(modelId, expand, clientRequestId, cancellationToken).Result;
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             });
             IMapper iMapper = config.CreateMapper();
 
-            var result = await digitalTwinRepositoryService.GetModelWithHttpMessagesAsync(modelId, _apiVersion, this.RepositoryId, clientRequestId, expand, null, cancellationToken).ConfigureAwait(false);
+            var result = await digitalTwinRepositoryService.GetModelWithHttpMessagesAsync(modelId, _ApiVersion, RepositoryId, clientRequestId, expand, null, cancellationToken).ConfigureAwait(false);
 
             var getModelResponse = iMapper.Map<GetModelHeaders, GetModelResponse>(result.Headers);
             getModelResponse.StatusCode = result.Response.StatusCode;
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// </return>
         public virtual Response<CreateOrUpdateModelResponse> CreateModel(string modelId, string content, string clientRequestId = default, CancellationToken cancellationToken = default)
         {
-            return this.CreateModelAsync(modelId, content, clientRequestId, cancellationToken).Result;
+            return CreateModelAsync(modelId, content, clientRequestId, cancellationToken).Result;
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             IMapper iMapper = config.CreateMapper();
 
             var _result = new HttpOperationHeaderResponse<CreateOrUpdateModelHeaders>();
-            _result = await digitalTwinRepositoryService.CreateOrUpdateModelWithHttpMessagesAsync(modelId, _apiVersion, content, this.RepositoryId, clientRequestId, null, null, cancellationToken).ConfigureAwait(false);
+            _result = await digitalTwinRepositoryService.CreateOrUpdateModelWithHttpMessagesAsync(modelId, _ApiVersion, content, RepositoryId, clientRequestId, null, null, cancellationToken).ConfigureAwait(false);
 
             var createModelResponse = iMapper.Map<CreateOrUpdateModelHeaders, CreateOrUpdateModelResponse>(_result.Headers);
             createModelResponse.StatusCode = _result.Response.StatusCode;
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// </return>
         public virtual Response<CreateOrUpdateModelResponse> UpdateModel(string modelId, string content, string ifMatchEtag, string clientRequestId = default, CancellationToken cancellationToken = default)
         {
-            return this.UpdateModelAsync(modelId, content, ifMatchEtag, clientRequestId, cancellationToken).Result;
+            return UpdateModelAsync(modelId, content, ifMatchEtag, clientRequestId, cancellationToken).Result;
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             IMapper iMapper = config.CreateMapper();
 
             var _result = new HttpOperationHeaderResponse<CreateOrUpdateModelHeaders>();
-            _result = await digitalTwinRepositoryService.CreateOrUpdateModelWithHttpMessagesAsync(modelId, _apiVersion, content, this.RepositoryId, clientRequestId, ifMatchEtag, null, cancellationToken).ConfigureAwait(false);
+            _result = await digitalTwinRepositoryService.CreateOrUpdateModelWithHttpMessagesAsync(modelId, _ApiVersion, content, RepositoryId, clientRequestId, ifMatchEtag, null, cancellationToken).ConfigureAwait(false);
 
             var updateModelResponse = iMapper.Map<CreateOrUpdateModelHeaders, CreateOrUpdateModelResponse>(_result.Headers);
             updateModelResponse.StatusCode = _result.Response.StatusCode;
@@ -287,7 +287,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// </return>
         public virtual Response<SearchModelResponse> SearchModel(SearchModelOptions searchModelOptions, string clientRequestId = default, CancellationToken cancellationToken = default)
         {
-            return this.SearchModelAsync(searchModelOptions, clientRequestId, cancellationToken).Result;
+            return SearchModelAsync(searchModelOptions, clientRequestId, cancellationToken).Result;
         }
 
         /// <summary>
@@ -328,7 +328,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             var searchOptions = iMapperInput.Map<SearchModelOptions, SearchOptions>(searchModelOptions);
 
             var _result = new HttpOperationResponse<SearchResponse, SearchModelHeaders>();
-            _result = await digitalTwinRepositoryService.SearchModelWithHttpMessagesAsync(searchOptions, _apiVersion, this.RepositoryId, clientRequestId, null, cancellationToken).ConfigureAwait(false);
+            _result = await digitalTwinRepositoryService.SearchModelWithHttpMessagesAsync(searchOptions, _ApiVersion, RepositoryId, clientRequestId, null, cancellationToken).ConfigureAwait(false);
 
             var searchModelResponse = iMapperResponse.Map<SearchResponse, SearchModelResponse>(_result.Body);
             searchModelResponse.StatusCode = _result.Response.StatusCode;
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
 
         public virtual Response<DeleteModelResponse> DeleteModel(string modelId, string clientRequestId = default, CancellationToken cancellationToken = default)
         {
-            return this.DeleteModelAsync(modelId, clientRequestId, cancellationToken).Result;
+            return DeleteModelAsync(modelId, clientRequestId, cancellationToken).Result;
         }
 
         /// <summary>
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             });
             IMapper iMapper = config.CreateMapper();
 
-            var _result = await digitalTwinRepositoryService.DeleteModelWithHttpMessagesAsync(modelId, this.RepositoryId, _apiVersion, clientRequestId, null, cancellationToken).ConfigureAwait(false);
+            var _result = await digitalTwinRepositoryService.DeleteModelWithHttpMessagesAsync(modelId, RepositoryId, _ApiVersion, clientRequestId, null, cancellationToken).ConfigureAwait(false);
 
             var deleteModelResponse = iMapper.Map<DeleteModelHeaders, DeleteModelResponse>(_result.Headers);
             deleteModelResponse.StatusCode = _result.Response.StatusCode;

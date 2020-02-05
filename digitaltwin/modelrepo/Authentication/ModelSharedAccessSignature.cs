@@ -70,7 +70,11 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             return new ModelSharedAccessSignature(
                 shareAccessSignatureName,
                 SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
-                expiry, keyName, signature, repositoryId, encodedAudience);
+                expiry,
+                keyName,
+                signature,
+                repositoryId,
+                encodedAudience);
         }
     }
 }

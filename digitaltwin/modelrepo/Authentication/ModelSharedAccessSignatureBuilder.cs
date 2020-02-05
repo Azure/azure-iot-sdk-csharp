@@ -11,11 +11,11 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 {
     public class ModelSharedAccessSignatureBuilder : SharedAccessSignatureBuilder
     {
-        public string RepositoryId { get; set; }
+        public string ModelRepositoryId { get; set; }
 
         public override string ToSignature()
         {
-            return BuildSignatureForModelRepo(KeyName, Key, hostName, RepositoryId).ToString();
+            return BuildSignatureForModelRepo(KeyName, Key, hostName, ModelRepositoryId).ToString();
         }
 
         protected StringBuilder BuildSignatureForModelRepo(string keyName, string key, string hostName, string repositoryId)

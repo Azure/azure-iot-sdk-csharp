@@ -3,7 +3,6 @@ using System.Net;
 
 namespace Microsoft.Azure.DigitalTwin.Model.Service
 {
-
     /// <summary>
     /// Defines headers for GetModel operation.
     /// </summary>
@@ -27,6 +26,5 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         public HttpStatusCode StatusCode { get; set; }
 
         public string Payload { get; set; }
-
     }
 }

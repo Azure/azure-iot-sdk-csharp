@@ -51,7 +51,7 @@
     <Compile Include="$(Common)\service\CommonConstants.cs">
       <Link>Common\CommonConstants.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\ResourceHelper.cs">
+    <Compile Include="$(Common)\ResourceHelper.cs">
       <Link>Common\ResourceHelper.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\EventTraceActivity.cs">

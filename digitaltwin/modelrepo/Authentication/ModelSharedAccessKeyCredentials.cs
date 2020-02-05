@@ -9,7 +9,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
     /// </summary>
     public class ModelSharedAccessKeyCredentials : IoTServiceClientCredentials
     {
-        private ModelServiceConnectionString _serviceConnectionString;
+        private readonly ModelServiceConnectionString _serviceConnectionString;
 
         /// <summary>
         /// Create a new instance of <code>SharedAccessKeyCredentials</code> using

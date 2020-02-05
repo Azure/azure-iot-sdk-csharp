@@ -77,7 +77,6 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             IDictionary<string, string> map = serviceConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
             HostName = GetConnectionStringValue(map, HostNamePropertyName);
-            //HostName = "72f988bf-86f1-41af-91ab-2d7cd011db47";
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             SharedAccessSignatureString = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);

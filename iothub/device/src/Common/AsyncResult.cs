@@ -3,7 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Common;
     using System;
     using System.Diagnostics;
@@ -215,7 +214,7 @@ namespace Microsoft.Azure.Devices.Client
                         throw;
                     }
 
-                    throw Fx.Exception.AsError(new InvalidOperationException(Resources.AsyncCallbackThrewException, e));
+                    throw Fx.Exception.AsError(new InvalidOperationException(Common.Resources.AsyncCallbackThrewException, e));
                 }
 #pragma warning restore 1634
             }
@@ -232,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!this.TryComplete(didCompleteSynchronously, e))
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(ResourceHelper.TruncateFormattedArgs(Resources.AsyncResultCompletedTwice, this.GetType())));
+                throw Fx.Exception.AsError(new InvalidOperationException(ResourceHelper.TruncateFormattedArgs(Common.Resources.AsyncResultCompletedTwice, this.GetType())));
             }
         }
 
@@ -240,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (result == null)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(Resources.InvalidNullAsyncResult));
+                throw Fx.Exception.AsError(new InvalidOperationException(Common.Resources.InvalidNullAsyncResult));
             }
             if (result.CompletedSynchronously)
             {
@@ -340,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (result == null)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(Resources.InvalidNullAsyncResult));
+                throw Fx.Exception.AsError(new InvalidOperationException(Common.Resources.InvalidNullAsyncResult));
             }
 
             callback = null;
@@ -404,12 +403,12 @@ namespace Microsoft.Azure.Devices.Client
 
         protected static void ThrowInvalidAsyncResult(IAsyncResult result)
         {
-            throw Fx.Exception.AsError(new InvalidOperationException(ResourceHelper.TruncateFormattedArgs(Resources.InvalidAsyncResultImplementation, result.GetType())));
+            throw Fx.Exception.AsError(new InvalidOperationException(ResourceHelper.TruncateFormattedArgs(Common.Resources.InvalidAsyncResultImplementation, result.GetType())));
         }
 
         protected static void ThrowInvalidAsyncResult(string debugText)
         {
-            string message = Resources.InvalidAsyncResultImplementationGeneric;
+            string message = Common.Resources.InvalidAsyncResultImplementationGeneric;
             if (debugText != null)
             {
 #if DEBUG
@@ -432,12 +431,12 @@ namespace Microsoft.Azure.Devices.Client
 
             if (asyncResult == null)
             {
-                throw Fx.Exception.Argument("result", Resources.InvalidAsyncResult);
+                throw Fx.Exception.Argument("result", Common.Resources.InvalidAsyncResult);
             }
 
             if (asyncResult.endCalled)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(Resources.AsyncResultAlreadyEnded));
+                throw Fx.Exception.AsError(new InvalidOperationException(Common.Resources.AsyncResultAlreadyEnded));
             }
 
             asyncResult.endCalled = true;
@@ -552,7 +551,7 @@ namespace Microsoft.Azure.Devices.Client
                         }
 
                         // Complete and Dispose are not expected to throw.  If they do it can mess up the AsyncResult state machine.
-                        throw Fx.Exception.AsError(new InvalidOperationException(Resources.AsyncTransactionException));
+                        throw Fx.Exception.AsError(new InvalidOperationException(Common.Resources.AsyncTransactionException));
                     }
 
                     // This will release the callback to run, or tell us that we need to defer the callback to Check/SyncContinue.

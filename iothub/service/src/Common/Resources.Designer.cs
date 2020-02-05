@@ -10,7 +10,8 @@
 
 using System.Reflection;
 
-namespace Microsoft.Azure.Devices.Common {
+namespace Microsoft.Azure.Devices.Common
+{
     using System;
     
     
