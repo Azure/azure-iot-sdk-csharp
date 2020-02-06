@@ -21,6 +21,10 @@ Parameters:
     -stresstests: Runs Stress tests.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
+    -framework: Select which framework to run tests on. Allowed values examples include, but are not limited to, "netcoreapp2.1", "net47", "net451"
+    -skipIotHubTests: Provide this flag if you want to skip all IoT Hub integration tests
+    -skipDPSTests: Provide this flag if you want to skip all DPS integration tests
+	
 
 Build will automatically detect if the machine is Windows vs Unix. On Windows development boxes, additional testing on .NET Framework will be performed.
 
@@ -62,13 +66,11 @@ Param(
     [switch] $e2etests,
     [switch] $stresstests,
     [switch] $publish,
-    [string] $verbosity = "q"
+    [string] $verbosity = "q",
+    [string] $framework = "*",
+    [switch] $skipIotHubTests,
+    [switch] $skipDPSTests
 )
-
-Function IsWindows()
-{
-    return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
-}
 
 Function CheckSignTools()
 {
@@ -155,7 +157,7 @@ Function BuildPackage($path, $message)
 
 Function RunTests($message, $framework = "*", $filterTestCategory = "*")
 {
-    $label = "TEST: --- $message $configuration $filterTestCategory ---"
+    $label = "TEST: --- $message $configuration $framework $filterTestCategory ---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
@@ -248,7 +250,7 @@ try
             Write-Host -ForegroundColor Cyan "Unit Test execution"
             Write-Host
 
-            RunTests "Unit tests" -filterTestCategory "TestCategory=Unit"
+            RunTests "Unit tests" -filterTestCategory "TestCategory=Unit" -framework $framework
         }
     }
 
@@ -272,7 +274,17 @@ try
         $testCategory += "&TestCategory!=FaultInjection"
         $testCategory += "&TestCategory!=Flaky"
 
-        RunTests "PR tests" -filterTestCategory $testCategory
+        if ($skipIotHubTests)
+        {
+            $testCategory += "&TestCategory!=IoTHub"
+        }
+		
+        if ($skipDPSTests)
+        {
+            $testCategory += "&TestCategory!=DPS"
+        }
+
+        RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
     }
 
     if (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
@@ -322,15 +334,7 @@ try
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        if (IsWindows)
-        {
-            RunTests "E2E tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory=E2E&TestCategory!=IoTHub-FaultInjection-PoolAmqp"
-            RunTests "E2E fault injection tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory=E2E&TestCategory=IoTHub-FaultInjection-PoolAmqp"
-        }
-        else
-        {
-            RunTests "E2E tests (NetCoreApp2.1)" "netcoreapp2.1" "TestCategory=E2E"
-        }
+        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
 
         $verbosity = $oldVerbosity
 
