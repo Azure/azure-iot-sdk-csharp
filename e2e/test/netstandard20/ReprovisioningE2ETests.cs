@@ -467,7 +467,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             _log.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
             _log.WriteLine($"ProvisioningDeviceClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
 
-            Assert.AreEqual(ProvisioningRegistrationStatusType.Assigned, result.Status);
+            Assert.AreEqual(ProvisioningRegistrationStatusType.Assigned, result.Status, $"Unexpected provisioning status, substatus: {result.Substatus}, error code: {result.ErrorCode}, error message: {result.ErrorMessage}");
             Assert.IsNotNull(result.AssignedHub);
             Assert.IsNotNull(result.DeviceId);
         }

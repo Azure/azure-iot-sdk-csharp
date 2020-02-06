@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
-        
+
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
-        
+
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
-        
+
         [TestMethod]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
@@ -235,6 +235,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [DoNotParallelize]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
@@ -249,6 +250,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [DoNotParallelize]
         [TestCategory("LongRunning")]
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
@@ -262,6 +264,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [DoNotParallelize]
         public async Task Message_QuotaExceededRecovery_Http()
         {
             try
