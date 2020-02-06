@@ -28,7 +28,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class TestDevice
     {
         private const int DelayAfterDeviceCreationSeconds = 0;
-        private static Dictionary<string, TestDevice> s_deviceCache = new Dictionary<string, TestDevice>();
         private static TestLogging s_log = TestLogging.GetInstance();
         private static SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
@@ -53,12 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 await s_semaphore.WaitAsync().ConfigureAwait(false);
-                if (!s_deviceCache.TryGetValue(prefix, out TestDevice testDevice))
-                {
-                    await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
-                }
-
-                TestDevice ret = s_deviceCache[prefix];
+                TestDevice ret = await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
 
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
                 return ret;
@@ -69,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private static async Task CreateDeviceAsync(TestDeviceType type, string prefix)
+        private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
         {
             string deviceName = prefix + Guid.NewGuid();
             s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found.");
@@ -100,9 +94,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Pausing for {DelayAfterDeviceCreationSeconds}s after device was created.");
                 await Task.Delay(DelayAfterDeviceCreationSeconds * 1000).ConfigureAwait(false);
 
-                s_deviceCache[prefix] = new TestDevice(device, auth);
-
                 await rm.CloseAsync().ConfigureAwait(false);
+                
+                return new TestDevice(device, auth);
             }
         }
 
