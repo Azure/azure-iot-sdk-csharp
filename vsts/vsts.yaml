@@ -5,7 +5,15 @@ resources:
 jobs:
   ### Linux build ###
   - job: LINUX
-    displayName: Linux .Net Core 2.1
+    displayName: Linux
+    strategy:
+      maxParallel: 2
+      #maxParallel: 1 Uncomment this to make linux builds run in serial rather than in parallel
+      matrix:
+        .Net Core 2.1:
+          FRAMEWORK: netcoreapp2.1
+        .Net Core 2.2:
+          FRAMEWORK: netcoreapp2.2
 
     condition: succeeded()
     pool:
@@ -66,7 +74,7 @@ jobs:
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
-          FRAMEWORK: "netcoreapp2.1"
+          FRAMEWORK: $(FRAMEWORK)
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
@@ -88,7 +96,7 @@ jobs:
         displayName: "Publish Test Results **/*.trx"
         inputs:
           testRunner: VSTest
-          testRunTitle: "Linux Tests (netcoreapp2.1)"
+          testRunTitle: "Linux Tests ($FRAMEWORK)"
           testResultsFiles: "**/*.trx"
 
         condition: always()
@@ -97,7 +105,7 @@ jobs:
   - job: WINDOWS
     displayName: Windows
     strategy:
-      maxParallel: 3
+      maxParallel: 4
       #maxParallel: 1 Uncomment this to make Windows builds run in serial rather than in parallel
       matrix:
         .Net Core 2.1:
@@ -106,6 +114,8 @@ jobs:
           FRAMEWORK: net47
         .Net Framework 4.5.1:
           FRAMEWORK: net451
+        .Net Core 2.2:
+          FRAMEWORK: netcoreapp2.2
 
     condition: succeeded()
     pool:
