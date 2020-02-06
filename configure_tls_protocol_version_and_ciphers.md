@@ -36,7 +36,7 @@ Although the SDK will default to the latest version of TLS by default, if one wi
 For example:
 
 ```C#
-Microsoft.Azure.Devices.Shared.TlsVersions.SetTlsMinimumVersions(SslProtocols.Tls12);
+Microsoft.Azure.Devices.Shared.TlsVersions.Instance.SetTlsMinimumVersions(SslProtocols.Tls12);
 ```
 
 Some notes:

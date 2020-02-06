@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ServiceClient()
         {
-            TlsVersions.SetLegacyAcceptableVersions();
+            TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 
         /// <summary>

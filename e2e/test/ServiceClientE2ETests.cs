@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class ServiceClientE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(ServiceClientE2ETests)}_";
@@ -27,6 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(TimeoutException))]
+        [TestCategory("Flaky")]
         public async Task Message_TimeOutReachedResponse()
         {
             await FastTimeout().ConfigureAwait(false);

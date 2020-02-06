@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class AmqpTransportSettings : ITransportSettings
     {
+        private TimeSpan _idleTimeout;
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
         static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
         const uint DefaultPrefetchCount = 50;
@@ -96,6 +97,11 @@ namespace Microsoft.Azure.Devices.Client
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
+
+        /// <summary>
+        /// Specify client side heart beat interval.
+        /// </summary>
+        public TimeSpan IdleTimeout { get => _idleTimeout; set => _idleTimeout = value; }
 
         public bool Equals(AmqpTransportSettings other)
         {

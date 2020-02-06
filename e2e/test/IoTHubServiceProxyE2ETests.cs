@@ -16,8 +16,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     using TransportType = Microsoft.Azure.Devices.TransportType;
 
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
-    [TestCategory("ProxyE2ETests")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
+    [TestCategory("Proxy")]
     public class IoTHubServiceProxyE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(IoTHubServiceProxyE2ETests)}_";

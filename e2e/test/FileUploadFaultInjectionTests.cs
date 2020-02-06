@@ -15,8 +15,9 @@ using System.Diagnostics.Tracing;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
-    [TestCategory("IoTHub-FaultInjection")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
+    [TestCategory("FaultInjection")]
     public class FileUploadFaultInjectionTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(FileUploadFaultInjectionTests)}_";
@@ -58,6 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [DoNotParallelize]
         public async Task FileUploadSuccess_QuotaExceed_Amqp()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -70,8 +72,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec
                 ).ConfigureAwait(false);
         }
-
-        
 
         private async Task UploadFileDisconnectTransport(
             Client.TransportType transport,
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     await deviceClient.CloseAsync().ConfigureAwait(false);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     // catch and ignore exceptions resulted incase device client close failed while offline
                 }
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private static async Task SendErrorInjectionMessageAsync(
-            DeviceClient deviceClient, 
+            DeviceClient deviceClient,
             string faultType,
             string reason,
             int delayInSec,

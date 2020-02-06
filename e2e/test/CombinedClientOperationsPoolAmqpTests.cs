@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class CombinedClientOperationsPoolAmqpTests : IDisposable
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";
@@ -213,7 +214,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 initOperation,
                 testOperation,
                 cleanupOperation,
-                authScope).ConfigureAwait(false);
+                authScope,
+                false).ConfigureAwait(false);
         }
 
         public void Dispose()
