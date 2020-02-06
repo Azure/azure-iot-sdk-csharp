@@ -10,6 +10,8 @@ using Xunit;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test.Model
 {
+    [Trait("TestCategory", "DigitalTwin")]
+    [Trait("TestCategory", "Unit")]
     public class DataCollectionJsonConverterTest
     {
         [Fact]

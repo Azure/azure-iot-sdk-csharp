@@ -16,6 +16,8 @@ using Azure;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
+    [Trait("TestCategory", "DigitalTwin")]
+    [Trait("TestCategory", "E2E")]
     public class DigitalTwinCommandsE2ETests
     {
         private const string sampleSyncCommandName = "syncCommand";

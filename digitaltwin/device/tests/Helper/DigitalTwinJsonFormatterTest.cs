@@ -9,6 +9,8 @@ using Xunit;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test.Helper
 {
+    [Trait("TestCategory", "DigitalTwin")]
+    [Trait("TestCategory", "Unit")]
     public class DigitalTwinJsonFormatterTest
     {
         [Fact]

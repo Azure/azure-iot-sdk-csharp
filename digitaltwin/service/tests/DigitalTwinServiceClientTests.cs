@@ -7,6 +7,8 @@ using Xunit;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Service.ServiceClient.Test
 {
+    [Trait("TestCategory", "DigitalTwin")]
+    [Trait("TestCategory", "Unit")]
     public class DigitalTwinServiceClientTests
     {
         [Fact]
@@ -168,7 +170,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Service.ServiceClient.Test
         public async void ConstructorThrowsForNullCredentials()
         {
             Uri mockUri = new Uri("https://www.microsoft.com");
-            Assert.Throws<ArgumentNullException>(() => new DigitalTwinServiceClient(mockUri, (IoTServiceClientCredentials) null));
+            Assert.Throws<ArgumentNullException>(() => new DigitalTwinServiceClient(mockUri, (IoTServiceClientCredentials)null));
         }
     }
 }

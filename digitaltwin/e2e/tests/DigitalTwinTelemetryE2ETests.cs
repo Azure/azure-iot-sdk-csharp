@@ -13,6 +13,8 @@ using static Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces.TestInterfa
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
+    [Trait("TestCategory", "DigitalTwin")]
+    [Trait("TestCategory", "E2E")]
     public class DigitalTwinTelemetryE2ETests
     {
         private static String telemetryDevicePrefix = "digitaltwine2e-telemetry";
@@ -32,7 +34,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 "\"stringArrayValue\":" +
                 "[" +
                     "\"someString1\", \"someString2\", \"someString3\", \"someString4\"" +
-                "]"+
+                "]" +
             "}";
 
         public const string COMPLEX_JSON_VALUE =

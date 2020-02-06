@@ -42,6 +42,16 @@ if (IsPullRequestBuild)
 	else 
 	{
 		Write-Host "Will run Iot Hub tests"
+	}
+
+	if (ShouldSkipDigitalTwinTests) 
+	{
+		Write-Host "Will skip Digital Twin tests"
+		$runTestCmd += " -skipDigitalTwinTests"
+	}
+	else 
+	{
+		Write-Host "Will run Digital Twin tests"
 	}	
 }
 else 
