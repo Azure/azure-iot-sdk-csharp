@@ -1,5 +1,5 @@
 {
-  "@id": "urn:contoso:azureiot:sdk:testinterface2:2",
+  "@id": "urn:contoso:azureiot:sdk:testinterface2:1",
   "@type": "Interface",
   "displayName": "Azure IoT Client Library End-to-End Test Interface",
   "description": "A test interface used in digital twin SDK end to end tests",
@@ -233,5 +233,5 @@
       }
     }
   ],
-  "@context": "http://azureiot.com/v1/contexts/Interface.json"
+  "@context": "http://azureiot.com/v1/contexts/IoTModel.json"
 }

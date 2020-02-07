@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
         [Fact]
         public async void testGetModelValidDCMUrn()
         {
-            string modelId = "urn:contoso:azureiot:sdk:testinterface:cm:2";
+            string modelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
             string result = await digitalTwinServiceClient.GetModelAsync(modelId);
 
             Assert.Contains(modelId, result);

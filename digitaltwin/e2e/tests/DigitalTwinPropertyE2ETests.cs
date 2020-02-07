@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 string propertyName = "writableProperty";
                 string propertyValue = "someString";
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 string propertyName = "writableProperty";
                 string propertyValue = "someString";
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 string propertyName = "writableProperty";
                 string propertyValue = "someString";
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType);
             DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-            string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+            string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
             string interfaceInstanceName = "testInterfaceInstanceName";
             string propertyName = "writableProperty";
             string propertyValue = "someString";
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 string propertyValue = "\"someReadOnlyPropertyValue\"";
                 TestInterface testInterface = new TestInterface(interfaceInstanceName);
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 string propertyValue = "\"someReadWritePropertyValue\"";
                 TestInterface testInterface = new TestInterface(interfaceInstanceName);
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 string property1Name = TestInterface.ReadWritePropertyName;
                 string property1Value = "\"property1Value\"";
@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 string propertyName = "undefinedProperty";
                 string propertyValue = "1234";
@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 string propertyName = "readOnlyProperty";
                 string propertyValue = "1234";

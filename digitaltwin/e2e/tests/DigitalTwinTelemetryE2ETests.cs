@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 TestInterface2 testInterface2 = new TestInterface2(interfaceInstanceName);
                 await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { new DeviceInformationInterface(), testInterface2 }).ConfigureAwait(false);
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
-                string capabilityModelId = "urn:contoso:azureiot:sdk:testinterface:cm:1";
+                string capabilityModelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
                 string interfaceInstanceName = "testInterfaceInstanceName";
                 TestInterface2 testInterface2 = new TestInterface2(interfaceInstanceName);
                 await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { new DeviceInformationInterface(), testInterface2 }).ConfigureAwait(false);

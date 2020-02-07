@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces
 {
-    class TestInterface2 : DigitalTwinInterfaceClientWithTracking
+    internal class TestInterface2 : DigitalTwinInterfaceClientWithTracking
     {
         public const string TELEMETRY_NAME_INTEGER = "telemetryWithIntegerValue";
         public const string TELEMETRY_NAME_LONG = "telemetryWithLongValue";
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces
         public const string COMMAND_ANOTHER_ASYNC_COMMAND = "anotherAsyncCommand";
         public const string PROPERTY_NAME_WRITABLE = "writableProperty";
 
-        public const string InterfaceId = "urn:contoso:azureiot:sdk:testinterface2:2";
+        public const string InterfaceId = "urn:contoso:azureiot:sdk:testinterface2:1";
 
         public TestInterface2(string interfaceName)
             : base(InterfaceId, interfaceName)
@@ -43,9 +43,11 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces
                 case "syncCommand":
                 case "anotherSyncCommand":
                     return new DigitalTwinCommandResponse(StatusCodeCompleted, commandRequest.Payload);
+
                 case "asyncCommand":
                 case "anotherAsyncCommand":
                     return new DigitalTwinCommandResponse(StatusCodePending, asyncCommandResponsePayload);
+
                 default:
                     return new DigitalTwinCommandResponse(StatusCodeNotImplemented, null);
             }
@@ -61,16 +63,19 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces
             {
                 case "readOnlyProperty":
                     break;
+
                 case "writableProperty":
                     break;
+
                 case "anotherWritableProperty":
                     break;
+
                 case "complexProperty":
                     break;
+
                 default:
                     break;
             }
         }
     }
 }
-

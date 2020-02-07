@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces
 {
-    class TestInterface : DigitalTwinInterfaceClientWithTracking
+    internal class TestInterface : DigitalTwinInterfaceClientWithTracking
     {
         public const string InterfaceId = "urn:contoso:azureiot:sdk:testinterface:1";
 
@@ -53,9 +53,11 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces
                 case "syncCommand":
                 case "anotherSyncCommand":
                     return new DigitalTwinCommandResponse(StatusCodeCompleted, commandRequest.Payload);
+
                 case "asyncCommand":
                 case "anotherAsyncCommand":
                     return new DigitalTwinCommandResponse(StatusCodePending, asyncCommandResponsePayload);
+
                 default:
                     return new DigitalTwinCommandResponse(StatusCodeNotImplemented, null);
             }
@@ -71,12 +73,16 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces
             {
                 case "readOnlyProperty":
                     break;
+
                 case "writableProperty":
                     break;
+
                 case "anotherWritableProperty":
                     break;
+
                 case "complexProperty":
                     break;
+
                 default:
                     break;
             }
