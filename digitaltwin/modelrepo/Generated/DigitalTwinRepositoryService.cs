@@ -592,7 +592,7 @@ namespace Azure.IoT.DigitalTwin.Model.Service.Generated
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "models/{modelId}").ToString();
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "Models/{modelId}").ToString();
             _url = _url.Replace("{modelId}", System.Uri.EscapeDataString(modelId));
             List<string> _queryParameters = new List<string>();
             if (repositoryId != null)
