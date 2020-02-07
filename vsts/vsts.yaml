@@ -49,8 +49,8 @@ phases:
 
 - phase: WINDOWS
   displayName: Windows
-# Uncomment to serialize builds:
-#  dependsOn: LINUX
+  # Since the samples run against the same Azure resources, CRUD operations will fight for the same resources. So, the builds have been serialized. Comment out the line below to run them in parallel.
+  dependsOn: LINUX
 
   condition: succeeded()
   queue:
