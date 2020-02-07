@@ -11,57 +11,58 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-
     public class MqttTransportSettings : ITransportSettings
     {
-        readonly TransportType transportType;
-        const bool DefaultCleanSession = false;
-        const bool DefaultDeviceReceiveAckCanTimeout = false;
-        const bool DefaultHasWill = false;
-        const bool DefaultMaxOutboundRetransmissionEnforced = false;
-        const int DefaultKeepAliveInSeconds = 300;
-        const int DefaultReceiveTimeoutInSeconds = 60;
-        const int DefaultMaxPendingInboundMessages = 50;
-        const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
-        const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
-        static readonly TimeSpan DefaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
-        static readonly TimeSpan DefaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
+        private readonly TransportType _transportType;
+
+        private const bool DefaultCleanSession = false;
+        private const bool DefaultDeviceReceiveAckCanTimeout = false;
+        private const bool DefaultHasWill = false;
+        private const bool DefaultMaxOutboundRetransmissionEnforced = false;
+        private const int DefaultKeepAliveInSeconds = 300;
+        private const int DefaultReceiveTimeoutInSeconds = 60;
+        private const int DefaultMaxPendingInboundMessages = 50;
+        private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
+        private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
+        private static readonly TimeSpan DefaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan DefaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
 
         public MqttTransportSettings(TransportType transportType)
         {
-            this.transportType = transportType;
+            _transportType = transportType;
 
             switch (transportType)
             {
                 case TransportType.Mqtt_WebSocket_Only:
-                    this.Proxy = DefaultWebProxySettings.Instance;
-                    this.transportType = transportType;
+                    Proxy = DefaultWebProxySettings.Instance;
+                    _transportType = transportType;
                     break;
+
                 case TransportType.Mqtt_Tcp_Only:
-                    this.transportType = transportType;
+                    _transportType = transportType;
                     break;
+
                 case TransportType.Mqtt:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Must specify Mqtt_WebSocket_Only or Mqtt_Tcp_Only");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Unsupported Transport Type {0}".FormatInvariant(transportType));
             }
 
-            this.CleanSession = DefaultCleanSession;
-            this.ConnectArrivalTimeout = DefaultConnectArrivalTimeout;
-            this.DeviceReceiveAckCanTimeout = DefaultDeviceReceiveAckCanTimeout;
-            this.DeviceReceiveAckTimeout = DefaultDeviceReceiveAckTimeout;
-            this.DupPropertyName = "mqtt-dup";
-            this.HasWill = DefaultHasWill;
-            this.KeepAliveInSeconds = DefaultKeepAliveInSeconds;
-            this.MaxOutboundRetransmissionEnforced = DefaultMaxOutboundRetransmissionEnforced;
-            this.MaxPendingInboundMessages = DefaultMaxPendingInboundMessages;
-            this.PublishToServerQoS = DefaultPublishToServerQoS;
-            this.ReceivingQoS = DefaultReceivingQoS;
-            this.QoSPropertyName = "mqtt-qos";
-            this.RetainPropertyName = "mqtt-retain";
-            this.WillMessage = null;
-            this.DefaultReceiveTimeout = TimeSpan.FromSeconds(DefaultReceiveTimeoutInSeconds);
+            CleanSession = DefaultCleanSession;
+            ConnectArrivalTimeout = DefaultConnectArrivalTimeout;
+            DeviceReceiveAckCanTimeout = DefaultDeviceReceiveAckCanTimeout;
+            DeviceReceiveAckTimeout = DefaultDeviceReceiveAckTimeout;
+            DupPropertyName = "mqtt-dup";
+            HasWill = DefaultHasWill;
+            KeepAliveInSeconds = DefaultKeepAliveInSeconds;
+            MaxOutboundRetransmissionEnforced = DefaultMaxOutboundRetransmissionEnforced;
+            MaxPendingInboundMessages = DefaultMaxPendingInboundMessages;
+            PublishToServerQoS = DefaultPublishToServerQoS;
+            ReceivingQoS = DefaultReceivingQoS;
+            QoSPropertyName = "mqtt-qos";
+            RetainPropertyName = "mqtt-retain";
+            WillMessage = null;
+            DefaultReceiveTimeout = TimeSpan.FromSeconds(DefaultReceiveTimeoutInSeconds);
         }
 
         public bool DeviceReceiveAckCanTimeout { get; set; }
@@ -94,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public TransportType GetTransportType()
         {
-            return this.transportType;
+            return _transportType;
         }
 
         public TimeSpan DefaultReceiveTimeout { get; set; }
