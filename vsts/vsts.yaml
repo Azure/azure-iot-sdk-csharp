@@ -5,8 +5,14 @@ resources:
 jobs:
   ### Linux build ###
   - job: LINUX
-    displayName: Linux .Net Core 2.1
-
+    displayName: Linux
+    strategy:
+      maxParallel: 3
+      #maxParallel: 1 Uncomment this to make Windows builds run in serial rather than in parallel
+      matrix:
+        .Net Core 2.1:
+          FRAMEWORK: netcoreapp2.1
+          
     condition: succeeded()
     pool:
       name: Hosted Ubuntu 1604
@@ -66,7 +72,7 @@ jobs:
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
-          FRAMEWORK: "netcoreapp2.1"
+          FRAMEWORK: $(FRAMEWORK)
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
