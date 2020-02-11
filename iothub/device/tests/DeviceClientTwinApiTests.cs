@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class DeviceClientTwinApiTests
     {
-        static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
         [TestMethod]
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => { return TaskHelpers.CompletedTask; };
+            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
             var context = new object();
 
             // act
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => { return TaskHelpers.CompletedTask; };
+            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
             var context = new object();
 
             // act
@@ -63,12 +63,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => { return TaskHelpers.CompletedTask; };
+            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
 
             // act
+#pragma warning disable CS0618 // Type or member is obsolete
             await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
             await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
             await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // assert
             await innerHandler.
@@ -84,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => { return TaskHelpers.CompletedTask; };
+            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
 
             // act
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);

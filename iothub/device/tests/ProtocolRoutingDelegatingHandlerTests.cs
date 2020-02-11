@@ -21,13 +21,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             var amqpTransportSettings = Substitute.For<ITransportSettings>();
             var mqttTransportSettings = Substitute.For<ITransportSettings>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
+            innerHandler.OpenAsync(CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
             contextMock.Get<ITransportSettings[]>().Returns(new[] { amqpTransportSettings, mqttTransportSettings });
             var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
             sut.ContinuationFactory = (ctx, inner) => innerHandler;
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
-            
+
             await innerHandler.Received(1).OpenAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var transportSettings = Substitute.For<ITransportSettings>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
 

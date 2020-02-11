@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 TopicName = "devices/d10/messages/devicebound/%24.cid=Corrid1&%24.mid=MessageId1&Prop1=Value1&Prop2=Value2&Prop3=Value3/"
             };
 
-
             MqttIotHubAdapter.PopulateMessagePropertiesFromPacket(message, publishPacket);
             Assert.AreEqual(3, message.Properties.Count);
             Assert.AreEqual("Value1", message.Properties["Prop1"]);
@@ -113,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
             // Setup internal state to be "Connected". Only then can we manage subscriptions
             // "NotConnected" -> (ChannelActive) -> "Connecting" -> (ChannelRead ConnAck) -> "Connected".
-            channelHandlerContext.Setup(context => context.Channel.EventLoop.ScheduleAsync(It.IsAny<Action>(), It.IsAny<TimeSpan>())).Returns(Task.CompletedTask);
+            channelHandlerContext.Setup(context => context.Channel.EventLoop.ScheduleAsync(It.IsAny<Action>(), It.IsAny<TimeSpan>())).Returns(TaskHelpers.CompletedTask);
             channelHandlerContext.SetupGet(context => context.Handler).Returns(mqttIotHubAdapter);
             mqttIotHubAdapter.ChannelActive(channelHandlerContext.Object);
             mqttIotHubAdapter.ChannelRead(channelHandlerContext.Object, new ConnAckPacket() { ReturnCode = ConnectReturnCode.Accepted, SessionPresent = false });
@@ -128,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
             channelHandlerContext.Setup(context => context.WriteAndFlushAsync(It.IsAny<T>()))
             .Callback<object>((packet) => startRequest.SetResult((T)packet))
-            .Returns(receiveResponseBeforeSendingRequestContinues ? Task.Run(sendResponse) : Task.CompletedTask);
+            .Returns(receiveResponseBeforeSendingRequestContinues ? Task.Run(sendResponse) : TaskHelpers.CompletedTask);
 
             // Act:
             // Send the request (and response if not done as mocked "sending" task) packets
