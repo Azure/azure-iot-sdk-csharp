@@ -1,5 +1,7 @@
 ﻿using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.Tracing;
@@ -27,8 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             _listener = TestConfig.StartEventListener();
             _hostName = TestDevice.GetHostName(Configuration.IoTHub.ConnectionString);
         }
-
-        
+                
         [TestMethod]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp()
         {
@@ -102,6 +103,42 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
+
+        [TestMethod]
+        public async Task X509_Disable_CertificateRevocationCheck_Mqtt()
+        {
+            await MqttWithoutCertificateRevocationCheck(Client.TransportType.Mqtt).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task X509_Disable_CertificateRevocationCheck_Mqtt_Tcp()
+        {
+            await MqttWithoutCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task X509_Disable_CertificateRevocationCheck_Mqtt_WebSocket()
+        {
+            await MqttWithoutCertificateRevocationCheck(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        private async Task MqttWithoutCertificateRevocationCheck(Client.TransportType transportType)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+
+            var mqttTransportSettings = new MqttTransportSettings(transportType)
+            {
+                CertificateRevocationCheck = false
+            };
+
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { mqttTransportSettings }))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await MessageSendE2ETests.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
 
         private async Task X509InvalidDeviceIdOpenAsyncTest(Client.TransportType transportType)
         {

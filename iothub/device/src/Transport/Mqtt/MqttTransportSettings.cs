@@ -105,5 +105,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public X509Certificate ClientCertificate { get; set; }
 
         public IWebProxy Proxy { get; set; }
+
+        /// <summary>
+        /// To enable certificate revocation check. Default to be true.
+        /// </summary>
+        public bool CertificateRevocationCheck = true;
     }
 }

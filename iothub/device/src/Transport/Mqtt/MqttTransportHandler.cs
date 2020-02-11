@@ -910,7 +910,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 var clientTlsSettings = new ClientTlsSettings(
                      protocols,
-                     certs.Any(),
+                     settings.CertificateRevocationCheck,
                      certs,
                      iotHubConnectionString.HostName);
 
