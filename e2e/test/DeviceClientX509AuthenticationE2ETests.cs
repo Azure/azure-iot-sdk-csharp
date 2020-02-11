@@ -105,32 +105,59 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task X509_Disable_CertificateRevocationCheck_Mqtt_Tcp()
+        public async Task X509_Enable_CertificateRevocationCheck_Mqtt_Tcp()
         {
-            await MqttWithCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            ITransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only);
+            await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task X509_Disable_CertificateRevocationCheck_Mqtt_WebSocket()
+        public async Task X509_Enable_CertificateRevocationCheck_Mqtt_WebSocket()
         {
-            await MqttWithCertificateRevocationCheck(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            ITransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType.Mqtt_WebSocket_Only);
+            await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
-        private async Task MqttWithCertificateRevocationCheck(Client.TransportType transportType)
+        [TestMethod]
+        public async Task X509_Enable_CertificateRevocationCheck_Amqp_Tcp()
+        {
+            ITransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType.Amqp_Tcp_Only);
+            await SendMessageTest(transportSetting).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task X509_Enable_CertificateRevocationCheck_Amqp_WebSocket()
+        {
+            ITransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType.Amqp_WebSocket_Only);
+            await SendMessageTest(transportSetting).ConfigureAwait(false);
+        }
+
+        private async Task SendMessageTest(ITransportSettings transportSetting)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
-            var mqttTransportSettings = new MqttTransportSettings(transportType)
-            {
-                CertificateRevocationCheck = true
-            };
-
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { mqttTransportSettings }))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting }))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await MessageSendE2ETests.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
+        }
+
+        private ITransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
+        {
+            return new MqttTransportSettings(transportType)
+            {
+                CertificateRevocationCheck = true
+            };
+        }
+
+        private ITransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
+        {
+            return new AmqpTransportSettings(transportType)
+            {
+                CertificateRevocationCheck = true
+            };
         }
 
 
