@@ -107,28 +107,28 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task X509_Disable_CertificateRevocationCheck_Mqtt()
         {
-            await MqttWithoutCertificateRevocationCheck(Client.TransportType.Mqtt).ConfigureAwait(false);
+            await MqttWithCertificateRevocationCheck(Client.TransportType.Mqtt).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task X509_Disable_CertificateRevocationCheck_Mqtt_Tcp()
         {
-            await MqttWithoutCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await MqttWithCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task X509_Disable_CertificateRevocationCheck_Mqtt_WebSocket()
         {
-            await MqttWithoutCertificateRevocationCheck(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await MqttWithCertificateRevocationCheck(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        private async Task MqttWithoutCertificateRevocationCheck(Client.TransportType transportType)
+        private async Task MqttWithCertificateRevocationCheck(Client.TransportType transportType)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
             var mqttTransportSettings = new MqttTransportSettings(transportType)
             {
-                CertificateRevocationCheck = false
+                CertificateRevocationCheck = true
             };
 
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { mqttTransportSettings }))
