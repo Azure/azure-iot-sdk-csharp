@@ -210,15 +210,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private bool CausedByRevocationCheckError(X509Chain chain)
         {
-            foreach (X509ChainStatus status in chain.ChainStatus)
-            {
-                if(status.Status != X509ChainStatusFlags.RevocationStatusUnknown)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return chain.ChainStatus.All(status => status.Status == X509ChainStatusFlags.RevocationStatusUnknown);
         }
     }
 }
