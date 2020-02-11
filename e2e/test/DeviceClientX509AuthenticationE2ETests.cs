@@ -105,12 +105,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task X509_Disable_CertificateRevocationCheck_Mqtt()
-        {
-            await MqttWithCertificateRevocationCheck(Client.TransportType.Mqtt).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task X509_Disable_CertificateRevocationCheck_Mqtt_Tcp()
         {
             await MqttWithCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
