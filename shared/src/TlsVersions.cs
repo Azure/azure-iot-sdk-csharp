@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Security.Authentication;
 
 namespace Microsoft.Azure.Devices.Shared
@@ -19,6 +18,13 @@ namespace Microsoft.Azure.Devices.Shared
         public static readonly TlsVersions Instance = new TlsVersions();
 
         /// <summary>
+        /// Internal constructor for testing. The SDK and users should use the static Instance property.
+        /// </summary>
+        internal TlsVersions()
+        {
+        }
+
+        /// <summary>
         /// The acceptable versions of TLS to use when the SDK must be explicit.
         /// </summary>
         public SslProtocols MinimumTlsVersions { get; private set; } = SslProtocols.Tls12;
@@ -32,7 +38,7 @@ namespace Microsoft.Azure.Devices.Shared
         public SslProtocols Preferred { get; private set; } = SslProtocols.None;
 
 #if NET451
-        private SecurityProtocolType _net451Protocol = (SecurityProtocolType)PreferredProtocol;
+        private System.Net.SecurityProtocolType _net451Protocol = (System.Net.SecurityProtocolType)PreferredProtocol;
 #endif
 
         private const SslProtocols AllowedProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
@@ -59,7 +65,7 @@ namespace Microsoft.Azure.Devices.Shared
                 Preferred = SslProtocols.None;
                 MinimumTlsVersions = PreferredProtocol;
 #if NET451
-                _net451Protocol = (SecurityProtocolType)PreferredProtocol;
+                _net451Protocol = (System.Net.SecurityProtocolType)PreferredProtocol;
 #endif
                 return;
             }
@@ -75,7 +81,7 @@ namespace Microsoft.Azure.Devices.Shared
             MinimumTlsVersions = Preferred = protocols;
 #if NET451
             // this works because the different enums have the same numeric values
-            _net451Protocol = (SecurityProtocolType)protocols;
+            _net451Protocol = (System.Net.SecurityProtocolType)protocols;
 #endif
         }
 
@@ -86,7 +92,7 @@ namespace Microsoft.Azure.Devices.Shared
         public void SetLegacyAcceptableVersions()
         {
 #if NET451
-            ServicePointManager.SecurityProtocol = _net451Protocol;
+            System.Net.ServicePointManager.SecurityProtocol = _net451Protocol;
 #endif
         }
     }
