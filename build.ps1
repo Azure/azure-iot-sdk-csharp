@@ -287,6 +287,19 @@ try
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
     }
 
+    if ($package)
+    {
+        BuildPackage shared\src "Shared Assembly"
+        BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
+        BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
+        BuildPackage security\tpm\src "SecurityProvider for TPM"
+        BuildPackage provisioning\device\src "Provisioning Device Client SDK"
+        BuildPackage provisioning\transport\amqp\src "Provisioning Transport for AMQP"
+        BuildPackage provisioning\transport\http\src "Provisioning Transport for HTTP"
+        BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
+        BuildPackage provisioning\service\src "Provisioning Service Client SDK"
+    }
+    
     if (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
     {
         Write-Host
@@ -304,19 +317,6 @@ try
 
         # Copy new packages.
         Copy-Item (Join-Path $rootDir "bin\pkg\*.*") $env:AZURE_IOT_LOCALPACKAGES
-    }
-
-    if ($package)
-    {
-        BuildPackage shared\src "Shared Assembly"
-        BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
-        BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
-        BuildPackage security\tpm\src "SecurityProvider for TPM"
-        BuildPackage provisioning\device\src "Provisioning Device Client SDK"
-        BuildPackage provisioning\transport\amqp\src "Provisioning Transport for AMQP"
-        BuildPackage provisioning\transport\http\src "Provisioning Transport for HTTP"
-        BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
-        BuildPackage provisioning\service\src "Provisioning Service Client SDK"
     }
 
     if ($e2etests)
