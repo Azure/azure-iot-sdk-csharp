@@ -24,6 +24,22 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
+        public async Task RegistryManager_GetDeviceAsync_DeviceDoesNotExist()
+        {
+            // arrange
+            var registryManager = RegistryManager.CreateFromConnectionString(
+                Configuration.IoTHub.ConnectionString,
+                new HttpTransportSettings
+                {
+                    Proxy = new WebProxy(Configuration.IoTHub.InvalidProxyServerAddress),
+                });
+
+            // act
+            _ = await registryManager.GetDeviceAsync("device-that-does-not-exist").ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task RegistryManager_AddAndRemoveDeviceWithScope()
         {
             RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);

@@ -33,6 +33,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string ProxyServerAddress => GetValue("IOTHUB_PROXY_SERVER_ADDRESS");
 
+            /// <summary>
+            /// A proxy server that should not exist (on local host)
+            /// </summary>
+            public const string InvalidProxyServerAddress = "127.0.0.1:1234";
+
             public class DeviceConnectionStringParser
             {
                 public DeviceConnectionStringParser(string connectionString)
