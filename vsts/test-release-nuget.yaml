@@ -37,38 +37,25 @@ phases:
     displayName: 'Start TPM Simulator'
     inputs:
       containerregistrytype: 'Container Registry'
-
       command: 'Run an image'
-
       imageName: aziotbld/testtpm
-
       containerName: 'testtpm-instance'
-
       ports: |  
        127.0.0.1:2321:2321
        127.0.0.1:2322:2322
-
       restartPolicy: unlessStopped
 
   - task: Docker@1
     displayName: 'Start Test Proxy'
     inputs:
       containerregistrytype: 'Container Registry'
-
       command: 'Run an image'
-
       imageName: aziotbld/testproxy
-
       containerName: 'testproxy-instance'
-
       ports: '127.0.0.1:8888:8888'
-
       restartPolicy: unlessStopped
 
   - script: |  
-       # Run dotnet first experience.
-       dotnet new
-       
        # List active docker containers
        docker ps -a
        
@@ -103,18 +90,14 @@ phases:
     displayName: 'Copy files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
-
       Contents: '**/*.trx'
-
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
     condition: always()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults_linux'
     inputs:
       ArtifactName: testresults_linux
-
     condition: always()
 
   - task: PublishTestResults@2
@@ -123,7 +106,6 @@ phases:
       testRunner: VSTest
       testRunTitle: 'Linux Tests'
       testResultsFiles: '**/*.trx'
-
     condition: always()
 
 ### Windows build ###
@@ -168,14 +150,6 @@ phases:
     displayName: 'Install Squid'
 
   - script: |  
-       choco install -y netfx-4.5.2-devpack
-        
-    displayName: 'Install .NET 4.5.2 Targetting Pack'
-
-  - script: |  
-       rem Run dotnet first experience.
-       dotnet new
-       
        rem List active docker containers
        docker ps -a
 
@@ -183,7 +157,7 @@ phases:
 
        start /D .\vsts\TpmSimulator Simulator.exe
 
-       build.cmd -configuration Release -nobuild -nounittests -nopackage -e2etests
+       build.cmd -configuration Release -e2etests
         
     displayName: build
     env:

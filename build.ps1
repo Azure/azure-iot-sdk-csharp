@@ -175,6 +175,7 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     # By specifying the root dir, the test runner will run all tests in test projects in the VS solution there
     Set-Location $rootDir
 
+    Write-Host "Invoking expression: $runTestCmd ----------"
     Invoke-Expression $runTestCmd
 
     if ($LASTEXITCODE -ne 0)
