@@ -1,28 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices
-{
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.Azure.Devices.Common.Extensions;
-    using Microsoft.Azure.Devices.Shared;
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.Azure.Devices.Common.Extensions;
+using Microsoft.Azure.Devices.Shared;
 
 #if NET451
     using System.Net.Http.Formatting;
 #endif
 
+namespace Microsoft.Azure.Devices
+{
     internal sealed class HttpClientHelper : IHttpClientHelper
     {
 #if !NETSTANDARD1_3 && !NETSTANDARD2_0
@@ -47,7 +47,9 @@ namespace Microsoft.Azure.Devices
             this.authenticationHeaderProvider = authenticationHeaderProvider;
             this.defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
-            this.defaultOperationTimeout = timeout;
+            defaultOperationTimeout = timeout;
+            this.preRequestActionForAllRequests = preRequestActionForAllRequests;
+            this.customHttpProxy = customHttpProxy;
             TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 

@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
-        
+
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
@@ -202,10 +202,46 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
+        [DataTestMethod]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        [TestCategory("LongRunning")]
+        public async Task Twin_ClientSetsReportedPropertyWithoutDesiredPropertyCallback(Client.TransportType transportType)
+        {
+            // arrange
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportType))
+            {
+                await Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
+
+                int connectionStatusChangeCount = 0;
+                ConnectionStatusChangesHandler connectionStatusChangesHandler = (ConnectionStatus status, ConnectionStatusChangeReason reason) =>
+                {
+                    Interlocked.Increment(ref connectionStatusChangeCount);
+                };
+
+                string propName = Guid.NewGuid().ToString();
+                string propValue = Guid.NewGuid().ToString();
+
+                _log.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent)}: name={propName}, value={propValue}");
+
+                // act
+                await RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+
+                // assert
+                Assert.AreEqual(0, connectionStatusChangeCount, "AMQP should not be disconnected.");
+
+                // clean up
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
         private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDevice(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport))
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport))
             {
                 await Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -226,7 +262,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
         }
-
 
         public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(DeviceClient deviceClient, string expectedPropName, string expectedPropValue)
         {
@@ -269,7 +304,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 (patch, context) =>
                 {
                     _log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
-                    
+
                     try
                     {
                         Assert.AreEqual(expectedPropValue, patch[expectedPropName].ToString());
@@ -309,7 +344,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var propValue = Guid.NewGuid().ToString();
 
             _log.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent)}: name={propName}, value={propValue}");
-            
+
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport))
@@ -350,7 +385,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
-            
+
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport))
