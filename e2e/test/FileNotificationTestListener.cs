@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly TimeSpan s_duration = TimeSpan.FromHours(2);
         private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan s_checkInterval = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan s_checkDuration = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan s_checkDuration = TimeSpan.FromMinutes(5);
         private static readonly TestLogging s_log = TestLogging.GetInstance();
 
         private static readonly SemaphoreSlim s_lock = new SemaphoreSlim(1, 1);
