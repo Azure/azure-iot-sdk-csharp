@@ -16,7 +16,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class DeviceTokenRefreshE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(DeviceTokenRefreshE2ETests)}_";
@@ -60,18 +61,22 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("Flaky")]
+        [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Http()
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Amqp).ConfigureAwait(false);
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
             // The IoT Hub service allows tokens expired < 5 minutes ago to be used during CONNECT.
@@ -122,9 +127,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             SemaphoreSlim deviceDisconnected = new SemaphoreSlim(0);
 
             var refresher = new TestTokenRefresher(
-                device.Id, 
-                device.Authentication.SymmetricKey.PrimaryKey, 
-                ttl, 
+                device.Id,
+                device.Authentication.SymmetricKey.PrimaryKey,
+                ttl,
                 buffer,
                 transport);
 
@@ -189,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Ensure that the token was refreshed.
                     Console.WriteLine($"[{DateTime.UtcNow}] Token was refreshed after {refresher.DetectedRefreshInterval} (ttl = {ttl} seconds).");
                     Assert.IsTrue(
-                        refresher.DetectedRefreshInterval.TotalSeconds < (float)ttl * (1 + (float)buffer/100), // Wait for more than what we expect.
+                        refresher.DetectedRefreshInterval.TotalSeconds < (float)ttl * (1 + (float)buffer / 100), // Wait for more than what we expect.
                         $"Token was refreshed after {refresher.DetectedRefreshInterval} although ttl={ttl} seconds.");
 
                     Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
@@ -222,11 +227,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             public TestTokenRefresher(
-                string deviceId, 
-                string key, 
-                int suggestedTimeToLive, 
+                string deviceId,
+                string key,
+                int suggestedTimeToLive,
                 int timeBufferPercentage,
-                Client.TransportType transport) 
+                Client.TransportType transport)
                 : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
             {
                 _key = key;

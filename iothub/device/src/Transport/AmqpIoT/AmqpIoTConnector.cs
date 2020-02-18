@@ -53,6 +53,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 HostName = _hostName
             };
 
+            TimeSpan idleTimeout = _amqpTransportSettings.IdleTimeout;
+            if (idleTimeout != null)
+            {
+                amqpConnectionSettings.IdleTimeOut = Convert.ToUInt32(idleTimeout.TotalMilliseconds);
+            }
+
             var amqpIoTTransport = new AmqpIoTTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
             TransportBase transportBase = await amqpIoTTransport.InitializeAsync(timeout).ConfigureAwait(false);

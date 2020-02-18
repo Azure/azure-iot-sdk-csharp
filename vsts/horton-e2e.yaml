@@ -16,5 +16,3 @@ resources:
 
 jobs:
 - template: vsts/templates/jobs-gate-csharp.yaml@e2e_fx
-
-  

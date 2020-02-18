@@ -5,12 +5,14 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.Tracing;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class RegistryManagerE2ETests
     {
         private readonly string DevicePrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
@@ -19,6 +21,22 @@ namespace Microsoft.Azure.Devices.E2ETests
         public RegistryManagerE2ETests()
         {
             _listener = TestConfig.StartEventListener();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
+        public async Task RegistryManager_GetDeviceAsync_DeviceDoesNotExist()
+        {
+            // arrange
+            var registryManager = RegistryManager.CreateFromConnectionString(
+                Configuration.IoTHub.ConnectionString,
+                new HttpTransportSettings
+                {
+                    Proxy = new WebProxy(Configuration.IoTHub.InvalidProxyServerAddress),
+                });
+
+            // act
+            _ = await registryManager.GetDeviceAsync("device-that-does-not-exist").ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -67,6 +85,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
 
                 Assert.IsTrue(actual.Capabilities != null && actual.Capabilities.IotEdge);
+            }
+        }
+
+        [TestMethod]
+        public async Task RegistryManager_AddDeviceWithProxy()
+        {
+            string deviceId = DevicePrefix + Guid.NewGuid();
+            HttpTransportSettings transportSettings = new HttpTransportSettings
+            {
+                Proxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
+            };
+            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, transportSettings))
+            {
+                Device device = new Device(deviceId);
+                await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
             }
         }
     }

@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string _appCertificate = Configuration.AzureSecurityCenterForIoTLogAnalytics.AadAppCertificate;
 
         private readonly TimeSpan _polingInterval = TimeSpan.FromSeconds(20);
-        private readonly TimeSpan _timeout = TimeSpan.FromMinutes(30);
+        private readonly TimeSpan _timeout = TimeSpan.FromMinutes(5);
 
         private readonly AuthenticationContext _authenticationContext;
         private readonly IClientAssertionCertificate _certificateAssertion;

@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System.Diagnostics.Contracts;
     using System.Globalization;
     using System.IO;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -50,6 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string IotHubTrueString = "true";
         private const string SegmentSeparator = "/";
         private const int MaxPayloadSize = 0x3ffff;
+        private const int MaxTopicNameLength = 0xffff;
 
         private static readonly Action<object> PingServerCallback = PingServer;
         private static readonly Action<object> CheckConnAckTimeoutCallback = ShutdownIfNotReady;
@@ -805,14 +807,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (Logging.IsEnabled) Logging.Enter(this, nameof(CloseIotHubConnection));
 
-            if (this.IsInState(StateFlags.NotConnected) || this.IsInState(StateFlags.Connecting))
-            {
-                // closure has happened before IoT Hub connection was established or it was initiated due to disconnect
-                return;
-            }
 
             try
             {
+                if (this.IsInState(StateFlags.NotConnected) || this.IsInState(StateFlags.Connecting))
+                {
+                    // closure has happened before IoT Hub connection was established or it was initiated due to disconnect
+                    return;
+                }
+
                 this.serviceBoundOneWayProcessor.Complete();
                 this.deviceBoundOneWayProcessor.Complete();
                 this.serviceBoundTwoWayProcessor.Complete();
@@ -826,7 +829,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             catch (Exception completeEx) when (!completeEx.IsFatal())
             {
                 if (Logging.IsEnabled) Logging.Error(this, $"Complete exception: {completeEx.ToString()}", nameof(CloseIotHubConnection));
-
+            }
+            finally
+            {
+                // Fix race condition, cleanup processors to make sure no task hanging
                 try
                 {
                     this.serviceBoundOneWayProcessor.Abort();
@@ -839,9 +845,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // ignored on closing
                     if (Logging.IsEnabled) Logging.Error(this, $"Abort exception: {abortEx.ToString()}", nameof(CloseIotHubConnection));
                 }
-            }
-            finally
-            {
+
                 if (Logging.IsEnabled) Logging.Exit(this, nameof(CloseIotHubConnection));
             }
         }
@@ -1166,6 +1170,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             else
             {
                 msg = topicName;
+            }
+
+            if (Encoding.UTF8.GetByteCount(msg) > MaxTopicNameLength)
+            {
+                throw new MessageTooLargeException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, current length is {Encoding.UTF8.GetByteCount(msg)}. The probable cause is the list of message.Properties and/or message.systemProperties is too long. Please use AMQP or HTTP.");
             }
 
             return msg;

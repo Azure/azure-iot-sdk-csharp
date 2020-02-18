@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -19,19 +20,23 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string EventHubConsumerGroup => GetValue("IOTHUB_EVENTHUB_CONSUMER_GROUP", "$Default");
 
             public static X509Certificate2 GetCertificateWithPrivateKey()
-                => GetBase64EncodedCertificate("IOTHUB_X509_PFX_CERTIFICATE", defaultValue: string.Empty);
+            {
+                const string hubPfxCert = "IOTHUB_X509_PFX_CERTIFICATE";
+                var cert = GetBase64EncodedCertificate(hubPfxCert, defaultValue: string.Empty);
+                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubPfxCert} has expired.");
+                return cert;
+            }
 
             public static string ConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_CONN_STRING_INVALIDCERT", string.Empty);
 
             public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
 
-            public static string DeviceConnectionString => GetValue("IOTHUB_DEVICE_CONN_STRING");
-
-            public static string DeviceConnectionString2 => GetValue("IOTHUB_DEVICE_CONN_STRING2");
-
-            public static string ModuleConnectionString => GetValue("IOTHUB_MODULE_CONN_STRING");
-
             public static string ProxyServerAddress => GetValue("IOTHUB_PROXY_SERVER_ADDRESS");
+
+            /// <summary>
+            /// A proxy server that should not exist (on local host)
+            /// </summary>
+            public const string InvalidProxyServerAddress = "127.0.0.1:1234";
 
             public class DeviceConnectionStringParser
             {
@@ -47,12 +52,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                             case "HOSTNAME":
                                 IoTHub = part.Substring("HOSTNAME=".Length);
                                 break;
+
                             case "SHAREDACCESSKEY":
                                 SharedAccessKey = part.Substring("SHAREDACCESSKEY=".Length);
                                 break;
+
                             case "DEVICEID":
                                 DeviceID = part.Substring("DEVICEID=".Length);
                                 break;
+
                             default:
                                 throw new NotSupportedException("Unrecognized tag found in test ConnectionString.");
                         }

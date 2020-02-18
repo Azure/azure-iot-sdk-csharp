@@ -10,7 +10,9 @@ using System.Diagnostics;
 using System.Linq;
 
 #if !NET451
+
 using Microsoft.Azure.EventHubs;
+
 #else
 using Microsoft.ServiceBus.Messaging;
 using System.IO;
@@ -20,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public sealed partial class EventHubTestListener
     {
-        private const int MaximumWaitTimeInMinutes = 1;
+        private static readonly TimeSpan MaximumWaitTime = TimeSpan.FromMinutes(1);
         private const int LookbackTimeInMinutes = 5;
         private const int OperationTimeoutInSeconds = 10;
 
@@ -40,8 +42,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // verify required message is present in the dictionary
-        public static bool VerifyIfMessageIsReceived(string deviceId, string payload, string p1Value)
+        public static bool VerifyIfMessageIsReceived(string deviceId, string payload, string p1Value, TimeSpan? maxWaitTime = null)
         {
+            if (!maxWaitTime.HasValue)
+            {
+                maxWaitTime = MaximumWaitTime;
+            }
+
             s_log.WriteLine($"Expected payload: deviceId={deviceId}; payload={payload}; property1={p1Value}");
 
             bool isReceived = false;
@@ -49,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var sw = new Stopwatch();
             sw.Start();
 
-            while (!isReceived && sw.Elapsed.TotalMinutes < MaximumWaitTimeInMinutes)
+            while (!isReceived && sw.Elapsed < maxWaitTime)
             {
                 events.TryRemove(payload, out EventData eventData);
                 if (eventData == null)
@@ -136,6 +143,5 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             return false;
         }
-
     }
 }

@@ -18,7 +18,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     using HttpTransportSettings = Microsoft.Azure.Devices.Provisioning.Service.HttpTransportSettings;
 
     [TestClass]
-    [TestCategory("Provisioning-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("DPS")]
     public class ProvisioningServiceClientE2ETests : IDisposable
     {
         public enum AttestationType
@@ -42,21 +43,21 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_IndividualEnrollments_Query_HttpWithProxy_Ok()
         {
             await ProvisioningServiceClient_IndividualEnrollments_Query_Ok(ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_Tpm_IndividualEnrollments_Create_HttpWithProxy_Ok()
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(ProxyServerAddress, AttestationType.Tpm).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_SymmetricKey_IndividualEnrollments_Create_HttpWithProxy_Ok()
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(ProxyServerAddress, AttestationType.SymmetricKey).ConfigureAwait(false);
@@ -75,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_SymmetricKey_GroupEnrollments_Create_HttpWithProxy_Ok()
         {
             await ProvisioningServiceClient_GroupEnrollments_Create_Ok(ProxyServerAddress, AttestationType.SymmetricKey).ConfigureAwait(false);
@@ -188,7 +189,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Assert.AreEqual(allocationPolicy, enrollmentGroup.AllocationPolicy);
 
-                await provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                try
+                {
+                    await provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Cleanup of enrollment group failed due to {ex}");
+                }
             }
         }
 
