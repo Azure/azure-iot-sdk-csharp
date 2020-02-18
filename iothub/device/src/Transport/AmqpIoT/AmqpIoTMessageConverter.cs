@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             netObject = null;
             if (amqpObject == null)
             {
-                return false;
+                return true;
             }
 
             switch (SerializationUtilities.GetTypeId(amqpObject))
@@ -433,7 +433,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             amqpObject = null;
             if (netObject == null)
             {
-                return false;
+                return true;
             }
 
             switch (SerializationUtilities.GetTypeId(netObject))

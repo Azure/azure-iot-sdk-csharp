@@ -116,6 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
             Assert.AreEqual(deviceName, connectionDeviceId);
             Assert.IsTrue(VerifyKeyValue("property1", p1Value, eventData.Properties));
+            Assert.IsTrue(VerifyKeyValue("property2", null, eventData.Properties));
 
             return true;
         }
@@ -126,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 if (checkForKey == key)
                 {
-                    if ((string)properties[checkForKey] == checkForValue)
+                    if (null == checkForValue || ((string)properties[checkForKey] == checkForValue))
                     {
                         return true;
                     }
