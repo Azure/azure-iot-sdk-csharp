@@ -4,7 +4,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Shared;
 using Xunit;
 
-namespace UnitTestsCommon.Shared
+namespace Microsoft.Azure.Devices.Shared.Tests
 {
     // By setting a collection, it causes xunit to not run in parallel, which we need because these test a static object
     [Collection("TlsVersions")]
@@ -110,25 +110,6 @@ namespace UnitTestsCommon.Shared
             tlsVersions.Preferred.Should().Be(SslProtocols.None);
         }
 
-#if NETSTANDARD2_1
-        [Fact]
-        public void SetMinimumTlsVersions_CannotSetDefault()
-        {
-            // arrange
-            var tlsVersions = new TlsVersions();
-
-            // act
-
-            // SslProtocols.Default is a combination of Ssl3 and Tls (1.0).
-            // Ssl3 is not allowed, but Tls (1.0) is, so Ssl3 should be filtered out.
-            tlsVersions.SetMinimumTlsVersions(SslProtocols.Default);
-
-            // assert
-            var expected = SslProtocols.Tls | SslProtocols.Tls12;
-            tlsVersions.MinimumTlsVersions.Should().Be(expected);
-            tlsVersions.Preferred.Should().Be(expected);
-        }
-#endif
 #pragma warning restore 0618
     }
 }

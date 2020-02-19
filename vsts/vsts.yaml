@@ -7,12 +7,14 @@ jobs:
   - job: LINUX
     displayName: Linux
     strategy:
+      # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 3
-      #maxParallel: 1 Uncomment this to make Windows builds run in serial rather than in parallel
       matrix:
         .Net Core 2.1:
           FRAMEWORK: netcoreapp2.1
-          
+        .Net Core 1.1:
+          FRAMEWORK: netcoreapp1.1
+
     condition: succeeded()
     pool:
       name: Hosted Ubuntu 1604
@@ -31,6 +33,21 @@ jobs:
             127.0.0.1:2322:2322
 
           restartPolicy: unlessStopped
+
+      - task: UseDotNet@2
+        displayName: "Install .NET Core App 1.1"
+        inputs:
+            # See https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+            packageType: "sdk"
+            version: "1.1.x"
+            installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: "Install .NET Core App 2.1"
+        inputs:
+            packageType: "sdk"
+            version: "2.1.x"
+            installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: Docker@1
         displayName: "Start Test Proxy"
@@ -103,13 +120,13 @@ jobs:
   - job: WINDOWS
     displayName: Windows
     strategy:
+      # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 3
-      #maxParallel: 1 Uncomment this to make Windows builds run in serial rather than in parallel
       matrix:
         .Net Core 2.1:
           FRAMEWORK: netcoreapp2.1
-        .Net Framework 4.7:
-          FRAMEWORK: net47
+        .Net Core 1.1:
+          FRAMEWORK: netcoreapp1.1
         .Net Framework 4.5.1:
           FRAMEWORK: net451
 

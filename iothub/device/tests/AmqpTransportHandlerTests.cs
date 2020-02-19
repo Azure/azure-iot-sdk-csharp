@@ -2,23 +2,20 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
-    using System.Collections.Generic;
-    using System.Net.Sockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Transport;
-    using Microsoft.Azure.Devices.Client.Test.ConnectionString;
-    using Microsoft.Azure.Devices.Client.Transport.Amqp;
-
     [TestClass]
     [TestCategory("Unit")]
     public class AmqpTransportHandlerTests
     {
-        const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         [TestMethod]
         public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()
@@ -89,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             //}
         }
 
-        async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
@@ -99,14 +96,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 await asyncMethod(tokenSource.Token).ConfigureAwait(false);
                 Assert.Fail("Fail to skip execution of this operation using cancellation token.");
             }
-            catch (OperationCanceledException) {}
+            catch (OperationCanceledException) { }
         }
 
-        AmqpTransportHandler CreateFromConnectionString()
+        private AmqpTransportHandler CreateFromConnectionString()
         {
             return new AmqpTransportHandler(
-                new PipelineContext(), 
-                IotHubConnectionStringExtensions.Parse(DumpyConnectionString), 
+                new PipelineContext(),
+                IotHubConnectionStringExtensions.Parse(DumpyConnectionString),
                 new AmqpTransportSettings(TransportType.Amqp_Tcp_Only));
         }
     }
