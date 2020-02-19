@@ -12,8 +12,6 @@ Use any of these tools to generate a device-specific connection string that you 
 
 > Note: You must have an IoT hub running in Azure before you can provision your device. The document [Set up IoT Hub](./setup_iothub.md) describes how to set up an IoT hub.
 
-You can also some of these tools to monitor the messages that your device sends to an IoT hub and send commands to your devices from IoT Hub.
-
 ## Use the Azure Portal to provision a device
 
 Follow the steps [here](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-create-through-portal#register-a-new-device-in-the-iot-hub) to learn how to provision devices using the Azure Portal experience.
@@ -25,3 +23,5 @@ Follow the steps [here](https://docs.microsoft.com/en-us/azure/iot-dps/) to lear
 ## Use Azure IoT Explorer to provision a device
 
 Learn more about the tool [here](https://github.com/Azure/azure-iot-explorer).
+
+> Note: you can also use this to monitor the messages that your device sends to an IoT hub, and send commands to the device.

@@ -1,37 +1,36 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
+using System;
+using System.Net;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Transport;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.Azure.Devices.Client.Test
 {
-    using System;
-    using System.Net;
-    using System.Net.WebSockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Amqp.Transport;
-    using Microsoft.Azure.Devices.Client;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     [TestClass]
     [TestCategory("Unit")]
     public class ClientWebSocketTransportTests
     {
-        const string IotHubName = "localhost";
-        const int Port = 12345;
-        static HttpListener listener;
-        static readonly Action<TransportAsyncCallbackArgs> onReadOperationComplete = OnReadOperationComplete;
-        static readonly Action<TransportAsyncCallbackArgs> onWriteOperationComplete = OnWriteOperationComplete;
-        static ClientWebSocketTransport clientWebSocketTransport;
+        private const string IotHubName = "localhost";
+        private const int Port = 12345;
+        private static readonly Action<TransportAsyncCallbackArgs> onReadOperationComplete = OnReadOperationComplete;
+        private static readonly Action<TransportAsyncCallbackArgs> onWriteOperationComplete = OnWriteOperationComplete;
+        private static ClientWebSocketTransport clientWebSocketTransport;
         private static Task s_serverTask;
+
+        private static byte[] byteArray = new byte[10] { 0x5, 0x6, 0x7, 0x8, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
+        private static volatile bool readComplete;
 
 #if NET451
         static LegacyClientWebSocketTransport legacyClientWebSocketTransport;
 #endif
 
-        static byte[] byteArray = new byte[10] { 0x5, 0x6, 0x7, 0x8, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
-        static volatile bool readComplete;
+        private static HttpListener listener;
 
         [ClassInitialize()]
         public static void AssembyInitialize(TestContext testcontext)
@@ -314,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 #endif
 
-        static void OnWriteOperationComplete(TransportAsyncCallbackArgs args)
+        private static void OnWriteOperationComplete(TransportAsyncCallbackArgs args)
         {
             if (args.BytesTransfered != byteArray.Length)
             {
@@ -327,7 +326,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
         }
 
-        static void OnReadOperationComplete(TransportAsyncCallbackArgs args)
+        private static void OnReadOperationComplete(TransportAsyncCallbackArgs args)
         {
             if (args.Exception != null)
             {
@@ -405,5 +404,5 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return;
             }
         }
-}
+    }
 }

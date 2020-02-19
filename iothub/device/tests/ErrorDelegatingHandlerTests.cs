@@ -22,7 +22,6 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class ErrorDelegatingHandlerTests
     {
-
         internal static readonly HashSet<Type> NonTransientExceptions = new HashSet<Type>
         {
             typeof(MessageTooLargeException),
@@ -34,9 +33,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             typeof(IotHubException),
         };
 
-        const string ErrorMessage = "Error occurred.";
+        private const string ErrorMessage = "Error occurred.";
 
-        static readonly Dictionary<Type, Func<Exception>> ExceptionFactory = new Dictionary<Type, Func<Exception>>
+        private static readonly Dictionary<Type, Func<Exception>> ExceptionFactory = new Dictionary<Type, Func<Exception>>
         {
             { typeof(UnauthorizedException), () => new UnauthorizedException(ErrorMessage) },
             { typeof(IotHubNotFoundException), () => new IotHubNotFoundException(ErrorMessage) },
@@ -57,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(HttpRequestException), () => new HttpRequestException() },
             { typeof(WebException), () => new WebException() },
             { typeof(AmqpException), () => new AmqpException(new Amqp.Framing.Error()) },
-            { typeof(WebSocketException), () => new WebSocketException() },
+            { typeof(WebSocketException), () => new WebSocketException(1) },
             { typeof(TestSecurityException), () => new Exception(
                                                             "Test top level",
                                                             new Exception(
@@ -86,11 +85,17 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         public class TestSecurityException : Exception
         {
-            public TestSecurityException() {}
+            public TestSecurityException()
+            {
+            }
 
-            public TestSecurityException(string message) : base(message) {}
+            public TestSecurityException(string message) : base(message)
+            {
+            }
 
-            public TestSecurityException(string message, Exception innerException) : base(message, innerException) {}
+            public TestSecurityException(string message, Exception innerException) : base(message, innerException)
+            {
+            }
         }
 
         [TestMethod]
@@ -98,8 +103,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var contextMock = Substitute.For<IPipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
             var cancellationToken = new CancellationToken();
@@ -134,18 +139,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
         }
 
-        static async Task TestExceptionThrown(Type thrownExceptionType, Type expectedExceptionType)
+        private static async Task TestExceptionThrown(Type thrownExceptionType, Type expectedExceptionType)
         {
             var message = new Message(new byte[0]);
             var cancellationToken = new CancellationToken();
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()), 
-                di => di.SendEventAsync(message, cancellationToken), 
-                di => di.Received(2).SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()), 
+                di => di.SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
+                di => di.SendEventAsync(message, cancellationToken),
+                di => di.Received(2).SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
-            IEnumerable<Message> messages = new[] { new Message(new byte[0])};
+            IEnumerable<Message> messages = new[] { new Message(new byte[0]) };
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
                 di => di.SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
@@ -194,11 +199,11 @@ namespace Microsoft.Azure.Devices.Client.Test
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
         }
 
-        static async Task OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-            Func<IDelegatingHandler, Task<Message>> mockSetup, 
-            Func<IDelegatingHandler, Task<Message>> act, 
-            Func<IDelegatingHandler, Task<Message>> assert, 
-            Type thrownExceptionType, 
+        private static async Task OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
+            Func<IDelegatingHandler, Task<Message>> mockSetup,
+            Func<IDelegatingHandler, Task<Message>> act,
+            Func<IDelegatingHandler, Task<Message>> assert,
+            Type thrownExceptionType,
             Type expectedExceptionType)
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -207,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //initial OpenAsync to emulate Gatekeeper behaviour
             var cancellationToken = new CancellationToken();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
 
             //set initial operation result that throws
@@ -237,18 +242,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             await assert(innerHandler).ConfigureAwait(false);
         }
 
-        static async Task OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-            Func<IDelegatingHandler, Task> mockSetup, 
-            Func<IDelegatingHandler, Task> act, 
-            Func<IDelegatingHandler, Task> assert, 
-            Type thrownExceptionType, 
+        private static async Task OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
+            Func<IDelegatingHandler, Task> mockSetup,
+            Func<IDelegatingHandler, Task> act,
+            Func<IDelegatingHandler, Task> assert,
+            Type thrownExceptionType,
             Type expectedExceptionType)
         {
             var contextMock = Substitute.For<IPipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
-            
+
             //initial OpenAsync to emulate Gatekeeper behaviour
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -260,7 +265,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 if (setup[0])
                 {
-                    return Task.CompletedTask;
+                    return TaskHelpers.CompletedTask; ;
                 }
                 throw ExceptionFactory[thrownExceptionType]();
             });
@@ -270,7 +275,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //override outcome
             setup[0] = true;//otherwise previosly setup call will happen and throw;
-            mockSetup(innerHandler).Returns(Task.CompletedTask);
+            mockSetup(innerHandler).Returns(TaskHelpers.CompletedTask);
 
             //act
             await act(sut).ConfigureAwait(false);
@@ -280,11 +285,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             await assert(innerHandler).ConfigureAwait(false);
         }
 
-        static async Task OpenAsync_ExceptionThrownAndThenSucceed_SuccessfullyOpened(
-            Func<IDelegatingHandler, Task> mockSetup, 
-            Func<IDelegatingHandler, Task> act, 
-            Func<IDelegatingHandler, Task> assert, 
-            Type thrownExceptionType, 
+        private static async Task OpenAsync_ExceptionThrownAndThenSucceed_SuccessfullyOpened(
+            Func<IDelegatingHandler, Task> mockSetup,
+            Func<IDelegatingHandler, Task> act,
+            Func<IDelegatingHandler, Task> assert,
+            Type thrownExceptionType,
             Type expectedExceptionType)
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -308,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //override outcome
             setup[0] = true;//otherwise previosly setup call will happen and throw;
-            mockSetup(innerHandler).Returns(Task.CompletedTask);
+            mockSetup(innerHandler).Returns(TaskHelpers.CompletedTask);
 
             //act
             await act(sut).ConfigureAwait(false);
