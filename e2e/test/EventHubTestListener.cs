@@ -127,7 +127,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 if (checkForKey == key)
                 {
-                    if (null == checkForValue || ((string)properties[checkForKey] == checkForValue))
+                    // For http according to spec, expected value of property here is empty string
+                    if ((null == checkForValue && string.IsNullOrEmpty((string)properties[checkForKey])) || checkForValue == ((string)properties[checkForKey]))
                     {
                         return true;
                     }
