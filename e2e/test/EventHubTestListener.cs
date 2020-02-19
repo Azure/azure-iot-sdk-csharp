@@ -123,6 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
             Assert.AreEqual(deviceName, connectionDeviceId);
             Assert.IsTrue(VerifyKeyValue("property1", p1Value, eventData.Properties));
+            Assert.IsTrue(VerifyKeyValue("property2", null, eventData.Properties));
 
             return true;
         }
@@ -133,7 +134,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 if (checkForKey == key)
                 {
-                    if ((string)properties[checkForKey] == checkForValue)
+                    // For http according to spec, expected value of property here is empty string
+                    if ((null == checkForValue && string.IsNullOrEmpty((string)properties[checkForKey])) || checkForValue == ((string)properties[checkForKey]))
                     {
                         return true;
                     }

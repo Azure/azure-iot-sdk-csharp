@@ -331,8 +331,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
-                Properties = { ["property1"] = p1Value }
             };
+            message.Properties.Add("property1", p1Value);
+            message.Properties.Add("property2", null);
 
             return (message, messageId, payload, p1Value);
         }
