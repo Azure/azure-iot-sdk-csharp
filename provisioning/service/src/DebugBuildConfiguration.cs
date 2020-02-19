@@ -4,5 +4,5 @@
 using System.Runtime.CompilerServices;
 
 #if (DEBUG)
-[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Provisioning.Service.Test")]
+[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Provisioning.Service.Tests")]
 #endif

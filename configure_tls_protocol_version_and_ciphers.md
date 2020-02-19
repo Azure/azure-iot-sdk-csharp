@@ -27,3 +27,21 @@ Also follow the instructions on how to [enable and disable ciphers].
 [TLS registry settings]: https://docs.microsoft.com/en-us/windows-server/security/tls/tls-registry-settings
 [best practices with .NEt and TLS]: https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls
 [enable and disable ciphers]: https://support.microsoft.com/en-us/help/245030/how-to-restrict-the-use-of-certain-cryptographic-algorithms-and-protoc
+
+### Linux Instructions
+
+On Linux, one cannot influence the version of TLS used, like on Windows.
+Although the SDK will default to the latest version of TLS by default, if one wishes to hard-code it to a specific version, there is a provision for that.
+
+For example:
+
+```C#
+Microsoft.Azure.Devices.Shared.TlsVersions.Instance.SetTlsMinimumVersions(SslProtocols.Tls12);
+```
+
+Some notes:
+
+- It will only allow one to specify TLS 1.0, 1.1, 1.2, or any combination of the 3.
+- It will always add TLS 1.2 because by calling this method you are setting the minimum version, and it should also incude the latest version.
+- The default is SslProtocols.None, which to let the OS decide.
+- If you wish to set it back to None, that is also allowed.

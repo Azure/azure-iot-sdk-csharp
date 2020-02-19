@@ -17,4 +17,3 @@ resources:
 jobs:
 - template: vsts/templates/jobs-gate-csharp-fault-injection.yaml@e2e_fx
 
-  

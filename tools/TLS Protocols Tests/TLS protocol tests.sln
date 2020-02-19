@@ -1,0 +1,78 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Client", "..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj", "{35C65875-F0E3-42C4-8DB8-F7764709E63D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared", "..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj", "{20236B81-224F-44B2-B7DA-0D983CC8A27A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices", "..\..\iothub\service\src\Microsoft.Azure.Devices.csproj", "{D1EC44A6-D0A0-4245-9BA1-68E2215A2750}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{621027E5-D274-4BE7-AD50-E8062B1EEB8E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Client", "..\..\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj", "{3BE2184F-2730-4614-98BB-34360358D461}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Mqtt", "..\..\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj", "{0251C216-945F-4019-9784-DDE35332983E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Amqp", "..\..\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj", "{336EA340-08CB-4303-B95E-542A433B023F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Http", "..\..\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj", "{7F7B8FE3-FFDC-42DA-B434-9CB96FAC4D57}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TLS protocol tests", "TLS protocol tests.csproj", "{D9804A9F-9C4A-41AF-983D-5BF6E5548E98}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{35C65875-F0E3-42C4-8DB8-F7764709E63D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35C65875-F0E3-42C4-8DB8-F7764709E63D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35C65875-F0E3-42C4-8DB8-F7764709E63D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35C65875-F0E3-42C4-8DB8-F7764709E63D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20236B81-224F-44B2-B7DA-0D983CC8A27A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20236B81-224F-44B2-B7DA-0D983CC8A27A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20236B81-224F-44B2-B7DA-0D983CC8A27A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20236B81-224F-44B2-B7DA-0D983CC8A27A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1EC44A6-D0A0-4245-9BA1-68E2215A2750}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1EC44A6-D0A0-4245-9BA1-68E2215A2750}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1EC44A6-D0A0-4245-9BA1-68E2215A2750}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1EC44A6-D0A0-4245-9BA1-68E2215A2750}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BE2184F-2730-4614-98BB-34360358D461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BE2184F-2730-4614-98BB-34360358D461}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BE2184F-2730-4614-98BB-34360358D461}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BE2184F-2730-4614-98BB-34360358D461}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0251C216-945F-4019-9784-DDE35332983E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0251C216-945F-4019-9784-DDE35332983E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0251C216-945F-4019-9784-DDE35332983E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0251C216-945F-4019-9784-DDE35332983E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{336EA340-08CB-4303-B95E-542A433B023F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{336EA340-08CB-4303-B95E-542A433B023F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{336EA340-08CB-4303-B95E-542A433B023F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{336EA340-08CB-4303-B95E-542A433B023F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F7B8FE3-FFDC-42DA-B434-9CB96FAC4D57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F7B8FE3-FFDC-42DA-B434-9CB96FAC4D57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F7B8FE3-FFDC-42DA-B434-9CB96FAC4D57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F7B8FE3-FFDC-42DA-B434-9CB96FAC4D57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9804A9F-9C4A-41AF-983D-5BF6E5548E98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9804A9F-9C4A-41AF-983D-5BF6E5548E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9804A9F-9C4A-41AF-983D-5BF6E5548E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9804A9F-9C4A-41AF-983D-5BF6E5548E98}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{35C65875-F0E3-42C4-8DB8-F7764709E63D} = {621027E5-D274-4BE7-AD50-E8062B1EEB8E}
+		{20236B81-224F-44B2-B7DA-0D983CC8A27A} = {621027E5-D274-4BE7-AD50-E8062B1EEB8E}
+		{D1EC44A6-D0A0-4245-9BA1-68E2215A2750} = {621027E5-D274-4BE7-AD50-E8062B1EEB8E}
+		{3BE2184F-2730-4614-98BB-34360358D461} = {621027E5-D274-4BE7-AD50-E8062B1EEB8E}
+		{0251C216-945F-4019-9784-DDE35332983E} = {621027E5-D274-4BE7-AD50-E8062B1EEB8E}
+		{336EA340-08CB-4303-B95E-542A433B023F} = {621027E5-D274-4BE7-AD50-E8062B1EEB8E}
+		{7F7B8FE3-FFDC-42DA-B434-9CB96FAC4D57} = {621027E5-D274-4BE7-AD50-E8062B1EEB8E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4082B685-B4EB-4ACA-B81E-863593EBA2BD}
+	EndGlobalSection
+EndGlobal

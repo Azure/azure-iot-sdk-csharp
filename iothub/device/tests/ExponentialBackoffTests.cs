@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -14,15 +13,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const int MAX_RETRY_ATTEMPTS = 5000;
 
         [TestMethod]
-        public async Task ExponentialBackoffDoesNotUnderflow()
+        [TestCategory("Unit")]
+        public void ExponentialBackoffDoesNotUnderflow()
         {
-            TransientFaultHandling.ExponentialBackoff exponentialBackoff = new TransientFaultHandling.ExponentialBackoff(MAX_RETRY_ATTEMPTS, RetryStrategy.DefaultMinBackoff, RetryStrategy.DefaultMaxBackoff, RetryStrategy.DefaultClientBackoff);
-
-            TimeSpan delay = TimeSpan.Zero;
+            var exponentialBackoff = new TransientFaultHandling.ExponentialBackoff(MAX_RETRY_ATTEMPTS, RetryStrategy.DefaultMinBackoff, RetryStrategy.DefaultMaxBackoff, RetryStrategy.DefaultClientBackoff);
             ShouldRetry shouldRetry = exponentialBackoff.GetShouldRetry();
             for (int i = 1; i < MAX_RETRY_ATTEMPTS; i++)
-            {    
-                shouldRetry(i, new Exception(), out delay);
+            {
+                shouldRetry(i, new Exception(), out TimeSpan delay);
 
                 if (delay.TotalSeconds <= 0)
                 {

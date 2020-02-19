@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,8 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public partial class MessageSendE2ETests : IDisposable
     {
         private const int MESSAGE_BATCH_COUNT = 5;
@@ -60,7 +62,27 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            amqpTransportSettings.IdleTimeout = TimeSpan.FromMinutes(2);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+            await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSendSingleMessage_AmqpWs_WithHeartbeats()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            amqpTransportSettings.IdleTimeout = TimeSpan.FromMinutes(2);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("Proxy")]
+        [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
         {
             Client.Http1TransportSettings httpTransportSettings = new Client.Http1TransportSettings();
@@ -71,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
         public async Task Message_DeviceSendSingleMessage_Http_WithCustomeProxy()
         {
             Http1TransportSettings httpTransportSettings = new Http1TransportSettings();
@@ -84,7 +106,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
+        [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_AmqpWs_WithProxy()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
@@ -95,10 +118,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
         public async Task Message_DeviceSendSingleMessage_MqttWs_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings = 
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
@@ -107,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
         public async Task Message_ModuleSendSingleMessage_AmqpWs_WithProxy()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
@@ -118,10 +141,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("ProxyE2ETests")]
+        [TestCategory("Proxy")]
         public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings = 
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
@@ -142,6 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task X509_DeviceSendSingleMessage_Mqtt()
         {
             await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
@@ -172,6 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task X509_DeviceSendBatchMessages_Mqtt()
         {
             await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
@@ -187,6 +212,28 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_DeviceSendBatchMessages_Http()
         {
             await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_ClientThrowsForMqttTopicNameTooLong()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+
+                Client.Message msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
+                //Mqtt topic name consists of, among other things, system properties and user properties
+                // setting lots of very long user properties should cause a MessageTooLargeException explaining
+                // that the topic name is too long to publish over mqtt
+                for (int i = 0; i < 100; i++)
+                {
+                    msg.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
+                }
+
+                await deviceClient.SendEventAsync(msg).ConfigureAwait(false);
+            }
         }
 
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)

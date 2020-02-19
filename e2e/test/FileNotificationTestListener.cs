@@ -10,9 +10,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     public static class FileNotificationTestListener
     {
         private static readonly TimeSpan s_duration = TimeSpan.FromHours(2);
-        private static readonly TimeSpan s_interval = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan s_checkInterval = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan s_checkDuration = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan s_checkDuration = TimeSpan.FromMinutes(5);
         private static readonly TestLogging s_log = TestLogging.GetInstance();
 
         private static readonly SemaphoreSlim s_lock = new SemaphoreSlim(1, 1);
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         }
                         catch (Exception)
                         {
-                            s_log.WriteLine("Ingore any exception while completing file upload notification.");
+                            s_log.WriteLine("Ignore any exception while completing file upload notification.");
                         }
                         return;
                     }
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 catch(Exception)
                 {
-                    s_log.WriteLine("Ingore any exception while receiving/abandon file upload notification.");
+                    s_log.WriteLine("Ignore any exception while receiving/abandon file upload notification.");
                 }
             }
 

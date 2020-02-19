@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.Azure.Devices.Client.Test
 {
-    using System;
-    using Microsoft.Azure.Devices.Client;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     [TestClass]
     [TestCategory("Unit")]
     public class UtilsTests
@@ -18,10 +17,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        [ExpectedException(typeof(NotSupportedException))]
         public void ConvertDeliveryAckTypeFromStringInvalidStringFail()
         {
-            Action action = () => Utils.ConvertDeliveryAckTypeFromString("unknown");
-            TestAssert.Throws<NotSupportedException>(action);
+            Utils.ConvertDeliveryAckTypeFromString("unknown");
         }
 
         [TestMethod]
@@ -31,10 +30,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        [ExpectedException(typeof(NotSupportedException))]
         public void ConvertDeliveryAckTypeToStringInvalidValueFail()
         {
-            Action action = () => Utils.ConvertDeliveryAckTypeToString((DeliveryAcknowledgement)100500);
-            TestAssert.Throws<NotSupportedException>(action);
+            Utils.ConvertDeliveryAckTypeToString((DeliveryAcknowledgement)100500);
         }
     }
 }

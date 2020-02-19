@@ -642,6 +642,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqp(
@@ -778,7 +779,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjection.FaultType_Auth,
                 FaultInjection.FaultCloseReason_Boom,
-                authScope:ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
         [TestMethod]

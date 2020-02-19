@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Win32;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -14,14 +14,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void GetSqmMachineId_ReturnsExpectedValue()
         {
-            var actualValue = TelemetryMethods.GetSqmMachineId();
+            string actualValue = TelemetryMethods.GetSqmMachineId();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 string expectedValue = null;
 
                 // Get SQM ID from Registry if exists
-                var key = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\SQMClient");
+                RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\SQMClient");
                 if (key != null)
                 {
                     expectedValue = key.GetValue("MachineId") as string;

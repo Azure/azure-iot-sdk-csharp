@@ -11,6 +11,8 @@ using System.Threading;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
+using System.Security.Authentication;
+using System.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
@@ -29,17 +31,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _hostName = hostName;
             _disableServerCertificateValidation = disableServerCertificateValidation;
 
-            var tcpTransportSettings = new TcpTransportSettings()
+            var tcpTransportSettings = new TcpTransportSettings
             {
                 Host = hostName,
-                Port = AmqpConstants.DefaultSecurePort
+                Port = AmqpConstants.DefaultSecurePort,
             };
+
+            SslProtocols protocols = TlsVersions.Instance.Preferred;
+#if NET451
+            // Requires hardcoding in NET451 otherwise yields error:
+            //    System.ArgumentException: The specified value is not valid in the 'SslProtocolType' enumeration.
+            if (amqpTransportSettings.GetTransportType() == TransportType.Amqp_Tcp_Only
+            && protocols == SslProtocols.None)
+            {
+                protocols = TlsVersions.Instance.MinimumTlsVersions;
+            }
+#endif
 
             _tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = hostName,
                 Certificate = null,
-                CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation
+                CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation,
+                Protocols = protocols,
             };
 
             if (_amqpTransportSettings.ClientCertificate != null)
@@ -58,10 +72,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 case TransportType.Amqp_WebSocket_Only:
                     transport = await CreateClientWebSocketTransportAsync(timeout).ConfigureAwait(false);
                     break;
+
                 case TransportType.Amqp_Tcp_Only:
                     var amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
                     transport = await amqpTransportInitiator.ConnectTaskAsync(timeout).ConfigureAwait(false);
                     break;
+
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
@@ -171,6 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(CreateClientWebSocketAsync)}");
             }
         }
+
         private bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)
@@ -183,7 +200,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 return true;
             }
 
+            if (!_amqpTransportSettings.CertificateRevocationCheck && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors && CausedByRevocationCheckError(chain))
+            {
+                return true;
+            }
+
             return false;
+        }
+
+        private bool CausedByRevocationCheckError(X509Chain chain)
+        {
+            return chain.ChainStatus.All(status => status.Status == X509ChainStatusFlags.RevocationStatusUnknown);
         }
     }
 }

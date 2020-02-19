@@ -12,15 +12,16 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
+    [TestCategory("LongRunning")]
     public class AzureSecurityCenterForIoTSecurityMessageE2ETests : IDisposable
     {
         private readonly string _devicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
         private readonly string _modulePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
-        private static TestLogging _log = TestLogging.GetInstance();
 
-        private readonly ConsoleEventListener _listener;
-        private readonly AzureSecurityCenterForIoTLogAnalyticsClient _logAnalyticsClient;
+        private ConsoleEventListener _listener;
+        private AzureSecurityCenterForIoTLogAnalyticsClient _logAnalyticsClient;
 
         public AzureSecurityCenterForIoTSecurityMessageE2ETests()
         {
@@ -31,55 +32,55 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
-            return TestSecurityMessage(Client.TransportType.Amqp_Tcp_Only);
+            return TestSecurityMessageAsync(Client.TransportType.Amqp_Tcp_Only);
         }
 
         [TestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_Amqp()
         {
-            return TestSecurityMessageModule(Client.TransportType.Amqp_Tcp_Only);
+            return TestSecurityMessageModuleAsync(Client.TransportType.Amqp_Tcp_Only);
         }
 
         [TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessage(Client.TransportType.Amqp_WebSocket_Only);
+            return TestSecurityMessageAsync(Client.TransportType.Amqp_WebSocket_Only);
         }
 
         [TestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessageModule(Client.TransportType.Amqp_WebSocket_Only);
+            return TestSecurityMessageModuleAsync(Client.TransportType.Amqp_WebSocket_Only);
         }
 
         [TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
         {
-            return TestSecurityMessage(Client.TransportType.Mqtt_Tcp_Only);
+            return TestSecurityMessageAsync(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
         {
-            return TestSecurityMessageModule(Client.TransportType.Mqtt_Tcp_Only);
+            return TestSecurityMessageModuleAsync(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
-            return TestSecurityMessage(Client.TransportType.Mqtt_WebSocket_Only);
+            return TestSecurityMessageAsync(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
-            return TestSecurityMessageModule(Client.TransportType.Mqtt_WebSocket_Only);
+            return TestSecurityMessageModuleAsync(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Http()
         {
-            return TestSecurityMessage(Client.TransportType.Http1);
+            return TestSecurityMessageAsync(Client.TransportType.Http1);
         }
 
         private Client.Message ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value)
@@ -87,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             eventId = p1Value = Guid.NewGuid().ToString();
             payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
 
-            Client.Message message = new Client.Message(Encoding.UTF8.GetBytes(payload))
+            var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 Properties = { ["property1"] = p1Value }
             };
@@ -105,7 +106,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 { "AgentId" , Guid.NewGuid().ToString() },
                 { "MessageSchemaVersion", "1.0" },
                 { "Events", new JArray
-                    { new JObject
+                    {
+                        new JObject
                         {
                             { "EventType", "Security" },
                             { "Category", "Periodic" },
@@ -122,15 +124,15 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        private async Task TestSecurityMessage(Client.TransportType transport)
+        private async Task TestSecurityMessageAsync(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            
+
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             {
                 try
                 {
-                    await SendSingleSecurityMessage(deviceClient, testDevice.Id, _logAnalyticsClient).ConfigureAwait(false);
+                    await SendSingleSecurityMessageAsync(deviceClient, testDevice.Id, _logAnalyticsClient).ConfigureAwait(false);
                 }
                 finally
                 {
@@ -139,15 +141,15 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task TestSecurityMessageModule(Client.TransportType transport)
+        private async Task TestSecurityMessageModuleAsync(Client.TransportType transport)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
-            
-            using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport))
+
+            using (var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport))
             {
                 try
                 {
-                    await SendSingleSecurityMessageModule(moduleClient, testModule.DeviceId, _logAnalyticsClient).ConfigureAwait(false);
+                    await SendSingleSecurityMessageModuleAsync(moduleClient, testModule.DeviceId, _logAnalyticsClient).ConfigureAwait(false);
                 }
                 finally
                 {
@@ -156,30 +158,40 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task SendSingleSecurityMessage(DeviceClient deviceClient, string deviceId, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+        private async Task SendSingleSecurityMessageAsync(
+            DeviceClient deviceClient,
+            string deviceId,
+            AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-            await ValidateEvent(deviceId, eventId, payload, p1Value, logAnalticsTestClient).ConfigureAwait(false);
+            await ValidateEventAsync(deviceId, eventId, payload, p1Value, logAnalticsTestClient).ConfigureAwait(false);
         }
 
-        private Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
-        {
-            moduleClient.OpenAsync();
-
-            Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
-            moduleClient.SendEventAsync(testMessage);
-
-            return ValidateEvent(deviceId, eventId, payload, p1Value, logAnalticsTestClient);
-        }
-
-        private async Task ValidateEvent(string deviceId, string eventId, string payload, string p1Value,
+        private async Task SendSingleSecurityMessageModuleAsync(
+            ModuleClient moduleClient,
+            string deviceId,
             AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
-            bool isReceivedEventHub = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value);
+            await moduleClient.OpenAsync().ConfigureAwait(false);
+
+            Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
+            await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+            await ValidateEventAsync(deviceId, eventId, payload, p1Value, logAnalticsTestClient).ConfigureAwait(false);
+        }
+
+        private async Task ValidateEventAsync(
+            string deviceId,
+            string eventId,
+            string payload,
+            string p1Value,
+            AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+        {
+            bool isReceivedEventHub = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value, TimeSpan.FromSeconds(10));
             Assert.IsFalse(isReceivedEventHub, "Security message received in customer event hub.");
             bool isReceivedOms = await logAnalticsTestClient.IsRawEventExist(deviceId, eventId).ConfigureAwait(false);
             Assert.IsTrue(isReceivedOms, "Security message was not recived in customer log analytics");
@@ -195,7 +207,17 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (disposing)
             {
-                _logAnalyticsClient.Dispose();
+                if (_logAnalyticsClient != null)
+                {
+                    _logAnalyticsClient.Dispose();
+                    _logAnalyticsClient = null;
+                }
+
+                if (_listener != null)
+                {
+                    _listener.Dispose();
+                    _listener = null;
+                }
             }
         }
     }
