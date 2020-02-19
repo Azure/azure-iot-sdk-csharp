@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             amqpTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
-            await SendSingleMessageModule(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+            await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
 
-            await SendSingleMessageModule(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+            await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task SendSingleMessageModule(TestDeviceType type, ITransportSettings[] transportSettings)
+        private async Task SendSingleMessageModule(ITransportSettings[] transportSettings)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
             using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))

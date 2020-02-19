@@ -1,11 +1,10 @@
-﻿using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -14,12 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class DeviceClientX509AuthenticationE2ETests : IDisposable
     {
-        private static readonly string DevicePrefix = $"E2E_{nameof(DeviceClientX509AuthenticationE2ETests)}_";
-        private static readonly TestLogging _log = TestLogging.GetInstance();
-        private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan TIMESPAN_ONE_SECOND = TimeSpan.FromSeconds(1);
-        private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan TIMESPAN_TWENDY_SECONDS = TimeSpan.FromSeconds(20);
+        private static readonly string s_devicePrefix = $"E2E_{nameof(DeviceClientX509AuthenticationE2ETests)}_";
 
         private readonly ConsoleEventListener _listener;
         private readonly string _hostName;
@@ -136,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMessageTest(ITransportSettings transportSetting)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting }))
             {

@@ -1,6 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Tracing;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -8,15 +16,6 @@ using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Net;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using static Microsoft.Azure.Devices.E2ETests.ProvisioningE2ETests;
 using static Microsoft.Azure.Devices.E2ETests.ProvisioningServiceClientE2ETests;
 
@@ -29,16 +28,15 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class ReprovisioningE2ETests : IDisposable
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
-        private const int FailingTimeoutMiliseconds = 10 * 1000;
         private static string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
-        private const string InvalidIDScope = "0neFFFFFFFF";
-        private const string InvalidGlobalAddress = "httpbin.org";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
-        private readonly string IdPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
+        private readonly string _devicePrefix = $"E2E_{nameof(ProvisioningE2ETests)}_";
 
+#pragma warning disable CA1823
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
+#pragma warning restore CA1823
 
         public ReprovisioningE2ETests()
         {
@@ -269,7 +267,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyServerAddress = null)
         {
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
-            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = _devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             bool twinOperationsAllowed = transportProtocol != Client.TransportType.Http1;
 
@@ -400,7 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, AttestationType.SymmetricKey, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, capabilities).ConfigureAwait(false);
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
                             SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
-                            string registrationIdSymmetricKey = IdPrefix + Guid.NewGuid();
+                            string registrationIdSymmetricKey = _devicePrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;
 

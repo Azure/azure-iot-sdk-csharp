@@ -1,11 +1,10 @@
-﻿using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -17,12 +16,13 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private const int MESSAGE_COUNT = 5;
 
-        private static readonly string DevicePrefix = $"E2E_{nameof(MessageFeedbackE2ETests)}_";
-        private static readonly TestLogging _log = TestLogging.GetInstance();
+        private static readonly string s_devicePrefix = $"E2E_{nameof(MessageFeedbackE2ETests)}_";
         private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
-
+#pragma warning disable CA1823
+        private static readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
+#pragma warning restore CA1823
 
         public MessageFeedbackE2ETests()
         {
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {

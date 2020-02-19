@@ -28,13 +28,18 @@
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>Device SDK for Azure IoT Hub</Description>
-    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageIcon>nugetIcon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>IoT Microsoft Azure IoTHub Device Client .NET AMQP MQTT HTTP</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <PropertyGroup>
     <common>$(RootDir)\common\src</common>

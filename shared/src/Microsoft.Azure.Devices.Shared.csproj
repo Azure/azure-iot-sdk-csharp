@@ -21,13 +21,18 @@
     <Title>Microsoft Azure IoT Devices Shared</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>Common code for Azure IoT Device and Service SDKs</Description>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
+    <PackageIcon>nugetIcon.png</PackageIcon>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT IoTHub Device Service Shared</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />

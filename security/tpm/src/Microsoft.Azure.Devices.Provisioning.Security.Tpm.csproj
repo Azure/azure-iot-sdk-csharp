@@ -31,13 +31,18 @@
     <Title>Microsoft Azure IoT Provisioning Device Security TPM Client</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>Provisioning Device Security TPM Client for Azure IoT Devices</Description>
-    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageIcon>nugetIcon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageTags>Microsoft Azure IoT Provisioning Device Security TPM Client .NET</PackageTags>    
+    <PackageTags>Microsoft Azure IoT Provisioning Device Security TPM Client .NET</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
@@ -52,5 +57,4 @@
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>
-
 </Project>

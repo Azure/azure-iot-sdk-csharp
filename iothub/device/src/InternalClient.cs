@@ -1299,6 +1299,8 @@ namespace Microsoft.Azure.Devices.Client
         #region Module Specific API
 
         /// <summary>
+        /// Sends an event (message) to the hub
+        /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="message">The message to send</param>
         /// <returns>The message containing the event</returns>
@@ -1320,8 +1322,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Sends an event (message) to the hub
+        /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="message">The message to send</param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken)
         {

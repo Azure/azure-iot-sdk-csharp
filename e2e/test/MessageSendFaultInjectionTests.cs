@@ -18,11 +18,11 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class MessageSendFaultInjectionTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
-        private readonly string ModulePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
-        private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
-        private static TestLogging _log = TestLogging.GetInstance();
 
+#pragma warning disable CA1823
+        private static TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
+#pragma warning restore CA1823
 
         public MessageSendFaultInjectionTests()
         {

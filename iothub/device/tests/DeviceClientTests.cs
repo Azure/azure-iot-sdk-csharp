@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedUpperLimit;
                 Assert.Fail();
             }
-            catch (ArgumentOutOfRangeException e)
+            catch (ArgumentOutOfRangeException)
             {
                 Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
             }
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedLowerLimit;
                 Assert.Fail();
             }
-            catch (ArgumentOutOfRangeException e)
+            catch (ArgumentOutOfRangeException)
             {
                 Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
             }
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
                 new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only),
-                new Http1TransportSettings()
+                new Http1TransportSettings(),
             };
 
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, transportSettings);

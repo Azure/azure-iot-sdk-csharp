@@ -17,8 +17,10 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("InvalidServiceCertificate")]
     public class IoTHubCertificateValidationE2ETest : IDisposable
     {
+#pragma warning disable CA1823
         private readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
+#pragma warning restore CA1823
 
         public IoTHubCertificateValidationE2ETest()
         {
@@ -137,9 +139,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task TestDeviceClientInvalidServiceCertificate(Client.TransportType transport)
         {
-            using (DeviceClient deviceClient = 
+            using (DeviceClient deviceClient =
                 DeviceClient.CreateFromConnectionString(
-                    Configuration.IoTHub.DeviceConnectionStringInvalidServiceCertificate, 
+                    Configuration.IoTHub.DeviceConnectionStringInvalidServiceCertificate,
                     transport))
             {
                 await deviceClient.SendEventAsync(new Client.Message()).ConfigureAwait(false);

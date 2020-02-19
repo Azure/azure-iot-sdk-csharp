@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private DateTime NOT_AFTER_UTC = new DateTime(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private const string SERIAL_NUMBER = "000000000000000000";
         private const int VERSION = 3;
+
         private const string PUBLIC_KEY_CERTIFICATE_STRING =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
@@ -58,6 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_X509_CERTIFICATES_21_001: [The constructor shall store the provided primary and secondary certificates as X509CertificateWithInfo.] */
+
         [TestMethod]
         public void X509CertificatesSucceedOnValidPrimaryX509Certificate()
         {
@@ -120,7 +122,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509CertificatesSucceedOnJsonWithPrimaryCertificate()
         {
             // arrange
-            string json = 
+            string json =
                 "{" +
                 "  \"primary\": " +
                 MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
@@ -156,6 +158,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_X509_CERTIFICATES_21_002: [The constructor shall throw ArgumentException if the provided primary certificates is invalid.] */
+
         [TestMethod]
         public void X509CertificatesThrowsOnNullPrimaryX509Certificate()
         {
@@ -163,7 +166,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             X509Certificate2 primary = null;
 
             // act - assert
+#pragma warning disable CA1806 // Do not ignore method results
             TestAssert.Throws<ArgumentException>(() => new X509Certificates(primary));
+#pragma warning restore CA1806 // Do not ignore method results
         }
 
         [TestMethod]
@@ -173,7 +178,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string primary = null;
 
             // act - assert
+#pragma warning disable CA1806 // Do not ignore method results
             TestAssert.Throws<ArgumentException>(() => new X509Certificates(primary));
+#pragma warning restore CA1806 // Do not ignore method results
         }
 
         [TestMethod]

@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Threading;
-    
+
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Azure.Amqp;
@@ -18,13 +18,13 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class Message : IDisposable, IReadOnlyIndicator
     {
-        readonly object messageLock = new object();
-        volatile Stream bodyStream;
-        AmqpMessage serializedAmqpMessage;
-        bool disposed;
-        bool ownsBodyStream;
-        int getBodyCalled;
-        long sizeInBytesCalled;
+        private readonly object messageLock = new object();
+        private volatile Stream bodyStream;
+        private AmqpMessage serializedAmqpMessage;
+        private bool disposed;
+        private bool ownsBodyStream;
+        private int getBodyCalled;
+        private long sizeInBytesCalled;
 
         /// <summary>
         /// Default constructor with no body data
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// This constructor is only used in the receive path from Amqp path, 
+        /// This constructor is only used in the receive path from Amqp path,
         /// or in Cloning from a Message that has serialized.
         /// </summary>
         /// <param name="amqpMessage"></param>
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices
         {
             if (amqpMessage == null)
             {
-                throw Fx.Exception.ArgumentNull("amqpMessage");
+                throw Fx.Exception.ArgumentNull(nameof(amqpMessage));
             }
 
             MessageConverter.UpdateMessageHeaderAndProperties(amqpMessage, this);
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// This constructor is only used on the Gateway http path so that 
+        /// This constructor is only used on the Gateway http path so that
         /// we can clean up the stream.
         /// </summary>
         /// <param name="stream"></param>
@@ -96,9 +96,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// [Required for two way requests] Used to correlate two-way communication. 
-        /// Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars 
-        /// + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}. 
+        /// [Required for two way requests] Used to correlate two-way communication.
+        /// Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars
+        /// + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
         /// Non-alphanumeric characters are from URN RFC.
         /// </summary>
         public string MessageId
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Indicates whether consumption or expiration of the message should post data to the feedback queue
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations", Justification="This should never happen. If it does, the client should crash.")]
+        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations", Justification = "This should never happen. If it does, the client should crash.")]
         public DeliveryAcknowledgement Ack
         {
             get
@@ -178,12 +178,16 @@ namespace Microsoft.Azure.Devices
                     {
                         case "none":
                             return DeliveryAcknowledgement.None;
+
                         case "positive":
                             return DeliveryAcknowledgement.PositiveOnly;
+
                         case "negative":
                             return DeliveryAcknowledgement.NegativeOnly;
+
                         case "full":
                             return DeliveryAcknowledgement.Full;
+
                         default:
                             throw new IotHubException("Invalid Delivery Ack mode");
                     }
@@ -200,15 +204,19 @@ namespace Microsoft.Azure.Devices
                     case DeliveryAcknowledgement.None:
                         valueToSet = "none";
                         break;
+
                     case DeliveryAcknowledgement.PositiveOnly:
                         valueToSet = "positive";
                         break;
+
                     case DeliveryAcknowledgement.NegativeOnly:
                         valueToSet = "negative";
                         break;
+
                     case DeliveryAcknowledgement.Full:
                         valueToSet = "full";
                         break;
+
                     default:
                         throw new IotHubException("Invalid Delivery Ack mode");
                 }
@@ -224,12 +232,12 @@ namespace Microsoft.Azure.Devices
         {
             get
             {
-                return this.GetSystemProperty<ulong>(MessageSystemPropertyNames.SequenceNumber);                
+                return this.GetSystemProperty<ulong>(MessageSystemPropertyNames.SequenceNumber);
             }
 
             set
             {
-                this.SystemProperties[MessageSystemPropertyNames.SequenceNumber] =  value;
+                this.SystemProperties[MessageSystemPropertyNames.SequenceNumber] = value;
             }
         }
 
@@ -282,7 +290,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// [Required in feedback messages] Used to specify the origin of messages generated by device hub. 
+        /// [Required in feedback messages] Used to specify the origin of messages generated by device hub.
         /// Possible value: “{hub name}/”
         /// </summary>
         public string UserId
@@ -405,6 +413,7 @@ namespace Microsoft.Azure.Devices
         internal ArraySegment<byte> DeliveryTag { get; set; }
 
 #if !NETSTANDARD1_3
+
         /// <summary>
         /// Makes a clone of the current event data instance.
         /// </summary>
@@ -448,6 +457,7 @@ namespace Microsoft.Azure.Devices
 
             return message;
         }
+
 #endif
 
         /// <summary>
@@ -514,7 +524,7 @@ namespace Microsoft.Azure.Devices
                 {
                     if (this.serializedAmqpMessage == null)
                     {
-                        // Interlocked exchange two variable does allow for a small period 
+                        // Interlocked exchange two variable does allow for a small period
                         // where one is set while the other is not. Not sure if it is worth
                         // correct this gap. The intention of setting this two variable is
                         // so that GetBody should not be called and all Properties are
@@ -546,7 +556,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        void SetGetBodyCalled()
+        private void SetGetBodyCalled()
         {
             if (1 == Interlocked.Exchange(ref this.getBodyCalled, 1))
             {
@@ -554,12 +564,12 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        void SetSizeInBytesCalled()
+        private void SetSizeInBytesCalled()
         {
             Interlocked.Exchange(ref this.sizeInBytesCalled, 1);
         }
 
-        void InitializeWithStream(Stream stream, bool ownsStream)
+        private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
@@ -567,7 +577,7 @@ namespace Microsoft.Azure.Devices
             this.ownsBodyStream = ownsStream;
         }
 
-        static byte[] ReadFullStream(Stream inputStream)
+        private static byte[] ReadFullStream(Stream inputStream)
         {
             using (var ms = new MemoryStream())
             {
@@ -577,7 +587,8 @@ namespace Microsoft.Azure.Devices
         }
 
 #if !NETSTANDARD1_3
-        static Stream CloneStream(Stream originalStream)
+
+        private static Stream CloneStream(Stream originalStream)
         {
             if (originalStream != null)
             {
@@ -606,15 +617,16 @@ namespace Microsoft.Azure.Devices
             }
             return null;
         }
+
 #endif
 
-        AmqpMessage PopulateAmqpMessageForSend(AmqpMessage message)
+        private AmqpMessage PopulateAmqpMessageForSend(AmqpMessage message)
         {
             MessageConverter.UpdateAmqpMessageHeadersAndProperties(message, this);
             return message;
         }
 
-        T GetSystemProperty<T>(string key)
+        private T GetSystemProperty<T>(string key)
         {
             if (this.SystemProperties.ContainsKey(key))
             {
@@ -624,7 +636,7 @@ namespace Microsoft.Azure.Devices
             return default(T);
         }
 
-        void ThrowIfDisposed()
+        private void ThrowIfDisposed()
         {
             if (this.disposed)
             {
@@ -632,7 +644,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!this.disposed)
             {
@@ -659,4 +671,3 @@ namespace Microsoft.Azure.Devices
         }
     }
 }
-
