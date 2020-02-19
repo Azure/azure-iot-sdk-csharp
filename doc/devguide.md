@@ -135,6 +135,4 @@ Contains scripts used by our internal Continuous Integration system (Azure DevOp
 
 ### /tools
 
-`/DeviceExplorer` contains the source code for the Azure IoT Device Explorer tool. Please see further dev documentation within this folder on how to build and debug.
-
 `/CaptureLogs` contains scripts for capturing SDK traces.
