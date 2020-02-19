@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class RegistryManagerE2ETests
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
+        private readonly string _devicePrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
         private readonly ConsoleEventListener _listener;
 
         public RegistryManagerE2ETests()
@@ -24,8 +24,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("Proxy")]
         [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
-        public async Task RegistryManager_GetDeviceAsync_DeviceDoesNotExist()
+        public async Task RegistryManager_BadProxy_ThrowsException()
         {
             // arrange
             var registryManager = RegistryManager.CreateFromConnectionString(
@@ -42,9 +43,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task RegistryManager_AddAndRemoveDeviceWithScope()
         {
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
-            string deviceId = DevicePrefix + Guid.NewGuid();
+            string deviceId = _devicePrefix + Guid.NewGuid();
 
             var edgeDevice = new Device(deviceId)
             {
@@ -65,9 +66,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task RegistryManager_AddDeviceWithTwinWithDeviceCapabilities()
         {
-            string deviceId = DevicePrefix + Guid.NewGuid();
+            string deviceId = _devicePrefix + Guid.NewGuid();
 
-            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using (var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 var twin = new Twin
                 {
@@ -91,14 +92,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task RegistryManager_AddDeviceWithProxy()
         {
-            string deviceId = DevicePrefix + Guid.NewGuid();
-            HttpTransportSettings transportSettings = new HttpTransportSettings
+            string deviceId = _devicePrefix + Guid.NewGuid();
+            var transportSettings = new HttpTransportSettings
             {
                 Proxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
             };
-            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, transportSettings))
+
+            using (var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, transportSettings))
             {
-                Device device = new Device(deviceId);
+                var device = new Device(deviceId);
                 await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
             }
         }

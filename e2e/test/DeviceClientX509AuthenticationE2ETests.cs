@@ -29,8 +29,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             _listener = TestConfig.StartEventListener();
             _hostName = TestDevice.GetHostName(Configuration.IoTHub.ConnectionString);
         }
-                
+
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp()
         {
             await X509InvalidDeviceIdOpenAsyncTest(Client.TransportType.Amqp).ConfigureAwait(false);
@@ -86,6 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt()
         {
             await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Mqtt).ConfigureAwait(false);
@@ -160,7 +162,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-
         private async Task X509InvalidDeviceIdOpenAsyncTest(Client.TransportType transportType)
         {
             var deviceClient = CreateDeviceClientWithInvalidId(transportType);
@@ -177,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 // Check TCP connection to verify there is no connection leak
-                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED" 
+                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
                 await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
             }
         }
@@ -201,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 // Check TCP connection to verify there is no connection leak
-                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED" 
+                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
                 await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
             }
         }
@@ -215,7 +216,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public void Dispose()
         {
-           
         }
     }
 }
