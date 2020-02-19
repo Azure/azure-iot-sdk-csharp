@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net47;net451</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp1.1;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1;netcoreapp1.1</TargetFrameworks>
     <!-- TODO #176: Enable warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
@@ -57,12 +57,15 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
     <Compile Include="net451\EventHubTestListener.NetFramework.cs" />
   </ItemGroup>
-  <!-- NetCore and .NET 4.7 -->
+  <!-- NetCoreApp 1.1 and NetCoreApp2.1 -->
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+    <Compile Include="netstandard20\EventHubTestListener.NetCore.cs" />
+  </ItemGroup>
+  <!-- NetCoreApp 2.1 Provisioning Client supports NetStandard 2.0 only-->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
     <Compile Include="$(CommonTest)\Configuration.Provisioning.cs">
       <Link>Common\Configuration.Provisioning.cs</Link>
     </Compile>
-    <Compile Include="netstandard20\EventHubTestListener.NetCore.cs" />
     <Compile Include="netstandard20\ProvisioningE2ETests.cs" />
     <Compile Include="netstandard20\ProvisioningServiceClientE2ETests.cs" />
     <Compile Include="netstandard20\ProvisioningCertificateValidationE2ETest.cs" />
@@ -84,7 +87,7 @@
     <!-- .NET 4.5.1 requires the System.ValueTuple NuGet package to be referenced explicitly. -->
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
-  <!-- NetCore and .NET 4.7 -->
+  <!-- NetCoreApp 1.1 and NetCoreApp2.1 -->
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.3" />
   </ItemGroup>
