@@ -4,11 +4,8 @@ name: BumpVersion_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
 phases:
 
 - phase: Phase_1
-
   steps:
-
   - task: EsrpClientTool@1
-
   - task: DownloadBuildArtifacts@0
     inputs:
       buildType: 'specific'
