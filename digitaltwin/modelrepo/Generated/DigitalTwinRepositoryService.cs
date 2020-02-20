@@ -642,15 +642,16 @@ namespace Azure.IoT.DigitalTwin.Model.Service.Generated
                     _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
                 }
             }
-
-            // Serialize Request
-            string _requestContent = null;
+            
             if(content != null)
             {
-                _requestContent = SafeJsonConvert.SerializeObject(content, SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                _httpRequest.Content = new StringContent((string)content, System.Text.Encoding.UTF8);
+                _httpRequest.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
+
+            _httpRequest.Content = new StringContent((string)content, System.Text.Encoding.UTF8);
+            _httpRequest.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+
             // Set Credentials
             if (Credentials != null)
             {
@@ -678,9 +679,9 @@ namespace Azure.IoT.DigitalTwin.Model.Service.Generated
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
                 else {
-                    _responseContent = string.Empty;
+                    content = string.Empty;
                 }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
+                ex.Request = new HttpRequestMessageWrapper(_httpRequest, (string)content);
                 ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
                 if (_shouldTrace)
                 {
