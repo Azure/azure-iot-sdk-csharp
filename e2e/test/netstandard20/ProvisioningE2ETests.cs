@@ -989,10 +989,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Assert.IsNotNull(result.JsonPayload);
                     Assert.AreEqual(payloadJsonData, result.JsonPayload);
                 }
-                else
-                {
-                    Assert.IsNull(result.JsonPayload);
-                }
             }
             else
             {

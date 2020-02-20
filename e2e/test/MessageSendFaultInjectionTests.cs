@@ -388,25 +388,27 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                (Client.Message testMessage, string messageId, string payload, string p1Value) = MessageSendE2ETests.ComposeD2CTestMessage();
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                var d2cMessage = MessageSendE2ETests.ComposeD2CTestMessage();
+                await deviceClient.SendEventAsync(d2cMessage.ClientMessage).ConfigureAwait(false);
 
                 bool isReceived = false;
-                isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, payload, p1Value);
+                isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, d2cMessage.Payload, d2cMessage.P1Value);
                 Assert.IsTrue(isReceived);
             };
 
-            await FaultInjection.TestErrorInjectionAsync(
-                DevicePrefix,
-                type,
-                transport,
-                faultType,
-                reason,
-                delayInSec,
-                durationInSec,
-                init,
-                testOperation,
-                () => { return Task.FromResult(false); }).ConfigureAwait(false);
+            await FaultInjection
+                .TestErrorInjectionAsync(
+                    DevicePrefix,
+                    type,
+                    transport,
+                    faultType,
+                    reason,
+                    delayInSec,
+                    durationInSec,
+                    init,
+                    testOperation,
+                    () => { return Task.FromResult(false); })
+                .ConfigureAwait(false);
         }
 
         public void Dispose()

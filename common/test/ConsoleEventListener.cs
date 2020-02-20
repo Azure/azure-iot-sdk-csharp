@@ -7,9 +7,11 @@ namespace System.Diagnostics.Tracing
     public sealed class ConsoleEventListener : EventListener
     {
         private readonly string[] _eventFilters;
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
-        public ConsoleEventListener() : this(string.Empty) { }
+        public ConsoleEventListener() : this(string.Empty)
+        {
+        }
 
         public ConsoleEventListener(string filter)
         {
@@ -19,7 +21,7 @@ namespace System.Diagnostics.Tracing
             InitializeEventSources();
         }
 
-        public ConsoleEventListener(string [] filters)
+        public ConsoleEventListener(string[] filters)
         {
             _eventFilters = filters ?? throw new ArgumentNullException(nameof(filters));
             if (_eventFilters.Length == 0) throw new ArgumentException("Filters cannot be empty");
@@ -60,7 +62,7 @@ namespace System.Diagnostics.Tracing
             lock (_lock)
             {
                 bool shouldDisplay = false;
-            
+
                 if (_eventFilters.Length == 1 && eventData.EventSource.Name.StartsWith(_eventFilters[0]))
                 {
                     shouldDisplay = true;

@@ -391,7 +391,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
                 Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
-                _log.WriteLine("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
+                _log.WriteLine($"verified {serviceTwin.Properties.Reported[propName]}=propValue");
             }
         }
 

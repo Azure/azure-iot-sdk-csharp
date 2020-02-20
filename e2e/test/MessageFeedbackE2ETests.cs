@@ -1,9 +1,11 @@
 ﻿using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,17 +31,21 @@ namespace Microsoft.Azure.Devices.E2ETests
             _listener = TestConfig.StartEventListener();
         }
 
+#if !(NETCOREAPP1_1 && DEBUG)
+
         [TestMethod]
         public async Task Message_CompleteMixOrder_AMQP()
         {
             await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
+#endif
+
         private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using (var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -55,8 +61,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var messages = new List<Client.Message>();
                 for (int i = 0; i < MESSAGE_COUNT; i++)
                 {
-                    (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2DTestMessage();
-                    await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                    var d2cMessage = MessageReceiveE2ETests.ComposeC2DTestMessage();
+                    await serviceClient.SendAsync(testDevice.Id, d2cMessage.CloudMessage).ConfigureAwait(false);
                     Client.Message message = await deviceClient.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                     if (message == null)
                     {
@@ -67,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 for (int i = 0; i < MESSAGE_COUNT; i++)
                 {
-                    Stopwatch stopwatch = new Stopwatch();
+                    var stopwatch = new Stopwatch();
                     stopwatch.Start();
                     await deviceClient.CompleteAsync(messages[MESSAGE_COUNT - 1 - i]).ConfigureAwait(false);
                     stopwatch.Stop();

@@ -22,6 +22,11 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         internal TlsVersions()
         {
+#if NETSTANDARD1_3
+            Preferred = SslProtocols.Tls12;
+#else
+            Preferred = SslProtocols.None;
+#endif
         }
 
         /// <summary>
@@ -33,9 +38,10 @@ namespace Microsoft.Azure.Devices.Shared
         /// The version of TLS to use by default.
         /// </summary>
         /// <remarks>
-        /// Defaults to "None", which means let the OS decide the proper TLS version (SChannel in Windows / OpenSSL in Linux).
+        /// Defaults to "None", which means let the OS decide the proper TLS version (SChannel in Windows / OpenSSL in Linux), except
+        /// for some older .Net framework versions which do not support it, in which case the default is TLS 1.2.
         /// </remarks>
-        public SslProtocols Preferred { get; private set; } = SslProtocols.None;
+        public SslProtocols Preferred { get; private set; }
 
 #if NET451
         private System.Net.SecurityProtocolType _net451Protocol = (System.Net.SecurityProtocolType)PreferredProtocol;

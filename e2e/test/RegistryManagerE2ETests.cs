@@ -24,23 +24,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("Proxy")]
-        [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
-        public async Task RegistryManager_BadProxy_ThrowsException()
-        {
-            // arrange
-            var registryManager = RegistryManager.CreateFromConnectionString(
-                Configuration.IoTHub.ConnectionString,
-                new HttpTransportSettings
-                {
-                    Proxy = new WebProxy(Configuration.IoTHub.InvalidProxyServerAddress),
-                });
-
-            // act
-            _ = await registryManager.GetDeviceAsync("device-that-does-not-exist").ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task RegistryManager_AddAndRemoveDeviceWithScope()
         {
             var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
@@ -89,6 +72,25 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+#if !NETCOREAPP1_1
+
+        [TestMethod]
+        [TestCategory("Proxy")]
+        [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
+        public async Task RegistryManager_BadProxy_ThrowsException()
+        {
+            // arrange
+            var registryManager = RegistryManager.CreateFromConnectionString(
+                Configuration.IoTHub.ConnectionString,
+                new HttpTransportSettings
+                {
+                    Proxy = new WebProxy(Configuration.IoTHub.InvalidProxyServerAddress),
+                });
+
+            // act
+            _ = await registryManager.GetDeviceAsync("device-that-does-not-exist").ConfigureAwait(false);
+        }
+
         [TestMethod]
         public async Task RegistryManager_AddDeviceWithProxy()
         {
@@ -104,5 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
             }
         }
+
+#endif
     }
 }

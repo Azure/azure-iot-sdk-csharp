@@ -812,12 +812,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                (Client.Message testMessage, string messageId, string payload, string p1Value) = MessageSendE2ETests.ComposeD2CTestMessage();
+                var d2cMessage = MessageSendE2ETests.ComposeD2CTestMessage();
 
-                _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{d2cMessage.Payload}' p1Value='{d2cMessage.P1Value}'");
+                await deviceClient.SendEventAsync(d2cMessage.ClientMessage).ConfigureAwait(false);
 
-                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, payload, p1Value);
+                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, d2cMessage.Payload, d2cMessage.P1Value);
                 Assert.IsTrue(isReceived, $"Message is not received for device {testDevice.Id}.");
             };
 
@@ -829,19 +829,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            await FaultInjectionPoolingOverAmqp.TestFaultInjectionPoolAmqpAsync(
-                MessageSend_DevicePrefix,
-                transport,
-                poolSize,
-                devicesCount,
-                faultType,
-                reason,
-                delayInSec,
-                durationInSec,
-                (d, t) => { return Task.FromResult<bool>(false); },
-                testOperation,
-                cleanupOperation,
-                authScope).ConfigureAwait(false);
+            await FaultInjectionPoolingOverAmqp
+                .TestFaultInjectionPoolAmqpAsync(
+                    MessageSend_DevicePrefix,
+                    transport,
+                    poolSize,
+                    devicesCount,
+                    faultType,
+                    reason,
+                    delayInSec,
+                    durationInSec,
+                    (d, t) => { return Task.FromResult<bool>(false); },
+                    testOperation,
+                    cleanupOperation,
+                    authScope)
+                .ConfigureAwait(false);
         }
     }
 }

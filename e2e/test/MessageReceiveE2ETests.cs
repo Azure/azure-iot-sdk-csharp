@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveMessageInOperationTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        public static (Message message, string messageId, string payload, string p1Value) ComposeC2DTestMessage()
+        public static TestMessage ComposeC2DTestMessage()
         {
             var payload = Guid.NewGuid().ToString();
             var messageId = Guid.NewGuid().ToString();
@@ -238,7 +238,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Properties = { ["property1"] = p1Value }
             };
 
-            return (message, messageId, payload, p1Value);
+            return new TestMessage
+            {
+                CloudMessage = message,
+                Payload = payload,
+                P1Value = p1Value,
+            };
         }
 
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
@@ -420,9 +425,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);
 
-                (Message msg, string messageId, string payload, string p1Value) = ComposeC2DTestMessage();
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                await VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                var d2cMessage = ComposeC2DTestMessage();
+                await serviceClient.SendAsync(testDevice.Id, d2cMessage.CloudMessage).ConfigureAwait(false);
+                await VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, d2cMessage.Payload, d2cMessage.P1Value).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
@@ -446,9 +451,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);
 
-                (Message msg, string messageId, string payload, string p1Value) = ComposeC2DTestMessage();
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                await VerifyReceivedC2DMessageWithCancellationTokenAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                var d2cMessage = ComposeC2DTestMessage();
+                await serviceClient.SendAsync(testDevice.Id, d2cMessage.CloudMessage).ConfigureAwait(false);
+                await VerifyReceivedC2DMessageWithCancellationTokenAsync(transport, deviceClient, testDevice.Id, d2cMessage.Payload, d2cMessage.P1Value).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);

@@ -19,10 +19,15 @@ namespace Microsoft.Azure.Devices.Shared.Tests
         }
 
         [Fact]
-        public void Preferred_DefaultsToNone()
+        public void Preferred_Defaults()
         {
             // assert
-            new TlsVersions().Preferred.Should().Be(SslProtocols.None);
+            new TlsVersions().Preferred.Should()
+#if NETCOREAPP1_1
+                .Be(SslProtocols.Tls12);
+#else
+                .Be(SslProtocols.None);
+#endif
         }
 
 #if NET451

@@ -9,27 +9,33 @@ namespace Microsoft.Azure.Devices.E2ETests
     [EventSource(Name = "Microsoft-Azure-Devices-TestLogging")]
     internal class EventSourceTestLogging : EventSource
     {
-        private static EventSourceTestLogging s_log = new EventSourceTestLogging();
-        private EventSourceTestLogging() { }
-
-        public static EventSourceTestLogging Log
+        private EventSourceTestLogging()
         {
-            get
-            {
-                return s_log;
-            }
         }
+
+        public static EventSourceTestLogging Log { get; } = new EventSourceTestLogging();
 
         [Event(1, Keywords = Keywords.Default, Level = EventLevel.Informational)]
         public void TestMessage(string message)
         {
-            WriteEvent(1, message);
+            WriteEvent(1, Truncate(message));
         }
 
         [Event(2, Keywords = Keywords.Debug, Level = EventLevel.Verbose)]
         public void TestVerboseMessage(string message)
         {
-            WriteEvent(2, message);
+            WriteEvent(2, Truncate(message));
+        }
+
+        private string Truncate(string message)
+        {
+            // Max size is 64K, but includes all info, so limit message to less
+            const int MaxEtwMessageSize = 60 * 1024;
+
+            if (string.IsNullOrEmpty(message)) return message;
+            return message.Length <= MaxEtwMessageSize
+                ? message
+                : message.Substring(0, MaxEtwMessageSize);
         }
 
         public static class Keywords

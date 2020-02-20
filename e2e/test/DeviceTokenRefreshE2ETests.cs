@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Net;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -33,6 +35,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             _log = TestLogging.GetInstance();
         }
 
+#if !(NETCOREAPP1_1 && DEBUG) // fails due to some bug in System.Diagnostics.Tracing.EventSource
+
         [TestMethod]
         [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task DeviceClient_Not_Exist_AMQP()
@@ -40,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}", Client.TransportType.Amqp_Tcp_Only))
+            using (var deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}", Client.TransportType.Amqp_Tcp_Only))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
             }
@@ -54,11 +58,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
+            using (var deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
             }
         }
+
+#endif
 
         [TestMethod]
         [TestCategory("Flaky")]
@@ -96,16 +102,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             string deviceId = config.DeviceID;
             string key = config.SharedAccessKey;
 
-            SharedAccessSignatureBuilder builder = new SharedAccessSignatureBuilder()
+            var builder = new SharedAccessSignatureBuilder
             {
                 Key = key,
                 TimeToLive = new TimeSpan(0, 10, 0),
                 Target = $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}",
             };
 
-            DeviceAuthenticationWithToken auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
+            var auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
 
-            using (DeviceClient deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only))
+            using (var deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only))
             {
                 _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(deviceClient)}");
 
@@ -124,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             int buffer = 50;
             Device device = testDevice.Identity;
-            SemaphoreSlim deviceDisconnected = new SemaphoreSlim(0);
+            var deviceDisconnected = new SemaphoreSlim(0);
 
             var refresher = new TestTokenRefresher(
                 device.Id,
@@ -133,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 buffer,
                 transport);
 
-            using (DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport))
+            using (var deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport))
             {
                 _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(deviceClient)}");
 
@@ -215,10 +221,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
         {
-            private string _key;
-            private Client.TransportType _transport;
-            private Stopwatch _stopwatch = new Stopwatch();
-            private SemaphoreSlim _tokenRefreshSemaphore = new SemaphoreSlim(0);
+            private readonly string _key;
+            private readonly Client.TransportType _transport;
+            private readonly Stopwatch _stopwatch = new Stopwatch();
+            private readonly SemaphoreSlim _tokenRefreshSemaphore = new SemaphoreSlim(0);
             private int _counter;
 
             public TestTokenRefresher(string deviceId, string key) : base(deviceId)
@@ -238,10 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _transport = transport;
             }
 
-            public TimeSpan DetectedRefreshInterval
-            {
-                get => _stopwatch.Elapsed;
-            }
+            public TimeSpan DetectedRefreshInterval => _stopwatch.Elapsed;
 
             public Task WaitForTokenRefreshAsync(CancellationToken cancellationToken)
             {
@@ -257,7 +260,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     suggestedTimeToLive = -IoTHubServerTimeAllowanceSeconds + 30; // Create an expired token.
                 }
 
-                var builder = new SharedAccessSignatureBuilder()
+                var builder = new SharedAccessSignatureBuilder
                 {
                     Key = _key,
                     TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),

@@ -1,15 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -73,43 +70,33 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
+#if !NETCOREAPP1_1 // no support for websockets in amqp
+
+        [DataTestMethod]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections(Client.TransportType transportType)
         {
             await ReceiveMessagePoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                transportType,
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
+        [DataTestMethod]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
         [TestMethod]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
+        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections(Client.TransportType transportType)
         {
             await ReceiveMessagePoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
-        {
-            await ReceiveMessagePoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                transportType,
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
-        {
-            await ReceiveMessagePoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
-        }
+#endif
 
         private async Task ReceiveMessagePoolOverAmqp(
             Client.TransportType transport,
@@ -117,17 +104,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            Dictionary<string, List<string>> messagesSent = new Dictionary<string, List<string>>();
+            var messagesSent = new Dictionary<string, List<string>>();
 
             // Initialize the service client
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2DTestMessage();
-                messagesSent.Add(testDevice.Id, new List<string> { payload, p1Value });
+                var d2cMessage = MessageReceiveE2ETests.ComposeC2DTestMessage();
+                messagesSent.Add(testDevice.Id, new List<string> { d2cMessage.Payload, d2cMessage.P1Value });
 
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await serviceClient.SendAsync(testDevice.Id, d2cMessage.CloudMessage).ConfigureAwait(false);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>

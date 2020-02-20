@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.Client.Extensions
     using Microsoft.Owin;
 #endif
 
-    delegate bool TryParse<in TInput, TOutput>(TInput input, bool ignoreCase, out TOutput output);
+    internal delegate bool TryParse<in TInput, TOutput>(TInput input, bool ignoreCase, out TOutput output);
 
-    static class CommonExtensionMethods
+    internal static class CommonExtensionMethods
     {
-        const char ValuePairDelimiter = ';';
-        const char ValuePairSeparator = '=';
+        private const char ValuePairDelimiter = ';';
+        private const char ValuePairSeparator = '=';
 
         public static string EnsureStartsWith(this string value, char prefix)
         {
@@ -148,7 +148,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                             addressBytes[addressBytes.Length - 4] = 0xFF;
                             maskedRemoteIpAddress = new IPAddress(addressBytes).ToString();
                         }
-
                     }
 
                     return maskedRemoteIpAddress;
@@ -200,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 }
                 nextSearchStartIndex = entryIndex + 1;
             }
-            
+
             return entryIndex;
         }
     }

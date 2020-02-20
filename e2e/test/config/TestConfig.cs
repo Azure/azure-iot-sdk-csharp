@@ -11,10 +11,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public static class TestConfig
     {
-        private static readonly ConsoleEventListener _listener = new ConsoleEventListener(new string[]
+        private static readonly ConsoleEventListener _listener = new ConsoleEventListener(
+            new string[]
             {
-            "DotNetty-Default",
-            "Microsoft-Azure-",
+#if !NETCOREAPP1_1 // avoid ETW logging bugs from a library we can't control
+                "DotNetty-Default",
+#endif
+                "Microsoft-Azure-",
             });
 
         public static ConsoleEventListener StartEventListener()

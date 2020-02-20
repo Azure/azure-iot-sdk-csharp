@@ -1,11 +1,12 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿using System;
+using System.Diagnostics.Tracing;
+using System.Security.Authentication;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics.Tracing;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -30,112 +31,49 @@ namespace Microsoft.Azure.Devices.E2ETests
             _hostName = TestDevice.GetHostName(Configuration.IoTHub.ConnectionString);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("LongRunning")]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp()
+        [DataRow(Client.TransportType.Mqtt)]
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException(Client.TransportType transport)
         {
-            await X509InvalidDeviceIdOpenAsyncTest(Client.TransportType.Amqp).ConfigureAwait(false);
+            using (DeviceClient deviceClient = CreateDeviceClientWithUniqueInvalidId(transport))
+            {
+                try
+                {
+                    await deviceClient.OpenAsync().ConfigureAwait(false);
+                    Assert.Fail("Should throw specific exception but didn't.");
+                }
+                catch (UnauthorizedException)
+                {
+                    // For some reason, with some NET 451 and netcoreapp2.1 the service returns UnauthorizedException
+                    // TODO #1251
+                }
+                catch (DeviceNotFoundException)
+                {
+                    // This should be the real error
+                }
+
+                // Check TCP connection to verify there is no connection leak
+                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
+                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+            }
         }
 
-        [TestMethod]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp_Tcp()
+        [DataTestMethod]
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+#if !NETCOREAPP1_1
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+#endif
+        public async Task X509_Enable_CertificateRevocationCheck(Client.TransportType transport)
         {
-            await X509InvalidDeviceIdOpenAsyncTest(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp_WebSocket()
-        {
-            await X509InvalidDeviceIdOpenAsyncTest(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Mqtt()
-        {
-            await X509InvalidDeviceIdOpenAsyncTest(Client.TransportType.Mqtt).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("LongRunning")]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Mqtt_Tcp()
-        {
-            await X509InvalidDeviceIdOpenAsyncTest(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Mqtt_WebSocket()
-        {
-            await X509InvalidDeviceIdOpenAsyncTest(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Amqp()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Amqp).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Amqp_TCP()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Amqp_WebSocket()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("LongRunning")]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Mqtt).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("LongRunning")]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt_Tcp()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt_WebSocket()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_Enable_CertificateRevocationCheck_Mqtt_Tcp()
-        {
-            ITransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only);
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_Enable_CertificateRevocationCheck_Mqtt_WebSocket()
-        {
-            ITransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType.Mqtt_WebSocket_Only);
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_Enable_CertificateRevocationCheck_Amqp_Tcp()
-        {
-            ITransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType.Amqp_Tcp_Only);
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task X509_Enable_CertificateRevocationCheck_Amqp_WebSocket()
-        {
-            ITransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType.Amqp_WebSocket_Only);
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
-        }
-
-        private async Task SendMessageTest(ITransportSettings transportSetting)
-        {
+            ITransportSettings transportSetting = CreateTransportSettingWithCertificateRevocationCheck(transport);
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting }))
@@ -146,68 +84,35 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private ITransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
+        private ITransportSettings CreateTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
         {
-            return new MqttTransportSettings(transportType)
+            switch (transportType)
             {
-                CertificateRevocationCheck = true
-            };
-        }
-
-        private ITransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
-        {
-            return new AmqpTransportSettings(transportType)
-            {
-                CertificateRevocationCheck = true
-            };
-        }
-
-        private async Task X509InvalidDeviceIdOpenAsyncTest(Client.TransportType transportType)
-        {
-            var deviceClient = CreateDeviceClientWithInvalidId(transportType);
-            using (deviceClient)
-            {
-                try
-                {
-                    await deviceClient.OpenAsync().ConfigureAwait(false);
-                    Assert.Fail("Should throw UnauthorizedException but didn't.");
-                }
-                catch (UnauthorizedException)
-                {
-                    // It should always throw UnauthorizedException
-                }
-
-                // Check TCP connection to verify there is no connection leak
-                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
-                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-            }
-        }
-
-        private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType transportType)
-        {
-            var deviceClient = CreateDeviceClientWithInvalidId(transportType);
-            using (deviceClient)
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    try
+                case Client.TransportType.Amqp:
+                case Client.TransportType.Amqp_Tcp_Only:
+                case Client.TransportType.Amqp_WebSocket_Only:
+                    return new AmqpTransportSettings(transportType)
                     {
-                        await deviceClient.OpenAsync().ConfigureAwait(false);
-                        Assert.Fail("Should throw UnauthorizedException but didn't.");
-                    }
-                    catch (UnauthorizedException)
-                    {
-                        // It should always throw UnauthorizedException
-                    }
-                }
+                        CertificateRevocationCheck = true
+                    };
 
-                // Check TCP connection to verify there is no connection leak
-                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
-                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                case Client.TransportType.Mqtt:
+                case Client.TransportType.Mqtt_Tcp_Only:
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                    return new MqttTransportSettings(transportType)
+                    {
+                        CertificateRevocationCheck = true
+                    };
+
+                default:
+                    Assert.Fail($"Unexpected transport type {transportType}.");
+                    break;
             }
+
+            return null;
         }
 
-        private DeviceClient CreateDeviceClientWithInvalidId(Client.TransportType transportType)
+        private DeviceClient CreateDeviceClientWithUniqueInvalidId(Client.TransportType transportType)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             var auth = new DeviceAuthenticationWithX509Certificate(deviceName, Configuration.IoTHub.GetCertificateWithPrivateKey());

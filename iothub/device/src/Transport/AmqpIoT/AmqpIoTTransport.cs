@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             // Requires hardcoding in NET451 otherwise yields error:
             //    System.ArgumentException: The specified value is not valid in the 'SslProtocolType' enumeration.
             if (amqpTransportSettings.GetTransportType() == TransportType.Amqp_Tcp_Only
-            && protocols == SslProtocols.None)
+                && protocols == SslProtocols.None)
             {
                 protocols = TlsVersions.Instance.MinimumTlsVersions;
             }

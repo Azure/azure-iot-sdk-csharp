@@ -1,16 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.EventHubs;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.EventHubs;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -25,9 +19,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 EntityPath = Configuration.IoTHub.EventHubCompatibleName
             };
 
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(builder.ToString());
-            var eventRuntimeInformation = eventHubClient.GetRuntimeInformationAsync().Result;
-            var eventHubPartitionsCount = eventRuntimeInformation.PartitionCount;
+            var eventHubClient = EventHubClient.CreateFromConnectionString(builder.ToString());
+            EventHubRuntimeInformation eventRuntimeInformation = eventHubClient.GetRuntimeInformationAsync().Result;
+            int eventHubPartitionsCount = eventRuntimeInformation.PartitionCount;
             string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
 
             foreach (string partitionId in eventRuntimeInformation.PartitionIds)
@@ -51,7 +45,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: Cannot create receiver for partitionID {partitionId}: {ex}");
                 }
             }
-
         }
     }
 }

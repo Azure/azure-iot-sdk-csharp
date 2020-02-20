@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec)
         {
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using (var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 Func<DeviceClient, TestDevice, Task> init = async (deviceClient, testDevice) =>
                 {
@@ -206,9 +206,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
                 {
-                    (Message message, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2DTestMessage();
-                    await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
-                    await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                    var d2cMessage = MessageReceiveE2ETests.ComposeC2DTestMessage();
+                    await serviceClient.SendAsync(testDevice.Id, d2cMessage.CloudMessage).ConfigureAwait(false);
+                    await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, d2cMessage.Payload, d2cMessage.P1Value).ConfigureAwait(false);
                 };
 
                 Func<Task> cleanupOperation = () =>
@@ -216,17 +216,19 @@ namespace Microsoft.Azure.Devices.E2ETests
                     return serviceClient.CloseAsync();
                 };
 
-                await FaultInjection.TestErrorInjectionAsync(
-                    DevicePrefix,
-                    type,
-                    transport,
-                    faultType,
-                    reason,
-                    delayInSec,
-                    FaultInjection.DefaultDurationInSec,
-                    init,
-                    testOperation,
-                    cleanupOperation).ConfigureAwait(false);
+                await FaultInjection
+                    .TestErrorInjectionAsync(
+                        DevicePrefix,
+                        type,
+                        transport,
+                        faultType,
+                        reason,
+                        delayInSec,
+                        FaultInjection.DefaultDurationInSec,
+                        init,
+                        testOperation,
+                        cleanupOperation)
+                    .ConfigureAwait(false);
             }
         }
 

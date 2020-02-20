@@ -1,20 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    using TransportType = Microsoft.Azure.Devices.TransportType;
-
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
@@ -29,16 +26,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static string ConnectionString = Configuration.IoTHub.ConnectionString;
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private readonly ConsoleEventListener _listener;
-        
+
         public IoTHubServiceProxyE2ETests()
         {
             _listener = TestConfig.StartEventListener();
         }
 
+#if !NETCOREAPP1_1
+
         [TestMethod]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
         {
-            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings();
+            var transportSettings = new ServiceClientTransportSettings();
             transportSettings.AmqpProxy = new WebProxy(ProxyServerAddress);
             transportSettings.HttpProxy = new WebProxy(ProxyServerAddress);
 
@@ -48,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task RegistryManager_AddAndRemoveDevice_WithProxy()
         {
-            HttpTransportSettings httpTransportSettings = new HttpTransportSettings();
+            var httpTransportSettings = new HttpTransportSettings();
             httpTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
 
             await RegistryManager_AddDevice(httpTransportSettings).ConfigureAwait(false);
@@ -57,20 +56,22 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
-            HttpTransportSettings httpTransportSettings = new HttpTransportSettings();
+            var httpTransportSettings = new HttpTransportSettings();
             httpTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
 
             await JobClient_ScheduleAndRunTwinJob(httpTransportSettings).ConfigureAwait(false);
         }
 
+#endif
+
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(ConnectionString, TransportType.Amqp, transportSettings))
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
+            using (var serviceClient = ServiceClient.CreateFromConnectionString(ConnectionString, TransportType.Amqp, transportSettings))
             {
-                (Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
-                await serviceClient.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
+                TestMessage d2cMessage = ComposeC2DTestMessage();
+                await serviceClient.SendAsync(testDevice.Id, d2cMessage.CloudMessage).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
@@ -81,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = DevicePrefix + Guid.NewGuid();
 
-            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(ConnectionString, httpTransportSettings))
+            using (var registryManager = RegistryManager.CreateFromConnectionString(ConnectionString, httpTransportSettings))
             {
                 await registryManager.AddDeviceAsync(new Device(deviceName)).ConfigureAwait(false);
                 await registryManager.RemoveDeviceAsync(deviceName).ConfigureAwait(false);
@@ -93,31 +94,38 @@ namespace Microsoft.Azure.Devices.E2ETests
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string query = $"DeviceId IN ['{JobDeviceId}']";
 
-            Twin twin = new Twin(JobDeviceId);
-            twin.Tags = new TwinCollection();
+            var twin = new Twin(JobDeviceId)
+            {
+                Tags = new TwinCollection()
+            };
             twin.Tags[JobTestTagName] = JobDeviceId;
 
-            using (JobClient jobClient = JobClient.CreateFromConnectionString(ConnectionString, httpTransportSettings))
+            using (var jobClient = JobClient.CreateFromConnectionString(ConnectionString, httpTransportSettings))
             {
                 JobResponse createJobResponse = await jobClient.ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
                 JobResponse jobResponse = await jobClient.GetJobAsync(jobId).ConfigureAwait(false);
             }
         }
 
-        private (Message message, string messageId, string payload, string p1Value) ComposeD2CTestMessage()
+        private TestMessage ComposeC2DTestMessage()
         {
             var messageId = Guid.NewGuid().ToString();
             var payload = Guid.NewGuid().ToString();
             var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
-                Properties = { ["property1"] = p1Value }
+                Properties = { ["property1"] = p1Value },
             };
 
-            return (message, messageId, payload, p1Value);
+            return new TestMessage
+            {
+                CloudMessage = message,
+                Payload = payload,
+                P1Value = p1Value,
+            };
         }
 
         public void Dispose()

@@ -91,6 +91,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
+#if !NETCOREAPP1_1 // System.NotImplementedException: web sockets are not yet supported for UWP
+
         [TestMethod]
         public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_Amqp()
         {
@@ -100,6 +102,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
+
+#endif
 
         [TestMethod]
         public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
@@ -132,9 +136,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Send C2D Message
                 _log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
-                (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2DTestMessage();
-                messagesSent.Add(testDevice.Id, new List<string> { payload, p1Value });
-                var sendC2DMessage = serviceClient.SendAsync(testDevice.Id, msg);
+                var d2cMessage = MessageReceiveE2ETests.ComposeC2DTestMessage();
+                messagesSent.Add(testDevice.Id, new List<string> { d2cMessage.Payload, d2cMessage.P1Value });
+                var sendC2DMessage = serviceClient.SendAsync(testDevice.Id, d2cMessage.CloudMessage);
                 initOperations.Add(sendC2DMessage);
 
                 // Set method handler
@@ -207,16 +211,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                 twinPropertyMap.Clear();
             };
 
-            await PoolingOverAmqp.TestPoolAmqpAsync(
-                DevicePrefix,
-                transport,
-                poolSize,
-                devicesCount,
-                initOperation,
-                testOperation,
-                cleanupOperation,
-                authScope,
-                false).ConfigureAwait(false);
+            await PoolingOverAmqp
+                .TestPoolAmqpAsync(
+                    DevicePrefix,
+                    transport,
+                    poolSize,
+                    devicesCount,
+                    initOperation,
+                    testOperation,
+                    cleanupOperation,
+                    authScope,
+                    false)
+                .ConfigureAwait(false);
         }
 
         public void Dispose()
