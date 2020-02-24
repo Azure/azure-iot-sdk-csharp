@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.0.0-preview.8" />
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.18.1" />
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -27,6 +26,7 @@
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
     <ProjectReference Include="$(RootDir)\digitaltwin\device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj" />
     <ProjectReference Include="$(RootDir)\digitaltwin\service\src\Microsoft.Azure.Devices.DigitalTwin.Service.csproj" />
+    <ProjectReference Include="$(RootDir)\iothub\service\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
