@@ -1,237 +1,242 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
-
 resources:
-- repo: self
-  clean: true
-phases:
+  - repo: self
+    clean: true
+jobs:
+  ### Linux build ###
+  - job: LINUX
+    displayName: Linux
+    strategy:
+      # Change maxParallel to 1 make builds run in serial rather than in parallel
+      maxParallel: 3
+      matrix:
+        .Net Core 2.1:
+          FRAMEWORK: netcoreapp2.1
+        .Net Core 1.1:
+          FRAMEWORK: netcoreapp1.1
 
-### Linux build ###
-- phase: LINUX
-  displayName: Linux
+    condition: succeeded()
+    pool:
+      name: Hosted Ubuntu 1604
+      timeoutInMinutes: 180
+    steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'specific'
+          project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
+          pipeline: '278'
+          buildVersionToDownload: 'latest'
+          downloadType: 'single'
+          downloadPath: '$(System.ArtifactsDirectory)'
+          artifactName: 'nuget'
+          
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: '$(System.ArtifactsDirectory)'
+          Contents: '**'
+          TargetFolder: '$(Build.SourcesDirectory)/bin/pkg'
+          OverWrite: true
 
-  condition: succeeded()
-  queue:
-    name: Hosted Ubuntu 1604
-    timeoutInMinutes: 180
+      - task: Docker@1
+        displayName: "Start TPM Simulator"
+        inputs:
+          containerregistrytype: "Container Registry"
+          command: "Run an image"
+          imageName: aziotbld/testtpm
+          containerName: "testtpm-instance"
+          ports: |
+            127.0.0.1:2321:2321
+            127.0.0.1:2322:2322
+          restartPolicy: unlessStopped
 
-  steps:
+      - task: Docker@1
+        displayName: 'Start Test Proxy'
+        inputs:
+          containerregistrytype: 'Container Registry'
+          command: 'Run an image'
+          imageName: aziotbld/testproxy
+          containerName: 'testproxy-instance'
+          ports: '127.0.0.1:8888:8888'
+          restartPolicy: unlessStopped
 
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'specific'
-      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-      pipeline: '278'
-      buildVersionToDownload: 'latest'
-      downloadType: 'single'
-      downloadPath: '$(System.ArtifactsDirectory)'
-      artifactName: 'nuget'
-      
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(System.ArtifactsDirectory)'
-      Contents: '**'
-      TargetFolder: '$(Build.SourcesDirectory)/bin/pkg'
-      OverWrite: true
+      - task: UseDotNet@2
+        displayName: "Install .NET Core App 1.1"
+        inputs:
+            # See https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+            packageType: "sdk"
+            version: "1.1.x"
+            installationPath: $(Agent.ToolsDirectory)/dotnet
 
-  - task: Docker@1
-    displayName: 'Start TPM Simulator'
-    inputs:
-      containerregistrytype: 'Container Registry'
-      command: 'Run an image'
-      imageName: aziotbld/testtpm
-      containerName: 'testtpm-instance'
-      ports: |  
-       127.0.0.1:2321:2321
-       127.0.0.1:2322:2322
-      restartPolicy: unlessStopped
+      - task: UseDotNet@2
+        displayName: "Install .NET Core App 2.1"
+        inputs:
+            packageType: "sdk"
+            version: "2.1.x"
+            installationPath: $(Agent.ToolsDirectory)/dotnet
 
-  - task: Docker@1
-    displayName: 'Start Test Proxy'
-    inputs:
-      containerregistrytype: 'Container Registry'
-      command: 'Run an image'
-      imageName: aziotbld/testproxy
-      containerName: 'testproxy-instance'
-      ports: '127.0.0.1:8888:8888'
-      restartPolicy: unlessStopped
+      - powershell: ./vsts/releaseTest.ps1
+        displayName: Test release nugets
+        env:
+          IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
+          IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+          IOTHUB_EVENTHUB_CONN_STRING_CSHARP: $(IOTHUB-EVENTHUB-CONN-STRING-CSHARP)
+          IOTHUB_EVENTHUB_COMPATIBLE_NAME: $(IOTHUB-EVENTHUB-COMPATIBLE-NAME)
+          IOTHUB_EVENTHUB_CONSUMER_GROUP: $(IOTHUB-EVENTHUB-CONSUMER-GROUP)
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
+          DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
+          DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
+          DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
+          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
+          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
+          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+          IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+          LA_AAD_TENANT: $(LA-AAD-TENANT)
+          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          FRAMEWORK: $(FRAMEWORK)
 
-  - script: |  
-       # List active docker containers
-       docker ps -a
-       
-       # Start build
-       pwsh -NoProfile -command ".\build.ps1 -configuration Release -build -e2etests" $@ "; exit \$LASTEXITCODE"
-    displayName: build
-    env:
-      IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
-      IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-      IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
-      IOTHUB_EVENTHUB_CONN_STRING_CSHARP: $(IOTHUB-EVENTHUB-CONN-STRING-CSHARP)
-      IOTHUB_EVENTHUB_COMPATIBLE_NAME: $(IOTHUB-EVENTHUB-COMPATIBLE-NAME)
-      IOTHUB_EVENTHUB_CONSUMER_GROUP: $(IOTHUB-EVENTHUB-CONSUMER-GROUP)
-      DPS_IDSCOPE: $(DPS-IDSCOPE)
-      DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-      DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
-      DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
-      DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-      DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
-      DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
-      DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
-      PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
-      IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
-      IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
-      DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
-      PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-      FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-      CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
-      IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
-      LA_AAD_TENANT: $(LA-AAD-TENANT)
-      LA_AAD_APP_ID: $(LA-AAD-APP-ID)
-      LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
-      LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+      - task: CopyFiles@2
+        displayName: 'Copy files to the artifacts folder'
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)'
+          Contents: '**/*.trx'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        condition: always()
 
-  - task: CopyFiles@2
-    displayName: 'Copy files to the artifacts folder'
-    inputs:
-      SourceFolder: '$(Build.SourcesDirectory)'
-      Contents: '**/*.trx'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: always()
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: testresults_linux'
+        inputs:
+          ArtifactName: testresults_linux_$(FRAMEWORK)
+        condition: always()
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: testresults_linux'
-    inputs:
-      ArtifactName: testresults_linux
-    condition: always()
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results **/*.trx'
+        inputs:
+          testRunner: VSTest
+          testRunTitle: 'Linux Tests $(FRAMEWORK)'
+          testResultsFiles: '**/*.trx'
+        condition: always()
 
-  - task: PublishTestResults@2
-    displayName: 'Publish Test Results **/*.trx'
-    inputs:
-      testRunner: VSTest
-      testRunTitle: 'Linux Tests'
-      testResultsFiles: '**/*.trx'
-    condition: always()
+  ### Windows build ###
+  - job: WINDOWS
+    displayName: Windows
+    strategy:
+      # Change maxParallel to 1 make builds run in serial rather than in parallel
+      maxParallel: 3
+      matrix:
+        .Net Core 2.1:
+          FRAMEWORK: netcoreapp2.1
+        .Net Core 1.1:
+          FRAMEWORK: netcoreapp1.1
+        .Net Framework 4.5.1:
+          FRAMEWORK: net451
 
-### Windows build ###
+    condition: succeeded()
+    pool:
+      name: Hosted VS2017
+      timeoutInMinutes: 180
+    steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'specific'
+          project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdk
+          pipeline: '278' # csharp-release-build
+          buildVersionToDownload: 'latest'
+          downloadType: 'single'
+          downloadPath: '$(System.ArtifactsDirectory)'
+          artifactName: 'nuget'
 
-- phase: WINDOWS
-  displayName: Windows
-# Uncomment to serialize builds:
-#  dependsOn: LINUX
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: '$(System.ArtifactsDirectory)'
+          Contents: '**'
+          TargetFolder: '$(Build.SourcesDirectory)/bin/pkg'
+          OverWrite: true
 
-  condition: succeeded()
-  queue:
-    name: Hosted VS2017
-    timeoutInMinutes: 180
-  steps:
+      - script: |  
+          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+          sn -Vr *,31bf3856ad364e35
+            
+        displayName: 'Disable strong name validation'
 
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'specific'
-      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdk
-      pipeline: '278' # csharp-release-build
-      buildVersionToDownload: 'latest'
-      downloadType: 'single'
-      downloadPath: '$(System.ArtifactsDirectory)'
-      artifactName: 'nuget'
+      - script: |  
+          choco install -y squid
+            
+        displayName: 'Install Squid'
 
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(System.ArtifactsDirectory)'
-      Contents: '**'
-      TargetFolder: '$(Build.SourcesDirectory)/bin/pkg'
-      OverWrite: true
+      - powershell: ./vsts/start_tpm_windows.ps1
+        displayName: "Start TPM Simulator"
 
-  - script: |  
-       call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-       sn -Vr *,31bf3856ad364e35
-        
-    displayName: 'Disable strong name validation'
+      - powershell: ./vsts/releaseTest.ps1
+        displayName: Test release nugets
+        env:
+          IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
+          IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+          IOTHUB_EVENTHUB_CONN_STRING_CSHARP: $(IOTHUB-EVENTHUB-CONN-STRING-CSHARP)
+          IOTHUB_EVENTHUB_COMPATIBLE_NAME: $(IOTHUB-EVENTHUB-COMPATIBLE-NAME)
+          IOTHUB_EVENTHUB_CONSUMER_GROUP: $(IOTHUB-EVENTHUB-CONSUMER-GROUP)
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
+          DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
+          DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
+          DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
+          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
+          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
+          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+          IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
+          LA_AAD_TENANT: $(LA-AAD-TENANT)
+          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          FRAMEWORK: $(FRAMEWORK)
 
-  - script: |  
-       choco install -y squid
-        
-    displayName: 'Install Squid'
+      - task: CopyFiles@2
+        displayName: 'Copy TRX files to the artifacts folder'
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)'
+          Contents: '**/*.trx'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        condition: always()
 
-  - script: |  
-       rem List active docker containers
-       docker ps -a
+      - task: CopyFiles@2
+        displayName: 'Copy ETL files to the artifacts folder'
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)'
+          Contents: '**/*.etl'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-       echo "start tmp sim"
+        condition: always()
 
-       start /D .\vsts\TpmSimulator Simulator.exe
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: testresults'
+        inputs:
+          ArtifactName: testresults_windows
+        condition: always()
 
-       build.cmd -configuration Release -build -e2etests
-        
-    displayName: build
-    env:
-      IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
-      IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-      IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
-      IOTHUB_EVENTHUB_CONN_STRING_CSHARP: $(IOTHUB-EVENTHUB-CONN-STRING-CSHARP)
-      IOTHUB_EVENTHUB_COMPATIBLE_NAME: $(IOTHUB-EVENTHUB-COMPATIBLE-NAME)
-      IOTHUB_EVENTHUB_CONSUMER_GROUP: $(IOTHUB-EVENTHUB-CONSUMER-GROUP)
-      DPS_IDSCOPE: $(DPS-IDSCOPE)
-      DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-      DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
-      DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
-      DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-      DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
-      DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
-      DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
-      PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
-      IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
-      IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
-      DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
-      PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-      FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-      CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
-      IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
-      LA_AAD_TENANT: $(LA-AAD-TENANT)
-      LA_AAD_APP_ID: $(LA-AAD-APP-ID)
-      LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
-      LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-
-  - task: CopyFiles@2
-    displayName: 'Copy TRX files to the artifacts folder'
-    inputs:
-      SourceFolder: '$(Build.SourcesDirectory)'
-
-      Contents: '**/*.trx'
-
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-    condition: always()
-
-  - task: CopyFiles@2
-    displayName: 'Copy ETL files to the artifacts folder'
-    inputs:
-      SourceFolder: '$(Build.SourcesDirectory)'
-
-      Contents: '**/*.etl'
-
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-    condition: always()
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: testresults'
-    inputs:
-      ArtifactName: testresults_windows
-
-    condition: always()
-
-  - task: PublishTestResults@2
-    displayName: 'Publish Test Results **/*.trx'
-    inputs:
-      testRunner: VSTest
-
-      testResultsFiles: '**/*.trx'
-
-      testRunTitle: 'Windows Tests'
-
-      platform: Windows
-
-      configuration: 'Debug UT + Release E2E'
-
-    condition: always()
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results **/*.trx'
+        inputs:
+          testRunner: VSTest
+          testResultsFiles: '**/*.trx'
+          testRunTitle: 'Windows Tests $(FRAMEWORK)'
+          platform: Windows
+          configuration: 'Debug UT + Release E2E'
+        condition: always()

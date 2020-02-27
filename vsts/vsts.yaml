@@ -148,8 +148,6 @@ jobs:
 
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
-        env:
-          COMMIT_FROM: $(COMMIT_FROM)
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
