@@ -42,11 +42,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             JobStatus.Unknown,
         };
 
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("LongRunning")]
         [Timeout(120000)]
-        public async Task RegistryManager_ImportDevices()
+        [DataRow(StorageAuthenticationType.KeyBased)]
+        [DataRow(StorageAuthenticationType.IdentityBased)]
+        public async Task RegistryManager_ImportDevices(StorageAuthenticationType storageAuthenticationType)
         {
+            // Remove after removal of environment variable
+            if (storageAuthenticationType == StorageAuthenticationType.IdentityBased
+                && Environment.GetEnvironmentVariable("EnableStorageIdentity") != "1")
+            {
+                return;
+            }
+
+            // arrange
+
             StorageContainer storageContainer = null;
             string deviceId = $"{nameof(RegistryManager_ImportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
             var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
@@ -55,13 +66,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                // arrange
-
                 string containerName = StorageContainer.BuildContainerName(nameof(RegistryManager_ImportDevices));
                 storageContainer = await StorageContainer
                     .GetInstanceAsync(containerName)
                     .ConfigureAwait(false);
                 _log.WriteLine($"Using container {storageContainer.Uri}");
+
+                Uri containerUri = storageAuthenticationType == StorageAuthenticationType.KeyBased
+                    ? storageContainer.SasUri
+                    : storageContainer.Uri;
 
                 Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(
                     new List<ExportImportDevice>
@@ -73,22 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             },
                             ImportMode.Create),
                     });
-
-                BlobClient blobClient = storageContainer.BlobContainerClient.GetBlobClient(ImportFileNameDefault);
-                Response<BlobContentInfo> uploadBlobResponse = await blobClient.UploadAsync(devicesFile).ConfigureAwait(false);
-
-                // wait for copy completion
-                bool foundBlob = false;
-                for (int i = 0; i < MaxIterationWait; ++i)
-                {
-                    await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                    if (await blobClient.ExistsAsync().ConfigureAwait(false))
-                    {
-                        foundBlob = true;
-                        break;
-                    }
-                }
-                foundBlob.Should().BeTrue($"Failed to find {ImportFileNameDefault} in storage container, required for test.");
+                await UploadFileAndConfirmAsync(storageContainer, devicesFile).ConfigureAwait(false);
 
                 // act
 
@@ -98,7 +96,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     try
                     {
                         importJobResponse = await registryManager
-                            .ImportDevicesAsync(storageContainer.SasUri.ToString(), storageContainer.SasUri.ToString())
+                            .ImportDevicesAsync(
+                                JobProperties.CreateForImportJob(
+                                    containerUri.ToString(),
+                                    containerUri.ToString(),
+                                    null,
+                                    storageAuthenticationType))
                             .ConfigureAwait(false);
                         break;
                     }
@@ -112,10 +115,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 // wait for job to complete
-                while (s_incompleteJobs.Contains(importJobResponse.Status))
+                for (int i = 0; i < MaxIterationWait; ++i)
                 {
                     await Task.Delay(1000).ConfigureAwait(false);
                     importJobResponse = await registryManager.GetJobAsync(importJobResponse.JobId).ConfigureAwait(false);
+                    _log.WriteLine($"Job {importJobResponse.JobId} is {importJobResponse.Status} with progress {importJobResponse.Progress}%");
+                    if (!s_incompleteJobs.Contains(importJobResponse.Status))
+                    {
+                        break;
+                    }
                 }
 
                 // assert
@@ -123,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 importJobResponse.Status.Should().Be(JobStatus.Completed, "Otherwise import failed");
                 importJobResponse.FailureReason.Should().BeNullOrEmpty("Otherwise import failed");
 
-                // should not throw due to 404, but device may not appear immediately in registry
+                // should not throw due to 404, but device may not immediately appear in registry
                 Device device = null;
                 for (int i = 0; i < MaxIterationWait; ++i)
                 {
@@ -153,6 +161,25 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 catch { }
             }
+        }
+
+        private static async Task UploadFileAndConfirmAsync(StorageContainer storageContainer, Stream devicesFile)
+        {
+            BlobClient blobClient = storageContainer.BlobContainerClient.GetBlobClient(ImportFileNameDefault);
+            _ = await blobClient.UploadAsync(devicesFile).ConfigureAwait(false);
+
+            // wait for blob to be written
+            bool foundBlob = false;
+            for (int i = 0; i < MaxIterationWait; ++i)
+            {
+                await Task.Delay(s_waitDuration).ConfigureAwait(false);
+                if (await blobClient.ExistsAsync().ConfigureAwait(false))
+                {
+                    foundBlob = true;
+                    break;
+                }
+            }
+            foundBlob.Should().BeTrue($"Failed to find {ImportFileNameDefault} in storage container, required for test.");
         }
     }
 }
