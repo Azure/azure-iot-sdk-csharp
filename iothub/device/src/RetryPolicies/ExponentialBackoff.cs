@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Returns true if, based on the parameters the operation should be retried.
+        /// Returns true if, based on the parameters, the operation should be retried.
         /// </summary>
         /// <param name="currentRetryCount">How many times the operation has been retried.</param>
         /// <param name="lastException">Operation exception.</param>
