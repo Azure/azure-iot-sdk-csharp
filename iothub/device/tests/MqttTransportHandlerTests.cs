@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new MqttTransportHandler(
                 new PipelineContext(),
                 IotHubConnectionStringExtensions.Parse(DummyConnectionString),
-                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
+                new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only));
         }
 
         private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
@@ -796,8 +796,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await transport.EnableStreamsAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            await channel.Received().WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(deviceStreamingPostTopicFilter, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
-            await channel.Received().WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(deviceStreamingResponseTopicFilter, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+            await channel.Received().WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(deviceStreamingPostTopicFilter, StringComparison.OrdinalIgnoreCase))).ConfigureAwait(false);
+            await channel.Received().WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(deviceStreamingResponseTopicFilter, StringComparison.OrdinalIgnoreCase))).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -813,8 +813,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await transport.DisableStreamsAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            await channel.Received().WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(deviceStreamingPostTopicFilter, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
-            await channel.Received().WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(deviceStreamingResponseTopicFilter, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+            await channel.Received().WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(deviceStreamingPostTopicFilter, StringComparison.OrdinalIgnoreCase))).ConfigureAwait(false);
+            await channel.Received().WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(deviceStreamingResponseTopicFilter, StringComparison.OrdinalIgnoreCase))).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -834,7 +834,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await transport.AcceptDeviceStreamRequestAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            await channel.Received().WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.Equals(responseTopic, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+            await channel.Received().WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.Equals(responseTopic, StringComparison.OrdinalIgnoreCase))).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -854,7 +854,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await transport.RejectDeviceStreamRequestAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            await channel.Received().WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.Equals(responseTopic, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+            await channel.Received().WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.Equals(responseTopic, StringComparison.OrdinalIgnoreCase))).ConfigureAwait(false);
         }
 
         [TestMethod]

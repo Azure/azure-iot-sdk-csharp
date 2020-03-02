@@ -10,6 +10,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 3
       matrix:
+        .Net Core 2.2:
+          FRAMEWORK: netcoreapp2.2
         .Net Core 2.1:
           FRAMEWORK: netcoreapp2.1
         .Net Core 1.1:
@@ -43,10 +45,10 @@ jobs:
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
-        displayName: "Install .NET Core App 2.1"
+        displayName: "Install .NET Core App 2.2"
         inputs:
             packageType: "sdk"
-            version: "2.1.x"
+            version: "2.2.x"
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: Docker@1
@@ -121,8 +123,10 @@ jobs:
     displayName: Windows
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 3
+      maxParallel: 4
       matrix:
+        .Net Core 2.2:
+          FRAMEWORK: netcoreapp2.2
         .Net Core 2.1:
           FRAMEWORK: netcoreapp2.1
         .Net Core 1.1:

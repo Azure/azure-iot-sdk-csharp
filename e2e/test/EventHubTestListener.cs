@@ -72,6 +72,36 @@ namespace Microsoft.Azure.Devices.E2ETests
             return isReceived;
         }
 
+        public static bool VerifyIfMessageIsReceived(string deviceId, string payload, TimeSpan? maxWaitTime = null)
+        {
+            if (!maxWaitTime.HasValue)
+            {
+                maxWaitTime = MaximumWaitTime;
+            }
+
+            s_log.WriteLine($"Expected payload: deviceId={deviceId}; payload={payload};");
+
+            bool isReceived = false;
+
+            var sw = new Stopwatch();
+            sw.Start();
+
+            while (!isReceived && sw.Elapsed < maxWaitTime)
+            {
+                events.TryRemove(payload, out EventData eventData);
+                if (eventData == null)
+                {
+                    continue;
+                }
+
+                isReceived = VerifyTestMessage(eventData, deviceId);
+            }
+
+            sw.Stop();
+
+            return isReceived;
+        }
+
         public static bool VerifyIfMessageWithSubPayloadIsReceived(string deviceId, string subPayload, TimeSpan? maxWaitTime = null)
         {
             if (!maxWaitTime.HasValue)
@@ -163,6 +193,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsTrue(VerifyKeyValue("property2", null, eventData.Properties));
 
             return true;
+        }
+
+        private static bool VerifyTestMessage(EventData eventData, string deviceName)
+        {
+#if NET451
+            var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
+#else
+            var connectionDeviceId = eventData.Properties["iothub-connection-device-id"].ToString();
+#endif
+            return deviceName.Equals(connectionDeviceId, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool VerifyKeyValue(string checkForKey, string checkForValue, IDictionary<string, object> properties)

@@ -8,13 +8,13 @@ using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
+namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.Meta
 {
-    class TestDigitalTwinDevice : IDisposable
+    internal class TestDigitalTwinDevice : IDisposable
     {
-        RegistryManager registryManager;
+        private RegistryManager registryManager;
         public string digitalTwinId;
-        private Microsoft.Azure.Devices.Device device;
+        private Devices.Device device;
         public DeviceClient deviceClient;
 
         public TestDigitalTwinDevice(String digitalTwinIdPrefix, Microsoft.Azure.Devices.Client.TransportType transportType)

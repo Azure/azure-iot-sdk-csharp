@@ -36,13 +36,13 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 TestInterface testInterface = new TestInterface(interfaceInstanceName);
                 await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { new DeviceInformationInterface(), testInterface }).ConfigureAwait(false);
 
-                string expectedCapabilityModelString = "{ \"capabilityModelId\": \"" + capabilityModelId + "\"";
+                string expectedCapabilityModelString = "\"capabilityModelId\":\"" + capabilityModelId + "\"";
                 Assert.True(EventHubTestListener.VerifyIfMessageWithSubPayloadIsReceived(digitalTwinDevice.digitalTwinId, expectedCapabilityModelString, EventHubReceiveTimeout), "Event hub never received the device registration message");
 
                 Assert.True(testInterface.onRegistrationCompleteExecuted, "OnRegistrationComplete was not executed");
 
                 //verify that service client can see the newly registered interface
-                var digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+                var digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
                 string serviceClientDigitalTwin = await digitalTwinServiceClient.GetDigitalTwinAsync(digitalTwinDevice.digitalTwinId);
                 Assert.Contains(TestInterface.InterfaceId, serviceClientDigitalTwin);
             }
@@ -65,13 +65,13 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
                 await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { new DeviceInformationInterface(), testInterface, testInterface2 }).ConfigureAwait(false);
 
-                string expectedCapabilityModelString = "{ \"capabilityModelId\": \"" + capabilityModelId + "\"";
+                string expectedCapabilityModelString = "\"capabilityModelId\":\"" + capabilityModelId + "\"";
 
                 Assert.True(testInterface.onRegistrationCompleteExecuted, "OnRegistrationComplete never executed");
                 Assert.True(testInterface2.onRegistrationCompleteExecuted, "OnRegistrationComplete never executed");
 
                 //verify that service client can see the newly registered interfaces
-                var digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+                var digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
                 string serviceClientDigitalTwin = await digitalTwinServiceClient.GetDigitalTwinAsync(digitalTwinDevice.digitalTwinId);
                 Assert.Contains(TestInterface.InterfaceId, serviceClientDigitalTwin);
                 Assert.Contains(TestInterface2.InterfaceId, serviceClientDigitalTwin);
@@ -202,13 +202,13 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 TestInterface testInterface = new TestInterface(interfaceInstanceName);
                 await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { new DeviceInformationInterface(), testInterface }).ConfigureAwait(false);
 
-                string expectedCapabilityModelString = "{ \"capabilityModelId\": \"" + capabilityModelId + "\"";
+                string expectedCapabilityModelString = "\"capabilityModelId\":\"" + capabilityModelId + "\"";
                 Assert.True(EventHubTestListener.VerifyIfMessageWithSubPayloadIsReceived(digitalTwinDevice.digitalTwinId, expectedCapabilityModelString, EventHubReceiveTimeout), "Event hub never received the device registration message");
 
                 Assert.True(testInterface.onRegistrationCompleteExecuted, "Digital twin client never executed callback for on registration complete");
 
                 //verify that service client can see the newly registered interface
-                var digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+                var digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
                 string serviceClientDigitalTwin = await digitalTwinServiceClient.GetDigitalTwinAsync(digitalTwinDevice.digitalTwinId);
                 Assert.Contains(TestInterface.InterfaceId, serviceClientDigitalTwin);
             }
