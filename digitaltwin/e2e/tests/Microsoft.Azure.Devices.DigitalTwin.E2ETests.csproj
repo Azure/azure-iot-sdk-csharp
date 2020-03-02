@@ -23,4 +23,10 @@
     <ProjectReference Include="..\..\device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj" />
     <ProjectReference Include="..\..\service\src\Microsoft.Azure.Devices.DigitalTwin.Service.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\e2e\test\E2ETests.csproj" />
+    <Compile Include="..\..\..\e2e\test\netstandard20\EventHubTestListener.NetCore.cs" />
+    <Compile Include="..\..\..\e2e\test\EventHubTestListener.cs" />
+  </ItemGroup>
 </Project>

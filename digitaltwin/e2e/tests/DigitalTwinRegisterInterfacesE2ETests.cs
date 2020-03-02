@@ -3,12 +3,13 @@
 
 using Microsoft.Azure.Devices.DigitalTwin.Client;
 using Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces;
-using Microsoft.Azure.Devices.DigitalTwin.E2ETests.meta;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.Meta;
 using Microsoft.Azure.Devices.DigitalTwin.Service;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.Azure.Devices.E2ETests;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
@@ -19,13 +20,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
         private static String registerInterfacesDevicePrefix = "digitaltwine2e-registerinterfaces";
 
         //wait at most 60 seconds for the sent message to be received by the eventhub receiver
-        private static int EventHubReceiveTimeoutSeconds = 60;
-
-        public DigitalTwinRegisterInterfacesE2ETests()
-        {
-            //constructor is run before each test, but multiple calls to this method are allowed
-            EventHubListener.Instance.startListening();
-        }
+        private static TimeSpan EventHubReceiveTimeout = TimeSpan.FromSeconds(60);
 
         [Theory]
         [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
@@ -42,7 +37,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { new DeviceInformationInterface(), testInterface }).ConfigureAwait(false);
 
                 string expectedCapabilityModelString = "{ \"capabilityModelId\": \"" + capabilityModelId + "\"";
-                Assert.True(EventHubListener.Instance.messageContainingSubstringsWasReceived(EventHubReceiveTimeoutSeconds, new string[] { expectedCapabilityModelString, TestInterface.InterfaceId }), "Event hub never received the device registration message");
+                Assert.True(EventHubTestListener.VerifyIfMessageWithSubPayloadIsReceived(digitalTwinDevice.digitalTwinId, expectedCapabilityModelString, EventHubReceiveTimeout), "Event hub never received the device registration message");
 
                 Assert.True(testInterface.onRegistrationCompleteExecuted, "OnRegistrationComplete was not executed");
 
@@ -208,7 +203,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { new DeviceInformationInterface(), testInterface }).ConfigureAwait(false);
 
                 string expectedCapabilityModelString = "{ \"capabilityModelId\": \"" + capabilityModelId + "\"";
-                Assert.True(EventHubListener.Instance.messageContainingSubstringsWasReceived(EventHubReceiveTimeoutSeconds, new string[] { expectedCapabilityModelString, TestInterface.InterfaceId }), "Eventhub never received the device registration message");
+                Assert.True(EventHubTestListener.VerifyIfMessageWithSubPayloadIsReceived(digitalTwinDevice.digitalTwinId, expectedCapabilityModelString, EventHubReceiveTimeout), "Event hub never received the device registration message");
 
                 Assert.True(testInterface.onRegistrationCompleteExecuted, "Digital twin client never executed callback for on registration complete");
 

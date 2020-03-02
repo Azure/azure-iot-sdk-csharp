@@ -3,13 +3,11 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
+namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.Meta
 {
-    class Configuration
+    internal class Configuration
     {
         public static string IotHubConnectionString => GetValue("IOTHUB_CONN_STRING_CSHARP");
-
-        public static string EventHubConnectionString => GetValue("IOTHUB_EVENTHUB_CONN_STRING_CSHARP");
 
         private static string GetValue(string envName, string defaultValue = null)
         {
