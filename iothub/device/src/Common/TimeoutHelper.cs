@@ -1,18 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Diagnostics;
-    using System.Threading;
-
     [DebuggerStepThrough]
-    struct TimeoutHelper
+    internal struct TimeoutHelper
     {
-        DateTime deadline;
-        bool deadlineSet;
-        TimeSpan originalTimeout;
+        private DateTime deadline;
+        private bool deadlineSet;
+        private TimeSpan originalTimeout;
         public static readonly TimeSpan MaxWait = TimeSpan.FromMilliseconds(Int32.MaxValue);
 
         public TimeoutHelper(TimeSpan timeout) :
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void SetDeadline()
+        private void SetDeadline()
         {
             Fx.Assert(!deadlineSet, "TimeoutHelper deadline set twice.");
             this.deadline = DateTime.UtcNow + this.originalTimeout;

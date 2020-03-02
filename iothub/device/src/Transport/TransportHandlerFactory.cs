@@ -1,18 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Transport
-{
-    using System;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Azure.Devices.Client.Transport.Amqp;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client.Transport.Amqp;
+
 #if !NETMF
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+
 #endif
 
-    class TransportHandlerFactory : ITransportHandlerFactory
+namespace Microsoft.Azure.Devices.Client.Transport
+{
+    internal class TransportHandlerFactory : ITransportHandlerFactory
     {
         public IDelegatingHandler Create(IPipelineContext context)
         {
@@ -29,22 +32,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
                     return new AmqpTransportHandler(
-                        context, 
-                        connectionString, 
+                        context,
+                        connectionString,
                         transportSetting as AmqpTransportSettings,
-                        new Func<MethodRequestInternal, Task>(onMethodCallback), 
+                        new Func<MethodRequestInternal, Task>(onMethodCallback),
                         onDesiredStatePatchReceived,
                         new Func<string, Message, Task>(onReceiveCallback));
+
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
 #if !NETMF
                 case TransportType.Mqtt_Tcp_Only:
                 case TransportType.Mqtt_WebSocket_Only:
                     return new MqttTransportHandler(
-                        context, 
-                        connectionString, 
+                        context,
+                        connectionString,
                         transportSetting as MqttTransportSettings,
-                        new Func<MethodRequestInternal, Task>(onMethodCallback), 
+                        new Func<MethodRequestInternal, Task>(onMethodCallback),
                         onDesiredStatePatchReceived,
                         new Func<string, Message, Task>(onReceiveCallback));
 #endif

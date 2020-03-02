@@ -412,8 +412,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ArraySegment<byte> DeliveryTag { get; set; }
 
-#if !NETSTANDARD1_3
-
         /// <summary>
         /// Makes a clone of the current event data instance.
         /// </summary>
@@ -457,8 +455,6 @@ namespace Microsoft.Azure.Devices
 
             return message;
         }
-
-#endif
 
         /// <summary>
         /// Dispose the current event data instance
@@ -586,8 +582,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-#if !NETSTANDARD1_3
-
         private static Stream CloneStream(Stream originalStream)
         {
             if (originalStream != null)
@@ -617,8 +611,6 @@ namespace Microsoft.Azure.Devices
             }
             return null;
         }
-
-#endif
 
         private AmqpMessage PopulateAmqpMessageForSend(AmqpMessage message)
         {

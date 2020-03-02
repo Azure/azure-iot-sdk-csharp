@@ -1,22 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
+using System.Threading;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Diagnostics;
-    using System.Reflection;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using System.Runtime.CompilerServices;
-    using System.Runtime.Versioning;
-    using System.Threading;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
-    class ExceptionTrace
+    internal class ExceptionTrace
     {
-        const ushort FailFastEventLogCategory = 6;
-        readonly string eventSourceName;
+        private const ushort FailFastEventLogCategory = 6;
+        private readonly string eventSourceName;
 
         public ExceptionTrace(string eventSourceName)
         {
@@ -66,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
         // When throwing ObjectDisposedException, it is highly recommended that you use this ctor
         // [C#]
         // public ObjectDisposedException(string objectName, string message);
-        // And provide null for objectName but meaningful and relevant message for message. 
+        // And provide null for objectName but meaningful and relevant message for message.
         // It is recommended because end user really does not care or can do anything on the disposed object, commonly an internal or private object.
         public ObjectDisposedException ObjectDisposed(string message)
         {
@@ -76,8 +75,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public void TraceHandled(Exception exception, string catchLocation, EventTraceActivity activity = null)
         {
-#if NET451
-#if DEBUG
+#if NET451 && DEBUG
             Trace.WriteLine(string.Format(
                 CultureInfo.InvariantCulture,
                 "IotHub/TraceHandled ThreadID=\"{0}\" catchLocation=\"{1}\" exceptionType=\"{2}\" exception=\"{3}\"",
@@ -85,7 +83,6 @@ namespace Microsoft.Azure.Devices.Client
                 catchLocation,
                 exception.GetType(),
                 exception.ToStringSlim()));
-#endif
 #endif
             ////MessagingClientEtwProvider.Provider.HandledExceptionWithFunctionName(
             ////    activity, catchLocation, exception.ToStringSlim(), string.Empty);
@@ -101,12 +98,12 @@ namespace Microsoft.Azure.Devices.Client
 #if NET451
         [ResourceConsumption(ResourceScope.Process)]
 #endif
+
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",
             Safe = "Does not leak any resource, needed for debugging")]
         public TException TraceException<TException>(TException exception, TraceEventType level, EventTraceActivity activity = null)
             where TException : Exception
         {
-
             if (!exception.Data.Contains(this.eventSourceName))
             {
                 // Only trace if this is the first time an exception is thrown by this ExceptionTrace/EventSource.
@@ -126,8 +123,9 @@ namespace Microsoft.Azure.Devices.Client
                         ////{
                         ////    MessagingClientEtwProvider.Provider.ThrowingExceptionError(activity, GetDetailsForThrownException(exception));
                         ////}
-                         
+
                         break;
+
                     case TraceEventType.Warning:
 #if NET451
                         Trace.TraceWarning("An Exception is being thrown: {0}", GetDetailsForThrownException(exception));
@@ -139,8 +137,9 @@ namespace Microsoft.Azure.Devices.Client
                         ////{
                         ////    MessagingClientEtwProvider.Provider.ThrowingExceptionWarning(activity, GetDetailsForThrownException(exception));
                         ////}
-                       
+
                         break;
+
                     default:
 #if DEBUG
                         ////if (MessagingClientEtwProvider.Provider.IsEnabled(
@@ -212,16 +211,16 @@ namespace Microsoft.Azure.Devices.Client
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void TraceFailFast(string message)
         {
-////            EventLogger logger = null;
-////#pragma warning disable 618
-////            logger = new EventLogger(this.eventSourceName, Fx.Trace);
-////#pragma warning restore 618
-////            TraceFailFast(message, logger);
+            ////            EventLogger logger = null;
+            ////#pragma warning disable 618
+            ////            logger = new EventLogger(this.eventSourceName, Fx.Trace);
+            ////#pragma warning restore 618
+            ////            TraceFailFast(message, logger);
         }
 
         // Generate an event Log entry for failfast purposes
         // To force a Watson on a dev machine, do the following:
-        // 1. Set \HKLM\SOFTWARE\Microsoft\PCHealth\ErrorReporting ForceQueueMode = 0 
+        // 1. Set \HKLM\SOFTWARE\Microsoft\PCHealth\ErrorReporting ForceQueueMode = 0
         // 2. In the command environment, set COMPLUS_DbgJitDebugLaunchSetting=0
         ////[SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
         ////[MethodImpl(MethodImplOptions.NoInlining)]

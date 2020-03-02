@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Client.Extensions;
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using System;
-
     /// <summary>
-    /// Authentication method that uses a shared access policy key. 
+    /// Authentication method that uses a shared access policy key.
     /// </summary>
     public sealed class DeviceAuthenticationWithSharedAccessPolicyKey : IAuthenticationMethod
     {
-        string deviceId;
-        string policyName;
-        string key;
+        private string deviceId;
+        private string policyName;
+        private string key;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithSharedAccessPolicyKey"/> class.
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
             return iotHubConnectionStringBuilder;
         }
 
-        void SetDeviceId(string deviceId)
+        private void SetDeviceId(string deviceId)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client
             this.deviceId = deviceId;
         }
 
-        void SetKey(string key)
+        private void SetKey(string key)
         {
             if (key.IsNullOrWhiteSpace())
             {
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client
             this.key = key;
         }
 
-        void SetPolicyName(string policyName)
+        private void SetPolicyName(string policyName)
         {
             if (policyName.IsNullOrWhiteSpace())
             {

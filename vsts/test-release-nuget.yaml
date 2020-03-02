@@ -12,8 +12,6 @@ jobs:
       matrix:
         .Net Core 2.1:
           FRAMEWORK: netcoreapp2.1
-        .Net Core 1.1:
-          FRAMEWORK: netcoreapp1.1
 
     condition: succeeded()
     pool:
@@ -58,14 +56,6 @@ jobs:
           containerName: 'testproxy-instance'
           ports: '127.0.0.1:8888:8888'
           restartPolicy: unlessStopped
-
-      - task: UseDotNet@2
-        displayName: "Install .NET Core App 1.1"
-        inputs:
-            # See https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
-            packageType: "sdk"
-            version: "1.1.x"
-            installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
         displayName: "Install .NET Core App 2.1"
@@ -136,8 +126,8 @@ jobs:
       matrix:
         .Net Core 2.1:
           FRAMEWORK: netcoreapp2.1
-        .Net Core 1.1:
-          FRAMEWORK: netcoreapp1.1
+        .Net Framework 4.7.2:
+          FRAMEWORK: net472
         .Net Framework 4.5.1:
           FRAMEWORK: net451
 

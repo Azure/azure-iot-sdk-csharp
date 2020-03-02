@@ -1,23 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
-{
-    using System;
-    using System.Net;
+using System;
+using System.Net;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using System.Diagnostics;
 
 #if !NETMF
-    using System.Threading.Tasks;
+
+using System.Threading.Tasks;
+
 #endif
 
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Shared;
-    using System.Diagnostics;
-
+namespace Microsoft.Azure.Devices.Client
+{
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
     {
-        const string UserSeparator = "@";
-        const int DefaultSecurePort = 5671;
+        private const string UserSeparator = "@";
+        private const int DefaultSecurePort = 5671;
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
         {
@@ -35,12 +36,10 @@ namespace Microsoft.Azure.Devices.Client
             this.DeviceId = builder.DeviceId;
             this.ModuleId = builder.ModuleId;
 
-#if NETSTANDARD1_3
-            this.HttpsEndpoint = new UriBuilder("https", this.HostName).Uri;
-#elif !NETMF
-            this.HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, this.HostName).Uri;
-#elif NETMF
+#if NETMF
             this.HttpsEndpoint = new Uri("https://" + this.HostName);
+#else
+            this.HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, this.HostName).Uri;
 #endif
 
 #if !NETMF
@@ -103,11 +102,13 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
+
         public Uri AmqpEndpoint
         {
             get;
             private set;
         }
+
 #endif
 
         public string Audience

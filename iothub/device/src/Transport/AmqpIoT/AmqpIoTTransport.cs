@@ -92,24 +92,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(CreateClientWebSocketTransportAsync)}");
 
                 string additionalQueryParams = "";
-#if NETSTANDARD1_3
-                // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
-                additionalQueryParams = "?iothub-no-client-cert=true";
-#endif
                 Uri websocketUri = new Uri(WebSocketConstants.Scheme + _hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
                 // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
 #if NET451
-                            if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
-                            {
-                                var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, this._amqpTransportSettings.ClientCertificate, timeout).ConfigureAwait(false);
-                                return new LegacyClientWebSocketTransport(
-                                    websocket,
-                                    this._amqpTransportSettings.OperationTimeout,
-                                    null,
-                                    null);
-                            }
-                            else
-                            {
+                if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
+                {
+                    var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, this._amqpTransportSettings.ClientCertificate, timeout).ConfigureAwait(false);
+                    return new LegacyClientWebSocketTransport(
+                        websocket,
+                        this._amqpTransportSettings.OperationTimeout,
+                        null,
+                        null);
+                }
+                else
+                {
 #endif
                 var websocket = await CreateClientWebSocketAsync(websocketUri, timeout).ConfigureAwait(false);
                 return new ClientWebSocketTransport(
@@ -117,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     null,
                     null);
 #if NET451
-                            }
+                }
 #endif
             }
             finally

@@ -24,11 +24,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
-        DeviceMessageLockLostException(SerializationInfo info, StreamingContext context)
+        private DeviceMessageLockLostException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

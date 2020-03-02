@@ -7,11 +7,11 @@ namespace Microsoft.Azure.Devices.Common.Tracing
     using System.Diagnostics;
 
     /// <summary>
-    /// This class holds the ActivityId that would be set on the thread for ETW during the trace. 
+    /// This class holds the ActivityId that would be set on the thread for ETW during the trace.
     /// </summary>
     internal class EventTraceActivity
     {
-        static EventTraceActivity empty;
+        private static EventTraceActivity empty;
 
         public EventTraceActivity()
             : this(Guid.NewGuid())
@@ -41,10 +41,9 @@ namespace Microsoft.Azure.Devices.Common.Tracing
             get { return "E2EActivity"; }
         }
 
-        // this field is passed as reference to native code. 
+        // this field is passed as reference to native code.
         public Guid ActivityId;
 
-#if !NETSTANDARD1_3
         public static EventTraceActivity CreateFromThread()
         {
             Guid id = Trace.CorrelationManager.ActivityId;
@@ -55,6 +54,5 @@ namespace Microsoft.Azure.Devices.Common.Tracing
 
             return new EventTraceActivity(id);
         }
-#endif
     }
 }

@@ -19,11 +19,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
-        ServerErrorException(SerializationInfo info, StreamingContext context)
+        private ServerErrorException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

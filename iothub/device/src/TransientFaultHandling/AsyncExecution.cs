@@ -2,6 +2,12 @@
 //Microsoft would like to thank its contributors, a list
 //of whom are at http://aka.ms/entlib-contributors
 
+using System;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
+
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
 //obtain a copy of the License at
@@ -20,12 +26,6 @@
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
-    using System;
-    using System.Globalization;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
-
     /// <summary>
     /// Provides a wrapper for a non-generic <see cref="T:System.Threading.Tasks.Task" /> and calls into the pipeline
     /// to retry only the generic version of the <see cref="T:System.Threading.Tasks.Task" />.

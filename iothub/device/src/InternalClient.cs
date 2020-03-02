@@ -1,29 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.Transport;
+using Microsoft.Azure.Devices.Shared;
+using System.Security.Cryptography.X509Certificates;
+using System.IO;
+using Microsoft.Azure.Devices.Client.Exceptions;
 
-#if !NET451
+#if NET451
 
-    using System.Net.Http;
+using System.Net;
 
 #else
-    using System.Net;
+
+using System.Net.Http;
+
 #endif
 
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Client.Transport;
-    using Microsoft.Azure.Devices.Shared;
-    using System.Security.Cryptography.X509Certificates;
-    using System.IO;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-
+namespace Microsoft.Azure.Devices.Client
+{
     /// <summary>
     /// Delegate for desired property update callbacks.  This will be called
     /// every time we receive a PATCH from the service.
@@ -68,7 +69,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal class InternalClient : IDisposable
     {
-        private uint _operationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
         private int _diagnosticSamplingPercentage = 0;
         private ITransportSettings[] transportSettings;
         private SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
@@ -164,18 +164,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets or sets the timeout used in the operation retries.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
-        public uint OperationTimeoutInMilliseconds
-        {
-            get
-            {
-                return _operationTimeoutInMilliseconds;
-            }
-
-            set
-            {
-                _operationTimeoutInMilliseconds = value;
-            }
-        }
+        public uint OperationTimeoutInMilliseconds { get; set; } = DeviceClient.DefaultOperationTimeoutInMilliseconds;
 
         internal X509Certificate2 Certificate { get; set; }
 

@@ -15,13 +15,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             this.MaximumResultCount = maximumResultCount;
         }
 
-#if !NETSTANDARD1_3
-        DeviceInvalidResultCountException(SerializationInfo info, StreamingContext context)
+        private DeviceInvalidResultCountException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             this.MaximumResultCount = info.GetInt32("MaximumResultCount");
         }
-#endif
 
         internal int MaximumResultCount
         {
@@ -29,13 +27,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             private set;
         }
 
-#if !NETSTANDARD1_3
         /// <inheritdoc />
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
             info.AddValue("MaximumResultCount", this.MaximumResultCount);
         }
-#endif
     }
 }

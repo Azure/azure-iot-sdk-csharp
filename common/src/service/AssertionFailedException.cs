@@ -28,13 +28,9 @@ namespace Microsoft.Azure.Devices.Common
         {
         }
 
-#if !NETSTANDARD1_3
-
         protected AssertionFailedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-
-#endif
     }
 }

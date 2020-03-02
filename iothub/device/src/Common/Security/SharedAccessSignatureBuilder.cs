@@ -1,19 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Net;
+using Microsoft.Azure.Devices.Client.Extensions;
+using System.Globalization;
+using System.Text;
+
+#if !NETMF
+
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
+
+#endif
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Net;
-    using Microsoft.Azure.Devices.Client.Extensions;
-#if !NETMF
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Security.Cryptography;
-#endif
-    using System.Globalization;
-    using System.Text;
-
     public class SharedAccessSignatureBuilder
     {
         private string key;
@@ -110,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client
         private string BuildExpiresOn(TimeSpan timeToLive)
         {
 #if MF_FRAMEWORK_VERSION_V4_3
-            // .NETMF < v4.4 had a know bug with DateTime.Kind: values were always created with DateTimeKind.Local 
+            // .NETMF < v4.4 had a know bug with DateTime.Kind: values were always created with DateTimeKind.Local
             // this requires us to perform an extra step to make a DateTime to be in UTC, otherwise the expiry date will be calculated wrongly
 
             // the 'absolute' value is correct but DateTimeKind is Local (WRONG!)
@@ -128,6 +131,7 @@ namespace Microsoft.Azure.Devices.Client
             return Convert.ToString(seconds, CultureInfo.InvariantCulture);
 #endif
         }
+
 #if NETMF
         private string Sign(string requestString, string key)
         {
@@ -136,6 +140,7 @@ namespace Microsoft.Azure.Devices.Client
             return Convert.ToBase64String(hmac);
         }
 #else
+
         protected virtual string Sign(string requestString, string key)
         {
             using (var algorithm = new HMACSHA256(Convert.FromBase64String(key)))
@@ -143,6 +148,7 @@ namespace Microsoft.Azure.Devices.Client
                 return Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
             }
         }
+
 #endif
     }
 }

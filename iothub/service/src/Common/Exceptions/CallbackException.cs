@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Common
     using System.Runtime.Serialization;
 
     [Serializable]
-    class CallbackException : FatalException
+    internal class CallbackException : FatalException
     {
         public CallbackException()
         {
@@ -22,11 +22,9 @@ namespace Microsoft.Azure.Devices.Common
             Fx.Assert(!Fx.IsFatal(innerException), "CallbackException can't be used to wrap fatal exceptions.");
         }
 
-#if !NETSTANDARD1_3
         protected CallbackException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

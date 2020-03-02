@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
 {
     internal sealed class HttpClientHelper : IHttpClientHelper
     {
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
         private readonly Uri _baseAddress;
@@ -155,11 +155,11 @@ namespace Microsoft.Azure.Devices
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if NET451
+                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+#else
                         var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
-#else
-                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                         return Task.FromResult(0);
                     },
@@ -183,11 +183,11 @@ namespace Microsoft.Azure.Devices
                     new Uri(_baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if NET451
+                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+#else
                         var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
-#else
-                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                         return Task.FromResult(0);
                     },
@@ -212,11 +212,11 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, operationType);
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if NET451
+                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+#else
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
-#else
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                     return Task.FromResult(0);
                 },
@@ -242,11 +242,11 @@ namespace Microsoft.Azure.Devices
                 {
                     // TODO: skintali: Use string etag when service side changes are ready
                     InsertEtag(requestMsg, etag, operationType);
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if NET451
+                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+#else
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
-#else
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                     return Task.FromResult(0);
                 },
@@ -266,11 +266,11 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, PutOperationType.UpdateEntity);
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if NET451
+                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+#else
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
-#else
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                     return Task.FromResult(0);
                 },
@@ -292,11 +292,11 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, putOperationType);
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if NET451
+                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+#else
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
-#else
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                     return Task.FromResult(0);
                 },
@@ -314,11 +314,11 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if NET451
+            T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
+#else
             var str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
             T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
-#else
-            T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
 #endif
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;

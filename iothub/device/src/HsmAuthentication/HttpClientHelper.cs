@@ -4,8 +4,11 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+
+#if !NET451
+
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
+
 #endif
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
@@ -20,13 +23,14 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         {
             HttpClient client;
 
-            if (providerUri.Scheme.Equals(HttpScheme, StringComparison.OrdinalIgnoreCase) || providerUri.Scheme.Equals(HttpsScheme, StringComparison.OrdinalIgnoreCase))
+            if (providerUri.Scheme.Equals(HttpScheme, StringComparison.OrdinalIgnoreCase)
+                | providerUri.Scheme.Equals(HttpsScheme, StringComparison.OrdinalIgnoreCase))
             {
                 client = new HttpClient();
                 return client;
             }
 
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NET451
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
                 client = new HttpClient(new HttpUdsMessageHandler(providerUri));
@@ -39,8 +43,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
         public static string GetBaseUrl(Uri providerUri)
         {
-
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NET451
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
                 return $"{HttpScheme}://{providerUri.Segments.Last()}";

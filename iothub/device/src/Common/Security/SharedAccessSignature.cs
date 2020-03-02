@@ -1,26 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Net;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Text;
-    using System.IO;
-    using System.Security.Cryptography;
-
-    sealed class SharedAccessSignature : ISharedAccessSignatureCredential
+    internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
-        readonly string iotHubName;
-        readonly string signature;
-        readonly string audience;
-        readonly string encodedAudience;
-        readonly string expiry;
-        readonly string keyName;
+        private readonly string iotHubName;
+        private readonly string signature;
+        private readonly string audience;
+        private readonly string encodedAudience;
+        private readonly string expiry;
+        private readonly string keyName;
 
-        SharedAccessSignature(string iotHubName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
+        private SharedAccessSignature(string iotHubName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
         {
             if (string.IsNullOrWhiteSpace(iotHubName))
             {
@@ -133,12 +132,10 @@ namespace Microsoft.Azure.Devices.Client
                 bool isSharedAccessSignature = parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature);
                 return isSharedAccessSignature;
             }
-
             catch (FormatException)
             {
                 return false;
             }
-
         }
 
         public bool IsExpired()
@@ -211,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
+        private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
         {
             string[] lines = sharedAccessSignature.Split();
 

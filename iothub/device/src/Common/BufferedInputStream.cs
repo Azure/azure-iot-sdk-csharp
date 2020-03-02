@@ -1,20 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using Microsoft.Azure.Devices.Client.Common;
+using System;
+using System.IO;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using Microsoft.Azure.Devices.Client.Common;
-    using System;
-    using System.IO;
-    using System.Threading;
-
-    class BufferedInputStream : Stream
-#if !NETSTANDARD1_3
-    , ICloneable
-#endif
+    internal class BufferedInputStream : Stream, ICloneable
     {
-        BufferManagerByteArray data;
-        MemoryStream innerStream;
-        bool disposed;
+        private BufferManagerByteArray data;
+        private MemoryStream innerStream;
+        private bool disposed;
 
         public BufferedInputStream(byte[] bytes, int bufferSize, InternalBufferManager bufferManager)
         {
@@ -22,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
             this.innerStream = new MemoryStream(bytes, 0, bufferSize);
         }
 
-        BufferedInputStream(BufferManagerByteArray data, int bufferSize)
+        private BufferedInputStream(BufferManagerByteArray data, int bufferSize)
         {
             this.data = data;
             this.data.AddReference();
@@ -96,19 +93,14 @@ namespace Microsoft.Azure.Devices.Client
 
         // Note: this is the old style async model (APM) that we don't need to support. It is not supported in UWP
         // I'm leaving it in place for the code owners to review and decide. ArturL 8/14/15
-#if !NETSTANDARD1_3
-        override
-#endif
-        public IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             this.ThrowIfDisposed();
             return new CompletedAsyncResultT<int>(this.innerStream.Read(buffer, offset, count), callback, state);
         }
 
-#if !NETSTANDARD1_3
-        override
-#endif
-        public int EndRead(IAsyncResult asyncResult)
+        public override int EndRead(IAsyncResult asyncResult)
         {
             return CompletedAsyncResultT<int>.End(asyncResult);
         }
@@ -150,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void ThrowIfDisposed()
+        private void ThrowIfDisposed()
         {
             if (this.disposed)
             {
@@ -158,9 +150,9 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        sealed class BufferManagerByteArray
+        private sealed class BufferManagerByteArray
         {
-            volatile int references;
+            private volatile int references;
 
             public BufferManagerByteArray(byte[] bytes, InternalBufferManager bufferManager)
             {
@@ -175,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client
                 private set;
             }
 
-            InternalBufferManager BufferManager
+            private InternalBufferManager BufferManager
             {
                 get;
                 set;

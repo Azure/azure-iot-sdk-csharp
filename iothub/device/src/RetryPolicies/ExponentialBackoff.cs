@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-
     /// <summary>
     /// Represents a retry policy that performs a specified number of retries, using a randomized exponential back off scheme to determine the interval between retries.
     /// </summary>

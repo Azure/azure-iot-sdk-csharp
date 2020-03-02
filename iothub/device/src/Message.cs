@@ -1,19 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
-{
-    using System;
-    using System.IO;
-    using System.Threading;
-    using Microsoft.Azure.Devices.Client.Extensions;
+using System;
+using System.IO;
+using System.Threading;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 #if NETMF
     using System.Collections;
 #else
-    using Microsoft.Azure.Devices.Client.Common.Api;
-    using System.Collections.Generic;
+
+using Microsoft.Azure.Devices.Client.Common.Api;
+using System.Collections.Generic;
+
 #endif
 
+namespace Microsoft.Azure.Devices.Client
+{
     using DateTimeT = System.DateTime;
 
     /// <summary>
@@ -26,23 +29,23 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         IDisposable
     {
-        readonly object messageLock = new object();
+        private readonly object messageLock = new object();
 #if NETMF
         Stream bodyStream;
 #else
-        volatile Stream bodyStream;
+        private volatile Stream bodyStream;
 #endif
-        bool disposed;
-        bool ownsBodyStream;
+        private bool disposed;
+        private bool ownsBodyStream;
 
         private const long StreamCannotSeek = -1;
-        long originalStreamPosition = StreamCannotSeek;
+        private long originalStreamPosition = StreamCannotSeek;
 
-        int getBodyCalled;
+        private int getBodyCalled;
 #if NETMF
         int sizeInBytesCalled;
 #else
-        long sizeInBytesCalled;
+        private long sizeInBytesCalled;
 #endif
 
         /// <summary>
@@ -86,6 +89,7 @@ namespace Microsoft.Azure.Devices.Client
         public Message(byte[] byteArray)
             : this(new MemoryStream(byteArray))
 #else
+
         public Message(
             byte[] byteArray)
             : this(new MemoryStream(byteArray))
@@ -193,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Indicates whether consumption or expiration of the message should post data to the feedback queue
         /// </summary>
-        DeliveryAcknowledgement Ack
+        private DeliveryAcknowledgement Ack
         {
             get
             {
@@ -496,6 +500,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
 #if !NETMF
+
         bool IReadOnlyIndicator.IsReadOnly
         {
             get
@@ -503,6 +508,7 @@ namespace Microsoft.Azure.Devices.Client
                 return Interlocked.Read(ref this.sizeInBytesCalled) == 1;
             }
         }
+
 #endif
 
         public Stream BodyStream
@@ -514,10 +520,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
+
         /// <summary>
         /// Gets or sets the deliveryTag which is used for server side checkpointing.
         /// </summary>
         internal ArraySegment<byte> DeliveryTag { get; set; }
+
 #endif
 
         /// <summary>
@@ -598,7 +606,7 @@ namespace Microsoft.Azure.Devices.Client
         internal bool IsBodyCalled => Volatile.Read(ref this.getBodyCalled) == 1;
 #endif
 
-        void SetGetBodyCalled()
+        private void SetGetBodyCalled()
         {
             if (1 == Interlocked.Exchange(ref this.getBodyCalled, 1))
             {
@@ -618,12 +626,12 @@ namespace Microsoft.Azure.Devices.Client
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
-        void SetSizeInBytesCalled()
+        private void SetSizeInBytesCalled()
         {
             Interlocked.Exchange(ref this.sizeInBytesCalled, 1);
         }
 
-        void InitializeWithStream(Stream stream, bool ownsStream)
+        private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
@@ -636,7 +644,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        static byte[] ReadFullStream(Stream inputStream)
+        private static byte[] ReadFullStream(Stream inputStream)
         {
 #if NETMF
             inputStream.Position = 0;
@@ -661,7 +669,8 @@ namespace Microsoft.Azure.Devices.Client
             return this.SystemProperties[key];
         }
 #else
-        T GetSystemProperty<T>(string key)
+
+        private T GetSystemProperty<T>(string key)
         {
             if (this.SystemProperties.ContainsKey(key))
             {
@@ -670,6 +679,7 @@ namespace Microsoft.Azure.Devices.Client
 
             return default(T);
         }
+
 #endif
 
         internal void ThrowIfDisposed()
@@ -684,7 +694,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!this.disposed)
             {

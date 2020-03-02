@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Exceptions
-{
-    using System;
+using System;
+
 #if !NETMF
-    using System.Runtime.Serialization;
+
+using System.Runtime.Serialization;
+
 #endif
 
+namespace Microsoft.Azure.Devices.Client.Exceptions
+{
     /// <summary>
     /// The exception that is thrown when an error occurs during DeviceClient or ModuleClient operation.
     /// </summary>
@@ -152,7 +155,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             this.TrackingId = trackingId;
         }
 
-#if !NETMF && !NETSTANDARD1_3
+#if !NETMF
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubException"/> class.
         /// </summary>
@@ -179,6 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             info.AddValue(IsTransientValueSerializationStoreName, _isTransient);
             info.AddValue(TrackingIdValueSerializationStoreName, _trackingId);
         }
+
 #endif
     }
 }

@@ -1,67 +1,65 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information. 
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Collections.Specialized;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using System.IO;
-    using System.Net;
-    using System.Net.Security;
-    using System.Net.Sockets;
-    using System.Security.Authentication;
-    using System.Security.Cryptography;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Amqp.Transport;
-    using Microsoft.Azure.Devices.Common;
-
     // http://tools.ietf.org/html/rfc6455
     [SuppressMessage(FxCop.Category.Design, FxCop.Rule.TypesThatOwnDisposableFieldsShouldBeDisposable, Justification = "Uses close/abort pattern")]
-    class IotHubClientWebSocket
+    internal class IotHubClientWebSocket
     {
-        const string HttpGetHeaderFormat = "GET {0} HTTP/1.1\r\n";
-        const string HttpConnectMethod = "CONNECT";
-        const string Http10 = "HTTP/1.0";
-        const string EndOfLineSuffix = "\r\n";
-        const byte FIN = 0x80;
-        const byte RSV = 0x00;
-        const byte Mask = 0x80;
-        const byte PayloadMask = 0x7F;
-        const byte Continuation = 0x00;
-        const byte Text = 0x01;
-        const byte Binary = 0x02;
-        const byte Close = 0x08;
-        const byte Ping = 0x09;
-        const byte Pong = 0x0A;
-        const byte MediumSizeFrame = 126;
-        const byte LargeSizeFrame = 127;
+        private const string HttpGetHeaderFormat = "GET {0} HTTP/1.1\r\n";
+        private const string EndOfLineSuffix = "\r\n";
+        private const byte FIN = 0x80;
+        private const byte RSV = 0x00;
+        private const byte Mask = 0x80;
+        private const byte PayloadMask = 0x7F;
+        private const byte Continuation = 0x00;
+        private const byte Text = 0x01;
+        private const byte Binary = 0x02;
+        private const byte Close = 0x08;
+        private const byte Ping = 0x09;
+        private const byte Pong = 0x0A;
+        private const byte MediumSizeFrame = 126;
+        private const byte LargeSizeFrame = 127;
 
-        const string HostHeaderPrefix = "Host: ";
-        const string Separator = ": ";
-        const string Upgrade = "Upgrade";
-        const string Websocket = "websocket";
-        const string ConnectionHeaderName = "Connection";
-        const string FramingPrematureEOF = "More data was expected, but EOF was reached.";
-        const string ClientWebSocketNotInOpenStateDuringReceive = "IotHubClientWebSocket not in Open State during Receive.";
-        const string ClientWebSocketNotInOpenStateDuringSend = "IotHubClientWebSocket not in Open State during Send.";
-        const string ServerRejectedUpgradeRequest = "The server rejected the upgrade request.";
-        const string UpgradeProtocolNotSupported = "Protocol Type {0} was sent to a service that does not support that type of upgrade.";
-        const string SizeExceedsRemainingBufferSpace = "The specified size exceeds the remaining buffer space bytes.";
+        private const string HostHeaderPrefix = "Host: ";
+        private const string Separator = ": ";
+        private const string Upgrade = "Upgrade";
+        private const string Websocket = "websocket";
+        private const string ConnectionHeaderName = "Connection";
+        private const string FramingPrematureEOF = "More data was expected, but EOF was reached.";
+        private const string ClientWebSocketNotInOpenStateDuringReceive = "IotHubClientWebSocket not in Open State during Receive.";
+        private const string ClientWebSocketNotInOpenStateDuringSend = "IotHubClientWebSocket not in Open State during Send.";
+        private const string ServerRejectedUpgradeRequest = "The server rejected the upgrade request.";
+        private const string UpgradeProtocolNotSupported = "Protocol Type {0} was sent to a service that does not support that type of upgrade.";
+        private const string SizeExceedsRemainingBufferSpace = "The specified size exceeds the remaining buffer space bytes.";
 
-        static readonly byte[] maskingKey = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-        static readonly SHA1 sha1CryptoServiceProvider = InitCryptoServiceProvider();
+        private static readonly byte[] s_maskingKey = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+        private static readonly SHA1 s_sha1CryptoServiceProvider = InitCryptoServiceProvider();
 
-        readonly string webSocketRole;   
-        readonly string requestPath;
-        string webSocketKey;
-        string host;
+        private readonly string _webSocketRole;
+        private readonly string _requestPath;
+        private string _webSocketKey;
+        private string _host;
 
-        static class Headers
+        private static class Headers
         {
             public const string SecWebSocketAccept = "Sec-WebSocket-Accept";
             public const string SecWebSocketProtocol = "Sec-WebSocket-Protocol";
@@ -76,16 +74,16 @@ namespace Microsoft.Azure.Devices
 
         public IotHubClientWebSocket(string webSocketRole, string requestPath)
         {
-            this.State = WebSocketState.Initial;
-            this.webSocketRole = webSocketRole;
-            this.requestPath = requestPath;
+            State = WebSocketState.Initial;
+            _webSocketRole = webSocketRole;
+            _requestPath = requestPath;
         }
 
         public enum WebSocketMessageType
         {
             Binary,
             Close,
-            Text
+            Text,
         }
 
         public enum WebSocketState
@@ -95,55 +93,30 @@ namespace Microsoft.Azure.Devices
             Open,
             Closed,
             Aborted,
-            Faulted
+            Faulted,
         }
 
-        public EndPoint LocalEndpoint
-        {
-            get
-            {
-                return this.TcpClient?.Client?.LocalEndPoint;
-            }
-        }
+        public EndPoint LocalEndpoint => TcpClient?.Client?.LocalEndPoint;
 
-        public EndPoint RemoteEndpoint
-        {
-            get
-            {
-                return this.TcpClient?.Client?.RemoteEndPoint;
-            }
-        }
+        public EndPoint RemoteEndpoint => TcpClient?.Client?.RemoteEndPoint;
 
         internal WebSocketState State { get; private set; }
 
-        TcpClient TcpClient { get; set; }
+        private TcpClient TcpClient { get; set; }
 
-        Stream WebSocketStream { get; set; }
+        private Stream WebSocketStream { get; set; }
 
         public void Abort()
         {
-            if (this.State == WebSocketState.Aborted || this.State == WebSocketState.Closed || this.State == WebSocketState.Faulted)
+            if (State == WebSocketState.Aborted || State == WebSocketState.Closed || State == WebSocketState.Faulted)
             {
                 return;
             }
 
-            this.State = WebSocketState.Aborted;
+            State = WebSocketState.Aborted;
             try
             {
-#if !NETSTANDARD1_3
-                this.WebSocketStream?.Close(); // Ungraceful close
-#else
-                this.WebSocketStream?.Dispose();
-#endif
-                this.WebSocketStream = null;
-
-#if !NETSTANDARD1_3
-                this.TcpClient?.Close();
-#else
-                this.TcpClient?.Dispose();
-#endif
-
-                this.TcpClient = null;
+                CleanUp();
             }
             catch (Exception e)
             {
@@ -159,83 +132,73 @@ namespace Microsoft.Azure.Devices
 
         public async Task ConnectAsync(string host, int port, string scheme, TimeSpan timeout)
         {
-            this.host = host;
+            _host = host;
             bool succeeded = false;
             try
             {
                 // Connect without proxy
-                this.TcpClient = new TcpClient();
+                TcpClient = new TcpClient();
                 await TcpClient.ConnectAsync(host, port).ConfigureAwait(false);
 
                 if (string.Equals(WebSocketConstants.Scheme, scheme, StringComparison.OrdinalIgnoreCase))
                 {
                     // In the real world, web-socket will happen over HTTPS
-                    var sslStream = new SslStream(this.TcpClient.GetStream(), false, IotHubConnection.OnRemoteCertificateValidation);
+                    var sslStream = new SslStream(TcpClient.GetStream(), false, IotHubConnection.OnRemoteCertificateValidation);
                     var x509CertificateCollection = new X509Certificate2Collection();
-                    await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation:false).ConfigureAwait(false);
-                    this.WebSocketStream = sslStream;
+                    await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation: false).ConfigureAwait(false);
+                    WebSocketStream = sslStream;
                 }
                 else
                 {
-                    this.WebSocketStream = this.TcpClient.GetStream();
+                    WebSocketStream = TcpClient.GetStream();
                 }
 
-                var upgradeRequest = this.BuildUpgradeRequest();
+                string upgradeRequest = BuildUpgradeRequest();
                 byte[] upgradeRequestBytes = Encoding.ASCII.GetBytes(upgradeRequest);
 
-                this.TcpClient.Client.SendTimeout = GetSocketTimeoutInMilliSeconds(timeout);
+                TcpClient.Client.SendTimeout = GetSocketTimeoutInMilliSeconds(timeout);
 
                 // Send WebSocket Upgrade request
                 await WebSocketStream.WriteAsync(upgradeRequestBytes, 0, upgradeRequestBytes.Length).ConfigureAwait(false);
 
                 // receive WebSocket Upgrade response
-                var responseBuffer = new byte[8 * 1024];
+                byte[] responseBuffer = new byte[8 * 1024];
 
-                var upgradeResponse = new HttpResponse(this.TcpClient, this.WebSocketStream, responseBuffer);
+                var upgradeResponse = new HttpResponse(TcpClient, WebSocketStream, responseBuffer);
 
                 await upgradeResponse.ReadAsync(timeout).ConfigureAwait(false);
 
                 if (upgradeResponse.StatusCode != HttpStatusCode.SwitchingProtocols)
                 {
                     // the HTTP response code was not 101
-                    if (this.TcpClient.Connected)
+                    if (TcpClient.Connected)
                     {
-#if !NETSTANDARD1_3
-                        this.WebSocketStream.Close();
-                        this.TcpClient.Close();
-#else
-                        this.WebSocketStream.Dispose();
-                        this.TcpClient.Dispose();
-#endif
+                        WebSocketStream.Close();
+                        TcpClient.Close();
                     }
 
                     throw new IOException(ServerRejectedUpgradeRequest + " " + upgradeResponse);
                 }
 
-                if (!this.VerifyWebSocketUpgradeResponse(upgradeResponse.Headers))
+                if (!VerifyWebSocketUpgradeResponse(upgradeResponse.Headers))
                 {
-                    if (this.TcpClient.Connected)
+                    if (TcpClient.Connected)
                     {
-#if !NETSTANDARD1_3
-                        this.WebSocketStream.Close();
-                        this.TcpClient.Close();
-#else
-                        this.WebSocketStream.Dispose();
-                        this.TcpClient.Dispose();
-#endif
+                        WebSocketStream.Close();
+                        TcpClient.Close();
                     }
 
                     throw new IOException(UpgradeProtocolNotSupported.FormatInvariant(WebSocketConstants.SubProtocols.Amqpwsb10));
                 }
 
-                this.State = WebSocketState.Open;
+                State = WebSocketState.Open;
                 succeeded = true;
             }
             finally
             {
                 if (!succeeded)
                 {
-                    this.Abort();
+                    Abort();
                 }
             }
         }
@@ -244,8 +207,8 @@ namespace Microsoft.Azure.Devices
         {
             byte[] header = new byte[2];
 
-            Fx.AssertAndThrow(this.State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringReceive);
-            this.TcpClient.ReceiveTimeout = TimeoutHelper.ToMilliseconds(timeout);
+            Fx.AssertAndThrow(State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringReceive);
+            TcpClient.ReceiveTimeout = TimeoutHelper.ToMilliseconds(timeout);
 
             bool succeeded = false;
             try
@@ -275,18 +238,13 @@ namespace Microsoft.Azure.Devices
                     if (!ParseWebSocketFrameHeader(header, out payloadLength, out pongFrame))
                     {
                         // Encountered a close frame or error in parsing frame from server. Close connection
-                        var closeHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
+                        byte[] closeHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
                         await WebSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length).ConfigureAwait(false);
 
-                        this.State = WebSocketState.Closed;
-#if !NETSTANDARD1_3
-                        this.WebSocketStream?.Close();
-                        this.TcpClient?.Close();
-#else
-                        this.WebSocketStream?.Dispose();
-                        this.TcpClient?.Dispose();
-#endif
+                        State = WebSocketState.Closed;
+                        WebSocketStream.Close();
+                        TcpClient.Close();
                         return 0;  // TODO: throw exception?
                     }
 
@@ -372,6 +330,7 @@ namespace Microsoft.Azure.Devices
                             }
 
                             break;
+
                         case LargeSizeFrame:
                             // read payload length (>= 64K)
                             var payloadLengthBuffer = new byte[8];
@@ -424,19 +383,19 @@ namespace Microsoft.Azure.Devices
             {
                 if (!succeeded)
                 {
-                    this.Fault();
+                    Fault();
                 }
             }
         }
 
         public async Task SendAsync(byte[] buffer, int offset, int size, WebSocketMessageType webSocketMessageType, TimeSpan timeout)
         {
-            Fx.AssertAndThrow(this.State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringSend);
-            this.TcpClient.Client.SendTimeout = TimeoutHelper.ToMilliseconds(timeout);
+            Fx.AssertAndThrow(State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringSend);
+            TcpClient.Client.SendTimeout = TimeoutHelper.ToMilliseconds(timeout);
             bool succeeded = false;
             try
             {
-                var webSocketHeader = PrepareWebSocketHeader(size, webSocketMessageType);
+                byte[] webSocketHeader = PrepareWebSocketHeader(size, webSocketMessageType);
                 await WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
                 MaskWebSocketData(buffer, offset, size);
                 await WebSocketStream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
@@ -446,30 +405,25 @@ namespace Microsoft.Azure.Devices
             {
                 if (!succeeded)
                 {
-                    this.Fault();
+                    Fault();
                 }
             }
         }
 
         public async Task CloseAsync()
         {
-            this.State = WebSocketState.Closed;
+            State = WebSocketState.Closed;
             bool succeeded = false;
             try
             {
-                if (this.TcpClient.Connected)
+                if (TcpClient.Connected)
                 {
-                    var webSocketHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
+                    byte[] webSocketHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
                     await WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
 
-#if !NETSTANDARD1_3
-                    this.WebSocketStream?.Close();
-                    this.TcpClient?.Close();
-#else
-                    this.WebSocketStream?.Dispose();
-                    this.TcpClient?.Dispose();
-#endif
+                    WebSocketStream.Close();
+                    TcpClient.Close();
                 }
 
                 succeeded = true;
@@ -488,13 +442,13 @@ namespace Microsoft.Azure.Devices
             {
                 if (!succeeded)
                 {
-                    this.Fault();
+                    Fault();
                 }
             }
         }
 
         [SuppressMessage("Microsoft.Cryptographic.Standard", "CA5354:SHA1CannotBeUsed", Justification = "SHA-1 Hash mandated by RFC 6455")]
-        static SHA1 InitCryptoServiceProvider()
+        private static SHA1 InitCryptoServiceProvider()
         {
             return SHA1.Create();
         }
@@ -502,7 +456,7 @@ namespace Microsoft.Azure.Devices
         // Socket.ReceiveTimeout/SendTimeout 0 means infinite/no-timeout. When dealing with cascading timeouts
         // if the remaining time reaches TimeSpan.Zero we don't want to turn off timeouts on the socket, instead
         // we want to use a very small timeout.
-        static int GetSocketTimeoutInMilliSeconds(TimeSpan timeout)
+        private static int GetSocketTimeoutInMilliSeconds(TimeSpan timeout)
         {
             if (timeout == TimeSpan.MaxValue)
             {
@@ -524,7 +478,7 @@ namespace Microsoft.Azure.Devices
             return Ticks.ToMilliseconds(ticks);
         }
 
-        static byte[] PrepareWebSocketHeader(int bufferLength, WebSocketMessageType webSocketMessageType)
+        private static byte[] PrepareWebSocketHeader(int bufferLength, WebSocketMessageType webSocketMessageType)
         {
             byte[] octet;
 
@@ -540,10 +494,10 @@ namespace Microsoft.Azure.Devices
                 octet[1] = (byte)(bufferLength | Mask);
 
                 // Octets 2-5 (Masking Key)
-                octet[2] = maskingKey[0];
-                octet[3] = maskingKey[1];
-                octet[4] = maskingKey[2];
-                octet[5] = maskingKey[3];
+                octet[2] = s_maskingKey[0];
+                octet[3] = s_maskingKey[1];
+                octet[4] = s_maskingKey[2];
+                octet[5] = s_maskingKey[3];
             }
             else if (bufferLength <= UInt16.MaxValue)
             {
@@ -561,10 +515,10 @@ namespace Microsoft.Azure.Devices
                 octet[3] = (byte)(bufferLength & 0x00FF);
 
                 // Octets 4-7 (Masking Key)
-                octet[4] = maskingKey[0];
-                octet[5] = maskingKey[1];
-                octet[6] = maskingKey[2];
-                octet[7] = maskingKey[3];
+                octet[4] = s_maskingKey[0];
+                octet[5] = s_maskingKey[1];
+                octet[6] = s_maskingKey[2];
+                octet[7] = s_maskingKey[3];
             }
             else
             {
@@ -587,16 +541,16 @@ namespace Microsoft.Azure.Devices
                 octet[9] = (byte)(bufferLength & 0x00FF);
 
                 // Octets 10-13 (Masking Key)
-                octet[10] = maskingKey[0];
-                octet[11] = maskingKey[1];
-                octet[12] = maskingKey[2];
-                octet[13] = maskingKey[3];
+                octet[10] = s_maskingKey[0];
+                octet[11] = s_maskingKey[1];
+                octet[12] = s_maskingKey[2];
+                octet[13] = s_maskingKey[3];
             }
 
             return octet;
         }
 
-        static byte PrepareOctet0(WebSocketMessageType webSocketMessageType)
+        private static byte PrepareOctet0(WebSocketMessageType webSocketMessageType)
         {
             byte octet0 = FIN | RSV;
             if (webSocketMessageType.Equals(WebSocketMessageType.Binary))
@@ -615,21 +569,21 @@ namespace Microsoft.Azure.Devices
             return octet0;
         }
 
-        static void MaskWebSocketData(byte[] buffer, int offset, int size)
+        private static void MaskWebSocketData(byte[] buffer, int offset, int size)
         {
             Utils.ValidateBufferBounds(buffer, offset, size);
 
             for (int i = 0; i < size; i++)
             {
-                buffer[i + offset] ^= maskingKey[i % 4];
+                buffer[i + offset] ^= s_maskingKey[i % 4];
             }
         }
 
-        static bool ParseWebSocketFrameHeader(byte[] buffer, out byte payloadLength, out bool pongFrame)
+        private static bool ParseWebSocketFrameHeader(byte[] buffer, out byte payloadLength, out bool pongFrame)
         {
             payloadLength = 0;
             bool finalFragment;
-            var fin = buffer[0] & FIN;
+            int fin = buffer[0] & FIN;
             if (fin == FIN)
             {
                 // this is the final fragment
@@ -642,7 +596,7 @@ namespace Microsoft.Azure.Devices
             }
 
             // TODO: check RSV?
-            var opcode = buffer[0] & 0x0F;
+            int opcode = buffer[0] & 0x0F;
 
             pongFrame = false;
 
@@ -662,6 +616,7 @@ namespace Microsoft.Azure.Devices
                 case Binary:
                     // WebSocket implementation can handle both text and binary messages
                     break;
+
                 case Close:
                     return false;   // Close frame received - We can close the connection
                 case Ping:
@@ -671,11 +626,12 @@ namespace Microsoft.Azure.Devices
                 case Pong:
                     pongFrame = true;
                     break;
+
                 default:
                     return false;
             }
 
-            var mask = buffer[1] & Mask;
+            int mask = buffer[1] & Mask;
             if (mask == Mask)
             {
                 // This is an error. We received a masked frame from server - Close connection as per RFC 6455
@@ -686,31 +642,32 @@ namespace Microsoft.Azure.Devices
             return true;
         }
 
-        void Fault()
+        private void Fault()
         {
-            this.State = WebSocketState.Faulted;
-            if (this.WebSocketStream != null)
+            State = WebSocketState.Faulted;
+            CleanUp();
+        }
+
+        private void CleanUp()
+        {
+            if (WebSocketStream != null)
             {
-#if !NETSTANDARD1_3
-                this.WebSocketStream.Close();   // Ungraceful close
-#else
-                this.WebSocketStream.Dispose();
-#endif
-                this.WebSocketStream = null;
+                WebSocketStream.Close();
+                WebSocketStream.Dispose();
+                WebSocketStream = null;
             }
 
-            if (this.TcpClient != null)
+            if (TcpClient != null)
             {
-#if !NETSTANDARD1_3
-                this.TcpClient.Close();
-#else
-                this.TcpClient.Dispose();
+                TcpClient.Close();
+#if !NET451 // compile error, otherwise
+                TcpClient.Dispose();
 #endif
-                this.TcpClient = null;
+                TcpClient = null;
             }
         }
 
-        bool VerifyWebSocketUpgradeResponse(NameValueCollection webSocketHeaders)
+        private bool VerifyWebSocketUpgradeResponse(NameValueCollection webSocketHeaders)
         {
             // verify that Upgrade header is present with a value of websocket
             string upgradeHeaderValue;
@@ -748,20 +705,20 @@ namespace Microsoft.Azure.Devices
                 return false;
             }
 
-            if (!ComputeHash(this.webSocketKey).Equals(secWebSocketAcceptHeaderValue, StringComparison.Ordinal))
+            if (!ComputeHash(_webSocketKey).Equals(secWebSocketAcceptHeaderValue, StringComparison.Ordinal))
             {
                 // Server Hash Value of Client's Nonce was invalid
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(this.webSocketRole))
+            if (!string.IsNullOrEmpty(_webSocketRole))
             {
                 // verify SecWebSocketProtocol contents
                 string secWebSocketProtocolHeaderValue;
                 if (null != (secWebSocketProtocolHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketProtocol)))
                 {
                     // Check SecWebSocketProtocolHeader with requested protocol
-                    if (!this.webSocketRole.Equals(secWebSocketProtocolHeaderValue))
+                    if (!StringComparer.OrdinalIgnoreCase.Equals(_webSocketRole, secWebSocketProtocolHeaderValue))
                     {
                         return false;
                     }
@@ -775,16 +732,16 @@ namespace Microsoft.Azure.Devices
             return true;
         }
 
-        string BuildUpgradeRequest()
+        private string BuildUpgradeRequest()
         {
-            this.webSocketKey = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            _webSocketKey = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
             var sb = new StringBuilder();
 
             // GET {0} HTTP/1.1\r\n
-            sb.AppendFormat(HttpGetHeaderFormat, this.requestPath);
+            sb.AppendFormat(CultureInfo.InvariantCulture, HttpGetHeaderFormat, _requestPath);
 
             // Setup Host Header
-            sb.Append(HostHeaderPrefix).Append(this.host).Append(EndOfLineSuffix);
+            sb.Append(HostHeaderPrefix).Append(_host).Append(EndOfLineSuffix);
 
             // Setup Upgrade Header
             sb.Append(Upgrade).Append(Separator).Append(Websocket).Append(EndOfLineSuffix);
@@ -795,15 +752,15 @@ namespace Microsoft.Azure.Devices
             // Setup SecWebSocketKey Header
             sb.Append(Headers.SecWebSocketKey)
               .Append(Separator)
-              .Append(this.webSocketKey)
+              .Append(_webSocketKey)
               .Append(EndOfLineSuffix);
 
-            if (!string.IsNullOrEmpty(this.webSocketRole))
+            if (!string.IsNullOrEmpty(_webSocketRole))
             {
                 // Setup SecWebSocketProtocol Header
                 sb.Append(Headers.SecWebSocketProtocol)
                     .Append(Separator)
-                    .Append(this.webSocketRole)
+                    .Append(_webSocketRole)
                     .Append(EndOfLineSuffix);
             }
 
@@ -819,55 +776,55 @@ namespace Microsoft.Azure.Devices
             return sb.ToString();
         }
 
-        static string ComputeHash(string key)
+        private static string ComputeHash(string key)
         {
             const string WebSocketGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
-            var modifiedString = key + WebSocketGuid;
-            var modifiedStringBytes = Encoding.ASCII.GetBytes(modifiedString);
+            string modifiedString = key + WebSocketGuid;
+            byte[] modifiedStringBytes = Encoding.ASCII.GetBytes(modifiedString);
 
             byte[] hashBytes;
-            lock (sha1CryptoServiceProvider)
+            lock (s_sha1CryptoServiceProvider)
             {
-                hashBytes = sha1CryptoServiceProvider.ComputeHash(modifiedStringBytes);
+                hashBytes = s_sha1CryptoServiceProvider.ComputeHash(modifiedStringBytes);
             }
 
             return Convert.ToBase64String(hashBytes);
         }
 
-        class HttpResponse
+        private class HttpResponse
         {
-            int bodyStartIndex;
+            private int _bodyStartIndex;
+
+            private int _bytesRead;
 
             public HttpResponse(TcpClient tcpClient, Stream stream, byte[] buffer)
             {
-                this.TcpClient = tcpClient;
-                this.Stream = stream;
-                this.Buffer = buffer;
+                TcpClient = tcpClient;
+                Stream = stream;
+                Buffer = buffer;
             }
 
-            TcpClient TcpClient { get; set; }
+            private TcpClient TcpClient { get; set; }
 
-            Stream Stream { get; set; }
+            private Stream Stream { get; set; }
 
-            byte[] Buffer { get; set; }
+            private byte[] Buffer { get; set; }
 
-            int TotalBytesRead { get; set; }
-
-            int bytesRead;
+            private int TotalBytesRead { get; set; }
 
             public async Task ReadAsync(TimeSpan timeout)
             {
-                TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
+                var timeoutHelper = new TimeoutHelper(timeout);
                 do
                 {
-                    this.TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeoutHelper.RemainingTime());
-                    this.bytesRead = 0;
+                    TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeoutHelper.RemainingTime());
+                    _bytesRead = 0;
 
-                    this.bytesRead = await Stream.ReadAsync(Buffer, TotalBytesRead, Buffer.Length - TotalBytesRead).ConfigureAwait(false);
+                    _bytesRead = await Stream.ReadAsync(Buffer, TotalBytesRead, Buffer.Length - TotalBytesRead).ConfigureAwait(false);
 
-                    this.TotalBytesRead += this.bytesRead;
-                    if (this.bytesRead == 0 || this.TryParseBuffer())
+                    TotalBytesRead += _bytesRead;
+                    if (_bytesRead == 0 || TryParseBuffer())
                     {
                         // exit the do/while loop
                         break;
@@ -875,15 +832,12 @@ namespace Microsoft.Azure.Devices
                 }
                 while (true);
 
-                if (this.TotalBytesRead == 0)
+                if (TotalBytesRead == 0)
                 {
                     var socketException = new SocketException((int)SocketError.ConnectionRefused);
                     throw Fx.Exception.AsWarning(new IOException(socketException.Message, socketException));
                 }
             }
-
-            // Commented out to avoid FxCop error for uncalled private code
-            ////public string HttpVersion { get; private set; }
 
             public HttpStatusCode StatusCode { get; private set; }
 
@@ -894,7 +848,7 @@ namespace Microsoft.Azure.Devices
             public override string ToString()
             {
                 // return a string like "407 Proxy Auth Required"
-                return (int)this.StatusCode + " " + this.StatusDescription;
+                return (int)StatusCode + " " + StatusDescription;
             }
 
             /// <summary>
@@ -905,73 +859,73 @@ namespace Microsoft.Azure.Devices
             ///    -if HTTP Headers Content-Length is present do we have that much content received?
             /// If all the above succeed then this method returns true, otherwise false (need to receive more data from network stream).
             /// </summary>
-            bool TryParseBuffer()
+            private bool TryParseBuffer()
             {
-                if (this.bodyStartIndex == 0)
+                if (_bodyStartIndex == 0)
                 {
-                    int firstSpace = IndexOfAsciiChar(this.Buffer, 0, this.TotalBytesRead, ' ');
+                    int firstSpace = IndexOfAsciiChar(Buffer, 0, TotalBytesRead, ' ');
                     if (firstSpace == -1)
                     {
                         return false;
                     }
 
-                    ////this.HttpVersion = Encoding.ASCII.GetString(array, arraySegment.Offset, firstSpace - arraySegment.Offset);
-                    int secondSpace = IndexOfAsciiChar(this.Buffer, firstSpace + 1, this.TotalBytesRead - (firstSpace + 1), ' ');
+                    ////HttpVersion = Encoding.ASCII.GetString(array, arraySegment.Offset, firstSpace - arraySegment.Offset);
+                    int secondSpace = IndexOfAsciiChar(Buffer, firstSpace + 1, TotalBytesRead - (firstSpace + 1), ' ');
                     if (secondSpace == -1)
                     {
                         return false;
                     }
 
-                    var statusCodeString = Encoding.ASCII.GetString(this.Buffer, firstSpace + 1, secondSpace - (firstSpace + 1));
-                    this.StatusCode = (HttpStatusCode)int.Parse(statusCodeString, CultureInfo.InvariantCulture);
-                    int endOfLine = IndexOfAsciiChars(this.Buffer, secondSpace + 1, this.TotalBytesRead - (secondSpace + 1), '\r', '\n');
+                    var statusCodeString = Encoding.ASCII.GetString(Buffer, firstSpace + 1, secondSpace - (firstSpace + 1));
+                    StatusCode = (HttpStatusCode)int.Parse(statusCodeString, CultureInfo.InvariantCulture);
+                    int endOfLine = IndexOfAsciiChars(Buffer, secondSpace + 1, TotalBytesRead - (secondSpace + 1), '\r', '\n');
                     if (endOfLine == -1)
                     {
                         return false;
                     }
 
-                    this.StatusDescription = Encoding.ASCII.GetString(this.Buffer, secondSpace + 1, endOfLine - (secondSpace + 1));
+                    StatusDescription = Encoding.ASCII.GetString(Buffer, secondSpace + 1, endOfLine - (secondSpace + 1));
 
                     // Now parse the headers
-                    this.Headers = new WebHeaderCollection();
+                    Headers = new WebHeaderCollection();
                     while (true)
                     {
                         int startCurrentLine = endOfLine + 2;
-                        if (startCurrentLine >= this.TotalBytesRead)
+                        if (startCurrentLine >= TotalBytesRead)
                         {
                             return false;
                         }
-                        else if (this.Buffer[startCurrentLine] == '\r' && this.Buffer[startCurrentLine + 1] == '\n')
+                        else if (Buffer[startCurrentLine] == '\r' && Buffer[startCurrentLine + 1] == '\n')
                         {
                             // \r\n\r\n indicates the end of the HTTP headers.
-                            this.bodyStartIndex = startCurrentLine + 2;
+                            _bodyStartIndex = startCurrentLine + 2;
                             break;
                         }
 
-                        int separatorIndex = IndexOfAsciiChars(this.Buffer, startCurrentLine, this.TotalBytesRead - startCurrentLine, ':', ' ');
+                        int separatorIndex = IndexOfAsciiChars(Buffer, startCurrentLine, TotalBytesRead - startCurrentLine, ':', ' ');
                         if (separatorIndex == -1)
                         {
                             return false;
                         }
 
-                        string headerName = Encoding.ASCII.GetString(this.Buffer, startCurrentLine, separatorIndex - startCurrentLine);
-                        endOfLine = IndexOfAsciiChars(this.Buffer, separatorIndex + 2, this.TotalBytesRead - (separatorIndex + 2), '\r', '\n');
+                        string headerName = Encoding.ASCII.GetString(Buffer, startCurrentLine, separatorIndex - startCurrentLine);
+                        endOfLine = IndexOfAsciiChars(Buffer, separatorIndex + 2, TotalBytesRead - (separatorIndex + 2), '\r', '\n');
                         if (endOfLine == -1)
                         {
                             return false;
                         }
 
-                        string headerValue = Encoding.ASCII.GetString(this.Buffer, separatorIndex + 2, endOfLine - (separatorIndex + 2));
-                        this.Headers.Add(headerName, headerValue);
+                        string headerValue = Encoding.ASCII.GetString(Buffer, separatorIndex + 2, endOfLine - (separatorIndex + 2));
+                        Headers.Add(headerName, headerValue);
                     }
                 }
 
                 // check to see if all the body bytes have been received.
-                string contentLengthValue = this.Headers[HttpResponseHeader.ContentLength];
+                string contentLengthValue = Headers[HttpResponseHeader.ContentLength];
                 if (!string.IsNullOrEmpty(contentLengthValue) && contentLengthValue != "0")
                 {
                     int contentLength = int.Parse(contentLengthValue, CultureInfo.InvariantCulture);
-                    if (contentLength > this.TotalBytesRead - this.bodyStartIndex)
+                    if (contentLength > TotalBytesRead - _bodyStartIndex)
                     {
                         return false;
                     }

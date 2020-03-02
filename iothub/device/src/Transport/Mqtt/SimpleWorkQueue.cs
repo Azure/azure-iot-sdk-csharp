@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using DotNetty.Common.Concurrency;
+using DotNetty.Common.Utilities;
+using DotNetty.Transport.Channels;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using DotNetty.Common.Concurrency;
-    using DotNetty.Common.Utilities;
-    using DotNetty.Transport.Channels;
-
     /// <summary>
-    /// Simple work queue with lifecycle state machine. 
-    /// It is running work items if it is available; otherwise waits for new work item. 
+    /// Simple work queue with lifecycle state machine.
+    /// It is running work items if it is available; otherwise waits for new work item.
     /// Worker will resume work as soon as new work has arrived.
     /// </summary>
     /// <typeparam name="TWork"></typeparam>
-    class SimpleWorkQueue<TWork>
+    internal class SimpleWorkQueue<TWork>
     {
-        readonly Func<IChannelHandlerContext, TWork, Task> worker;
+        private readonly Func<IChannelHandlerContext, TWork, Task> worker;
 
-        readonly Queue<TWork> backlogQueue;
-        readonly TaskCompletionSource completionSource;
+        private readonly Queue<TWork> backlogQueue;
+        private readonly TaskCompletionSource completionSource;
         protected States State { get; set; }
 
         public SimpleWorkQueue(Func<IChannelHandlerContext, TWork, Task> worker)
@@ -52,13 +52,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     this.State = States.Processing;
                     this.StartWorkQueueProcessingAsync(context);
                     break;
+
                 case States.Processing:
                 case States.FinalProcessing:
                     this.backlogQueue.Enqueue(workItem);
                     break;
+
                 case States.Aborted:
                     ReferenceCountUtil.Release(workItem);
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -74,17 +77,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 case States.Idle:
                     this.completionSource.TryComplete();
                     break;
+
                 case States.Processing:
                     this.State = States.FinalProcessing;
                     break;
+
                 case States.FinalProcessing:
                 case States.Aborted:
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
-
 
         public virtual void Abort()
         {
@@ -115,8 +120,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         }
                     }
                     break;
+
                 case States.Aborted:
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -127,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return this.worker(context, work);
         }
 
-        async void StartWorkQueueProcessingAsync(IChannelHandlerContext context)
+        private async void StartWorkQueueProcessingAsync(IChannelHandlerContext context)
         {
             try
             {
@@ -143,10 +150,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case States.Processing:
                         this.State = States.Idle;
                         break;
+
                     case States.FinalProcessing:
                     case States.Aborted:
                         this.completionSource.TryComplete();
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -163,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Idle,
             Processing,
             FinalProcessing,
-            Aborted
+            Aborted,
         }
     }
 }

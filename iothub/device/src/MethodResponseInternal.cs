@@ -1,37 +1,41 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-namespace Microsoft.Azure.Devices.Client
-{
-    using System;
-    using System.IO;
-    using System.Threading;
+using System;
+using System.IO;
+using System.Threading;
+
 #if NETMF
     using System.Collections;
 #else
-    using Microsoft.Azure.Devices.Client.Common.Api;
-    using System.Collections.Generic;
-#endif
-    using DateTimeT = System.DateTime;
-    using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
+using Microsoft.Azure.Devices.Client.Common.Api;
+using System.Collections.Generic;
+
+#endif
+
+using DateTimeT = System.DateTime;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
+
+namespace Microsoft.Azure.Devices.Client
+{
     /// <summary>
     /// The data structure represent the method response that is used for interacting with IotHub.
     /// </summary>
     public sealed class MethodResponseInternal : IDisposable
     {
-        readonly object messageLock = new object();
+        private readonly object messageLock = new object();
 #if NETMF
         Stream bodyStream;
 #else
-        volatile Stream bodyStream;
+        private volatile Stream bodyStream;
 #endif
-        bool disposed;
-        bool ownsBodyStream;
-        int getBodyCalled;
+        private bool disposed;
+        private bool ownsBodyStream;
+        private int getBodyCalled;
 #if NETMF
         int sizeInBytesCalled;
 #else
-        long sizeInBytesCalled;
+        private long sizeInBytesCalled;
 #endif
 
         /// <summary>
@@ -81,6 +85,7 @@ namespace Microsoft.Azure.Devices.Client
         internal MethodResponse(byte[] byteArray)
             : this(new MemoryStream(byteArray))
 #else
+
         internal MethodResponseInternal(
         byte[] byteArray, string requestId, int status)
             : this(new MemoryStream(byteArray))
@@ -190,14 +195,14 @@ namespace Microsoft.Azure.Devices.Client
 #if NETMF
         internal bool IsBodyCalled
         {
-			// A safe comparison for one that will never actually perform an exchange (maybe not necessary?)
+            // A safe comparison for one that will never actually perform an exchange (maybe not necessary?)
             get { return Interlocked.CompareExchange(ref this.getBodyCalled, 9999, 9999) == 1; }
         }
 #else
         internal bool IsBodyCalled => Volatile.Read(ref this.getBodyCalled) == 1;
 #endif
 
-        void SetGetBodyCalled()
+        private void SetGetBodyCalled()
         {
             if (1 == Interlocked.Exchange(ref this.getBodyCalled, 1))
             {
@@ -209,12 +214,12 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void SetSizeInBytesCalled()
+        private void SetSizeInBytesCalled()
         {
             Interlocked.Exchange(ref this.sizeInBytesCalled, 1);
         }
 
-        void InitializeWithStream(Stream stream, bool ownsStream)
+        private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
@@ -222,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client
             this.ownsBodyStream = ownsStream;
         }
 
-        static byte[] ReadFullStream(Stream inputStream)
+        private static byte[] ReadFullStream(Stream inputStream)
         {
 #if NETMF
             inputStream.Position = 0;
@@ -252,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!this.disposed)
             {

@@ -48,16 +48,14 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceMaximumQueueDepthExceededException"/> class with the specified serialization and context information.
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        DeviceMaximumQueueDepthExceededException(SerializationInfo info, StreamingContext context)
+        private DeviceMaximumQueueDepthExceededException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

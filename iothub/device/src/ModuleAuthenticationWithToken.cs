@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
     /// <summary>
-    /// Authentication method that uses a shared access signature token. 
+    /// Authentication method that uses a shared access signature token.
     /// </summary>
     public sealed class ModuleAuthenticationWithToken : IAuthenticationMethod
     {
-        string deviceId;
-        string moduleId;
-        string token;
+        private string deviceId;
+        private string moduleId;
+        private string token;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModuleAuthenticationWithToken"/> class.
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
             return iotHubConnectionStringBuilder;
         }
 
-        void SetDeviceId(string deviceId)
+        private void SetDeviceId(string deviceId)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
             this.deviceId = deviceId;
         }
 
-        void SetModuleId(string moduleId)
+        private void SetModuleId(string moduleId)
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
             this.moduleId = moduleId;
         }
 
-        void SetToken(string token)
+        private void SetToken(string token)
         {
             if (token.IsNullOrWhiteSpace())
             {

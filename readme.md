@@ -44,11 +44,13 @@ Due to security considerations, build logs are not publicly available.
 
 > .NET MicroFramework will not be supported in future versions of the SDK.
 
+> .NET Standard 1.3 (IoT Hub SDKs only) is last supported in the [2020-02-27](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2020-2-27) and in the [2020-1-31 LTS](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31) releases.
+
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
 
 The NuGet packages provide support for the following .NET flavors:
 - .NET Standard 2.0
-- .NET Standard 1.3 (IoT Hub SDKs only)
+- .NET Framework 4.7.2 (IoT Hub SDKs only)
 - .NET Framework 4.5.1 (IoT Hub SDKs only)
 
 For details on .NET support see the [.NET Standard documentation](https://docs.microsoft.com/en-us/dotnet/standard/net-standard).
