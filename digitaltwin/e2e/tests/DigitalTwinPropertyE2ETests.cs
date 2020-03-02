@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 using Azure;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.Meta;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
@@ -155,7 +156,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
                 await testInterface.updateReadOnlyPropertyAsync(propertyValue);
 
-                DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+                DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
                 string digitalTwin = await digitalTwinServiceClient.GetDigitalTwinAsync(digitalTwinDevice.digitalTwinId);
                 Assert.Contains(propertyValue, digitalTwin);
             }
@@ -178,7 +179,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
                 await testInterface.updateReadWritePropertyAsync(propertyValue);
 
-                DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+                DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
                 string digitalTwin = await digitalTwinServiceClient.GetDigitalTwinAsync(digitalTwinDevice.digitalTwinId);
                 Assert.Contains(propertyValue, digitalTwin);
             }
@@ -204,7 +205,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
                 await testInterface.updateMultiplePropertiesAsync(property1Name, property1Value, property2Name, property2Value);
 
-                DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+                DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
                 string digitalTwin = await digitalTwinServiceClient.GetDigitalTwinAsync(digitalTwinDevice.digitalTwinId);
                 string property1Substring = "\"" + property1Name + "\":{\"reported\":{\"value\":" + property1Value + "}}";
                 string property2Substring = "\"" + property2Name + "\":{\"reported\":{\"value\":" + property2Value + "}}";
@@ -262,7 +263,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
         private async Task<Response<string>> updateProperty(string digitalTwinId, string interfaceInstanceName, string propertyName, string propertyValue)
         {
-            DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+            DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
 
             string patch =
                 "{" +
@@ -280,7 +281,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
         private async Task<Response<string>> updateProperties(string digitalTwinId, string interfaceInstanceName, string propertyName, string propertyValue, string property2Name, string property2Value)
         {
-            DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+            DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
 
             string patch =
                 "{" +

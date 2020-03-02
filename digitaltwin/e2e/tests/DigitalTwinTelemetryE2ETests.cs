@@ -8,6 +8,7 @@ using Xunit;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.E2ETests;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.Meta;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {

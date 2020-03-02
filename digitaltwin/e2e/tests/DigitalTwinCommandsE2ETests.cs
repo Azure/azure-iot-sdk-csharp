@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Xunit;
 using DigitalTwinCommandResponse = Microsoft.Azure.Devices.DigitalTwin.Service.Models.DigitalTwinCommandResponse;
 using Azure;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.Meta;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
@@ -229,7 +230,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
         private async Task<Response<DigitalTwinCommandResponse>> invokeCommand(string digitalTwinId, string interfaceInstanceName, string commandName, string argument)
         {
-            DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+            DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
             return await digitalTwinServiceClient.InvokeCommandAsync(digitalTwinId, interfaceInstanceName, commandName, argument);
         }
     }

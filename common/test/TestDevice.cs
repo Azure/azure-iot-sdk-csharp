@@ -63,26 +63,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static async Task<TestDevice> CreateTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
-        {
-            string prefix = namePrefix + type + "_" + Guid.NewGuid();
-
-            try
-            {
-                await s_semaphore.WaitAsync().ConfigureAwait(false);
-
-                await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
-                TestDevice ret = s_deviceCache[prefix];
-
-                s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
-                return ret;
-            }
-            finally
-            {
-                s_semaphore.Release();
-            }
-        }
-
         private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
         {
             string deviceName = prefix + Guid.NewGuid();

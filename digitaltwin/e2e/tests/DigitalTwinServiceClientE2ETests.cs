@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.Meta;
 using Microsoft.Azure.Devices.DigitalTwin.Service;
 using Microsoft.Rest;
 using System;
@@ -18,7 +19,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
         public DigitalTwinServiceClientE2ETests()
         {
-            digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
+            digitalTwinServiceClient = new DigitalTwinServiceClient(Meta.Configuration.IotHubConnectionString);
         }
 
         [Fact]
