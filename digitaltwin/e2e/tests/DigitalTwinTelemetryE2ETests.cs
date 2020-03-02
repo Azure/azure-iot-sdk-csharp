@@ -5,11 +5,9 @@ using Microsoft.Azure.Devices.DigitalTwin.Client;
 using Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces;
 using System;
 using Xunit;
-using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-using Microsoft.Azure.Devices.DigitalTwin.E2ETests.meta;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces.TestInterface2;
+using Microsoft.Azure.Devices.E2ETests;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
@@ -20,12 +18,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
         private static String telemetryDevicePrefix = "digitaltwine2e-telemetry";
 
         //wait at most 60 seconds for the sent message to be received by the Eventhub receiver
-        private static int EventHubReceiveTimeoutSeconds = 60;
-
-        public DigitalTwinTelemetryE2ETests()
-        {
-            EventHubListener.Instance.startListening();
-        }
+        private static TimeSpan EventHubReceiveTimeout = TimeSpan.FromSeconds(60);
 
         public const string COMPLEX_JSON_OBJECT =
             "{" +
@@ -84,7 +77,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 await testInterface2.sendTelemetryAsync(telemetryName, telemetryValue);
 
                 string expectedEventhubPayload = "{ \"" + telemetryName + "\": " + telemetryValue + " }";
-                Assert.True(EventHubListener.Instance.messageWasReceived(expectedEventhubPayload, EventHubReceiveTimeoutSeconds));
+                Assert.True(EventHubTestListener.VerifyIfMessageIsReceived(digitalTwinDevice.digitalTwinId, expectedEventhubPayload, "", EventHubReceiveTimeout), "Eventhub never received the telemetry message");
             }
         }
 
@@ -114,7 +107,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 {
                     threads[threadIndex].Wait();
                     string expectedEventhubPayload = "{ \"" + telemetryName + "\": " + telemetryValue + threadIndex + " }";
-                    Assert.True(EventHubListener.Instance.messageWasReceived(expectedEventhubPayload, EventHubReceiveTimeoutSeconds));
+                    Assert.True(EventHubTestListener.VerifyIfMessageIsReceived(digitalTwinDevice.digitalTwinId, expectedEventhubPayload, "", EventHubReceiveTimeout), "Eventhub never received the telemetry message");
                 }
             }
         }

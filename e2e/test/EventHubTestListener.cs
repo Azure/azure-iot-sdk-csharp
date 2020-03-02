@@ -72,6 +72,43 @@ namespace Microsoft.Azure.Devices.E2ETests
             return isReceived;
         }
 
+        public static bool VerifyIfMessageWithSubPayloadIsReceived(string deviceId, string subPayload, TimeSpan? maxWaitTime = null)
+        {
+            if (!maxWaitTime.HasValue)
+            {
+                maxWaitTime = MaximumWaitTime;
+            }
+
+            s_log.WriteLine($"Expected subPayload={subPayload}");
+
+            bool isReceived = false;
+
+            var sw = new Stopwatch();
+            sw.Start();
+
+            while (!isReceived && sw.Elapsed < maxWaitTime)
+            {
+                foreach (string payload in events.Keys)
+                {
+                    if (payload.Contains(subPayload))
+                    {
+                        events.TryRemove(payload, out EventData eventData);
+                        var connectionDeviceId = eventData.Properties["iothub-connection-device-id"].ToString();
+
+                        if (deviceId.Equals(connectionDeviceId))
+                        {
+                            isReceived = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            sw.Stop();
+
+            return isReceived;
+        }
+
         private static void ProcessEventData(IEnumerable<EventData> eventDatas)
         {
             if (eventDatas == null)

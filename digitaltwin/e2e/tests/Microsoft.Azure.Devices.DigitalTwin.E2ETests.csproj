@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.0.0-preview.8" />
-    <PackageReference Include="Microsoft.Azure.EventHubs" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
@@ -32,5 +31,11 @@
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
     <PackageReference Include="Microsoft.Azure.Devices.DigitalTwin.Client" Version="1.0.0-preview-*" />
     <PackageReference Include="Microsoft.Azure.Devices.DigitalTwin.Service" Version="1.0.0-preview-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\e2e\test\E2ETests.csproj" />
+    <Compile Include="..\..\..\e2e\test\netstandard20\EventHubTestListener.NetCore.cs" />
+    <Compile Include="..\..\..\e2e\test\EventHubTestListener.cs" />
   </ItemGroup>
 </Project>

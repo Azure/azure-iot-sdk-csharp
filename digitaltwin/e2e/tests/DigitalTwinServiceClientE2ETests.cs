@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
         }
 
-        [Fact]
+        [Fact(Skip = "Model repo undergoing changes, this test may not be applicable")]
         public async void testGetModelValidInterfaceUrn()
         {
             string modelId = "urn:contoso:azureiot:sdk:testinterface:1";
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             Assert.Contains("\"@type\":\"Interface\"", result);
         }
 
-        [Fact]
+        [Fact(Skip = "Model repo undergoing changes, this test may not be applicable")]
         public async void testGetModelValidDCMUrn()
         {
             string modelId = "urn:contoso:azureiot:sdk:testcapabilitymodel:cm:1";
@@ -41,14 +41,14 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             Assert.Contains("\"@type\":\"CapabilityModel\"", result);
         }
 
-        [Fact]
+        [Fact(Skip = "Model repo undergoing changes, this test may not be applicable")]
         public async void testGetModelInformationUnknownModelUrn()
         {
             string modelId = "urn:notreal:fakenamington:doesnotexist:nonexistentcapabilitymodel:cm:2";
             await Assert.ThrowsAsync<HttpOperationException>(async () => await digitalTwinServiceClient.GetModelAsync(modelId));
         }
 
-        [Fact]
+        [Fact(Skip = "Model repo undergoing changes, this test may not be applicable")]
         public async void testGetModelInformationUnknownInterfaceUrn()
         {
             string modelId = "urn:notreal:fakenamington:doesnotexist:nonexistentinterface:2";
