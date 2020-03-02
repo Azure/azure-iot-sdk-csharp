@@ -12,6 +12,8 @@ using Xunit;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
+    [Trait("TestCategory", "E2E")]
+    [Trait("TestCategory", "DigitalTwin")]
     public class DigitalTwinRegisterInterfacesE2ETests
     {
         private static String registerInterfacesDevicePrefix = "digitaltwine2e-registerinterfaces";
@@ -111,7 +113,8 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 }
 
                 Assert.True(exceptionThrown, "No exception was thrown even though register was called multiple times");
-                Assert.True(testInterface.onRegistrationCompleteExecuted, "No registration complete callback was executed when 1 was expected");            }
+                Assert.True(testInterface.onRegistrationCompleteExecuted, "No registration complete callback was executed when 1 was expected");
+            }
         }
 
         [Theory]
@@ -222,7 +225,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
         public async void registerCapbilityModelWhenDeviceClientIsDisposed(Devices.Client.TransportType transportType)
         {
             TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType);
-            
+
             DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
 
             await digitalTwinDevice.deviceClient.OpenAsync();

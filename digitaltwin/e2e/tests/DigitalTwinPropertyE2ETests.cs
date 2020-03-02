@@ -15,6 +15,8 @@ using Azure;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
+    [Trait("TestCategory", "E2E")]
+    [Trait("TestCategory", "DigitalTwin")]
     public class DigitalTwinPropertyE2ETests
     {
         private const string propertiesDevicePrefix = "digitaltwine2e-properties";
@@ -93,7 +95,6 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
                 TestInterface testInterface = new TestInterface(interfaceInstanceName);
                 await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { new DeviceInformationInterface(), testInterface }).ConfigureAwait(false);
-
 
                 int MaxThreads = 5;
                 List<Task<Response<string>>> threads = new List<Task<Response<string>>>();
@@ -258,7 +259,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
                 string returnedPayload = result.Value;
             }
         }
-       
+
         private async Task<Response<string>> updateProperty(string digitalTwinId, string interfaceInstanceName, string propertyName, string propertyValue)
         {
             DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
@@ -276,7 +277,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 
             return await digitalTwinServiceClient.UpdateDigitalTwinPropertiesAsync(digitalTwinId, interfaceInstanceName, patch);
         }
-        
+
         private async Task<Response<string>> updateProperties(string digitalTwinId, string interfaceInstanceName, string propertyName, string propertyValue, string property2Name, string property2Value)
         {
             DigitalTwinServiceClient digitalTwinServiceClient = new DigitalTwinServiceClient(Configuration.IotHubConnectionString);
