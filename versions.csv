@@ -10,3 +10,4 @@ security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj, 1.1.6
 provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 1.5.0
 digitaltwin\device\src\Azure.Iot.DigitalTwin.Device.csproj, 1.0.0-preview-001
 digitaltwin\service\src\Azure.Iot.DigitalTwin.Service.csproj, 1.0.0-preview-001
+

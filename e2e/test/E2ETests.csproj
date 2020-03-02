@@ -51,6 +51,7 @@
     <Compile Include="$(CommonTest)\CustomWebProxy.cs">
       <Link>Common\CustomWebProxy.cs</Link>
     </Compile>
+    <Compile Include="config\TestConfig.cs" />
   </ItemGroup>
   <!-- Legacy .NET 4.5.1 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
@@ -71,9 +72,9 @@
   <!-- All Platforms -->
   <ItemGroup>
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
-    <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.0.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <!-- Legacy .NET 4.5.1 -->
@@ -86,14 +87,6 @@
   <!-- NetCore and .NET 4.7 -->
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.3" />
-  </ItemGroup>
-
-  <!-- Test configuration: parallelize Windows only until we get TPM driver fixes for Linux -->
-  <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
-    <Compile Include="config\TestConfig.Linux.cs" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <Compile Include="config\TestConfig.Windows.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">

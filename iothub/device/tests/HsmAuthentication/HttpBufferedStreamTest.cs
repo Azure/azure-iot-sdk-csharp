@@ -18,28 +18,28 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         public async Task TestReadLines_ShouldReturnResponse()
         {
             string expected = "GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
-
             byte[] expectedBytes = Encoding.UTF8.GetBytes(expected);
             var memory = new MemoryStream(expectedBytes, true);
-
-            IList<string> lines = new List<string>();
             var buffered = new HttpBufferedStream(memory);
-            System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            string line = await buffered.ReadLineAsync(cancellationToken);
 
-            while (!string.IsNullOrEmpty(line))
+            var allLines = new List<string>(5);
+
+            while (true)
             {
-                lines.Add(line);
-                line = await buffered.ReadLineAsync(cancellationToken);
+                string currentLine = await buffered.ReadLineAsync(default).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(currentLine))
+                {
+                    break;
+                }
+                allLines.Add(currentLine);
             }
 
-            Assert.AreEqual(5, lines.Count);
-            Assert.AreEqual("GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1", lines[0]);
-            Assert.AreEqual("Host: localhost:8081", lines[1]);
-            Assert.AreEqual("Connection: close", lines[2]);
-            Assert.AreEqual("Content-Type: application/json", lines[3]);
-            Assert.AreEqual("Content-Length: 100", lines[4]);
+            Assert.AreEqual(5, allLines.Count);
+            Assert.AreEqual("GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1", allLines[0]);
+            Assert.AreEqual("Host: localhost:8081", allLines[1]);
+            Assert.AreEqual("Connection: close", allLines[2]);
+            Assert.AreEqual("Content-Type: application/json", allLines[3]);
+            Assert.AreEqual("Content-Length: 100", allLines[4]);
         }
-
     }
 }

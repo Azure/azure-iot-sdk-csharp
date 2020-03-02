@@ -4,6 +4,6 @@
 using System.Runtime.CompilerServices;
 
 #if (DEBUG)
-[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Test")]
+[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 #endif

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard1.3;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;netstandard1.3;net451</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0;netstandard1.3</TargetFrameworks>
     <!-- TODO #176: Enable warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -9,8 +9,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+
     <!-- Don't auto-compile platform specific files: -->
     <DefaultItemExcludes>netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
   </PropertyGroup>
 
@@ -42,7 +44,7 @@
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
     <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
   </ItemGroup>
 
@@ -125,5 +127,4 @@
     <!-- FXCop -->
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
-
 </Project>

@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
 
-#region AmqpMessage <--> Message
+        #region AmqpMessage <--> Message
         public static Message AmqpMessageToMessage(AmqpMessage amqpMessage)
         {
             if (amqpMessage == null)
@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             netObject = null;
             if (amqpObject == null)
             {
-                return false;
+                return true;
             }
 
             switch (SerializationUtilities.GetTypeId(amqpObject))
@@ -433,7 +433,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             amqpObject = null;
             if (netObject == null)
             {
-                return false;
+                return true;
             }
 
             switch (SerializationUtilities.GetTypeId(netObject))
@@ -504,7 +504,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return amqpObject != null;
         }
 
-        private static ArraySegment<byte> ReadStream(Stream stream)
+        internal static ArraySegment<byte> ReadStream(Stream stream)
         {
             MemoryStream memoryStream = new MemoryStream();
             int bytesRead;
