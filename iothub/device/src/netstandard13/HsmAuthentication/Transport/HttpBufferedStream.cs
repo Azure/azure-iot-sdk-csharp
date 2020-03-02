@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
     {
         private const char CR = '\r';
         private const char LF = '\n';
-        private Stream _innerStream;
+        private readonly Stream _innerStream;
 
         public HttpBufferedStream(Stream stream)
         {
@@ -51,7 +51,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             var builder = new StringBuilder();
             while (true)
             {
-                var length = await _innerStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)
+                var length = await _innerStream
+                    .ReadAsync(buffer, 0, buffer.Length, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (length == 0)
@@ -59,14 +60,14 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                     throw new IOException("Unexpected end of stream.");
                 }
 
-                if (crFound && (char) buffer[position] == LF)
+                if (crFound && (char)buffer[position] == LF)
                 {
                     builder.Remove(builder.Length - 1, 1);
                     return builder.ToString();
                 }
 
-                builder.Append((char) buffer[position]);
-                crFound = (char) buffer[position] == CR;
+                builder.Append((char)buffer[position]);
+                crFound = (char)buffer[position] == CR;
             }
         }
 

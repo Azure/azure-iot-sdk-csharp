@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class DeviceClientTests
     {
-        const string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
-        const string fakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
+        private const string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private const string fakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
 
         const string fakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
         const string fakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
@@ -30,6 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
+
         [TestMethod]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_DefaultValue()
         {
@@ -137,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.OperationTimeoutInMilliseconds = 0;
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             deviceClient.InnerHandler = innerHandler;
 
             Task t = deviceClient.OpenAsync();
@@ -193,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Array.Empty<byte>()), CancellationToken.None);
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(new byte[0]), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -291,13 +292,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
 
             bool isMethodHandlerCalled = false;
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
+#pragma warning restore CS0618 // Type or member is obsolete
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Array.Empty<byte>()), CancellationToken.None);
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(new byte[0]), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -485,7 +488,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -533,7 +536,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -580,7 +583,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -605,7 +608,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody2 = methodRequest.DataAsJson;
                 actualMethodUserContext2 = userContext;
                 methodCallbackCalled2 = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodUserContext2 = "UserContext2";
@@ -640,7 +643,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -665,7 +668,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody2 = methodRequest.DataAsJson;
                 actualMethodUserContext2 = userContext;
                 methodCallbackCalled2 = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodUserContext2 = "UserContext2";
@@ -701,7 +704,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -746,7 +749,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -808,7 +811,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -883,7 +886,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -919,7 +922,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -944,7 +947,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody2 = methodRequest.DataAsJson;
                 actualMethodUserContext2 = userContext;
                 methodCallbackCalled2 = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodUserContext2 = "UserContext2";
@@ -980,7 +983,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.DataAsJson;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(Array.Empty<byte>(), 200));
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
             };
 
             string methodName = "TestMethodName";
@@ -1084,7 +1087,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // current status = disabled
 
             deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
-            
+
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, status);
             Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
@@ -1099,7 +1102,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         // Tests_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections process. **]**
         // Tests_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed. **]**
-        public async Task DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
+        public void DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();

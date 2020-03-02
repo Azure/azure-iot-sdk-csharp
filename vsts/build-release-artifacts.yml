@@ -4,11 +4,8 @@ name: BumpVersion_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
 phases:
 
 - phase: Phase_1
-
   steps:
-
   - task: EsrpClientTool@1
-
   - task: DownloadBuildArtifacts@0
     inputs:
       buildType: 'specific'
@@ -84,7 +81,7 @@ phases:
       md $env:ESRP_LOG_DIR
       md $env:AZURE_IOT_LOCALPACKAGES
       Set-Location $(Build.SourcesDirectory)
-      $(Build.SourcesDirectory)/build.ps1 -configuration Release -sign -verbosity d
+      $(Build.SourcesDirectory)/build.ps1 -configuration Release -build -sign -package -verbosity d
 
     displayName: 'Build, Package, Sign'
     env:

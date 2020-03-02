@@ -6,11 +6,15 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
 #if !NET451
+
     using System.Net.Http;
+
 #else
     using System.Net;
 #endif
+
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
@@ -37,10 +41,10 @@ namespace Microsoft.Azure.Devices.Client
     public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
 
     /// <summary>
-    ///    Status of handling a message. 
+    ///    Status of handling a message.
     ///    None - Means Device SDK won't send an ackowledge of receipt.
     ///    Completed - Means Device SDK will Complete the event. Removing from the queue.
-    ///    Abandoned - Event will be Abandoned. 
+    ///    Abandoned - Event will be Abandoned.
     /// </summary>
     public enum MessageResponse { None, Completed, Abandoned };
 
@@ -86,7 +90,6 @@ namespace Microsoft.Azure.Devices.Client
         private ConnectionStatus lastConnectionStatus = ConnectionStatus.Disconnected;
         private ConnectionStatusChangeReason lastConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close;
 
-
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
         internal delegate Task OnReceiveEventMessageCalledDelegate(string input, Message message);
@@ -99,12 +102,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Has twin functionality been enabled with the service?
         /// </summary>
-        Boolean patchSubscribedWithService = false;
+        private Boolean patchSubscribedWithService = false;
 
         /// <summary>
         /// userContext passed when registering the twin patch callback
         /// </summary>
-        Object twinPatchCallbackContext = null;
+        private Object twinPatchCallbackContext = null;
 
         private int _currentMessageCount = 0;
 
@@ -137,9 +140,9 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled) Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
 
-        /// <summary> 
-        /// Diagnostic sampling percentage value, [0-100];  
-        /// 0 means no message will carry on diag info 
+        /// <summary>
+        /// Diagnostic sampling percentage value, [0-100];
+        /// 0 means no message will carry on diag info
         /// </summary>
         public int DiagnosticSamplingPercentage
         {
@@ -210,7 +213,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Stores the retry strategy used in the operation retries.
         /// </summary>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff
         // parameters for calculating delay in between retries.]
         [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
         public RetryPolicyType RetryPolicy { get; set; }
@@ -219,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets the retry policy used in the operation retries.
         /// </summary>
         /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff
         // parameters for calculating delay in between retries.]
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
@@ -873,7 +876,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
+        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
@@ -896,7 +899,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
+        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
@@ -1032,7 +1035,7 @@ namespace Microsoft.Azure.Devices.Client
 #endregion DEVICE STREAMING
 
         /// <summary>
-        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
+        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate.
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
@@ -1155,7 +1158,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update 
+        /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.  This has the side-effect of subscribing
         /// to the PATCH topic on the service.
         /// </summary>
@@ -1169,7 +1172,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update 
+        /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.  This has the side-effect of subscribing
         /// to the PATCH topic on the service.
         /// </summary>
@@ -1193,7 +1196,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update 
+        /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.  This has the side-effect of subscribing
         /// to the PATCH topic on the service.
         /// </summary>
@@ -1262,6 +1265,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw;
             }
         }
+
         /// <summary>
         /// Push reported property changes up to the service.
         /// </summary>
@@ -1311,6 +1315,11 @@ namespace Microsoft.Azure.Devices.Client
         //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         internal void OnReportedStatePatchReceived(TwinCollection patch)
         {
+            if (this.desiredPropertyUpdateCallback == null)
+            {
+                return;
+            }
+
             if (Logging.IsEnabled) Logging.Info(this, patch.ToJson(), nameof(OnReportedStatePatchReceived));
             this.desiredPropertyUpdateCallback(patch, this.twinPatchCallbackContext);
         }
@@ -1361,6 +1370,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         #region Module Specific API
+
         /// <summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="message">The message to send</param>
@@ -1676,9 +1686,11 @@ namespace Microsoft.Azure.Devices.Client
                     case MessageResponse.Completed:
                         await this.CompleteAsync(message).ConfigureAwait(false);
                         break;
+
                     case MessageResponse.Abandoned:
                         await this.AbandonAsync(message).ConfigureAwait(false);
                         break;
+
                     default:
                         break;
                 }
@@ -1703,6 +1715,5 @@ namespace Microsoft.Azure.Devices.Client
         {
             return ex is OperationCanceledException || (ex is IotHubCommunicationException && (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException));
         }
-
     }
 }

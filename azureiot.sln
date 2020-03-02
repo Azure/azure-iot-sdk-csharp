@@ -95,6 +95,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{D1C32A32-5A16-433E-ACED-1A08F64980FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "e2e", "e2e", "{2C6E63E9-C0EF-47B5-8EFA-E0A6142F2BA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.Tests", "shared\tests\Microsoft.Azure.Devices.Shared.Tests.csproj", "{CEEE435F-32FC-4DE5-8735-90F6AC950A01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -188,6 +189,9 @@ Global
 		{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -230,6 +234,7 @@ Global
 		{050D6440-A8DD-4A66-B6D9-F90D6AA66D29} = {34BE85F9-78AD-4D2D-8E3E-D1BD4F2EF057}
 		{D1C32A32-5A16-433E-ACED-1A08F64980FE} = {34BE85F9-78AD-4D2D-8E3E-D1BD4F2EF057}
 		{2C6E63E9-C0EF-47B5-8EFA-E0A6142F2BA1} = {34BE85F9-78AD-4D2D-8E3E-D1BD4F2EF057}
+		{CEEE435F-32FC-4DE5-8735-90F6AC950A01} = {3AA089A9-A035-439E-BAF6-C3975A334379}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
