@@ -32,6 +32,17 @@ function ShouldSkipDPSTests
 	return $false
 }
 
+function ShouldSkipDigitalTwinTests 
+{
+	if (ShouldSkipIotHubTests) 
+	{
+		return !(DoChangesAffectAnyOfFolders @("Digitaltwin"))
+	}
+
+	#Digital twin tests depend on iot hub packages, so if iot hub tests aren't being skipped, neither should digital twin tests
+	return $false
+}
+
 # $folderNames is an array of strings where each string is the name of a folder within the codebase to look for in the git diff between the source and target branches
 # For instance, $folderNames can be "iothub", "common", "shared" if you want to see if and changes happened within the iothub folder, the common folder, or in the shared folder
 function DoChangesAffectAnyOfFolders($folderNames) 
