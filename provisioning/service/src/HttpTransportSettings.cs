@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         public HttpTransportSettings()
         {
-            this.Proxy = DefaultWebProxySettings.Instance;
+            Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>

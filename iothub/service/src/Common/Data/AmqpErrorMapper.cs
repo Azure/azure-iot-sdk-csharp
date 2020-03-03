@@ -10,9 +10,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Client;
 
-    static class AmqpErrorMapper
+    internal static class AmqpErrorMapper
     {
-        const int MaxSizeInInfoMap = 32 * 1024;
+        private const int MaxSizeInInfoMap = 32 * 1024;
 
         public static Tuple<string, string, string> GenerateError(Exception ex)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
             if (exception == null)
             {
-                throw new ArgumentNullException("exception");
+                throw new ArgumentNullException(nameof(exception));
             }
 
             Error error = new Error();

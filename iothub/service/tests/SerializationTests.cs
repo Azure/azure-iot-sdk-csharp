@@ -1,10 +1,9 @@
-﻿ // Copyright (c) Microsoft. All rights reserved.
- // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using System;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Test
 {
@@ -25,7 +24,7 @@ namespace Microsoft.Azure.Devices.Test
  ""statusUpdateTime"": ""2018-06-29T21:17:08.7759733"",
  ""connectionState"": ""Connected"",
  ""lastActivityTime"": ""2018-06-29T21:17:08.7759733"",
-}"; 
+}";
 
             JsonConvert.DeserializeObject<Twin>(jsonString);
         }

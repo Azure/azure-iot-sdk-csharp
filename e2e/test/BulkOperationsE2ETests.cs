@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -27,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using (var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 Twin twin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
 
@@ -141,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private string ResultErrorsToString(BulkRegistryOperationResult result)
         {
             var errorString = "";
-            
+
             foreach (var error in result.Errors)
             {
                 errorString += $"\t{error.ErrorCode} : {error.ErrorStatus}\n";

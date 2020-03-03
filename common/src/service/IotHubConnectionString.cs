@@ -1,28 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Security;
 
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Amqp;
-    
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Security;
-
-    sealed class IotHubConnectionString : IAuthorizationHeaderProvider, ICbsTokenProvider
+    internal sealed class IotHubConnectionString : IAuthorizationHeaderProvider, ICbsTokenProvider
     {
-        static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromHours(1);
-        const string UserSeparator = "@";
+        private static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromHours(1);
+        private const string UserSeparator = "@";
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
         {
             if (builder == null)
             {
-                throw new ArgumentNullException("builder");
+                throw new ArgumentNullException(nameof(builder));
             }
 
             this.Audience = builder.HostName;
@@ -91,7 +89,7 @@ namespace Microsoft.Azure.Devices
             get;
             private set;
         }
-        
+
         public string ModuleId
         {
             get;
@@ -125,7 +123,7 @@ namespace Microsoft.Azure.Devices
                 password = this.BuildToken(out timeToLive);
             }
             else
-            { 
+            {
                 password = this.SharedAccessSignature;
             }
 
@@ -155,7 +153,7 @@ namespace Microsoft.Azure.Devices
 
             return Task.FromResult(token);
         }
-        
+
         public Uri BuildLinkAddress(string path)
         {
             var builder = new UriBuilder(this.AmqpEndpoint)
@@ -172,7 +170,7 @@ namespace Microsoft.Azure.Devices
             return new IotHubConnectionString(builder);
         }
 
-        string BuildToken(out TimeSpan ttl)
+        private string BuildToken(out TimeSpan ttl)
         {
             var builder = new SharedAccessSignatureBuilder()
             {
@@ -189,7 +187,7 @@ namespace Microsoft.Azure.Devices
                 {
                     builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId);
                 }
-                else 
+                else
                 {
                     builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId) + "/modules/" + WebUtility.UrlEncode(this.ModuleId);
                 }

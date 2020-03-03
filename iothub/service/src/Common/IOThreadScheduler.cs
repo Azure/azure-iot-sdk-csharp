@@ -9,25 +9,25 @@ namespace Microsoft.Azure.Devices.Common
 
     // IOThreadScheduler takes no locks due to contention problems on multiproc.
     [Fx.Tag.SynchronizationPrimitive(Fx.Tag.BlocksUsing.NonBlocking)]
-    class IOThreadScheduler
+    internal class IOThreadScheduler
     {
         // Do not increase the maximum capacity above 32k!  It must be a power of two, 0x8000 or less, in order to
         // work with the strategy for 'headTail'.
-        const int MaximumCapacity = 0x8000;
+        private const int MaximumCapacity = 0x8000;
 
         [Fx.Tag.SecurityNote(Miscellaneous = "can be called outside user context")]
-        static class Bits
+        private static class Bits
         {
-            public const int HiShift     = 32 / 2;
+            public const int HiShift = 32 / 2;
 
-            public const int HiOne       = 1 << HiShift;
-            public const int LoHiBit     = HiOne >> 1;
-            public const int HiHiBit     = LoHiBit << HiShift;
+            public const int HiOne = 1 << HiShift;
+            public const int LoHiBit = HiOne >> 1;
+            public const int HiHiBit = LoHiBit << HiShift;
             public const int LoCountMask = LoHiBit - 1;
             public const int HiCountMask = LoCountMask << HiShift;
-            public const int LoMask      = LoCountMask | LoHiBit;
-            public const int HiMask      = HiCountMask | HiHiBit;
-            public const int HiBits      = LoHiBit | HiHiBit;
+            public const int LoMask = LoCountMask | LoHiBit;
+            public const int HiMask = HiCountMask | HiHiBit;
+            public const int HiBits = LoHiBit | HiHiBit;
 
             public static int Count(int slot)
             {
@@ -51,18 +51,18 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        static IOThreadScheduler current = new IOThreadScheduler(32, 32);
-        readonly ScheduledOverlapped overlapped;
+        private static IOThreadScheduler current = new IOThreadScheduler(32, 32);
+        private readonly ScheduledOverlapped overlapped;
 
         [Fx.Tag.Queue(typeof(Slot), Scope = Fx.Tag.Strings.AppDomain)]
         [Fx.Tag.SecurityNote(Critical = "holds callbacks which get called outside of the app security context")]
         [SecurityCritical]
-        readonly Slot[] slots;
+        private readonly Slot[] slots;
 
         [Fx.Tag.Queue(typeof(Slot), Scope = Fx.Tag.Strings.AppDomain)]
         [Fx.Tag.SecurityNote(Critical = "holds callbacks which get called outside of the app security context")]
         [SecurityCritical]
-        readonly Slot[] slotsLowPri;
+        private readonly Slot[] slotsLowPri;
 
         // This field holds both the head (HiWord) and tail (LoWord) indicies into the slot array.  This limits each
         // value to 64k.  In order to be able to distinguish wrapping the slot array (allowed) from wrapping the
@@ -76,16 +76,16 @@ namespace Microsoft.Azure.Devices.Common
         // When the tail is *two* slots ahead of the head (equivalent to a count of -1), that means the IOTS is
         // idle.  Hence, we start out headTail with a -2 (equivalent) in the head and zero in the tail.
         [Fx.Tag.SynchronizationObject(Blocking = false, Kind = Fx.Tag.SynchronizationKind.InterlockedNoSpin)]
-        int headTail = -2 << Bits.HiShift;
+        private int headTail = -2 << Bits.HiShift;
 
         // This field is the same except that it governs the low-priority work items.  It doesn't have a concept
         // of idle (-2) so starts empty (-1).
         [Fx.Tag.SynchronizationObject(Blocking = false, Kind = Fx.Tag.SynchronizationKind.InterlockedNoSpin)]
-        int headTailLowPri = -1 << Bits.HiShift;
+        private int headTailLowPri = -1 << Bits.HiShift;
 
         [Fx.Tag.SecurityNote(Critical = "creates a ScheduledOverlapped, touches slots, can be called outside of user context",
             Safe = "The scheduled overlapped is only used internally, and flows security.")]
-        IOThreadScheduler(int capacity, int capacityLowPri)
+        private IOThreadScheduler(int capacity, int capacityLowPri)
         {
             Fx.Assert(capacity > 0, "Capacity must be positive.");
             Fx.Assert(capacity <= 0x8000, "Capacity cannot exceed 32k.");
@@ -108,13 +108,14 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (callback == null)
             {
-                throw Fx.Exception.ArgumentNull("callback");
+                throw Fx.Exception.ArgumentNull(nameof(callback));
             }
 
             bool queued = false;
             while (!queued)
             {
-                try { } finally
+                try { }
+                finally
                 {
                     // Called in a finally because it needs to run uninterrupted in order to maintain consistency.
                     queued = IOThreadScheduler.current.ScheduleCallbackHelper(callback, state);
@@ -128,13 +129,14 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (callback == null)
             {
-                throw Fx.Exception.ArgumentNull("callback");
+                throw Fx.Exception.ArgumentNull(nameof(callback));
             }
 
             bool queued = false;
             while (!queued)
             {
-                try { } finally
+                try { }
+                finally
                 {
                     // Called in a finally because it needs to run uninterrupted in order to maintain consistency.
                     queued = IOThreadScheduler.current.ScheduleCallbackLowPriHelper(callback, state);
@@ -145,7 +147,7 @@ namespace Microsoft.Azure.Devices.Common
         // Returns true if successfully scheduled, false otherwise.
         [Fx.Tag.SecurityNote(Critical = "calls into ScheduledOverlapped to post it, touches slots, can be called outside user context.")]
         [SecurityCritical]
-        bool ScheduleCallbackHelper(Action<object> callback, object state)
+        private bool ScheduleCallbackHelper(Action<object> callback, object state)
         {
             // See if there's a free slot.  Fortunately the overflow bit is simply lost.
             int slot = Interlocked.Add(ref this.headTail, Bits.HiOne);
@@ -191,7 +193,7 @@ namespace Microsoft.Azure.Devices.Common
         // Returns true if successfully scheduled, false otherwise.
         [Fx.Tag.SecurityNote(Critical = "calls into ScheduledOverlapped to post it, touches slots, can be called outside user context.")]
         [SecurityCritical]
-        bool ScheduleCallbackLowPriHelper(Action<object> callback, object state)
+        private bool ScheduleCallbackLowPriHelper(Action<object> callback, object state)
         {
             // See if there's a free slot.  Fortunately the overflow bit is simply lost.
             int slot = Interlocked.Add(ref this.headTailLowPri, Bits.HiOne);
@@ -248,7 +250,7 @@ namespace Microsoft.Azure.Devices.Common
 
         [Fx.Tag.SecurityNote(Critical = "calls into ScheduledOverlapped to post it, touches slots, may be called outside of user context")]
         [SecurityCritical]
-        void CompletionCallback(out Action<object> callback, out object state)
+        private void CompletionCallback(out Action<object> callback, out object state)
         {
             int slot = this.headTail;
             int slotLowPri;
@@ -321,7 +323,7 @@ namespace Microsoft.Azure.Devices.Common
 
         [Fx.Tag.SecurityNote(Critical = "touches slots, may be called outside of user context")]
         [SecurityCritical]
-        bool TryCoalesce(out Action<object> callback, out object state)
+        private bool TryCoalesce(out Action<object> callback, out object state)
         {
             int slot = this.headTail;
             int slotLowPri;
@@ -358,7 +360,7 @@ namespace Microsoft.Azure.Devices.Common
             return false;
         }
 
-        int SlotMask
+        private int SlotMask
         {
             [Fx.Tag.SecurityNote(Critical = "touches slots, may be called outside of user context")]
             [SecurityCritical]
@@ -368,7 +370,7 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        int SlotMaskLowPri
+        private int SlotMaskLowPri
         {
             [Fx.Tag.SecurityNote(Critical = "touches slots, may be called outside of user context")]
             [SecurityCritical]
@@ -399,7 +401,7 @@ namespace Microsoft.Azure.Devices.Common
 #endif
         }
 
-        void Cleanup()
+        private void Cleanup()
         {
             if (this.overlapped != null)
             {
@@ -471,11 +473,11 @@ namespace Microsoft.Azure.Devices.Common
         //   -  When the high bit is set, callback is null.
         //   -  It's illegal for the gate to be in a state that would satisfy more than one of these conditions.
         //   -  The state field follows the same rules as callback.
-        struct Slot
+        private struct Slot
         {
-            int gate;
-            Action<object> heldCallback;
-            object heldState;
+            private int gate;
+            private Action<object> heldCallback;
+            private object heldState;
 
             [Fx.Tag.SecurityNote(Miscellaneous = "called by critical code, can be called outside user context")]
             public bool TryEnqueueWorkItem(Action<object> callback, object state, out bool wrapped)
@@ -577,12 +579,14 @@ namespace Microsoft.Azure.Devices.Common
             }
 
 #if DEBUG
+
             public void DebugVerifyEmpty()
             {
                 Fx.Assert(this.gate == 0, "Finalized with unfinished slot.");
                 Fx.Assert(this.heldCallback == null, "Finalized with leaked callback.");
                 Fx.Assert(this.heldState == null, "Finalized with leaked state.");
             }
+
 #endif
         }
 
@@ -595,6 +599,7 @@ namespace Microsoft.Azure.Devices.Common
         // by the GC anyway.
         [Fx.Tag.SecurityNote(Critical = "manages NativeOverlapped instance, can be called outside user context")]
         [SecurityCritical]
+        private
 #if NET451
         unsafe class ScheduledOverlapped
 #else
@@ -604,7 +609,7 @@ namespace Microsoft.Azure.Devices.Common
 #if NET451
             readonly NativeOverlapped* nativeOverlapped;
 #endif
-            IOThreadScheduler scheduler;
+            private IOThreadScheduler scheduler;
 
             public ScheduledOverlapped()
             {
@@ -627,7 +632,8 @@ namespace Microsoft.Azure.Devices.Common
 
                 Action<object> callback;
                 object state;
-                try { } finally
+                try { }
+                finally
                 {
                     // Called in a finally because it needs to run uninterrupted in order to maintain consistency.
                     iots.CompletionCallback(out callback, out state);
@@ -643,7 +649,8 @@ namespace Microsoft.Azure.Devices.Common
                         callback(state);
                     }
 
-                    try { } finally
+                    try { }
+                    finally
                     {
                         // Called in a finally because it needs to run uninterrupted in order to maintain consistency.
                         found = iots.TryCoalesce(out callback, out state);

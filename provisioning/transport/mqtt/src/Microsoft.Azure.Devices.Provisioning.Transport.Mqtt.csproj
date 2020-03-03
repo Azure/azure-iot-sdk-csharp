@@ -17,19 +17,24 @@
     <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <Version>1.2.0</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client MQTT Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>Provisioning Device Client MQTT Transport for Azure IoT Devices</Description>
-    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageIcon>nugetIcon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Device Client .NET MQTT</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <PropertyGroup>
     <common>$(RootDir)\common\src</common>
@@ -46,7 +51,7 @@
     <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
       <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs"> 
+    <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs">
       <Link>Common\device\provisioning\transport\ClientApiVersionHelper.cs</Link>
     </Compile>
     <Compile Include="$(Common)\device\provisioning\transport\DeviceRegistrationResult.cs">
@@ -57,7 +62,7 @@
     </Compile>
     <Compile Include="$(Common)\device\provisioning\transport\TpmRegistrationResult.cs">
       <Link>Common\device\provisioning\transport\TpmRegistrationResult.cs</Link>
-    </Compile>    
+    </Compile>
     <Compile Include="$(Common)\device\provisioning\transport\X509CertificateInfo.cs">
       <Link>Common\device\provisioning\transport\X509CertificateInfo.cs</Link>
     </Compile>
@@ -94,5 +99,4 @@
     <!-- FXCop -->
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
-
 </Project>
