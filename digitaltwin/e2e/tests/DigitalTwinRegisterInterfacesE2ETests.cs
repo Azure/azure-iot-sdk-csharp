@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
         [Theory]
         [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
         [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
-        public async void registerCapbilityModelWithSingleInterface(Devices.Client.TransportType transportType)
+        public async void registerCapabilityModelWithSingleInterface(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType))
             {
