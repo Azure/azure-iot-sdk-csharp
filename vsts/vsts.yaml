@@ -6,6 +6,7 @@ jobs:
   ### Linux build ###
   - job: LINUX
     displayName: Linux
+    timeoutInMinutes: 120
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 3
@@ -121,6 +122,7 @@ jobs:
   ### Windows build ###
   - job: WINDOWS
     displayName: Windows
+    timeoutInMinutes: 120
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 4
