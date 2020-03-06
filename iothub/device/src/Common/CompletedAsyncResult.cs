@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-
     [Serializable]
-    class CompletedAsyncResultT<T> : AsyncResult
+    internal class CompletedAsyncResultT<T> : AsyncResult
     {
-        T data;
+        private T data;
 
         public CompletedAsyncResultT(T data, AsyncCallback callback, object state)
             : base(callback, state)
@@ -27,10 +27,10 @@ namespace Microsoft.Azure.Devices.Client
     }
 
     [Serializable]
-    class CompletedAsyncResultT2<TResult, TParameter> : AsyncResult
+    internal class CompletedAsyncResultT2<TResult, TParameter> : AsyncResult
     {
-        TResult resultData;
-        TParameter parameter;
+        private TResult resultData;
+        private TParameter parameter;
 
         public CompletedAsyncResultT2(TResult resultData, TParameter parameter, AsyncCallback callback, object state)
             : base(callback, state)

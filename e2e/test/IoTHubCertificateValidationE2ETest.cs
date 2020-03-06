@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
                 () => query.GetNextAsTwinAsync()).ConfigureAwait(false);
 
-#if NET451 || NET47
+#if NET451 || NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     DateTime.UtcNow,
                     60)).ConfigureAwait(false);
 
-#if NET451 || NET47
+#if NET451 || NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
                 () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
-#if NET451 || NET47
+#if NET451 || NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));

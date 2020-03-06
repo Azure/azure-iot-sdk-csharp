@@ -14,15 +14,15 @@ namespace Microsoft.Azure.Amqp.Transport
 {
     internal sealed class ClientWebSocketTransport : TransportBase, IDisposable
     {
-        static readonly AsyncCallback onReadComplete = OnReadComplete;
-        static readonly AsyncCallback onWriteComplete = OnWriteComplete;
-        static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly AsyncCallback onReadComplete = OnReadComplete;
+        private static readonly AsyncCallback onWriteComplete = OnWriteComplete;
+        private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(30);
 
-        readonly ClientWebSocket webSocket;
-        readonly EndPoint localEndPoint;
-        readonly EndPoint remoteEndPoint;
-        volatile CancellationTokenSource writeCancellationTokenSource;
-        bool disposed;
+        private readonly ClientWebSocket webSocket;
+        private readonly EndPoint localEndPoint;
+        private readonly EndPoint remoteEndPoint;
+        private volatile CancellationTokenSource writeCancellationTokenSource;
+        private bool disposed;
 
         public ClientWebSocketTransport(ClientWebSocket clientwebSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
             : base("clientwebsocket")
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Amqp.Transport
             return true;
         }
 
-        async Task<bool> WriteAsyncCore(TransportAsyncCallbackArgs args)
+        private async Task<bool> WriteAsyncCore(TransportAsyncCallbackArgs args)
         {
             bool succeeded = false;
             try
@@ -99,12 +99,10 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new IOException(webSocketException.Message, webSocketException);
             }
-#if !NETSTANDARD1_3
             catch (HttpListenerException httpListenerException)
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
-#endif
             catch (TaskCanceledException taskCanceledException)
             {
                 throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
@@ -141,7 +139,7 @@ namespace Microsoft.Azure.Amqp.Transport
             return true;
         }
 
-        async Task<int> ReadAsyncCore(ArraySegment<byte> seg)
+        private async Task<int> ReadAsyncCore(ArraySegment<byte> seg)
         {
             bool succeeded = false;
             try
@@ -156,12 +154,10 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new IOException(webSocketException.Message, webSocketException);
             }
-#if !NETSTANDARD1_3
             catch (HttpListenerException httpListenerException)
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
-#endif
             catch (TaskCanceledException taskCanceledException)
             {
                 throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
@@ -193,7 +189,7 @@ namespace Microsoft.Azure.Amqp.Transport
             return true;
         }
 
-        async Task CloseInternalAsync(TimeSpan timeout)
+        private async Task CloseInternalAsync(TimeSpan timeout)
         {
             try
             {
@@ -209,11 +205,11 @@ namespace Microsoft.Azure.Amqp.Transport
             {
             }
 
-            // Call Abort anyway to ensure that all WebSocket Resources are released 
+            // Call Abort anyway to ensure that all WebSocket Resources are released
             Abort();
         }
 
-        void CancelPendingWrite()
+        private void CancelPendingWrite()
         {
             try
             {
@@ -235,7 +231,7 @@ namespace Microsoft.Azure.Amqp.Transport
             }
         }
 
-        static void OnReadComplete(IAsyncResult result)
+        private static void OnReadComplete(IAsyncResult result)
         {
             if (result.CompletedSynchronously)
             {
@@ -245,7 +241,7 @@ namespace Microsoft.Azure.Amqp.Transport
             HandleReadComplete(result);
         }
 
-        static void HandleReadComplete(IAsyncResult result)
+        private static void HandleReadComplete(IAsyncResult result)
         {
             Task<int> taskResult = (Task<int>)result;
             var args = (TransportAsyncCallbackArgs)taskResult.AsyncState;
@@ -254,7 +250,7 @@ namespace Microsoft.Azure.Amqp.Transport
             args.CompletedCallback(args);
         }
 
-        static bool ReadTaskDone(Task<int> taskResult, TransportAsyncCallbackArgs args)
+        private static bool ReadTaskDone(Task<int> taskResult, TransportAsyncCallbackArgs args)
         {
             IAsyncResult result = taskResult;
             args.BytesTransfered = 0;  // reset bytes transferred
@@ -277,7 +273,7 @@ namespace Microsoft.Azure.Amqp.Transport
             return false;
         }
 
-        static void OnWriteComplete(IAsyncResult result)
+        private static void OnWriteComplete(IAsyncResult result)
         {
             if (result.CompletedSynchronously)
             {
@@ -287,7 +283,7 @@ namespace Microsoft.Azure.Amqp.Transport
             HandleWriteComplete(result);
         }
 
-        static void HandleWriteComplete(IAsyncResult result)
+        private static void HandleWriteComplete(IAsyncResult result)
         {
             Task taskResult = (Task)result;
             var args = (TransportAsyncCallbackArgs)taskResult.AsyncState;
@@ -295,7 +291,7 @@ namespace Microsoft.Azure.Amqp.Transport
             args.CompletedCallback(args);
         }
 
-        static bool WriteTaskDone(Task taskResult, TransportAsyncCallbackArgs args)
+        private static bool WriteTaskDone(Task taskResult, TransportAsyncCallbackArgs args)
         {
             IAsyncResult result = taskResult;
             args.BytesTransfered = 0; // reset bytes transferred
@@ -320,7 +316,7 @@ namespace Microsoft.Azure.Amqp.Transport
             return false;
         }
 
-        void ThrowIfNotOpen()
+        private void ThrowIfNotOpen()
         {
             var webSocketState = webSocket.State;
             if (webSocketState == WebSocketState.Open)

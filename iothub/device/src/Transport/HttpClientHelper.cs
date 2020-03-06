@@ -1,37 +1,36 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Transport
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Shared;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
 
 #if NET451
     using System.Net.Http.Formatting;
 #else
 
-    using System.Text;
-    using Newtonsoft.Json;
+using System.Text;
+using Newtonsoft.Json;
 
 #endif
 
-    using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography.X509Certificates;
 
+namespace Microsoft.Azure.Devices.Client.Transport
+{
     internal sealed class HttpClientHelper : IHttpClientHelper
     {
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
         private readonly Uri baseAddress;
@@ -535,7 +534,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
         private static ObjectContent<T> CreateContent<T>(T entity)
         {
             return new ObjectContent<T>(entity, JsonFormatter);

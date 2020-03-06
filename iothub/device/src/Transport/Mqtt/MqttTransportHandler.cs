@@ -968,10 +968,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return async (address, port) =>
             {
                 string additionalQueryParams = "";
-#if NETSTANDARD1_3
-                // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
-                additionalQueryParams = "?iothub-no-client-cert=true";
-#endif
 
                 var websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
                 var websocket = new ClientWebSocket();

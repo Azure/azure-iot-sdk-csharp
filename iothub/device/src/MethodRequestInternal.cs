@@ -1,38 +1,40 @@
-﻿
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-namespace Microsoft.Azure.Devices.Client
-{
-    using System;
-    using System.IO;
-    using System.Threading;
+using System;
+using System.IO;
+using System.Threading;
+
 #if NETMF
     using System.Collections;
 #else
-    using Microsoft.Azure.Devices.Client.Common.Api;
-    using System.Collections.Generic;
+
+using Microsoft.Azure.Devices.Client.Common.Api;
+using System.Collections.Generic;
+
 #endif
 
-    using DateTimeT = System.DateTime;
+using DateTimeT = System.DateTime;
 
+namespace Microsoft.Azure.Devices.Client
+{
     /// <summary>
     /// The data structure represent the method request coming from the IotHub.
     /// </summary>
     public sealed class MethodRequestInternal : IDisposable
     {
-        readonly object messageLock = new object();
+        private readonly object messageLock = new object();
 #if NETMF
         Stream bodyStream;
 #else
-        volatile Stream bodyStream;
+        private volatile Stream bodyStream;
 #endif
-        bool disposed;
-        bool ownsBodyStream;
-        int getBodyCalled;
+        private bool disposed;
+        private bool ownsBodyStream;
+        private int getBodyCalled;
 #if NETMF
         int sizeInBytesCalled;
 #else
-        long sizeInBytesCalled;
+        private long sizeInBytesCalled;
 #endif
 
         /// <summary>
@@ -48,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client
 
 #if !NETMF
         /// <summary>
-        /// This constructor is only used in the receive path from Amqp path, 
+        /// This constructor is only used in the receive path from Amqp path,
         /// or in Cloning from a Message that has serialized.
         /// </summary>
 
@@ -60,6 +62,7 @@ namespace Microsoft.Azure.Devices.Client
             Stream stream = bodyStream;
             this.InitializeWithStream(stream, false);
         }
+
 #endif
 
         internal CancellationToken CancellationToken
@@ -67,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
             get;
             private set;
         }
-        
+
         /// <summary>
         /// Property indicating the method name for this instance
         /// </summary>
@@ -173,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client
         internal bool IsBodyCalled => Volatile.Read(ref this.getBodyCalled) == 1;
 #endif
 
-        void SetGetBodyCalled()
+        private void SetGetBodyCalled()
         {
             if (1 == Interlocked.Exchange(ref this.getBodyCalled, 1))
             {
@@ -185,12 +188,12 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void SetSizeInBytesCalled()
+        private void SetSizeInBytesCalled()
         {
             Interlocked.Exchange(ref this.sizeInBytesCalled, 1);
         }
 
-        void InitializeWithStream(Stream stream, bool ownsStream)
+        private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
@@ -198,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client
             this.ownsBodyStream = ownsStream;
         }
 
-        static byte[] ReadFullStream(Stream inputStream)
+        private static byte[] ReadFullStream(Stream inputStream)
         {
 #if NETMF
             inputStream.Position = 0;
@@ -216,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
 
-        void ThrowIfDisposed()
+        private void ThrowIfDisposed()
         {
             if (this.disposed)
             {
@@ -228,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!this.disposed)
             {

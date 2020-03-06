@@ -1,25 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+
 namespace Microsoft.Azure.Devices.Api.Test
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Shared;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
-
     [TestClass]
     [TestCategory("Unit")]
     public class DeviceAuthenticationTests
     {
-        const string IotHubName = "acme";
+        private const string IotHubName = "acme";
 
         [TestMethod]
         public async Task DeviceAuthenticationGoodAuthConfigTest1()
@@ -60,7 +58,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     X509Thumbprint = new X509Thumbprint()
                     {
                         PrimaryThumbprint = "921BC9694ADEB8929D4F7FE4B9A3A6DE58B0790B",
-                        SecondaryThumbprint = "921BC9694ADEB8929D4F7FE4B9A3A6DE58B0790B"
+                        SecondaryThumbprint = "921BC9694ADEB8929D4F7FE4B9A3A6DE58B0790B",
                     }
                 }
             };
@@ -211,7 +209,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest1()
         {
             var deviceBadAuthConfig = new Device("123")

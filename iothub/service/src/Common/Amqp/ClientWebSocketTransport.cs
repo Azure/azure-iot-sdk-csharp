@@ -1,59 +1,49 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Net;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Transport;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.IO;
-    using System.Net;
-    using System.Net.WebSockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Amqp.Transport;
-
-    sealed class ClientWebSocketTransport : TransportBase
+    internal sealed class ClientWebSocketTransport : TransportBase
     {
-        static readonly AsyncCallback onReadComplete = OnReadComplete;
-        static readonly AsyncCallback onWriteComplete = OnWriteComplete;
-        static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly AsyncCallback s_onReadComplete = OnReadComplete;
+        private static readonly AsyncCallback s_onWriteComplete = OnWriteComplete;
+        private static readonly TimeSpan s_closeTimeout = TimeSpan.FromSeconds(30);
 
-        readonly ClientWebSocket webSocket;
-        readonly EndPoint localEndPoint;
-        readonly EndPoint remoteEndPoint;
-        volatile CancellationTokenSource writeCancellationTokenSource;
-        bool disposed;
+        private readonly ClientWebSocket _webSocket;
+        private readonly EndPoint _localEndPoint;
+        private readonly EndPoint _remoteEndPoint;
+        private volatile CancellationTokenSource _writeCancellationTokenSource;
+        private bool _disposed;
 
         public ClientWebSocketTransport(ClientWebSocket webSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
             : base("clientwebsocket")
         {
-            this.webSocket = webSocket;
-            this.localEndPoint = localEndpoint;
-            this.remoteEndPoint = remoteEndpoint;
-            this.writeCancellationTokenSource = new CancellationTokenSource();
+            _webSocket = webSocket;
+            _localEndPoint = localEndpoint;
+            _remoteEndPoint = remoteEndpoint;
+            _writeCancellationTokenSource = new CancellationTokenSource();
         }
 
-        public override string LocalEndPoint
-        {
-            get { return this.localEndPoint.ToString(); }
-        }
+        public override string LocalEndPoint => _localEndPoint.ToString();
 
         public override string RemoteEndPoint
         {
-            get { return this.remoteEndPoint.ToString(); }
+            get { return _remoteEndPoint.ToString(); }
         }
 
-        public override bool RequiresCompleteFrames
-        {
-            get { return true; }
-        }
+        public override bool RequiresCompleteFrames => true;
 
-        public override bool IsSecure
-        {
-            get { return true; }
-        }
+        public override bool IsSecure => true;
 
         public override void SetMonitor(ITransportMonitor usageMeter)
         {
@@ -62,23 +52,23 @@ namespace Microsoft.Azure.Devices
 
         public override bool WriteAsync(TransportAsyncCallbackArgs args)
         {
-            this.ThrowIfNotOpen();
+            ThrowIfNotOpen();
 
             Fx.AssertAndThrow(args.Buffer != null || args.ByteBufferList != null, "must have a buffer to write");
             Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
             args.Exception = null; // null out any exceptions
 
-            Task taskResult = this.WriteAsyncCore(args);
+            Task taskResult = WriteAsyncCore(args);
             if (WriteTaskDone(taskResult, args))
             {
                 return false;
             }
 
-            taskResult.ToAsyncResult(onWriteComplete, args);
+            taskResult.ToAsyncResult(s_onWriteComplete, args);
             return true;
         }
 
-        async Task WriteAsyncCore(TransportAsyncCallbackArgs args)
+        private async Task WriteAsyncCore(TransportAsyncCallbackArgs args)
         {
             bool succeeded = false;
             try
@@ -86,14 +76,14 @@ namespace Microsoft.Azure.Devices
                 if (args.Buffer != null)
                 {
                     var arraySegment = new ArraySegment<byte>(args.Buffer, args.Offset, args.Count);
-                    await webSocket.SendAsync(arraySegment, WebSocketMessageType.Binary, true, writeCancellationTokenSource.Token).ConfigureAwait(false);
+                    await _webSocket.SendAsync(arraySegment, WebSocketMessageType.Binary, true, _writeCancellationTokenSource.Token).ConfigureAwait(false);
                 }
                 else
                 {
                     foreach (ByteBuffer byteBuffer in args.ByteBufferList)
                     {
-                        await webSocket.SendAsync(new ArraySegment<byte>(byteBuffer.Buffer, byteBuffer.Offset, byteBuffer.Length),
-                            WebSocketMessageType.Binary, true, writeCancellationTokenSource.Token).ConfigureAwait(false);
+                        await _webSocket.SendAsync(new ArraySegment<byte>(byteBuffer.Buffer, byteBuffer.Offset, byteBuffer.Length),
+                            WebSocketMessageType.Binary, true, _writeCancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
 
@@ -115,14 +105,14 @@ namespace Microsoft.Azure.Devices
             {
                 if (!succeeded)
                 {
-                    this.Abort();
+                    Abort();
                 }
             }
         }
 
         public override bool ReadAsync(TransportAsyncCallbackArgs args)
         {
-            this.ThrowIfNotOpen();
+            ThrowIfNotOpen();
 
             // Read with buffer list not supported
             Fx.AssertAndThrow(args.Buffer != null, "must have buffer to read");
@@ -131,22 +121,22 @@ namespace Microsoft.Azure.Devices
             Utils.ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
             args.Exception = null; // null out any exceptions
 
-            Task<int> taskResult = this.ReadAsyncCore(args);
+            Task<int> taskResult = ReadAsyncCore(args);
             if (ReadTaskDone(taskResult, args))
             {
                 return false;
             }
 
-            taskResult.ToAsyncResult(onReadComplete, args);
+            taskResult.ToAsyncResult(s_onReadComplete, args);
             return true;
         }
 
-        async Task<int> ReadAsyncCore(TransportAsyncCallbackArgs args)
+        private async Task<int> ReadAsyncCore(TransportAsyncCallbackArgs args)
         {
             bool succeeded = false;
             try
             {
-                WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(
+                WebSocketReceiveResult receiveResult = await _webSocket.ReceiveAsync(
                     new ArraySegment<byte>(args.Buffer, args.Offset, args.Count), CancellationToken.None).ConfigureAwait(false);
 
                 succeeded = true;
@@ -168,39 +158,39 @@ namespace Microsoft.Azure.Devices
             {
                 if (!succeeded)
                 {
-                    this.Abort();
+                    Abort();
                 }
             }
         }
 
         protected override bool OpenInternal()
         {
-            this.ThrowIfNotOpen();
+            ThrowIfNotOpen();
 
             return true;
         }
 
         protected override bool CloseInternal()
         {
-            var webSocketState = this.webSocket.State;
+            var webSocketState = _webSocket.State;
             if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
             {
-                this.CloseInternalAsync(CloseTimeout);
+                CloseInternalAsync(s_closeTimeout);
             }
 
             return true;
         }
 
-        async Task CloseInternalAsync(TimeSpan timeout)
+        private async Task CloseInternalAsync(TimeSpan timeout)
         {
             try
             {
                 // Cancel any pending write
-                this.CancelPendingWrite();
+                CancelPendingWrite();
 
                 using (var cancellationTokenSource = new CancellationTokenSource(timeout))
                 {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
+                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
             catch (Exception e)
@@ -211,15 +201,15 @@ namespace Microsoft.Azure.Devices
                 }
             }
 
-            // Call Abort anyway to ensure that all WebSocket Resources are released 
-            this.Abort();
+            // Call Abort anyway to ensure that all WebSocket Resources are released
+            Abort();
         }
 
-        void CancelPendingWrite()
+        private void CancelPendingWrite()
         {
             try
             {
-                this.writeCancellationTokenSource.Cancel();
+                _writeCancellationTokenSource.Cancel();
             }
             catch (ObjectDisposedException)
             {
@@ -229,15 +219,15 @@ namespace Microsoft.Azure.Devices
 
         protected override void AbortInternal()
         {
-            if (!this.disposed && this.webSocket.State != WebSocketState.Aborted)
+            if (!_disposed && _webSocket.State != WebSocketState.Aborted)
             {
-                this.disposed = true;
-                this.webSocket.Abort();
-                this.webSocket.Dispose();
+                _disposed = true;
+                _webSocket.Abort();
+                _webSocket.Dispose();
             }
         }
 
-        static void OnReadComplete(IAsyncResult result)
+        private static void OnReadComplete(IAsyncResult result)
         {
             if (result.CompletedSynchronously)
             {
@@ -247,16 +237,16 @@ namespace Microsoft.Azure.Devices
             HandleReadComplete(result);
         }
 
-        static void HandleReadComplete(IAsyncResult result)
+        private static void HandleReadComplete(IAsyncResult result)
         {
-            Task<int> taskResult = (Task<int>)result;
+            var taskResult = (Task<int>)result;
             var args = (TransportAsyncCallbackArgs)taskResult.AsyncState;
 
             ReadTaskDone(taskResult, args);
             args.CompletedCallback(args);
         }
 
-        static bool ReadTaskDone(Task<int> taskResult, TransportAsyncCallbackArgs args)
+        private static bool ReadTaskDone(Task<int> taskResult, TransportAsyncCallbackArgs args)
         {
             IAsyncResult result = taskResult;
             args.BytesTransfered = 0;  // reset bytes transferred
@@ -279,7 +269,7 @@ namespace Microsoft.Azure.Devices
             return false;
         }
 
-        static void OnWriteComplete(IAsyncResult result)
+        private static void OnWriteComplete(IAsyncResult result)
         {
             if (result.CompletedSynchronously)
             {
@@ -289,15 +279,15 @@ namespace Microsoft.Azure.Devices
             HandleWriteComplete(result);
         }
 
-        static void HandleWriteComplete(IAsyncResult result)
+        private static void HandleWriteComplete(IAsyncResult result)
         {
-            Task taskResult = (Task)result;
+            var taskResult = (Task)result;
             var args = (TransportAsyncCallbackArgs)taskResult.AsyncState;
             WriteTaskDone(taskResult, args);
             args.CompletedCallback(args);
         }
 
-        static bool WriteTaskDone(Task taskResult, TransportAsyncCallbackArgs args)
+        private static bool WriteTaskDone(Task taskResult, TransportAsyncCallbackArgs args)
         {
             IAsyncResult result = taskResult;
             args.BytesTransfered = 0; // reset bytes transferred
@@ -320,9 +310,9 @@ namespace Microsoft.Azure.Devices
             return false;
         }
 
-        void ThrowIfNotOpen()
+        private void ThrowIfNotOpen()
         {
-            var webSocketState = this.webSocket.State;
+            WebSocketState webSocketState = _webSocket.State;
             if (webSocketState == WebSocketState.Open)
             {
                 return;
@@ -333,7 +323,7 @@ namespace Microsoft.Azure.Devices
                 webSocketState == WebSocketState.CloseReceived ||
                 webSocketState == WebSocketState.CloseSent)
             {
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
             }
 
             throw new AmqpException(AmqpErrorCode.IllegalState, null);

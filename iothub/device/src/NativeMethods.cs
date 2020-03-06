@@ -16,12 +16,10 @@ namespace Microsoft.Azure.Devices.Client
                int dwOSMinorVersion,
                int dwSpMajorVersion,
                int dwSpMinorVersion,
-               out int pdwReturnedProductType
-           );
+               out int pdwReturnedProductType);
 
         public static int GetWindowsProductType()
         {
-#if !NETSTANDARD1_3
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
@@ -36,7 +34,6 @@ namespace Microsoft.Azure.Devices.Client
                 Debug.Assert(false, ex.Message);
                 if (Logging.IsEnabled) Logging.Error(null, ex, nameof(NativeMethods));
             }
-#endif
             return 0;
         }
     }

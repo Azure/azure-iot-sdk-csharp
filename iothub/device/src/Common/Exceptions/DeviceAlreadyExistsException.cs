@@ -39,7 +39,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAlreadyExistsException"/> class with the specified serialization and context information.
         /// </summary>
@@ -48,7 +47,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         public DeviceAlreadyExistsException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-        } 
-#endif
+        }
     }
 }

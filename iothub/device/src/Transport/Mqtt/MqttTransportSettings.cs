@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
         private static readonly TimeSpan DefaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan DefaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
+
         /// <summary>
         /// To enable certificate revocation check. Default to be false.
         /// </summary>
@@ -109,6 +110,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public X509Certificate ClientCertificate { get; set; }
 
         public IWebProxy Proxy { get; set; }
-
     }
 }

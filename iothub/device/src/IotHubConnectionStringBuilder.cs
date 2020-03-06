@@ -1,21 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
-{
-    using System;
-    using System.Text;
-    using Microsoft.Azure.Devices.Client.Extensions;
+using System;
+using System.Text;
+using Microsoft.Azure.Devices.Client.Extensions;
 
 #if !NETMF
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Text.RegularExpressions;
-    using System.Net;
-    using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
-    using System.Security.Cryptography.X509Certificates;
+
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Net;
+using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
+using System.Security.Cryptography.X509Certificates;
+
 #endif
 
+namespace Microsoft.Azure.Devices.Client
+{
     /// <summary>
     /// Builds a connection string for the IoT Hub service based on the properties populated by the user.
     /// </summary>
@@ -35,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
         private const RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        private const string X509CertPropertyName =  "X509Cert";
+        private const string X509CertPropertyName = "X509Cert";
         private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex IdNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", regexOptions, regexTimeoutMilliseconds);
@@ -45,13 +47,12 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
         private string hostName;
-        private string iotHubName;
         private IAuthenticationMethod authenticationMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubConnectionStringBuilder"/> class.
         /// </summary>
-        IotHubConnectionStringBuilder()
+        private IotHubConnectionStringBuilder()
         {
         }
 
@@ -103,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         internal static IotHubConnectionStringBuilder CreateWithIAuthenticationOverride(
-            string iotHubConnectionString, 
+            string iotHubConnectionString,
             IAuthenticationMethod authenticationMethod)
         {
             var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder()
@@ -114,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client
             if (authenticationMethod == null)
             {
                 iotHubConnectionStringBuilder.Parse(iotHubConnectionString);
-                iotHubConnectionStringBuilder.AuthenticationMethod = 
+                iotHubConnectionStringBuilder.AuthenticationMethod =
                     AuthenticationMethodFactory.GetAuthenticationMethod(iotHubConnectionStringBuilder);
             }
             else
@@ -125,7 +126,6 @@ namespace Microsoft.Azure.Devices.Client
 
             return iotHubConnectionStringBuilder;
         }
-
 
         /// <summary>
         /// Gets or sets the value of the fully-qualified DNS hostname of the IoT Hub service.
@@ -139,7 +139,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets or sets the authentication method to be used with the IoT Hub service.
         /// </summary>
-        public IAuthenticationMethod AuthenticationMethod {
+        public IAuthenticationMethod AuthenticationMethod
+        {
             get { return this.authenticationMethod; }
             set { this.SetAuthenticationMethod(value); }
         }
@@ -176,10 +177,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool UsingX509Cert { get; internal set; }
 
-        internal string IotHubName 
-        {
-            get { return this.iotHubName; }
-        }
+        internal string IotHubName { get; private set; }
 
 #if !NETMF
         internal X509Certificate2 Certificate { get; set; }
@@ -192,6 +190,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
+
         /// <summary>
         /// Produces the connection string based on the values of the <see cref="IotHubConnectionStringBuilder"/> instance properties.
         /// </summary>
@@ -216,9 +215,10 @@ namespace Microsoft.Azure.Devices.Client
 
             return stringBuilder.ToString();
         }
+
 #endif
 
-        void Parse(string iotHubConnectionString)
+        private void Parse(string iotHubConnectionString)
         {
 #if NETMF
             if (iotHubConnectionString.IsNullOrWhiteSpace())
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             string[] parts = iotHubConnectionString.Split(ValuePairDelimiter);
-            
+
             foreach (string part in parts)
             {
                 string[] pair = part.Split(new char[] { ValuePairSeparator }, 2);
@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else if (string.Equals(pair[0].ToLower(), SharedAccessKeyNamePropertyName.ToLower()))
                     {
-                        // Shared Access Key Name 
+                        // Shared Access Key Name
                         this.SharedAccessKeyName = pair[1];
                     }
                     else if (string.Equals(pair[0].ToLower(), SharedAccessKeyPropertyName.ToLower()))
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.Client
             this.Validate();
         }
 
-        void Validate()
+        private void Validate()
         {
             if (this.DeviceId.IsNullOrWhiteSpace())
             {
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
 
-        void SetHostName(string hostname)
+        private void SetHostName(string hostname)
         {
             if (hostname.IsNullOrWhiteSpace())
             {
@@ -372,9 +372,9 @@ namespace Microsoft.Azure.Devices.Client
             this.SetIotHubName();
         }
 
-        void SetIotHubName()
+        private void SetIotHubName()
         {
-            this.iotHubName = GetIotHubName(this.HostName);
+            this.IotHubName = GetIotHubName(this.HostName);
 
             if (this.IotHubName.IsNullOrWhiteSpace())
             {
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void SetAuthenticationMethod(IAuthenticationMethod authMethod)
+        private void SetAuthenticationMethod(IAuthenticationMethod authMethod)
         {
             if (authMethod == null)
             {
@@ -399,7 +399,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
-        static void ValidateFormat(string value, string propertyName, Regex regex)
+
+        private static void ValidateFormat(string value, string propertyName, Regex regex)
         {
             if (!regex.IsMatch(value))
             {
@@ -407,7 +408,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        static void ValidateFormatIfSpecified(string value, string propertyName, Regex regex)
+        private static void ValidateFormatIfSpecified(string value, string propertyName, Regex regex)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -415,7 +416,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
+        private static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
         {
             string value;
             if (!map.TryGetValue(propertyName, out value))
@@ -426,14 +427,14 @@ namespace Microsoft.Azure.Devices.Client
             return value;
         }
 
-        static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
+        private static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
         {
             string value;
             map.TryGetValue(propertyName, out value);
             return value;
         }
 
-        static TValue GetConnectionStringOptionalValueOrDefault<TValue>(IDictionary<string, string> map, string propertyName, TryParse<string, TValue> tryParse, bool ignoreCase)
+        private static TValue GetConnectionStringOptionalValueOrDefault<TValue>(IDictionary<string, string> map, string propertyName, TryParse<string, TValue> tryParse, bool ignoreCase)
         {
             TValue value = default(TValue);
             string stringValue;
@@ -447,8 +448,10 @@ namespace Microsoft.Azure.Devices.Client
 
             return value;
         }
+
 #endif
-        static string GetIotHubName(string hostName)
+
+        private static string GetIotHubName(string hostName)
         {
 #if NETMF
             int index = hostName.IndexOf(HostNameSeparator);
@@ -459,7 +462,7 @@ namespace Microsoft.Azure.Devices.Client
             return iotHubName;
         }
 
-        static bool GetX509(string input, bool ignoreCase, out bool usingX509Cert)
+        private static bool GetX509(string input, bool ignoreCase, out bool usingX509Cert)
         {
             usingX509Cert = false;
             bool isMatch;

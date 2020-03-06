@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Client.Common
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Stephen Cleary approved
     /// http://stackoverflow.com/questions/15428604/how-to-run-a-task-on-a-custom-taskscheduler-using-await
     /// </summary>
-    static class TaskUtils
+    internal static class TaskUtils
     {
-        static readonly TaskFactory MyTaskFactory = new TaskFactory( CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskContinuationOptions.None, TaskScheduler.Default);
+        private static readonly TaskFactory MyTaskFactory = new TaskFactory(CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskContinuationOptions.None, TaskScheduler.Default);
 
         internal static Task RunOnDefaultScheduler(this Func<Task> func)
         {

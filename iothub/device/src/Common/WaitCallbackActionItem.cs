@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    static class WaitCallbackActionItem
+    internal static class WaitCallbackActionItem
     {
         internal static bool ShouldUseActivity { get; set; }
     }

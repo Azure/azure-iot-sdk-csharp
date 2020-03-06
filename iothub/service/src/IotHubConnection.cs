@@ -2,6 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
+using System.Net;
+using System.Net.Security;
+using System.Net.WebSockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
@@ -11,33 +17,21 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Client;
 using Microsoft.Azure.Devices.Common.Data;
 using Microsoft.Azure.Devices.Shared;
-using System.Net;
-using System.Net.Security;
 
 #if NET451
-using System.Configuration;
-#endif
-
-#if !NETSTANDARD1_3
-
-using System.Net.WebSockets;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
-using System.Globalization;
-
+    using System.Configuration;
 #endif
 
 namespace Microsoft.Azure.Devices
 {
     internal sealed class IotHubConnection : IDisposable
     {
+        private const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
-        internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
-        internal static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan s_refreshTokenRetryInterval = TimeSpan.FromSeconds(30);
-        private const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
         private static readonly Lazy<bool> s_disableServerCertificateValidation = new Lazy<bool>(InitializeDisableServerCertificateValidation);
+
         private readonly AccessRights _accessRights;
         private readonly FaultTolerantAmqpObject<AmqpSession> _faultTolerantSession;
 #if !NET451
@@ -47,6 +41,9 @@ namespace Microsoft.Azure.Devices
 #endif
         private readonly bool _useWebSocketOnly;
         private readonly ServiceClientTransportSettings _transportSettings;
+
+        internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
+        internal static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
         public IotHubConnection(IotHubConnectionString connectionString, AccessRights accessRights, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
@@ -103,12 +100,7 @@ namespace Microsoft.Azure.Devices
                 Target = new Target { Address = linkAddress.AbsoluteUri },
                 SndSettleMode = null, // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
                 RcvSettleMode = null, // (byte)ReceiverSettleMode.First (null as it is the default and to avoid bytes on the wire)
-                LinkName = Guid.NewGuid()
-#if NETSTANDARD1_3
-                    .ToString("N"),
-#else
-                    .ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
-#endif
+                LinkName = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
             };
 
             SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
@@ -141,12 +133,7 @@ namespace Microsoft.Azure.Devices
                 Source = new Source { Address = linkAddress.AbsoluteUri },
                 SndSettleMode = null, // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
                 RcvSettleMode = (byte)ReceiverSettleMode.Second,
-                LinkName = Guid.NewGuid()
-#if NETSTANDARD1_3
-                    .ToString("N"),
-#else
-                    .ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
-#endif
+                LinkName = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
             };
 
             SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
@@ -196,12 +183,10 @@ namespace Microsoft.Azure.Devices
                 {
                     transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 }
-#if !NETSTANDARD1_3
                 catch (AuthenticationException)
                 {
                     throw;
                 }
-#endif
                 catch (Exception e)
                 {
                     if (Fx.IsFatal(e))
@@ -224,12 +209,7 @@ namespace Microsoft.Azure.Devices
             var amqpConnectionSettings = new AmqpConnectionSettings
             {
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
-                ContainerId = Guid.NewGuid()
-#if NETSTANDARD1_3
-                    .ToString("N"),
-#else
-                    .ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
-#endif
+                ContainerId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
                 HostName = ConnectionString.AmqpEndpoint.Host,
             };
 
@@ -268,8 +248,6 @@ namespace Microsoft.Azure.Devices
             // Closing the connection also closes any sessions.
             amqpSession.Connection.SafeClose();
         }
-
-#if !NETSTANDARD1_3
 
         private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
         {
@@ -317,13 +295,8 @@ namespace Microsoft.Azure.Devices
             return websocket;
         }
 
-#endif
-
         private async Task<TransportBase> CreateClientWebSocketTransport(TimeSpan timeout)
         {
-#if NETSTANDARD1_3
-            throw new NotImplementedException("web sockets are not yet supported for UWP");
-#else
             var timeoutHelper = new TimeoutHelper(timeout);
             var websocketUri = new Uri(WebSocketConstants.Scheme + ConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix);
 
@@ -344,14 +317,13 @@ namespace Microsoft.Azure.Devices
             else
             {
 #endif
-                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                return new ClientWebSocketTransport(
-                    websocket,
-                    null,
-                    null);
+            ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            return new ClientWebSocketTransport(
+                websocket,
+                null,
+                null);
 #if NET451
             }
-#endif
 #endif
         }
 
@@ -385,10 +357,8 @@ namespace Microsoft.Azure.Devices
             var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = ConnectionString.HostName,
-#if !NETSTANDARD1_3
                 Certificate = null, // TODO: add client cert support
-                CertificateValidationCallback = OnRemoteCertificateValidation,
-#endif
+                CertificateValidationCallback = OnRemoteCertificateValidation
             };
 
             return tlsTransportSettings;
@@ -452,8 +422,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-#if !NETSTANDARD1_3
-
         public static bool OnRemoteCertificateValidation(
             object sender,
             X509Certificate certificate,
@@ -472,8 +440,6 @@ namespace Microsoft.Azure.Devices
 
             return false;
         }
-
-#endif
 
         public static ArraySegment<byte> GetNextDeliveryTag(ref int deliveryTag)
         {

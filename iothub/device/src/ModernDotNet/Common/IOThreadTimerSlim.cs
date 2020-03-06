@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Threading;
-
-    class IOThreadTimerSlim
+    internal class IOThreadTimerSlim
     {
-        Timer timer;
-        Action<object> callback;
-        object callbackState;
+        private Timer timer;
+        private Action<object> callback;
+        private object callbackState;
 
         private void CreateTimer()
         {

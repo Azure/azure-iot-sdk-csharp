@@ -1,43 +1,32 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Security;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Security;
-    using System.Threading;
-
-    abstract class ActionItem
+    internal abstract class ActionItem
     {
+#if NET451
         [Fx.Tag.SecurityNote(Critical = "Stores the security context, used later in binding back into")]
         [SecurityCritical]
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-        SecurityContext context;
+        private SecurityContext _context;
 #endif
-        bool isScheduled;
-
-        bool lowPriority;
+        private bool _isScheduled;
 
         protected ActionItem()
         {
         }
 
-        public bool LowPriority
-        {
-            get
-            {
-                return this.lowPriority;
-            }
-            protected set
-            {
-                this.lowPriority = value;
-            }
-        }
+        public bool LowPriority { get; protected set; }
 
         public static void Schedule(Action<object> callback, object state)
         {
             Schedule(callback, state, false);
         }
+
         [Fx.Tag.SecurityNote(Critical = "Calls into critical method ScheduleCallback",
             Safe = "Schedule invoke of the given delegate under the current context")]
         public static void Schedule(Action<object> callback, object state, bool lowPriority)
@@ -67,18 +56,18 @@ namespace Microsoft.Azure.Devices.Client
         [SecurityCritical]
         protected void Schedule()
         {
-            if (isScheduled)
+            if (_isScheduled)
             {
                 throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
             }
 
-            this.isScheduled = true;
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+            _isScheduled = true;
+#if NET451
             if (PartialTrustHelpers.ShouldFlowSecurityContext)
             {
-                this.context = PartialTrustHelpers.CaptureSecurityContextNoIdentityFlow();
+                _context = PartialTrustHelpers.CaptureSecurityContextNoIdentityFlow();
             }
-            if (this.context != null)
+            if (_context != null)
             {
                 ScheduleCallback(CallbackHelper.InvokeWithContextCallback);
             }
@@ -88,7 +77,8 @@ namespace Microsoft.Azure.Devices.Client
                 ScheduleCallback(CallbackHelper.InvokeWithoutContextCallback);
             }
         }
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+
+#if NET451
         [Fx.Tag.SecurityNote(Critical = "Access critical field context and critical property " +
             "CallbackHelper.InvokeWithContextCallback, calls into critical method ScheduleCallback; " +
             "since nothing is known about the given context, can't be treated as safe")]
@@ -99,34 +89,35 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw Fx.Exception.ArgumentNull("context");
             }
-            if (isScheduled)
+            if (_isScheduled)
             {
                 throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
             }
 
-            this.isScheduled = true;
-            this.context = contextToSchedule.CreateCopy();
+            _isScheduled = true;
+            _context = contextToSchedule.CreateCopy();
             ScheduleCallback(CallbackHelper.InvokeWithContextCallback);
         }
 #endif
+
         [Fx.Tag.SecurityNote(Critical = "Access critical property CallbackHelper.InvokeWithoutContextCallback, " +
             "Calls into critical method ScheduleCallback; not bound to a security context")]
         [SecurityCritical]
         protected void ScheduleWithoutContext()
         {
-            if (isScheduled)
+            if (_isScheduled)
             {
                 throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
             }
 
-            this.isScheduled = true;
+            _isScheduled = true;
             ScheduleCallback(CallbackHelper.InvokeWithoutContextCallback);
         }
 
         [Fx.Tag.SecurityNote(Critical = "Calls into critical methods IOThreadScheduler.ScheduleCallbackNoFlow, " +
             "IOThreadScheduler.ScheduleCallbackLowPriNoFlow")]
         [SecurityCritical]
-        static void ScheduleCallback(Action<object> callback, object state, bool lowPriority)
+        private static void ScheduleCallback(Action<object> callback, object state, bool lowPriority)
         {
             Fx.Assert(callback != null, "Cannot schedule a null callback");
             if (lowPriority)
@@ -139,34 +130,36 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
         [Fx.Tag.SecurityNote(Critical = "Extract the security context stored and reset the critical field")]
         [SecurityCritical]
-        SecurityContext ExtractContext()
+        private SecurityContext ExtractContext()
         {
-            Fx.Assert(this.context != null, "Cannot bind to a null context; context should have been set by now");
-            Fx.Assert(this.isScheduled, "Context is extracted only while the object is scheduled");
-            SecurityContext result = this.context;
-            this.context = null;
+            Fx.Assert(_context != null, "Cannot bind to a null context; context should have been set by now");
+            Fx.Assert(_isScheduled, "Context is extracted only while the object is scheduled");
+            SecurityContext result = _context;
+            _context = null;
             return result;
         }
 #endif
 
         [Fx.Tag.SecurityNote(Critical = "Calls into critical static method ScheduleCallback")]
         [SecurityCritical]
-        void ScheduleCallback(Action<object> callback)
+        private void ScheduleCallback(Action<object> callback)
         {
-            ScheduleCallback(callback, this, this.lowPriority);
+            ScheduleCallback(callback, this, LowPriority);
         }
 
         [SecurityCritical]
-        static class CallbackHelper
+        private static class CallbackHelper
         {
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
-            static Action<object> invokeWithoutContextCallback;
+            private static Action<object> invokeWithoutContextCallback;
+
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
-            static ContextCallback onContextAppliedCallback;
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+            private static ContextCallback onContextAppliedCallback;
+
+#if NET451
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
             static Action<object> invokeWithContextCallback;
             [Fx.Tag.SecurityNote(Critical = "Provides access to a critical field; Initialize it with " +
@@ -197,6 +190,7 @@ namespace Microsoft.Azure.Devices.Client
                     return invokeWithoutContextCallback;
                 }
             }
+
             [Fx.Tag.SecurityNote(Critical = "Provides access to a critical field; Initialize it with " +
                 "a delegate to a critical method")]
             public static ContextCallback OnContextAppliedCallback
@@ -210,42 +204,43 @@ namespace Microsoft.Azure.Devices.Client
                     return onContextAppliedCallback;
                 }
             }
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+
+#if NET451
             [Fx.Tag.SecurityNote(Critical = "Called by the scheduler without any user context on the stack")]
-            static void InvokeWithContext(object state)
+            private static void InvokeWithContext(object state)
             {
                 SecurityContext context = ((ActionItem)state).ExtractContext();
                 SecurityContext.Run(context, OnContextAppliedCallback, state);
             }
 #endif
+
             [Fx.Tag.SecurityNote(Critical = "Called by the scheduler without any user context on the stack")]
-            static void InvokeWithoutContext(object state)
+            private static void InvokeWithoutContext(object state)
             {
-                ActionItem tempState = (ActionItem)state;
+                var tempState = (ActionItem)state;
                 tempState.Invoke();
-                tempState.isScheduled = false;
+                tempState._isScheduled = false;
             }
+
             [Fx.Tag.SecurityNote(Critical = "Called after applying the user context on the stack")]
-            static void OnContextApplied(object o)
+            private static void OnContextApplied(object o)
             {
-                ActionItem tempState = (ActionItem)o;
+                var tempState = (ActionItem)o;
                 tempState.Invoke();
-                tempState.isScheduled = false;
+                tempState._isScheduled = false;
             }
         }
 
-        class DefaultActionItem : ActionItem
+        private class DefaultActionItem : ActionItem
         {
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate that will be called later, at a particular context")]
             [SecurityCritical]
-            Action<object> callback;
+            private readonly Action<object> _callback;
+
             [Fx.Tag.SecurityNote(Critical = "Stores an object that will be passed to the delegate that will be " +
                 "called later, at a particular context")]
             [SecurityCritical]
-            object state;
-
-            ////bool flowActivityId;
-            ////Guid activityId;
+            private readonly object _state;
 
             [Fx.Tag.SecurityNote(Critical = "Access critical fields callback and state",
                 Safe = "Doesn't leak information or resources")]
@@ -253,13 +248,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 Fx.Assert(callback != null, "Shouldn't instantiate an object to wrap a null callback");
                 base.LowPriority = isLowPriority;
-                this.callback = callback;
-                this.state = state;
-                ////if (WaitCallbackActionItem.ShouldUseActivity)
-                ////{
-                ////    this.flowActivityId = true;
-                ////    this.activityId = DiagnosticTrace.ActivityId;
-                ////}
+                _callback = callback;
+                _state = state;
             }
 
             [Fx.Tag.SecurityNote(Critical = "Implements a the critical abstract ActionItem.Invoke method, " +
@@ -267,25 +257,8 @@ namespace Microsoft.Azure.Devices.Client
             [SecurityCritical]
             protected override void Invoke()
             {
-                ////if (this.flowActivityId)
-                ////{
-                ////    Guid currentActivityId = DiagnosticTrace.ActivityId;
-                ////    try
-                ////    {
-                ////        DiagnosticTrace.ActivityId = this.activityId;
-                ////        this.callback(this.state);
-                ////    }
-                ////    finally
-                ////    {
-                ////        DiagnosticTrace.ActivityId = currentActivityId;
-                ////    }
-                ////}
-                ////else
-                {
-                    this.callback(this.state);
-                }
+                _callback(_state);
             }
         }
     }
 }
-

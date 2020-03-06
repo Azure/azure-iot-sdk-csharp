@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System.Text;
-
     /// <summary>
     /// The data structure represent the Device Twin Method that is used for triggering an activity on the device
     /// </summary>
     public sealed class MethodResponse
     {
-        byte[] result;
+        private byte[] result;
 
         /// <summary>
         /// Make a new instance of the return class and validates that the payload is correct JSON.

@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Client.Common;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using Microsoft.Azure.Devices.Client.Common;
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Diagnostics.Contracts;
-
     /// <summary>
     /// Read-only wrapper for another generic dictionary.
     /// </summary>
@@ -19,19 +19,19 @@ namespace Microsoft.Azure.Devices.Client
     [DebuggerDisplay("Count = {Count}")]
     public class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary //, IReadOnlyDictionary<TKey, TValue>
     {
-        readonly IDictionary<TKey, TValue> m_dictionary;
+        private readonly IDictionary<TKey, TValue> m_dictionary;
 
         [NonSerialized]
-        object m_syncRoot;
+        private object m_syncRoot;
 
         [NonSerialized]
-        KeyCollection m_keys;
+        private KeyCollection m_keys;
 
         [NonSerialized]
-        ValueCollection m_values;
+        private ValueCollection m_values;
 
         [NonSerialized]
-        IReadOnlyIndicator m_readOnlyIndicator;
+        private IReadOnlyIndicator m_readOnlyIndicator;
 
         public ReadOnlyDictionary45(IDictionary<TKey, TValue> dictionary)
             : this(dictionary, new AlwaysReadOnlyIndicator())
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        #endregion
+        #endregion IDictionary<TKey, TValue> Members
 
         #region ICollection<KeyValuePair<TKey, TValue>> Members
 
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.Client
             return m_dictionary.Remove(item);
         }
 
-        #endregion
+        #endregion ICollection<KeyValuePair<TKey, TValue>> Members
 
         #region IEnumerable<KeyValuePair<TKey, TValue>> Members
 
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client
             return m_dictionary.GetEnumerator();
         }
 
-        #endregion
+        #endregion IEnumerable<KeyValuePair<TKey, TValue>> Members
 
         #region IEnumerable Members
 
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client
             return ((IEnumerable)m_dictionary).GetEnumerator();
         }
 
-        #endregion
+        #endregion IEnumerable Members
 
         #region IDictionary Members
 
@@ -458,14 +458,14 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        #endregion
+        #endregion IDictionary Members
 
         [DebuggerDisplay("Count = {Count}")]
         [Serializable]
         public sealed class KeyCollection : ICollection<TKey>, ICollection
         {
             private readonly ICollection<TKey> m_collection;
-            
+
             [NonSerialized]
             private object m_syncRoot;
 
@@ -534,7 +534,7 @@ namespace Microsoft.Azure.Devices.Client
                 return m_collection.Remove(item);
             }
 
-            #endregion
+            #endregion ICollection<T> Members
 
             #region IEnumerable<T> Members
 
@@ -543,7 +543,7 @@ namespace Microsoft.Azure.Devices.Client
                 return m_collection.GetEnumerator();
             }
 
-            #endregion
+            #endregion IEnumerable<T> Members
 
             #region IEnumerable Members
 
@@ -552,7 +552,7 @@ namespace Microsoft.Azure.Devices.Client
                 return ((IEnumerable)m_collection).GetEnumerator();
             }
 
-            #endregion
+            #endregion IEnumerable Members
 
             #region ICollection Members
 
@@ -586,7 +586,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            #endregion
+            #endregion ICollection Members
         }
 
         [DebuggerDisplay("Count = {Count}")]
@@ -664,7 +664,7 @@ namespace Microsoft.Azure.Devices.Client
                 return m_collection.Remove(item);
             }
 
-            #endregion
+            #endregion ICollection<T> Members
 
             #region IEnumerable<T> Members
 
@@ -673,7 +673,7 @@ namespace Microsoft.Azure.Devices.Client
                 return m_collection.GetEnumerator();
             }
 
-            #endregion
+            #endregion IEnumerable<T> Members
 
             #region IEnumerable Members
 
@@ -682,7 +682,7 @@ namespace Microsoft.Azure.Devices.Client
                 return ((IEnumerable)m_collection).GetEnumerator();
             }
 
-            #endregion
+            #endregion IEnumerable Members
 
             #region ICollection Members
 
@@ -719,7 +719,7 @@ namespace Microsoft.Azure.Devices.Client
             #endregion ICollection Members
         }
 
-        class AlwaysReadOnlyIndicator : IReadOnlyIndicator
+        private class AlwaysReadOnlyIndicator : IReadOnlyIndicator
         {
             public bool IsReadOnly
             {

@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     using System;
     using System.Runtime.Serialization;
-    
+
     [Serializable]
     public sealed class PreconditionFailedException : IotHubException
     {
@@ -24,11 +24,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
-        PreconditionFailedException(SerializationInfo info, StreamingContext context)
+        private PreconditionFailedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

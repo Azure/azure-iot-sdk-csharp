@@ -2,6 +2,14 @@
 //Microsoft would like to thank its contributors, a list
 //of whom are at http://aka.ms/entlib-contributors
 
+using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
+
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
 //obtain a copy of the License at
@@ -21,14 +29,6 @@
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
-    using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
-
-    using System;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Handles the execution and retries of the user-initiated task.
     /// </summary>
@@ -136,12 +136,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 
             long executionTime = stopwatch.ElapsedMilliseconds;
 
-// 'RetryLimitExceededException' is obsolete: 'You should use cancellation tokens or other means of stopping the retry loop.'               
-#pragma warning disable 0618 
             if (innerException is RetryLimitExceededException)
-#pragma warning restore 0618
             {
-                TaskCompletionSource<TResult> taskCompletionSource = new TaskCompletionSource<TResult>();
+                var taskCompletionSource = new TaskCompletionSource<TResult>();
                 if (innerException.InnerException != null)
                 {
                     taskCompletionSource.TrySetException(innerException.InnerException);
@@ -168,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 {
                     double newBackoffTimeMiliseconds = MinimumTimeBetweenRetriesMiliseconds - executionTime;
                     Debug.WriteLine(
-                        this.cancellationToken.GetHashCode() + " Last execution time was " + executionTime + ". Adjusting back-off time to " + 
+                        this.cancellationToken.GetHashCode() + " Last execution time was " + executionTime + ". Adjusting back-off time to " +
                         newBackoffTimeMiliseconds + " to avoid high CPU/Memory spikes.");
                     zero = TimeSpan.FromMilliseconds(newBackoffTimeMiliseconds);
                 }

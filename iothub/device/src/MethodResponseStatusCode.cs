@@ -10,6 +10,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         BadRequest = 400,
         UserCodeException = 500,
-        MethodNotImplemented = 501
+        MethodNotImplemented = 501,
     }
 }

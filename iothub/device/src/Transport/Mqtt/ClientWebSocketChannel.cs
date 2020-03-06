@@ -1,23 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics.Contracts;
+using System.Net;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+using DotNetty.Buffers;
+using DotNetty.Transport.Channels;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-    using System.Diagnostics.Contracts;
-    using System.Net;
-    using System.Net.WebSockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using DotNetty.Buffers;
-    using DotNetty.Transport.Channels;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
     public class ClientWebSocketChannel : AbstractChannel
     {
-        readonly ClientWebSocket webSocket;
-        readonly CancellationTokenSource writeCancellationTokenSource;
-        bool active;
+        private readonly ClientWebSocket webSocket;
+        private readonly CancellationTokenSource writeCancellationTokenSource;
+        private bool active;
 
         internal bool ReadPending { get; set; }
 
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async Task<int> DoReadBytes(IByteBuffer byteBuffer)
+        private async Task<int> DoReadBytes(IByteBuffer byteBuffer)
         {
             WebSocketReceiveResult receiveResult = await this.webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None).ConfigureAwait(false);
             if (receiveResult.MessageType == WebSocketMessageType.Text)
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return receiveResult.Count;
         }
 
-        void CancelPendingWrite()
+        private void CancelPendingWrite()
         {
             try
             {
@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async Task HandleCloseAsync()
+        private async Task HandleCloseAsync()
         {
             try
             {
@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        void Abort()
+        private void Abort()
         {
             this.webSocket.Abort();
             this.webSocket.Dispose();

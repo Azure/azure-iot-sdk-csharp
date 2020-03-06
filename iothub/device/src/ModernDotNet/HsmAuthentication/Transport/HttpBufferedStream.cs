@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         public HttpBufferedStream(Stream stream)
         {
-#if NETSTANDARD2_0
+#if !NET451
             _innerStream = new BufferedStream(stream);
 #else
             _innerStream = new BufferedReadStream(stream);

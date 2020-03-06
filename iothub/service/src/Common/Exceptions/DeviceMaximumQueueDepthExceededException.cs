@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     {
         public DeviceMaximumQueueDepthExceededException(int maximumQueueDepth)
             : this(maximumQueueDepth, null)
-        {            
+        {
         }
 
         public DeviceMaximumQueueDepthExceededException(int maximumQueueDepth, string trackingId)
@@ -29,13 +29,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
-        DeviceMaximumQueueDepthExceededException(SerializationInfo info, StreamingContext context)
+        private DeviceMaximumQueueDepthExceededException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             this.MaximumQueueDepth = info.GetInt32("MaximumQueueDepth");
         }
-#endif
 
         internal int MaximumQueueDepth
         {
@@ -43,13 +41,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             private set;
         }
 
-#if !NETSTANDARD1_3
         /// <inheritdoc />
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
             info.AddValue("MaximumQueueDepth", this.MaximumQueueDepth);
         }
-#endif
     }
 }

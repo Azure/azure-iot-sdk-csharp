@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Amqp.Encoding;
     using Microsoft.Azure.Amqp.Framing;
 
-    static class MessageConverter
+    internal static class MessageConverter
     {
         public const string LockTokenName = "x-opt-lock-token";
         public const string SequenceNumberName = "x-opt-sequence-number";
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices
                     if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out netObject))
                     {
                         var stringObject = netObject as string;
-                        
+
                         if (stringObject != null)
                         {
                             switch (pair.Key.ToString())
@@ -99,12 +99,15 @@ namespace Microsoft.Azure.Devices
                                 case MessageSystemPropertyNames.Operation:
                                     data.SystemProperties[pair.Key.ToString()] = stringObject;
                                     break;
+
                                 case MessageSystemPropertyNames.MessageSchema:
                                     data.MessageSchema = stringObject;
                                     break;
+
                                 case MessageSystemPropertyNames.CreationTimeUtc:
                                     data.CreationTimeUtc = DateTime.Parse(stringObject);
                                     break;
+
                                 default:
                                     data.Properties[pair.Key.ToString()] = stringObject;
                                     break;
@@ -115,7 +118,7 @@ namespace Microsoft.Azure.Devices
                             // TODO: RDBug 4093369 Handling of non-string property values in Amqp messages
                             // Drop non-string properties and log an error
                             Fx.Exception.TraceHandled(new InvalidDataException("IotHub does not accept non-string Amqp properties"), "MessageConverter.UpdateMessageHeaderAndProperties");
-                        }                        
+                        }
                     }
                 }
             }
@@ -166,7 +169,7 @@ namespace Microsoft.Azure.Devices
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.CreationTimeUtc, out propertyValue))
             {
-                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime) propertyValue).ToString("o");   // Convert to string that complies with ISO 8601
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o");   // Convert to string that complies with ISO 8601
             }
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out propertyValue))
@@ -191,7 +194,7 @@ namespace Microsoft.Azure.Devices
                 }
             }
         }
-        
+
         public static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)
         {
             amqpObject = null;
@@ -220,21 +223,26 @@ namespace Microsoft.Azure.Devices
                 case PropertyValueType.String:
                     amqpObject = netObject;
                     break;
+
                 case PropertyValueType.Stream:
                     if (mappingType == MappingType.ApplicationProperty)
                     {
                         amqpObject = ReadStream((Stream)netObject);
                     }
                     break;
+
                 case PropertyValueType.Uri:
                     amqpObject = new DescribedType((AmqpSymbol)UriName, ((Uri)netObject).AbsoluteUri);
                     break;
+
                 case PropertyValueType.DateTimeOffset:
                     amqpObject = new DescribedType((AmqpSymbol)DateTimeOffsetName, ((DateTimeOffset)netObject).UtcTicks);
                     break;
+
                 case PropertyValueType.TimeSpan:
                     amqpObject = new DescribedType((AmqpSymbol)TimeSpanName, ((TimeSpan)netObject).Ticks);
                     break;
+
                 case PropertyValueType.Unknown:
                     if (netObject is Stream)
                     {
@@ -261,6 +269,7 @@ namespace Microsoft.Azure.Devices
                         amqpObject = new AmqpMap((IDictionary)netObject);
                     }
                     break;
+
                 default:
                     break;
             }
@@ -296,6 +305,7 @@ namespace Microsoft.Azure.Devices
                 case PropertyValueType.String:
                     netObject = amqpObject;
                     break;
+
                 case PropertyValueType.Unknown:
                     if (amqpObject is AmqpSymbol)
                     {
@@ -355,6 +365,7 @@ namespace Microsoft.Azure.Devices
                         netObject = amqpObject;
                     }
                     break;
+
                 default:
                     break;
             }
@@ -372,11 +383,7 @@ namespace Microsoft.Azure.Devices
                 memoryStream.Write(readBuffer, 0, bytesRead);
             }
 
-#if NETSTANDARD1_3
-            return new ArraySegment<byte>(memoryStream.ToArray(), 0, (int)memoryStream.Length);
-#else
             return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
-#endif
         }
     }
 }

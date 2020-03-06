@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
 
-#if NET451 || NET47
+#if NET451 || NET472
             File.WriteAllBytes(filePath, buffer);
             await Task.Delay(0).ConfigureAwait(false);
 #else

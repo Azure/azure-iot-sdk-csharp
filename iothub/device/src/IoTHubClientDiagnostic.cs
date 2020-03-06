@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Globalization;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Globalization;
-
     internal class IoTHubClientDiagnostic
     {
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
