@@ -11,9 +11,9 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class ModuleAuthenticationWithToken : IAuthenticationMethod
     {
-        private string deviceId;
-        private string moduleId;
-        private string token;
+        private string _deviceId;
+        private string _moduleId;
+        private string _token;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModuleAuthenticationWithToken"/> class.
@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="token">Security Token.</param>
         public ModuleAuthenticationWithToken(string deviceId, string moduleId, string token)
         {
-            this.SetDeviceId(deviceId);
-            this.SetModuleId(moduleId);
-            this.SetToken(token);
+            SetDeviceId(deviceId);
+            SetModuleId(moduleId);
+            SetToken(token);
         }
 
         /// <summary>
@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string DeviceId
         {
-            get { return this.deviceId; }
-            set { this.SetDeviceId(value); }
+            get => _deviceId;
+            set => SetDeviceId(value);
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string ModuleId
         {
-            get { return this.moduleId; }
-            set { this.SetModuleId(value); }
+            get => _moduleId;
+            set => SetModuleId(value);
         }
 
         /// <summary>
@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string Token
         {
-            get { return this.token; }
-            set { this.SetToken(value); }
+            get => _token;
+            set => SetToken(value);
         }
 
         /// <summary>
@@ -64,12 +64,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException("iotHubConnectionStringBuilder");
+                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
-            iotHubConnectionStringBuilder.ModuleId = this.ModuleId;
-            iotHubConnectionStringBuilder.SharedAccessSignature = this.Token;
+            iotHubConnectionStringBuilder.DeviceId = DeviceId;
+            iotHubConnectionStringBuilder.ModuleId = ModuleId;
+            iotHubConnectionStringBuilder.SharedAccessSignature = Token;
             iotHubConnectionStringBuilder.SharedAccessKey = null;
             iotHubConnectionStringBuilder.SharedAccessKeyName = null;
 
@@ -80,42 +80,35 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
-            this.deviceId = deviceId;
+            _deviceId = deviceId;
         }
 
         private void SetModuleId(string moduleId)
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("moduleId");
+                throw new ArgumentNullException(nameof(moduleId));
             }
 
-            this.moduleId = moduleId;
+            _moduleId = moduleId;
         }
 
         private void SetToken(string token)
         {
             if (token.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("token");
+                throw new ArgumentNullException(nameof(token));
             }
 
-#if NETMF
-            if (token.IndexOf(SharedAccessSignatureConstants.SharedAccessSignature) != 0)
-            {
-                throw new ArgumentException("Token must be of type SharedAccessSignature");
-            }
-#else
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Token must be of type SharedAccessSignature");
             }
-#endif
 
-            this.token = token;
+            _token = token;
         }
     }
 }

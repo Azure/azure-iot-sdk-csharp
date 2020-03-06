@@ -20,14 +20,12 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (iotHubConnectionStringBuilder.SharedAccessKey != null)
             {
-#if !NETMF
                 if (iotHubConnectionStringBuilder.ModuleId != null)
                 {
                     return new ModuleAuthenticationWithRegistrySymmetricKey(
                         iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.ModuleId, iotHubConnectionStringBuilder.SharedAccessKey);
                 }
                 else
-#endif
                 {
                     return new DeviceAuthenticationWithRegistrySymmetricKey(
                         iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessKey);
@@ -35,31 +33,23 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (iotHubConnectionStringBuilder.SharedAccessSignature != null)
             {
-#if !NETMF
                 if (iotHubConnectionStringBuilder.ModuleId != null)
                 {
                     return new ModuleAuthenticationWithToken(
                         iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.ModuleId, iotHubConnectionStringBuilder.SharedAccessSignature);
                 }
                 else
-#endif
                 {
                     return new DeviceAuthenticationWithToken(
                         iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessSignature);
                 }
             }
-#if !NETMF
             else if (iotHubConnectionStringBuilder.UsingX509Cert)
             {
                 return new DeviceAuthenticationWithX509Certificate(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.Certificate);
             }
-#endif
 
-#if NETMF
-            throw new InvalidOperationException("Unsupported Authentication Method " + iotHubConnectionStringBuilder.ToString());
-#else
             throw new InvalidOperationException("Unsupported Authentication Method {0}".FormatInvariant(iotHubConnectionStringBuilder));
-#endif
         }
 
         /// <summary>
@@ -85,8 +75,6 @@ namespace Microsoft.Azure.Devices.Client
             return new DeviceAuthenticationWithToken(deviceId, token);
         }
 
-#if !NETMF
-
         /// <summary>
         /// Creates a <see cref="ModuleAuthenticationWithToken"/> instance based on the parameters.
         /// </summary>
@@ -99,8 +87,6 @@ namespace Microsoft.Azure.Devices.Client
             return new ModuleAuthenticationWithToken(deviceId, moduleId, token);
         }
 
-#endif
-
         /// <summary>
         /// Creates a <see cref="DeviceAuthenticationWithRegistrySymmetricKey"/> instance based on the parameters.
         /// </summary>
@@ -111,8 +97,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             return new DeviceAuthenticationWithRegistrySymmetricKey(deviceId, key);
         }
-
-#if !NETMF
 
         /// <summary>
         /// Creates a <see cref="ModuleAuthenticationWithRegistrySymmetricKey"/> instance based on the parameters.
@@ -125,7 +109,5 @@ namespace Microsoft.Azure.Devices.Client
         {
             return new ModuleAuthenticationWithRegistrySymmetricKey(deviceId, moduleId, key);
         }
-
-#endif
     }
 }

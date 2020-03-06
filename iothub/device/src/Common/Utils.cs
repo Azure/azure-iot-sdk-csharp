@@ -5,12 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using Microsoft.Azure.Devices.Client.Extensions;
-
-#if !NETMF
-
 using Newtonsoft.Json;
-
-#endif
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -19,8 +14,6 @@ namespace Microsoft.Azure.Devices.Client
         static Utils()
         {
         }
-
-#if !NETMF
 
         public static void ValidateBufferBounds(byte[] buffer, int offset, int size)
         {
@@ -55,8 +48,6 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(size), size, Common.Resources.SizeExceedsRemainingBufferSpace.FormatInvariant(remainingBufferSpace));
             }
         }
-
-#endif
 
         public static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)
         {
@@ -100,8 +91,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !NETMF
-
         public static void ValidateDataIsEmptyOrJson(byte[] data)
         {
             if (data.Length != 0)
@@ -117,7 +106,5 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
         }
-
-#endif
     }
 }
