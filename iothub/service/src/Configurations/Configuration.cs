@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal Configuration()
         {
-            SchemaVersion = "1.0";
+            SchemaVersion = "2.0";
             ContentType = "assignment";
             Metrics = new ConfigurationMetrics();
         }
