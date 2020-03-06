@@ -6,12 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
-
-#if !NETMF
-
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-
-#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -21,11 +16,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             // ProtocolRoutingDelegatingHandler configures the ITransportSettings configuration
             // which is different from ITransportSettings[] element.
-            var transportSetting = context.Get<ITransportSettings>();
-            var connectionString = context.Get<IotHubConnectionString>();
-            var onMethodCallback = context.Get<InternalClient.OnMethodCalledDelegate>();
-            var onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
-            var onReceiveCallback = context.Get<InternalClient.OnReceiveEventMessageCalledDelegate>();
+            ITransportSettings transportSetting = context.Get<ITransportSettings>();
+            IotHubConnectionString connectionString = context.Get<IotHubConnectionString>();
+            InternalClient.OnMethodCalledDelegate onMethodCallback = context.Get<InternalClient.OnMethodCalledDelegate>();
+            Action<TwinCollection> onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
+            InternalClient.OnReceiveEventMessageCalledDelegate onReceiveCallback = context.Get<InternalClient.OnReceiveEventMessageCalledDelegate>();
 
             switch (transportSetting.GetTransportType())
             {
@@ -41,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
-#if !NETMF
+
                 case TransportType.Mqtt_Tcp_Only:
                 case TransportType.Mqtt_WebSocket_Only:
                     return new MqttTransportHandler(
@@ -51,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         new Func<MethodRequestInternal, Task>(onMethodCallback),
                         onDesiredStatePatchReceived,
                         new Func<string, Message, Task>(onReceiveCallback));
-#endif
+
                 default:
                     throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
             }

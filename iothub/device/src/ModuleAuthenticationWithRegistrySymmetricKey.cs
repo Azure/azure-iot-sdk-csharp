@@ -11,9 +11,9 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class ModuleAuthenticationWithRegistrySymmetricKey : IAuthenticationMethod
     {
-        private string deviceId;
-        private string moduleId;
-        private byte[] key;
+        private string _deviceId;
+        private string _moduleId;
+        private byte[] _key;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithRegistrySymmetricKey"/> class.
@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="key">Symmetric key associated with the module.</param>
         public ModuleAuthenticationWithRegistrySymmetricKey(string deviceId, string moduleId, string key)
         {
-            this.SetDeviceId(deviceId);
-            this.SetModuleId(moduleId);
-            this.SetKeyFromBase64String(key);
+            SetDeviceId(deviceId);
+            SetModuleId(moduleId);
+            SetKeyFromBase64String(key);
         }
 
         /// <summary>
@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string DeviceId
         {
-            get { return this.deviceId; }
-            set { this.SetDeviceId(value); }
+            get => _deviceId;
+            set => SetDeviceId(value);
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string ModuleId
         {
-            get { return this.moduleId; }
-            set { this.SetModuleId(value); }
+            get => _moduleId;
+            set => SetModuleId(value);
         }
 
         /// <summary>
@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public byte[] Key
         {
-            get { return this.key; }
-            set { this.SetKey(value); }
+            get => _key;
+            set => SetKey(value);
         }
 
         /// <summary>
@@ -60,8 +60,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string KeyAsBase64String
         {
-            get { return Convert.ToBase64String(this.Key); }
-            set { this.SetKeyFromBase64String(value); }
+            get => Convert.ToBase64String(Key);
+            set => SetKeyFromBase64String(value);
         }
 
         /// <summary>
@@ -73,12 +73,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException("iotHubConnectionStringBuilder");
+                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
-            iotHubConnectionStringBuilder.ModuleId = this.ModuleId;
-            iotHubConnectionStringBuilder.SharedAccessKey = this.KeyAsBase64String;
+            iotHubConnectionStringBuilder.DeviceId = DeviceId;
+            iotHubConnectionStringBuilder.ModuleId = ModuleId;
+            iotHubConnectionStringBuilder.SharedAccessKey = KeyAsBase64String;
             iotHubConnectionStringBuilder.SharedAccessKeyName = null;
             iotHubConnectionStringBuilder.SharedAccessSignature = null;
 
@@ -87,49 +87,42 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetKey(byte[] key)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException("key");
-            }
-
-            this.key = key;
+            _key = key ?? throw new ArgumentNullException(nameof(key));
         }
 
         private void SetKeyFromBase64String(string key)
         {
             if (key.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
-#if !NETMF
             if (!StringValidationHelper.IsBase64String(key))
             {
                 throw new ArgumentException("Key must be base64 encoded");
             }
-#endif
 
-            this.key = Convert.FromBase64String(key);
+            _key = Convert.FromBase64String(key);
         }
 
         private void SetDeviceId(string deviceId)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
-            this.deviceId = deviceId;
+            _deviceId = deviceId;
         }
 
         private void SetModuleId(string moduleId)
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("moduleId");
+                throw new ArgumentNullException(nameof(moduleId));
             }
 
-            this.moduleId = moduleId;
+            _moduleId = moduleId;
         }
     }
 }
