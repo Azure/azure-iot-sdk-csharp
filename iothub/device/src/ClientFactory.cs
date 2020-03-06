@@ -76,7 +76,6 @@ namespace Microsoft.Azure.Devices.Client
 
             IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 
-#if !NETMF
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
                 if (connectionStringBuilder.Certificate == null)
@@ -93,7 +92,6 @@ namespace Microsoft.Azure.Devices.Client
                 dc.Certificate = connectionStringBuilder.Certificate;
                 return dc;
             }
-#endif
 
             return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportType, null);
         }
@@ -124,16 +122,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (hostname == null)
             {
-                throw new ArgumentNullException("hostname");
+                throw new ArgumentNullException(nameof(hostname));
             }
 
             if (authenticationMethod == null)
             {
-                throw new ArgumentNullException("authenticationMethod");
+                throw new ArgumentNullException(nameof(authenticationMethod));
             }
 
             var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
-#if !NETMF
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
                 if (connectionStringBuilder.Certificate == null)
@@ -150,7 +147,6 @@ namespace Microsoft.Azure.Devices.Client
                 dc.Certificate = connectionStringBuilder.Certificate;
                 return dc;
             }
-#endif
             return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportSettings, null);
         }
 

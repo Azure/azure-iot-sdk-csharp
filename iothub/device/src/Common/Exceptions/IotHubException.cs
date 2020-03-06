@@ -2,12 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-
-#if !NETMF
-
 using System.Runtime.Serialization;
-
-#endif
 
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
@@ -155,8 +150,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             this.TrackingId = trackingId;
         }
 
-#if !NETMF
-
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubException"/> class.
         /// </summary>
@@ -183,7 +176,5 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             info.AddValue(IsTransientValueSerializationStoreName, _isTransient);
             info.AddValue(TrackingIdValueSerializationStoreName, _trackingId);
         }
-
-#endif
     }
 }
