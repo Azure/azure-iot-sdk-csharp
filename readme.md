@@ -59,7 +59,6 @@ For details on OS support see the following resources:
 - [.NET Core Runtime ID Catalog](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
 - [.NET Framework System Requirements](https://docs.microsoft.com/en-us/dotnet/framework/get-started/system-requirements)
 - [Configure TLS Protocol Version and Ciphers](./configure_tls_protocol_version_and_ciphers.md)
-- [.NET MicroFramework](http://netmf.github.io)
 
 ## Key features and roadmap
 
