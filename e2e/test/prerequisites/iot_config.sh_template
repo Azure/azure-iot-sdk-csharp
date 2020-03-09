@@ -92,6 +92,10 @@ export CUSTOM_ALLOCATION_POLICY_WEBHOOK=""
 # Only the hostname is needed, not the full connection string
 export FAR_AWAY_IOTHUB_HOSTNAME=""
 
+# Storage account integration
+# Used for IoT Hub features that integrate with a storage account, e.g. DeviceImport and DeviceExport jobs
+export STORAGE_ACCOUNT_CONNECTION_STRING=""
+
 # ---------- Invalid Certificate validation ----------
 # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
 

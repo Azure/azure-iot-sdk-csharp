@@ -1,20 +1,22 @@
-﻿// ---------------------------------------------------------------
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// ---------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ---------------------------------------------------------------
 
+using System;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json;
-
     /// <summary>
     ///  contains device properties specified during export/import operation
     /// </summary>
     public sealed class ExportImportDevice
     {
-        string eTag;
-        string twinETag;
+        private string _eTag;
+        private string _twinETag;
 
         /// <summary>
         /// making default ctor public
@@ -27,16 +29,16 @@ namespace Microsoft.Azure.Devices
         /// ctor which takes a Device object along with import mode
         /// </summary>
         /// <param name="device"></param>
-        /// <param name="importmode"></param>
-        public ExportImportDevice(Device device, ImportMode importmode)
+        /// <param name="importMode"></param>
+        public ExportImportDevice(Device device, ImportMode importMode)
         {
-            this.Id = device.Id;
-            this.eTag = this.SanitizeETag(device.ETag);
-            this.ImportMode = importmode;
-            this.Status = device.Status;
-            this.StatusReason = device.StatusReason;
-            this.Authentication = device.Authentication;
-            this.Capabilities = device.Capabilities;
+            Id = device.Id;
+            _eTag = SanitizeETag(device.ETag);
+            ImportMode = importMode;
+            Status = device.Status;
+            StatusReason = device.StatusReason;
+            Authentication = device.Authentication;
+            Capabilities = device.Capabilities;
         }
 
         /// <summary>
@@ -55,15 +57,10 @@ namespace Microsoft.Azure.Devices
         /// ETag of the device
         /// </summary>
         [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore)]
-        public string ETag {
-            get
-            {
-                return this.eTag;
-            }
-            set
-            {
-                this.eTag = this.SanitizeETag(value);
-            }
+        public string ETag
+        {
+            get => _eTag;
+            set => _eTag = SanitizeETag(value);
         }
 
         /// <summary>
@@ -93,8 +90,8 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
         public string TwinETag
         {
-            get { return this.twinETag; }
-            set { this.twinETag = this.SanitizeETag(value); }
+            get => _twinETag;
+            set => _twinETag = SanitizeETag(value);
         }
 
         [JsonProperty(PropertyName = "tags", NullValueHandling = NullValueHandling.Ignore)]
@@ -115,7 +112,7 @@ namespace Microsoft.Azure.Devices
             public TwinCollection ReportedProperties { get; set; }
         }
 
-        string SanitizeETag(string eTag)
+        private string SanitizeETag(string eTag)
         {
             if (!string.IsNullOrWhiteSpace(eTag))
             {
