@@ -279,7 +279,7 @@ try
         {
             $testCategory += "&TestCategory!=IoTHub"
         }
-		
+
         if ($skipDPSTests)
         {
             $testCategory += "&TestCategory!=DPS"
@@ -300,7 +300,7 @@ try
         BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
         BuildPackage provisioning\service\src "Provisioning Service Client SDK"
     }
-    
+
     if (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
     {
         Write-Host
@@ -361,7 +361,7 @@ try
         {
             if ($result.success)
             {
-                Write-Host -ForegroundColor Green "OK    : $($result.file.FullName)"
+                Write-Host -ForegroundColor Green "OK: $($result.file.FullName)"
             }
             else
             {
