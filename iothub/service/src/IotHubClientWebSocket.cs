@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
 {
@@ -145,7 +146,13 @@ namespace Microsoft.Azure.Devices
                     // In the real world, web-socket will happen over HTTPS
                     var sslStream = new SslStream(TcpClient.GetStream(), false, IotHubConnection.OnRemoteCertificateValidation);
                     var x509CertificateCollection = new X509Certificate2Collection();
-                    await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation: false).ConfigureAwait(false);
+                    await sslStream
+                        .AuthenticateAsClientAsync(
+                            host,
+                            x509CertificateCollection,
+                            TlsVersions.Instance.Preferred,
+                            checkCertificateRevocation: false)
+                        .ConfigureAwait(false);
                     WebSocketStream = sslStream;
                 }
                 else
