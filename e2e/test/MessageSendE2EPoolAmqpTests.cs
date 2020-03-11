@@ -137,12 +137,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsTrue(isReceived, "Message is not received.");
             };
 
-            Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
+            Func<IList<DeviceClient>, Task> cleanupOperation = (deviceClients) =>
             {
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     deviceClient.Dispose();
                 }
+
+                return Task.FromResult(0);
             };
 
             await PoolingOverAmqp.TestPoolAmqpAsync(

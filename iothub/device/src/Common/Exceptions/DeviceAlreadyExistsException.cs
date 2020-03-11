@@ -39,6 +39,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
+#pragma warning disable CA2229 // Implement serialization constructors. Would change public API.
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAlreadyExistsException"/> class with the specified serialization and context information.
         /// </summary>
@@ -48,5 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             : base(info, context)
         {
         }
+
+#pragma warning restore CA2229 // Implement serialization constructors
     }
 }

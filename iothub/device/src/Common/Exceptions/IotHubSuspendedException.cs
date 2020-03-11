@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-        private IotHubSuspendedException(SerializationInfo info, StreamingContext context)
+        protected IotHubSuspendedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
