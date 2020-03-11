@@ -524,7 +524,7 @@ namespace Microsoft.Azure.Devices
         public abstract Task<IEnumerable<Module>> GetModulesOnDeviceAsync(string deviceId, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves specified number of devices from every Iot Hub partition. 
+        /// Retrieves specified number of devices from every Iot Hub partition.
         /// This is an approximation and not a definitive list. Results are not ordered.
         /// </summary>
         /// <returns>
@@ -534,7 +534,7 @@ namespace Microsoft.Azure.Devices
         public abstract Task<IEnumerable<Device>> GetDevicesAsync(int maxCount);
 
         /// <summary>
-        /// Retrieves specified number of devices from every Iot hub partition. 
+        /// Retrieves specified number of devices from every Iot hub partition.
         /// This is an approximation and not a definitive list. Results are not ordered.
         /// </summary>
         /// <returns>
@@ -559,14 +559,14 @@ namespace Microsoft.Azure.Devices
         public abstract IQuery CreateQuery(string sqlQueryString, int? pageSize);
 
         /// <summary>
-        /// Copies registered device data to a set of blobs in a specific container in a storage account. 
+        /// Copies registered device data to a set of blobs in a specific container in a storage account.
         /// </summary>
         /// <param name="storageAccountConnectionString">ConnectionString to the destination StorageAccount</param>
         /// <param name="containerName">Destination blob container name</param>
         public abstract Task ExportRegistryAsync(string storageAccountConnectionString, string containerName);
 
         /// <summary>
-        /// Copies registered device data to a set of blobs in a specific container in a storage account. 
+        /// Copies registered device data to a set of blobs in a specific container in a storage account.
         /// </summary>
         /// <param name="storageAccountConnectionString">ConnectionString to the destination StorageAccount</param>
         /// <param name="containerName">Destination blob container name</param>
@@ -574,19 +574,21 @@ namespace Microsoft.Azure.Devices
         public abstract Task ExportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Imports registered device data from a set of blobs in a specific container in a storage account. 
+        /// Imports registered device data from a set of blobs in a specific container in a storage account.
         /// </summary>
         /// <param name="storageAccountConnectionString">ConnectionString to the source StorageAccount</param>
         /// <param name="containerName">Source blob container name</param>
         public abstract Task ImportRegistryAsync(string storageAccountConnectionString, string containerName);
 
         /// <summary>
-        /// Imports registered device data from a set of blobs in a specific container in a storage account. 
+        /// Imports registered device data from a set of blobs in a specific container in a storage account.
         /// </summary>
         /// <param name="storageAccountConnectionString">ConnectionString to the source StorageAccount</param>
         /// <param name="containerName">Source blob container name</param>
         /// <param name="cancellationToken">Task cancellation token</param>
         public abstract Task ImportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken);
+
+#pragma warning disable CA1054 // Uri parameters should not be strings
 
         /// <summary>
         /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
@@ -594,6 +596,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="exportBlobContainerUri">Destination blob container URI</param>
         /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export</param>
         /// <returns>JobProperties of the newly created job.</returns>
+
         public abstract Task<JobProperties> ExportDevicesAsync(string exportBlobContainerUri, bool excludeKeys);
 
         /// <summary>
@@ -620,9 +623,17 @@ namespace Microsoft.Azure.Devices
         /// <param name="exportBlobContainerUri"></param>
         /// <param name="outputBlobName"></param>
         /// <param name="excludeKeys"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Task cancellation token</param>
         /// <returns>JobProperties of the newly created job.</returns>
         public abstract Task<JobProperties> ExportDevicesAsync(string exportBlobContainerUri, string outputBlobName, bool excludeKeys, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
+        /// </summary>
+        /// <param name="jobParameters">Parameters for the job</param>
+        /// <param name="cancellationToken">Task cancellation token</param>
+        /// <returns>JobProperties of the newly created job.</returns>
+        public abstract Task<JobProperties> ExportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a new bulk job to import device registrations into the IoT Hub.
@@ -656,9 +667,19 @@ namespace Microsoft.Azure.Devices
         /// <param name="importBlobContainerUri"></param>
         /// <param name="outputBlobContainerUri"></param>
         /// <param name="inputBlobName"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Task cancellation token</param>
         /// <returns>JobProperties of the newly created job.</returns>
         public abstract Task<JobProperties> ImportDevicesAsync(string importBlobContainerUri, string outputBlobContainerUri, string inputBlobName, CancellationToken cancellationToken);
+
+#pragma warning restore CA1054 // Uri parameters should not be strings
+
+        /// <summary>
+        /// Creates a new bulk job to import device registrations into the IoT Hub.
+        /// </summary>
+        /// <param name="jobParameters">Parameters for the job</param>
+        /// <param name="cancellationToken">Task cancellation token</param>
+        /// <returns>JobProperties of the newly created job.</returns>
+        public abstract Task<JobProperties> ImportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the job with the specified ID.
@@ -972,7 +993,7 @@ namespace Microsoft.Azure.Devices
         public abstract Task<Configuration> GetConfigurationAsync(string configurationId, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves specified number of configurations from every Iot Hub partition. 
+        /// Retrieves specified number of configurations from every Iot Hub partition.
         /// Results are not ordered.
         /// </summary>
         /// <returns>
@@ -981,7 +1002,7 @@ namespace Microsoft.Azure.Devices
         public abstract Task<IEnumerable<Configuration>> GetConfigurationsAsync(int maxCount);
 
         /// <summary>
-        /// Retrieves specified number of configurations from every Iot hub partition. 
+        /// Retrieves specified number of configurations from every Iot hub partition.
         /// Results are not ordered.
         /// </summary>
         /// <returns>
