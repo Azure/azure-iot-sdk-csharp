@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         exportJobResponse = await registryManager
                            .ExportDevicesAsync(
                                 JobProperties.CreateForExportJob(
-                                    storageContainer.SasUri.ToString(),
+                                    containerUri.ToString(),
                                     true,
                                     null,
                                     storageAuthenticationType))

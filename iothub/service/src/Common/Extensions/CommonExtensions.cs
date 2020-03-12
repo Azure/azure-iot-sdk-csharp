@@ -99,18 +99,18 @@ namespace Microsoft.Azure.Devices.Common
         /// <summary>
         /// Takes a string representation of key/value pairs and produces a dictionary
         /// </summary>
-        /// <param name="keyValuePair">The string containing key/value pairs</param>
+        /// <param name="valuePairString">The string containing key/value pairs</param>
         /// <param name="kvpDelimiter">The delimeter between key/value pairs</param>
         /// <param name="kvpSeparator">The character separating each key and value</param>
         /// <returns>A dictionary of the key/value pairs</returns>
-        public static IDictionary<string, string> ToDictionary(this string keyValuePair, char kvpDelimiter, char kvpSeparator)
+        public static IDictionary<string, string> ToDictionary(this string valuePairString, char kvpDelimiter, char kvpSeparator)
         {
-            if (string.IsNullOrWhiteSpace(keyValuePair))
+            if (string.IsNullOrWhiteSpace(valuePairString))
             {
                 throw new ArgumentException("Malformed token");
             }
 
-            IEnumerable<string[]> parts = keyValuePair
+            IEnumerable<string[]> parts = valuePairString
                 .Split(kvpDelimiter)
                 .Select((part) => part.Split(new char[] { kvpSeparator }, 2));
 
