@@ -1,40 +1,39 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Data;
+using Microsoft.Azure.Devices.Common.Exceptions;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Amqp.Framing;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Data;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.Azure.Devices.Common.WebApi;
-
-    sealed class AmqpServiceClient : ServiceClient
+    internal sealed class AmqpServiceClient : ServiceClient
     {
-        static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
-        const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
-        const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
-        const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
-        const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
+        private const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
+        private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
+        private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
+        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
 
-        readonly IotHubConnection iotHubConnection;
-        readonly TimeSpan openTimeout;
-        readonly TimeSpan operationTimeout;
-        readonly FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantSendingLink;
-        readonly string sendingPath;
-        readonly AmqpFeedbackReceiver feedbackReceiver;
-        readonly AmqpFileNotificationReceiver fileNotificationReceiver;
-        readonly IHttpClientHelper httpClientHelper;
-        readonly string iotHubName;
+        private readonly IotHubConnection iotHubConnection;
+        private readonly TimeSpan openTimeout;
+        private readonly TimeSpan operationTimeout;
+        private readonly FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantSendingLink;
+        private readonly string sendingPath;
+        private readonly AmqpFeedbackReceiver feedbackReceiver;
+        private readonly AmqpFileNotificationReceiver fileNotificationReceiver;
+        private readonly IHttpClientHelper httpClientHelper;
+        private readonly string iotHubName;
 
-        int sendingDeliveryTag;
+        private int sendingDeliveryTag;
 
         public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
@@ -212,7 +211,7 @@ namespace Microsoft.Azure.Devices
             return InvokeDeviceMethodAsync(GetDeviceMethodUri(deviceId), cloudToDeviceMethod, cancellationToken);
         }
 
-        Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(Uri uri,
+        private Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(Uri uri,
             CloudToDeviceMethod cloudToDeviceMethod,
             CancellationToken cancellationToken)
         {
@@ -225,7 +224,6 @@ namespace Microsoft.Azure.Devices
                 null,
                 null,
                 cancellationToken);
-
         }
 
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod)
@@ -291,7 +289,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        async Task<SendingAmqpLink> GetSendingLinkAsync()
+        private async Task<SendingAmqpLink> GetSendingLinkAsync()
         {
             SendingAmqpLink sendingLink;
             if (!this.faultTolerantSendingLink.TryGetOpenedObject(out sendingLink))
@@ -302,7 +300,7 @@ namespace Microsoft.Azure.Devices
             return sendingLink;
         }
 
-        Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)
+        private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)
         {
             return this.iotHubConnection.CreateSendingLinkAsync(this.sendingPath, timeout);
         }
@@ -320,7 +318,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        static TimeSpan GetInvokeDeviceMethodOperationTimeout(CloudToDeviceMethod cloudToDeviceMethod)
+        private static TimeSpan GetInvokeDeviceMethodOperationTimeout(CloudToDeviceMethod cloudToDeviceMethod)
         {
             // For InvokeDeviceMethod, we need to take into account the timeouts specified
             // for the Device to connect and send a response. We also need to take into account
@@ -331,23 +329,23 @@ namespace Microsoft.Azure.Devices
             return timeout <= DefaultOperationTimeout ? DefaultOperationTimeout : timeout;
         }
 
-        static Uri GetStatisticsUri()
+        private static Uri GetStatisticsUri()
         {
             return new Uri(StatisticsUriFormat, UriKind.Relative);
         }
 
-        static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
+        private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
         {
             return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
-        static Uri GetDeviceMethodUri(string deviceId)
+        private static Uri GetDeviceMethodUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             return new Uri(DeviceMethodUriFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
-        static Uri GetModuleMethodUri(string deviceId, string moduleId)
+        private static Uri GetModuleMethodUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
