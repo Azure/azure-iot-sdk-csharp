@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices
 #pragma warning disable CA1056 // Uri properties should not be strings
 
         /// <summary>
-        /// URI containing SAS token to a blob container that contains registry data to sync.
+        /// URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// </summary>
         /// <remarks>
         /// For Import job, if there are errors they will be written to OutputBlobContainerUri to a file called "importerrors.log"
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices
         public string InputBlobContainerUri { get; set; }
 
         /// <summary>
-        /// URI containing SAS token to a blob container.  This is used to output the status of the job and the results.
+        /// URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// </summary>
         [JsonProperty(PropertyName = "outputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
         public string OutputBlobContainerUri { get; set; }
@@ -125,8 +125,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of JobProperties with parameters ready to start an Import job
         /// </summary>
-        /// <param name="inputBlobContainerUri">URI containing SAS token to a blob container that contains registry data to sync</param>
-        /// <param name="outputBlobContainerUri">URI containing SAS token to a blob container.  This is used to output the status of the job and the results.</param>
+        /// <param name="inputBlobContainerUri">URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
+        /// <param name="outputBlobContainerUri">URI to a blob container.  This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
         /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>
         /// <returns>An instance of JobProperties</returns>
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of JobProperties with paramters ready to start an Import job
         /// </summary>
-        /// <param name="outputBlobContainerUri">URI containing SAS token to a blob container.  This is used to output the status of the job and the results.</param>
+        /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
         /// <param name="excludeKeysInExport">Indicates if authorization keys are included in export output</param>
         /// <param name="outputBlobName">The name of the blob that will be created in the provided output blob container</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>

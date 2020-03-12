@@ -29,12 +29,12 @@ namespace Microsoft.Azure.Devices
         /// ctor which takes a Device object along with import mode
         /// </summary>
         /// <param name="device"></param>
-        /// <param name="importMode"></param>
-        public ExportImportDevice(Device device, ImportMode importMode)
+        /// <param name="importmode"></param>
+        public ExportImportDevice(Device device, ImportMode importmode)
         {
             Id = device.Id;
             _eTag = SanitizeETag(device.ETag);
-            ImportMode = importMode;
+            ImportMode = importmode;
             Status = device.Status;
             StatusReason = device.StatusReason;
             Authentication = device.Authentication;
