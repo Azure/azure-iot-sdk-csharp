@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -18,6 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
+    [Ignore("diagnostics bug hits when running with other tests")]
     public class RegistryManagerImportDevicesTests
     {
 #pragma warning disable CA1823
@@ -27,6 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // so for now, we need to disable this.
         // https://github.com/Azure/azure-sdk-for-net/issues/10476
         //private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
+
 #pragma warning restore CA1823
 
         private const string ImportFileNameDefault = "devices.txt";

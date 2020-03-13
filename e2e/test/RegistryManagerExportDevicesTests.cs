@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
@@ -20,6 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
+    [Ignore("diagnostics bug hits when running with other tests")]
     public class RegistryManagerExportDevicesTests
     {
 #pragma warning disable CA1823
