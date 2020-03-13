@@ -10,8 +10,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 3
       matrix:
-        .Net Core 2.1:
-          FRAMEWORK: netcoreapp2.1
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
 
     condition: succeeded()
     pool:
@@ -95,7 +95,7 @@ jobs:
         displayName: "Publish Test Results **/*.trx"
         inputs:
           testRunner: VSTest
-          testRunTitle: "Linux Tests (netcoreapp2.1)"
+          testRunTitle: "Linux Tests (netcoreapp3.1)"
           testResultsFiles: "**/*.trx"
 
         condition: always()
@@ -107,8 +107,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 3
       matrix:
-        .Net Core 2.1:
-          FRAMEWORK: netcoreapp2.1
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
         .Net Framework 4.7.2:
           FRAMEWORK: net472
         .Net Framework 4.5.1:
