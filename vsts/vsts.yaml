@@ -32,13 +32,6 @@ jobs:
 
           restartPolicy: unlessStopped
 
-      - task: UseDotNet@2
-        displayName: "Install .NET Core App 2.1"
-        inputs:
-            packageType: "sdk"
-            version: "2.1.x"
-            installationPath: $(Agent.ToolsDirectory)/dotnet
-
       - task: Docker@1
         displayName: "Start Test Proxy"
         inputs:
