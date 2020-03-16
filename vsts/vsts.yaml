@@ -10,8 +10,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 3
       matrix:
-        .Net Core 2.1:
-          FRAMEWORK: netcoreapp2.1
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
 
     condition: succeeded()
     pool:
@@ -31,13 +31,6 @@ jobs:
             127.0.0.1:2322:2322
 
           restartPolicy: unlessStopped
-
-      - task: UseDotNet@2
-        displayName: "Install .NET Core App 2.1"
-        inputs:
-            packageType: "sdk"
-            version: "2.1.x"
-            installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: Docker@1
         displayName: "Start Test Proxy"
@@ -102,7 +95,7 @@ jobs:
         displayName: "Publish Test Results **/*.trx"
         inputs:
           testRunner: VSTest
-          testRunTitle: "Linux Tests (netcoreapp2.1)"
+          testRunTitle: "Linux Tests (netcoreapp3.1)"
           testResultsFiles: "**/*.trx"
 
         condition: always()
@@ -114,8 +107,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 3
       matrix:
-        .Net Core 2.1:
-          FRAMEWORK: netcoreapp2.1
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
         .Net Framework 4.7.2:
           FRAMEWORK: net472
         .Net Framework 4.5.1:

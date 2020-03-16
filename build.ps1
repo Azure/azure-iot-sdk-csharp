@@ -21,7 +21,7 @@ Parameters:
     -stresstests: Runs Stress tests.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
-    -framework: Select which framework to run tests on. Allowed values examples include, but are not limited to, "netcoreapp2.1", "net47", "net451"
+    -framework: Select which framework to run tests on. Allowed values examples include, but are not limited to, "netcoreapp3.1", "net47", "net451"
     -skipIotHubTests: Provide this flag if you want to skip all IoT Hub integration tests
     -skipDPSTests: Provide this flag if you want to skip all DPS integration tests
 	
@@ -184,7 +184,7 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     }
 }
 
-Function RunApp($path, $message, $framework = "netcoreapp2.1")
+Function RunApp($path, $message, $framework = "netcoreapp3.1")
 {
     $label = "RUN: --- $message $configuration ---"
 
