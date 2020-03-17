@@ -10,8 +10,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal static class CertificateInstaller
     {
-        private static HashSet<string> _installedCertificates = new HashSet<string>();
-        private static object _lock = new object();
+        private static readonly HashSet<string> s_installedCertificates = new HashSet<string>();
+        private static readonly object s_lock = new object();
 
         static CertificateInstaller()
         {
@@ -22,15 +22,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     store.Open(OpenFlags.ReadOnly);
                     foreach (X509Certificate2 certificate in store.Certificates)
                     {
-                        _installedCertificates.Add(certificate.Thumbprint);
+                        s_installedCertificates.Add(certificate.Thumbprint);
                     }
                 }
             }
             catch (Exception ex)
             {
-                if(Logging.IsEnabled) Logging.Error(
-                    null, 
-                    $"{nameof(CertificateInstaller)} failed to read store: {ex}.");
+                if (Logging.IsEnabled) Logging.Error(
+                     null,
+                     $"{nameof(CertificateInstaller)} failed to read store: {ex}.");
             }
         }
 
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (certificates == null) return;
 
-            lock (_lock)
+            lock (s_lock)
             {
                 using (var store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser))
                 {
@@ -46,13 +46,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                     foreach (X509Certificate2 certificate in certificates)
                     {
-                        if (!_installedCertificates.Contains(certificate.Thumbprint))
+                        if (!s_installedCertificates.Contains(certificate.Thumbprint))
                         {
                             if (Logging.IsEnabled)
                                 Logging.Info(null, $"{nameof(CertificateInstaller)} adding {certificate.Thumbprint}");
 
                             store.Add(certificate);
-                            _installedCertificates.Add(certificate.Thumbprint);
+                            s_installedCertificates.Add(certificate.Thumbprint);
                         }
                     }
                 }

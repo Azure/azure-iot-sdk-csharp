@@ -381,9 +381,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = FaultInjection.DefaultDurationInSec,
             int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
         {
-            Func<DeviceClient, TestDevice, Task> init = async (deviceClient, testDevice) =>
+            Func<DeviceClient, TestDevice, Task> init = (deviceClient, testDevice) =>
             {
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
+                return Task.FromResult(0);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
@@ -396,17 +397,19 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsTrue(isReceived);
             };
 
-            await FaultInjection.TestErrorInjectionAsync(
-                DevicePrefix,
-                type,
-                transport,
-                faultType,
-                reason,
-                delayInSec,
-                durationInSec,
-                init,
-                testOperation,
-                () => { return Task.FromResult(false); }).ConfigureAwait(false);
+            await FaultInjection
+                .TestErrorInjectionAsync(
+                    DevicePrefix,
+                    type,
+                    transport,
+                    faultType,
+                    reason,
+                    delayInSec,
+                    durationInSec,
+                    init,
+                    testOperation,
+                    () => { return Task.FromResult(false); })
+                .ConfigureAwait(false);
         }
 
         public void Dispose()

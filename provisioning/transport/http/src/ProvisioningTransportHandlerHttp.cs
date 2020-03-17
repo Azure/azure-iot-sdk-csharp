@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     {
         private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
         private const int DefaultHttpsPort = 443;
+
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerHttp class.
         /// </summary>
@@ -42,6 +43,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(RegisterAsync)}");
+
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 

@@ -18,21 +18,21 @@ namespace Microsoft.Azure.Devices.Client.Edge
     /// </summary>
     internal class EdgeModuleClientFactory
     {
-        const string DefaultApiVersion = "2018-06-28";
-        const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
-        const string IotHubHostnameVariableName = "IOTEDGE_IOTHUBHOSTNAME";
-        const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
-        const string DeviceIdVariableName = "IOTEDGE_DEVICEID";
-        const string ModuleIdVariableName = "IOTEDGE_MODULEID";
-        const string ModuleGenerationIdVariableName = "IOTEDGE_MODULEGENERATIONID";
-        const string AuthSchemeVariableName = "IOTEDGE_AUTHSCHEME";
-        const string SasTokenAuthScheme = "SasToken";
-        const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
-        const string IothubConnectionstringVariableName = "IotHubConnectionString";
-        const string EdgeCaCertificateFileVariableName = "EdgeModuleCACertificateFile";
+        private const string DefaultApiVersion = "2018-06-28";
+        private const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
+        private const string IotHubHostnameVariableName = "IOTEDGE_IOTHUBHOSTNAME";
+        private const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
+        private const string DeviceIdVariableName = "IOTEDGE_DEVICEID";
+        private const string ModuleIdVariableName = "IOTEDGE_MODULEID";
+        private const string ModuleGenerationIdVariableName = "IOTEDGE_MODULEGENERATIONID";
+        private const string AuthSchemeVariableName = "IOTEDGE_AUTHSCHEME";
+        private const string SasTokenAuthScheme = "SasToken";
+        private const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
+        private const string IothubConnectionstringVariableName = "IotHubConnectionString";
+        private const string EdgeCaCertificateFileVariableName = "EdgeModuleCACertificateFile";
 
-        readonly ITransportSettings[] transportSettings;
-        readonly ITrustBundleProvider trustBundleProvider;
+        private readonly ITransportSettings[] _transportSettings;
+        private readonly ITrustBundleProvider _trustBundleProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EdgeModuleClientFactory"/> class with transport settings.
@@ -41,24 +41,23 @@ namespace Microsoft.Azure.Devices.Client.Edge
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
         public EdgeModuleClientFactory(ITransportSettings[] transportSettings, ITrustBundleProvider trustBundleProvider)
         {
-            this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
-            this.trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));
+            _transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
+            _trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));
         }
 
         /// <summary>
         /// Creates a ModuleClient instance based on environment.
         /// </summary>
-        /// <returns></returns>
         public Task<ModuleClient> CreateAsync()
         {
-            return this.CreateInternalClientFromEnvironmentAsync();
+            return CreateInternalClientFromEnvironmentAsync();
         }
 
-        async Task<ModuleClient> CreateInternalClientFromEnvironmentAsync()
+        private async Task<ModuleClient> CreateInternalClientFromEnvironmentAsync()
         {
             IDictionary envVariables = Environment.GetEnvironmentVariables();
 
-            string connectionString = this.GetValueFromEnvironment(envVariables, EdgehubConnectionstringVariableName) ?? this.GetValueFromEnvironment(envVariables, IothubConnectionstringVariableName);
+            string connectionString = GetValueFromEnvironment(envVariables, EdgehubConnectionstringVariableName) ?? GetValueFromEnvironment(envVariables, IothubConnectionstringVariableName);
 
             // First try to create from connection string and if env variable for connection string is not found try to create from edgedUri
             if (!string.IsNullOrWhiteSpace(connectionString))
@@ -70,20 +69,20 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 {
                     Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from file");
                     var expectedRoot = new X509Certificate2(certPath);
-                    certificateValidator = this.GetCertificateValidator(new List<X509Certificate2>() { expectedRoot });
+                    certificateValidator = GetCertificateValidator(new List<X509Certificate2>() { expectedRoot });
                 }
 
-                return new ModuleClient(this.CreateInternalClientFromConnectionString(connectionString), certificateValidator);
+                return new ModuleClient(CreateInternalClientFromConnectionString(connectionString), certificateValidator);
             }
             else
             {
-                string edgedUri = this.GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
-                string deviceId = this.GetValueFromEnvironment(envVariables, DeviceIdVariableName) ?? throw new InvalidOperationException($"Environment variable {DeviceIdVariableName} is required.");
-                string moduleId = this.GetValueFromEnvironment(envVariables, ModuleIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleIdVariableName} is required.");
-                string hostname = this.GetValueFromEnvironment(envVariables, IotHubHostnameVariableName) ?? throw new InvalidOperationException($"Environment variable {IotHubHostnameVariableName} is required.");
-                string authScheme = this.GetValueFromEnvironment(envVariables, AuthSchemeVariableName) ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
-                string generationId = this.GetValueFromEnvironment(envVariables, ModuleGenerationIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleGenerationIdVariableName} is required.");
-                string gateway = this.GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
+                string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
+                string deviceId = GetValueFromEnvironment(envVariables, DeviceIdVariableName) ?? throw new InvalidOperationException($"Environment variable {DeviceIdVariableName} is required.");
+                string moduleId = GetValueFromEnvironment(envVariables, ModuleIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleIdVariableName} is required.");
+                string hostname = GetValueFromEnvironment(envVariables, IotHubHostnameVariableName) ?? throw new InvalidOperationException($"Environment variable {IotHubHostnameVariableName} is required.");
+                string authScheme = GetValueFromEnvironment(envVariables, AuthSchemeVariableName) ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
+                string generationId = GetValueFromEnvironment(envVariables, ModuleGenerationIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleGenerationIdVariableName} is required.");
+                string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
 
                 if (!string.Equals(authScheme, SasTokenAuthScheme, StringComparison.OrdinalIgnoreCase))
                 {
@@ -98,23 +97,23 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 ICertificateValidator certificateValidator = NullCertificateValidator.Instance;
                 if (!string.IsNullOrEmpty(gateway))
                 {
-                    IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
-                    certificateValidator = this.GetCertificateValidator(certs);
+                    IList<X509Certificate2> certs = await _trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
+                    certificateValidator = GetCertificateValidator(certs);
                 }
 
-                return new ModuleClient(this.CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod), certificateValidator);
+                return new ModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod), certificateValidator);
             }
         }
 
         private ICertificateValidator GetCertificateValidator(IList<X509Certificate2> certs)
         {
-            if (certs.Count() != 0)
+            if (certs.Count != 0)
             {
                 Debug.WriteLine("EdgeModuleClientFactory.GetCertificateValidator()");
                 if (IsOSPlatform(OSPlatform.Windows))
                 {
                     Debug.WriteLine("EdgeModuleClientFactory GetCertificateValidator on Windows");
-                    var certValidator = CustomCertificateValidator.Create(certs, transportSettings);
+                    var certValidator = CustomCertificateValidator.Create(certs, _transportSettings);
                     return certValidator;
                 }
                 else
@@ -128,24 +127,21 @@ namespace Microsoft.Azure.Devices.Client.Edge
             return NullCertificateValidator.Instance;
         }
 
-        InternalClient CreateInternalClientFromConnectionString(string connectionString)
+        private InternalClient CreateInternalClientFromConnectionString(string connectionString)
         {
-            return ClientFactory.CreateFromConnectionString(connectionString, this.transportSettings);
+            return ClientFactory.CreateFromConnectionString(connectionString, _transportSettings);
         }
 
-        InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod)
+        private InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod)
         {
-            return ClientFactory.Create(hostname, gateway, authMethod, this.transportSettings);
+            return ClientFactory.Create(hostname, gateway, authMethod, _transportSettings);
         }
 
-        string GetValueFromEnvironment(IDictionary envVariables, string variableName)
+        private static string GetValueFromEnvironment(IDictionary envVariables, string variableName)
         {
-            if (envVariables.Contains(variableName))
-            {
-                return envVariables[variableName].ToString();
-            }
-
-            return null;
+            return envVariables.Contains(variableName)
+                ? envVariables[variableName].ToString()
+                : null;
         }
     }
 }

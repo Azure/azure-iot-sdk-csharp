@@ -79,6 +79,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
 
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             RegistrationOperationStatus operation = null;
