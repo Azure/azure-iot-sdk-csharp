@@ -4,9 +4,8 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.Storage;
-using Azure.Storage.Blobs;
-using Azure.Storage.Sas;
+using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.Blob;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -20,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public string ContainerName { get; }
         public Uri Uri { get; private set; }
         public Uri SasUri { get; private set; }
-        public BlobContainerClient BlobContainerClient { get; private set; }
+        public CloudBlobContainer CloudBlobContainer { get; private set; }
 
         private StorageContainer(string containerName)
         {
@@ -41,23 +40,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public void UpdateSasUri(DateTimeOffset? expiresOn = null)
         {
-            var constraints = new AccountSasBuilder
+            var constraints = new SharedAccessBlobPolicy
             {
-                Services = AccountSasServices.Blobs,
-                ResourceTypes = AccountSasResourceTypes.Service | AccountSasResourceTypes.Object,
-                StartsOn = DateTimeOffset.UtcNow,
-                ExpiresOn = expiresOn ?? DateTimeOffset.UtcNow.AddHours(1),
-                Protocol = SasProtocol.Https,
+                SharedAccessExpiryTime = expiresOn ?? DateTimeOffset.UtcNow.AddHours(1),
+                Permissions = SharedAccessBlobPermissions.Read
+                    | SharedAccessBlobPermissions.Write
+                    | SharedAccessBlobPermissions.Create
+                    | SharedAccessBlobPermissions.List
+                    | SharedAccessBlobPermissions.Add
+                    | SharedAccessBlobPermissions.Delete,
+                SharedAccessStartTime = DateTimeOffset.UtcNow,
             };
-            constraints.SetPermissions(AccountSasPermissions.All);
 
-            var credential = new StorageSharedKeyCredential(Configuration.Storage.Name, Configuration.Storage.Key);
-
-            var sasUri = new UriBuilder(BlobContainerClient.Uri)
-            {
-                Query = constraints.ToSasQueryParameters(credential).ToString(),
-            };
-            SasUri = sasUri.Uri;
+            string sasContainerToken = CloudBlobContainer.GetSharedAccessSignature(constraints);
+            SasUri = new Uri($"{Uri}{sasContainerToken}");
         }
 
         public void Dispose()
@@ -129,10 +125,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 return;
             }
 
-            if (disposing && BlobContainerClient != null)
+            if (disposing && CloudBlobContainer != null)
             {
-                BlobContainerClient.Delete();
-                BlobContainerClient = null;
+                CloudBlobContainer.Delete();
+                CloudBlobContainer = null;
             }
 
             _disposed = true;
@@ -140,10 +136,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private async Task InitializeAsync()
         {
-            BlobContainerClient = new BlobContainerClient(Configuration.Storage.ConnectionString, ContainerName);
-            await BlobContainerClient.CreateIfNotExistsAsync().ConfigureAwait(false);
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.Storage.ConnectionString);
+            CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer = cloudBlobClient.GetContainerReference(ContainerName);
+            await CloudBlobContainer.CreateIfNotExistsAsync().ConfigureAwait(false);
 
-            Uri = BlobContainerClient.Uri;
+            Uri = CloudBlobContainer.Uri;
             UpdateSasUri();
         }
     }
