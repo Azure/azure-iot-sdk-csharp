@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Authentication;
 
 namespace Microsoft.Azure.Devices.Shared
@@ -41,6 +43,7 @@ namespace Microsoft.Azure.Devices.Shared
         private System.Net.SecurityProtocolType _net451Protocol = (System.Net.SecurityProtocolType)PreferredProtocol;
 #endif
 
+#pragma warning disable CA5397 // Do not use deprecated SslProtocols values
         private const SslProtocols AllowedProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
         private const SslProtocols PreferredProtocol = SslProtocols.Tls12;
 
@@ -84,6 +87,8 @@ namespace Microsoft.Azure.Devices.Shared
             _net451Protocol = (System.Net.SecurityProtocolType)protocols;
 #endif
         }
+
+#pragma warning restore CA5397 // Do not use deprecated SslProtocols values
 
         /// <summary>
         /// Sets the acceptable versions of TLS over HTTPS or websocket for .NET framework 4.5.1, as it does not offer a "SystemDefault" option. No-op for other .NET versions.

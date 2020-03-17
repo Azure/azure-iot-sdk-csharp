@@ -14,7 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerErrorException"/> class.
         /// </summary>
-        public ServerErrorException() : base(isTransient: true)
+        public ServerErrorException()
+            : base(isTransient: true)
         {
         }
 
