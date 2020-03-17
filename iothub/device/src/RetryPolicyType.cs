@@ -1,7 +1,7 @@
-﻿namespace Microsoft.Azure.Devices.Client
-{
-    using System;
+﻿using System;
 
+namespace Microsoft.Azure.Devices.Client
+{
     /// <summary>
     /// Retry Strategy types supported by DeviceClient
     /// </summary>

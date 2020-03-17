@@ -31,11 +31,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
         public ConfigurationNotFoundException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

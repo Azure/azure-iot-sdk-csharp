@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
     /// <summary>
-    /// Authentication method that uses a shared access signature token and allows for token refresh. 
+    /// Authentication method that uses a shared access signature token and allows for token refresh.
     /// </summary>
     public abstract class ModuleAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as 
+        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
         /// a percentage of the time to live.</param>
         public ModuleAuthenticationWithTokenRefresh(
             string deviceId,
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on a snapshot of the properties of 
+        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on a snapshot of the properties of
         /// the current instance.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>

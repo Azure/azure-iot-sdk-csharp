@@ -1,22 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+// C# using aliases cannot name an unbound generic type declaration without supplying type arguments
+// Therefore, define a separate alias for each type argument
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    // C# using aliases cannot name an unbound generic type declaration without supplying type arguments
-    // Therefore, define a separate alias for each type argument
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Contains the implementation of methods that a device can use to send messages to and receive from the service.
     /// </summary>
-    abstract class TransportHandlerBase
+    internal abstract class TransportHandlerBase
     {
-        bool openCalled;
-        bool closeCalled;
-        volatile TaskCompletionSource<object> openTaskCompletionSource;
+        private bool openCalled;
+        private bool closeCalled;
+        private volatile TaskCompletionSource<object> openTaskCompletionSource;
 
         protected TransportHandlerBase()
         {
@@ -295,6 +295,5 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected abstract Task OnSendEventAsync(Message message);
 
         protected abstract Task OnSendEventAsync(IEnumerable<Message> messages);
-
     }
 }

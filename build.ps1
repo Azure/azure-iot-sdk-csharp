@@ -10,17 +10,21 @@ Microsoft Azure IoT SDK .NET build script.
 Builds Azure IoT SDK binaries.
 
 Parameters:
+    -configuration {Debug|Release}
+    -sign: (Internal use, requires signing toolset) Signs the binaries before release.
+    -package: Packs NuGets
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
-    -nobuild: Skips build step (use if re-running tests after a successful build).
-    -nounittests: Skips Unit Tests
-    -nopackage: Skips NuGet packaging
+    -build: Builds projects (use if re-running tests after a successful build).
+    -unittests: Runs unit tests
+    -prtests: Runs all tests selected for PR validation
     -e2etests: Runs E2E tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
-    -xamarintests: Runs Xamarin tests. Requires additional SDKs and prerequisite configuration.
-    -sign: (Internal use, requires signing toolset) Signs the binaries before release.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
-    -configuration {Debug|Release}
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
+    -framework: Select which framework to run tests on. Allowed values examples include, but are not limited to, "netcoreapp3.1", "net47", "net451"
+    -skipIotHubTests: Provide this flag if you want to skip all IoT Hub integration tests
+    -skipDPSTests: Provide this flag if you want to skip all DPS integration tests
+	
 
 Build will automatically detect if the machine is Windows vs Unix. On Windows development boxes, additional testing on .NET Framework will be performed.
 
@@ -35,40 +39,38 @@ The following environment variables can tune the build behavior:
 
 Builds a Debug version of the SDK.
 .EXAMPLE
-.\build -config Release
+.\build -configuration Release -build
 
 Builds a Release version of the SDK.
 .EXAMPLE
-.\build -clean -e2etests -xamarintests
+.\build -clean -build -unittests
 
-Builds and runs all tests (requires prerequisites).
+Builds and runs unit tests (requires prerequisites).
 .EXAMPLE
-.\build -nobuild -nounittests -nopackage -stresstests
+.\build -configuration Release -sign -package -e2etests
 
-Builds stress tests after a successful build.
+Runs E2E tests with already built binaries.
 .LINK
 https://github.com/azure/azure-iot-sdk-csharp
 
 #>
 
 Param(
+    [string] $configuration = "Debug",
+    [switch] $sign,
+    [switch] $package,
     [switch] $clean,
-    [switch] $nobuild,
-    [switch] $nounittests,
-    [switch] $nopackage,
+    [switch] $build,
+    [switch] $unittests,
+    [switch] $prtests,
     [switch] $e2etests,
     [switch] $stresstests,
-    [switch] $xamarintests,
-    [switch] $sign,
     [switch] $publish,
-    [string] $configuration = "Debug",
-    [string] $verbosity = "q"
+    [string] $verbosity = "q",
+    [string] $framework = "*",
+    [switch] $skipIotHubTests,
+    [switch] $skipDPSTests
 )
-
-Function IsWindowsDevelopmentBox()
-{
-    return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
-}
 
 Function CheckSignTools()
 {
@@ -84,124 +86,116 @@ Function CheckPublishTools()
 
 Function CheckTools($commands)
 {
-    foreach($command in $commands)
+    foreach ($command in $commands)
     {
         $info = Get-Command $command -ErrorAction SilentlyContinue
-        if ($info -eq $null)
+        if (-not $info)
         {
             throw "Toolset not found: '$command' is missing."
         }
     }
 }
 
-Function BuildProject($path, $message) {
-
+Function BuildProject($path, $message)
+{
     $label = "BUILD: --- $message $configuration ---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
-    cd (Join-Path $rootDir $path)
 
-    if ($clean) {
-        & dotnet clean --verbosity $verbosity --configuration $configuration
-        if ($LASTEXITCODE -ne 0) {
+    $projectPath = Join-Path $rootDir $path
+
+    if ($clean)
+    {
+        & dotnet clean $projectPath --verbosity $verbosity --configuration $configuration
+        if ($LASTEXITCODE -ne 0)
+        {
             throw "Clean failed: $label"
         }
     }
 
-    & dotnet build --verbosity $verbosity --configuration $configuration
+    & dotnet build $projectPath --verbosity $verbosity --configuration $configuration
 
-    if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -ne 0)
+    {
         throw "Build failed: $label"
     }
 }
 
-Function BuildPackage($path, $message) {
+Function BuildPackage($path, $message)
+{
     $label = "PACK: --- $message $configuration ---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
 
     $projectPath = Join-Path $rootDir $path
-    cd $projectPath
-
-    $projectName = (dir (Join-Path $projectPath *.csproj))[0].BaseName
+    $projectName = (Get-ChildItem (Join-Path $projectPath *.csproj))[0].BaseName
 
     if ($sign)
     {
-        Write-Host -ForegroundColor Magenta "`tSigning binaries: $projectName"
-        $filesToSign = dir -Recurse .\bin\Release\$projectName.dll
+        Set-Location $projectPath
+        Write-Host -ForegroundColor Magenta "`tSigning binaries for: $projectName"
+        $filesToSign = Get-ChildItem -Path "$projectPath\bin\$configuration\*\$projectName.dll" -Recurse
         SignDotNetBinary $filesToSign
     }
 
     & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --output $localPackages
 
-    if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -ne 0)
+    {
         throw "Package failed: $label"
     }
 
     if ($sign)
     {
         Write-Host -ForegroundColor Magenta "`tSigning package: $projectName"
-        $filesToSign = dir (Join-Path $localPackages "$projectName.*.nupkg")
+        $filesToSign = Get-ChildItem (Join-Path $localPackages "$projectName.*.nupkg")
         SignNuGetPackage $filesToSign
     }
 }
 
-Function RunTests($path, $message, $framework="*", $filterTestCategory="*") {
-
-    if ($filterTestCategory -eq "*")
-    {
-        $label = "TEST: --- $message $configuration ---"
-    }
-    else
-    {
-        $label = "TEST: --- $message $configuration $filterTestCategory ---"
-    }
+Function RunTests($message, $framework = "*", $filterTestCategory = "*")
+{
+    $label = "TEST: --- $message $configuration $framework $filterTestCategory ---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
-    cd (Join-Path $rootDir $path)
 
-    if ($framework -eq "*")
+    $runTestCmd = "dotnet test --verbosity $verbosity --configuration $configuration --no-build --logger trx"
+    if ($filterTestCategory -ne "*")
     {
-        if ($filterTestCategory -eq "*")
-        {
-            & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
-        }
-        else
-        {
-            & dotnet test --filter $filterTestCategory --verbosity $verbosity --configuration $configuration --logger "trx"
-        }
+        $runTestCmd += " --filter '$filterTestCategory'"
     }
-    else 
+    if ($framework -ne "*")
     {
-        if ($filterTestCategory -eq "*")
-        {
-            & dotnet test --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
-        }
-        else
-        {
-            & dotnet test --filter $filterTestCategory --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
-        }
+        $runTestCmd += " --framework $framework"
     }
 
-    if ($LASTEXITCODE -ne 0) {
+    # By specifying the root dir, the test runner will run all tests in test projects in the VS solution there
+    Set-Location $rootDir
+
+    Write-Host "Invoking expression: $runTestCmd ----------"
+    Invoke-Expression $runTestCmd
+
+    if ($LASTEXITCODE -ne 0)
+    {
         throw "Tests failed: $label"
     }
 }
 
-Function RunApp($path, $message, $framework="netcoreapp2.1") {
-
+Function RunApp($path, $message, $framework = "netcoreapp3.1")
+{
     $label = "RUN: --- $message $configuration ---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
-    cd (Join-Path $rootDir $path)
+    $appPath = (Join-Path $rootDir $path)
 
-    & dotnet run --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+    & dotnet run --project $appPath --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
 
-    if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -ne 0)
+    {
         throw "Tests failed: $label"
     }
 }
@@ -212,12 +206,18 @@ $startTime = Get-Date
 $buildFailed = $true
 $errorMessage = ""
 
-try {
+try
+{
     if ($sign)
     {
         if ([string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
         {
             throw "Local NuGet package source path is not set, required when signing packages."
+        }
+
+        if ($configuration -ne "Release")
+        {
+            throw "Do not sign assemblies that aren't release."
         }
 
         CheckSignTools
@@ -228,7 +228,7 @@ try {
         CheckPublishTools
     }
 
-    if (-not $nobuild)
+    if ($build)
     {
         # We must disable package testing here as the E2E csproj may reference new APIs that are not available in existing NuGet packages.
         $packageTempPath = $env:AZURE_IOT_LOCALPACKAGES
@@ -239,23 +239,56 @@ try {
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
-    if ((-not $nounittests) -and ($configuration.ToUpperInvariant() -eq "DEBUG"))
+    if ($unittests)
     {
-        Write-Host
-        Write-Host -ForegroundColor Cyan "Unit Test execution"
-        Write-Host
+        if ($configuration -ne "Debug")
+        {
+            Write-Host -ForegroundColor Magenta "Unit tests must be run in Debug configuration"
+        }
+        else
+        {
+            Write-Host
+            Write-Host -ForegroundColor Cyan "Unit Test execution"
+            Write-Host
 
-        RunTests iothub\device\tests "IoT Hub DeviceClient Tests"
-        RunTests iothub\service\tests "IoT Hub ServiceClient Tests"
-        RunTests provisioning\device\tests "Provisioning Device Client Tests"
-        RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP Tests"
-        RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP Tests"
-        RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT Tests"
-        RunTests security\tpm\tests "SecurityProvider for TPM Tests"
-        RunTests provisioning\service\tests "Provisioning Service Client Tests"
+            RunTests "Unit tests" -filterTestCategory "TestCategory=Unit" -framework $framework
+        }
     }
 
-    if ((-not $nopackage))
+    if ($prtests)
+    {
+        Write-Host
+        Write-Host -ForegroundColor Cyan "PR validation tests"
+        Write-Host
+
+        # Tests categories to include
+        $testCategory = "("
+        $testCategory += "TestCategory=Unit"
+        $testCategory += "|"
+        $testCategory += "TestCategory=E2E"
+        $testCategory += "|"
+        $testCategory += "TestCategory=InvalidServiceCertificate"
+        $testCategory += ")"
+
+        # test categories to exclude
+        $testCategory += "&TestCategory!=LongRunning"
+        $testCategory += "&TestCategory!=FaultInjection"
+        $testCategory += "&TestCategory!=Flaky"
+
+        if ($skipIotHubTests)
+        {
+            $testCategory += "&TestCategory!=IoTHub"
+        }
+
+        if ($skipDPSTests)
+        {
+            $testCategory += "&TestCategory!=DPS"
+        }
+
+        RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
+    }
+
+    if ($package)
     {
         BuildPackage shared\src "Shared Assembly"
         BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
@@ -284,7 +317,7 @@ try {
         Remove-Item $env:AZURE_IOT_LOCALPACKAGES\*.*
 
         # Copy new packages.
-        copy (Join-Path $rootDir "bin\pkg\*.*") $env:AZURE_IOT_LOCALPACKAGES
+        Copy-Item (Join-Path $rootDir "bin\pkg\*.*") $env:AZURE_IOT_LOCALPACKAGES
     }
 
     if ($e2etests)
@@ -302,29 +335,12 @@ try {
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        if (IsWindowsDevelopmentBox)
-        {
-            RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory!=IoTHub-FaultInjection-PoolAmqp"
-            RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory=IoTHub-FaultInjection-PoolAmqp"
-        }
-        else
-        {
-            RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1"
-
-            # To exclude the Pooling Fault Injection Tests from E2E test run:
-            # RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1" "TestCategory!=IoTHub-FaultInjection-PoolAmqp"
-        }
+        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
 
         $verbosity = $oldVerbosity
 
         # Samples
         BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
-
-        # Xamarin samples (require Android, iOS and UWP SDKs and configured iOS remote)
-        if ($xamarintests)
-        {
-            # TODO #335 - create new Xamarin automated samples/tests
-        }
     }
 
     if ($stresstests)
@@ -336,22 +352,16 @@ try {
         RunApp e2e\stress\MemoryLeakTest "MemoryLeakTest test"
     }
 
-    # Xamarin samples (require Android, iOS and UWP SDKs and configured iOS remote)
-    if ($xamarintests)
-    {
-        # TODO #335 - create new Xamarin automated samples/tests
-    }
-
     if ($publish)
     {
-        $files = dir $rootDir\bin\pkg\*.nupkg | where {-not ($_.Name -match "symbols")}
+        $files = Get-ChildItem $rootDir\bin\pkg\*.nupkg | Where-Object { -not ($_.Name -match "symbols") }
         $publishResult = PushNuGet $files
 
-        foreach( $result in $publishResult)
+        foreach ( $result in $publishResult)
         {
-            if($result.success)
+            if ($result.success)
             {
-                Write-Host -ForegroundColor Green "OK    : $($result.file.FullName)"
+                Write-Host -ForegroundColor Green "OK: $($result.file.FullName)"
             }
             else
             {
@@ -362,25 +372,26 @@ try {
 
     $buildFailed = $false
 }
-catch [Exception]{
+catch [Exception]
+{
     $buildFailed = $true
     $errorMessage = $Error[0]
 }
-finally {
-    cd $rootDir
+finally
+{
+    Set-Location $rootDir
     $endTime = Get-Date
 }
 
-Write-Host
-Write-Host
+Write-Host ("`n`nTime Elapsed {0:c}" -f ($endTime - $startTime))
 
-Write-Host ("Time Elapsed {0:c}" -f ($endTime - $startTime))
-
-if ($buildFailed) {
+if ($buildFailed)
+{
     Write-Host -ForegroundColor Red "Build failed ($errorMessage)"
     exit 1
 }
-else {
+else
+{
     Write-Host -ForegroundColor Green "Build succeeded."
     exit 0
 }

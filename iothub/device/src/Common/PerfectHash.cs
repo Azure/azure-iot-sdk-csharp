@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.-
 
+using System;
+using System.Text;
+
 namespace Microsoft.Azure.Devices.Common.Cloud
 {
-    using System;
-    using System.Text;
-
-    static class PerfectHash
+    internal static class PerfectHash
     {
         public static long HashToLong(string data)
         {
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Common.Cloud
         }
 
         // Perfect hashing implementation. source: distributed cache team
-        static void ComputeHash(byte[] data, uint seed1, uint seed2, out uint hash1, out uint hash2)
+        private static void ComputeHash(byte[] data, uint seed1, uint seed2, out uint hash1, out uint hash2)
         {
             uint a, b, c;
 
@@ -80,6 +80,7 @@ namespace Microsoft.Azure.Devices.Common.Cloud
                     b += BitConverter.ToUInt32(data, index + 4);
                     c += BitConverter.ToUInt32(data, index + 8);
                     break;
+
                 case 11:
                     c += ((uint)data[index + 10]) << 16;
                     goto case 10;
@@ -93,6 +94,7 @@ namespace Microsoft.Azure.Devices.Common.Cloud
                     b += BitConverter.ToUInt32(data, index + 4);
                     a += BitConverter.ToUInt32(data, index);
                     break;
+
                 case 7:
                     b += ((uint)data[index + 6]) << 16;
                     goto case 6;
@@ -105,6 +107,7 @@ namespace Microsoft.Azure.Devices.Common.Cloud
                 case 4:
                     a += BitConverter.ToUInt32(data, index);
                     break;
+
                 case 3:
                     a += ((uint)data[index + 2]) << 16;
                     goto case 2;
@@ -114,6 +117,7 @@ namespace Microsoft.Azure.Devices.Common.Cloud
                 case 1:
                     a += (uint)data[index];
                     break;
+
                 case 0:
                     hash1 = c;
                     hash2 = b;

@@ -1,45 +1,42 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security;
+using System.Threading;
+using Microsoft.Azure.Devices.Client.Exceptions;
+
 #if NET451
     using System.Runtime.ConstrainedExecution;
-#endif
-    using System.Runtime.InteropServices;
-    using System.Security;
-    using System.Threading;
-#if NET451
     using System.Transactions;
-#endif
-#if NET451
     using Microsoft.Win32;
 #endif
-    using Microsoft.Azure.Devices.Client.Exceptions;
 
-    static class Fx
+namespace Microsoft.Azure.Devices.Client
+{
+    internal static class Fx
     {
         // This is only used for EventLog Source therefore matching EventLog source rather than ETL source
-        const string DefaultEventSource = "Microsoft.IotHub";
+        private const string DefaultEventSource = "Microsoft.IotHub";
 
 #if DEBUG
-        const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
-        const string AssertsFailFastName = "AssertsFailFast";
-        const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
-        const string FastDebugName = "FastDebug";
+        private const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
+        private const string AssertsFailFastName = "AssertsFailFast";
+        private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
+        private const string FastDebugName = "FastDebug";
 
-        static bool breakOnExceptionTypesRetrieved;
-        static Type[] breakOnExceptionTypesCache;
+        private static bool breakOnExceptionTypesRetrieved;
+        private static Type[] breakOnExceptionTypesCache;
 #endif
 
-        static ExceptionTrace exceptionTrace;
+        private static ExceptionTrace exceptionTrace;
 
         public static ExceptionTrace Exception
         {
@@ -54,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
                 return exceptionTrace;
             }
         }
-        
+
         // Do not call the parameter "message" or else FxCop thinks it should be localized.
         [Conditional("DEBUG")]
         public static void Assert(bool condition, string description)
@@ -232,7 +229,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        static bool TryGetDebugSwitch(string name, out object value)
+        private static bool TryGetDebugSwitch(string name, out object value)
         {
 #if !NET451
             // No registry access in UWP
@@ -260,13 +257,14 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #endif // DEBUG
+
         [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
-        [Fx.Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
+        [Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
 #if NET451
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
-        static void TraceExceptionNoThrow(Exception exception)
+        private static void TraceExceptionNoThrow(Exception exception)
         {
             try
             {
@@ -285,11 +283,11 @@ namespace Microsoft.Azure.Devices.Client
             Justification = "Don't want to hide the exception which is about to crash the process.")]
         [SuppressMessage(FxCop.Category.ReliabilityBasic, FxCop.Rule.IsFatalRule,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
-        [Fx.Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
+        [Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
 #if NET451
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
-        static bool HandleAtThreadBase(Exception exception)
+        private static bool HandleAtThreadBase(Exception exception)
         {
             // This area is too sensitive to do anything but return.
             if (exception == null)
@@ -425,39 +423,21 @@ namespace Microsoft.Azure.Devices.Client
             [Conditional("CODE_ANALYSIS")]
             public sealed class ExternalResourceAttribute : Attribute
             {
-                readonly Location location;
-                readonly string description;
-
                 public ExternalResourceAttribute(Location location, string description)
                 {
-                    this.location = location;
-                    this.description = description;
+                    Location = location;
+                    Description = description;
                 }
 
-                public Location Location
-                {
-                    get
-                    {
-                        return this.location;
-                    }
-                }
+                public Location Location { get; private set; }
 
-                public string Description
-                {
-                    get
-                    {
-                        return this.description;
-                    }
-                }
+                public string Description { get; private set; }
             }
 
             [AttributeUsage(AttributeTargets.Field)]
             [Conditional("CODE_ANALYSIS")]
             public sealed class CacheAttribute : Attribute
             {
-                readonly Type elementType;
-                readonly CacheAttrition cacheAttrition;
-
                 public CacheAttribute(Type elementType, CacheAttrition cacheAttrition)
                 {
                     Scope = Strings.DeclaringInstance;
@@ -469,25 +449,13 @@ namespace Microsoft.Azure.Devices.Client
                         throw Fx.Exception.ArgumentNull("elementType");
                     }
 
-                    this.elementType = elementType;
-                    this.cacheAttrition = cacheAttrition;
+                    ElementType = elementType;
+                    CacheAttrition = cacheAttrition;
                 }
 
-                public Type ElementType
-                {
-                    get
-                    {
-                        return this.elementType;
-                    }
-                }
+                public Type ElementType { get; private set; }
 
-                public CacheAttrition CacheAttrition
-                {
-                    get
-                    {
-                        return this.cacheAttrition;
-                    }
-                }
+                public CacheAttrition CacheAttrition { get; private set; }
 
                 public string Scope { get; set; }
                 public string SizeLimit { get; set; }
@@ -498,8 +466,6 @@ namespace Microsoft.Azure.Devices.Client
             [Conditional("CODE_ANALYSIS")]
             public sealed class QueueAttribute : Attribute
             {
-                readonly Type elementType;
-
                 public QueueAttribute(Type elementType)
                 {
                     Scope = Strings.DeclaringInstance;
@@ -510,16 +476,10 @@ namespace Microsoft.Azure.Devices.Client
                         throw Fx.Exception.ArgumentNull("elementType");
                     }
 
-                    this.elementType = elementType;
+                    ElementType = elementType;
                 }
 
-                public Type ElementType
-                {
-                    get
-                    {
-                        return this.elementType;
-                    }
-                }
+                public Type ElementType { get; private set; }
 
                 public string Scope { get; set; }
                 public string SizeLimit { get; set; }
@@ -540,57 +500,29 @@ namespace Microsoft.Azure.Devices.Client
                     Kind = SynchronizationKind.FromFieldType;
                 }
 
-                public bool Blocking
-                {
-                    get;
-                    set;
-                }
-                public string Scope
-                {
-                    get;
-                    set;
-                }
-                public SynchronizationKind Kind
-                {
-                    get;
-                    set;
-                }
+                public bool Blocking { get; set; }
+
+                public string Scope { get; set; }
+
+                public SynchronizationKind Kind { get; set; }
             }
 
             [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = true)]
             [Conditional("CODE_ANALYSIS")]
             public sealed class SynchronizationPrimitiveAttribute : Attribute
             {
-                readonly BlocksUsing blocksUsing;
-
                 public SynchronizationPrimitiveAttribute(BlocksUsing blocksUsing)
                 {
-                    this.blocksUsing = blocksUsing;
+                    BlocksUsing = blocksUsing;
                 }
 
-                public BlocksUsing BlocksUsing
-                {
-                    get
-                    {
-                        return this.blocksUsing;
-                    }
-                }
+                public BlocksUsing BlocksUsing { get; private set; }
 
-                public bool SupportsAsync
-                {
-                    get;
-                    set;
-                }
-                public bool Spins
-                {
-                    get;
-                    set;
-                }
-                public string ReleaseMethod
-                {
-                    get;
-                    set;
-                }
+                public bool SupportsAsync { get; set; }
+
+                public bool Spins { get; set; }
+
+                public string ReleaseMethod { get; set; }
             }
 
             [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = false)]
@@ -601,21 +533,11 @@ namespace Microsoft.Azure.Devices.Client
                 {
                 }
 
-                public string CancelMethod
-                {
-                    get;
-                    set;
-                }
-                public Type CancelDeclaringType
-                {
-                    get;
-                    set;
-                }
-                public string Conditional
-                {
-                    get;
-                    set;
-                }
+                public string CancelMethod { get; set; }
+
+                public Type CancelDeclaringType { get; set; }
+
+                public string Conditional { get; set; }
             }
 
             // Sometime a method will call a conditionally-blocking method in such a way that it is guaranteed
@@ -650,16 +572,9 @@ namespace Microsoft.Azure.Devices.Client
                 {
                 }
 
-                public Type FromDeclaringType
-                {
-                    get;
-                    set;
-                }
-                public string From
-                {
-                    get;
-                    set;
-                }
+                public Type FromDeclaringType { get; set; }
+
+                public string From { get; set; }
             }
 
             [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class |
@@ -673,21 +588,11 @@ namespace Microsoft.Azure.Devices.Client
                 {
                 }
 
-                public string Critical
-                {
-                    get;
-                    set;
-                }
-                public string Safe
-                {
-                    get;
-                    set;
-                }
-                public string Miscellaneous
-                {
-                    get;
-                    set;
-                }
+                public string Critical { get; set; }
+
+                public string Safe { get; set; }
+
+                public string Miscellaneous { get; set; }
             }
         }
     }

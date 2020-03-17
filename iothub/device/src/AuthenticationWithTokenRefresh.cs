@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using Microsoft.Azure.Devices.Shared;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-    using Microsoft.Azure.Devices.Shared;
-
     /// <summary>
-    /// Authentication method that uses a shared access signature token and allows for token refresh. 
+    /// Authentication method that uses a shared access signature token and allows for token refresh.
     /// </summary>
     public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod
     {
@@ -20,32 +20,31 @@ namespace Microsoft.Azure.Devices.Client
         private int _bufferSeconds;
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private string _token = null;
-        private DateTime _expiryTime;
 
         /// <summary>
         /// Gets a snapshot of the UTC token expiry time.
         /// </summary>
-        public DateTime ExpiresOn => _expiryTime;
+        public DateTime ExpiresOn { get; private set; }
 
         /// <summary>
         /// Gets a snapshot of the UTC token refresh time.
         /// </summary>
-        public DateTime RefreshesOn => _expiryTime.AddSeconds(-_bufferSeconds);
+        public DateTime RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
 
         /// <summary>
         /// Gets a snapshot expiry state.
         /// </summary>
-        public bool IsExpiring => (_expiryTime - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
+        public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
         /// </summary>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as 
+        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
         /// a percentage of the time to live.</param>
         public AuthenticationWithTokenRefresh(
-            int suggestedTimeToLiveSeconds, 
+            int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
         {
             if (suggestedTimeToLiveSeconds < 0)
@@ -60,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
 
             _suggestedTimeToLiveSeconds = suggestedTimeToLiveSeconds;
             _timeBufferPercentage = timeBufferPercentage;
-            _expiryTime = DateTime.UtcNow.AddSeconds(- _suggestedTimeToLiveSeconds);
+            ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLiveSeconds);
             Debug.Assert(IsExpiring);
             UpdateTimeBufferSeconds(_suggestedTimeToLiveSeconds);
         }
@@ -87,10 +86,10 @@ namespace Microsoft.Azure.Devices.Client
                 _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
 
                 SharedAccessSignature sas = SharedAccessSignature.Parse(".", _token);
-                _expiryTime = sas.ExpiresOn;
-                UpdateTimeBufferSeconds((int)(_expiryTime - DateTime.UtcNow).TotalSeconds);
+                ExpiresOn = sas.ExpiresOn;
+                UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
 
-                if (Logging.IsEnabled) Logging.GenerateToken(this, _expiryTime);
+                if (Logging.IsEnabled) Logging.GenerateToken(this, ExpiresOn);
 
                 return _token;
             }
@@ -101,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on a snapshot of the properties of 
+        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on a snapshot of the properties of
         /// the current instance.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>

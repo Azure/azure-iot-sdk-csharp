@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
-    using System;
-#if !NETMF
-    using System.Runtime.Serialization;
-#endif
-
     /// <summary>
     /// The exception that is thrown when an error occurs during DeviceClient or ModuleClient operation.
     /// </summary>
@@ -20,41 +18,15 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         [NonSerialized]
         private const string TrackingIdValueSerializationStoreName = "IotHubException-TrackingId";
 
-        [NonSerialized]
-        private bool _isTransient;
-
-        [NonSerialized]
-        private string _trackingId;
-
         /// <summary>
         /// Gets a value indicating if the error is transient.
         /// </summary>
-        public bool IsTransient
-        {
-            get
-            {
-                return _isTransient;
-            }
-            private set
-            {
-                _isTransient = value;
-            }
-        }
+        public bool IsTransient { get; private set; }
 
         /// <summary>
         /// Gets or sets the Azure IoT service-side Tracking ID in Support Requests.
         /// </summary>
-        public string TrackingId
-        {
-            get
-            {
-                return _trackingId;
-            }
-            set
-            {
-                _trackingId = value;
-            }
-        }
+        public string TrackingId { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubException"/> class.
@@ -65,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
 
         internal IotHubException(bool isTransient) : base()
         {
-            this.IsTransient = isTransient;
+            IsTransient = isTransient;
         }
 
         /// <summary>
@@ -148,11 +120,10 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         protected IotHubException(string message, Exception innerException, bool isTransient, string trackingId)
             : base(message, innerException)
         {
-            this.IsTransient = isTransient;
-            this.TrackingId = trackingId;
+            IsTransient = isTransient;
+            TrackingId = trackingId;
         }
 
-#if !NETMF && !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubException"/> class.
         /// </summary>
@@ -163,8 +134,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
             if (info != null)
             {
-                _isTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                _trackingId = info.GetString(TrackingIdValueSerializationStoreName);
+                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
+                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
             }
         }
 
@@ -176,9 +147,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue(IsTransientValueSerializationStoreName, _isTransient);
-            info.AddValue(TrackingIdValueSerializationStoreName, _trackingId);
+            info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
+            info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
         }
-#endif
     }
 }

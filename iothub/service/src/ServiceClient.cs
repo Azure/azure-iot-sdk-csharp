@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Net;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Transport types supported by ServiceClient - Amqp and Amqp over WebSocket only
     /// </summary>
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+
     public enum TransportType
     {
         /// <summary>
@@ -24,6 +26,8 @@ namespace Microsoft.Azure.Devices
         Amqp_WebSocket_Only
     }
 
+#pragma warning restore CA1707 // Identifiers should not contain underscores
+
     /// <summary>
     /// Contains methods that services can use to send messages to devices
     /// </summary>
@@ -34,9 +38,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ServiceClient()
         {
-#if NET451
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-#endif
+            TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 
         /// <summary>
@@ -52,7 +54,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc />
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -60,7 +62,7 @@ namespace Microsoft.Azure.Devices
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing) {}
+        protected virtual void Dispose(bool disposing) { }
 
         /// <summary>
         /// Create ServiceClient from the specified connection string using specified Transport Type
@@ -83,7 +85,7 @@ namespace Microsoft.Azure.Devices
         public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings)
         {
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            var useWebSocketOnly = (transportType == TransportType.Amqp_WebSocket_Only);
+            bool useWebSocketOnly = (transportType == TransportType.Amqp_WebSocket_Only);
             var serviceClient = new AmqpServiceClient(iotHubConnectionString, useWebSocketOnly, transportSettings);
             return serviceClient;
         }

@@ -46,12 +46,6 @@ Please follow the [devbox-setup](devbox_setup.md) "Optional Setup" for Xamarin b
 
 `jenkins\windows_csharp_xamarin.cmd`
 
-### .NET Micro Framework
-
-Please follow the [devbox-setup][devbox_setup.md] "Optional Setup" for .NET Micro Framework before trying to build. To build and test, run the following Jenkins script from the root of the repository:
-
-`jenkins\windows_csharp_mf.cmd`
-
 ## 5. Testing
 
 ### Testing using binaries
@@ -84,9 +78,8 @@ Contains the IoT Hub Device SDK source, unit-tests and samples.
 This produces the `Microsoft.Azure.Devices.Client` NuGet package.
 
 ```diff
-- .NET MicroFramework will not be supported in future versions of the SDK.
+- .NET MicroFramework is no longer supported in the SDK.
 ```
-The src.NetMF folder contains the .NET Microframework port.
 
 ### /iothub/service
 
@@ -134,7 +127,5 @@ Contains common code shared between multiple components. This doesn't generate a
 Contains scripts used by our internal Continuous Integration system (Azure DevOps).
 
 ### /tools
-
-`/DeviceExplorer` contains the source code for the Azure IoT Device Explorer tool. Please see further dev documentation within this folder on how to build and debug.
 
 `/CaptureLogs` contains scripts for capturing SDK traces.

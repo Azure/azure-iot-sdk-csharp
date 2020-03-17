@@ -75,6 +75,8 @@
             Assert.IsTrue(r.IsMatch(diagId));
         }
 
+#if !NET451
+
         [TestMethod]
         public void IoTHubClientDiagnostic_CorrelationContext_Test()
         {
@@ -95,6 +97,8 @@
 
             Assert.IsTrue((DateTime.UtcNow - creationTime).TotalSeconds < 60);
         }
+
+#endif
 
         [TestMethod]
         public void IoTHubClientDiagnostic_SamplingPercentage_Test()
@@ -142,7 +146,6 @@
                 }
             }
             Assert.AreEqual(count, 20);
-
 
             count = 0;
             percentage = 50;
@@ -195,6 +198,5 @@
             var message = new Message(memoryStream);
             return message;
         }
-
     }
 }

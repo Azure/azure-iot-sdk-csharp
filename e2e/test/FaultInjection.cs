@@ -1,21 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
-// If you see intermittent failures on devices that are created by this file, check to see if you have multiple suites 
+// If you see intermittent failures on devices that are created by this file, check to see if you have multiple suites
 // running at the same time because one test run could be accidentally destroying devices created by a different test run.
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -43,8 +38,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string FaultCloseReason_Bye = "byebye";
 
         public const int DefaultDelayInSec = 5; // Time in seconds after service initiates the fault.
-        public const int DefaultDurationInSec = 5; // Duration in seconds 
-        public const int LatencyTimeBufferInSec = 5; // Buffer time waiting fault occurs or connection recover
+        public const int DefaultDurationInSec = 5; // Duration in seconds
+        public const int LatencyTimeBufferInSec = 10; // Buffer time waiting fault occurs or connection recover
 
         public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
         public const int WaitForReconnectMilliseconds = 2 * DefaultDurationInSec * 1000;
@@ -98,12 +93,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.OperationTimeoutInMilliseconds = (uint)delayInSec * 1000;
                 }
 
-                await deviceClient.SendEventAsync(
-                    FaultInjection.ComposeErrorInjectionProperties(
-                        faultType,
-                        reason,
-                        delayInSec,
-                        durationInSec)).ConfigureAwait(false);
+                await deviceClient
+                    .SendEventAsync(
+                        ComposeErrorInjectionProperties(
+                            faultType,
+                            reason,
+                            delayInSec,
+                            durationInSec))
+                    .ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex)
             {
@@ -115,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException ex)
             {
                 s_log.WriteLine($"{nameof(ActivateFaultInjection)}: {ex}");
-                
+
                 // For quota injection, the fault is only seen for the original HTTP request.
                 if (transport == Client.TransportType.Http1) throw;
             }
@@ -171,6 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing baseline");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
+                int countBeforeFaultInjection = connectionStatusChangeCount;
                 watch.Start();
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
                 await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
@@ -185,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     bool isFaulted = false;
                     for (int i = 0; i < LatencyTimeBufferInSec; i++)
                     {
-                        if (connectionStatusChangeCount >= 2)
+                        if (connectionStatusChangeCount > countBeforeFaultInjection)
                         {
                             isFaulted = true;
                             break;
@@ -204,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
 
-                    Assert.AreEqual(lastConnectionStatus, ConnectionStatus.Connected, $"{testDevice.Id} did not reconnect.");
+                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"{testDevice.Id} did not reconnect.");
                     s_log.WriteLine($"{nameof(FaultInjection)}: Confirmed device back online.");
 
                     // Perform the test operation.
@@ -230,14 +228,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                     if (FaultInjection.FaultShouldDisconnect(faultType))
                     {
                         // 4 is the minimum notification count: connect, fault, reconnect, disable.
-                        // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
+                        // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise
                         // we would attempt to send the fault injection forever.)
                         Assert.IsTrue(connectionStatusChangeCount >= 4, $"The expected connection status change count for {testDevice.Id} should be equal or greater than 4 but was {connectionStatusChangeCount}");
                     }
                     else
                     {
                         // 2 is the minimum notification count: connect, disable.
-                        // We will monitor the test environment real network stability and switch to >=2 if necessary to 
+                        // We will monitor the test environment real network stability and switch to >=2 if necessary to
                         // account for real network issues.
                         Assert.IsTrue(connectionStatusChangeCount == 2, $"The expected connection status change count for {testDevice.Id}  should be 2 but was {connectionStatusChangeCount}");
                     }

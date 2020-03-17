@@ -1,29 +1,44 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Shared;
+using System;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using Microsoft.Azure.Devices.Shared;
-    using System;
-    using System.Net;
-    using System.Net.Security;
-    using System.Security.Cryptography.X509Certificates;
-
     /// <summary>
     /// contains Amqp transport-specific settings for DeviceClient
     /// </summary>
     public sealed class AmqpTransportSettings : ITransportSettings
     {
-        static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
-        static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
-        const uint DefaultPrefetchCount = 50;
-
-        readonly TransportType transportType;
-        TimeSpan operationTimeout;
-        TimeSpan openTimeout;
+        private readonly TransportType _transportType;
+        private TimeSpan _operationTimeout;
+        private TimeSpan _openTimeout;
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+        public bool CertificateRevocationCheck = false;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AmqpTransportSettings" class./>
+        /// The default operation timeout
+        /// </summary>
+        public static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
+
+        /// <summary>
+        /// The default open timeout
+        /// </summary>
+        public static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
+
+        /// <summary>
+        /// The default prefetch count
+        /// </summary>
+        public const uint DefaultPrefetchCount = 50;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AmqpTransportSettings" />
         /// </summary>
         /// <param name="transportType">The AMQP transport type.</param>
         public AmqpTransportSettings(TransportType transportType)
@@ -32,109 +47,141 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AmqpTransportSettings" class./>
+        /// Initializes a new instance of the <see cref="AmqpTransportSettings" />
         /// </summary>
         /// <param name="transportType">The AMQP transport type.</param>
+        /// <param name="prefetchCount">The prefetch count.</param>
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount)
-            :this(transportType, prefetchCount, new AmqpConnectionPoolSettings())
+            : this(transportType, prefetchCount, new AmqpConnectionPoolSettings())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AmqpTransportSettings" />
+        /// </summary>
+        /// <param name="transportType">The AMQP transport type.</param>
+        /// <param name="prefetchCount">The prefetch count.</param>
+        /// <param name="amqpConnectionPoolSettings">AMQP connection pool settings.</param>
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount, AmqpConnectionPoolSettings amqpConnectionPoolSettings)
         {
-            this.operationTimeout = DefaultOperationTimeout;
-            this.openTimeout = DefaultOpenTimeout;
+            OperationTimeout = DefaultOperationTimeout;
+            OpenTimeout = DefaultOpenTimeout;
 
-            if (prefetchCount <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(prefetchCount), "Must be greater than zero");
-            }
+            PrefetchCount = prefetchCount <= 0
+                ? throw new ArgumentOutOfRangeException(nameof(prefetchCount), "Must be greater than zero")
+                : prefetchCount;
 
             switch (transportType)
             {
                 case TransportType.Amqp_WebSocket_Only:
-                    this.Proxy = DefaultWebProxySettings.Instance;
-                    this.transportType = transportType;
+                    Proxy = DefaultWebProxySettings.Instance;
+                    _transportType = transportType;
                     break;
+
                 case TransportType.Amqp_Tcp_Only:
-                    this.transportType = transportType;
+                    _transportType = transportType;
                     break;
+
                 case TransportType.Amqp:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Must specify Amqp_WebSocket_Only or Amqp_Tcp_Only");
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, null);
             }
 
-            this.PrefetchCount = prefetchCount;
-            this.AmqpConnectionPoolSettings = amqpConnectionPoolSettings;
+            AmqpConnectionPoolSettings = amqpConnectionPoolSettings;
         }
 
-        public TransportType GetTransportType()
+        /// <summary>
+        /// Specify client-side heartbeat interval
+        /// </summary>
+        public TimeSpan IdleTimeout { get; set; }
+
+        /// <summary>
+        /// The operation timeout
+        /// </summary>
+        public TimeSpan OperationTimeout
         {
-            return this.transportType;
+            get => _operationTimeout;
+            set => SetOperationTimeout(value);
         }
 
-        public TimeSpan DefaultReceiveTimeout => this.operationTimeout;
-
-        public TimeSpan OperationTimeout {
-            get { return this.operationTimeout; }
-            set { this.SetOperationTimeout(value); }
-        }
-
+        /// <summary>
+        /// The open timeout
+        /// </summary>
         public TimeSpan OpenTimeout
         {
-            get { return this.openTimeout; }
-            set { this.SetOpenTimeout(value); }
+            get => _openTimeout;
+            set => SetOpenTimeout(value);
         }
 
+        /// <summary>
+        /// The prefetch count
+        /// </summary>
         public uint PrefetchCount { get; set; }
 
+        /// <summary>
+        /// The client certificate to use for authenticating
+        /// </summary>
         public X509Certificate2 ClientCertificate { get; set; }
 
+        /// <summary>
+        /// The proxy
+        /// </summary>
         public IWebProxy Proxy { get; set; }
 
+        /// <summary>
+        /// A callback for remote certificate validation
+        /// </summary>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
+        /// <summary>
+        /// The connection pool settings for AMQP
+        /// </summary>
         public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
 
+        /// <summary>
+        /// Returns the configured transport type
+        /// </summary>
+        public TransportType GetTransportType()
+        {
+            return _transportType;
+        }
+
+        /// <summary>
+        /// Returns the default current receive timeout
+        /// </summary>
+        public TimeSpan DefaultReceiveTimeout => DefaultOperationTimeout;
+
+        /// <summary>
+        /// Compares the properties of this instance to another
+        /// </summary>
+        /// <param name="other">The other instance to compare to</param>
+        /// <returns>True if equal</returns>
         public bool Equals(AmqpTransportSettings other)
         {
-            if (other == null)
-            {
-                return false;
-            }
-
-            if (object.ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            // ClientCertificates are usually different
-            return (this.PrefetchCount == other.PrefetchCount && this.OpenTimeout == other.OpenTimeout && this.OperationTimeout == other.OperationTimeout && this.AmqpConnectionPoolSettings.Equals(other.AmqpConnectionPoolSettings));
+            return other == null
+                ? false
+                : ReferenceEquals(this, other)
+                    // ClientCertificates are usually different, so ignore them in the comparison
+                    || PrefetchCount == other.PrefetchCount
+                        && OpenTimeout == other.OpenTimeout
+                        && OperationTimeout == other.OperationTimeout
+                        && AmqpConnectionPoolSettings.Equals(other.AmqpConnectionPoolSettings);
         }
 
-        void SetOperationTimeout(TimeSpan timeout)
+        private void SetOperationTimeout(TimeSpan timeout)
         {
-            if (timeout > TimeSpan.Zero)
-            {
-                this.operationTimeout = timeout;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(timeout));
-            }
+            _operationTimeout = timeout > TimeSpan.Zero
+                ? timeout
+                : throw new ArgumentOutOfRangeException(nameof(timeout));
         }
 
-        void SetOpenTimeout(TimeSpan timeout)
+        private void SetOpenTimeout(TimeSpan timeout)
         {
-            if (timeout > TimeSpan.Zero)
-            {
-                this.openTimeout = timeout;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(timeout));
-            }
+            _openTimeout = timeout > TimeSpan.Zero
+                ? timeout
+                : throw new ArgumentOutOfRangeException(nameof(timeout));
         }
     }
 }

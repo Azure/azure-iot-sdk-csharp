@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Globalization;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Globalization;
-
-    static class SecurityHelper
+    internal static class SecurityHelper
     {
         public static void ValidateIotHubHostName(string iotHubHostName, string iotHubName)
         {

@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Common;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using Microsoft.Azure.Devices.Common;
-
     /// <summary>
-    /// Authentication method that uses a shared access policy key. 
+    /// Authentication method that uses a shared access policy key.
     /// </summary>
     public sealed class ServiceAuthenticationWithSharedAccessPolicyKey : IAuthenticationMethod
     {
-        string policyName;
-        string key;
+        private string _policyName;
+        private string _key;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyKey"/> class.
@@ -21,51 +21,51 @@ namespace Microsoft.Azure.Devices
         /// <param name="key">Key associated with the shared access policy.</param>
         public ServiceAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
         {
-            this.SetPolicyName(policyName);
-            this.SetKey(key);
+            SetPolicyName(policyName);
+            SetKey(key);
         }
 
         public string PolicyName
         {
-            get { return this.policyName; }
-            set { this.SetPolicyName(value);}
+            get => _policyName;
+            set { SetPolicyName(value); }
         }
 
         public string Key
         {
-            get { return this.key; }
-            set { this.SetKey(value); }
+            get => _key;
+            set => SetKey(value);
         }
 
         public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException("iotHubConnectionStringBuilder");
+                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.SharedAccessKey = this.Key;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = this.PolicyName;
+            iotHubConnectionStringBuilder.SharedAccessKey = Key;
+            iotHubConnectionStringBuilder.SharedAccessKeyName = PolicyName;
             iotHubConnectionStringBuilder.SharedAccessSignature = null;
 
             return iotHubConnectionStringBuilder;
         }
 
-        void SetPolicyName(string policyName)
+        private void SetPolicyName(string policyName)
         {
             if (string.IsNullOrWhiteSpace(policyName))
             {
-                throw new ArgumentNullException("policyName");
+                throw new ArgumentNullException(nameof(policyName));
             }
 
-            this.policyName = policyName;
+            _policyName = policyName;
         }
 
-        void SetKey(string key)
+        private void SetKey(string key)
         {
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
             if (!StringValidationHelper.IsBase64String(key))
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentException("Key must be Base64 encoded");
             }
 
-            this.key = key;
+            _key = key;
         }
     }
 }

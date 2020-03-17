@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
-
-    interface IHttpClientHelper : IDisposable
+    internal interface IHttpClientHelper : IDisposable
     {
         Task<T> GetAsync<T>(
             Uri requestUri,
@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             T entity,
             PutOperationType operationType,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            CancellationToken cancellationToken) where T: IETagHolder;
+            CancellationToken cancellationToken) where T : IETagHolder;
 
         Task PostAsync<T>(
-            Uri requestUri, 
-            T entity, 
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides, 
-            IDictionary<string, string> customHeaders, 
+            Uri requestUri,
+            T entity,
+            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
+            IDictionary<string, string> customHeaders,
             CancellationToken cancellationToken);
 
         Task<T2> PostAsync<T1, T2>(
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Uri requestUri,
             T entity,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            IDictionary<string, string> customHeaders, 
+            IDictionary<string, string> customHeaders,
             CancellationToken cancellationToken) where T : IETagHolder;
     }
 }

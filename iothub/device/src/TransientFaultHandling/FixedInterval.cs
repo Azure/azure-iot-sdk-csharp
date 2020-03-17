@@ -2,6 +2,8 @@
 //Microsoft would like to thank its contributors, a list
 //of whom are at http://aka.ms/entlib-contributors
 
+using System;
+
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
 //obtain a copy of the License at
@@ -20,8 +22,6 @@
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
-    using System;
-
     /// <summary>
     /// Represents a retry strategy with a specified number of retry attempts and a default, fixed time interval between retries.
     /// </summary>
@@ -32,14 +32,14 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         private readonly TimeSpan retryInterval;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class.
         /// </summary>
         public FixedInterval() : this(RetryStrategy.DefaultClientRetryCount)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts.
         /// </summary>
         /// <param name="retryCount">The number of retry attempts.</param>
         public FixedInterval(int retryCount) : this(retryCount, RetryStrategy.DefaultRetryInterval)
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts and time interval. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts and time interval.
         /// </summary>
         /// <param name="retryCount">The number of retry attempts.</param>
         /// <param name="retryInterval">The time interval between retries.</param>
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts, time interval, and retry strategy. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts, time interval, and retry strategy.
         /// </summary>
         /// <param name="name">The retry strategy name.</param>
         /// <param name="retryCount">The number of retry attempts.</param>
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts, time interval, retry strategy, and fast start option. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts, time interval, retry strategy, and fast start option.
         /// </summary>
         /// <param name="name">The retry strategy name.</param>
         /// <param name="retryCount">The number of retry attempts.</param>

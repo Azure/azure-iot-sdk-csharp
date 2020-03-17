@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             this.RequestedVersion = version;
         }
 
-#if !NETSTANDARD1_3
         public InvalidProtocolVersionException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -33,7 +32,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
             base.GetObjectData(info, context);
         }
-#endif
+
         public string RequestedVersion { get; private set; }
     }
 }

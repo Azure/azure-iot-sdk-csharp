@@ -8,7 +8,6 @@ namespace Microsoft.Azure.Devices.Api.Test
     using System.Linq;
     using System.Net;
     using System.Net.Http;
-    using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
@@ -20,7 +19,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     [TestCategory("Unit")]
     public class RegistryManagerTests
     {
-        const string IotHubName = "acme";
+        private const string IotHubName = "acme";
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -67,13 +66,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             List<Device> devicesToReturn = new List<Device>();
             devicesToReturn.Add(new Device("a") { ConnectionState = DeviceConnectionState.Connected });
-            
+
             var restOpMock = new Mock<IHttpClientHelper>();
-            restOpMock.Setup(restOp => restOp.GetAsync<IEnumerable<Device>>(It.IsAny<Uri>(), 
+            restOpMock.Setup(restOp => restOp.GetAsync<IEnumerable<Device>>(It.IsAny<Uri>(),
                 It.IsAny<TimeSpan>(),
                 null,
-                null, 
-                true, 
+                null,
+                true,
                 It.IsAny<CancellationToken>())).ReturnsAsync(devicesToReturn);
 
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
@@ -149,7 +148,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
-            await registryManager.AddDevicesAsync(new List<Device>() {goodDevice, badDevice}).ConfigureAwait(false);
+            await registryManager.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when bad deviceid was used.");
         }
 
@@ -291,7 +290,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             await registryManager.UpdateDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the device parameter was null.");
         }
-
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
@@ -647,7 +645,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>,Task <string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
+            restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
 
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
             await registryManager.RemoveDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
@@ -669,8 +667,8 @@ namespace Microsoft.Azure.Devices.Api.Test
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevicesAsyncForceDeleteFalseMissingETagTest()
         {
-            var badDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected};
-            var badDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected};
+            var badDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
+            var badDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
 
@@ -820,7 +818,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             registryManager.Dispose();
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Once());
         }
-    
+
         [TestMethod]
         public async Task CloseAsyncTest()
         {

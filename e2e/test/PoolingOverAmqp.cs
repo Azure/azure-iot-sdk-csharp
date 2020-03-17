@@ -28,7 +28,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<IList<DeviceClient>, Task> cleanupOperation,
-            ConnectionStringAuthScope authScope)
+            ConnectionStringAuthScope authScope,
+            bool ignoreConnectionStatus)
         {
             var transportSettings = new ITransportSettings[]
             {
@@ -92,17 +93,24 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         await deviceClients[i].CloseAsync().ConfigureAwait(false);
 
-                        // The connection status change count should be 2: connect (open) and disabled (close)
-                        if (amqpConnectionStatuses[i].ConnectionStatusChangesHandlerCount != 2)
+                        if (!ignoreConnectionStatus)
                         {
-                            deviceConnectionStatusAsExpected = false;
-                        }
+                            // The connection status change count should be 2: connect (open) and disabled (close)
+                            if (amqpConnectionStatuses[i].ConnectionStatusChangesHandlerCount != 2)
+                            {
+                                deviceConnectionStatusAsExpected = false;
+                            }
 
-                        // The connection status should be "Disabled", with connection status change reason "Client_close"
-                        Assert.AreEqual(ConnectionStatus.Disabled, amqpConnectionStatuses[i].LastConnectionStatus, $"The actual connection status is = {amqpConnectionStatuses[i].LastConnectionStatus}");
-                        Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, amqpConnectionStatuses[i].LastConnectionStatusChangeReason, $"The actual connection status change reason is = {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
+                            // The connection status should be "Disabled", with connection status change reason "Client_close"
+                            Assert.AreEqual(ConnectionStatus.Disabled, amqpConnectionStatuses[i].LastConnectionStatus, $"The actual connection status is = {amqpConnectionStatuses[i].LastConnectionStatus}");
+                            Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, amqpConnectionStatuses[i].LastConnectionStatusChangeReason, $"The actual connection status change reason is = {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
+                        }
                     }
-                    if (deviceConnectionStatusAsExpected) successfulRuns++;
+                    if (deviceConnectionStatusAsExpected)
+                    {
+                        successfulRuns++;
+                    }
+
                     currentSuccessRate = (int)((double)successfulRuns / totalRuns * 100);
                     reRunTest = currentSuccessRate < testSuccessRate;
                 }

@@ -1,26 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+
 namespace Microsoft.Azure.Devices
 {
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
-
     /// <summary>
-    ///     This wraps underlying paged query result access logic.
-    ///     Use pattern:
-    /// 
-    ///     IQuery q = await registryManager.CreateQuery(sql, pagesize);
-    ///     while (q.HasMoreResults) {
-    ///         IEnumerable\<Twin\> result = r.GetNextAsTwinAsync();
-    ///         // access individual device twin records
-    ///     }
+    /// This wraps underlying paged query result access logic.
     /// </summary>
+    /// <remarks>
+    /// Use pattern:
+    ///
+    /// IQuery q = await registryManager.CreateQuery(sql, pagesize);
+    /// while (q.HasMoreResults) {
+    ///     IEnumerable&lt;Twin&gt; result = r.GetNextAsTwinAsync();
+    ///     // access individual device twin records
+    /// }
+    /// </remarks>
     public interface IQuery
     {
         /// <summary>
-        ///     Indicate if more results can be fetched
+        /// Indicate if more results can be fetched
         /// </summary>
         bool HasMoreResults { get; }
 

@@ -317,13 +317,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var taskCompletionSource = new TaskCompletionSource<Twin>();
                 _twinResponseCompletions[correlationId] = taskCompletionSource;
 
                 await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, _operationTimeout).ConfigureAwait(false);
 
                 var receivingTask = taskCompletionSource.Task;
-                if (await Task.WhenAny(receivingTask, Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds))).ConfigureAwait(false) == receivingTask)
+                if (await Task.WhenAny(receivingTask, Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds), cancellationToken)).ConfigureAwait(false) == receivingTask)
                 {
                     // Task completed within timeout.
                     // Consider that the task may have faulted or been canceled.
@@ -376,7 +377,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Accepted, cancellationToken);
+                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Accepted);
             }
             finally
             {
@@ -390,7 +391,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Released, cancellationToken);
+                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Released);
             }
             finally
             {
@@ -404,7 +405,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Rejected, cancellationToken);
+                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Rejected);
             }
             finally
             {
@@ -412,7 +413,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private async Task DisposeMessageAsync(string lockToken, AmqpIoTDisposeActions outcome, CancellationToken cancellationToken)
+        private async Task DisposeMessageAsync(string lockToken, AmqpIoTDisposeActions outcome)
         {
             if (Logging.IsEnabled) Logging.Enter(this, outcome, $"{nameof(DisposeMessageAsync)}");
             AmqpIoTOutcome disposeOutcome;

@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal class AmqpIoTSendingLink
     {
         public event EventHandler Closed;
+
         private readonly SendingAmqpLink _sendingAmqpLink;
 
         public AmqpIoTSendingLink(SendingAmqpLink sendingAmqpLink)
@@ -51,6 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         }
 
         #region Telemetry handling
+
         internal async Task<AmqpIoTOutcome> SendMessageAsync(Message message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, $"{nameof(SendMessageAsync)}");
@@ -76,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     var data = new Data()
                     {
-                        Value = amqpMessage.DataBody
+                        Value = AmqpIoTMessageConverter.ReadStream(amqpMessage.ToStream())
                     };
                     messageList.Add(data);
                 }
@@ -124,8 +126,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     if (ex is AmqpIoTResourceException)
                     {
                         _sendingAmqpLink.SafeClose();
+                        throw new IotHubCommunicationException(ex.Message, ex);
                     }
-                    throw new IotHubCommunicationException(ex.Message, ex);
+                    throw ex;
                 }
             }
             finally
@@ -133,9 +136,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(SendAmqpMessageAsync)}");
             }
         }
-        #endregion
+
+        #endregion Telemetry handling
 
         #region Method handling
+
         internal async Task<AmqpIoTOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, methodResponse, $"{nameof(SendMethodResponseAsync)}");
@@ -149,9 +154,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             return new AmqpIoTOutcome(outcome);
         }
-        #endregion
+
+        #endregion Method handling
 
         #region Twin handling
+
         internal async Task<AmqpIoTOutcome> SendTwinGetMessageAsync(string correlationId, TwinCollection reportedProperties, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(SendTwinGetMessageAsync)}");
@@ -186,6 +193,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             return new AmqpIoTOutcome(outcome);
         }
-        #endregion
+
+        #endregion Twin handling
     }
 }

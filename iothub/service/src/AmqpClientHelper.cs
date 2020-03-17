@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common.Extensions;
     using Newtonsoft.Json;
 
-    class AmqpClientHelper
+    internal class AmqpClientHelper
     {
         public delegate object ParseFunc<in T>(AmqpMessage amqpMessage, T data);
 
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices
                     break;
 
                 default:
-                    throw new ArgumentException("Invalid endpoint kind to receive messages from Service endpoints", "endpointKind");
+                    throw new ArgumentException("Invalid endpoint kind to receive messages from Service endpoints", nameof(endpointKind));
             }
 
             return path;

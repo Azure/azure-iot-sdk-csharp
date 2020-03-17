@@ -4,5 +4,5 @@
 using System.Runtime.CompilerServices;
 
 #if (DEBUG)
-[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.Tests")]
 #endif

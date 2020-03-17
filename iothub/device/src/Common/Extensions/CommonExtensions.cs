@@ -1,26 +1,27 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Extensions
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Sockets;
-    using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
+using System.Text.RegularExpressions;
 
 #if NET451
     using Microsoft.Owin;
 #endif
 
-    delegate bool TryParse<in TInput, TOutput>(TInput input, bool ignoreCase, out TOutput output);
+namespace Microsoft.Azure.Devices.Client.Extensions
+{
+    internal delegate bool TryParse<in TInput, TOutput>(TInput input, bool ignoreCase, out TOutput output);
 
-    static class CommonExtensionMethods
+    internal static class CommonExtensionMethods
     {
-        const char ValuePairDelimiter = ';';
-        const char ValuePairSeparator = '=';
+        private const char ValuePairDelimiter = ';';
+        private const char ValuePairSeparator = '=';
 
         public static string EnsureStartsWith(this string value, char prefix)
         {
@@ -57,12 +58,17 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 throw new ArgumentException("Malformed Token");
             }
 
-            IEnumerable<string[]> parts = valuePairString
-                .Split(kvpDelimiter)
-                .Where(p => p.Trim().Length > 0)
-                .Select(p => p.Split(new char[] { kvpSeparator }, 2));
+            IEnumerable<string[]> parts = new Regex($"(?:^|{kvpDelimiter})([^{kvpDelimiter}{kvpSeparator}]*){kvpSeparator}")
+                .Matches(valuePairString)
+                .Cast<Match>()
+                .Select(m => new string[] {
+                    m.Result("$1"),
+                    valuePairString.Substring(
+                        m.Index + m.Value.Length,
+                        (m.NextMatch().Success ? m.NextMatch().Index : valuePairString.Length) - (m.Index + m.Value.Length))
+                });
 
-            if (parts.Any(p => p.Length != 2))
+            if (!parts.Any() || parts.Any(p => p.Length != 2))
             {
                 throw new FormatException("Malformed Token");
             }
@@ -142,7 +148,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                             addressBytes[addressBytes.Length - 4] = 0xFF;
                             maskedRemoteIpAddress = new IPAddress(addressBytes).ToString();
                         }
-
                     }
 
                     return maskedRemoteIpAddress;
@@ -194,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 }
                 nextSearchStartIndex = entryIndex + 1;
             }
-            
+
             return entryIndex;
         }
     }

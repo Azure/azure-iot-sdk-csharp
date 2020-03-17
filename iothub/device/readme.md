@@ -48,7 +48,6 @@ So **workaround** would be to directly install older version of **validation.dll
 
 Other useful documents include:
 - [Setup IoT Hub][setup-iothub]
-- [How to use Device Explorer][device-explorer]
 - [Microsoft Azure IoT device SDK for .NET API reference][dotnet-api-ref]
 
 
@@ -60,7 +59,6 @@ API reference documentation can be found online at https://msdn.microsoft.com/li
 [devbox-setup]: ../../doc/devbox_setup.md
 [run-sample-on-desktop-windows]: ../../doc/get_started/windows-desktop-csharp.md
 [run-sample-on-windows-iot-core]: ../../doc/get_started/windows10-iotcore-csharp.md
-[device-explorer]: ../../tools/DeviceExplorer/readme.md
 [dotnet-api-ref]: https://msdn.microsoft.com/library/microsoft.azure.devices.aspx
 [azure-functions]: https://azure.microsoft.com/en-us/services/functions/
 [binding-redirect]:https://msdn.microsoft.com/en-us/library/eftw1fys(v=vs.110).aspx

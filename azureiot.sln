@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iothub", "iothub", "{537FA828-124D-4C70-9FC1-89301D9E776D}"
 EndProject
@@ -25,21 +25,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{873E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Client", "iothub\device\src\Microsoft.Azure.Devices.Client.csproj", "{3308B8AE-2B01-4140-BC8B-DD0AADA5530C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Client.Test", "iothub\device\tests\Microsoft.Azure.Devices.Client.Test.csproj", "{80F6B034-D570-4A50-B178-464996A1BC43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Client.Tests", "iothub\device\tests\Microsoft.Azure.Devices.Client.Tests.csproj", "{80F6B034-D570-4A50-B178-464996A1BC43}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices", "iothub\service\src\Microsoft.Azure.Devices.csproj", "{933EA769-2D37-42C3-BBEF-8D2E0DF76AAB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Test", "iothub\service\tests\Microsoft.Azure.Devices.Test.csproj", "{E35FEBBE-F360-4472-90E0-D10D95D4A8FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Tests", "iothub\service\tests\Microsoft.Azure.Devices.Tests.csproj", "{E35FEBBE-F360-4472-90E0-D10D95D4A8FD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Client", "provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj", "{F99E80F7-86D5-4E78-9FAB-6F1459F01E2F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "transport", "transport", "{82CFD984-1D5A-4848-A8EE-7018C35AA289}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Client.UnitTests", "provisioning\device\tests\Microsoft.Azure.Devices.Provisioning.Client.UnitTests.csproj", "{A817DDB5-67E5-41A0-982B-62F2E1DFC191}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Client.Tests", "provisioning\device\tests\Microsoft.Azure.Devices.Provisioning.Client.Tests.csproj", "{A817DDB5-67E5-41A0-982B-62F2E1DFC191}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Service", "provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj", "{AD108C3E-F395-4DDF-ADFA-645D14B6E952}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Service.Test", "provisioning\service\tests\Microsoft.Azure.Devices.Provisioning.Service.Test.csproj", "{C1DFF192-CDAB-4CC1-A340-F78C186EFC0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Service.Tests", "provisioning\service\tests\Microsoft.Azure.Devices.Provisioning.Service.Tests.csproj", "{C1DFF192-CDAB-4CC1-A340-F78C186EFC0A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "amqp", "amqp", "{BD2CD647-FA82-4E3F-8067-DB8FCAE908E5}"
 EndProject
@@ -49,25 +49,32 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "http", "http", "{EEFED918-4
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Amqp", "provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj", "{1A36C3B4-257F-4537-8DE4-CE319FB4BB5D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests", "provisioning\transport\amqp\tests\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests.csproj", "{CC9311E1-729D-426C-BFC5-FA703C4626D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Amqp.Tests", "provisioning\transport\amqp\tests\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.Tests.csproj", "{CC9311E1-729D-426C-BFC5-FA703C4626D2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Http", "provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj", "{C8614ED0-89EB-48FF-9860-8CF8F9F1D39A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Http.UnitTests", "provisioning\transport\http\tests\Microsoft.Azure.Devices.Provisioning.Transport.Http.UnitTests.csproj", "{81419EA1-77B0-4D51-A331-453026336251}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Http.Tests", "provisioning\transport\http\tests\Microsoft.Azure.Devices.Provisioning.Transport.Http.Tests.csproj", "{81419EA1-77B0-4D51-A331-453026336251}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Mqtt", "provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj", "{0E1D5558-3631-4850-81BE-27F096B6A015}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.UnitTests", "provisioning\transport\mqtt\tests\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.UnitTests.csproj", "{13A54C92-754F-488B-9619-0A3D103FA217}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.Tests", "provisioning\transport\mqtt\tests\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.Tests.csproj", "{13A54C92-754F-488B-9619-0A3D103FA217}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tpm", "tpm", "{4CF9A9B8-9D3F-44F6-B965-DF2B7EEA024E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Security.Tpm", "security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj", "{1398AC6D-A247-4503-A5B0-6E8A398DF182}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Security.Tpm.UnitTests", "security\tpm\tests\Microsoft.Azure.Devices.Provisioning.Security.Tpm.UnitTests.csproj", "{5A200FEC-F723-4A85-86DA-3F6E246FE273}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Security.Tpm.Tests", "security\tpm\tests\Microsoft.Azure.Devices.Provisioning.Security.Tpm.Tests.csproj", "{5A200FEC-F723-4A85-86DA-3F6E246FE273}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared", "shared\src\Microsoft.Azure.Devices.Shared.csproj", "{275DEE86-1EEA-47C4-A9C5-797DF20EC8A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E2ETests", "e2e\test\E2ETests.csproj", "{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{719D18A7-E943-461B-B777-0AAEC43916F5}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.Tests", "shared\tests\Microsoft.Azure.Devices.Shared.Tests.csproj", "{CEEE435F-32FC-4DE5-8735-90F6AC950A01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -139,6 +146,9 @@ Global
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -172,6 +182,7 @@ Global
 		{5A200FEC-F723-4A85-86DA-3F6E246FE273} = {4CF9A9B8-9D3F-44F6-B965-DF2B7EEA024E}
 		{275DEE86-1EEA-47C4-A9C5-797DF20EC8A7} = {3AA089A9-A035-439E-BAF6-C3975A334379}
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
+		{CEEE435F-32FC-4DE5-8735-90F6AC950A01} = {3AA089A9-A035-439E-BAF6-C3975A334379}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices
             this.EnsureInstanceNotClosed();
 
             return this.httpClientHelper.PostAsync<string, JobResponse>(
-                new Uri(CancelJobUriFormat.FormatInvariant(jobId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative),
+                new Uri(CancelJobUriFormat.FormatInvariant(jobId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative),
                 null,
                 null,
                 null,
@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices
 
         Uri BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
         {
-            StringBuilder stringBuilder = new StringBuilder(JobsQueryFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryString));
+            StringBuilder stringBuilder = new StringBuilder(JobsQueryFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryStringDefault));
 
             if (jobType != null)
             {
@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices
 
         static Uri GetJobUri(string jobId)
         {
-            return new Uri(JobsUriFormat.FormatInvariant(jobId ?? string.Empty, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(JobsUriFormat.FormatInvariant(jobId ?? string.Empty, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
         }
     }
 }

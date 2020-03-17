@@ -8,16 +8,14 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client.Extensions;
-
-#if !NETSTANDARD1_3
 using System.Configuration;
-#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpIoTConnector : IDisposable
     {
         #region Members-Constructor
+
 #if NET451
         const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
 #endif
@@ -34,9 +32,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _amqpTransportSettings = amqpTransportSettings;
             _hostName = hostName;
         }
-#endregion
 
-#region Open-Close
+        #endregion Members-Constructor
+
+        #region Open-Close
+
         public async Task<AmqpIoTConnection> OpenConnectionAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(OpenConnectionAsync)}");
@@ -52,6 +52,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 ContainerId = CommonResources.GetNewStringGuid(),
                 HostName = _hostName
             };
+
+            TimeSpan idleTimeout = _amqpTransportSettings.IdleTimeout;
+            if (idleTimeout != null)
+            {
+                amqpConnectionSettings.IdleTimeOut = Convert.ToUInt32(idleTimeout.TotalMilliseconds);
+            }
 
             var amqpIoTTransport = new AmqpIoTTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
@@ -76,9 +82,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
             }
         }
-#endregion
 
-#region Authentication
+        #endregion Open-Close
+
+        #region Authentication
+
         private static bool InitializeDisableServerCertificateValidation()
         {
 #if !NET451
@@ -97,7 +105,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return false;
 #endif
         }
-#endregion
+
+        #endregion Authentication
 
         public void Dispose()
         {
