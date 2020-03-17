@@ -2,13 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -16,18 +17,14 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    [Ignore("diagnostics bug hits when running with other tests")]
     public class RegistryManagerImportDevicesTests
     {
-#pragma warning disable CA1823
         private readonly TestLogging _log = TestLogging.GetInstance();
 
         // A bug in either Storage or System.Diagnostics causes an exception during container creation
-        // so for now, we need to disable this.
+        // so for now, we need to use the older storage nuget.
         // https://github.com/Azure/azure-sdk-for-net/issues/10476
-        //private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
-
-#pragma warning restore CA1823
+        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         private const string ImportFileNameDefault = "devices.txt";
         private const int MaxIterationWait = 30;
@@ -165,15 +162,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task UploadFileAndConfirmAsync(StorageContainer storageContainer, Stream devicesFile)
         {
-            BlobClient blobClient = storageContainer.BlobContainerClient.GetBlobClient(ImportFileNameDefault);
-            _ = await blobClient.UploadAsync(devicesFile).ConfigureAwait(false);
+            CloudBlockBlob cloudBlob = storageContainer.CloudBlobContainer.GetBlockBlobReference(ImportFileNameDefault);
+            await cloudBlob.UploadFromStreamAsync(devicesFile).ConfigureAwait(false);
 
             // wait for blob to be written
             bool foundBlob = false;
             for (int i = 0; i < MaxIterationWait; ++i)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                if (await blobClient.ExistsAsync().ConfigureAwait(false))
+                if (await cloudBlob.ExistsAsync().ConfigureAwait(false))
                 {
                     foundBlob = true;
                     break;

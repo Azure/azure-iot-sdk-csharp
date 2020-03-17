@@ -2,15 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -19,17 +17,14 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    [Ignore("diagnostics bug hits when running with other tests")]
     public class RegistryManagerExportDevicesTests
     {
-#pragma warning disable CA1823
         private readonly TestLogging _log = TestLogging.GetInstance();
 
-        // A bug in either Storage or System.Diagnostics causes an exception during container creation
-        // so for now, we need to disable this.
+        // A bug in either Azure.Storage.Blob or System.Diagnostics causes an exception during container creation
+        // so for now, we need to use the older storage nuget.
         // https://github.com/Azure/azure-sdk-for-net/issues/10476
-        //private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
-#pragma warning restore CA1823
+        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         private const string ExportFileNameDefault = "devices.txt";
         private const int MaxIterationWait = 30;
@@ -171,17 +166,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task<string> DownloadFileAsync(StorageContainer storageContainer)
         {
-            BlobClient exportFile = storageContainer.BlobContainerClient.GetBlobClient(ExportFileNameDefault);
-            Response<BlobDownloadInfo> download = await exportFile.DownloadAsync().ConfigureAwait(false);
-            return ReadStream(download.Value.Content);
-        }
-
-        private static string ReadStream(Stream stream)
-        {
-            using (var streamReader = new StreamReader(stream))
-            {
-                return streamReader.ReadToEnd();
-            }
+            CloudBlockBlob exportFile = storageContainer.CloudBlobContainer.GetBlockBlobReference(ExportFileNameDefault);
+            return await exportFile.DownloadTextAsync().ConfigureAwait(false);
         }
     }
 }
