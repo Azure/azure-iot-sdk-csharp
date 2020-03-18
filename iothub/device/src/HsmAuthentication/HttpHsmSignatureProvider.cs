@@ -6,10 +6,13 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
-#if NETSTANDARD2_0
-using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
-#endif
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
+
+#if !NET451
+
+using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
+
+#endif
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
@@ -24,8 +27,9 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         private readonly string _apiVersion;
         private readonly Uri _providerUri;
 
-        static readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy = new ErrorDetectionStrategy();
-        static readonly RetryStrategy TransientRetryStrategy =
+        private static readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy = new ErrorDetectionStrategy();
+
+        private static readonly RetryStrategy TransientRetryStrategy =
             new TransientFaultHandling.ExponentialBackoff(retryCount: 3, minBackoff: TimeSpan.FromSeconds(2), maxBackoff: TimeSpan.FromSeconds(30), deltaBackoff: TimeSpan.FromSeconds(3));
 
         public HttpHsmSignatureProvider(string providerUri, string apiVersion)
@@ -102,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             return response;
         }
 
-        class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
+        private class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
         {
             public bool IsTransient(Exception ex) => ex is SwaggerException se && se.StatusCode >= 500;
         }

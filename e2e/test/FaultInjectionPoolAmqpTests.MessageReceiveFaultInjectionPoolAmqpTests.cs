@@ -463,6 +463,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task Message_DeviceSak_AmqpC2DLinkDropReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqp(
@@ -607,7 +608,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 durationInSec,
-                (d, t) => { return Task.FromResult(false);  },
+                (d, t) => { return Task.FromResult(false); },
                 testOperation,
                 cleanupOperation,
                 authScope).ConfigureAwait(false);

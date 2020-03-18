@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information. 
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client.Extensions
 {
-    using System.Globalization;
-
-    static class StringFormattingExtensions
+    internal static class StringFormattingExtensions
     {
         public static string FormatInvariant(this string format, params object[] args)
         {

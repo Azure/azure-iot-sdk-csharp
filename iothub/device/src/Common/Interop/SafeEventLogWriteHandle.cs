@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#if NET451
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Security;
+using Microsoft.Win32.SafeHandles;
+
 namespace Microsoft.Azure.Devices.Client
 {
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-    using System;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.Runtime.InteropServices;
-    using System.Runtime.Versioning;
-    using System.Security;
-    using Microsoft.Win32.SafeHandles;
-
     [SecurityCritical]
     sealed class SafeEventLogWriteHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
@@ -44,5 +44,5 @@ namespace Microsoft.Azure.Devices.Client
             return DeregisterEventSource(this.handle);
         }
     }
-#endif
 }
+#endif

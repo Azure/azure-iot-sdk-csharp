@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-
     /// <summary>
     /// The exception that is thrown when an attempt to add a device fails because the maximum number of registered devices has been reached.
     /// </summary>
@@ -38,16 +38,14 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="QuotaExceededException"/> class with the specified serialization and context information.
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        QuotaExceededException(SerializationInfo info, StreamingContext context)
+        private QuotaExceededException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

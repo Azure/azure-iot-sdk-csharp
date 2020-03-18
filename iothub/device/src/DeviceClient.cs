@@ -1,24 +1,20 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Threading;
-#if NETSTANDARD1_3
-    using System.Net.Http;
-#endif
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
-
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
     public sealed class DeviceClient : IDisposable
     {
-
         /// <summary>
         /// Default operation timeout.
         /// </summary>
@@ -195,9 +191,9 @@ namespace Microsoft.Azure.Devices.Client
 
         internal InternalClient InternalClient => this.internalClient;
 
-        /// <summary> 
-        /// Diagnostic sampling percentage value, [0-100];  
-        /// 0 means no message will carry on diag info 
+        /// <summary>
+        /// Diagnostic sampling percentage value, [0-100];
+        /// 0 means no message will carry on diag info
         /// </summary>
         public int DiagnosticSamplingPercentage
         {
@@ -207,8 +203,8 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Stores the timeout used in the operation retries. Note that this value is ignored for operations
-        /// where a cancellation token is provided. For example, SendEventAsync(Message) will use this timeout, but 
-        /// SendEventAsync(Message, CancellationToken) will not. The latter operation will only be canceled by the 
+        /// where a cancellation token is provided. For example, SendEventAsync(Message) will use this timeout, but
+        /// SendEventAsync(Message, CancellationToken) will not. The latter operation will only be canceled by the
         /// provided cancellation token.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
@@ -230,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Stores the retry strategy used in the operation retries.
         /// </summary>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff
         // parameters for calculating delay in between retries.]
         [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
         public RetryPolicyType RetryPolicy
@@ -244,7 +240,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The change will take effect after any in-progress operations.
         /// </summary>
         /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff
         // parameters for calculating delay in between retries.]
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
@@ -259,7 +255,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Explicitly open the DeviceClient instance.
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// </summary>
         public Task OpenAsync(CancellationToken cancellationToken) => this.internalClient.OpenAsync(cancellationToken);
 
@@ -272,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Close the DeviceClient instance
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns></returns>
         public Task CloseAsync(CancellationToken cancellationToken) => this.internalClient.CloseAsync(cancellationToken);
 
@@ -286,7 +282,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Receive a message from the device queue using the cancellation token.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The receive message or null if there was no message until CancellationToken Expired</returns>
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => this.internalClient.ReceiveAsync(cancellationToken);
 
@@ -309,7 +305,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The lock identifier for the previously received message</returns>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task CompleteAsync(string lockToken, CancellationToken cancellationToken) => this.internalClient.CompleteAsync(lockToken, cancellationToken);
 
         /// <summary>
@@ -324,7 +320,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The previously received message</returns>
         public Task CompleteAsync(Message message, CancellationToken cancellationToken) => this.internalClient.CompleteAsync(message, cancellationToken);
 
@@ -340,7 +336,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The previously received message</returns>
         public Task AbandonAsync(string lockToken, CancellationToken cancellationToken) => this.internalClient.AbandonAsync(lockToken, cancellationToken);
 
@@ -356,7 +352,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message, CancellationToken cancellationToken) => this.internalClient.AbandonAsync(message, cancellationToken);
 
@@ -372,7 +368,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <param name="lockToken">The message lockToken.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The previously received message</returns>
         public Task RejectAsync(string lockToken, CancellationToken cancellationToken) => this.internalClient.RejectAsync(lockToken, cancellationToken);
 
@@ -388,10 +384,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The lock identifier for the previously received message</returns>
         public Task RejectAsync(Message message, CancellationToken cancellationToken) => this.internalClient.RejectAsync(message, cancellationToken);
-
 
         /// <summary>
         /// Sends an event to device hub
@@ -405,23 +400,23 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => this.internalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">A list of one or more messages to send</param>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken) => this.internalClient.SendEventBatchAsync(messages, cancellationToken);
 
@@ -442,7 +437,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="blobName"></param>
         /// <param name="source"></param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>AsncTask</returns>
         public Task UploadToBlobAsync(String blobName, Stream source, CancellationToken cancellationToken) =>
             this.internalClient.UploadToBlobAsync(blobName, source, cancellationToken);
@@ -464,14 +459,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// </summary>
         public Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext, CancellationToken cancellationToken) =>
             this.internalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
 
-
         /// <summary>
-        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
+        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
@@ -480,13 +474,13 @@ namespace Microsoft.Azure.Devices.Client
             this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
 
         /// <summary>
-        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
+        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext, CancellationToken cancellationToken) =>
             this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
 
@@ -503,8 +497,8 @@ namespace Microsoft.Azure.Devices.Client
             this.internalClient.SetMethodHandler(methodName, methodHandler, userContext);
 
         /// <summary>
-        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
-        /// it will be replaced with the new delegate.
+        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated,
+        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
@@ -516,7 +510,7 @@ namespace Microsoft.Azure.Devices.Client
         public void Dispose() => this.internalClient?.Dispose();
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update 
+        /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.  This has the side-effect of subscribing
         /// to the PATCH topic on the service.
         /// </summary>
@@ -527,7 +521,7 @@ namespace Microsoft.Azure.Devices.Client
             this.internalClient.SetDesiredPropertyUpdateCallback(callback, userContext);
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update 
+        /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.  This has the side-effect of subscribing
         /// to the PATCH topic on the service.
         /// </summary>
@@ -537,14 +531,14 @@ namespace Microsoft.Azure.Devices.Client
             this.internalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update 
+        /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.  This has the side-effect of subscribing
         /// to the PATCH topic on the service.
         /// </summary>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken) =>
             this.internalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
 
@@ -558,7 +552,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Retrieve a device twin object for the current device.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync(CancellationToken cancellationToken) => this.internalClient.GetTwinAsync(cancellationToken);
 
@@ -574,16 +568,17 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             this.internalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
-#region Device Streaming
+        #region Device Streaming
+
         /// <summary>
         /// Waits for an incoming Cloud-to-Device Stream request.
         /// </summary>
         /// <returns>A stream request when received</returns>
-        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync() 
+        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync()
             => this.internalClient.WaitForDeviceStreamRequestAsync();
 
         /// <summary>
@@ -627,6 +622,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>An awaitable async task</returns>
         public Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
             => this.internalClient.RejectDeviceStreamRequestAsync(request, cancellationToken);
-#endregion Device Streaming
+
+        #endregion Device Streaming
     }
 }

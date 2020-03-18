@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.ApiTest
 
     public static class CertificateHelper
     {
-        static readonly ConcurrentDictionary<string, X509Certificate2> certificatesFromFiles = new ConcurrentDictionary<string, X509Certificate2>();
+        private static readonly ConcurrentDictionary<string, X509Certificate2> certificatesFromFiles = new ConcurrentDictionary<string, X509Certificate2>();
 
         public static X509Certificate2 GetCertificateFromFile(string fileName, string password)
         {
@@ -35,7 +35,9 @@ namespace Microsoft.Azure.Devices.Client.ApiTest
             }
             finally
             {
+#if !NETCOREAPP1_1
                 store.Close();
+#endif
             }
         }
 
@@ -51,6 +53,6 @@ namespace Microsoft.Azure.Devices.Client.ApiTest
             CertificateHelper.InstallCertificate(certificate, storeLocation);
 
             return certificate;
-        } 
+        }
     }
 }

@@ -3,7 +3,7 @@
 This document describes how to prepare your development environment to build and use the **Microsoft Azure IoT device client SDK for .NET**
 
 1.  [Prerequisites required to build the SDK](#min_setup)
-2.  [Optional prerequisites required to test Xamarin, Windows IoT and .NET Micro Framework](#advanced)
+2.  [Optional prerequisites required to test Xamarin and Windows IoT(#advanced)
 3.  [Test prerequisites](#testprereq)
 
 <a name="min_setup"/>
@@ -16,7 +16,7 @@ This may not be sufficient to run certain samples that require Visual Studio and
 ### Windows + .NET Framework
 
 - Install the latest .NET Core from https://dot.net
-- Install .NET Framework 4.7 Developer Pack: https://support.microsoft.com/en-us/help/3186612/the-net-framework-4-7-developer-pack-and-language-packs
+- Install .NET Framework 4.7.2 Developer Pack: https://dotnet.microsoft.com/download/dotnet-framework/net472
 - Install .NET Framework 4.5.1 Developer Pack: https://www.microsoft.com/en-us/download/details.aspx?id=40772
 - As admin (one-time setup):
     Enable Powershell script execution on your system. See http://go.microsoft.com/fwlink/?LinkID=135170 for more information.
@@ -29,7 +29,7 @@ This may not be sufficient to run certain samples that require Visual Studio and
 
 <a name="advanced"/>
 
-## Optional Setup required to test Xamarin, Windows IoT and .NET Micro Framework
+## Optional Setup required to test Xamarin, Windows IoT
 
 ### Installing Visual Studio 2017 for Xamarin applications
 
@@ -44,38 +44,14 @@ Components:
 
 ### Installing Windows IoT Core SDK
 
-Install the Microsoft IoT Windows Core Project Templates for Visual Studio 2017 from the Extension Marketplace: 
-	https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreProjectTemplatesforVS15
+Install the Microsoft IoT Windows Core Project Templates for Visual Studio 2017 from the Extension Marketplace:
+    https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreProjectTemplatesforVS15
 
 ### [Deprecated] Installing .NET Micro Framework
 
 ```diff
-- .NET MicroFramework will not be supported in future versions of the SDK.
+- .NET MicroFramework is no longer supported in the SDK.
 ```
-
-#### 1. Download and Install Visual Studio Community 2015 Update 3 (approx. size: 9GB)
-
-NetMF is not supported on VS2017. We recommend a separate virtual machine with VS2015.
-VS2015 Community is sufficient. Download from: https://www.visualstudio.com/vs/older-downloads/
-
-Under Programming Languages, Visual C++ make sure that `Common Tools for Visual C++ 2015` is selected.
-
-#### 2. Download and install .NET MicroFramework 4.4 and 4.3
-
-1. SDK v 4.4: 
-  * MicroFrameworkSDK.msi  (SDK v4.4) - Complete Installation
-  * NetMFVS14.vsx
-		
-2. SDK 4.3 - The official site has been archived. *Either*:
-  * Download the Codeplex archive (3.4GB) then unpack to find the MSI:
-    * Under releases\13 unpack c4ad01a9-68f6-48cd-82e5-e6d154b0eb2f
-    * Rename c4ad01a9-68f6-48cd-82e5-e6d154b0eb2f to netmf-v4.3.2-SDK-QFE2-RTM.zip and unzip
-    * Install MicroFrameworkSDK.msi - Complete Installation
-  * Download from http://developer.wildernesslabs.co/Netduino/About/Downloads/
-  
-#### 3. Install .NET Framework 3.5
-
-See the following documentation on how to enable this Windows component: https://docs.microsoft.com/en-us/dotnet/framework/install/dotnet-35-windows-10
 
 <a name="testprereq"/>
 

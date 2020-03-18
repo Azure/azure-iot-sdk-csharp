@@ -3,9 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    enum MappingType
+    internal enum MappingType
     {
         ApplicationProperty,
-        MessageBody
+        MessageBody,
     }
 }

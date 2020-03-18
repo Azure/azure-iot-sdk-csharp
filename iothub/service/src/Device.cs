@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-
     /// <summary>
     /// Contains Device properties and their accessors.
     /// </summary>
@@ -23,12 +23,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates a new instance of <see cref="Device"/>
         /// </summary>
-        /// <param name="id">Device ID</param>
+        /// <param name="id">Device Id</param>
         public Device(string id)
         {
-            this.Id = id;
-            this.ConnectionState = DeviceConnectionState.Disconnected;
-            this.LastActivityTime = this.StatusUpdatedTime = this.ConnectionStateUpdatedTime = DateTime.MinValue;
+            Id = id;
+            ConnectionState = DeviceConnectionState.Disconnected;
+            LastActivityTime = StatusUpdatedTime = ConnectionStateUpdatedTime = DateTime.MinValue;
         }
 
         /// <summary>
@@ -47,11 +47,7 @@ namespace Microsoft.Azure.Devices
         /// Device's ETag
         /// </summary>
         [JsonProperty(PropertyName = "etag")]
-        public string ETag
-        {
-            get;
-            set;
-        }
+        public string ETag { get; set; }
 
         /// <summary>
         /// Device's ConnectionState

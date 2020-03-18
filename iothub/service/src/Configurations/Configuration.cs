@@ -1,30 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Microsoft.Azure.Devices.Shared;
-
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Azure IoT Edge Configurations.
     /// </summary>
     public class Configuration : IETagHolder
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Configuration"/> class. 
+        /// Initializes a new instance of the <see cref="Configuration"/> class.
         /// </summary>
-        /// <param name="configurationId">
-        /// configuration Id
-        /// </param>
+        /// <param name="configurationId">configuration Id</param>
         public Configuration(string configurationId)
             : this()
         {
-            this.Id = configurationId;
+            Id = configurationId;
         }
 
         /// <summary>
@@ -32,9 +28,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal Configuration()
         {
-            this.SchemaVersion = "1.0";
-            this.ContentType = "assignment";
-            this.Metrics = new ConfigurationMetrics();
+            SchemaVersion = "1.0";
+            ContentType = "assignment";
+            Metrics = new ConfigurationMetrics();
         }
 
         /// <summary>

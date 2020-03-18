@@ -2,6 +2,8 @@
 //Microsoft would like to thank its contributors, a list
 //of whom are at http://aka.ms/entlib-contributors
 
+using System;
+
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
 //obtain a copy of the License at
@@ -20,8 +22,6 @@
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
-    using System;
-
     /// <summary>
     /// A retry strategy with a specified number of retry attempts and an incremental time interval between retries.
     /// </summary>
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         private readonly TimeSpan increment;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> class. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> class.
         /// </summary>
         public Incremental() : this(RetryStrategy.DefaultClientRetryCount, RetryStrategy.DefaultRetryInterval, RetryStrategy.DefaultRetryIncrement)
         {
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> class with the specified number of retry attempts, time interval, retry strategy, and fast start option. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> class with the specified number of retry attempts, time interval, retry strategy, and fast start option.
         /// </summary>
         /// <param name="name">The retry strategy name.</param>
         /// <param name="retryCount">The number of retry attempts.</param>

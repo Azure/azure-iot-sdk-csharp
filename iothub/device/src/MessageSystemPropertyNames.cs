@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    static class MessageSystemPropertyNames
+    internal static class MessageSystemPropertyNames
     {
         public const string MessageId = "message-id";
 

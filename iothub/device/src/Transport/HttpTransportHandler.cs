@@ -24,9 +24,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class HttpTransportHandler : TransportHandler
     {
-        static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(60);
-        static readonly TimeSpan DefaultMethodOperationTimeout = TimeSpan.FromSeconds(100);
-        static readonly IDictionary<string, string> MapMessageProperties2HttpHeaders = new Dictionary<string, string>
+        private static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan DefaultMethodOperationTimeout = TimeSpan.FromSeconds(100);
+
+        private static readonly IDictionary<string, string> MapMessageProperties2HttpHeaders = new Dictionary<string, string>
             {
                 { MessageSystemPropertyNames.Ack, CustomHeaderConstants.Ack },
                 { MessageSystemPropertyNames.CorrelationId, CustomHeaderConstants.CorrelationId },
@@ -42,12 +43,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 { MessageSystemPropertyNames.InterfaceId, CustomHeaderConstants.InterfaceId }
             };
 
-        readonly IHttpClientHelper httpClientHelper;
-        readonly string deviceId;
-        readonly string moduleId;
+        private readonly IHttpClientHelper httpClientHelper;
+        private readonly string deviceId;
+        private readonly string moduleId;
 
         internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings, HttpClientHandler httpClientHandler = null)
-            :base(context, transportSettings)
+            : base(context, transportSettings)
         {
             ProductInfo productInfo = context.Get<ProductInfo>();
             this.deviceId = iotHubConnectionString.DeviceId;
@@ -117,11 +118,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             string body = ToJson(messages);
             return this.httpClientHelper.PostAsync<string>(
-                        GetRequestUri(this.deviceId, CommonConstants.DeviceEventPathTemplate, null),
-                        body,
-                        ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                        customHeaders,
-                        cancellationToken);
+                GetRequestUri(this.deviceId, CommonConstants.DeviceEventPathTemplate, null),
+                body,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                customHeaders,
+                cancellationToken);
         }
 
         protected override void Dispose(bool disposing)
@@ -298,7 +299,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return message;
         }
 
-
         public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
             TimeSpan timeout = timeoutHelper.RemainingTime();
@@ -388,7 +388,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
-        static TimeSpan GetInvokeDeviceMethodOperationTimeout(MethodInvokeRequest methodInvokeRequest)
+        private static TimeSpan GetInvokeDeviceMethodOperationTimeout(MethodInvokeRequest methodInvokeRequest)
         {
             // For InvokeDeviceMethod, we need to take into account the timeouts specified
             // for the Device to connect and send a response. We also need to take into account
@@ -399,7 +399,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return timeout <= DefaultMethodOperationTimeout ? DefaultMethodOperationTimeout : timeout;
         }
 
-        static IDictionary<string, string> PrepareCustomHeaders(string toHeader, string messageId, string operation)
+        private static IDictionary<string, string> PrepareCustomHeaders(string toHeader, string messageId, string operation)
         {
             var customHeaders = new Dictionary<string, string>
             {
@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return customHeaders;
         }
 
-        static Uri GetRequestUri(string deviceId, string path, IDictionary<string, string> queryValueDictionary)
+        private static Uri GetRequestUri(string deviceId, string path, IDictionary<string, string> queryValueDictionary)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
 
@@ -439,7 +439,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return new Uri(stringBuilder.ToString(), UriKind.Relative);
         }
 
-        static string ToJson(IEnumerable<Message> messages)
+        private static string ToJson(IEnumerable<Message> messages)
         {
             using (var sw = new StringWriter())
             using (var writer = new JsonTextWriter(sw))
@@ -490,7 +490,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        static string ToJson(IEnumerable<string> messages)
+        private static string ToJson(IEnumerable<string> messages)
         {
             using (var sw = new StringWriter())
             using (var writer = new JsonTextWriter(sw))
@@ -522,7 +522,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        static string ToJson(IEnumerable<Tuple<string, IDictionary<string, string>>> messages)
+        private static string ToJson(IEnumerable<Tuple<string, IDictionary<string, string>>> messages)
         {
             using (var sw = new StringWriter())
             using (var writer = new JsonTextWriter(sw))

@@ -1,10 +1,11 @@
 # Microsoft Azure IoT SDK for .NET
 
 This repository contains the following:
-* **Microsoft Azure IoT Hub device SDK for C#** to connect client devices to Azure IoT Hub with .NET
-* **Microsoft Azure IoT Hub service SDK for C#** to manage your IoT Hub service instance from a back-end .NET application
-* **Microsoft Azure Provisioning device SDK for C#** to provision devices to Azure IoT Hub with .NET
-* **Microsoft Azure Provisioning service SDK for C#** to manage your Provisioning service instance from a back-end .NET application
+
+- **Microsoft Azure IoT Hub device SDK for C#** to connect client devices to Azure IoT Hub with .NET
+- **Microsoft Azure IoT Hub service SDK for C#** to manage your IoT Hub service instance from a back-end .NET application
+- **Microsoft Azure Provisioning device SDK for C#** to provision devices to Azure IoT Hub with .NET
+- **Microsoft Azure Provisioning service SDK for C#** to manage your Provisioning service instance from a back-end .NET application
 
 The API reference documentation for .NET SDK is [here][dotnet-api-reference].
 
@@ -12,50 +13,57 @@ To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sd
 For IoT Hub Management SDK in .NET, please visit [azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net) repository
 
 ## Need Support?
-* Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
-* Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”
-* Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/en-us/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time.  Consider submitting a ticket and get assistance from Microsoft support team.
-* Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
+
+- Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
+- Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”
+- Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/en-us/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time.  Consider submitting a ticket and get assistance from Microsoft support team.
+- Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
 
 ## Developing applications for Azure IoT
+
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
 
 ## Samples
+
 Samples are available at [Azure IoT Samples for C#](https://github.com/Azure-Samples/azure-iot-samples-csharp)
 
 ## Contribute to the Azure IoT C# SDK
+
 If you would like to build or change the SDK source code, please follow the [devguide](doc/devguide.md).
 
 ### Build status
+
 Due to security considerations, build logs are not publicly available.
 
 | Service Environment      | Status |
 | ---                      | ---    |
 | Master                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-westus1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=44&_a=summary&repositoryFilter=9&branchFilter=23)|
-| Preview                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=43&_a=summary&repositoryFilter=9&branchFilter=72)|
+| Preview                  | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=43&_a=summary&repositoryFilter=9&branchFilter=72)|
 
 ## OS platforms and hardware compatibility
 
-```diff
-- .NET MicroFramework will not be supported in future versions of the SDK.
-```
+> .NET MicroFramework will not be supported in future versions of the SDK.
+
+> .NET Standard 1.3 (IoT Hub SDKs only) is last supported in the [2020-02-27](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2020-2-27) and in the [2020-1-31 LTS](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31) releases.
 
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
 
 The NuGet packages provide support for the following .NET flavors:
 - .NET Standard 2.0
-- .NET Standard 1.3 (IoT Hub SDKs only)
+- .NET Framework 4.7.2 (IoT Hub SDKs only)
 - .NET Framework 4.5.1 (IoT Hub SDKs only)
 
 For details on .NET support see the [.NET Standard documentation](https://docs.microsoft.com/en-us/dotnet/standard/net-standard).
 For details on OS support see the following resources:
+
 - [.NET Core Runtime ID Catalog](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
 - [.NET Framework System Requirements](https://docs.microsoft.com/en-us/dotnet/framework/get-started/system-requirements)
-- [.NET MicroFramework](http://netmf.github.io)
+- [Configure TLS Protocol Version and Ciphers](./configure_tls_protocol_version_and_ciphers.md)
 
 ## Key features and roadmap
 
 ### IoT Hub Device SDK
+
 :heavy_check_mark: feature available  :heavy_multiplication_x: feature planned but not supported  :heavy_minus_sign: no support planned
 
 | Features                                                                                                         | mqtt                | mqtt-ws             | amqp                | amqp-ws             | https               | Description                                                                                                                                                                                                                                                            |
@@ -72,6 +80,7 @@ For details on OS support see the following resources:
 | Connection Pooling - Specifying number of connections                                                            | :heavy_minus_sign:  | :heavy_minus_sign:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |                                                                                                                                                                                                                                                                        |
 
 ### IoT Hub Service SDK
+
 :heavy_check_mark: feature available  :heavy_multiplication_x: feature planned but not supported  :heavy_minus_sign: no support planned
 
 | Features                                                                                                      | C# .Net             | Description                                                                                                              |
@@ -85,6 +94,7 @@ For details on OS support see the following resources:
 | [File Upload](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload)                    | :heavy_check_mark:  | Set up your backend app to send file upload notification receiver.                                                       |
 
 ### Provisioning Device SDK
+
 This repository contains [provisioning device client SDK](./provisioning/device) for the [Device Provisioning Service](https://docs.microsoft.com/en-us/azure/iot-dps/).
 
 :heavy_check_mark: feature available  :heavy_multiplication_x: feature planned but not supported  :heavy_minus_sign: no support planned
@@ -98,6 +108,7 @@ This repository contains [provisioning device client SDK](./provisioning/device)
 _Note *_ WebSocket support for MQTT/AMQP is limited to .NET Framework 4.x.
 
 ### Provisioniong Service SDK
+
 This repository contains [provisioning service client SDK](./provisioning/service/) for the Device Provisioning Service to [programmatically enroll devices](https://docs.microsoft.com/en-us/azure/iot-dps/how-to-manage-enrollments-sdks).
 
 | Feature                                            | Support            | Description                                                                                                                                                                                                                                            |
@@ -109,13 +120,16 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 | Query enrollments                                  | :heavy_check_mark: | Programmatically query registration states with the service SDK.  Please visit the [samples folder](./provisioning/service/samples/) to learn more about this feature.                                                                            |
 
 ## Read more
-* [Azure IoT Hub documentation][iot-hub-documentation]
-* [Set up IoT Hub](doc/setup_iothub.md) describes how to configure your Azure IoT Hub service.
-* [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
-* [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
-* [Set up your development environment](./doc/devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
-* [API reference documentation for .NET](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet)
-* [Get Started with IoT Hub using .NET](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
+
+- [Azure IoT Hub documentation][iot-hub-documentation]
+- [Set up IoT Hub](doc/setup_iothub.md) describes how to configure your Azure IoT Hub service.
+- [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
+- [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
+- [Set up your development environment](./doc/devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
+- [API reference documentation for .NET](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet)
+- [Get Started with IoT Hub using .NET](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
+
+> Device Explorer is no longer supported. A replacement tool can be found [here](https://github.com/Azure/azure-iot-explorer).
 
 # Long Term Support
 
@@ -136,19 +150,19 @@ Below is a table showing the mapping of the LTS branches to the packages release
 
 | Release | Github Branch | LTS Status | LTS Start Date | Maintenance End Date | Removed Date |
 | :-----------: | :-----------: | :--------: | :------------: | :------------------: | :----------: |
-| [2018-1-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2018-1-23) | lts_2018_01   | Active     | 2018-01-23     | 2018-06-30           | 2018-12-31   |
-| [2017-10-6](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2017-10-6) | lts_07_2017   | Deprecated     | 2017-07-01     | 2018-12-31           | 2018-06-30   |
+| [2020-1-31](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31) | lts_2020_01   | Active     | 2020-01-31     | 2020-06-30           | 2020-12-31   |
+| [2018-1-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2018-1-23) | lts_2018_01   | Deprecated     | 2018-01-23     | 2018-06-30           | 2018-12-31   |
 
-* <sup>1</sup> All scheduled dates are subject to change by the Azure IoT SDK team.
+- <sup>1</sup> All scheduled dates are subject to change by the Azure IoT SDK team.
 
-### Planned Release Schedule
+### Planned release schedule
 ![](./lts_branches.png)
 
 ---
+
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 Microsoft collects performance and usage information which may be used to provide and improve Microsoft products and services and enhance your experience.  To learn more, review the [privacy statement](https://go.microsoft.com/fwlink/?LinkId=521839&clcid=0x409).  
-
 
 [iot-hub-documentation]: https://docs.microsoft.com/en-us/azure/iot-hub/
 [iot-dev-center]: http://azure.com/iotdev

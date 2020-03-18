@@ -1,23 +1,20 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Text;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.IO;
-    using System.Text;
-#if !NETMF
-    using Newtonsoft.Json;
-#endif
-    using Extensions;
-
-    static class Utils
+    internal static class Utils
     {
         static Utils()
         {
         }
 
-#if !NETMF
         public static void ValidateBufferBounds(byte[] buffer, int offset, int size)
         {
             if (buffer == null)
@@ -27,7 +24,8 @@ namespace Microsoft.Azure.Devices.Client
 
             ValidateBufferBounds(buffer.Length, offset, size);
         }
-        static void ValidateBufferBounds(int bufferSize, int offset, int size)
+
+        private static void ValidateBufferBounds(int bufferSize, int offset, int size)
         {
             if (offset < 0)
             {
@@ -50,7 +48,6 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(size), size, Common.Resources.SizeExceedsRemainingBufferSpace.FormatInvariant(remainingBufferSpace));
             }
         }
-#endif
 
         public static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)
         {
@@ -58,10 +55,13 @@ namespace Microsoft.Azure.Devices.Client
             {
                 case "none":
                     return DeliveryAcknowledgement.None;
+
                 case "negative":
                     return DeliveryAcknowledgement.NegativeOnly;
+
                 case "positive":
                     return DeliveryAcknowledgement.PositiveOnly;
+
                 case "full":
                     return DeliveryAcknowledgement.Full;
 
@@ -76,10 +76,13 @@ namespace Microsoft.Azure.Devices.Client
             {
                 case DeliveryAcknowledgement.None:
                     return "none";
+
                 case DeliveryAcknowledgement.NegativeOnly:
                     return "negative";
+
                 case DeliveryAcknowledgement.PositiveOnly:
                     return "positive";
+
                 case DeliveryAcknowledgement.Full:
                     return "full";
 
@@ -88,7 +91,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !NETMF
         public static void ValidateDataIsEmptyOrJson(byte[] data)
         {
             if (data.Length != 0)
@@ -104,6 +106,5 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
         }
-#endif
     }
 }

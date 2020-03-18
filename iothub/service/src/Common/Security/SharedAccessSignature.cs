@@ -1,122 +1,113 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Common.Data;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+
 namespace Microsoft.Azure.Devices.Common.Security
 {
-    using Microsoft.Azure.Devices.Common.Data;
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Net;
-    using System.Security.Cryptography;
-    using System.Text;
-
     public sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
-        readonly string iotHubName;
-        readonly string signature;
-        readonly string audience;
-        readonly string encodedAudience;
-        readonly string expiry;
-        readonly string keyName;
+        private readonly string _encodedAudience;
+        private readonly string _expiry;
 
-        SharedAccessSignature(string iotHubName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
+        private SharedAccessSignature(
+            string iotHubName,
+            DateTime expiresOn,
+            string expiry,
+            string keyName,
+            string signature,
+            string encodedAudience)
         {
             if (string.IsNullOrWhiteSpace(iotHubName))
             {
-                throw new ArgumentNullException("iotHubName");
+                throw new ArgumentNullException(nameof(iotHubName));
             }
 
-            this.ExpiresOn = expiresOn;
+            ExpiresOn = expiresOn;
 
-            if (this.IsExpired())
+            if (IsExpired())
             {
                 throw new UnauthorizedAccessException("The specified SAS token is expired");
             }
 
-            this.iotHubName = iotHubName;
-            this.signature = signature;
-            this.audience = WebUtility.UrlDecode(encodedAudience);
-            this.encodedAudience = encodedAudience;
-            this.expiry = expiry;
-            this.keyName = keyName ?? string.Empty;
+            IotHubName = iotHubName;
+            Signature = signature;
+            Audience = WebUtility.UrlDecode(encodedAudience);
+            _encodedAudience = encodedAudience;
+            _expiry = expiry;
+            KeyName = keyName ?? string.Empty;
         }
 
-        public string IotHubName
-        {
-            get
-            {
-                return this.iotHubName;
-            }
-        }
+        /// <summary>
+        /// The IoT hub name
+        /// </summary>
+        public string IotHubName { get; private set; }
 
-        public DateTime ExpiresOn
-        {
-            get;
-            private set;
-        }
+        /// <summary>
+        /// The date and time the SAS expires
+        /// </summary>
+        public DateTime ExpiresOn { get; private set; }
 
-        public string KeyName
-        {
-            get
-            {
-                return this.keyName;
-            }
-        }
+        public string KeyName { get; private set; }
 
-        public string Audience
-        {
-            get
-            {
-                return this.audience;
-            }
-        }
+        public string Audience { get; private set; }
 
-        public string Signature
-        {
-            get
-            {
-                return this.signature;
-            }
-        }
+        public string Signature { get; private set; }
 
         public static SharedAccessSignature Parse(string iotHubName, string rawToken)
         {
             if (string.IsNullOrWhiteSpace(iotHubName))
             {
-                throw new ArgumentNullException("iotHubName");
+                throw new ArgumentNullException(nameof(iotHubName));
             }
 
             if (string.IsNullOrWhiteSpace(rawToken))
             {
-                throw new ArgumentNullException("rawToken");
+                throw new ArgumentNullException(nameof(rawToken));
             }
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
-            string signature;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.SignatureFieldName));
+                throw new FormatException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Missing field: {0}",
+                    SharedAccessSignatureConstants.SignatureFieldName));
             }
 
-            string expiry;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out expiry))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out string expiry))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.ExpiryFieldName));
+                throw new FormatException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Missing field: {0}",
+                    SharedAccessSignatureConstants.ExpiryFieldName));
             }
 
             // KeyName (skn) is optional.
-            string keyName;
-            parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out keyName);
+            parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out string keyName);
 
-            string encodedAudience;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out encodedAudience))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out string encodedAudience))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.AudienceFieldName));
+                throw new FormatException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Missing field: {0}",
+                    SharedAccessSignatureConstants.AudienceFieldName));
             }
 
-            return new SharedAccessSignature(iotHubName, SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)), expiry, keyName, signature, encodedAudience);
+            return new SharedAccessSignature(
+                iotHubName,
+                SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
+                expiry,
+                keyName,
+                signature,
+                encodedAudience);
         }
 
         public static bool IsSharedAccessSignature(string rawSignature)
@@ -127,33 +118,38 @@ namespace Microsoft.Azure.Devices.Common.Security
             }
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawSignature);
-            string signature;
-            bool isSharedAccessSignature = parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature);
+            bool isSharedAccessSignature = parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out _);
 
             return isSharedAccessSignature;
         }
 
+        /// <summary>
+        /// Indicates if the token has expired
+        /// </summary>
         public bool IsExpired()
         {
-            return this.ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
+            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// The date and time of expiration
+        /// </summary>
         public DateTime ExpiryTime()
         {
-            return this.ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
+            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
         }
 
         public void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)
         {
-            if (this.IsExpired())
+            if (IsExpired())
             {
-                throw new UnauthorizedAccessException("The specified SAS token is expired.");
+                throw new UnauthorizedAccessException("The specified SAS token has expired.");
             }
 
             if (sasAuthorizationRule.PrimaryKey != null)
             {
-                string primareyKeyComputedSignature = this.ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
-                if (string.Equals(this.signature, primareyKeyComputedSignature))
+                string primareyKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
+                if (StringComparer.Ordinal.Equals(Signature, primareyKeyComputedSignature))
                 {
                     return;
                 }
@@ -161,8 +157,8 @@ namespace Microsoft.Azure.Devices.Common.Security
 
             if (sasAuthorizationRule.SecondaryKey != null)
             {
-                string secondaryKeyComputedSignature = this.ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
-                if (string.Equals(this.signature, secondaryKeyComputedSignature))
+                string secondaryKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
+                if (StringComparer.Ordinal.Equals(Signature, secondaryKeyComputedSignature))
                 {
                     return;
                 }
@@ -173,19 +169,19 @@ namespace Microsoft.Azure.Devices.Common.Security
 
         public void Authorize(string iotHubHostName)
         {
-            SecurityHelper.ValidateIotHubHostName(iotHubHostName, this.IotHubName);
+            SecurityHelper.ValidateIotHubHostName(iotHubHostName, IotHubName);
         }
 
         public void Authorize(Uri targetAddress)
         {
             if (targetAddress == null)
             {
-                throw new ArgumentNullException("targetAddress");
+                throw new ArgumentNullException(nameof(targetAddress));
             }
-            
+
             string target = targetAddress.Host + targetAddress.AbsolutePath;
 
-            if (!target.StartsWith(this.audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
+            if (!target.StartsWith(Audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
             {
                 throw new UnauthorizedAccessException("Invalid target audience");
             }
@@ -193,9 +189,11 @@ namespace Microsoft.Azure.Devices.Common.Security
 
         public string ComputeSignature(byte[] key)
         {
-            List<string> fields = new List<string>();
-            fields.Add(this.encodedAudience);
-            fields.Add(this.expiry);
+            var fields = new List<string>
+            {
+                _encodedAudience,
+                _expiry,
+            };
 
             using (var hmac = new HMACSHA256(key))
             {
@@ -204,11 +202,14 @@ namespace Microsoft.Azure.Devices.Common.Security
             }
         }
 
-        static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
+        private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
         {
             string[] lines = sharedAccessSignature.Split();
 
-            if (!string.Equals(lines[0].Trim(), SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.Ordinal) || lines.Length != 2)
+            if (!StringComparer.Ordinal.Equals(
+                    lines[0].Trim(),
+                    SharedAccessSignatureConstants.SharedAccessSignature)
+                || lines.Length != 2)
             {
                 throw new FormatException("Malformed signature");
             }
@@ -218,9 +219,9 @@ namespace Microsoft.Azure.Devices.Common.Security
 
             foreach (string field in fields)
             {
-                if (field != string.Empty)
+                if (!string.IsNullOrEmpty(field))
                 {
-                    string[] fieldParts = field.Split(new string[]{ SharedAccessSignatureConstants.KeyValueSeparator }, StringSplitOptions.None);
+                    string[] fieldParts = field.Split(new string[] { SharedAccessSignatureConstants.KeyValueSeparator }, StringSplitOptions.None);
                     if (string.Equals(fieldParts[0], SharedAccessSignatureConstants.AudienceFieldName, StringComparison.OrdinalIgnoreCase))
                     {
                         // We need to preserve the casing of the escape characters in the audience,

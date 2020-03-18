@@ -1,16 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Common
-{
-    using System;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-    using System.Threading.Tasks;
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+using System;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+#if NET451
     using System.Transactions;
 #endif
-    static class TaskHelpers
+
+namespace Microsoft.Azure.Devices.Common
+{
+    internal static class TaskHelpers
     {
         public static readonly Task CompletedTask = Task.FromResult(default(VoidTaskResult));
 
@@ -19,7 +21,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         /// <param name="begin"></param>
         /// <param name="end"></param>
-        /// <param name="state"> 
+        /// <param name="state">
         /// This parameter helps reduce allocations by passing state to the Funcs. e.g.:
         ///  await TaskHelpers.CreateTask(
         ///      (c, s) => ((Transaction)s).BeginCommit(c, s),
@@ -70,14 +72,14 @@ namespace Microsoft.Azure.Devices.Common
             return retval;
         }
 
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
         /// <summary>
         /// Create a Task based on Begin/End IAsyncResult pattern.
         /// </summary>
         /// <param name="transaction">The transaction (optional) to use.  If not null a TransactionScope will be used when calling the begin Func.</param>
         /// <param name="begin"></param>
         /// <param name="end"></param>
-        /// <param name="state"> 
+        /// <param name="state">
         /// This parameter helps reduce allocations by passing state to the Funcs. e.g.:
         ///  await TaskHelpers.CreateTask(
         ///      (c, s) => ((Transaction)s).BeginCommit(c, s),
@@ -144,6 +146,7 @@ namespace Microsoft.Azure.Devices.Common
             return retval;
         }
 #endif
+
         public static Task ExecuteAndGetCompletedTask(Action action)
         {
             TaskCompletionSource<object> completedTcs = new TaskCompletionSource<object>();
@@ -330,9 +333,11 @@ namespace Microsoft.Azure.Devices.Common
                     var exception = source.Exception.GetBaseException();
                     proxy.TrySetException(exception);
                     break;
+
                 case TaskStatus.Canceled:
                     proxy.TrySetCanceled();
                     break;
+
                 case TaskStatus.RanToCompletion:
                     Task<TResult> castedSource = source as Task<TResult>;
                     proxy.TrySetResult(
@@ -454,7 +459,7 @@ namespace Microsoft.Azure.Devices.Common
             throw new TimeoutException(errorMessage());
         }
 
-        static async Task CreateDelayTask(TimeSpan timeout, CancellationToken token)
+        private static async Task CreateDelayTask(TimeSpan timeout, CancellationToken token)
         {
             try
             {

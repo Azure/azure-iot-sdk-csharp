@@ -56,10 +56,12 @@ namespace Microsoft.Azure.Devices.Client.Edge
                             }
                         }
                         break;
+
                     case TransportType.Http1:
                         // InvokeMethodAsync is over HTTP even when transportSettings set a different protocol
                         // So set the callback in HttpClientHandler for InvokeMethodAsync
                         break;
+
                     case TransportType.Mqtt_WebSocket_Only:
                     case TransportType.Mqtt_Tcp_Only:
                         if (transportSetting is MqttTransportSettings mqttTransportSettings)
@@ -70,6 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                             }
                         }
                         break;
+
                     default:
                         throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportSetting.GetTransportType()));
                 }
@@ -89,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
             // Allow the chain the chance to rebuild itself with the expected root
             chain.ChainPolicy.ExtraStore.Add(trustedCertificate);
             chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
-#if NETSTANDARD2_0
+#if !NET451
             if (!chain.Build(new X509Certificate2(certificate)))
             {
                 Debug.WriteLine("Unable to build the chain using the expected root certificate.");
@@ -112,8 +115,5 @@ namespace Microsoft.Azure.Devices.Client.Edge
             }
             return true;
         }
-
-       
     }
-
 }
