@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     Assert.AreEqual(2, clone.Properties.Count);
 
                     Assert.AreEqual("gzip", clone.ContentEncoding);
-                    Assert.AreEqual(null, clone.ContentType);
+                    Assert.IsNull(clone.ContentType);
                     Assert.IsFalse(clone.SystemProperties.Keys.Contains(MessageSystemPropertyNames.UserId));
                 }
             }
