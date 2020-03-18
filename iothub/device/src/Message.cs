@@ -339,14 +339,14 @@ namespace Microsoft.Azure.Devices.Client
         {
             var result = new Message(byteArray);
 
-            foreach (string key in this.Properties.Keys)
+            foreach (string key in Properties.Keys)
             {
-                result.Properties.Add(key, this.Properties[key]);
+                result.Properties.Add(key, Properties[key]);
             }
 
-            foreach (string key in this.SystemProperties.Keys)
+            foreach (string key in SystemProperties.Keys)
             {
-                result.SystemProperties.Add(key, this.SystemProperties[key]);
+                result.SystemProperties.Add(key, SystemProperties[key]);
             }
 
             return result;
