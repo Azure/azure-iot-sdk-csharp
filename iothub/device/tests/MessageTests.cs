@@ -198,5 +198,29 @@ namespace Microsoft.Azure.Devices.Client.Test
                 }
             }
         }
+
+        [TestMethod]
+        public void CloneWithBodyWithNullTest()
+        {
+            using (var original = new Message(Encoding.UTF8.GetBytes("Original copy")))
+            {
+                original.Properties["test1"] = "test_v_1";
+                original.Properties["test2"] = null;
+
+                original.ContentEncoding = "gzip";
+                original.ContentType = null;
+
+                using (var clone = original.CloneWithBody(Encoding.UTF8.GetBytes("Cloned version")))
+                {                    
+                    Assert.AreEqual("test_v_1", clone.Properties["test1"]);
+                    Assert.AreEqual(null, clone.Properties["test2"]);
+                    Assert.AreEqual(2, clone.Properties.Count);
+
+                    Assert.AreEqual("gzip", clone.ContentEncoding);
+                    Assert.AreEqual(null, clone.ContentType);
+                    Assert.IsFalse(clone.SystemProperties.Keys.Contains(MessageSystemPropertyNames.UserId));
+                }
+            }
+        }
     }
 }
