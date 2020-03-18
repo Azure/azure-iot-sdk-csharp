@@ -80,32 +80,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="byteArray"/> on it.
-        /// </summary>
-        /// <param name="byteArray">Message content to be set after clone.</param>
-        /// <returns>A new instance of <see cref="Message"/> with body content defined by <paramref name="byteArray"/>,
-        /// and user/system properties of the cloned <see cref="Message"/> instance.
-        /// </returns>
-        /// <remarks>user should treat the input byte array as immutable when
-        /// sending the message.</remarks>
-        public Message CloneWithBody(byte[] byteArray)
-        {
-            var result = new Message(byteArray);
-
-            foreach (string key in this.Properties.Keys)
-            {
-                result.Properties.Add(key, this.Properties[key]);
-            }
-
-            foreach (string key in this.SystemProperties.Keys)
-            {
-                result.SystemProperties.Add(key, this.SystemProperties[key]);
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// [Required for two way requests] Used to correlate two-way communication.
         /// Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars
         /// + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
@@ -350,6 +324,32 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return ReadFullStream(_bodyStream);
+        }
+
+        /// <summary>
+        /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="byteArray"/> on it.
+        /// </summary>
+        /// <param name="byteArray">Message content to be set after clone.</param>
+        /// <returns>A new instance of <see cref="Message"/> with body content defined by <paramref name="byteArray"/>,
+        /// and user/system properties of the cloned <see cref="Message"/> instance.
+        /// </returns>
+        /// <remarks>user should treat the input byte array as immutable when
+        /// sending the message.</remarks>
+        public Message CloneWithBody(in byte[] byteArray)
+        {
+            var result = new Message(byteArray);
+
+            foreach (string key in this.Properties.Keys)
+            {
+                result.Properties.Add(key, this.Properties[key]);
+            }
+
+            foreach (string key in this.SystemProperties.Keys)
+            {
+                result.SystemProperties.Add(key, this.SystemProperties[key]);
+            }
+
+            return result;
         }
 
         internal void ResetBody()

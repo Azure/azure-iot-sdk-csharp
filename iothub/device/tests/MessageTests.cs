@@ -175,6 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             original.Properties["test2"] = "test_v_2";
 
             original.ContentEncoding = "gzip";
+            original.ContentType = "text/plain";
             original.UserId = "JohnDoe";
 
             var clone = original.CloneWithBody(Encoding.UTF8.GetBytes("Cloned version"));
@@ -183,11 +184,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual("test_v_2", clone.Properties["test2"]);
 
             Assert.AreEqual("gzip", clone.ContentEncoding);
+            Assert.AreEqual("text/plain", clone.ContentType);
             Assert.AreEqual("JohnDoe", clone.UserId);
 
-            var clonedContent = new StreamReader(clone.BodyStream, Encoding.UTF8).ReadToEnd();
+            var clonedContent = default(string);
+            var reader = default(StreamReader);
 
+            clonedContent = (reader = new StreamReader(clone.BodyStream, Encoding.UTF8)).ReadToEnd();
+    
             Assert.AreEqual("Cloned version", clonedContent);
+
+            original.Dispose();
+            clone.Dispose();
+            reader.Dispose();
         }
     }
 }
