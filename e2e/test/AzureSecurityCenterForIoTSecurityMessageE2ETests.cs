@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    [TestClass]
-    [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
-    [TestCategory("LongRunning")]
+    //[TestClass]
+    //[TestCategory("E2E")]
+    //[TestCategory("IoTHub")]
+    //[TestCategory("LongRunning")]
     public class AzureSecurityCenterForIoTSecurityMessageE2ETests : IDisposable
     {
         private readonly string _devicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
@@ -29,55 +29,55 @@ namespace Microsoft.Azure.Devices.E2ETests
             _logAnalyticsClient = AzureSecurityCenterForIoTLogAnalyticsClient.CreateClient();
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
             return TestSecurityMessageAsync(Client.TransportType.Amqp_Tcp_Only);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_Amqp()
         {
             return TestSecurityMessageModuleAsync(Client.TransportType.Amqp_Tcp_Only);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
             return TestSecurityMessageAsync(Client.TransportType.Amqp_WebSocket_Only);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
             return TestSecurityMessageModuleAsync(Client.TransportType.Amqp_WebSocket_Only);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
         {
             return TestSecurityMessageAsync(Client.TransportType.Mqtt_Tcp_Only);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
         {
             return TestSecurityMessageModuleAsync(Client.TransportType.Mqtt_Tcp_Only);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
             return TestSecurityMessageAsync(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
             return TestSecurityMessageModuleAsync(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Http()
         {
             return TestSecurityMessageAsync(Client.TransportType.Http1);
