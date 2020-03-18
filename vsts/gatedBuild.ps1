@@ -44,15 +44,16 @@ if (IsPullRequestBuild)
 		Write-Host "Will run Iot Hub tests"
 	}	
 	
-	if (ShouldSkipPnPTests) 
-	{
-		Write-Host "Will skip PnP tests"
+	#if (ShouldSkipPnPTests) 
+	#{
+		#Write-Host "Will skip PnP tests"
+		Write-Host "SKIPPING ALL PNP TESTS REGARDLESS"
 		$runTestCmd += " -skipPnPTests"
-	}
-	else 
-	{
-		Write-Host "Will run Digital Twin tests"
-	}
+	#}
+	#else 
+	#{
+	#	Write-Host "Will run Digital Twin tests"
+	#}
 }
 else 
 {
