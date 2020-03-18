@@ -169,34 +169,34 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void CloneWithBodyTest()
         {
-            var original = new Message(Encoding.UTF8.GetBytes("Original copy"));
+            using (var original = new Message(Encoding.UTF8.GetBytes("Original copy")))
+            {
+                original.Properties["test1"] = "test_v_1";
+                original.Properties["test2"] = "test_v_2";
 
-            original.Properties["test1"] = "test_v_1";
-            original.Properties["test2"] = "test_v_2";
+                original.ContentEncoding = "gzip";
+                original.ContentType = "text/plain";
+                original.UserId = "JohnDoe";
 
-            original.ContentEncoding = "gzip";
-            original.ContentType = "text/plain";
-            original.UserId = "JohnDoe";
+                using (var clone = original.CloneWithBody(Encoding.UTF8.GetBytes("Cloned version")))
+                { 
+                    Assert.AreEqual("test_v_1", clone.Properties["test1"]);
+                    Assert.AreEqual("test_v_2", clone.Properties["test2"]);
 
-            var clone = original.CloneWithBody(Encoding.UTF8.GetBytes("Cloned version"));
+                    Assert.AreEqual("gzip", clone.ContentEncoding);
+                    Assert.AreEqual("text/plain", clone.ContentType);
+                    Assert.AreEqual("JohnDoe", clone.UserId);
 
-            Assert.AreEqual("test_v_1", clone.Properties["test1"]);
-            Assert.AreEqual("test_v_2", clone.Properties["test2"]);
+                    var clonedContent = default(string);
 
-            Assert.AreEqual("gzip", clone.ContentEncoding);
-            Assert.AreEqual("text/plain", clone.ContentType);
-            Assert.AreEqual("JohnDoe", clone.UserId);
-
-            var clonedContent = default(string);
-            var reader = default(StreamReader);
-
-            clonedContent = (reader = new StreamReader(clone.BodyStream, Encoding.UTF8)).ReadToEnd();
-    
-            Assert.AreEqual("Cloned version", clonedContent);
-
-            original.Dispose();
-            clone.Dispose();
-            reader.Dispose();
+                    using (var reader = new StreamReader(clone.BodyStream, Encoding.UTF8))
+                    {
+                        clonedContent = reader.ReadToEnd();
+                    }
+                
+                    Assert.AreEqual("Cloned version", clonedContent);
+                }
+            }
         }
     }
 }
