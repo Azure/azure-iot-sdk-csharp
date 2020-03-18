@@ -270,10 +270,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_007: [ The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await OpenAsync(cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await OpenAsync(cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -302,15 +300,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Close the InternalClient instance
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A task to await</returns>
         public async Task CloseAsync()
         {
             try
             {
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await CloseAsync(cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await CloseAsync(cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -344,11 +340,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-                }
+                // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable (authentication, quota exceed) error occurs.]
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                return await ReceiveAsync(cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -401,10 +395,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await CompleteAsync(lockToken, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await CompleteAsync(lockToken, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -486,10 +478,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await AbandonAsync(lockToken, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await AbandonAsync(lockToken, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -567,10 +557,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await RejectAsync(lockToken, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await RejectAsync(lockToken, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -646,10 +634,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SendEventAsync(message, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SendEventAsync(message, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -691,10 +677,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SendEventBatchAsync(messages, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SendEventBatchAsync(messages, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -808,10 +792,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SetMethodHandlerAsync(methodName, methodHandler, userContext, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SetMethodHandlerAsync(methodName, methodHandler, userContext, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -888,10 +870,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SetMethodDefaultHandlerAsync(methodHandler, userContext, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SetMethodDefaultHandlerAsync(methodHandler, userContext, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1117,10 +1097,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1170,10 +1148,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    return await GetTwinAsync(cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                return await GetTwinAsync(cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1209,10 +1185,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await UpdateReportedPropertiesAsync(reportedProperties, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await UpdateReportedPropertiesAsync(reportedProperties, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1313,10 +1287,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SendEventAsync(outputName, message, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SendEventAsync(outputName, message, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1375,10 +1347,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SendEventBatchAsync(outputName, messages, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SendEventBatchAsync(outputName, messages, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1440,10 +1410,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SetInputMessageHandlerAsync(inputName, messageHandler, userContext, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SetInputMessageHandlerAsync(inputName, messageHandler, userContext, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1517,10 +1485,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    await SetMessageHandlerAsync(messageHandler, userContext, cts.Token).ConfigureAwait(false);
-                }
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SetMessageHandlerAsync(messageHandler, userContext, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {

@@ -49,7 +49,10 @@ namespace Microsoft.Azure.Devices
         /// Gets or sets labels for the configuration
         /// </summary>
         [JsonProperty(PropertyName = "labels", NullValueHandling = NullValueHandling.Ignore)]
+#pragma warning disable CA2227 // Collection properties should be read only
         public IDictionary<string, string> Labels { get; set; }
+
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets Content for the configuration

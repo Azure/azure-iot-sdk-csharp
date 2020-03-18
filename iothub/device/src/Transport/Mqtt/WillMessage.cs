@@ -5,16 +5,26 @@ using DotNetty.Codecs.Mqtt.Packets;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
+    /// <summary>
+    /// An MQTT "will" message, used when a client disconnects
+    /// </summary>
     public class WillMessage : IWillMessage
     {
+        /// <inheritdoc />
         public Message Message { get; private set; }
 
+        /// <inheritdoc />
         public QualityOfService QoS { get; set; }
 
+        /// <summary>
+        /// Creates an instance of WillMessage
+        /// </summary>
+        /// <param name="qos">The quality of service</param>
+        /// <param name="message">The message to be sent</param>
         public WillMessage(QualityOfService qos, Message message)
         {
-            this.QoS = qos;
-            this.Message = message;
+            QoS = qos;
+            Message = message;
         }
     }
 }

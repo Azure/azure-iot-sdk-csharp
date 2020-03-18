@@ -375,15 +375,17 @@ namespace Microsoft.Azure.Devices
 
         public static ArraySegment<byte> ReadStream(Stream stream)
         {
-            MemoryStream memoryStream = new MemoryStream();
-            int bytesRead;
-            byte[] readBuffer = new byte[512];
-            while ((bytesRead = stream.Read(readBuffer, 0, readBuffer.Length)) > 0)
+            using (var memoryStream = new MemoryStream())
             {
-                memoryStream.Write(readBuffer, 0, bytesRead);
-            }
+                int bytesRead;
+                byte[] readBuffer = new byte[512];
+                while ((bytesRead = stream.Read(readBuffer, 0, readBuffer.Length)) > 0)
+                {
+                    memoryStream.Write(readBuffer, 0, bytesRead);
+                }
 
-            return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+                return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+            }
         }
     }
 }

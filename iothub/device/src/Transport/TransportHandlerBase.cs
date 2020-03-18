@@ -14,26 +14,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal abstract class TransportHandlerBase
     {
-        private bool openCalled;
-        private bool closeCalled;
-        private volatile TaskCompletionSource<object> openTaskCompletionSource;
+        private bool _openCalled;
+        private bool _closeCalled;
+        private volatile TaskCompletionSource<object> _openTaskCompletionSource;
 
         protected TransportHandlerBase()
         {
-            this.ThisLock = new object();
-            this.openTaskCompletionSource = new TaskCompletionSource<object>(this);
+            _openTaskCompletionSource = new TaskCompletionSource<object>(this);
         }
 
         protected abstract TimeSpan DefaultReceiveTimeout { get; set; }
 
-        protected object ThisLock { get; private set; }
+        protected object ThisLock { get; } = new object();
 
         /// <summary>
         /// Explicitly open the DeviceClient instance.
         /// </summary>
         public Task OpenAsync()
         {
-            return this.EnsureOpenedAsync(true);
+            return EnsureOpenedAsync(true);
         }
 
         /// <summary>
@@ -43,15 +42,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public Task CloseAsync()
         {
             TaskCompletionSource<object> localOpenTaskCompletionSource;
-            lock (this.ThisLock)
+            lock (ThisLock)
             {
-                if (this.closeCalled)
+                if (_closeCalled)
                 {
                     return TaskHelpers.CompletedTask;
                 }
 
-                localOpenTaskCompletionSource = this.openTaskCompletionSource;
-                this.closeCalled = true;
+                localOpenTaskCompletionSource = _openTaskCompletionSource;
+                _closeCalled = true;
             }
 
             if (localOpenTaskCompletionSource != null)
@@ -59,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 localOpenTaskCompletionSource.TrySetCanceled();
             }
 
-            return this.OnCloseAsync();
+            return OnCloseAsync();
         }
 
         /// <summary>
@@ -68,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
         public Task<Message> ReceiveAsync()
         {
-            return this.ReceiveAsync(this.DefaultReceiveTimeout);
+            return ReceiveAsync(DefaultReceiveTimeout);
         }
 
         /// <summary>
@@ -77,8 +76,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            return await this.OnReceiveAsync(timeout).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            return await OnReceiveAsync(timeout).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -89,11 +88,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull("lockToken");
+                throw Fx.Exception.ArgumentNull(nameof(lockToken));
             }
 
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            await this.OnCompleteAsync(lockToken).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            await OnCompleteAsync(lockToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -104,11 +103,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            await this.OnCompleteAsync(message).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            await OnCompleteAsync(message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -119,11 +118,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull("lockToken");
+                throw Fx.Exception.ArgumentNull(nameof(lockToken));
             }
 
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            await this.OnAbandonAsync(lockToken).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            await OnAbandonAsync(lockToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -134,11 +133,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            await this.OnAbandonAsync(message).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            await OnAbandonAsync(message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -149,11 +148,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull("lockToken");
+                throw Fx.Exception.ArgumentNull(nameof(lockToken));
             }
 
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            await this.OnRejectAsync(lockToken).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            await OnRejectAsync(lockToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -164,11 +163,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            await this.OnRejectAsync(message).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            await OnRejectAsync(message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -179,11 +178,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            await this.OnSendEventAsync(message).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            await OnSendEventAsync(message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -194,38 +193,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (messages == null)
             {
-                throw Fx.Exception.ArgumentNull("messages");
+                throw Fx.Exception.ArgumentNull(nameof(messages));
             }
 
-            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
-            await this.OnSendEventAsync(messages).ConfigureAwait(false);
+            await EnsureOpenedAsync(false).ConfigureAwait(false);
+            await OnSendEventAsync(messages).ConfigureAwait(false);
         }
 
         protected Task EnsureOpenedAsync(bool explicitOpen)
         {
             bool needOpen = false;
             Task openTask;
-            if (this.openTaskCompletionSource != null)
+            if (_openTaskCompletionSource != null)
             {
-                lock (this.ThisLock)
+                lock (ThisLock)
                 {
-                    if (this.openCalled)
+                    if (_openCalled)
                     {
-                        if (this.openTaskCompletionSource == null)
+                        if (_openTaskCompletionSource == null)
                         {
                             // openTaskCompletionSource being null means open has finished completely
                             openTask = TaskHelpers.CompletedTask;
                         }
                         else
                         {
-                            openTask = this.openTaskCompletionSource.Task;
+                            openTask = _openTaskCompletionSource.Task;
                         }
                     }
                     else
                     {
                         // It's this call's job to kick off the open.
-                        this.openCalled = true;
-                        openTask = this.openTaskCompletionSource.Task;
+                        _openCalled = true;
+                        openTask = _openTaskCompletionSource.Task;
                         needOpen = true;
                     }
                 }
@@ -238,22 +237,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (needOpen)
             {
-                this.OnOpenAsync(explicitOpen).ContinueWith(
+                OnOpenAsync(explicitOpen).ContinueWith(
                     t =>
                     {
-                        var localOpenTaskCompletionSource = this.openTaskCompletionSource;
-                        lock (this.ThisLock)
+                        var localOpenTaskCompletionSource = _openTaskCompletionSource;
+                        lock (ThisLock)
                         {
                             if (!t.IsFaulted && !t.IsCanceled)
                             {
                                 // This lets future calls avoid the Open logic all together.
-                                this.openTaskCompletionSource = null;
+                                _openTaskCompletionSource = null;
                             }
                             else
                             {
                                 // OpenAsync was cancelled or threw an exception, next time retry.
-                                this.openCalled = false;
-                                this.openTaskCompletionSource = new TaskCompletionSource<object>(this);
+                                _openCalled = false;
+                                _openTaskCompletionSource = new TaskCompletionSource<object>(this);
                             }
                         }
 
@@ -273,21 +272,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected virtual Task OnCompleteAsync(Message message)
         {
-            return this.OnCompleteAsync(message.LockToken);
+            return OnCompleteAsync(message.LockToken);
         }
 
         protected abstract Task OnCompleteAsync(string lockToken);
 
         protected virtual Task OnAbandonAsync(Message message)
         {
-            return this.OnAbandonAsync(message.LockToken);
+            return OnAbandonAsync(message.LockToken);
         }
 
         protected abstract Task OnAbandonAsync(string lockToken);
 
         protected virtual Task OnRejectAsync(Message message)
         {
-            return this.OnRejectAsync(message.LockToken);
+            return OnRejectAsync(message.LockToken);
         }
 
         protected abstract Task OnRejectAsync(string lockToken);
