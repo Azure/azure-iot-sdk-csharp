@@ -133,7 +133,6 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
         /// </summary>
         protected override void OnRegistrationCompleted()
         {
-            Console.WriteLine($"OnRegistrationCompleted.");
         }
     }
 }
