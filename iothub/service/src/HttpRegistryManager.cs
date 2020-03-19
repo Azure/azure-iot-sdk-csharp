@@ -65,7 +65,9 @@ namespace Microsoft.Azure.Devices
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 client => { },
-                transportSettings.Proxy);
+                transportSettings.Proxy,
+                transportSettings.CertificateRevocationCheck
+                );
         }
 
         // internal test helper

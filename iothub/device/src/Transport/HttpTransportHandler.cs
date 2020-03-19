@@ -62,7 +62,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 transportSettings.ClientCertificate,
                 httpClientHandler,
                 productInfo,
-                transportSettings.Proxy);
+                transportSettings.Proxy,
+                transportSettings.CertificateRevocationCheck);
         }
 
         public override Task OpenAsync(TimeoutHelper timeoutHelper)

@@ -29,6 +29,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
+        private readonly bool _certificateRevocationCheck;
+
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
@@ -67,6 +69,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             };
             _httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
+            _certificateRevocationCheck = httpTransportSettings.CertificateRevocationCheck;
         }
 
         /// <summary>

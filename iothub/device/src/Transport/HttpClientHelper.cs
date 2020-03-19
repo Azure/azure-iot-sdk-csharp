@@ -39,7 +39,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly bool usingX509ClientCert = false;
         private HttpClient httpClientObj;
         private bool isDisposed;
-        private ProductInfo productInfo;
+        private ProductInfo _productInfo;
+        private readonly bool _certificateRevocationCheck;
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -50,7 +51,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             X509Certificate2 clientCert,
             HttpClientHandler httpClientHandler,
             ProductInfo productInfo,
-            IWebProxy proxy
+            IWebProxy proxy,
+            bool certificateRevocationCheck
             )
         {
             this.baseAddress = baseAddress;
@@ -84,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 handler.Proxy = proxy;
             }
 
-            this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
+            httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
             if (httpClientHandler == null)
             {
@@ -95,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (clientCert != null)
             {
                 httpClientHandler.ClientCertificates.Add(clientCert);
-                this.usingX509ClientCert = true;
+                usingX509ClientCert = true;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
@@ -104,18 +106,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 httpClientHandler.Proxy = proxy;
             }
 
-            this.httpClientObj = new HttpClient(httpClientHandler);
+            httpClientObj = new HttpClient(httpClientHandler);
 #endif
 
-            this.httpClientObj.BaseAddress = this.baseAddress;
-            this.httpClientObj.Timeout = timeout;
-            this.httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
-            this.httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
+            httpClientObj.BaseAddress = this.baseAddress;
+            httpClientObj.Timeout = timeout;
+            httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+            httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
             if (preRequestActionForAllRequests != null)
             {
-                preRequestActionForAllRequests(this.httpClientObj);
+                preRequestActionForAllRequests(httpClientObj);
             }
-            this.productInfo = productInfo;
+            _productInfo = productInfo;
+            _certificateRevocationCheck = certificateRevocationCheck;
         }
 
         public Task<T> GetAsync<T>(
@@ -435,7 +438,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);
                 }
 
-                msg.Headers.UserAgent.ParseAdd(this.productInfo.ToString(UserAgentFormats.Http));
+                msg.Headers.UserAgent.ParseAdd(_productInfo.ToString(UserAgentFormats.Http));
 
                 if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
 

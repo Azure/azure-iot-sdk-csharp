@@ -101,6 +101,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task X509_Enable_CertificateRevocationCheck_Httt_Tcp()
+        {
+            ITransportSettings transportSetting 
+                = CreateHttpTransportSettingWithCertificateRevocationCheck();
+            await SendMessageTest(transportSetting).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task X509_Enable_CertificateRevocationCheck_Mqtt_Tcp()
         {
             ITransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only);
@@ -140,6 +148,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+        private ITransportSettings CreateHttpTransportSettingWithCertificateRevocationCheck()
+        {
+            return new Http1TransportSettings()
+            {
+                CertificateRevocationCheck = true
+            };
+        }
         private ITransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
         {
             return new MqttTransportSettings(transportType)

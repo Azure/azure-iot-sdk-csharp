@@ -17,5 +17,10 @@ namespace Microsoft.Azure.Devices
         }
 
         public IWebProxy Proxy { get; set; }
+
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+        public bool CertificateRevocationCheck { get; set; } = true;
     }
 }

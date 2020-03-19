@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices
         private readonly TimeSpan _defaultOperationTimeout;
         private readonly IWebProxy _customHttpProxy;
         private readonly Action<HttpClient> _preRequestActionForAllRequests;
+        private readonly bool _certificateRevocationCheck;
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -41,7 +42,8 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
-            IWebProxy customHttpProxy)
+            IWebProxy customHttpProxy,
+            bool certificateRevocationCheck)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
@@ -49,6 +51,7 @@ namespace Microsoft.Azure.Devices
             _defaultOperationTimeout = timeout;
             _preRequestActionForAllRequests = preRequestActionForAllRequests;
             _customHttpProxy = customHttpProxy;
+            _certificateRevocationCheck = certificateRevocationCheck;
             TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 

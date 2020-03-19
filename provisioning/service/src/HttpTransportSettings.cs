@@ -23,5 +23,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets or sets proxy information for the request.
         /// </summary>
         public IWebProxy Proxy { get; set; }
+
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+        public bool CertificateRevocationCheck { get; set; } = true;
+
     }
 }

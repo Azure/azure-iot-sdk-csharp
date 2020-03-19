@@ -20,5 +20,7 @@ namespace Microsoft.Azure.Devices
         public IWebProxy AmqpProxy { get; set; }
 
         public IWebProxy HttpProxy { get; set; }
+
+        public bool CertificateRevocationCheck { get; set; } = true;
     }
 }

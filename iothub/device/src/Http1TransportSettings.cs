@@ -30,5 +30,10 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan DefaultReceiveTimeout => s_defaultOperationTimeout;
 
         public IWebProxy Proxy { get; set; }
+
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+        public bool CertificateRevocationCheck { get; set; }
     }
 }
