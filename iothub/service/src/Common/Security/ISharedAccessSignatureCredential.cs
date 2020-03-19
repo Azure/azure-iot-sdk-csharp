@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Common.Security
 
     using Microsoft.Azure.Devices.Common.Data;
       
-    public interface ISharedAccessSignatureCredential
+    internal interface ISharedAccessSignatureCredential
     {
         bool IsExpired();
 

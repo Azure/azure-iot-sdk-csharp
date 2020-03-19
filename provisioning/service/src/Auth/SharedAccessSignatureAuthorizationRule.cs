@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
 using System;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Common.Service.Auth
 {
@@ -11,10 +9,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         private string _primaryKey;
         private string _secondaryKey;
 
-        [JsonProperty(PropertyName = "keyName")]
         public string KeyName { get; set; }
 
-        [JsonProperty(PropertyName = "primaryKey")]
         public string PrimaryKey
         {
             get
@@ -29,7 +25,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             }
         }
 
-        [JsonProperty(PropertyName = "secondaryKey")]
         public string SecondaryKey
         {
             get
@@ -44,7 +39,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             }
         }
 
-        [JsonProperty(PropertyName = "rights")]
         public AccessRights Rights { get; set; }
 
         public bool Equals(SharedAccessSignatureAuthorizationRule other)
