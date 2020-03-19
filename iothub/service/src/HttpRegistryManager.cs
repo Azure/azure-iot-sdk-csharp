@@ -66,8 +66,7 @@ namespace Microsoft.Azure.Devices
                 s_defaultOperationTimeout,
                 client => { },
                 transportSettings.Proxy,
-                transportSettings.CertificateRevocationCheck
-                );
+                transportSettings.CertificateRevocationCheck);
         }
 
         // internal test helper
