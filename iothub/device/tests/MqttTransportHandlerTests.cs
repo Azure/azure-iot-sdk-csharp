@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Codecs.Mqtt.Packets;
@@ -25,14 +28,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     {
         private const string DummyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
         private const string DummyModuleConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;ModuleId=FakeModule;SharedAccessKey=dGVzdFN0cmluZzE=";
-        private const string fakeMethodResponseBody = "{ \"foo\" : \"bar\" }";
-        private const string methodPostTopicFilter = "$iothub/methods/POST/#";
-        private const string twinPatchDesiredTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
-        private const string twinPatchReportedTopicPrefix = "$iothub/twin/PATCH/properties/reported/";
-        private const string twinGetTopicPrefix = "$iothub/twin/GET/?$rid=";
-        private const int statusSuccess = 200;
-        private const int statusFailure = 400;
-        private const string fakeResponseId = "fakeResponseId";
+        private const string FakeMethodResponseBody = "{ \"foo\" : \"bar\" }";
+        private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
+        private const string TwinPatchDesiredTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
+        private const string TwinPatchReportedTopicPrefix = "$iothub/twin/PATCH/properties/reported/";
+        private const string TwinGetTopicPrefix = "$iothub/twin/GET/?$rid=";
+        private const int StatusSuccess = 200;
+        private const int StatusFailure = 400;
+        private const string FakeResponseId = "fakeResponseId";
 
         [TestMethod]
         public async Task MqttTransportHandlerOpenAsyncTokenCancellationRequested()
@@ -190,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             await channel
                 .Received()
-                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter))).ConfigureAwait(false);
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(MethodPostTopicFilter))).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_003: `EnableMethodsAsync` shall return failure if the subscription request fails.
@@ -202,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             IChannel channel;
             var transport = CreateTransportHandlerWithMockChannel(out channel);
             channel
-                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter)))
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(MethodPostTopicFilter)))
                 .Returns(x => { throw new TimeoutException(); });
 
             // act & assert
@@ -228,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             await channel
                 .Received()
-                .WriteAsync(Arg.Is<UnsubscribePacket>(msg => System.Linq.Enumerable.ElementAt(msg.TopicFilters, 0).Equals(methodPostTopicFilter))).ConfigureAwait(false);
+                .WriteAsync(Arg.Is<UnsubscribePacket>(msg => System.Linq.Enumerable.ElementAt(msg.TopicFilters, 0).Equals(MethodPostTopicFilter))).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_003: `DisableMethodsAsync` shall return failure if the unsubscription fails.
@@ -240,7 +243,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             IChannel channel;
             var transport = CreateTransportHandlerWithMockChannel(out channel);
             channel
-                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter)))
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(MethodPostTopicFilter)))
                 .Returns(x => { throw new TimeoutException(); });
 
             // act & assert
@@ -340,10 +343,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         public async Task MqttTransportHandlerSendMethodResponseAsyncSendsMessage()
         {
             // arrange
-            IChannel channel;
-            var responseBytes = System.Text.Encoding.UTF8.GetBytes(fakeMethodResponseBody);
-            var transport = CreateTransportHandlerWithMockChannel(out channel);
-            var response = new MethodResponseInternal(responseBytes, fakeResponseId, statusSuccess);
+            var responseBytes = Encoding.UTF8.GetBytes(FakeMethodResponseBody);
+            var response = new MethodResponseInternal(responseBytes, FakeResponseId, StatusSuccess);
+            var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
 
             // act
             transport.OnConnected();
@@ -353,17 +355,18 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             MessageMatcher matches = (msg) =>
             {
-                using (StreamReader reader = new StreamReader(msg.GetBodyStream(), System.Text.Encoding.UTF8))
-                {
-                    string body = reader.ReadToEnd();
+                using StreamReader reader = new StreamReader(msg.GetBodyStream(), System.Text.Encoding.UTF8);
+                string body = reader.ReadToEnd();
+                msg.Dispose();
 
-                    return (fakeMethodResponseBody.Equals(body) &&
-                        msg.MqttTopicName.Equals("$iothub/methods/res/" + statusSuccess + "/?$rid=" + fakeResponseId));
-                }
+                return (FakeMethodResponseBody.Equals(body) &&
+                    msg.MqttTopicName.Equals($"$iothub/methods/res/{StatusSuccess}/?$rid={FakeResponseId}"));
             };
+
             await channel
                 .Received()
-                .WriteAndFlushAsync(Arg.Is<Message>(msg => matches(msg))).ConfigureAwait(false);
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => matches(msg)))
+                .ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_010: `EnableTwinPatchAsync` shall subscribe using the '$iothub/twin/PATCH/properties/desired/#' topic filter.
@@ -384,7 +387,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             await channel
                 .Received()
-                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(twinPatchDesiredTopicFilter))).ConfigureAwait(false);
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(TwinPatchDesiredTopicFilter))).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
@@ -396,7 +399,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             IChannel channel;
             var transport = CreateTransportHandlerWithMockChannel(out channel);
             channel
-                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(twinPatchDesiredTopicFilter)))
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(TwinPatchDesiredTopicFilter)))
                 .Returns(x => { throw new TimeoutException(); });
 
             // act & assert
@@ -430,11 +433,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             twin.Properties.Desired["foo"] = "bar";
             var twinByteStream = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(twin.Properties));
             channel
-                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(twinGetTopicPrefix)))
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(TwinGetTopicPrefix)))
                 .Returns(msg =>
                 {
                     var response = new Message(twinByteStream);
-                    response.MqttTopicName = getResponseTopic(msg.Arg<Message>().MqttTopicName, statusSuccess);
+                    response.MqttTopicName = getResponseTopic(msg.Arg<Message>().MqttTopicName, StatusSuccess);
                     transport.OnMessageReceived(response);
                     return TaskHelpers.CompletedTask;
                 });
@@ -455,11 +458,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             IChannel channel;
             var transport = CreateTransportHandlerWithMockChannel(out channel);
 
-            channel.WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(twinGetTopicPrefix)))
+            channel.WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(TwinGetTopicPrefix)))
                    .Returns(msg =>
                    {
                        var response = new Message();
-                       response.MqttTopicName = getResponseTopic(msg.Arg<Message>().MqttTopicName, statusFailure);
+                       response.MqttTopicName = getResponseTopic(msg.Arg<Message>().MqttTopicName, StatusFailure);
                        transport.OnMessageReceived(response);
                        return TaskHelpers.CompletedTask;
                    });
@@ -502,7 +505,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             string receivedBody = null;
             props["foo"] = "bar";
             channel
-                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(twinPatchReportedTopicPrefix)))
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(TwinPatchReportedTopicPrefix)))
                 .Returns(msg =>
                 {
                     var request = msg.Arg<Message>();
@@ -511,7 +514,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                         receivedBody = reader.ReadToEnd();
                     }
                     var response = new Message();
-                    response.MqttTopicName = getResponseTopic(request.MqttTopicName, statusSuccess);
+                    response.MqttTopicName = getResponseTopic(request.MqttTopicName, StatusSuccess);
                     transport.OnMessageReceived(response);
                     return TaskHelpers.CompletedTask;
                 });
@@ -534,12 +537,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = CreateTransportHandlerWithMockChannel(out channel);
             var props = new TwinCollection();
             channel
-                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(twinPatchReportedTopicPrefix)))
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(TwinPatchReportedTopicPrefix)))
                 .Returns(msg =>
                 {
                     var request = msg.Arg<Message>();
                     var response = new Message();
-                    response.MqttTopicName = getResponseTopic(request.MqttTopicName, statusFailure);
+                    response.MqttTopicName = getResponseTopic(request.MqttTopicName, StatusFailure);
                     transport.OnMessageReceived(response);
                     return TaskHelpers.CompletedTask;
                 });

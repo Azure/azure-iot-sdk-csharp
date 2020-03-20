@@ -9,8 +9,13 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
+    /// <summary>
+    /// An interface for pipeline elements that carry out work in a chain (decorator/chain of responsibility patterns apply)
+    /// </summary>
     internal interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable
     {
+        bool IsUsable { get; }
+
         // Transport state.
         Task OpenAsync(TimeoutHelper timeoutHelper);
 
@@ -19,8 +24,6 @@ namespace Microsoft.Azure.Devices.Client
         Task CloseAsync(CancellationToken cancellationToken);
 
         Task WaitForTransportClosedAsync();
-
-        bool IsUsable { get; }
 
         // Telemetry uplink.
         Task SendEventAsync(Message message, CancellationToken cancellationToken);

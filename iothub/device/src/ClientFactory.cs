@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            pipelineBuilder = pipelineBuilder ?? BuildPipeline();
+            pipelineBuilder ??= BuildPipeline();
 
             // Defer concrete InternalClient creation to OpenAsync
             var client = new InternalClient(iotHubConnectionString, transportSettings, pipelineBuilder);

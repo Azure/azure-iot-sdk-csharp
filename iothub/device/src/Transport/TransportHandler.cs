@@ -8,13 +8,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal abstract class TransportHandler : DefaultDelegatingHandler
     {
-        protected ITransportSettings TransportSettings;
         private TaskCompletionSource<bool> _transportShouldRetry;
+        protected ITransportSettings _transportSettings;
 
         protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
             : base(context, innerHandler: null)
         {
-            TransportSettings = transportSettings;
+            _transportSettings = transportSettings;
         }
 
         public override Task WaitForTransportClosedAsync()
@@ -25,13 +25,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected override void Dispose(bool disposing)
         {
-            if (_disposed) return;
-
-            base.Dispose(disposing);
-            if (disposing)
+            if (disposing && !_disposed)
             {
                 OnTransportClosedGracefully();
             }
+
+            base.Dispose(disposing);
         }
 
         protected void OnTransportClosedGracefully()

@@ -7,11 +7,11 @@ using System.Threading;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Common.Api;
 using System.Collections.Generic;
+using DotNetty.Common.Utilities;
+using DotNetty.Common;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using DateTimeT = System.DateTime;
-
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
@@ -103,9 +103,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// [Optional] The time when this message is considered expired
         /// </summary>
-        public DateTimeT ExpiryTimeUtc
+        public DateTime ExpiryTimeUtc
         {
-            get => GetSystemProperty<DateTimeT>(MessageSystemPropertyNames.ExpiryTimeUtc);
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
             internal set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
         }
 
@@ -155,9 +155,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Time when the message was received by the server
         /// </summary>
-        public DateTimeT EnqueuedTimeUtc
+        public DateTime EnqueuedTimeUtc
         {
-            get => GetSystemProperty<DateTimeT>(MessageSystemPropertyNames.EnqueuedTime);
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
             internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
         }
 
@@ -198,9 +198,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Custom date property set by the originator of the message.
         /// </summary>
-        public DateTimeT CreationTimeUtc
+        public DateTime CreationTimeUtc
         {
-            get => GetSystemProperty<DateTimeT>(MessageSystemPropertyNames.CreationTimeUtc);
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
             set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
         }
 
@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client
                 return (T)SystemProperties[key];
             }
 
-            return default(T);
+            return default;
         }
 
         internal void ThrowIfDisposed()

@@ -1,4 +1,6 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -37,8 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
                 {
                     connectionStatusChanges.TryGetValue(status, out int count);
-                    count++;
-                    connectionStatusChanges[status] = count;
+                    connectionStatusChanges[status] = ++count;
                     lastConnectionStatus = status;
                 });
 
@@ -46,14 +47,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: injecting fault {FaultInjection.FaultType_Tcp}...");
-                await FaultInjection.ActivateFaultInjection(
-                    Client.TransportType.Amqp_Tcp_Only, 
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec, 
-                    FaultInjection.DefaultDurationInSec, 
-                    deviceClient
-                ).ConfigureAwait(false);
+                await FaultInjection
+                    .ActivateFaultInjection(
+                        Client.TransportType.Amqp_Tcp_Only,
+                        FaultInjection.FaultType_Tcp,
+                        FaultInjection.FaultCloseReason_Boom,
+                        FaultInjection.DefaultDelayInSec,
+                        FaultInjection.DefaultDurationInSec,
+                        deviceClient)
+                    .ConfigureAwait(false);
 
                 await Task.Delay(FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
 

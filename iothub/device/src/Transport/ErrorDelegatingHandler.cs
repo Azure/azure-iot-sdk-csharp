@@ -4,25 +4,25 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Net.WebSockets;
+using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
-using System.Security.Authentication;
-using System.Runtime.InteropServices;
-using System.Net.Sockets;
-using System.Net.WebSockets;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
-        public ErrorDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler) : base(context, innerHandler)
+        public ErrorDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
+            : base(context, innerHandler)
         {
         }
 
@@ -47,7 +47,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(timeoutHelper));
         }
-
 
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
@@ -83,13 +82,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableTwinPatchAsync(cancellationToken));
         }
-        
+
         public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinGetAsync(cancellationToken));
         }
-        
-        public override Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
+
+        public override Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken));
         }
@@ -155,7 +154,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation)
         {
-            return ExecuteWithErrorHandlingAsync<bool>(async () => { await asyncOperation().ConfigureAwait(false); return false; });
+            return ExecuteWithErrorHandlingAsync(
+                async () =>
+                {
+                    await asyncOperation().ConfigureAwait(false);
+                    return false;
+                });
         }
 
         private async Task<T> ExecuteWithErrorHandlingAsync<T>(Func<Task<T>> asyncOperation)
@@ -174,7 +178,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (IsSecurityExceptionChain(exception))
                     {
-                        Exception innerException = (exception is IotHubException) ? exception.InnerException : exception;
+                        Exception innerException = (exception is IotHubException)
+                            ? exception.InnerException
+                            : exception;
                         throw new AuthenticationException("TLS authentication error.", innerException);
                     }
                     // For historic reasons, part of the Error handling is done within the transport handlers.
@@ -184,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     else if (IsNetworkExceptionChain(exception))
                     {
-                        throw new IotHubCommunicationException("Transient network error occurred, please retry.", exception);
+                        throw new IotHubCommunicationException("Transient network error occurred; please retry.", exception);
                     }
                     else
                     {

@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -26,17 +25,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.
         /// </summary>
-        public ProvisioningTransportHandler() {}
+        public ProvisioningTransportHandler() { }
 
         /// <summary>
         /// Gets or sets the inner handler.
         /// </summary>
         public ProvisioningTransportHandler InnerHandler
         {
-            get
-            {
-                return _innerHandler;
-            }
+            get => _innerHandler;
             set
             {
                 if (value == null)

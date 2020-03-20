@@ -6,6 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,17 +19,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
+        // we use SemaphoreSlim because we must await inside the lock, which can't be done with `lock`.
         private readonly SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
+
+        private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
+        private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
         private bool _openCalled;
         private bool _opened;
         private bool _methodsEnabled;
         private bool _twinEnabled;
         private bool _eventsEnabled;
-
         private Task _transportClosedTask;
-        private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
-
-        private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
 
         public RetryDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
@@ -465,23 +466,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return EnsureOpenedAsync(cancellationToken);
         }
 
-        public override async Task CloseAsync(CancellationToken cancellationToken)
+        protected override void Dispose(bool disposing)
         {
-            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
+            if (disposing && !_disposed)
             {
-                if (!_openCalled) return;
-                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(CloseAsync));
+                _handleDisconnectCts?.Cancel();
+                _handleDisconnectCts?.Dispose();
 
-                _handleDisconnectCts.Cancel();
-                await base.CloseAsync(cancellationToken).ConfigureAwait(false);
-                Dispose(true);
+                _handlerLock?.Dispose();
             }
-            finally
-            {
-                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(CloseAsync));
-                _handlerLock.Release();
-            }
+
+            base.Dispose(disposing);
         }
 
         /// <summary>
@@ -563,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         try
                         {
-                            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+                            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(OpenInternalAsync));
 
                             // Will throw on error.
                             await base.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -576,7 +571,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         finally
                         {
-                            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(OpenInternalAsync));
                         }
                     },
                     cancellationToken);
@@ -590,7 +585,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         try
                         {
-                            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
+                            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, nameof(OpenInternalAsync));
 
                             // Will throw on error.
                             await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
@@ -603,7 +598,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         finally
                         {
-                            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
+                            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, nameof(OpenInternalAsync));
                         }
                     },
                     new CancellationTokenSource(timeoutHelper.RemainingTime()).Token);
@@ -676,7 +671,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
                     }
 
-                    if (tasks.Count > 0)
+                    if (tasks.Any())
                     {
                         await Task.WhenAll(tasks).ConfigureAwait(false);
                     }
@@ -728,18 +723,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _onConnectionStatusChanged(ConnectionStatus.Disconnected, status);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (_disposed) return;
-
-            base.Dispose(disposing);
-            if (disposing)
-            {
-                _handleDisconnectCts?.Cancel();
-                _handleDisconnectCts?.Dispose();
-            }
         }
     }
 }
