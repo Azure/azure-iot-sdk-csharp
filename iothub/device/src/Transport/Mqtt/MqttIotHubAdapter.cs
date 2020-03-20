@@ -1136,7 +1136,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public static Message CompleteMessageFromPacket(Message message, PublishPacket packet, MqttTransportSettings mqttTransportSettings)
         {
-            message.MessageId = Guid.NewGuid().ToString("N");
+            message.MessageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             if (packet.RetainRequested)
             {
                 message.Properties[mqttTransportSettings.RetainPropertyName] = IotHubTrueString;

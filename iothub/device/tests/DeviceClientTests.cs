@@ -270,11 +270,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
 
             bool isMethodHandlerCalled = false;
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler("testMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
+#pragma warning restore CS0618 // Type or member is obsolete
 
             await deviceClient.InternalClient.OnMethodCalled(null).ConfigureAwait(false);
             await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -313,11 +315,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
@@ -415,11 +419,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(200));
             }, "custom data");
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
@@ -436,11 +442,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isMethodHandlerCalled = false;
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
             }, "custom data");
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
@@ -889,7 +897,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodName = "TestMethodName";
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+#pragma warning restore CS0618 // Type or member is obsolete
             await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -925,7 +935,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodName = "TestMethodName";
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+#pragma warning restore CS0618 // Type or member is obsolete
             await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -986,7 +998,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodName = "TestMethodName";
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+#pragma warning restore CS0618 // Type or member is obsolete
             await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -1013,7 +1027,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler("TestMethodName", null, null);
+#pragma warning restore CS0618 // Type or member is obsolete
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
