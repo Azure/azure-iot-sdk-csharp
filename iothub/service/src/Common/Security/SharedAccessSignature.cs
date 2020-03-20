@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Microsoft.Azure.Devices.Common.Security
 {
-    internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
+    public sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
         private readonly string _encodedAudience;
         private readonly string _expiry;

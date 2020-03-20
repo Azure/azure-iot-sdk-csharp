@@ -13,10 +13,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string PrimaryKey
         {
-            get
-            {
-                return _primaryKey;
-            }
+            get => _primaryKey;
 
             set
             {
@@ -27,10 +24,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string SecondaryKey
         {
-            get
-            {
-                return _secondaryKey;
-            }
+            get => _secondaryKey;
 
             set
             {
