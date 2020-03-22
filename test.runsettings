@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+   <MSTest>
+      <!-- Specify timeout in milliseconds. A valid value should be greater than 0 -->
+      <TestTimeout>300000</TestTimeout>
+   </MSTest>
+</RunSettings>

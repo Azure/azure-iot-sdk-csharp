@@ -1,9 +1,12 @@
-﻿using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -47,11 +50,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: injecting fault {FaultInjection.FaultType_Tcp}...");
                 await FaultInjection.ActivateFaultInjection(
-                    Client.TransportType.Amqp_Tcp_Only, 
+                    Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec, 
-                    FaultInjection.DefaultDurationInSec, 
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
                     deviceClient
                 ).ConfigureAwait(false);
 

@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics.Tracing;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System;
-    using System.Diagnostics.Tracing;
-    using System.Threading.Tasks;
-
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
@@ -30,8 +29,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
-            await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+            await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+                Client.TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [TestCategory("LongRunning")]
@@ -39,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+                Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -47,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_Tcp_Only, async (r, d) =>
+                Client.TransportType.Amqp_Tcp_Only, async (r, d) =>
                 {
                     Device device = await r.GetDeviceAsync(d).ConfigureAwait(false);
                     device.Status = DeviceStatus.Disabled;
@@ -60,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_WebSocket_Only, async (r, d) =>
+                Client.TransportType.Amqp_WebSocket_Only, async (r, d) =>
                 {
                     Device device = await r.GetDeviceAsync(d).ConfigureAwait(false);
                     device.Status = DeviceStatus.Disabled;
@@ -73,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+                Client.TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -81,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+                Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         // IoT Hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
@@ -90,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_Tcp_Only, async (r, d) =>
+                Client.TransportType.Amqp_Tcp_Only, async (r, d) =>
                 {
                     Device device = await r.GetDeviceAsync(d).ConfigureAwait(false);
                     device.Status = DeviceStatus.Disabled;
@@ -104,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_WebSocket_Only, async (r, d) =>
+                Client.TransportType.Amqp_WebSocket_Only, async (r, d) =>
             {
                 Device device = await r.GetDeviceAsync(d).ConfigureAwait(false);
                 device.Status = DeviceStatus.Disabled;
