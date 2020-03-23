@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-
     [Flags]
     public enum TransportState
     {
@@ -14,6 +14,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Subscribing = Open | 8,
         Receiving = Open | 16,
         Closed = 32,
-        Error = 64
+        Error = 64,
     }
 }

@@ -14,7 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerErrorException"/> class.
         /// </summary>
-        public ServerErrorException() : base(isTransient: true)
+        public ServerErrorException()
+            : base(isTransient: true)
         {
         }
 
@@ -37,11 +38,9 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
-        ServerErrorException(SerializationInfo info, StreamingContext context)
+        private ServerErrorException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

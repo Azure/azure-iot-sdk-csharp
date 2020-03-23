@@ -1,6 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Tracing;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -8,35 +16,27 @@ using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Net;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using static Microsoft.Azure.Devices.E2ETests.ProvisioningE2ETests;
 using static Microsoft.Azure.Devices.E2ETests.ProvisioningServiceClientE2ETests;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("Provisioning-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("DPS")]
+    [TestCategory("LongRunning")]
     public class ReprovisioningE2ETests : IDisposable
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
-        private const int FailingTimeoutMiliseconds = 10 * 1000;
         private static string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
-        private const string InvalidIDScope = "0neFFFFFFFF";
-        private const string InvalidGlobalAddress = "httpbin.org";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
-        private readonly string IdPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
+        private readonly string _devicePrefix = $"E2E_{nameof(ProvisioningE2ETests)}_";
 
+#pragma warning disable CA1823
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
+#pragma warning restore CA1823
 
         public ReprovisioningE2ETests()
         {
@@ -248,10 +248,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         /// <summary>
-        /// Provisions a device to a starting hub, tries to open a connection, send telemetry, 
+        /// Provisions a device to a starting hub, tries to open a connection, send telemetry,
         /// and (if supported by the protocol) send a twin update. Then, this method updates the enrollment
-        /// to provision the device to a different hub. Based on the provided reprovisioning settings, this 
-        /// method then checks that the device was/was not reprovisioned as expected, and that the device 
+        /// to provision the device to a different hub. Based on the provided reprovisioning settings, this
+        /// method then checks that the device was/was not reprovisioned as expected, and that the device
         /// did/did not migrate twin data as expected.
         /// </summary>
         public async Task ProvisioningDeviceClient_ReprovisioningFlow(
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyServerAddress = null)
         {
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
-            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = _devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             bool twinOperationsAllowed = transportProtocol != Client.TransportType.Http1;
 
@@ -343,7 +343,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
         }
-        
+
         private async Task<SecurityProvider> CreateSecurityProviderFromName(AttestationType attestationType, EnrollmentType? enrollmentType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities = null)
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromName)}({attestationType})");
@@ -357,7 +357,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     var tpmSim = new SecurityProviderTpmSimulator(registrationId);
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-
 
                     var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
 
@@ -380,10 +379,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                         case EnrollmentType.Individual:
                             certificate = Configuration.Provisioning.GetIndividualEnrollmentCertificate();
                             break;
+
                         case EnrollmentType.Group:
                             certificate = Configuration.Provisioning.GetGroupEnrollmentCertificate();
                             collection = Configuration.Provisioning.GetGroupEnrollmentChain();
                             break;
+
                         default:
                             throw new NotSupportedException($"Unknown X509 type: '{enrollmentType}'");
                     }
@@ -397,7 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, AttestationType.SymmetricKey, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, capabilities).ConfigureAwait(false);
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
                             SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
-                            string registrationIdSymmetricKey = IdPrefix + Guid.NewGuid();
+                            string registrationIdSymmetricKey = _devicePrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;
 
@@ -405,6 +406,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             string secondaryKeyIndividual = ProvisioningE2ETests.ComputeDerivedSymmetricKey(Convert.FromBase64String(secondaryKeyEnrollmentGroup), registrationIdSymmetricKey);
 
                             return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKeyIndividual, secondaryKeyIndividual);
+
                         case EnrollmentType.Individual:
                             IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, AttestationType.SymmetricKey, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, capabilities).ConfigureAwait(false);
 
@@ -415,6 +417,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             string primaryKey = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKey = symmetricKeyAttestation.SecondaryKey;
                             return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKey, secondaryKey);
+
                         default:
                             throw new NotSupportedException("Unrecognized enrollment type");
                     }
@@ -462,7 +465,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             _log.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
             _log.WriteLine($"ProvisioningDeviceClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
 
-            Assert.AreEqual(ProvisioningRegistrationStatusType.Assigned, result.Status);
+            Assert.AreEqual(ProvisioningRegistrationStatusType.Assigned, result.Status, $"Unexpected provisioning status, substatus: {result.Substatus}, error code: {result.ErrorCode}, error message: {result.ErrorMessage}");
             Assert.IsNotNull(result.AssignedHub);
             Assert.IsNotNull(result.DeviceId);
         }

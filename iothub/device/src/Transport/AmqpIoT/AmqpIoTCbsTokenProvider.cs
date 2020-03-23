@@ -46,7 +46,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 if (Logging.IsEnabled) Logging.Exit(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIoTCbsTokenProvider.GetTokenAsync)}");
             }
-
         }
     }
 }

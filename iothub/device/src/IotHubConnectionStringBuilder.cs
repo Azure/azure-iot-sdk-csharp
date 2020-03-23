@@ -1,21 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Text;
+using Microsoft.Azure.Devices.Client.Extensions;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Net;
+using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
+using System.Security.Cryptography.X509Certificates;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Text;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
-#if !NETMF
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Text.RegularExpressions;
-    using System.Net;
-    using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
-    using System.Security.Cryptography.X509Certificates;
-#endif
-
     /// <summary>
     /// Builds a connection string for the IoT Hub service based on the properties populated by the user.
     /// </summary>
@@ -31,27 +28,23 @@ namespace Microsoft.Azure.Devices.Client
         private const string SharedAccessKeyPropertyName = "SharedAccessKey";
         private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
         private const string GatewayHostNamePropertyName = "GatewayHostName";
-
-#if !NETMF
         private const RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        private const string X509CertPropertyName =  "X509Cert";
+        private const string X509CertPropertyName = "X509Cert";
         private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex IdNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex X509CertRegex = new Regex(@"^[true|false]+$", regexOptions, regexTimeoutMilliseconds);
-#endif
 
-        private string hostName;
-        private string iotHubName;
-        private IAuthenticationMethod authenticationMethod;
+        private string _hostName;
+        private IAuthenticationMethod _authenticationMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubConnectionStringBuilder"/> class.
         /// </summary>
-        IotHubConnectionStringBuilder()
+        private IotHubConnectionStringBuilder()
         {
         }
 
@@ -96,14 +89,14 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionString.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("iotHubConnectionString");
+                throw new ArgumentNullException(nameof(iotHubConnectionString));
             }
 
             return CreateWithIAuthenticationOverride(iotHubConnectionString, null);
         }
 
         internal static IotHubConnectionStringBuilder CreateWithIAuthenticationOverride(
-            string iotHubConnectionString, 
+            string iotHubConnectionString,
             IAuthenticationMethod authenticationMethod)
         {
             var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder()
@@ -114,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client
             if (authenticationMethod == null)
             {
                 iotHubConnectionStringBuilder.Parse(iotHubConnectionString);
-                iotHubConnectionStringBuilder.AuthenticationMethod = 
+                iotHubConnectionStringBuilder.AuthenticationMethod =
                     AuthenticationMethodFactory.GetAuthenticationMethod(iotHubConnectionStringBuilder);
             }
             else
@@ -126,22 +119,22 @@ namespace Microsoft.Azure.Devices.Client
             return iotHubConnectionStringBuilder;
         }
 
-
         /// <summary>
         /// Gets or sets the value of the fully-qualified DNS hostname of the IoT Hub service.
         /// </summary>
         public string HostName
         {
-            get { return this.hostName; }
-            set { this.SetHostName(value); }
+            get => _hostName;
+            set => SetHostName(value);
         }
 
         /// <summary>
         /// Gets or sets the authentication method to be used with the IoT Hub service.
         /// </summary>
-        public IAuthenticationMethod AuthenticationMethod {
-            get { return this.authenticationMethod; }
-            set { this.SetAuthenticationMethod(value); }
+        public IAuthenticationMethod AuthenticationMethod
+        {
+            get => _authenticationMethod;
+            set => SetAuthenticationMethod(value);
         }
 
         /// <summary>
@@ -176,39 +169,33 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool UsingX509Cert { get; internal set; }
 
-        internal string IotHubName 
-        {
-            get { return this.iotHubName; }
-        }
+        internal string IotHubName { get; private set; }
 
-#if !NETMF
         internal X509Certificate2 Certificate { get; set; }
-#endif
 
         internal IotHubConnectionString ToIotHubConnectionString()
         {
-            this.Validate();
+            Validate();
             return new IotHubConnectionString(this);
         }
 
-#if !NETMF
         /// <summary>
         /// Produces the connection string based on the values of the <see cref="IotHubConnectionStringBuilder"/> instance properties.
         /// </summary>
         /// <returns>A properly formatted connection string.</returns>
         public override sealed string ToString()
         {
-            this.Validate();
+            Validate();
 
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, this.HostName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, this.DeviceId);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, this.ModuleId);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, this.SharedAccessKeyName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, this.SharedAccessKey);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, this.SharedAccessSignature);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(X509CertPropertyName, this.UsingX509Cert);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(GatewayHostNamePropertyName, this.GatewayHostName);
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, HostName);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, DeviceId);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, ModuleId);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignature);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(X509CertPropertyName, UsingX509Cert);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(GatewayHostNamePropertyName, GatewayHostName);
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
@@ -216,126 +203,59 @@ namespace Microsoft.Azure.Devices.Client
 
             return stringBuilder.ToString();
         }
-#endif
 
-        void Parse(string iotHubConnectionString)
+        private void Parse(string iotHubConnectionString)
         {
-#if NETMF
-            if (iotHubConnectionString.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentException("Malformed Token");
-            }
-
-            string[] parts = iotHubConnectionString.Split(ValuePairDelimiter);
-            
-            foreach (string part in parts)
-            {
-                string[] pair = part.Split(new char[] { ValuePairSeparator }, 2);
-
-                if (pair.Length > 1)
-                {
-                    if (string.Equals(pair[0].ToLower(), HostNamePropertyName.ToLower()))
-                    {
-                        // Host Name
-                        this.HostName = pair[1];
-                    }
-                    else if (string.Equals(pair[0].ToLower(), DeviceIdPropertyName.ToLower()))
-                    {
-                        // DeviceId
-                        this.DeviceId = pair[1];
-                    }
-                    else if (string.Equals(pair[0].ToLower(), ModuleIdPropertyName.ToLower()))
-                    {
-                        // ModuleId
-                        this.ModuleId = pair[1];
-                    }
-                    else if (string.Equals(pair[0].ToLower(), SharedAccessKeyNamePropertyName.ToLower()))
-                    {
-                        // Shared Access Key Name 
-                        this.SharedAccessKeyName = pair[1];
-                    }
-                    else if (string.Equals(pair[0].ToLower(), SharedAccessKeyPropertyName.ToLower()))
-                    {
-                        // Shared Access Key
-                        // need to handle this differently because shared access key may have special chars such as '=' which break the string split
-                        this.SharedAccessKey = pair[1];
-                    }
-                    else if (string.Equals(pair[0].ToLower(), SharedAccessSignaturePropertyName.ToLower()))
-                    {
-                        // Shared Access Signature
-                        // need to handle this differently because shared access key may have special chars such as '=' which break the string split
-                        this.SharedAccessSignature = pair[1];
-                    }
-                    else if (string.Equals(pair[0].ToLower(), GatewayHostNamePropertyName.ToLower()))
-                    {
-                        // Gateway host name
-                        this.GatewayHostName = pair[1];
-                    }
-                }
-            }
-#else
             IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
-            this.HostName = GetConnectionStringValue(map, HostNamePropertyName);
-            this.DeviceId = GetConnectionStringOptionalValue(map, DeviceIdPropertyName);
-            this.ModuleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName);
-            this.SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
-            this.SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
-            this.SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
-            this.UsingX509Cert = GetConnectionStringOptionalValueOrDefault<bool>(map, X509CertPropertyName, GetX509, true);
-            this.GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
-#endif
+            HostName = GetConnectionStringValue(map, HostNamePropertyName);
+            DeviceId = GetConnectionStringOptionalValue(map, DeviceIdPropertyName);
+            ModuleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName);
+            SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
+            SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
+            SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
+            UsingX509Cert = GetConnectionStringOptionalValueOrDefault<bool>(map, X509CertPropertyName, GetX509, true);
+            GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
 
-            this.Validate();
+            Validate();
         }
 
-        void Validate()
+        private void Validate()
         {
-            if (this.DeviceId.IsNullOrWhiteSpace())
+            if (DeviceId.IsNullOrWhiteSpace())
             {
                 throw new ArgumentException("DeviceId must be specified in connection string");
             }
 
-            if (!(this.SharedAccessKey.IsNullOrWhiteSpace() ^ this.SharedAccessSignature.IsNullOrWhiteSpace()))
+            if (!(SharedAccessKey.IsNullOrWhiteSpace() ^ SharedAccessSignature.IsNullOrWhiteSpace()))
             {
-#if !NETMF
-                if (!(this.UsingX509Cert || (this.AuthenticationMethod is AuthenticationWithTokenRefresh)))
+                if (!(UsingX509Cert || (AuthenticationMethod is AuthenticationWithTokenRefresh)))
                 {
-#endif
                     throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is not used");
-#if !NETMF
                 }
-#endif
             }
 
-#if !NETMF
-            if ((this.UsingX509Cert || this.Certificate != null) &&
-                (!this.SharedAccessKey.IsNullOrWhiteSpace() || !this.SharedAccessSignature.IsNullOrWhiteSpace()))
+            if ((UsingX509Cert || Certificate != null) &&
+                (!SharedAccessKey.IsNullOrWhiteSpace() || !SharedAccessSignature.IsNullOrWhiteSpace()))
             {
                 throw new ArgumentException("Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used");
             }
-#endif
 
-            if (this.IotHubName.IsNullOrWhiteSpace())
+            if (IotHubName.IsNullOrWhiteSpace())
             {
-#if NETMF
-                throw new ArgumentException("Missing IOT hub name");
-#else
-                throw new FormatException("Missing IOT hub name");
-#endif
+                throw new FormatException("Missing IoT hub name");
             }
 
-            if (!this.SharedAccessKey.IsNullOrWhiteSpace())
+            if (!SharedAccessKey.IsNullOrWhiteSpace())
             {
-                Convert.FromBase64String(this.SharedAccessKey);
+                Convert.FromBase64String(SharedAccessKey);
             }
 
-#if !NETMF
-            if (!string.IsNullOrWhiteSpace(this.SharedAccessSignature))
+            if (!string.IsNullOrWhiteSpace(SharedAccessSignature))
             {
-                if (SharedAccessSignatureParser.IsSharedAccessSignature(this.SharedAccessSignature))
+                if (SharedAccessSignatureParser.IsSharedAccessSignature(SharedAccessSignature))
                 {
-                    SharedAccessSignatureParser.Parse(this.IotHubName, this.SharedAccessSignature);
+                    SharedAccessSignatureParser.Parse(IotHubName, SharedAccessSignature);
                 }
                 else
                 {
@@ -343,71 +263,64 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            ValidateFormat(this.HostName, HostNamePropertyName, HostNameRegex);
-            ValidateFormat(this.DeviceId, DeviceIdPropertyName, IdNameRegex);
-            if (!string.IsNullOrEmpty(this.ModuleId))
+            ValidateFormat(HostName, HostNamePropertyName, HostNameRegex);
+            ValidateFormat(DeviceId, DeviceIdPropertyName, IdNameRegex);
+            if (!string.IsNullOrEmpty(ModuleId))
             {
-                ValidateFormat(this.ModuleId, DeviceIdPropertyName, IdNameRegex);
+                ValidateFormat(ModuleId, DeviceIdPropertyName, IdNameRegex);
             }
 
-            ValidateFormatIfSpecified(this.SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
-            ValidateFormatIfSpecified(this.SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
-            ValidateFormatIfSpecified(this.SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);
-            ValidateFormatIfSpecified(this.GatewayHostName, GatewayHostNamePropertyName, HostNameRegex);
-            ValidateFormatIfSpecified(this.UsingX509Cert.ToString(), X509CertPropertyName, X509CertRegex);
-#endif
+            ValidateFormatIfSpecified(SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
+            ValidateFormatIfSpecified(SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
+            ValidateFormatIfSpecified(SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);
+            ValidateFormatIfSpecified(GatewayHostName, GatewayHostNamePropertyName, HostNameRegex);
+            ValidateFormatIfSpecified(UsingX509Cert.ToString(CultureInfo.InvariantCulture), X509CertPropertyName, X509CertRegex);
         }
 
-        void SetHostName(string hostname)
+        private void SetHostName(string hostname)
         {
             if (hostname.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("hostname");
+                throw new ArgumentNullException(nameof(hostname));
             }
-#if !NETMF
+
             ValidateFormat(hostname, HostNamePropertyName, HostNameRegex);
-#endif
 
-            this.hostName = hostname;
-            this.SetIotHubName();
+            _hostName = hostname;
+            SetIotHubName();
         }
 
-        void SetIotHubName()
+        private void SetIotHubName()
         {
-            this.iotHubName = GetIotHubName(this.HostName);
+            IotHubName = GetIotHubName(HostName);
 
-            if (this.IotHubName.IsNullOrWhiteSpace())
+            if (IotHubName.IsNullOrWhiteSpace())
             {
-#if NETMF
-                throw new ArgumentException("Missing IOT hub name");
-#else
                 throw new FormatException("Missing IOT hub name");
-#endif
             }
         }
 
-        void SetAuthenticationMethod(IAuthenticationMethod authMethod)
+        private void SetAuthenticationMethod(IAuthenticationMethod authMethod)
         {
             if (authMethod == null)
             {
-                throw new ArgumentNullException("authMethod");
+                throw new ArgumentNullException(nameof(authMethod));
             }
 
             authMethod.Populate(this);
-            this.authenticationMethod = authMethod;
-            this.Validate();
+            _authenticationMethod = authMethod;
+            Validate();
         }
 
-#if !NETMF
-        static void ValidateFormat(string value, string propertyName, Regex regex)
+        private static void ValidateFormat(string value, string propertyName, Regex regex)
         {
             if (!regex.IsMatch(value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), "iotHubConnectionString");
+                throw new ArgumentException($"The connection string has an invalid value for property: {propertyName}.");
             }
         }
 
-        static void ValidateFormatIfSpecified(string value, string propertyName, Regex regex)
+        private static void ValidateFormatIfSpecified(string value, string propertyName, Regex regex)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -415,61 +328,52 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
+        private static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
         {
-            string value;
-            if (!map.TryGetValue(propertyName, out value))
+            if (!map.TryGetValue(propertyName, out string value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), "iotHubConnectionString");
+                throw new ArgumentException($"The connection string is missing the property: {propertyName}.");
             }
 
             return value;
         }
 
-        static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
+        private static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
         {
-            string value;
-            map.TryGetValue(propertyName, out value);
+            map.TryGetValue(propertyName, out string value);
             return value;
         }
 
-        static TValue GetConnectionStringOptionalValueOrDefault<TValue>(IDictionary<string, string> map, string propertyName, TryParse<string, TValue> tryParse, bool ignoreCase)
+        private static TValue GetConnectionStringOptionalValueOrDefault<TValue>(
+            IDictionary<string, string> map,
+            string propertyName,
+            TryParse<string, TValue> tryParse,
+            bool ignoreCase)
         {
-            TValue value = default(TValue);
-            string stringValue;
-            if (map.TryGetValue(propertyName, out stringValue) && stringValue != null)
+            var value = default(TValue);
+            if (map.TryGetValue(propertyName, out string stringValue) && stringValue != null)
             {
                 if (!tryParse(stringValue, ignoreCase, out value))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), "iotHubConnectionString");
+                    throw new ArgumentException($"The connection string has an invalid value for property: {propertyName}");
                 }
             }
 
             return value;
         }
-#endif
-        static string GetIotHubName(string hostName)
+
+        private static string GetIotHubName(string hostName)
         {
-#if NETMF
-            int index = hostName.IndexOf(HostNameSeparator);
-#else
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
-#endif
             string iotHubName = index >= 0 ? hostName.Substring(0, index) : null;
             return iotHubName;
         }
 
-        static bool GetX509(string input, bool ignoreCase, out bool usingX509Cert)
+        private static bool GetX509(string input, bool ignoreCase, out bool usingX509Cert)
         {
             usingX509Cert = false;
-            bool isMatch;
 
-#if NETMF
-            isMatch = (ignoreCase ? input.ToLower().CompareTo("true") : input.CompareTo("true")) == 0;
-#else
-            isMatch = string.Equals(input, "true", ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
-#endif
-
+            bool isMatch = string.Equals(input, "true", ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
             if (isMatch)
             {
                 usingX509Cert = true;

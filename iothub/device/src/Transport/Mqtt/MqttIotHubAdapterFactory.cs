@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-
-    class MqttIotHubAdapterFactory 
+    internal class MqttIotHubAdapterFactory
     {
-        readonly MqttTransportSettings settings;
+        private readonly MqttTransportSettings settings;
 
         public MqttIotHubAdapterFactory(MqttTransportSettings settings)
         {
@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public MqttIotHubAdapter Create(
             IMqttIotHubEventHandler mqttIotHubEventHandler,
-            IotHubConnectionString iotHubConnectionString, 
+            IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings mqttTransportSettings,
             ProductInfo productInfo)
         {
             IWillMessage willMessage = mqttTransportSettings.HasWill ? this.settings.WillMessage : null;
-            
+
             return new MqttIotHubAdapter(
                 iotHubConnectionString.DeviceId,
                 iotHubConnectionString.ModuleId,

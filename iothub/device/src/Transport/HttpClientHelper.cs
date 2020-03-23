@@ -1,43 +1,45 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Transport
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Shared;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
 
 #if NET451
     using System.Net.Http.Formatting;
 #else
-    using System.Text;
-    using Newtonsoft.Json;
-#endif
-    using System.Security.Cryptography.X509Certificates;
 
-    sealed class HttpClientHelper : IHttpClientHelper
+using System.Text;
+using Newtonsoft.Json;
+
+#endif
+
+using System.Security.Cryptography.X509Certificates;
+
+namespace Microsoft.Azure.Devices.Client.Transport
+{
+    internal sealed class HttpClientHelper : IHttpClientHelper
     {
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
-        readonly Uri baseAddress;
-        readonly IAuthorizationProvider authenticationHeaderProvider;
-        readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
-        readonly bool usingX509ClientCert = false;
-        HttpClient httpClientObj;
-        bool isDisposed;
-        ProductInfo productInfo;
+        private readonly Uri baseAddress;
+        private readonly IAuthorizationProvider authenticationHeaderProvider;
+        private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
+        private readonly bool usingX509ClientCert = false;
+        private HttpClient httpClientObj;
+        private bool isDisposed;
+        private ProductInfo productInfo;
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -57,6 +59,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
 #if NET451
+            TlsVersions.Instance.SetLegacyAcceptableVersions();
+
             WebRequestHandler handler = httpClientHandler as WebRequestHandler;
             if (clientCert != null)
             {
@@ -82,29 +86,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
+            if (httpClientHandler == null)
+            {
+                httpClientHandler = new HttpClientHandler();
+            }
+            httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
+
             if (clientCert != null)
             {
-                if (httpClientHandler == null)
-                {
-                    httpClientHandler = new HttpClientHandler();
-                }
-
                 httpClientHandler.ClientCertificates.Add(clientCert);
                 this.usingX509ClientCert = true;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
             {
-                if (httpClientHandler == null)
-                {
-                    httpClientHandler = new HttpClientHandler();
-                }
-
                 httpClientHandler.UseProxy = (proxy != null);
                 httpClientHandler.Proxy = proxy;
             }
 
-            this.httpClientObj = httpClientHandler != null ? new HttpClient(httpClientHandler) : new HttpClient();
+            this.httpClientObj = new HttpClient(httpClientHandler);
 #endif
 
             this.httpClientObj.BaseAddress = this.baseAddress;
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return result;
         }
 
-        static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)
+        private static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)
         {
             if (typeof(T) == typeof(HttpResponseMessage))
             {
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return entity;
         }
 
-        static Task AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
+        private static Task AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
         {
             if (customHeaders != null)
             {
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return TaskHelpers.CompletedTask;
         }
 
-        static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
+        private static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
         {
             if (operationType == PutOperationType.CreateEntity)
             {
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity)
+        private static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity)
         {
             if (string.IsNullOrWhiteSpace(entity.ETag))
             {
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(etag));
         }
 
-        IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> MergeErrorMapping(
+        private IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> MergeErrorMapping(
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides)
         {
             var mergedMapping = this.defaultErrorMapping.ToDictionary(mapping => mapping.Key, mapping => mapping.Value);
@@ -335,7 +335,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return result;
         }
 
-        Task PostAsyncHelper<T1>(
+        private Task PostAsyncHelper<T1>(
             Uri requestUri,
             T1 entity,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     cancellationToken);
         }
 
-        Task ExecuteAsync(
+        private Task ExecuteAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
-        async Task ExecuteAsync(
+        private async Task ExecuteAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
@@ -503,7 +503,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        static async Task<Exception> MapToExceptionAsync(
+        private static async Task<Exception> MapToExceptionAsync(
             HttpResponseMessage response,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMapping)
         {
@@ -534,7 +534,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
         private static ObjectContent<T> CreateContent<T>(T entity)
         {
             return new ObjectContent<T>(entity, JsonFormatter);
@@ -545,6 +545,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return content.ReadAsAsync<T>(token);
         }
 #else
+
         private static StringContent CreateContent<T>(T entity)
         {
             return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
@@ -559,6 +560,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return new JsonSerializer().Deserialize<T>(jsonReader);
             }
         }
+
 #endif
     }
 }

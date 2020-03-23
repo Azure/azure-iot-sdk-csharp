@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Common
 {
-    sealed class CommonResources : Microsoft.Azure.Devices.Common.Resources
+    internal sealed class CommonResources : Resources
     {
         internal static string GetString(string value, params object[] args)
         {
@@ -18,10 +18,10 @@ namespace Microsoft.Azure.Devices.Common
                     }
                 }
 
-                return string.Format(CommonResources.Culture, value, args);
+                return string.Format(Culture, value, args);
             }
 
             return value;
-        } 
+        }
     }
 }

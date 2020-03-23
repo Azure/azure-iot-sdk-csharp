@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
     /// <summary>
     /// The exception that is thrown when an attempt to communicate with a device fails because the given device identifier cannot be found.
     /// </summary>
@@ -46,12 +46,13 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="iotHubName">Name of the IOT Hub instance.</param>
         /// <param name="trackingId">Tracking identifier that is used for telemetry purposes.</param>
         public DeviceNotFoundException(string deviceId, string iotHubName, string trackingId)
-            : base(!string.IsNullOrEmpty(iotHubName) ? "Device {0} at IotHub {1} not registered".FormatInvariant(deviceId, iotHubName) : "Device {0} not registered".FormatInvariant(deviceId), 
+            : base(!string.IsNullOrEmpty(iotHubName) ? "Device {0} at IotHub {1} not registered".FormatInvariant(deviceId, iotHubName) : "Device {0} not registered".FormatInvariant(deviceId),
                    null,
                    isTransient: false,
                    trackingId: trackingId)
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceNotFoundException"/> class with the message string containing the identifier of the device that could not be found and a reference to the inner exception that is the cause of this exception.
         /// </summary>
@@ -62,7 +63,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
+#pragma warning disable CA2229 // Implement serialization constructors. Would change public API.
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceNotFoundException"/> class with the specified serialization and context information.
         /// </summary>
@@ -72,6 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             : base(info, context)
         {
         }
-#endif
+
+#pragma warning restore CA2229 // Implement serialization constructors
     }
 }

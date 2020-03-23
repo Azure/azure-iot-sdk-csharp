@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client.Common
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
     public class UrlEncodedDictionarySerializer
     {
         public const char KeyValueSeparator = '=';
@@ -18,12 +18,12 @@ namespace Microsoft.Azure.Devices.Client.Common
 
         //We assume that in avarage 20% of string are the encoded characters.
         //We can make a better estimation though.
-        const float EncodedSymbolsFactor = 1.2f;
+        private const float EncodedSymbolsFactor = 1.2f;
 
-        readonly IDictionary<string, string> output;
-        readonly Tokenizer tokenizer;
+        private readonly IDictionary<string, string> output;
+        private readonly Tokenizer tokenizer;
 
-        UrlEncodedDictionarySerializer(
+        private UrlEncodedDictionarySerializer(
             IDictionary<string, string> output,
             string value,
             int startIndex)
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Common
             this.tokenizer = new Tokenizer(value, startIndex);
         }
 
-        void Deserialize()
+        private void Deserialize()
         {
             string key = null;
 
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                 {
                     firstProperty = property;
                 }
-                
+
                 //In case of value, '=' and ',' take up length, otherwise just ','
                 estimatedLength += property.Key.Length + (property.Value?.Length + 2 ?? 1);
                 propertiesCount++;
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Common
             Value
         }
 
-        struct Token
+        private struct Token
         {
             public TokenType Type { get; }
 
@@ -136,9 +136,9 @@ namespace Microsoft.Azure.Devices.Client.Common
         /// <summary>
         /// Tokenizer state machine
         /// </summary>
-        class Tokenizer
+        private class Tokenizer
         {
-            enum TokenizerState
+            private enum TokenizerState
             {
                 ReadyToReadKey,
                 ReadKey,
@@ -146,10 +146,11 @@ namespace Microsoft.Azure.Devices.Client.Common
                 Error,
                 Finish
             }
-            readonly string value;
-            int position;
 
-            TokenizerState currentState = TokenizerState.ReadyToReadKey;
+            private readonly string value;
+            private int position;
+
+            private TokenizerState currentState = TokenizerState.ReadyToReadKey;
 
             public Tokenizer(string value, int startIndex)
             {
@@ -186,9 +187,11 @@ namespace Microsoft.Azure.Devices.Client.Common
                                         errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, this.currentState);
                                         this.currentState = TokenizerState.Error;
                                         break;
+
                                     case '/':
                                         this.currentState = TokenizerState.Finish;
                                         break;
+
                                     default:
                                         readCount++;
                                         this.currentState = TokenizerState.ReadKey;
@@ -214,18 +217,21 @@ namespace Microsoft.Azure.Devices.Client.Common
                                         readCount = 0;
                                         this.currentState = TokenizerState.ReadValue;
                                         break;
+
                                     case '&':
                                         yield return this.CreateToken(TokenType.Key, readCount);
                                         yield return this.CreateToken(TokenType.Value, 0);
                                         readCount = 0;
                                         this.currentState = TokenizerState.ReadyToReadKey;
                                         break;
+
                                     case '/':
                                         yield return this.CreateToken(TokenType.Key, readCount);
                                         yield return this.CreateToken(TokenType.Value, 0);
                                         readCount = 0;
                                         this.currentState = TokenizerState.Finish;
                                         break;
+
                                     default:
                                         readCount++;
                                         //this.currentState = TokenizerState.ReadKey;
@@ -249,16 +255,19 @@ namespace Microsoft.Azure.Devices.Client.Common
                                         errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, this.currentState);
                                         this.currentState = TokenizerState.Error;
                                         break;
+
                                     case '&':
                                         yield return this.CreateToken(TokenType.Value, readCount);
                                         readCount = 0;
                                         this.currentState = TokenizerState.ReadyToReadKey;
                                         break;
+
                                     case '/':
                                         yield return this.CreateToken(TokenType.Value, readCount);
                                         readCount = 0;
                                         this.currentState = TokenizerState.Finish;
                                         break;
+
                                     default:
                                         readCount++;
                                         //this.currentState = TokenizerState.ReadValue;
@@ -270,6 +279,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                         case TokenizerState.Error:
                             readCompleted = true;
                             break;
+
                         default:
                             throw new NotSupportedException();
                     }
@@ -282,7 +292,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                 }
             }
 
-            Token CreateToken(TokenType tokenType, int readCount)
+            private Token CreateToken(TokenType tokenType, int readCount)
             {
                 string tokenValue = readCount == 0 ? null : this.value.Substring(this.position - readCount, readCount);
 

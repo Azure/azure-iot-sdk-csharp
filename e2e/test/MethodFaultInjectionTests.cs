@@ -16,8 +16,9 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
-    [TestCategory("IoTHub-FaultInjection")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
+    [TestCategory("FaultInjection")]
     public class MethodFaultInjectionTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MethodFaultInjectionTests)}_";

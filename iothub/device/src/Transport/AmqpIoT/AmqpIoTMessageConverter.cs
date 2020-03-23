@@ -30,7 +30,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
 
-#region AmqpMessage <--> Message
+        #region AmqpMessage <--> Message
+
         public static Message AmqpMessageToMessage(AmqpMessage amqpMessage)
         {
             if (amqpMessage == null)
@@ -60,7 +61,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             else
             {
                 amqpMessage = AmqpMessage.Create();
-
             }
             UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);
 
@@ -156,12 +156,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                                 case MessageSystemPropertyNames.Operation:
                                     message.SystemProperties[pair.Key.ToString()] = stringObject;
                                     break;
+
                                 case MessageSystemPropertyNames.MessageSchema:
                                     message.MessageSchema = stringObject;
                                     break;
+
                                 case MessageSystemPropertyNames.CreationTimeUtc:
                                     message.CreationTimeUtc = DateTime.Parse(stringObject);
                                     break;
+
                                 default:
                                     message.Properties[pair.Key.ToString()] = stringObject;
                                     break;
@@ -264,9 +267,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 amqpMessage.MessageAnnotations.Map[AmqpDiagCorrelationContextKey] = data.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext];
             }
         }
-        #endregion
+
+        #endregion AmqpMessage <--> Message
 
         #region AmqpMessage <--> Methods
+
         public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal, bool setBodyCalled = true)
         {
             methodResponseInternal.ThrowIfDisposed();
@@ -332,14 +337,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             amqpMessage.ApplicationProperties.Map[Status] = methodResponseInternal.Status;
         }
-        #endregion
+
+        #endregion AmqpMessage <--> Methods
 
         private static bool TryGetNetObjectFromAmqpObject(object amqpObject, MappingType mappingType, out object netObject)
         {
             netObject = null;
             if (amqpObject == null)
             {
-                return false;
+                return true;
             }
 
             switch (SerializationUtilities.GetTypeId(amqpObject))
@@ -362,6 +368,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 case PropertyValueType.String:
                     netObject = amqpObject;
                     break;
+
                 case PropertyValueType.Unknown:
                     if (amqpObject is AmqpSymbol)
                     {
@@ -421,6 +428,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         netObject = amqpObject;
                     }
                     break;
+
                 default:
                     break;
             }
@@ -433,7 +441,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             amqpObject = null;
             if (netObject == null)
             {
-                return false;
+                return true;
             }
 
             switch (SerializationUtilities.GetTypeId(netObject))
@@ -456,21 +464,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 case PropertyValueType.String:
                     amqpObject = netObject;
                     break;
+
                 case PropertyValueType.Stream:
                     if (mappingType == MappingType.ApplicationProperty)
                     {
                         amqpObject = ReadStream((Stream)netObject);
                     }
                     break;
+
                 case PropertyValueType.Uri:
                     amqpObject = new DescribedType((AmqpSymbol)UriName, ((Uri)netObject).AbsoluteUri);
                     break;
+
                 case PropertyValueType.DateTimeOffset:
                     amqpObject = new DescribedType((AmqpSymbol)DateTimeOffsetName, ((DateTimeOffset)netObject).UtcTicks);
                     break;
+
                 case PropertyValueType.TimeSpan:
                     amqpObject = new DescribedType((AmqpSymbol)TimeSpanName, ((TimeSpan)netObject).Ticks);
                     break;
+
                 case PropertyValueType.Unknown:
                     if (netObject is Stream)
                     {
@@ -497,6 +510,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         amqpObject = new AmqpMap((IDictionary)netObject);
                     }
                     break;
+
                 default:
                     break;
             }
@@ -504,7 +518,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return amqpObject != null;
         }
 
-        private static ArraySegment<byte> ReadStream(Stream stream)
+        internal static ArraySegment<byte> ReadStream(Stream stream)
         {
             MemoryStream memoryStream = new MemoryStream();
             int bytesRead;
@@ -514,12 +528,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 memoryStream.Write(readBuffer, 0, bytesRead);
             }
 
-#if NETSTANDARD1_3
-            // UWP doesn't have GetBuffer. ToArray creates a copy -- make sure perf impact is acceptable
-            return new ArraySegment<byte>(memoryStream.ToArray(), 0, (int)memoryStream.Length);
-#else
             return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
-#endif
         }
     }
 }

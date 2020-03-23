@@ -219,10 +219,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         {
             byte[] expected = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\nContent-length=5\r\n\r\nMessage is longer");
             var memory = new MemoryStream(expected, true);
-            HttpBufferedStream stream = new HttpBufferedStream(memory);
+            var stream = new HttpBufferedStream(memory);
 
-            System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<HttpRequestException>(() => new HttpRequestResponseSerializer().DeserializeResponse(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<HttpRequestException>(() => new HttpRequestResponseSerializer().DeserializeResponse(stream, default)).Wait();
         }
 
         [TestMethod]
@@ -230,10 +229,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         {
             byte[] expected = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\nContent-length: 5\r\n");
             var memory = new MemoryStream(expected, true);
-            HttpBufferedStream stream = new HttpBufferedStream(memory);
+            var stream = new HttpBufferedStream(memory);
 
-            System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<IOException>(() => new HttpRequestResponseSerializer().DeserializeResponse(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<IOException>(() => new HttpRequestResponseSerializer().DeserializeResponse(stream, default)).Wait();
         }
 
         [TestMethod]
@@ -241,16 +239,17 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         {
             byte[] expected = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\nTest-header: 4\r\n\r\nTest");
             var memory = new MemoryStream(expected, true);
-            HttpBufferedStream stream = new HttpBufferedStream(memory);
+            var stream = new HttpBufferedStream(memory);
 
-            System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            var response = await new HttpRequestResponseSerializer().DeserializeResponse(stream, cancellationToken);
+            HttpResponseMessage response = await new HttpRequestResponseSerializer().DeserializeResponse(stream, default).ConfigureAwait(false);
 
-            Assert.AreEqual(response.Version, Version.Parse("1.1"));
-            Assert.AreEqual(response.StatusCode, System.Net.HttpStatusCode.OK);
-            Assert.AreEqual(response.ReasonPhrase, "OK");
-            Assert.AreEqual(response.Content.Headers.ContentLength, 4);
-            Assert.AreEqual(await response.Content.ReadAsStringAsync(), "Test");
+            Assert.AreEqual(Version.Parse("1.1"), response.Version);
+            Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
+            Assert.AreEqual("OK", response.ReasonPhrase);
+#if !NETCOREAPP1_1
+            Assert.AreEqual(4, response.Content.Headers.ContentLength);
+#endif
+            Assert.AreEqual("Test", await response.Content.ReadAsStringAsync());
         }
 
         [TestMethod]
@@ -258,15 +257,16 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         {
             byte[] expected = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\nContent-length: 4\r\n\r\nTest");
             var memory = new MemoryStream(expected, true);
-            HttpBufferedStream stream = new HttpBufferedStream(memory);
+            var stream = new HttpBufferedStream(memory);
 
-            System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            var response = await new HttpRequestResponseSerializer().DeserializeResponse(stream, cancellationToken);
+            var response = await new HttpRequestResponseSerializer().DeserializeResponse(stream, default);
 
             Assert.AreEqual(response.Version, Version.Parse("1.1"));
             Assert.AreEqual(response.StatusCode, System.Net.HttpStatusCode.OK);
             Assert.AreEqual(response.ReasonPhrase, "OK");
+#if !NETCOREAPP1_1
             Assert.AreEqual(response.Content.Headers.ContentLength, 4);
+#endif
             Assert.AreEqual(await response.Content.ReadAsStringAsync(), "Test");
         }
     }

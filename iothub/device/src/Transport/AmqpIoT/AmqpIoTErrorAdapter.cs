@@ -10,13 +10,14 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    static class AmqpIoTErrorAdapter
+    internal static class AmqpIoTErrorAdapter
     {
         public static readonly AmqpSymbol TimeoutName = AmqpIoTConstants.Vendor + ":timeout";
         public static readonly AmqpSymbol StackTraceName = AmqpIoTConstants.Vendor + ":stack-trace";
 
         // Error codes
         public static readonly AmqpSymbol DeadLetterName = AmqpIoTConstants.Vendor + ":dead-letter";
+
         public const string DeadLetterReasonHeader = "DeadLetterReason";
         public const string DeadLetterErrorDescriptionHeader = "DeadLetterErrorDescription";
         public static readonly AmqpSymbol TimeoutError = AmqpIoTConstants.Vendor + ":timeout";
@@ -34,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public static readonly AmqpSymbol ApiVersion = AmqpIoTConstants.Vendor + ":api-version";
         public static readonly AmqpSymbol ChannelCorrelationId = AmqpIoTConstants.Vendor + ":channel-correlation-id";
 
-        const int MaxSizeInInfoMap = 32 * 1024;
+        private const int MaxSizeInInfoMap = 32 * 1024;
 
         public static AmqpException ToAmqpException(Exception exception, string gatewayId)
         {
@@ -64,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (exception is AmqpException)
             {
-                AmqpException amqpException = (AmqpException) exception;
+                AmqpException amqpException = (AmqpException)exception;
                 error.Condition = amqpException.Error.Condition;
                 error.Info = amqpException.Error.Info;
             }
@@ -145,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             string trackingId;
             error.Info.TryGetValue(TrackingId, out trackingId);
-            trackingId = AmqpIoTTrackingHelper.CheckAndAddGatewayIdToTrackingId(gatewayId, trackingId);                
+            trackingId = AmqpIoTTrackingHelper.CheckAndAddGatewayIdToTrackingId(gatewayId, trackingId);
             error.Info.Add(TrackingId, trackingId);
 
             return error;
@@ -186,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             // Generic AMQP error
             if (Equals(AmqpErrorCode.InternalError, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubCommunicationException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.NotFound, amqpSymbol))
             {
@@ -218,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             else if (Equals(AmqpErrorCode.ResourceLocked, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new AmqpIoTResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.PreconditionFailed, amqpSymbol))
             {
@@ -273,7 +274,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             else if (Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new AmqpIoTResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol))
             {
@@ -311,8 +312,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             Exception retException;
             if (error == null)
             {
-               retException = new IotHubException("Unknown error.");
-               return retException;
+                retException = new IotHubException("Unknown error.");
+                return retException;
             }
 
             string message = error.Description;
@@ -382,10 +383,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (trackingId != null && retException is IotHubException)
             {
-                IotHubException iotHubException = (IotHubException) retException;                
+                IotHubException iotHubException = (IotHubException)retException;
                 iotHubException.TrackingId = trackingId;
             }
             return retException;
         }
-    }   
+    }
 }

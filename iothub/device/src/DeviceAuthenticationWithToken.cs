@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
     /// <summary>
-    /// Authentication method that uses a shared access signature token. 
+    /// Authentication method that uses a shared access signature token.
     /// </summary>
     public sealed class DeviceAuthenticationWithToken : IAuthenticationMethod
     {
-        string deviceId;
-        string token;
+        private string _deviceId;
+        private string _token;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithToken"/> class.
@@ -21,8 +21,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="token">Security Token.</param>
         public DeviceAuthenticationWithToken(string deviceId, string token)
         {
-            this.SetDeviceId(deviceId);
-            this.SetToken(token);
+            SetDeviceId(deviceId);
+            SetToken(token);
         }
 
         /// <summary>
@@ -30,8 +30,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string DeviceId
         {
-            get { return this.deviceId; }
-            set { this.SetDeviceId(value); }
+            get => _deviceId;
+            set => SetDeviceId(value);
         }
 
         /// <summary>
@@ -39,8 +39,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string Token
         {
-            get { return this.token; }
-            set { this.SetToken(value); }
+            get => _token;
+            set => SetToken(value);
         }
 
         /// <summary>
@@ -52,47 +52,40 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException("iotHubConnectionStringBuilder");
+                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
-            iotHubConnectionStringBuilder.SharedAccessSignature = this.Token;
+            iotHubConnectionStringBuilder.DeviceId = DeviceId;
+            iotHubConnectionStringBuilder.SharedAccessSignature = Token;
             iotHubConnectionStringBuilder.SharedAccessKey = null;
             iotHubConnectionStringBuilder.SharedAccessKeyName = null;
 
             return iotHubConnectionStringBuilder;
         }
 
-        void SetDeviceId(string deviceId)
+        private void SetDeviceId(string deviceId)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
-            this.deviceId = deviceId;
+            _deviceId = deviceId;
         }
 
-        void SetToken(string token)
+        private void SetToken(string token)
         {
             if (token.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("token");
+                throw new ArgumentNullException(nameof(token));
             }
 
-#if NETMF
-            if (token.IndexOf(SharedAccessSignatureConstants.SharedAccessSignature) != 0)
-            {
-                throw new ArgumentException("Token must be of type SharedAccessSignature");
-            }
-#else
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Token must be of type SharedAccessSignature");
             }
-#endif
 
-            this.token = token;
+            _token = token;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///
     /// The content of this class will be serialized in a JSON format and sent as a body of the rest API to the
     ///    provisioning service.
-    ///    
+    ///
     /// The content of this class can be filled by a JSON, received from the provisioning service, as result of a
     ///    EnrollmentGroup operation like create, update, or query EnrollmentGroup.
     /// </remarks>
@@ -84,9 +84,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates a new instance of <code>EnrollmentGroup</code>.
         /// </summary>
         /// <remarks>
-        /// This constructor creates an instance of the EnrollmentGroup object with the minimum set of 
-        /// information required by the provisioning service. A valid EnrollmentGroup must contain the 
-        /// enrollmentGroupId, which uniquely identify this enrollmentGroup, and the attestation mechanism, 
+        /// This constructor creates an instance of the EnrollmentGroup object with the minimum set of
+        /// information required by the provisioning service. A valid EnrollmentGroup must contain the
+        /// enrollmentGroupId, which uniquely identify this enrollmentGroup, and the attestation mechanism,
         /// which must X509.
         ///
         /// Other parameters can be added by calling the setters on this object.
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// }
         /// </code>
         /// </example>
-        /// <param name="enrollmentGroupId">the <code>string</code> that uniquely identify this enrollmentGroup in the provisioning 
+        /// <param name="enrollmentGroupId">the <code>string</code> that uniquely identify this enrollmentGroup in the provisioning
         ///     service. It cannot be <code>null</code> or empty.</param>
         /// <param name="attestation">the <see cref="Attestation"/> object with the attestation mechanism. It cannot be <code>null</code>.</param>
         /// <exception cref="ArgumentNullException">if one of the provided parameters is not correct</exception>
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string eTag,
             DeviceCapabilities capabilities)
         {
-            /* SRS_ENROLLMENT_GROUP_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
+            /* SRS_ENROLLMENT_GROUP_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the
                                                     provided parameters in JSON is not valid.] */
             if (attestation == null)
             {
@@ -223,19 +223,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="ArgumentException">if the provided string does not fit the enrollmentGroup Id requirements</exception>
         [JsonProperty(PropertyName = "enrollmentGroupId")]
-        public string EnrollmentGroupId
-        {
-            get
-            {
-                return _enrollmentGroupId;
-            }
-
-            private set
-            {
-                _enrollmentGroupId = value;
-            }
-        }
-        private string _enrollmentGroupId;
+        public string EnrollmentGroupId { get; private set; }
 
         /// <summary>
         /// Current registration state.
@@ -255,10 +243,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonIgnore]
         public Attestation Attestation
         {
-            get
-            {
-                return _attestation.GetAttestation();
-            }
+            get => _attestation.GetAttestation();
             set
             {
                 if (value == null)
@@ -325,26 +310,31 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DeviceCapabilities Capabilities { get; set; }
 
-        /// <summary> 
+        /// <summary>
         /// The behavior when a device is re-provisioned to an IoT hub.
         /// </summary>
         [JsonProperty(PropertyName = "reprovisionPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ReprovisionPolicy ReprovisionPolicy { get; set; }
 
-        /// <summary> 
+        /// <summary>
         /// The allocation policy of this resource. Overrides the tenant level allocation policy.
         /// </summary>
         [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public AllocationPolicy? AllocationPolicy { get; set; }
-        /// <summary> 
+
+#pragma warning disable CA2227 // Collection properties should be read only. Will not change public API
+
+        /// <summary>
         /// The list of names of IoT hubs the device(s) in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
         /// </summary>
         [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ICollection<string> IotHubs { get; set; }
 
-        /// <summary> 
-        /// Custom allocation definition.  
-        /// </summary>  
+#pragma warning restore CA2227 // Collection properties should be read only
+
+        /// <summary>
+        /// Custom allocation definition.
+        /// </summary>
         [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
     }

@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal class AmqpIoTReceivingLink
     {
         public event EventHandler Closed;
+
         private readonly ReceivingAmqpLink _receivingAmqpLink;
 
         private Action<Message> _onEventsReceived;
@@ -52,6 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         }
 
         #region Receive Message
+
         internal async Task<Message> ReceiveAmqpMessageAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ReceiveAmqpMessageAsync)}");
@@ -94,11 +96,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled) Logging.Enter(this, outcome, $"{nameof(DisposeMessageAsync)}");
 
             ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
-            Outcome disposeOutcome = 
+            Outcome disposeOutcome =
                 await _receivingAmqpLink.DisposeMessageAsync(
-                    deliveryTag, 
-                    outcome, 
-                    batchable: true, 
+                    deliveryTag,
+                    outcome,
+                    batchable: true,
                     timeout: timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled) Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
@@ -120,9 +122,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             return new ArraySegment<byte>(lockTokenGuid.ToByteArray());
         }
-        #endregion
+
+        #endregion Receive Message
 
         #region EventHandling
+
         internal void RegisterEventListener(Action<Message> onEventsReceived)
         {
             _onEventsReceived = onEventsReceived;
@@ -143,9 +147,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
             }
         }
-        #endregion
+
+        #endregion EventHandling
 
         #region Method handling
+
         internal void RegisterMethodListener(Action<MethodRequestInternal> onMethodReceived)
         {
             _onMethodReceived = onMethodReceived;
@@ -171,9 +177,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             _receivingAmqpLink.DisposeDelivery(amqpMessage, settled, acceptedOutcome);
         }
-        #endregion
+
+        #endregion Method handling
 
         #region Twin handling
+
         internal void RegisterTwinListener(Action<Twin, string, TwinCollection> onDesiredPropertyReceived)
         {
             _onDesiredPropertyReceived = onDesiredPropertyReceived;
@@ -192,7 +200,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     _onDesiredPropertyReceived.Invoke(null, correlationId, null);
                 }
-
 
                 Twin twin = null;
                 TwinCollection twinProperties = null;
@@ -232,7 +239,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
             }
         }
-        #endregion
+
+        #endregion Twin handling
 
         internal static bool VerifyResponseMessage(AmqpMessage response)
         {

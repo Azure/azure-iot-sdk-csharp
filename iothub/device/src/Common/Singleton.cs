@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
-    abstract class Singleton<TValue> : IDisposable where TValue : class
+    internal abstract class Singleton<TValue> : IDisposable where TValue : class
     {
-        readonly object syncLock;
+        private readonly object syncLock;
 
-        TaskCompletionSource<TValue> taskCompletionSource;
-        volatile bool disposed;
+        private TaskCompletionSource<TValue> taskCompletionSource;
+        private volatile bool disposed;
 
         public Singleton()
         {
@@ -115,13 +115,13 @@ namespace Microsoft.Azure.Devices.Client
 
         protected abstract void OnSafeClose(TValue value);
 
-        bool TryGet(out TaskCompletionSource<TValue> tcs)
+        private bool TryGet(out TaskCompletionSource<TValue> tcs)
         {
             tcs = Volatile.Read<TaskCompletionSource<TValue>>(ref this.taskCompletionSource);
             return tcs != null;
         }
 
-        bool TrySet(TaskCompletionSource<TValue> tcs)
+        private bool TrySet(TaskCompletionSource<TValue> tcs)
         {
             lock (this.syncLock)
             {
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        async Task CreateValue(TaskCompletionSource<TValue> tcs, TimeSpan timeout, CancellationToken cancellationToken)
+        private async Task CreateValue(TaskCompletionSource<TValue> tcs, TimeSpan timeout, CancellationToken cancellationToken)
         {
             try
             {

@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
-
     //
     // Note on ConfigureAwait: dotNetty is using a custom TaskScheduler that binds Tasks to the corresponding
     // EventLoop. To limit I/O to the EventLoopGroup and keep Netty semantics, we are going to ensure that the
@@ -34,12 +33,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string SubscribeFilter = "$dps/registrations/res/#";
         private const string RegisterTopic = "$dps/registrations/PUT/iotdps-register/?$rid={0}";
         private const string GetOperationsTopic = "$dps/registrations/GET/iotdps-get-operationstatus/?$rid={0}&operationId={1}";
-        private static readonly Regex RegistrationStatusTopicRegex = new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled);
+        private static readonly Regex s_registrationStatusTopicRegex = new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled);
         private static readonly TimeSpan s_defaultOperationPoolingInterval = TimeSpan.FromSeconds(2);
 
         private const string Registration = "registration";
 
-        private ProvisioningTransportRegisterMessage _message;
+        private readonly ProvisioningTransportRegisterMessage _message;
         private TaskCompletionSource<RegistrationOperationStatus> _taskCompletionSource;
         private CancellationToken _cancellationToken;
         private int _state;
@@ -134,7 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(ExceptionCaught));
         }
 
-        #endregion
+        #endregion DotNetty.ChannelHandlerAdapter overrides
 
         private Task ConnectAsync(IChannelHandlerContext context)
         {
@@ -179,28 +178,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 case State.Start:
                     Debug.Fail($"{nameof(ProvisioningChannelHandlerAdapter)}: Invalid state: {nameof(State.Start)}");
                     break;
+
                 case State.Done:
                     Debug.Fail($"{nameof(ProvisioningChannelHandlerAdapter)}: Invalid state: {nameof(State.Done)}");
                     break;
+
                 case State.Failed:
                     Debug.Fail($"{nameof(ProvisioningChannelHandlerAdapter)}: Invalid state: {nameof(State.Failed)}");
                     break;
+
                 case State.WaitForConnack:
                     await VerifyExpectedPacketType(context, PacketType.CONNACK, message).ConfigureAwait(true);
                     await ProcessConnAckAsync(context, (ConnAckPacket)message).ConfigureAwait(true);
                     break;
+
                 case State.WaitForSuback:
                     await VerifyExpectedPacketType(context, PacketType.SUBACK, message).ConfigureAwait(true);
                     await ProcessSubAckAsync(context, (SubAckPacket)message).ConfigureAwait(true);
                     break;
+
                 case State.WaitForPubAck:
                     ChangeState(State.WaitForPubAck, State.WaitForStatus);
                     await VerifyExpectedPacketType(context, PacketType.PUBACK, message).ConfigureAwait(true);
                     break;
+
                 case State.WaitForStatus:
                     await VerifyExpectedPacketType(context, PacketType.PUBLISH, message).ConfigureAwait(true);
                     await ProcessRegistrationStatusAsync(context, (PublishPacket)message).ConfigureAwait(true);
                     break;
+
                 default:
                     await FailWithExceptionAsync(
                         context,
@@ -293,12 +299,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (_message.Payload != null && _message.Payload.Length > 0)
             {
                 var deviceRegistration = new DeviceRegistration { Payload = new JRaw(_message.Payload) };
-                var customContentStream =
-                    new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
-                long streamLength = customContentStream.Length;
-                int length = (int)streamLength;
-                packagePayload = context.Channel.Allocator.Buffer(length, length);
-                await packagePayload.WriteBytesAsync(customContentStream, length).ConfigureAwait(false);
+                using (var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration))))
+                {
+                    long streamLength = customContentStream.Length;
+                    int length = (int)streamLength;
+                    packagePayload = context.Channel.Allocator.Buffer(length, length);
+                    await packagePayload.WriteBytesAsync(customContentStream, length).ConfigureAwait(false);
+                }
             }
 
             int packetId = GetNextPacketId();
@@ -314,7 +321,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private async Task VerifyPublishPacketTopicAsync(IChannelHandlerContext context, string topicName, string jsonData)
         {
-            Match match = RegistrationStatusTopicRegex.Match(topicName);
+            Match match = s_registrationStatusTopicRegex.Match(topicName);
             if (match.Groups.Count >= 2)
             {
                 if (Enum.TryParse(match.Groups[1].Value, out HttpStatusCode statusCode))
@@ -392,9 +399,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        private Task PubAckAsync(IChannelHandlerContext context, int packetId)
+        private static Task PubAckAsync(IChannelHandlerContext context, int packetId)
         {
-            var message = new PubAckPacket()
+            var message = new PubAckPacket
             {
                 PacketId = packetId,
             };

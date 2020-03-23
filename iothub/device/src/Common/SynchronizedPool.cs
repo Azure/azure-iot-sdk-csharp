@@ -1,63 +1,61 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Security.Permissions;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Collections.Generic;
-#if !NETSTANDARD1_3
-    using System.Security.Permissions;
-#endif
-    using System.Threading;
-
     // A simple synchronized pool would simply lock a stack and push/pop on return/take.
     //
     // This implementation tries to reduce locking by exploiting the case where an item
-    // is taken and returned by the same thread, which turns out to be common in our 
-    // scenarios.  
+    // is taken and returned by the same thread, which turns out to be common in our
+    // scenarios.
     //
-    // Initially, all the quota is allocated to a global (non-thread-specific) pool, 
-    // which takes locks.  As different threads take and return values, we record their IDs, 
-    // and if we detect that a thread is taking and returning "enough" on the same thread, 
-    // then we decide to "promote" the thread.  When a thread is promoted, we decrease the 
-    // quota of the global pool by one, and allocate a thread-specific entry for the thread 
-    // to store it's value.  Once this entry is allocated, the thread can take and return 
-    // it's value from that entry without taking any locks.  Not only does this avoid 
+    // Initially, all the quota is allocated to a global (non-thread-specific) pool,
+    // which takes locks.  As different threads take and return values, we record their IDs,
+    // and if we detect that a thread is taking and returning "enough" on the same thread,
+    // then we decide to "promote" the thread.  When a thread is promoted, we decrease the
+    // quota of the global pool by one, and allocate a thread-specific entry for the thread
+    // to store it's value.  Once this entry is allocated, the thread can take and return
+    // it's value from that entry without taking any locks.  Not only does this avoid
     // locks, but it affinitizes pooled items to a particular thread.
     //
     // There are a couple of additional things worth noting:
-    // 
+    //
     // It is possible for a thread that we have reserved an entry for to exit.  This means
-    // we will still have a entry allocated for it, but the pooled item stored there 
-    // will never be used.  After a while, we could end up with a number of these, and 
+    // we will still have a entry allocated for it, but the pooled item stored there
+    // will never be used.  After a while, we could end up with a number of these, and
     // as a result we would begin to exhaust the quota of the overall pool.  To mitigate this
-    // case, we throw away the entire per-thread pool, and return all the quota back to 
-    // the global pool if we are unable to promote a thread (due to lack of space).  Then 
+    // case, we throw away the entire per-thread pool, and return all the quota back to
+    // the global pool if we are unable to promote a thread (due to lack of space).  Then
     // the set of active threads will be re-promoted as they take and return items.
-    // 
+    //
     // You may notice that the code does not immediately promote a thread, and does not
-    // immediately throw away the entire per-thread pool when it is unable to promote a 
-    // thread.  Instead, it uses counters (based on the number of calls to the pool) 
+    // immediately throw away the entire per-thread pool when it is unable to promote a
+    // thread.  Instead, it uses counters (based on the number of calls to the pool)
     // and a threshold to figure out when to do these operations.  In the case where the
-    // pool to misconfigured to have too few items for the workload, this avoids constant 
+    // pool to misconfigured to have too few items for the workload, this avoids constant
     // promoting and rebuilding of the per thread entries.
     //
     // You may also notice that we do not use interlocked methods when adjusting statistics.
-    // Since the statistics are a heuristic as to how often something is happening, they 
+    // Since the statistics are a heuristic as to how often something is happening, they
     // do not need to be perfect.
-    // 
+    //
     [Fx.Tag.SynchronizationObject(Blocking = false)]
-    class SynchronizedPool<T> where T : class
+    internal class SynchronizedPool<T> where T : class
     {
-        const int maxPendingEntries = 128;
-        const int maxPromotionFailures = 64;
-        const int maxReturnsBeforePromotion = 64;
-        const int maxThreadItemsPerProcessor = 16;
-        Entry[] entries;
-        GlobalPool globalPool;
-        int maxCount;
-        PendingEntry[] pending;
-        int promotionFailures;
+        private const int maxPendingEntries = 128;
+        private const int maxPromotionFailures = 64;
+        private const int maxReturnsBeforePromotion = 64;
+        private const int maxThreadItemsPerProcessor = 16;
+        private Entry[] entries;
+        private GlobalPool globalPool;
+        private int maxCount;
+        private PendingEntry[] pending;
+        private int promotionFailures;
 
         public SynchronizedPool(int maxCount)
         {
@@ -73,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
             this.globalPool = new GlobalPool(maxCount);
         }
 
-        object ThisLock
+        private object ThisLock
         {
             get
             {
@@ -93,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client
             globalPool.Clear();
         }
 
-        void HandlePromotionFailure(int thisThreadID)
+        private void HandlePromotionFailure(int thisThreadID)
         {
             int newPromotionFailures = this.promotionFailures + 1;
 
@@ -114,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        bool PromoteThread(int thisThreadID)
+        private bool PromoteThread(int thisThreadID)
         {
             lock (ThisLock)
             {
@@ -138,7 +136,7 @@ namespace Microsoft.Azure.Devices.Client
             return false;
         }
 
-        void RecordReturnToGlobalPool(int thisThreadID)
+        private void RecordReturnToGlobalPool(int thisThreadID)
         {
             PendingEntry[] localPending = this.pending;
 
@@ -172,7 +170,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        void RecordTakeFromGlobalPool(int thisThreadID)
+        private void RecordTakeFromGlobalPool(int thisThreadID)
         {
             PendingEntry[] localPending = this.pending;
 
@@ -211,9 +209,6 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool Return(T value)
         {
-#if NETSTANDARD1_3
-            throw new NotImplementedException();
-#else
             int thisThreadID = Thread.CurrentThread.ManagedThreadId;
 
             if (thisThreadID == 0)
@@ -227,10 +222,9 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return ReturnToGlobalPool(thisThreadID, value);
-#endif
         }
 
-        bool ReturnToPerThreadPool(int thisThreadID, T value)
+        private bool ReturnToPerThreadPool(int thisThreadID, T value)
         {
             Entry[] entriesReference = this.entries;
 
@@ -259,7 +253,7 @@ namespace Microsoft.Azure.Devices.Client
             return false;
         }
 
-        bool ReturnToGlobalPool(int thisThreadID, T value)
+        private bool ReturnToGlobalPool(int thisThreadID, T value)
         {
             RecordReturnToGlobalPool(thisThreadID);
 
@@ -268,9 +262,6 @@ namespace Microsoft.Azure.Devices.Client
 
         public T Take()
         {
-#if NETSTANDARD1_3
-            throw new NotImplementedException();
-#else
             int thisThreadID = Thread.CurrentThread.ManagedThreadId;
 
             if (thisThreadID == 0)
@@ -286,10 +277,9 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return TakeFromGlobalPool(thisThreadID);
-#endif
         }
 
-        T TakeFromPerThreadPool(int thisThreadID)
+        private T TakeFromPerThreadPool(int thisThreadID)
         {
             Entry[] entriesReference = this.entries;
 
@@ -320,26 +310,26 @@ namespace Microsoft.Azure.Devices.Client
             return null;
         }
 
-        T TakeFromGlobalPool(int thisThreadID)
+        private T TakeFromGlobalPool(int thisThreadID)
         {
             RecordTakeFromGlobalPool(thisThreadID);
 
             return globalPool.Take();
         }
 
-        struct Entry
+        private struct Entry
         {
             public int threadID;
             public T value;
         }
 
-        struct PendingEntry
+        private struct PendingEntry
         {
             public int returnCount;
             public int threadID;
         }
 
-        static class SynchronizedPoolHelper
+        private static class SynchronizedPoolHelper
         {
             public static readonly int ProcessorCount = GetProcessorCount();
 
@@ -347,18 +337,18 @@ namespace Microsoft.Azure.Devices.Client
 #if NET451
             [EnvironmentPermission(SecurityAction.Assert, Read = "NUMBER_OF_PROCESSORS")]
 #endif
-            static int GetProcessorCount()
+            private static int GetProcessorCount()
             {
                 return Environment.ProcessorCount;
             }
         }
 
         [Fx.Tag.SynchronizationObject(Blocking = false)]
-        class GlobalPool
+        private class GlobalPool
         {
-            Stack<T> items;
+            private Stack<T> items;
 
-            int maxCount;
+            private int maxCount;
 
             public GlobalPool(int maxCount)
             {
@@ -385,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            object ThisLock
+            private object ThisLock
             {
                 get
                 {

@@ -1,54 +1,33 @@
-﻿
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
+using System.IO;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.IO;
-    using System.Threading;
-#if NETMF
-    using System.Collections;
-#else
-    using Microsoft.Azure.Devices.Client.Common.Api;
-    using System.Collections.Generic;
-#endif
-
-    using DateTimeT = System.DateTime;
-
     /// <summary>
     /// The data structure represent the method request coming from the IotHub.
     /// </summary>
     public sealed class MethodRequestInternal : IDisposable
     {
-        readonly object messageLock = new object();
-#if NETMF
-        Stream bodyStream;
-#else
-        volatile Stream bodyStream;
-#endif
-        bool disposed;
-        bool ownsBodyStream;
-        int getBodyCalled;
-#if NETMF
-        int sizeInBytesCalled;
-#else
-        long sizeInBytesCalled;
-#endif
+        private volatile Stream _bodyStream;
+        private bool _disposed;
+        private bool _ownsBodyStream;
+        private int _getBodyCalled;
+        private long _sizeInBytesCalled;
 
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
         internal MethodRequestInternal(CancellationToken cancellationToken)
         {
-#if !NETMF
-            this.InitializeWithStream(Stream.Null, true);
-#endif
-            this.CancellationToken = cancellationToken;
+            InitializeWithStream(Stream.Null, true);
+            CancellationToken = cancellationToken;
         }
 
-#if !NETMF
         /// <summary>
-        /// This constructor is only used in the receive path from Amqp path, 
+        /// This constructor is only used in the receive path from Amqp path,
         /// or in Cloning from a Message that has serialized.
         /// </summary>
 
@@ -58,46 +37,29 @@ namespace Microsoft.Azure.Devices.Client
             Name = name;
             RequestId = requestId;
             Stream stream = bodyStream;
-            this.InitializeWithStream(stream, false);
+            InitializeWithStream(stream, false);
         }
-#endif
 
-        internal CancellationToken CancellationToken
-        {
-            get;
-            private set;
-        }
-        
+        internal CancellationToken CancellationToken { get; private set; }
+
         /// <summary>
         /// Property indicating the method name for this instance
         /// </summary>
-        internal string Name
-        {
-            get; private set;
-        }
+        internal string Name { get; private set; }
 
         /// <summary>
         /// the request ID for the transport layer
         /// </summary>
-        internal string RequestId
-        {
-            get; private set;
-        }
+        internal string RequestId { get; private set; }
 
-        internal Stream BodyStream
-        {
-            get
-            {
-                return this.bodyStream;
-            }
-        }
+        internal Stream BodyStream => _bodyStream;
 
         /// <summary>
         /// Dispose the current method data instance
         /// </summary>
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
         }
 
         /// <summary>
@@ -109,18 +71,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>This method can only be called once and afterwards method will throw <see cref="InvalidOperationException"/>.</remarks>
         internal Stream GetBodyStream()
         {
-            this.ThrowIfDisposed();
-            this.SetGetBodyCalled();
-            if (this.bodyStream != null)
+            ThrowIfDisposed();
+            SetGetBodyCalled();
+            if (_bodyStream != null)
             {
-                return this.bodyStream;
+                return _bodyStream;
             }
 
-#if NETMF
-            return null;
-#else
             return Stream.Null;
-#endif
         }
 
         /// <summary>
@@ -131,117 +89,96 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ObjectDisposedException">throws if the method data has already been disposed.</exception>
         internal byte[] GetBytes()
         {
-            this.ThrowIfDisposed();
-            this.SetGetBodyCalled();
-            if (this.bodyStream == null)
+            ThrowIfDisposed();
+            SetGetBodyCalled();
+            if (_bodyStream == null)
             {
-                return new byte[] { };
+#if NET451
+                return new byte[0];
+#else
+                return Array.Empty<byte>();
+#endif
             }
 
             // This is just fail safe code in case we are not using the Amqp protocol.
-            return ReadFullStream(this.bodyStream);
+            return ReadFullStream(_bodyStream);
         }
 
         // Test hook only
         internal void ResetGetBodyCalled()
         {
-            Interlocked.Exchange(ref this.getBodyCalled, 0);
-            if (this.bodyStream != null && this.bodyStream.CanSeek)
+            Interlocked.Exchange(ref _getBodyCalled, 0);
+            if (_bodyStream != null && _bodyStream.CanSeek)
             {
-                this.bodyStream.Seek(0, SeekOrigin.Begin);
+                _bodyStream.Seek(0, SeekOrigin.Begin);
             }
         }
 
         internal bool TryResetBody(long position)
         {
-            if (this.bodyStream != null && this.bodyStream.CanSeek)
+            if (_bodyStream != null && _bodyStream.CanSeek)
             {
-                this.bodyStream.Seek(position, SeekOrigin.Begin);
-                Interlocked.Exchange(ref this.getBodyCalled, 0);
+                _bodyStream.Seek(position, SeekOrigin.Begin);
+                Interlocked.Exchange(ref _getBodyCalled, 0);
                 return true;
             }
             return false;
         }
 
-#if NETMF
-        internal bool IsBodyCalled
-        {
-            // A safe comparison for one that will never actually perform an exchange (maybe not necessary?)
-            get { return Interlocked.CompareExchange(ref this.getBodyCalled, 9999, 9999) == 1; }
-        }
-#else
-        internal bool IsBodyCalled => Volatile.Read(ref this.getBodyCalled) == 1;
-#endif
+        internal bool IsBodyCalled => Volatile.Read(ref _getBodyCalled) == 1;
 
-        void SetGetBodyCalled()
+        private void SetGetBodyCalled()
         {
-            if (1 == Interlocked.Exchange(ref this.getBodyCalled, 1))
+            if (1 == Interlocked.Exchange(ref _getBodyCalled, 1))
             {
-#if NETMF
-                throw new InvalidOperationException("The message body cannot be read multiple times. To reuse it store the value after reading.");
-#else
                 throw Fx.Exception.AsError(new InvalidOperationException(Common.Api.ApiResources.MessageBodyConsumed));
-#endif
             }
         }
 
-        void SetSizeInBytesCalled()
+        private void SetSizeInBytesCalled()
         {
-            Interlocked.Exchange(ref this.sizeInBytesCalled, 1);
+            Interlocked.Exchange(ref _sizeInBytesCalled, 1);
         }
 
-        void InitializeWithStream(Stream stream, bool ownsStream)
+        private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
-            this.bodyStream = stream;
-            this.ownsBodyStream = ownsStream;
+            _bodyStream = stream;
+            _ownsBodyStream = ownsStream;
         }
 
-        static byte[] ReadFullStream(Stream inputStream)
+        private static byte[] ReadFullStream(Stream inputStream)
         {
-#if NETMF
-            inputStream.Position = 0;
-            byte[] buffer = new byte[inputStream.Length];
-
-            inputStream.Read(buffer, 0, (int)inputStream.Length);
-
-            return buffer;
-#else
             using (var ms = new MemoryStream())
             {
                 inputStream.CopyTo(ms);
                 return ms.ToArray();
             }
-#endif
         }
 
-        void ThrowIfDisposed()
+        private void ThrowIfDisposed()
         {
-            if (this.disposed)
+            if (_disposed)
             {
-#if NETMF
-                throw new Exception("Message disposed");
-#else
                 throw Fx.Exception.ObjectDisposed(Common.Api.ApiResources.MessageDisposed);
-#endif
             }
         }
 
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
-            if (!this.disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    if (this.bodyStream != null && this.ownsBodyStream)
+                    if (_bodyStream != null && _ownsBodyStream)
                     {
-                        this.bodyStream.Dispose();
-                        this.bodyStream = null;
+                        _bodyStream.Dispose();
+                        _bodyStream = null;
                     }
                 }
 
-                this.disposed = true;
+                _disposed = true;
             }
         }
     }

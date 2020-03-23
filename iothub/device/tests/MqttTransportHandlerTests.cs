@@ -1,47 +1,44 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using DotNetty.Codecs.Mqtt.Packets;
+using DotNetty.Transport.Channels;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using NSubstitute;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
-    using System.Diagnostics;
-    using System.Net.Sockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-    using Microsoft.Azure.Devices.Shared;
-    using System.Net;
-    using DotNetty.Transport.Channels;
-    using NSubstitute;
-    using DotNetty.Codecs.Mqtt.Packets;
-    using Newtonsoft.Json;
-    using System.IO;
-    using System.Linq;
-    using Exceptions;
-    using Client.Transport;
-    using DotNetty.Common.Concurrency;
-    using Microsoft.Azure.Devices.Client.Test.ConnectionString;
-    using System.Collections.Generic;
-
     [TestClass]
     [TestCategory("Unit")]
     public class MqttTransportHandlerTests
     {
-        const string DummyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
-        const string DummyModuleConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;ModuleId=FakeModule;SharedAccessKey=dGVzdFN0cmluZzE=";
-        const string fakeMethodResponseBody = "{ \"foo\" : \"bar\" }";
-        const string methodPostTopicFilter = "$iothub/methods/POST/#";
-        const string twinPatchDesiredTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
-        const string twinPatchReportedTopicPrefix = "$iothub/twin/PATCH/properties/reported/";
-        const string twinGetTopicPrefix = "$iothub/twin/GET/?$rid=";
-        const int statusSuccess = 200;
-        const int statusFailure = 400;
-        const string fakeResponseId = "fakeResponseId";
-        const string deviceStreamingPostTopicFilter = "$iothub/streams/POST/#";
-        const string deviceStreamingPostTopicPrefix = "$iothub/streams/POST/";
-        const string deviceStreamingResponseTopicFilter = "$iothub/streams/res/#";
+        private const string DummyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private const string DummyModuleConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;ModuleId=FakeModule;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private const string fakeMethodResponseBody = "{ \"foo\" : \"bar\" }";
+        private const string methodPostTopicFilter = "$iothub/methods/POST/#";
+        private const string twinPatchDesiredTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
+        private const string twinPatchReportedTopicPrefix = "$iothub/twin/PATCH/properties/reported/";
+        private const string twinGetTopicPrefix = "$iothub/twin/GET/?$rid=";
+        private const int statusSuccess = 200;
+        private const int statusFailure = 400;
+        private const string fakeResponseId = "fakeResponseId";
+        private const string deviceStreamingPostTopicFilter = "$iothub/streams/POST/#";
+        private const string deviceStreamingPostTopicPrefix = "$iothub/streams/POST/";
+        private const string deviceStreamingResponseTopicFilter = "$iothub/streams/res/#";
 
         [TestMethod]
         public async Task MqttTransportHandlerOpenAsyncTokenCancellationRequested()
@@ -103,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTwinPatchAsync(new TwinCollection(), token)).ConfigureAwait(false);
         }
 
-        MqttTransportHandler CreateFromConnectionString()
+        private MqttTransportHandler CreateFromConnectionString()
         {
             return new MqttTransportHandler(
                 new PipelineContext(),
@@ -111,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
         }
 
-        async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
@@ -124,13 +121,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             catch (OperationCanceledException) { }
         }
 
-        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, string connectionString = DummyConnectionString)
+        private MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, string connectionString = DummyConnectionString)
         {
             var _channel = Substitute.For<IChannel>();
             channel = _channel;
             MqttTransportHandler transport = null;
 
-            // The channel factory creates the channel.  This gets called from inside OpenAsync.  
+            // The channel factory creates the channel.  This gets called from inside OpenAsync.
             // Unfortunately, it needs access to the internals of the transport (like being able to call OnConnceted, which is passed into the Mqtt channel constructor, but we're not using that)
             Func<IPAddress[], int, Task<IChannel>> factory = (a, i) =>
             {
@@ -142,6 +139,26 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return transport;
         }
 
+        private MqttTransportHandler CreateTransportHandlerWithRealChannel(out IChannel channel, string connectionString = DummyConnectionString)
+        {
+            var _channel = Substitute.For<IChannel>();
+            channel = _channel;
+            return new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(IotHubCommunicationException))]
+        public async Task MqttTransportHandler_OpenAsync_OpenHandlesConnectExceptionAndThrowsWhenChannelIsNotInitialized()
+        {
+            // arrange
+            IChannel channel;
+            var transport = CreateTransportHandlerWithRealChannel(out channel);
+
+            //act
+            //Open will attempt to connect to localhost, and get a connect exception. Expected behavior is for this exception to be ignored.
+            //However, later in the open call, the lack of an opened channel should throw an IotHubCommunicationException.
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+        }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
         [TestMethod]
@@ -160,7 +177,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Received()
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals("$iothub/twin/res/#"))).ConfigureAwait(false);
         }
-
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_001: `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_032: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
@@ -182,7 +198,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Received()
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter))).ConfigureAwait(false);
         }
-
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_003: `EnableMethodsAsync` shall return failure if the subscription request fails.
         [TestMethod]
@@ -234,7 +249,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter)))
                 .Returns(x => { throw new TimeoutException(); });
 
-
             // act & assert
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -263,7 +277,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Received()
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(expectedTopicFilter))).ConfigureAwait(false);
         }
-
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_023: `EnableMethodsAsync` shall return failure if the subscription request fails.
         [TestMethod]
@@ -319,11 +332,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             transport.OnConnected();
-            await transport.OpenAsync( CancellationToken.None).ConfigureAwait(false);
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.DisableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
-        delegate bool MessageMatcher(Message msg);
+        private delegate bool MessageMatcher(Message msg);
+
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_005: `SendMethodResponseAsync` shall allocate a `Message` object containing the method response.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_006: `SendMethodResponseAsync` shall set the message topic to '$iothub/methods/res/<STATUS>/?$rid=<REQUEST_ID>' where STATUS is the return status for the method and REQUEST_ID is the request ID received from the service in the original method call.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_007: `SendMethodResponseAsync` shall set the message body to the response payload of the `Method` object.
@@ -350,7 +364,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     string body = reader.ReadToEnd();
 
                     return (fakeMethodResponseBody.Equals(body) &&
-                        msg.MqttTopicName.Equals("$iothub/methods/res/"+statusSuccess+"/?$rid="+fakeResponseId));
+                        msg.MqttTopicName.Equals("$iothub/methods/res/" + statusSuccess + "/?$rid=" + fakeResponseId));
                 }
             };
             await channel
@@ -378,7 +392,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Received()
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(twinPatchDesiredTopicFilter))).ConfigureAwait(false);
         }
-        
+
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
         [TestMethod]
         [ExpectedException(typeof(TimeoutException))]
@@ -397,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await transport.EnableTwinPatchAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
-        string getResponseTopic(string requestTopic, int status)
+        private string getResponseTopic(string requestTopic, int status)
         {
             var index = requestTopic.IndexOf("=");
             var rid = requestTopic.Remove(0, index + 1);
@@ -411,7 +425,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_017: `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_018: When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_034: `SendTwinGetAsync` shall shall open the transport  if this method is called when the transport is not open.
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_021: If the response contains a success code, `SendTwinGetAsync` shall return success to the caller 
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_021: If the response contains a success code, `SendTwinGetAsync` shall return success to the caller
         [TestMethod]
         public async Task MqttTransportHandlerSendTwinGetAsyncHappyPath()
         {
@@ -539,10 +553,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
-
         }
 
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_029: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error. 
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_029: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.
         [TestMethod]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerSendTwinPatchAsyncTimesOut()
@@ -571,7 +584,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             Task task = transport.WaitForTransportClosedAsync();
 
             // act
-            transport.OnError(new ApplicationException("Testing"));
+            transport.OnError(new Exception("Testing"));
 
             // assert
             await task.ConfigureAwait(false);
@@ -579,7 +592,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, WaitForTransportClosedAsync shall be invoked.
         [TestMethod]
-        [ExpectedException(typeof(IotHubCommunicationException))]
+        [ExpectedException(typeof(OperationCanceledException))]
         public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerReceiving()
         {
             // arrange
@@ -592,7 +605,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             Task task = transport.WaitForTransportClosedAsync();
 
             // act
-            transport.OnError(new ApplicationException("Testing"));
+            transport.OnError(new Exception("Testing"));
 
             // assert
             await task.ConfigureAwait(false);
@@ -609,7 +622,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = CreateTransportHandlerWithMockChannel(out channel);
 
             // act
-            transport.OnError(new ApplicationException("Testing"));
+            transport.OnError(new Exception("Testing"));
 
             // assert
             Task t = transport.WaitForTransportClosedAsync();
@@ -638,9 +651,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             Assert.IsNotNull(result);
             Assert.AreEqual(3, result.Count);
-            Assert.AreEqual(propValue0 , result[propKey0]);
-            Assert.AreEqual(propValue1 , result[propKey1]);
-            Assert.AreEqual(propValue2 , result[propKey2]);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
         }
 
         [TestMethod]
@@ -750,8 +763,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         #region Device Streaming
-        const string fakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
-        const string fakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
+
+        private const string fakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
+        private const string fakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
 
         [TestMethod]
         public async Task MqttTransportHandlerEnableStreamsAsyncSuccessfully()
@@ -847,7 +861,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             transport.OnConnected();
 
-            transport.OnMessageReceived(new Message() {
+            transport.OnMessageReceived(new Message()
+            {
                 MqttTopicName = $"{deviceStreamingPostTopicPrefix}{streamName}/$rid={requestId}&$url={escapedUrl}&$auth={fakeDeviceStreamAuthToken}"
             });
 
@@ -887,6 +902,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             Assert.AreEqual(transport.State, TransportState.Error);
         }
+
         #endregion Device Streaming
     }
 }

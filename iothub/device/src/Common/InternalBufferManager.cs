@@ -1,21 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
+using System.Threading;
+using System.Runtime.InteropServices;
+using System.Collections.Concurrent;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Runtime.InteropServices;
-    using System.Collections.Concurrent;
-
-    abstract class InternalBufferManager
+    internal abstract class InternalBufferManager
     {
         protected InternalBufferManager()
         {
         }
 
         public abstract byte[] TakeBuffer(int bufferSize);
+
         public abstract void ReturnBuffer(byte[] buffer);
+
         public abstract void Clear();
 
         public static InternalBufferManager Create(long maxBufferPoolSize, int maxBufferSize, bool isTransportBufferPool)
@@ -40,23 +42,23 @@ namespace Microsoft.Azure.Devices.Client
 
         public static byte[] AllocateByteArray(int size)
         {
-            // This will be inlined in retail bits but provides a 
-            // common entry point for debugging all buffer allocations 
-            // and can be instrumented if necessary. 
+            // This will be inlined in retail bits but provides a
+            // common entry point for debugging all buffer allocations
+            // and can be instrumented if necessary.
             return new byte[size];
         }
 
-        class PreallocatedBufferManager : InternalBufferManager
+        private class PreallocatedBufferManager : InternalBufferManager
         {
-            int maxBufferSize;
-            int medBufferSize;
-            int smallBufferSize;
+            private int maxBufferSize;
+            private int medBufferSize;
+            private int smallBufferSize;
 
-            byte[][] buffersList;
-            GCHandle[] handles;
-            ConcurrentStack<byte[]> freeSmallBuffers;
-            ConcurrentStack<byte[]> freeMedianBuffers;
-            ConcurrentStack<byte[]> freeLargeBuffers;
+            private byte[][] buffersList;
+            private GCHandle[] handles;
+            private ConcurrentStack<byte[]> freeSmallBuffers;
+            private ConcurrentStack<byte[]> freeMedianBuffers;
+            private ConcurrentStack<byte[]> freeLargeBuffers;
 
             internal PreallocatedBufferManager(long maxMemoryToPool, int maxBufferSize)
             {
@@ -145,7 +147,6 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.freeLargeBuffers.Push(buffer);
                 }
-
             }
 
             public override void Clear()
@@ -162,18 +163,18 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        class PooledBufferManager : InternalBufferManager
+        private class PooledBufferManager : InternalBufferManager
         {
-            const int minBufferSize = 128;
-            const int maxMissesBeforeTuning = 8;
-            const int initialBufferCount = 1;
-            readonly object tuningLock;
+            private const int minBufferSize = 128;
+            private const int maxMissesBeforeTuning = 8;
+            private const int initialBufferCount = 1;
+            private readonly object tuningLock;
 
-            int[] bufferSizes;
-            BufferPool[] bufferPools;
-            long remainingMemory;
-            bool areQuotasBeingTuned;
-            int totalMisses;
+            private int[] bufferSizes;
+            private BufferPool[] bufferPools;
+            private long remainingMemory;
+            private bool areQuotasBeingTuned;
+            private int totalMisses;
 
             public PooledBufferManager(long maxMemoryToPool, int maxBufferSize)
             {
@@ -181,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client
                 this.remainingMemory = maxMemoryToPool;
                 List<BufferPool> bufferPoolList = new List<BufferPool>();
 
-                for (int bufferSize = minBufferSize; ; )
+                for (int bufferSize = minBufferSize; ;)
                 {
                     long bufferCountLong = this.remainingMemory / bufferSize;
 
@@ -230,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            void ChangeQuota(ref BufferPool bufferPool, int delta)
+            private void ChangeQuota(ref BufferPool bufferPool, int delta)
             {
                 BufferPool oldBufferPool = bufferPool;
                 int newLimit = oldBufferPool.Limit + delta;
@@ -249,12 +250,12 @@ namespace Microsoft.Azure.Devices.Client
                 bufferPool = newBufferPool;
             }
 
-            void DecreaseQuota(ref BufferPool bufferPool)
+            private void DecreaseQuota(ref BufferPool bufferPool)
             {
                 ChangeQuota(ref bufferPool, -1);
             }
 
-            int FindMostExcessivePool()
+            private int FindMostExcessivePool()
             {
                 long maxBytesInExcess = 0;
                 int index = -1;
@@ -278,7 +279,7 @@ namespace Microsoft.Azure.Devices.Client
                 return index;
             }
 
-            int FindMostStarvedPool()
+            private int FindMostStarvedPool()
             {
                 long maxBytesMissed = 0;
                 int index = -1;
@@ -302,7 +303,7 @@ namespace Microsoft.Azure.Devices.Client
                 return index;
             }
 
-            BufferPool FindPool(int desiredBufferSize)
+            private BufferPool FindPool(int desiredBufferSize)
             {
                 for (int i = 0; i < this.bufferSizes.Length; i++)
                 {
@@ -315,7 +316,7 @@ namespace Microsoft.Azure.Devices.Client
                 return null;
             }
 
-            void IncreaseQuota(ref BufferPool bufferPool)
+            private void IncreaseQuota(ref BufferPool bufferPool)
             {
                 ChangeQuota(ref bufferPool, 1);
             }
@@ -368,7 +369,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            void TuneQuotas()
+            private void TuneQuotas()
             {
                 if (this.areQuotasBeingTuned)
                 {
@@ -431,13 +432,13 @@ namespace Microsoft.Azure.Devices.Client
                 this.areQuotasBeingTuned = false;
             }
 
-            abstract class BufferPool
+            private abstract class BufferPool
             {
-                int bufferSize;
-                int count;
-                int limit;
-                int misses;
-                int peak;
+                private int bufferSize;
+                private int count;
+                private int limit;
+                private int misses;
+                private int peak;
 
                 public BufferPool(int bufferSize, int limit)
                 {
@@ -495,13 +496,15 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 internal abstract byte[] Take();
+
                 internal abstract bool Return(byte[] buffer);
+
                 internal abstract void OnClear();
 
                 internal static BufferPool CreatePool(int bufferSize, int limit)
                 {
                     // To avoid many buffer drops during training of large objects which
-                    // get allocated on the LOH, we use the LargeBufferPool and for 
+                    // get allocated on the LOH, we use the LargeBufferPool and for
                     // bufferSize < 85000, the SynchronizedPool. There is a 12 or 24(x64)
                     // byte overhead for an array so we use 85000-24=84976 as the limit
                     if (bufferSize < 84976)
@@ -514,9 +517,9 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
 
-                class SynchronizedBufferPool : BufferPool
+                private class SynchronizedBufferPool : BufferPool
                 {
-                    SynchronizedPool<byte[]> innerPool;
+                    private SynchronizedPool<byte[]> innerPool;
 
                     internal SynchronizedBufferPool(int bufferSize, int limit)
                         : base(bufferSize, limit)
@@ -540,9 +543,9 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
 
-                class LargeBufferPool : BufferPool
+                private class LargeBufferPool : BufferPool
                 {
-                    Stack<byte[]> items;
+                    private Stack<byte[]> items;
 
                     internal LargeBufferPool(int bufferSize, int limit)
                         : base(bufferSize, limit)
@@ -550,7 +553,7 @@ namespace Microsoft.Azure.Devices.Client
                         this.items = new Stack<byte[]>(limit);
                     }
 
-                    object ThisLock
+                    private object ThisLock
                     {
                         get
                         {
@@ -596,11 +599,11 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        class GCBufferManager : InternalBufferManager
+        private class GCBufferManager : InternalBufferManager
         {
-            static GCBufferManager value = new GCBufferManager();
+            private static GCBufferManager value = new GCBufferManager();
 
-            GCBufferManager()
+            private GCBufferManager()
             {
             }
 

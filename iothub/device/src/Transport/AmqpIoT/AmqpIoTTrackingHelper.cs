@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal static class AmqpIoTTrackingHelper
     {
         // TODO: GatewayId is not assigned to anywhere in this class. Likely a bug!
-        static string GatewayId = string.Empty;
+        private static string GatewayId = string.Empty;
 
         public static string GenerateTrackingId()
         {
@@ -31,7 +31,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             trackingId = Guid.NewGuid().ToString("N");
             if (!string.IsNullOrEmpty(gatewayId))
             {
-
                 gatewayId = "0";
                 trackingId = "{0}-G:{1}".FormatInvariant(trackingId, gatewayId);
             }
@@ -61,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return exception.GenerateTrackingId(AmqpIoTTrackingHelper.GatewayId, backendId, partitionId);
         }
 
-        public static string GenerateTrackingId(this AmqpException exception,string gatewayId, string backendId, string partitionId)
+        public static string GenerateTrackingId(this AmqpException exception, string gatewayId, string backendId, string partitionId)
         {
             if (exception.Error.Info == null)
             {
@@ -76,10 +75,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             return trackingId;
         }
-        
+
         public static string CheckAndAddGatewayIdToTrackingId(string gatewayId, string trackingId)
         {
-
             if (!string.IsNullOrEmpty(trackingId) && trackingId.Contains("-B:"))
             {
                 return "{0}-G:{1}{2}".FormatInvariant(trackingId.Substring(0, trackingId.IndexOf("-B:")), gatewayId, trackingId.Substring(trackingId.IndexOf("-B:") + 3));
@@ -104,10 +102,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public static string GetGatewayId(this AmqpLink link)
         {
             string gatewayId = null;
-            if(link.Settings.LinkName.Contains("_G:"))
+            if (link.Settings.LinkName.Contains("_G:"))
             {
                 gatewayId = link.Settings.LinkName.Substring(link.Settings.LinkName.IndexOf("_G:") + 3);
-            } 
+            }
             return gatewayId;
         }
     }

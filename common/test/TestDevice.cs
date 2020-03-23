@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -26,7 +28,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class TestDevice : IDisposable
     {
         private const int DelayAfterDeviceCreationSeconds = 0;
-        private static Dictionary<string, TestDevice> s_deviceCache = new Dictionary<string, TestDevice>();
         private static TestLogging s_log = TestLogging.GetInstance();
         private static SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
@@ -51,12 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 await s_semaphore.WaitAsync().ConfigureAwait(false);
-                if (!s_deviceCache.TryGetValue(prefix, out TestDevice testDevice))
-                {
-                    await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
-                }
-
-                TestDevice ret = s_deviceCache[prefix];
+                TestDevice ret = await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
 
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
                 return ret;
@@ -67,44 +63,24 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static async Task<TestDevice> CreateTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
-        {
-            string prefix = namePrefix + type + "_" + Guid.NewGuid();
-
-            try
-            {
-                await s_semaphore.WaitAsync().ConfigureAwait(false);
-                
-                await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
-                TestDevice ret = s_deviceCache[prefix];
-
-                s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
-                return ret;
-            }
-            finally
-            {
-                s_semaphore.Release();
-            }
-        }
-
-        private static async Task CreateDeviceAsync(TestDeviceType type, string prefix)
+        private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
         {
             string deviceName = prefix + Guid.NewGuid();
             s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found.");
 
             // Delete existing devices named this way and create a new one.
-            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using (var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
                 Client.IAuthenticationMethod auth = null;
 
-                Device requestDevice = new Device(deviceName);
+                var requestDevice = new Device(deviceName);
                 if (type == TestDeviceType.X509)
                 {
-                    requestDevice.Authentication = new AuthenticationMechanism()
+                    requestDevice.Authentication = new AuthenticationMechanism
                     {
-                        X509Thumbprint = new X509Thumbprint()
+                        X509Thumbprint = new X509Thumbprint
                         {
                             PrimaryThumbprint = Configuration.IoTHub.GetCertificateWithPrivateKey().Thumbprint
                         }
@@ -118,9 +94,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Pausing for {DelayAfterDeviceCreationSeconds}s after device was created.");
                 await Task.Delay(DelayAfterDeviceCreationSeconds * 1000).ConfigureAwait(false);
 
-                s_deviceCache[prefix] = new TestDevice(device, auth);
-
                 await rm.CloseAsync().ConfigureAwait(false);
+
+                return new TestDevice(device, auth);
             }
         }
 
@@ -229,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private static string GetHostName(string iotHubConnectionString)
+        public static string GetHostName(string iotHubConnectionString)
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;

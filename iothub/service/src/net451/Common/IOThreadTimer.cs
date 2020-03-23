@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.ComponentModel;
+using System.Security;
+using System.Threading;
+using Microsoft.Win32.SafeHandles;
+using Microsoft.Azure.Devices.Common.Interop;
+
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-    using System.ComponentModel;
-    using System.Security;
-    using System.Threading;
-    
-    using Microsoft.Win32.SafeHandles;
-    using Microsoft.Azure.Devices.Common.Interop;
-
     // IOThreadTimer has several characterstics that are important for performance:
     // - Timers that expire benefit from being scheduled to run on IO threads using IOThreadScheduler.Schedule.
     // - The timer "waiter" thread thread is only allocated if there are set timers.
@@ -20,66 +19,62 @@ namespace Microsoft.Azure.Devices.Common
     //   of time to wait for additional timers to be set.
     // - Timers are stored in an array-based priority queue to reduce the amount of time spent in updates, and
     //   to always provide O(1) access to the minimum timer (the first one that will expire).
-    // - The standard textbook priority queue data structure is extended to allow efficient Delete in addition to 
+    // - The standard textbook priority queue data structure is extended to allow efficient Delete in addition to
     //   DeleteMin for efficient handling of canceled timers.
-    // - Timers that are typically set, then immediately canceled (such as a retry timer, 
-    //   or a flush timer), are tracked separately from more stable timers, to avoid having 
-    //   to update the waitable timer in the typical case when a timer is canceled.  Whether 
+    // - Timers that are typically set, then immediately canceled (such as a retry timer,
+    //   or a flush timer), are tracked separately from more stable timers, to avoid having
+    //   to update the waitable timer in the typical case when a timer is canceled.  Whether
     //   a timer instance follows this pattern is specified when the timer is constructed.
     // - Extending a timer by a configurable time delta (maxSkew) does not involve updating the
     //   waitable timer, or taking a lock.
-    // - Timer instances are relatively cheap.  They share "heavy" resources like the waiter thread and 
+    // - Timer instances are relatively cheap.  They share "heavy" resources like the waiter thread and
     //   waitable timer handle.
     // - Setting or canceling a timer does not typically involve any allocations.
 
-    class IOThreadTimer
+    internal class IOThreadTimer
     {
-        const int maxSkewInMillisecondsDefault = 100;
-        static long systemTimeResolutionTicks = -1;
-        Action<object> callback;
-        object callbackState;
-        long dueTime;
-
-        int index;
-        long maxSkew;
-        TimerGroup timerGroup;
+        private const int MaxSkewInMillisecondsDefault = 100;
+        private static long s_systemTimeResolutionTicks = -1;
+        private readonly Action<object> _callback;
+        private readonly object _callbackState;
+        private long _dueTime;
+        private int _index;
+        private readonly long _maxSkew;
+        private readonly TimerGroup _timerGroup;
 
         public IOThreadTimer(Action<object> callback, object callbackState, bool isTypicallyCanceledShortlyAfterBeingSet)
-            : this(callback, callbackState, isTypicallyCanceledShortlyAfterBeingSet, maxSkewInMillisecondsDefault)
+            : this(callback, callbackState, isTypicallyCanceledShortlyAfterBeingSet, MaxSkewInMillisecondsDefault)
         {
         }
 
         public IOThreadTimer(Action<object> callback, object callbackState, bool isTypicallyCanceledShortlyAfterBeingSet, int maxSkewInMilliseconds)
         {
-            this.callback = callback;
-            this.callbackState = callbackState;
-            this.maxSkew = Ticks.FromMilliseconds(maxSkewInMilliseconds);
-            this.timerGroup =
-                (isTypicallyCanceledShortlyAfterBeingSet ? TimerManager.Value.VolatileTimerGroup : TimerManager.Value.StableTimerGroup);
+            _callback = callback;
+            _callbackState = callbackState;
+            _maxSkew = Ticks.FromMilliseconds(maxSkewInMilliseconds);
+            _timerGroup = isTypicallyCanceledShortlyAfterBeingSet
+                ? TimerManager.Value.VolatileTimerGroup
+                : TimerManager.Value.StableTimerGroup;
         }
 
         public static long SystemTimeResolutionTicks
         {
             get
             {
-                if (IOThreadTimer.systemTimeResolutionTicks == -1)
+                if (s_systemTimeResolutionTicks == -1)
                 {
-                    IOThreadTimer.systemTimeResolutionTicks = GetSystemTimeResolution();
+                    s_systemTimeResolutionTicks = GetSystemTimeResolution();
                 }
-                return IOThreadTimer.systemTimeResolutionTicks;
+                return s_systemTimeResolutionTicks;
             }
         }
 
         [Fx.Tag.SecurityNote(Critical = "Calls critical method GetSystemTimeAdjustment", Safe = "method is a SafeNativeMethod")]
-        static long GetSystemTimeResolution()
+        private static long GetSystemTimeResolution()
         {
-            int dummyAdjustment;
-            uint increment;
-            uint dummyAdjustmentDisabled;
-
-            if (UnsafeNativeMethods.GetSystemTimeAdjustment(out dummyAdjustment, out increment, out dummyAdjustmentDisabled) != 0)
+            if (UnsafeNativeMethods.GetSystemTimeAdjustment(out _, out uint increment, out _) != 0)
             {
-                return (long)increment;
+                return increment;
             }
 
             // Assume the default, which is around 15 milliseconds.
@@ -95,7 +90,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (TimeSpan.Zero < timeFromNow && timeFromNow < TimeSpan.MaxValue)
             {
-                this.Set(timeFromNow);
+                Set(timeFromNow);
             }
         }
 
@@ -103,7 +98,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (timeFromNow == TimeSpan.MaxValue)
             {
-                throw Fx.Exception.Argument("timeFromNow", CommonResources.IOThreadTimerCannotAcceptMaxTimeSpan);
+                throw Fx.Exception.Argument(nameof(timeFromNow), Resources.IOThreadTimerCannotAcceptMaxTimeSpan);
             }
 
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromTimeSpan(timeFromNow)));
@@ -121,80 +116,54 @@ namespace Microsoft.Azure.Devices.Common
                 throw Fx.Exception.ArgumentOutOfRange(
                     "newDueTime",
                     newDueTimeInTicks,
-                    CommonResources.GetString(CommonResources.ArgumentOutOfRange, 0, TimeSpan.MaxValue.Ticks - 1));
+                    CommonResources.GetString(Resources.ArgumentOutOfRange, 0, TimeSpan.MaxValue.Ticks - 1));
             }
 
             TimerManager.Value.Set(this, newDueTimeInTicks);
         }
 
         [Fx.Tag.SynchronizationObject(Blocking = false, Scope = Fx.Tag.Strings.AppDomain)]
-        class TimerManager : IDisposable
+        private class TimerManager : IDisposable
         {
-            const long maxTimeToWaitForMoreTimers = 1000 * TimeSpan.TicksPerMillisecond;
+            private const long MaxTimeToWaitForMoreTimers = 1000 * TimeSpan.TicksPerMillisecond;
+            private bool _waitScheduled;
+            private readonly Action<object> _onWaitCallback;
 
             [Fx.Tag.Queue(typeof(IOThreadTimer), Scope = Fx.Tag.Strings.AppDomain, StaleElementsRemovedImmediately = true)]
-            static TimerManager value = new TimerManager();
+            static readonly TimerManager s_value = new TimerManager();
 
-            Action<object> onWaitCallback;
-            TimerGroup stableTimerGroup;
-            TimerGroup volatileTimerGroup;
             [Fx.Tag.SynchronizationObject(Blocking = false)]
-            WaitableTimer[] waitableTimers;
-
-            bool waitScheduled;
+            private readonly WaitableTimer[] _waitableTimers;
 
             public TimerManager()
             {
-                this.onWaitCallback = new Action<object>(OnWaitCallback);
-                this.stableTimerGroup = new TimerGroup();
-                this.volatileTimerGroup = new TimerGroup();
-                this.waitableTimers = new WaitableTimer[] { this.stableTimerGroup.WaitableTimer, this.volatileTimerGroup.WaitableTimer };
+                _onWaitCallback = new Action<object>(OnWaitCallback);
+                StableTimerGroup = new TimerGroup();
+                VolatileTimerGroup = new TimerGroup();
+                _waitableTimers = new WaitableTimer[] { StableTimerGroup.WaitableTimer, VolatileTimerGroup.WaitableTimer };
             }
 
-            object ThisLock
-            {
-                get { return this; }
-            }
-
-            public static TimerManager Value
-            {
-                get
-                {
-                    return TimerManager.value;
-                }
-            }
-
-            public TimerGroup StableTimerGroup
-            {
-                get
-                {
-                    return this.stableTimerGroup;
-                }
-            }
-            public TimerGroup VolatileTimerGroup
-            {
-                get
-                {
-                    return this.volatileTimerGroup;
-                }
-            }
+            private object ThisLock => this;
+            public static TimerManager Value => s_value;
+            public TimerGroup StableTimerGroup { get; }
+            public TimerGroup VolatileTimerGroup { get; }
 
             public void Set(IOThreadTimer timer, long dueTime)
             {
-                long timeDiff = dueTime - timer.dueTime;
+                long timeDiff = dueTime - timer._dueTime;
                 if (timeDiff < 0)
                 {
                     timeDiff = -timeDiff;
                 }
 
-                if (timeDiff > timer.maxSkew)
+                if (timeDiff > timer._maxSkew)
                 {
                     lock (ThisLock)
                     {
-                        TimerGroup timerGroup = timer.timerGroup;
+                        TimerGroup timerGroup = timer._timerGroup;
                         TimerQueue timerQueue = timerGroup.TimerQueue;
 
-                        if (timer.index > 0)
+                        if (timer._index > 0)
                         {
                             if (timerQueue.UpdateTimer(timer, dueTime))
                             {
@@ -221,9 +190,9 @@ namespace Microsoft.Azure.Devices.Common
             {
                 lock (ThisLock)
                 {
-                    if (timer.index > 0)
+                    if (timer._index > 0)
                     {
-                        TimerGroup timerGroup = timer.timerGroup;
+                        TimerGroup timerGroup = timer._timerGroup;
                         TimerQueue timerQueue = timerGroup.TimerQueue;
 
                         timerQueue.DeleteTimer(timer);
@@ -240,10 +209,10 @@ namespace Microsoft.Azure.Devices.Common
                                 long now = Ticks.Now;
                                 long thisGroupRemainingTime = timerGroup.WaitableTimer.DueTime - now;
                                 long otherGroupRemainingTime = otherTimerGroup.WaitableTimer.DueTime - now;
-                                if (thisGroupRemainingTime > maxTimeToWaitForMoreTimers &&
-                                    otherGroupRemainingTime > maxTimeToWaitForMoreTimers)
+                                if (thisGroupRemainingTime > MaxTimeToWaitForMoreTimers
+                                    && otherGroupRemainingTime > MaxTimeToWaitForMoreTimers)
                                 {
-                                    timerGroup.WaitableTimer.Set(Ticks.Add(now, maxTimeToWaitForMoreTimers));
+                                    timerGroup.WaitableTimer.Set(Ticks.Add(now, MaxTimeToWaitForMoreTimers));
                                 }
                             }
                         }
@@ -257,52 +226,47 @@ namespace Microsoft.Azure.Devices.Common
                 }
             }
 
-            void EnsureWaitScheduled()
+            private void EnsureWaitScheduled()
             {
-                if (!this.waitScheduled)
+                if (!_waitScheduled)
                 {
                     ScheduleWait();
                 }
             }
 
-            TimerGroup GetOtherTimerGroup(TimerGroup timerGroup)
+            private TimerGroup GetOtherTimerGroup(TimerGroup timerGroup)
             {
-                if (object.ReferenceEquals(timerGroup, this.volatileTimerGroup))
-                {
-                    return this.stableTimerGroup;
-                }
-                else
-                {
-                    return this.volatileTimerGroup;
-                }
+                return ReferenceEquals(timerGroup, VolatileTimerGroup)
+                    ? StableTimerGroup
+                    : VolatileTimerGroup;
             }
 
-            void OnWaitCallback(object state)
+            private void OnWaitCallback(object state)
             {
-                WaitHandle.WaitAny(this.waitableTimers);
+                WaitHandle.WaitAny(_waitableTimers);
                 long now = Ticks.Now;
                 lock (ThisLock)
                 {
-                    this.waitScheduled = false;
+                    _waitScheduled = false;
                     ScheduleElapsedTimers(now);
                     ReactivateWaitableTimers();
                     ScheduleWaitIfAnyTimersLeft();
                 }
             }
 
-            void ReactivateWaitableTimers()
+            private void ReactivateWaitableTimers()
             {
-                ReactivateWaitableTimer(this.stableTimerGroup);
-                ReactivateWaitableTimer(this.volatileTimerGroup);
+                ReactivateWaitableTimer(StableTimerGroup);
+                ReactivateWaitableTimer(VolatileTimerGroup);
             }
 
-            static void ReactivateWaitableTimer(TimerGroup timerGroup)
+            private static void ReactivateWaitableTimer(TimerGroup timerGroup)
             {
                 TimerQueue timerQueue = timerGroup.TimerQueue;
 
                 if (timerQueue.Count > 0)
                 {
-                    timerGroup.WaitableTimer.Set(timerQueue.MinTimer.dueTime);
+                    timerGroup.WaitableTimer.Set(timerQueue.MinTimer._dueTime);
                 }
                 else
                 {
@@ -310,23 +274,23 @@ namespace Microsoft.Azure.Devices.Common
                 }
             }
 
-            void ScheduleElapsedTimers(long now)
+            private void ScheduleElapsedTimers(long now)
             {
-                ScheduleElapsedTimers(this.stableTimerGroup, now);
-                ScheduleElapsedTimers(this.volatileTimerGroup, now);
+                ScheduleElapsedTimers(StableTimerGroup, now);
+                ScheduleElapsedTimers(VolatileTimerGroup, now);
             }
 
-            static void ScheduleElapsedTimers(TimerGroup timerGroup, long now)
+            private static void ScheduleElapsedTimers(TimerGroup timerGroup, long now)
             {
                 TimerQueue timerQueue = timerGroup.TimerQueue;
                 while (timerQueue.Count > 0)
                 {
                     IOThreadTimer timer = timerQueue.MinTimer;
-                    long timeDiff = timer.dueTime - now;
-                    if (timeDiff <= timer.maxSkew)
+                    long timeDiff = timer._dueTime - now;
+                    if (timeDiff <= timer._maxSkew)
                     {
                         timerQueue.DeleteMinTimer();
-                        ActionItem.Schedule(timer.callback, timer.callbackState);
+                        ActionItem.Schedule(timer._callback, timer._callbackState);
                     }
                     else
                     {
@@ -335,118 +299,102 @@ namespace Microsoft.Azure.Devices.Common
                 }
             }
 
-            void ScheduleWait()
+            private void ScheduleWait()
             {
-                ActionItem.Schedule(this.onWaitCallback, null);
-                this.waitScheduled = true;
+                ActionItem.Schedule(_onWaitCallback, null);
+                _waitScheduled = true;
             }
 
-            void ScheduleWaitIfAnyTimersLeft()
+            private void ScheduleWaitIfAnyTimersLeft()
             {
-                if (this.stableTimerGroup.TimerQueue.Count > 0 ||
-                    this.volatileTimerGroup.TimerQueue.Count > 0)
+                if (StableTimerGroup.TimerQueue.Count > 0
+                    || VolatileTimerGroup.TimerQueue.Count > 0)
                 {
                     ScheduleWait();
                 }
             }
 
-            static void UpdateWaitableTimer(TimerGroup timerGroup)
+            private static void UpdateWaitableTimer(TimerGroup timerGroup)
             {
                 WaitableTimer waitableTimer = timerGroup.WaitableTimer;
                 IOThreadTimer minTimer = timerGroup.TimerQueue.MinTimer;
-                long timeDiff = waitableTimer.DueTime - minTimer.dueTime;
+                long timeDiff = waitableTimer.DueTime - minTimer._dueTime;
+
                 if (timeDiff < 0)
                 {
                     timeDiff = -timeDiff;
                 }
-                if (timeDiff > minTimer.maxSkew)
+
+                if (timeDiff > minTimer._maxSkew)
                 {
-                    waitableTimer.Set(minTimer.dueTime);
+                    waitableTimer.Set(minTimer._dueTime);
                 }
             }
 
             public void Dispose()
             {
-                this.stableTimerGroup.Dispose();
-                this.volatileTimerGroup.Dispose();
+                StableTimerGroup.Dispose();
+                VolatileTimerGroup.Dispose();
                 GC.SuppressFinalize(this);
             }
         }
 
-        class TimerGroup : IDisposable
+        private class TimerGroup : IDisposable
         {
-            TimerQueue timerQueue;
-            WaitableTimer waitableTimer;
-
             public TimerGroup()
             {
-                this.waitableTimer = new WaitableTimer();
-                this.waitableTimer.Set(long.MaxValue);
-                this.timerQueue = new TimerQueue();
+                WaitableTimer = new WaitableTimer();
+                WaitableTimer.Set(long.MaxValue);
+                TimerQueue = new TimerQueue();
             }
 
-            public TimerQueue TimerQueue
-            {
-                get
-                {
-                    return this.timerQueue;
-                }
-            }
-            public WaitableTimer WaitableTimer
-            {
-                get
-                {
-                    return this.waitableTimer;
-                }
-            }
+            public TimerQueue TimerQueue { get; }
+            public WaitableTimer WaitableTimer { get; }
 
             public void Dispose()
             {
-                this.waitableTimer.Dispose();
+                WaitableTimer.Dispose();
                 GC.SuppressFinalize(this);
             }
         }
 
-        class TimerQueue
+        private class TimerQueue
         {
-            int count;
-            IOThreadTimer[] timers;
+            private IOThreadTimer[] _timers;
 
             public TimerQueue()
             {
-                this.timers = new IOThreadTimer[4];
+                _timers = new IOThreadTimer[4];
             }
 
-            public int Count
-            {
-                get { return count; }
-            }
+            public int Count { get; private set; }
 
             public IOThreadTimer MinTimer
             {
                 get
                 {
-                    Fx.Assert(this.count > 0, "Should have at least one timer in our queue.");
-                    return timers[1];
+                    Fx.Assert(Count > 0, "Should have at least one timer in our queue.");
+                    return _timers[1];
                 }
             }
             public void DeleteMinTimer()
             {
-                IOThreadTimer minTimer = this.MinTimer;
+                IOThreadTimer minTimer = MinTimer;
                 DeleteMinTimerCore();
-                minTimer.index = 0;
-                minTimer.dueTime = 0;
+                minTimer._index = 0;
+                minTimer._dueTime = 0;
             }
+
             public void DeleteTimer(IOThreadTimer timer)
             {
-                int index = timer.index;
+                int index = timer._index;
 
                 Fx.Assert(index > 0, "");
-                Fx.Assert(index <= this.count, "");
+                Fx.Assert(index <= Count, "");
 
-                IOThreadTimer[] tempTimers = this.timers;
+                IOThreadTimer[] tempTimers = _timers;
 
-                for (; ; )
+                while (true)
                 {
                     int parentIndex = index / 2;
 
@@ -454,7 +402,7 @@ namespace Microsoft.Azure.Devices.Common
                     {
                         IOThreadTimer parentTimer = tempTimers[parentIndex];
                         tempTimers[index] = parentTimer;
-                        parentTimer.index = index;
+                        parentTimer._index = index;
                     }
                     else
                     {
@@ -464,32 +412,32 @@ namespace Microsoft.Azure.Devices.Common
                     index = parentIndex;
                 }
 
-                timer.index = 0;
-                timer.dueTime = 0;
+                timer._index = 0;
+                timer._dueTime = 0;
                 tempTimers[1] = null;
                 DeleteMinTimerCore();
             }
 
             public bool InsertTimer(IOThreadTimer timer, long dueTime)
             {
-                Fx.Assert(timer.index == 0, "Timer should not have an index.");
+                Fx.Assert(timer._index == 0, "Timer should not have an index.");
 
-                IOThreadTimer[] tempTimers = this.timers;
+                IOThreadTimer[] tempTimers = _timers;
 
-                int index = this.count + 1;
+                int index = Count + 1;
 
                 if (index == tempTimers.Length)
                 {
                     tempTimers = new IOThreadTimer[tempTimers.Length * 2];
-                    Array.Copy(this.timers, tempTimers, this.timers.Length);
-                    this.timers = tempTimers;
+                    Array.Copy(_timers, tempTimers, _timers.Length);
+                    _timers = tempTimers;
                 }
 
-                this.count = index;
+                Count = index;
 
                 if (index > 1)
                 {
-                    for (; ; )
+                    while (true)
                     {
                         int parentIndex = index / 2;
 
@@ -500,10 +448,10 @@ namespace Microsoft.Azure.Devices.Common
 
                         IOThreadTimer parent = tempTimers[parentIndex];
 
-                        if (parent.dueTime > dueTime)
+                        if (parent._dueTime > dueTime)
                         {
                             tempTimers[index] = parent;
-                            parent.index = index;
+                            parent._index = index;
                             index = parentIndex;
                         }
                         else
@@ -514,33 +462,34 @@ namespace Microsoft.Azure.Devices.Common
                 }
 
                 tempTimers[index] = timer;
-                timer.index = index;
-                timer.dueTime = dueTime;
+                timer._index = index;
+                timer._dueTime = dueTime;
                 return index == 1;
             }
+
             public bool UpdateTimer(IOThreadTimer timer, long newDueTime)
             {
-                int index = timer.index;
+                int index = timer._index;
 
-                IOThreadTimer[] tempTimers = this.timers;
-                int tempCount = this.count;
+                IOThreadTimer[] tempTimers = _timers;
+                int tempCount = Count;
 
                 Fx.Assert(index > 0, "");
                 Fx.Assert(index <= tempCount, "");
 
                 int parentIndex = index / 2;
-                if (parentIndex == 0 ||
-                    tempTimers[parentIndex].dueTime <= newDueTime)
+                if (parentIndex == 0
+                    || tempTimers[parentIndex]._dueTime <= newDueTime)
                 {
                     int leftChildIndex = index * 2;
                     if (leftChildIndex > tempCount ||
-                        tempTimers[leftChildIndex].dueTime >= newDueTime)
+                        tempTimers[leftChildIndex]._dueTime >= newDueTime)
                     {
                         int rightChildIndex = leftChildIndex + 1;
                         if (rightChildIndex > tempCount ||
-                            tempTimers[rightChildIndex].dueTime >= newDueTime)
+                            tempTimers[rightChildIndex]._dueTime >= newDueTime)
                         {
-                            timer.dueTime = newDueTime;
+                            timer._dueTime = newDueTime;
                             return index == 1;
                         }
                     }
@@ -551,23 +500,23 @@ namespace Microsoft.Azure.Devices.Common
                 return true;
             }
 
-            void DeleteMinTimerCore()
+            private void DeleteMinTimerCore()
             {
-                int currentCount = this.count;
+                int currentCount = Count;
 
                 if (currentCount == 1)
                 {
-                    this.count = 0;
-                    this.timers[1] = null;
+                    Count = 0;
+                    _timers[1] = null;
                 }
                 else
                 {
-                    IOThreadTimer[] tempTimers = this.timers;
+                    IOThreadTimer[] tempTimers = _timers;
                     IOThreadTimer lastTimer = tempTimers[currentCount];
-                    this.count = --currentCount;
+                    Count = --currentCount;
 
                     int index = 1;
-                    for (; ; )
+                    while (true)
                     {
                         int leftChildIndex = index * 2;
 
@@ -585,7 +534,7 @@ namespace Microsoft.Azure.Devices.Common
                             int rightChildIndex = leftChildIndex + 1;
                             IOThreadTimer rightChild = tempTimers[rightChildIndex];
 
-                            if (rightChild.dueTime < leftChild.dueTime)
+                            if (rightChild._dueTime < leftChild._dueTime)
                             {
                                 child = rightChild;
                                 childIndex = rightChildIndex;
@@ -602,10 +551,10 @@ namespace Microsoft.Azure.Devices.Common
                             child = tempTimers[childIndex];
                         }
 
-                        if (lastTimer.dueTime > child.dueTime)
+                        if (lastTimer._dueTime > child._dueTime)
                         {
                             tempTimers[index] = child;
-                            child.index = index;
+                            child._index = index;
                         }
                         else
                         {
@@ -621,47 +570,41 @@ namespace Microsoft.Azure.Devices.Common
                     }
 
                     tempTimers[index] = lastTimer;
-                    lastTimer.index = index;
+                    lastTimer._index = index;
                     tempTimers[currentCount + 1] = null;
                 }
             }
         }
 
         [Fx.Tag.SynchronizationPrimitive(Fx.Tag.BlocksUsing.NonBlocking)]
-        class WaitableTimer : WaitHandle
+        private class WaitableTimer : WaitHandle
         {
-
-            long dueTime;
-
             [Fx.Tag.SecurityNote(Critical = "Call the critical CreateWaitableTimer method in TimerHelper",
                 Safe = "Doesn't leak information or resources")]
             public WaitableTimer()
             {
 #if NETSTANDARD1_3
-                this.SetSafeWaitHandle(TimerHelper.CreateWaitableTimer());
+                SetSafeWaitHandle(TimerHelper.CreateWaitableTimer());
 #else
-                this.SafeWaitHandle = TimerHelper.CreateWaitableTimer();
+                SafeWaitHandle = TimerHelper.CreateWaitableTimer();
 #endif
             }
 
-            public long DueTime
-            {
-                get { return this.dueTime; }
-            }
+            public long DueTime { get; private set; }
 
             [Fx.Tag.SecurityNote(Critical = "Call the critical Set method in TimerHelper",
                 Safe = "Doesn't leak information or resources")]
             public void Set(long newDueTime)
             {
 #if NETSTANDARD1_3
-                this.dueTime = TimerHelper.Set(this.GetSafeWaitHandle(), newDueTime);
+                dueTime = TimerHelper.Set(GetSafeWaitHandle(), newDueTime);
 #else
-                this.dueTime = TimerHelper.Set(this.SafeWaitHandle, newDueTime);
+                DueTime = TimerHelper.Set(SafeWaitHandle, newDueTime);
 #endif
             }
             [Fx.Tag.SecurityNote(Critical = "Provides a set of unsafe methods used to work with the WaitableTimer")]
             [SecurityCritical]
-            static class TimerHelper
+            private static class TimerHelper
             {
                 public static unsafe SafeWaitHandle CreateWaitableTimer()
                 {
@@ -672,14 +615,17 @@ namespace Microsoft.Azure.Devices.Common
                         handle.SetHandleAsInvalid();
                         throw Fx.Exception.AsError(exception);
                     }
+
                     return handle;
                 }
+
                 public static unsafe long Set(SafeWaitHandle timer, long dueTime)
                 {
                     if (!UnsafeNativeMethods.SetWaitableTimer(timer, ref dueTime, 0, IntPtr.Zero, IntPtr.Zero, false))
                     {
                         throw Fx.Exception.AsError(new Win32Exception());
                     }
+
                     return dueTime;
                 }
             }

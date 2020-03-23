@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+
 namespace Microsoft.Azure.Devices.Client.Extensions
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Globalization;
-    using System.Linq;
-    using System.Reflection;
-
-    static class ExceptionExtensions
+    internal static class ExceptionExtensions
     {
-        const string ExceptionIdentifierName = "ExceptionId";
-        static MethodInfo prepForRemotingMethodInfo;
-        
+        private const string ExceptionIdentifierName = "ExceptionId";
+        private static MethodInfo prepForRemotingMethodInfo;
+
         public static bool IsFatal(this Exception exception)
         {
             return Fx.IsFatal(exception);
@@ -64,12 +64,8 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 // Racing here is harmless
                 if (ExceptionExtensions.prepForRemotingMethodInfo == null)
                 {
-#if NETSTANDARD1_3 // No Type.GetMethod in NetStandard1.3
-                    ExceptionExtensions.prepForRemotingMethodInfo = null;
-#else
                     ExceptionExtensions.prepForRemotingMethodInfo =
                         typeof(Exception).GetMethod("PrepForRemoting", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { }, new ParameterModifier[] { });
-#endif
                 }
                 if (ExceptionExtensions.prepForRemotingMethodInfo != null)
                 {
@@ -127,7 +123,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             }
         }
 
-        static bool ShouldPrepareForRethrow(Exception exception)
+        private static bool ShouldPrepareForRethrow(Exception exception)
         {
             while (exception != null)
             {

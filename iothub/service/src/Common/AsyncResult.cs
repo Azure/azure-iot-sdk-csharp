@@ -1,169 +1,128 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using Microsoft.Azure.Devices.Common.Tracing;
+
+#if NET451
+using System.Transactions;
+#endif
+
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Threading;
-#if NET451
-    using System.Transactions;
-#endif    
-    using Microsoft.Azure.Devices.Common.Tracing;
-
     // AsyncResult starts acquired; Complete releases.
     [Fx.Tag.SynchronizationPrimitive(Fx.Tag.BlocksUsing.ManualResetEvent, SupportsAsync = true, ReleaseMethod = "Complete")]
     [DebuggerStepThrough]
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
         Justification = "Uses custom scheme for cleanup")]
-    abstract class AsyncResult : IAsyncResult
+    internal abstract class AsyncResult : IAsyncResult
     {
         public const string DisablePrepareForRethrow = "DisablePrepareForRethrow";
 
-        static AsyncCallback asyncCompletionWrapperCallback;
-        AsyncCallback callback;
-        bool completedSynchronously;
-        bool endCalled;
-        Exception exception;
-        bool isCompleted;
-        AsyncCompletion nextAsyncCompletion;
+        private static AsyncCallback s_asyncCompletionWrapperCallback;
+        private AsyncCallback _callback;
+        private bool _endCalled;
+        private Exception _exception;
+        private AsyncCompletion _nextAsyncCompletion;
 #if NET451
-        IAsyncResult deferredTransactionalResult;
-        TransactionSignalScope transactionContext;
+        private IAsyncResult _deferredTransactionalResult;
+        private TransactionSignalScope _transactionContext;
 #endif
-        object state;
 
         [Fx.Tag.SynchronizationObject]
-        ManualResetEvent manualResetEvent;
+        private ManualResetEvent _manualResetEvent;
 
         [Fx.Tag.SynchronizationObject(Blocking = false)]
-        object thisLock;
+        private object _thisLock;
 
 #if DEBUG
-        UncompletedAsyncResultMarker marker;
+        private UncompletedAsyncResultMarker _marker;
 #endif
 
         protected AsyncResult(AsyncCallback callback, object state)
         {
-            this.callback = callback;
-            this.state = state;
-            this.thisLock = new object();
+            _callback = callback;
+            AsyncState = state;
+            _thisLock = new object();
 
 #if DEBUG
-            this.marker = new UncompletedAsyncResultMarker(this);
+            _marker = new UncompletedAsyncResultMarker(this);
 #endif
         }
 
-        public object AsyncState
-        {
-            get
-            {
-                return this.state;
-            }
-        }
+        public object AsyncState { get; private set; }
 
         public WaitHandle AsyncWaitHandle
         {
             get
             {
-                if (this.manualResetEvent != null)
+                if (_manualResetEvent != null)
                 {
-                    return this.manualResetEvent;
+                    return _manualResetEvent;
                 }
 
-                lock (this.ThisLock)
+                lock (ThisLock)
                 {
-                    if (this.manualResetEvent == null)
+                    if (_manualResetEvent == null)
                     {
-                        this.manualResetEvent = new ManualResetEvent(isCompleted);
+                        _manualResetEvent = new ManualResetEvent(IsCompleted);
                     }
                 }
 
-                return this.manualResetEvent;
+                return _manualResetEvent;
             }
         }
 
-        public bool CompletedSynchronously
-        {
-            get
-            {
-                return this.completedSynchronously;
-            }
-        }
+        public bool CompletedSynchronously { get; private set; }
 
-        public bool HasCallback
-        {
-            get
-            {
-                return this.callback != null;
-            }
-        }
+        public bool HasCallback => _callback != null;
 
-        public bool IsCompleted
-        {
-            get
-            {
-                return this.isCompleted;
-            }
-        }
+        public bool IsCompleted { get; private set; }
 
         // used in conjunction with PrepareAsyncCompletion to allow for finally blocks
         protected Action<AsyncResult, Exception> OnCompleting { get; set; }
 
         // Override this property to provide the ActivityId when completing with exception
-        protected internal virtual EventTraceActivity Activity
-        {
-            get { return null; }
-        }
+        protected internal virtual EventTraceActivity Activity => null;
 
 #if NET451
         // Override this property to change the trace level when completing with exception
-        protected virtual TraceEventType TraceEventType
-        {
-            get { return TraceEventType.Verbose; }
-        }
+        protected virtual TraceEventType TraceEventType => TraceEventType.Verbose;
 #endif
-        protected object ThisLock
-        {
-            get
-            {
-                return this.thisLock;
-            }
-        }
+
+        protected object ThisLock => _thisLock;
 
         // subclasses like TraceAsyncResult can use this to wrap the callback functionality in a scope
-        protected Action<AsyncCallback, IAsyncResult> VirtualCallback
-        {
-            get;
-            set;
-        }
+        protected Action<AsyncCallback, IAsyncResult> VirtualCallback { get; set; }
 
         protected bool TryComplete(bool didCompleteSynchronously, Exception exception)
         {
-            lock (this.ThisLock)
+            lock (ThisLock)
             {
-                if (this.isCompleted)
+                if (IsCompleted)
                 {
                     return false;
                 }
 
-                this.exception = exception;
-                this.isCompleted = true;
+                _exception = exception;
+                IsCompleted = true;
             }
 
 #if DEBUG
-            this.marker.AsyncResult = null;
-            this.marker = null;
+            _marker.AsyncResult = null;
+            _marker = null;
 #endif
 
-            this.completedSynchronously = didCompleteSynchronously;
-            if (this.OnCompleting != null)
+            CompletedSynchronously = didCompleteSynchronously;
+            if (OnCompleting != null)
             {
                 // Allow exception replacement, like a catch/throw pattern.
                 try
                 {
-                    this.OnCompleting(this, this.exception);
+                    OnCompleting(this, this._exception);
                 }
                 catch (Exception e)
                 {
@@ -171,7 +130,7 @@ namespace Microsoft.Azure.Devices.Common
                     {
                         throw;
                     }
-                    this.exception = e;
+                    _exception = e;
                 }
             }
 
@@ -179,30 +138,30 @@ namespace Microsoft.Azure.Devices.Common
             {
                 // If we completedSynchronously, then there's no chance that the manualResetEvent was created so
                 // we don't need to worry about a race
-                Fx.Assert(this.manualResetEvent == null, "No ManualResetEvent should be created for a synchronous AsyncResult.");
+                Fx.Assert(_manualResetEvent == null, "No ManualResetEvent should be created for a synchronous AsyncResult.");
             }
             else
             {
-                lock (this.ThisLock)
+                lock (ThisLock)
                 {
-                    if (this.manualResetEvent != null)
+                    if (_manualResetEvent != null)
                     {
-                        this.manualResetEvent.Set();
+                        _manualResetEvent.Set();
                     }
                 }
             }
 
-            if (this.callback != null)
+            if (_callback != null)
             {
                 try
                 {
-                    if (this.VirtualCallback != null)
+                    if (VirtualCallback != null)
                     {
-                        this.VirtualCallback(this.callback, this);
+                        VirtualCallback(_callback, this);
                     }
                     else
                     {
-                        this.callback(this);
+                        _callback(this);
                     }
                 }
 #pragma warning disable 1634
@@ -224,37 +183,39 @@ namespace Microsoft.Azure.Devices.Common
 
         protected bool TryComplete(bool didcompleteSynchronously)
         {
-            return this.TryComplete(didcompleteSynchronously, null);
+            return TryComplete(didcompleteSynchronously, null);
         }
 
         protected void Complete(bool didCompleteSynchronously)
         {
-            this.Complete(didCompleteSynchronously, null);
+            Complete(didCompleteSynchronously, null);
         }
 
         protected void Complete(bool didCompleteSynchronously, Exception e)
         {
-            if (!this.TryComplete(didCompleteSynchronously, e))
+            if (!TryComplete(didCompleteSynchronously, e))
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.GetString(CommonResources.AsyncResultCompletedTwice, this.GetType())));
+                throw Fx.Exception.AsError(
+                    new InvalidOperationException(CommonResources.GetString(Resources.AsyncResultCompletedTwice, GetType())));
             }
         }
 
-        static void AsyncCompletionWrapperCallback(IAsyncResult result)
+        private static void AsyncCompletionWrapperCallback(IAsyncResult result)
         {
             if (result == null)
             {
                 throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.InvalidNullAsyncResult));
             }
+
             if (result.CompletedSynchronously)
             {
                 return;
             }
 
-            AsyncResult thisPtr = (AsyncResult)result.AsyncState;
+            var thisPtr = (AsyncResult)result.AsyncState;
 
 #if NET451
-            if (thisPtr.transactionContext != null && !thisPtr.transactionContext.Signal(result))
+            if (thisPtr._transactionContext != null && !thisPtr._transactionContext.Signal(result))
             {
                 // The TransactionScope isn't cleaned up yet and can't be done on this thread.  Must defer
                 // the callback (which is likely to attempt to commit the transaction) until later.
@@ -289,37 +250,35 @@ namespace Microsoft.Azure.Devices.Common
         protected AsyncCallback PrepareAsyncCompletion(AsyncCompletion callback)
         {
 #if NET451
-            if (this.transactionContext != null)
+            if (_transactionContext != null)
             {
                 // It might be an old, leftover one, if an exception was thrown within the last using (PrepareTransactionalCall()) block.
-                if (this.transactionContext.IsPotentiallyAbandoned)
+                if (_transactionContext.IsPotentiallyAbandoned)
                 {
-                    this.transactionContext = null;
+                    _transactionContext = null;
                 }
                 else
                 {
-                    this.transactionContext.Prepared();
+                    _transactionContext.Prepared();
                 }
             }
 #endif
-            this.nextAsyncCompletion = callback;
-            if (AsyncResult.asyncCompletionWrapperCallback == null)
+            _nextAsyncCompletion = callback;
+            if (s_asyncCompletionWrapperCallback == null)
             {
-                AsyncResult.asyncCompletionWrapperCallback = new AsyncCallback(AsyncCompletionWrapperCallback);
+                s_asyncCompletionWrapperCallback = new AsyncCallback(AsyncCompletionWrapperCallback);
             }
-            return AsyncResult.asyncCompletionWrapperCallback;
+            return s_asyncCompletionWrapperCallback;
         }
 
         protected bool CheckSyncContinue(IAsyncResult result)
         {
-            AsyncCompletion dummy;
-            return TryContinueHelper(result, out dummy);
+            return TryContinueHelper(result, out AsyncCompletion dummy);
         }
 
         protected bool SyncContinue(IAsyncResult result)
         {
-            AsyncCompletion callback;
-            if (TryContinueHelper(result, out callback))
+            if (TryContinueHelper(result, out AsyncCompletion callback))
             {
                 return callback(result);
             }
@@ -329,7 +288,7 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        bool TryContinueHelper(IAsyncResult result, out AsyncCompletion callback)
+        private bool TryContinueHelper(IAsyncResult result, out AsyncCompletion callback)
         {
             if (result == null)
             {
@@ -342,13 +301,13 @@ namespace Microsoft.Azure.Devices.Common
             {
 #if NET451
                 // Once we pass the check, we know that we own forward progress, so transactionContext is correct. Verify its state.
-                if (this.transactionContext != null)
+                if (_transactionContext != null)
                 {
-                    if (this.transactionContext.State != TransactionSignalState.Completed)
+                    if (_transactionContext.State != TransactionSignalState.Completed)
                     {
                         ThrowInvalidAsyncResult("Check/SyncContinue cannot be called from within the PrepareTransactionalCall using block.");
                     }
-                    else if (this.transactionContext.IsSignalled)
+                    else if (_transactionContext.IsSignalled)
                     {
                         // This is most likely to happen when result.CompletedSynchronously registers differently here and in the callback, which
                         // is the fault of 'result'.
@@ -358,17 +317,17 @@ namespace Microsoft.Azure.Devices.Common
 #endif
             }
 #if NET451
-            else if (object.ReferenceEquals(result, this.deferredTransactionalResult))
+            else if (ReferenceEquals(result, _deferredTransactionalResult))
             {
                 // The transactionContext may not be current if forward progress has been made via the callback. Instead,
                 // use deferredTransactionalResult to see if we are supposed to execute a post-transaction callback.
                 //
                 // Once we pass the check, we know that we own forward progress, so transactionContext is correct. Verify its state.
-                if (this.transactionContext == null || !this.transactionContext.IsSignalled)
+                if (_transactionContext == null || !_transactionContext.IsSignalled)
                 {
                     ThrowInvalidAsyncResult(result);
                 }
-                this.deferredTransactionalResult = null;
+                _deferredTransactionalResult = null;
             }
 #endif
             else
@@ -384,19 +343,21 @@ namespace Microsoft.Azure.Devices.Common
             return true;
         }
 
-        AsyncCompletion GetNextCompletion()
+        private AsyncCompletion GetNextCompletion()
         {
-            AsyncCompletion result = this.nextAsyncCompletion;
+            AsyncCompletion result = _nextAsyncCompletion;
 #if NET451
-            this.transactionContext = null;
+            _transactionContext = null;
 #endif
-            this.nextAsyncCompletion = null;
+            _nextAsyncCompletion = null;
             return result;
         }
 
         protected static void ThrowInvalidAsyncResult(IAsyncResult result)
         {
-            throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.GetString(CommonResources.InvalidAsyncResultImplementation, result.GetType())));
+            throw Fx.Exception.AsError(
+                new InvalidOperationException(
+                    CommonResources.GetString(Resources.InvalidAsyncResultImplementation, result.GetType())));
         }
 
         protected static void ThrowInvalidAsyncResult(string debugText)
@@ -417,59 +378,59 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (result == null)
             {
-                throw Fx.Exception.ArgumentNull("result");
+                throw Fx.Exception.ArgumentNull(nameof(result));
             }
 
-            TAsyncResult asyncResult = result as TAsyncResult;
+            var asyncResult = result as TAsyncResult;
 
             if (asyncResult == null)
             {
-                throw Fx.Exception.Argument("result", CommonResources.InvalidAsyncResult);
+                throw Fx.Exception.Argument(nameof(result), Resources.InvalidAsyncResult);
             }
 
-            if (asyncResult.endCalled)
+            if (asyncResult._endCalled)
             {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.AsyncResultAlreadyEnded));
+                throw Fx.Exception.AsError(new InvalidOperationException(Resources.AsyncResultAlreadyEnded));
             }
 
-            asyncResult.endCalled = true;
+            asyncResult._endCalled = true;
 
-            if (!asyncResult.isCompleted)
+            if (!asyncResult.IsCompleted)
             {
                 lock (asyncResult.ThisLock)
                 {
-                    if (!asyncResult.isCompleted && asyncResult.manualResetEvent == null)
+                    if (!asyncResult.IsCompleted && asyncResult._manualResetEvent == null)
                     {
-                        asyncResult.manualResetEvent = new ManualResetEvent(asyncResult.isCompleted);
+                        asyncResult._manualResetEvent = new ManualResetEvent(asyncResult.IsCompleted);
                     }
                 }
             }
 
-            if (asyncResult.manualResetEvent != null)
+            if (asyncResult._manualResetEvent != null)
             {
-                asyncResult.manualResetEvent.WaitOne();
+                asyncResult._manualResetEvent.WaitOne();
 #if NET451
-                asyncResult.manualResetEvent.Close();
+                asyncResult._manualResetEvent.Close();
 #else
-                asyncResult.manualResetEvent.Dispose();
+                asyncResult._manualResetEvent.Dispose();
 #endif
             }
 
-            if (asyncResult.exception != null)
+            if (asyncResult._exception != null)
             {
                 // Trace before PrepareForRethrow to avoid weird callstack strings
 #if NET451
-                Fx.Exception.TraceException(asyncResult.exception, asyncResult.TraceEventType, asyncResult.Activity);
+                Fx.Exception.TraceException(asyncResult._exception, asyncResult.TraceEventType, asyncResult.Activity);
 #else
-                Fx.Exception.TraceException(asyncResult.exception, TraceEventType.Verbose, asyncResult.Activity);
+                Fx.Exception.TraceException(asyncResult._exception, TraceEventType.Verbose, asyncResult.Activity);
 #endif
-                ExceptionDispatcher.Throw(asyncResult.exception);
+                ExceptionDispatcher.Throw(asyncResult._exception);
             }
 
             return asyncResult;
         }
 
-        enum TransactionSignalState
+        private enum TransactionSignalState
         {
             Ready = 0,
             Prepared,
@@ -479,19 +440,19 @@ namespace Microsoft.Azure.Devices.Common
 
 #if NET451
         [Serializable]
-        class TransactionSignalScope : SignalGate<IAsyncResult>, IDisposable
+        private class TransactionSignalScope : SignalGate<IAsyncResult>, IDisposable
         {
             [NonSerialized]
-            TransactionScope transactionScope;
+            TransactionScope _transactionScope;
             [NonSerialized]
-            AsyncResult parent;
-            bool disposed;
+            AsyncResult _parent;
+            bool _disposed;
 
             public TransactionSignalScope(AsyncResult result, Transaction transaction)
             {
                 Fx.Assert(transaction != null, "Null Transaction provided to AsyncResult.TransactionSignalScope.");
-                this.parent = result;
-                this.transactionScope = Fx.CreateTransactionScope(transaction);
+                _parent = result;
+                _transactionScope = Fx.CreateTransactionScope(transaction);
             }
 
             public TransactionSignalState State { get; private set; }
@@ -500,7 +461,9 @@ namespace Microsoft.Azure.Devices.Common
             {
                 get
                 {
-                    return this.State == TransactionSignalState.Abandoned || (State == TransactionSignalState.Completed && !IsSignalled);
+                    return State == TransactionSignalState.Abandoned
+                        || State == TransactionSignalState.Completed
+                        && !IsSignalled;
                 }
             }
 
@@ -508,33 +471,33 @@ namespace Microsoft.Azure.Devices.Common
             {
                 if (State != TransactionSignalState.Ready)
                 {
-                    AsyncResult.ThrowInvalidAsyncResult("PrepareAsyncCompletion should only be called once per PrepareTransactionalCall.");
+                    ThrowInvalidAsyncResult("PrepareAsyncCompletion should only be called once per PrepareTransactionalCall.");
                 }
-                this.State = TransactionSignalState.Prepared;
+                State = TransactionSignalState.Prepared;
             }
 
             protected virtual void Dispose(bool disposing)
             {
-                if (disposing && !this.disposed)
+                if (disposing && !this._disposed)
                 {
-                    this.disposed = true;
+                    _disposed = true;
 
-                    if (this.State == TransactionSignalState.Ready)
+                    if (State == TransactionSignalState.Ready)
                     {
-                        this.State = TransactionSignalState.Abandoned;
+                        State = TransactionSignalState.Abandoned;
                     }
-                    else if (this.State == TransactionSignalState.Prepared)
+                    else if (State == TransactionSignalState.Prepared)
                     {
-                        this.State = TransactionSignalState.Completed;
+                        State = TransactionSignalState.Completed;
                     }
                     else
                     {
-                        AsyncResult.ThrowInvalidAsyncResult("PrepareTransactionalCall should only be called in a using. Dispose called multiple times.");
+                        ThrowInvalidAsyncResult("PrepareTransactionalCall should only be called in a using. Dispose called multiple times.");
                     }
 
                     try
                     {
-                        Fx.CompleteTransactionScope(ref this.transactionScope);
+                        Fx.CompleteTransactionScope(ref this._transactionScope);
                     }
                     catch (Exception exception)
                     {
@@ -544,7 +507,7 @@ namespace Microsoft.Azure.Devices.Common
                         }
 
                         // Complete and Dispose are not expected to throw.  If they do it can mess up the AsyncResult state machine.
-                        throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.AsyncTransactionException));
+                        throw Fx.Exception.AsError(new InvalidOperationException(Resources.AsyncTransactionException));
                     }
 
                     // This will release the callback to run, or tell us that we need to defer the callback to Check/SyncContinue.
@@ -554,13 +517,13 @@ namespace Microsoft.Azure.Devices.Common
                     // unnecessary Interlocked only happens when: PrepareTransactionalCall is called with a non-null transaction,
                     // PrepareAsyncCompletion is reached, and the operation completes synchronously or with an exception.
                     IAsyncResult result;
-                    if (this.State == TransactionSignalState.Completed && Unlock(out result))
+                    if (State == TransactionSignalState.Completed && Unlock(out result))
                     {
-                        if (this.parent.deferredTransactionalResult != null)
+                        if (_parent._deferredTransactionalResult != null)
                         {
-                            AsyncResult.ThrowInvalidAsyncResult(this.parent.deferredTransactionalResult);
+                            ThrowInvalidAsyncResult(this._parent._deferredTransactionalResult);
                         }
-                        this.parent.deferredTransactionalResult = result;
+                        _parent._deferredTransactionalResult = result;
                     }
                 }
             }
@@ -572,6 +535,7 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 #endif
+
         // can be utilized by subclasses to write core completion code for both the sync and async paths
         // in one location, signalling chainable synchronous completion with the boolean result,
         // and leveraging PrepareAsyncCompletion for conversion to an AsyncCallback.
@@ -579,7 +543,8 @@ namespace Microsoft.Azure.Devices.Common
         protected delegate bool AsyncCompletion(IAsyncResult result);
 
 #if DEBUG
-        class UncompletedAsyncResultMarker
+
+        private class UncompletedAsyncResultMarker
         {
             public UncompletedAsyncResultMarker(AsyncResult result)
             {
@@ -590,11 +555,12 @@ namespace Microsoft.Azure.Devices.Common
                 Justification = "Debug-only facility")]
             public AsyncResult AsyncResult { get; set; }
         }
+
 #endif
     }
 
     // Use this as your base class for AsyncResult and you don't have to define the End method.
-    abstract class AsyncResult<TAsyncResult> : AsyncResult
+    internal abstract class AsyncResult<TAsyncResult> : AsyncResult
         where TAsyncResult : AsyncResult<TAsyncResult>
     {
         protected AsyncResult(AsyncCallback callback, object state)
@@ -604,7 +570,7 @@ namespace Microsoft.Azure.Devices.Common
 
         public static TAsyncResult End(IAsyncResult asyncResult)
         {
-            return AsyncResult.End<TAsyncResult>(asyncResult);
+            return End<TAsyncResult>(asyncResult);
         }
     }
 }
