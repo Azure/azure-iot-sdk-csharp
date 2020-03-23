@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-
     /// <summary>
     /// Represents a retry policy
     /// </summary>
     public interface IRetryPolicy
     {
-    	/// <summary>
+        /// <summary>
         /// Method called by DeviceClient prior to a retry.
         /// </summary>
         /// <param name="currentRetryCount">The number of times the current operation has been attempted.</param>

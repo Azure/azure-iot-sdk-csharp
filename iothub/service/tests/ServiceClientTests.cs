@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             PurgeMessageQueueResult result = await serviceClient.PurgeMessageQueueAsync("TestDevice", CancellationToken.None).ConfigureAwait(false);
         }
 
-        Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> SetupPurgeMessageQueueTests()
+        private Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> SetupPurgeMessageQueueTests()
         {
             // Create expected return object
             var deviceId = "TestDevice";
@@ -136,11 +136,12 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         #region Device Streaming
-        const string DS_Http_Resp_Header_Is_Accepted = "iothub-streaming-is-accepted";
-        const string DS_Http_Resp_Header_Url = "iothub-streaming-url";
-        const string DS_Http_Resp_Header_Auth_Token = "iothub-streaming-auth-token";
-        const string FakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
-        const string FakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
+
+        private const string DS_Http_Resp_Header_Is_Accepted = "iothub-streaming-is-accepted";
+        private const string DS_Http_Resp_Header_Url = "iothub-streaming-url";
+        private const string DS_Http_Resp_Header_Auth_Token = "iothub-streaming-auth-token";
+        private const string FakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
+        private const string FakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
 
         [TestMethod]
         public async Task CreateStreamAsyncDeviceClientAccepts()
@@ -189,11 +190,11 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             if (String.IsNullOrEmpty(moduleId))
             {
-                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryString}", UriKind.Relative);
+                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryStringDefault}", UriKind.Relative);
             }
             else
             {
-                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryString}", UriKind.Relative);
+                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryStringDefault}", UriKind.Relative);
             }
 
             restOpMock.Setup(m => m.PostAsync<byte[], HttpResponseMessage>(
@@ -237,7 +238,6 @@ namespace Microsoft.Azure.Devices.Api.Test
                 Assert.IsNull(response.Url);
                 Assert.IsNull(response.AuthorizationToken);
             }
-
         }
 
         #endregion Device Streaming

@@ -14,8 +14,9 @@ namespace Microsoft.Azure.Devices.Client.Edge
 {
     internal class TrustBundleProvider : ITrustBundleProvider
     {
-        static readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy = new ErrorDetectionStrategy();
-        static readonly RetryStrategy TransientRetryStrategy =
+        private static readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy = new ErrorDetectionStrategy();
+
+        private static readonly RetryStrategy TransientRetryStrategy =
             new TransientFaultHandling.ExponentialBackoff(retryCount: 3, minBackoff: TimeSpan.FromSeconds(2), maxBackoff: TimeSpan.FromSeconds(30), deltaBackoff: TimeSpan.FromSeconds(3));
 
         public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion)
@@ -70,18 +71,16 @@ namespace Microsoft.Azure.Devices.Client.Edge
             string[] rawCerts = pemCerts.Split(new[] { delimiter }, StringSplitOptions.None);
 
             return rawCerts
-               .Take(rawCerts.Count() - 1) // Drop the invalid entry
+               .Take(rawCerts.Length - 1) // Drop the invalid entry
                .Select(c => $"{c}{delimiter}") // Re-add the certificate end-marker which was removed by split
                .Select(c => System.Text.Encoding.UTF8.GetBytes(c))
                .Select(c => new X509Certificate2(c))
                .ToList();
         }
 
-        class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
+        private class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
         {
             public bool IsTransient(Exception ex) => ex is SwaggerException se && se.StatusCode >= 500;
         }
-
     }
-
 }

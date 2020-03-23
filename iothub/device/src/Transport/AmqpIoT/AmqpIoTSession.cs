@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal class AmqpIoTSession
     {
         public event EventHandler Closed;
+
         private readonly AmqpSession _amqpSession;
 
         public AmqpIoTSession(AmqpSession amqpSession)
@@ -47,6 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         }
 
         #region Telemetry links
+
         internal async Task<AmqpIoTSendingLink> OpenTelemetrySenderLinkAsync(
             DeviceIdentity deviceIdentity,
             TimeSpan timeout
@@ -82,9 +84,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 timeout
             ).ConfigureAwait(false);
         }
-        #endregion
+
+        #endregion Telemetry links
 
         #region EventLink
+
         internal async Task<AmqpIoTReceivingLink> OpenEventsReceiverLinkAsync(
             DeviceIdentity deviceIdentity,
             TimeSpan timeout
@@ -102,9 +106,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 timeout
             ).ConfigureAwait(false);
         }
-        #endregion
+
+        #endregion EventLink
 
         #region MethodLink
+
         internal async Task<AmqpIoTSendingLink> OpenMethodsSenderLinkAsync(
             DeviceIdentity deviceIdentity,
             string correlationIdSuffix,
@@ -142,9 +148,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 timeout
             ).ConfigureAwait(false);
         }
-        #endregion
+
+        #endregion MethodLink
 
         #region TwinLink
+
         internal async Task<AmqpIoTReceivingLink> OpenTwinReceiverLinkAsync(
             DeviceIdentity deviceIdentity,
             string correlationIdSuffix,
@@ -182,7 +190,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     timeout
             ).ConfigureAwait(false);
         }
-        #endregion
+
+        #endregion TwinLink
 
         #region StreamLink
         internal async Task<AmqpIoTSendingLink> OpenStreamsSenderLinkAsync(
@@ -225,6 +234,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         #endregion
 
         #region Common link handling
+
         private static async Task<AmqpIoTSendingLink> OpenSendingAmqpLinkAsync(
             DeviceIdentity deviceIdentity,
             AmqpSession amqpSession,
@@ -295,8 +305,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             string moduleTemplate,
             string linkSuffix,
             string correlationId,
-            TimeSpan timeout
-        )
+            TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
 
@@ -372,6 +381,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             return deviceIdentity.IotHubConnectionString.BuildLinkAddress(path).AbsoluteUri;
         }
-        #endregion
+
+        #endregion Common link handling
     }
 }

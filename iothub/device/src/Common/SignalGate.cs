@@ -1,18 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Threading;
-
     [Fx.Tag.SynchronizationPrimitive(Fx.Tag.BlocksUsing.NonBlocking)]
-    //TODO: 171524 - Across remoting boundary Serializable is not sufficient, and requires AsyncResult that derives from MarshalByRefObject.  
+    //TODO: 171524 - Across remoting boundary Serializable is not sufficient, and requires AsyncResult that derives from MarshalByRefObject.
     [Serializable]
-    class SignalGate
+    internal class SignalGate
     {
         [Fx.Tag.SynchronizationObject(Blocking = false, Kind = Fx.Tag.SynchronizationKind.InterlockedNoSpin)]
-        int state;
+        private int state;
 
         public SignalGate()
         {
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         // Returns true if this brings the gate to the Signalled state.
-        // Transitions - SignalPending -> Signaled | return the AsyncResult since the callback already 
+        // Transitions - SignalPending -> Signaled | return the AsyncResult since the callback already
         //                                         | completed and provided the result on its thread
         //               Locked -> Unlocked
         public bool Unlock()
@@ -82,12 +82,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         // This is factored out to allow Signal and Unlock to be inlined.
-        static void ThrowInvalidSignalGateState()
+        private static void ThrowInvalidSignalGateState()
         {
             throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.InvalidSemaphoreExit));
         }
 
-        static class GateState
+        private static class GateState
         {
             public const int Locked = 0;
             public const int SignalPending = 1;
@@ -98,9 +98,9 @@ namespace Microsoft.Azure.Devices.Client
 
     [Fx.Tag.SynchronizationPrimitive(Fx.Tag.BlocksUsing.NonBlocking)]
     [Serializable]
-    class SignalGateT<T> : SignalGate
+    internal class SignalGateT<T> : SignalGate
     {
-        T Result { get; set; }
+        private T Result { get; set; }
 
         public SignalGateT()
             : base()

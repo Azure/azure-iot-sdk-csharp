@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System.Collections.Generic;
-
-    interface ISessionContextProvider
+    internal interface ISessionContextProvider
     {
-        IDictionary<string, string> Properties { get; set; } 
+        IDictionary<string, string> Properties { get; set; }
     }
 }

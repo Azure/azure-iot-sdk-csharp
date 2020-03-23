@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -50,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ThrowIfDisposed();
             return InnerHandler?.OpenAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
-        
+
         public virtual Task CloseAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -65,11 +64,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return closeTask;
             }
         }
-        
+
         /// <summary>
         /// Completes when the transport disconnected.
         /// </summary>
-        /// <returns></returns>
         public virtual Task WaitForTransportClosedAsync()
         {
             ThrowIfDisposed();
@@ -179,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ThrowIfDisposed();
             return InnerHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
         }
-        
+
         public virtual Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -219,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public void Dispose()
         {
-            Dispose(true);   
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 

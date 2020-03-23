@@ -11,7 +11,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     using System.Threading.Tasks;
 
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     public class ConnectionStatusChangeHandlerTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}_Device";
@@ -26,12 +27,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
+        [TestCategory("LongRunning")]
         [TestMethod]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
@@ -39,8 +42,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        // Re-enable test once PR #1102 is checked-in.
-        // [TestMethod]
+        [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -52,8 +55,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        // Re-enable test once PR #1102 is checked-in.
-        // [TestMethod]
+        [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -66,13 +69,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+                TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -107,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }).ConfigureAwait(false);
         }
 
-        async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+        private async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
             Client.TransportType protocol, Func<RegistryManager, string, Task> registryManagerOperation)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
@@ -143,35 +148,20 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(twin);
 
-                // Delete the device in IoT Hub. This should trigger the ConnectionStatusChangesHandler.
+                // Delete/disable the device in IoT Hub. This should trigger the ConnectionStatusChangesHandler.
                 using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(registryManager, deviceId).ConfigureAwait(false);
                 }
 
-                // Periodically keep retrieving the device twin to keep connection alive.
-                // The ConnectionStatusChangesHandler should be triggered when the connection is closed from IoT hub with an
-                // exception thrown.
-                int twinRetrievals = 50;
-                for (int i = 0; i < twinRetrievals; i++)
+                // Artificial sleep waiting for the connection status change handler to get triggered.
+                int sleepCount = 50;
+                for (int i = 0; i < sleepCount; i++)
                 {
-                    try
+                    await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    if (deviceDisabledReceivedCount == 1)
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-                        if (deviceDisabledReceivedCount == 1)
-                        {
-                            // Call an API on the client again to trigger the ConnectionStatusChangesHandler once again with the 
-                            // Device_Disabled status.
-                            // This currently does not work due to some issues with IoT hub allowing new connections even when the
-                            // device is deleted/disabled. Once that problem is investigated and fixed, we can re-enable this call
-                            // and test for multiple invocations of the ConnectionStatusChangeHandler.
-                            // await deviceClient.GetTwinAsync().ConfigureAwait(false);
-                            break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.WriteLine($"Exception occurred while retrieving module twin: {ex}");
+                        break;
                     }
                 }
 
@@ -181,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+        private async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
             Client.TransportType protocol, Func<RegistryManager, string, Task> registryManagerOperation)
         {
             AmqpTransportSettings amqpTransportSettings = new AmqpTransportSettings(protocol);
@@ -214,36 +204,20 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(twin);
 
-                // Delete the device in IoT Hub.
+                // Delete/disable the device in IoT Hub.
                 using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(registryManager, testModule.DeviceId).ConfigureAwait(false);
                 }
 
-                // Periodically keep retrieving the device twin to keep connection alive.
-                // The ConnectionStatusChangesHandler should be triggered when the connection is closed from IoT hub with an
-                // exception thrown.
-                int twinRetrievals = 50;
-                for (int i = 0; i < twinRetrievals; i++)
+                // Artificial sleep waiting for the connection status change handler to get triggered.
+                int sleepCount = 50;
+                for (int i = 0; i < sleepCount; i++)
                 {
-                    try
+                    await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    if (deviceDisabledReceivedCount == 1)
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-                        if (deviceDisabledReceivedCount == 1)
-                        {
-                            // Call an API on the client again to trigger the ConnectionStatusChangesHandler once again with the 
-                            // Device_Disabled status.
-                            // This currently does not work due to some issues with IoT hub allowing new connections even when the
-                            // device is deleted/disabled. Once that problem is investigated and fixed, we can re-enable this call
-                            // and test for multiple invocations of the ConnectionStatusChangeHandler.
-                            // await moduleClient.GetTwinAsync().ConfigureAwait(false);
-                            break;
-                        }
-                    }
-                    catch (IotHubException ex)
-                    {
-                        _log.WriteLine($"Exception occurred while retrieving module twin: {ex}");
-                        Assert.IsInstanceOfType(ex.InnerException, typeof(DeviceNotFoundException));
+                        break;
                     }
                 }
 

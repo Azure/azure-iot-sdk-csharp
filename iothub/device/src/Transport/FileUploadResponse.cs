@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    using Newtonsoft.Json;
-
-    class FileUploadResponse
+    internal class FileUploadResponse
     {
         [JsonProperty(PropertyName = "correlationId")]
         public string CorrelationId { get; set; }

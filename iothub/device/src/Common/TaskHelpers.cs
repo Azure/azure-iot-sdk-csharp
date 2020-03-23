@@ -1,17 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information. 
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Diagnostics;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-    using System.Threading.Tasks;
-#if !NETSTANDARD1_3
-    using System.Transactions;
-#endif
-    static class TaskHelpers
+    internal static class TaskHelpers
     {
 #if NET451
         public static readonly Task CompletedTask = Task.FromResult<bool>(false);
@@ -112,9 +107,11 @@ namespace Microsoft.Azure.Devices.Client
                     var exception = source.Exception.GetBaseException();
                     proxy.TrySetException(exception);
                     break;
+
                 case TaskStatus.Canceled:
                     proxy.TrySetCanceled();
                     break;
+
                 case TaskStatus.RanToCompletion:
                     Task<TResult> castedSource = source as Task<TResult>;
                     proxy.TrySetResult(

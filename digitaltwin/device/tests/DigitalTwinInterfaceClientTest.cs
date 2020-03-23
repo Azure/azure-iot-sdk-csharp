@@ -16,6 +16,8 @@ using Xunit;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test
 {
+    [Trait("TestCategory", "Unit")]
+    [Trait("TestCategory", "PnP")]
     public class DigitalTwinInterfaceClientTest
     {
         [Fact]
@@ -68,10 +70,10 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test
         [MemberData(nameof(GetInvalidInterfaceInstanceNameData))]
         public void TestConstructorWhenInstanceNameFormatIsInvalid(string instanceName)
         {
-                var ex = Assert.Throws<ArgumentException>(() => new DigitalTwinInterfaceTestClient("urn:testId", instanceName));
+            var ex = Assert.Throws<ArgumentException>(() => new DigitalTwinInterfaceTestClient("urn:testId", instanceName));
 
-                Assert.Equal(ex.ParamName, "instanceName");
-                Assert.StartsWith(DigitalTwinConstants.InvalidInterfaceInstanceNameErrorMessage, ex.Message, StringComparison.Ordinal);
+            Assert.Equal(ex.ParamName, "instanceName");
+            Assert.StartsWith(DigitalTwinConstants.InvalidInterfaceInstanceNameErrorMessage, ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]

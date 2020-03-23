@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Common.Service.Auth;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +11,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Service.Auth;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -23,7 +23,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private readonly Uri _baseAddress;
         private readonly IAuthorizationHeaderProvider _authenticationHeaderProvider;
-        private HttpClient _httpClientObj;
+
+        private HttpClientHandler _httpClientHandler = null;
+        private HttpClient _httpClientObj = null;
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
@@ -31,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="baseAddress">the <code>Uri</code> HTTP endpoint in the service.</param>
-        /// <param name="authenticationHeaderProvider">the <see cref="IAuthorizationHeaderProvider"/> that will provide the 
+        /// <param name="authenticationHeaderProvider">the <see cref="IAuthorizationHeaderProvider"/> that will provide the
         ///     authorization token for the HTTP communication.</param>
         /// <param name="httpTransportSettings"> Specifies HTTP Transport Settings for the request</param>
         public ContractApiHttp(
@@ -42,22 +44,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
 
+            _httpClientHandler = new HttpClientHandler
+            {
+                // Cannot specify a specific protocol here, as desired due to an error:
+                //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
+                // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
+
+                //SslProtocols = TlsVersions.Preferred,
+            };
+
             IWebProxy webProxy = httpTransportSettings.Proxy;
             if (webProxy != DefaultWebProxySettings.Instance)
             {
-                HttpClientHandler httpClientHandler = new HttpClientHandler();
-                httpClientHandler.UseProxy = (webProxy != null);
-                httpClientHandler.Proxy = webProxy;
-                _httpClientObj = new HttpClient(httpClientHandler);
+                _httpClientHandler.UseProxy = webProxy != null;
+                _httpClientHandler.Proxy = webProxy;
             }
-            else
+
+            _httpClientObj = new HttpClient(_httpClientHandler)
             {
-                _httpClientObj = new HttpClient();
-            }
-            _httpClientObj.BaseAddress = _baseAddress;
-            _httpClientObj.Timeout = s_defaultOperationTimeout;
-            _httpClientObj.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue(MediaTypeForDeviceManagementApis));
+                BaseAddress = _baseAddress,
+                Timeout = s_defaultOperationTimeout,
+            };
+            _httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
         }
 
@@ -72,7 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
         /// <exception cref="ProvisioningServiceClientException">if the cancellation was requested.</exception>
-        /// <exception cref="ProvisioningServiceClientTransportException">if there is a error in the HTTP communication 
+        /// <exception cref="ProvisioningServiceClientTransportException">if there is a error in the HTTP communication
         ///     between client and service.</exception>
         /// <exception cref="ProvisioningServiceClientHttpException">if the service answer the request with error status.</exception>
         public async Task<ContractApiResponse> RequestAsync(
@@ -85,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             ContractApiResponse response;
 
-            using (HttpRequestMessage msg = new HttpRequestMessage(httpMethod, requestUri))
+            using (var msg = new HttpRequestMessage(httpMethod, requestUri))
             {
                 if (!string.IsNullOrEmpty(body))
                 {
@@ -120,7 +128,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                             httpResponse.ReasonPhrase);
                     }
                 }
-                catch(AggregateException ex)
+                catch (AggregateException ex)
                 {
                     var innerExceptions = ex.Flatten().InnerExceptions;
                     if (innerExceptions.Any(e => e is TimeoutException))
@@ -179,7 +187,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return;
             }
 
-            StringBuilder quotedIfMatch = new StringBuilder();
+            var quotedIfMatch = new StringBuilder();
 
             if (!ifMatch.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
@@ -207,12 +215,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         protected virtual void Dispose(bool disposing)
         {
-            if(disposing)
+            if (disposing)
             {
-                if(_httpClientObj != null)
+                if (_httpClientObj != null)
                 {
                     _httpClientObj.Dispose();
                     _httpClientObj = null;
+                }
+
+                if (_httpClientHandler != null)
+                {
+                    _httpClientHandler.Dispose();
+                    _httpClientHandler = null;
                 }
             }
         }

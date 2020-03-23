@@ -2,6 +2,10 @@
 //Microsoft would like to thank its contributors, a list
 //of whom are at http://aka.ms/entlib-contributors
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
 //obtain a copy of the License at
@@ -20,10 +24,6 @@
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// Provides the base implementation of the retry mechanism for unreliable actions and transient conditions.
     /// </summary>
@@ -61,14 +61,6 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             }
         }
 
-        private static RetryPolicy noRetry = new RetryPolicy(new RetryPolicy.TransientErrorIgnoreStrategy(), RetryStrategy.NoRetry);
-
-        private static RetryPolicy defaultFixed = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultFixed);
-
-        private static RetryPolicy defaultProgressive = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultProgressive);
-
-        private static RetryPolicy defaultExponential = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultExponential);
-
         /// <summary>
         /// An instance of a callback delegate that will be invoked whenever a retry condition is encountered.
         /// </summary>
@@ -77,67 +69,35 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// <summary>
         /// Returns a default policy that performs no retries, but invokes the action only once.
         /// </summary>
-        public static RetryPolicy NoRetry
-        {
-            get
-            {
-                return RetryPolicy.noRetry;
-            }
-        }
+        public static RetryPolicy NoRetry { get; } = new RetryPolicy(new RetryPolicy.TransientErrorIgnoreStrategy(), RetryStrategy.NoRetry);
 
         /// <summary>
         /// Returns a default policy that implements a fixed retry interval configured with the default <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> retry strategy.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryPolicy DefaultFixed
-        {
-            get
-            {
-                return RetryPolicy.defaultFixed;
-            }
-        }
+        public static RetryPolicy DefaultFixed { get; } = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultFixed);
 
         /// <summary>
         /// Returns a default policy that implements a progressive retry interval configured with the default <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> retry strategy.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryPolicy DefaultProgressive
-        {
-            get
-            {
-                return RetryPolicy.defaultProgressive;
-            }
-        }
+        public static RetryPolicy DefaultProgressive { get; } = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultProgressive);
 
         /// <summary>
         /// Returns a default policy that implements a random exponential retry interval configured with the default <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> retry strategy.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryPolicy DefaultExponential
-        {
-            get
-            {
-                return RetryPolicy.defaultExponential;
-            }
-        }
+        public static RetryPolicy DefaultExponential { get; } = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultExponential);
 
         /// <summary>
         /// Gets the retry strategy.
         /// </summary>
-        public RetryStrategy RetryStrategy
-        {
-            get;
-            private set;
-        }
+        public RetryStrategy RetryStrategy { get; private set; }
 
         /// <summary>
         /// Gets the instance of the error detection strategy.
         /// </summary>
-        public ITransientErrorDetectionStrategy ErrorDetectionStrategy
-        {
-            get;
-            private set;
-        }
+        public ITransientErrorDetectionStrategy ErrorDetectionStrategy { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryPolicy" /> class with the specified number of retry attempts and parameters defining the progressive delay between retries.
@@ -148,12 +108,12 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             Guard.ArgumentNotNull(errorDetectionStrategy, "errorDetectionStrategy");
             Guard.ArgumentNotNull(retryStrategy, "retryPolicy");
-            this.ErrorDetectionStrategy = errorDetectionStrategy;
+            ErrorDetectionStrategy = errorDetectionStrategy;
             if (errorDetectionStrategy == null)
             {
                 throw new InvalidOperationException("The error detection strategy type must implement the ITransientErrorDetectionStrategy interface.");
             }
-            this.RetryStrategy = retryStrategy;
+            RetryStrategy = retryStrategy;
         }
 
         /// <summary>
@@ -205,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         public virtual void ExecuteAction(Action action)
         {
             Guard.ArgumentNotNull(action, "action");
-            this.ExecuteAction<object>(delegate
+            ExecuteAction<object>(delegate
             {
                 action();
                 return null;
@@ -222,33 +182,30 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             Guard.ArgumentNotNull(func, "func");
             int num = 0;
-            TimeSpan zero = TimeSpan.Zero;
-            ShouldRetry shouldRetry = this.RetryStrategy.GetShouldRetry();
+            ShouldRetry shouldRetry = RetryStrategy.GetShouldRetry();
             TResult result;
             while (true)
             {
-                Exception ex = null;
+                Exception ex;
+                TimeSpan zero;
                 try
                 {
                     result = func();
                     break;
                 }
-// 'RetryLimitExceededException' is obsolete: 'You should use cancellation tokens or other means of stopping the retry loop.'
-#pragma warning disable 0618 
                 catch (RetryLimitExceededException ex2)
-#pragma warning restore 0618
                 {
                     if (ex2.InnerException != null)
                     {
                         throw ex2.InnerException;
                     }
-                    result = default(TResult);
+                    result = default;
                     break;
                 }
                 catch (Exception ex3)
                 {
                     ex = ex3;
-                    if (!this.ErrorDetectionStrategy.IsTransient(ex) || !shouldRetry(num++, ex, out zero))
+                    if (!ErrorDetectionStrategy.IsTransient(ex) || !shouldRetry(num++, ex, out zero))
                     {
                         throw;
                     }
@@ -257,8 +214,8 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 {
                     zero = TimeSpan.Zero;
                 }
-                this.OnRetrying(num, ex, zero);
-                if (num > 1 || !this.RetryStrategy.FastFirstRetry)
+                OnRetrying(num, ex, zero);
+                if (num > 1 || !RetryStrategy.FastFirstRetry)
                 {
                     Task.Delay(zero).Wait();
                 }
@@ -277,7 +234,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// </returns>
         public Task ExecuteAsync(Func<Task> taskAction)
         {
-            return this.ExecuteAsync(taskAction, default(CancellationToken));
+            return ExecuteAsync(taskAction, default);
         }
 
         /// <summary>
@@ -294,9 +251,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             if (taskAction == null)
             {
-                throw new ArgumentNullException("taskAction");
+                throw new ArgumentNullException(nameof(taskAction));
             }
-            return new AsyncExecution(taskAction, this.RetryStrategy.GetShouldRetry(), new Func<Exception, bool>(this.ErrorDetectionStrategy.IsTransient), new Action<int, Exception, TimeSpan>(this.OnRetrying), this.RetryStrategy.FastFirstRetry, cancellationToken).ExecuteAsync();
+            return new AsyncExecution(taskAction, RetryStrategy.GetShouldRetry(), new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient), new Action<int, Exception, TimeSpan>(OnRetrying), RetryStrategy.FastFirstRetry, cancellationToken).ExecuteAsync();
         }
 
         /// <summary>
@@ -310,7 +267,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// </returns>
         public Task<TResult> ExecuteAsync<TResult>(Func<Task<TResult>> taskFunc)
         {
-            return this.ExecuteAsync<TResult>(taskFunc, default(CancellationToken));
+            return ExecuteAsync(taskFunc, default);
         }
 
         /// <summary>
@@ -327,9 +284,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             if (taskFunc == null)
             {
-                throw new ArgumentNullException("taskFunc");
+                throw new ArgumentNullException(nameof(taskFunc));
             }
-            return new AsyncExecution<TResult>(taskFunc, this.RetryStrategy.GetShouldRetry(), new Func<Exception, bool>(this.ErrorDetectionStrategy.IsTransient), new Action<int, Exception, TimeSpan>(this.OnRetrying), this.RetryStrategy.FastFirstRetry, cancellationToken).ExecuteAsync();
+            return new AsyncExecution<TResult>(taskFunc, RetryStrategy.GetShouldRetry(), new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient), new Action<int, Exception, TimeSpan>(OnRetrying), RetryStrategy.FastFirstRetry, cancellationToken).ExecuteAsync();
         }
 
         /// <summary>
@@ -340,10 +297,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// <param name="delay">The delay that indicates how long the current thread will be suspended before the next iteration is invoked.</param>
         protected virtual void OnRetrying(int retryCount, Exception lastError, TimeSpan delay)
         {
-            if (this.Retrying != null)
-            {
-                this.Retrying(this, new RetryingEventArgs(retryCount, delay, lastError));
-            }
+            Retrying?.Invoke(this, new RetryingEventArgs(retryCount, delay, lastError));
         }
     }
 }

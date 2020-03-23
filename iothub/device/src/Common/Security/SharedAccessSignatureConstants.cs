@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-
-    static class SharedAccessSignatureConstants
+    internal static class SharedAccessSignatureConstants
     {
         public const int MaxKeyNameLength = 256;
         public const int MaxKeyLength = 256;
@@ -17,12 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string SignedResourceFullFieldName = SharedAccessSignature + " " + AudienceFieldName;
         public const string KeyValueSeparator = "=";
         public const string PairSeparator = "&";
-#if NETMF
-        public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-        public static readonly TimeSpan MaxClockSkew = new TimeSpan(0, 5, 0);
-#else
         public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         public static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
-#endif
     }
 }

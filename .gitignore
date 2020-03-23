@@ -13,6 +13,8 @@
 *.user
 *.sln.docstates
 .vs/
+launchSettings.json
+*.pubxml
 
 # Build results
 

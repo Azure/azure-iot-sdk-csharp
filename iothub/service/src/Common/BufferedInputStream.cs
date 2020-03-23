@@ -1,20 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-    using System.IO;
-    using System.Threading;
-
-    class BufferedInputStream : Stream
-#if !NETSTANDARD1_3
-    , ICloneable
-#endif
+    internal class BufferedInputStream : Stream, ICloneable
     {
-        BufferManagerByteArray data;
-        MemoryStream innerStream;
-        bool disposed;
+        private BufferManagerByteArray data;
+        private MemoryStream innerStream;
+        private bool disposed;
 
         public BufferedInputStream(byte[] bytes, int bufferSize, InternalBufferManager bufferManager)
         {
@@ -22,7 +19,7 @@ namespace Microsoft.Azure.Devices.Common
             this.innerStream = new MemoryStream(bytes, 0, bufferSize);
         }
 
-        BufferedInputStream(BufferManagerByteArray data, int bufferSize)
+        private BufferedInputStream(BufferManagerByteArray data, int bufferSize)
         {
             this.data = data;
             this.data.AddReference();
@@ -131,7 +128,7 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        void ThrowIfDisposed()
+        private void ThrowIfDisposed()
         {
             if (this.disposed)
             {
@@ -139,9 +136,9 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        sealed class BufferManagerByteArray
+        private sealed class BufferManagerByteArray
         {
-            volatile int references;
+            private volatile int references;
 
             public BufferManagerByteArray(byte[] bytes, InternalBufferManager bufferManager)
             {
@@ -156,7 +153,7 @@ namespace Microsoft.Azure.Devices.Common
                 private set;
             }
 
-            InternalBufferManager BufferManager
+            private InternalBufferManager BufferManager
             {
                 get;
                 set;

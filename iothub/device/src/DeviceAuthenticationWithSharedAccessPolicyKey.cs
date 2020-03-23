@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Client.Extensions;
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using System;
-
     /// <summary>
-    /// Authentication method that uses a shared access policy key. 
+    /// Authentication method that uses a shared access policy key.
     /// </summary>
     public sealed class DeviceAuthenticationWithSharedAccessPolicyKey : IAuthenticationMethod
     {
-        string deviceId;
-        string policyName;
-        string key;
+        private string _deviceId;
+        private string _policyName;
+        private string _key;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithSharedAccessPolicyKey"/> class.
@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="key">Key associated with the shared access policy.</param>
         public DeviceAuthenticationWithSharedAccessPolicyKey(string deviceId, string policyName, string key)
         {
-            this.SetDeviceId(deviceId);
-            this.SetKey(key);
-            this.SetPolicyName(policyName);
+            SetDeviceId(deviceId);
+            SetKey(key);
+            SetPolicyName(policyName);
         }
 
         /// <summary>
@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string DeviceId
         {
-            get { return this.deviceId; }
-            set { this.SetDeviceId(value); }
+            get => _deviceId;
+            set => SetDeviceId(value);
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string Key
         {
-            get { return this.key; }
-            set { this.SetKey(value); }
+            get => _key;
+            set => SetKey(value);
         }
 
         /// <summary>
@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string PolicyName
         {
-            get { return this.policyName; }
-            set { this.SetPolicyName(value); }
+            get => _policyName;
+            set => SetPolicyName(value);
         }
 
         /// <summary>
@@ -64,53 +64,50 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException("iotHubConnectionStringBuilder");
+                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
-            iotHubConnectionStringBuilder.SharedAccessKey = this.Key;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = this.PolicyName;
+            iotHubConnectionStringBuilder.DeviceId = DeviceId;
+            iotHubConnectionStringBuilder.SharedAccessKey = Key;
+            iotHubConnectionStringBuilder.SharedAccessKeyName = PolicyName;
             iotHubConnectionStringBuilder.SharedAccessSignature = null;
 
             return iotHubConnectionStringBuilder;
         }
 
-        void SetDeviceId(string deviceId)
+        private void SetDeviceId(string deviceId)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
-            this.deviceId = deviceId;
+            _deviceId = deviceId;
         }
 
-        void SetKey(string key)
+        private void SetKey(string key)
         {
             if (key.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
-
-#if !NETMF
 
             if (!StringValidationHelper.IsBase64String(key))
             {
                 throw new ArgumentException("Key must be base64 encoded");
             }
-#endif
 
-            this.key = key;
+            _key = key;
         }
 
-        void SetPolicyName(string policyName)
+        private void SetPolicyName(string policyName)
         {
             if (policyName.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("policyName");
+                throw new ArgumentNullException(nameof(policyName));
             }
 
-            this.policyName = policyName;
+            _policyName = policyName;
         }
     }
 }

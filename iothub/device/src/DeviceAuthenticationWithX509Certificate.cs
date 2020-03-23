@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Security.Cryptography.X509Certificates;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
     /// <summary>
     /// Authentication method that uses a X.509 certificate
     /// </summary>
     public sealed class DeviceAuthenticationWithX509Certificate : IAuthenticationMethod
     {
-        string deviceId;
+        private string deviceId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithX509Certificate"/> class.
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
             return iotHubConnectionStringBuilder;
         }
 
-        void SetDeviceId(string deviceId)
+        private void SetDeviceId(string deviceId)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {

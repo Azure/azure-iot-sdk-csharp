@@ -7,9 +7,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     using System.Runtime.Serialization;
 
     /// <summary>
-    /// Exception thrown when the list of input modules is too large for an operation 
+    /// Exception thrown when the list of input modules is too large for an operation
     /// </summary>
-    /// 
+    ///
     [Serializable]
     public sealed class TooManyModulesOnDeviceException : IotHubException
     {
@@ -42,11 +42,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
-        TooManyModulesOnDeviceException(SerializationInfo info, StreamingContext context)
+        private TooManyModulesOnDeviceException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

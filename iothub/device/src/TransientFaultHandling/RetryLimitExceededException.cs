@@ -2,6 +2,9 @@
 //Microsoft would like to thank its contributors, a list
 //of whom are at http://aka.ms/entlib-contributors
 
+using System;
+using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
+
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
 //obtain a copy of the License at
@@ -20,15 +23,16 @@
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
-    using System;
-    using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
-
     /// <summary>
     /// The special type of exception that provides managed exit from a retry loop. The user code can use this
     /// exception to notify the retry policy that no further retry attempts are required.
+    ///
+    /// We want to stop using this. Instead we should use cancellation tokens or other means of stopping the retry loop.
     /// </summary>
-    [Obsolete("You should use cancellation tokens or other means of stopping the retry loop.")]
+#pragma warning disable CA1064 // Exceptions should be public
+
     internal sealed class RetryLimitExceededException : Exception
+#pragma warning restore CA1064 // Exceptions should be public
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryLimitExceededException" /> class with a default error message.

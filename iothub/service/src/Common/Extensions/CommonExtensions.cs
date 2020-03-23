@@ -1,71 +1,94 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Common
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Sockets;
-    using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
 
-    using Microsoft.Azure.Devices.Common.WebApi;
 #if NET451
-    using Microsoft.Owin;
+using Microsoft.Owin;
 #endif
 
+using Microsoft.Azure.Devices.Common.WebApi;
+
+namespace Microsoft.Azure.Devices.Common
+{
     public delegate bool TryParse<TInput, TOutput>(TInput input, bool ignoreCase, out TOutput output);
 
+    /// <summary>
+    /// Extension method helpers
+    /// </summary>
     public static class CommonExtensionMethods
     {
-        const char ValuePairDelimiter = ';';
-        const char ValuePairSeparator = '=';
+        private const char ValuePairDelimiter = ';';
+        private const char ValuePairSeparator = '=';
 
+        /// <summary>
+        /// Appends the specified character, if not already there
+        /// </summary>
+        /// <param name="value">The string value to update</param>
+        /// <param name="suffix">The desired suffix</param>
+        /// <returns>The fixed up string</returns>
         public static string EnsureEndsWith(this string value, char suffix)
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
-            var length = value.Length;
+            int length = value.Length;
             if (length == 0)
             {
+#pragma warning disable CA1305 // Specify IFormatProvider
                 return suffix.ToString();
+#pragma warning restore CA1305 // Specify IFormatProvider
             }
-            else if (value[length - 1] == suffix)
-            {
-                return value;
-            }
-            else
-            {
-                return value + suffix;
-            }
+
+            return value[length - 1] == suffix
+                    ? value
+                    : value + suffix;
         }
 
+        /// <summary>
+        /// Prepends the specified character, if not already there
+        /// </summary>
+        /// <param name="value">The string value to update</param>
+        /// <param name="prefix">The desired prefix</param>
+        /// <returns>The fixed up string</returns>
         public static string EnsureStartsWith(this string value, char prefix)
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
             if (value.Length == 0)
             {
+#pragma warning disable CA1305 // Specify IFormatProvider
                 return prefix.ToString();
+#pragma warning restore CA1305 // Specify IFormatProvider
             }
             else
             {
-                return value[0] == prefix ? value : prefix + value;
+                return value[0] == prefix
+                    ? value
+                    : prefix + value;
             }
         }
 
+        /// <summary>
+        /// Gets the value of the specified key, if present
+        /// </summary>
+        /// <param name="map">The dictionary containing the specifed key</param>
+        /// <param name="keyName">The key of the desired value</param>
+        /// <returns>The value, if present</returns>
         public static string GetValueOrDefault(this IDictionary<string, string> map, string keyName)
         {
-            string value;
-            if (!map.TryGetValue(keyName, out value))
+            if (!map.TryGetValue(keyName, out string value))
             {
                 value = null;
             }
@@ -73,15 +96,23 @@ namespace Microsoft.Azure.Devices.Common
             return value;
         }
 
+        /// <summary>
+        /// Takes a string representation of key/value pairs and produces a dictionary
+        /// </summary>
+        /// <param name="valuePairString">The string containing key/value pairs</param>
+        /// <param name="kvpDelimiter">The delimeter between key/value pairs</param>
+        /// <param name="kvpSeparator">The character separating each key and value</param>
+        /// <returns>A dictionary of the key/value pairs</returns>
         public static IDictionary<string, string> ToDictionary(this string valuePairString, char kvpDelimiter, char kvpSeparator)
         {
             if (string.IsNullOrWhiteSpace(valuePairString))
             {
-                throw new ArgumentException("Malformed Token");
+                throw new ArgumentException("Malformed token");
             }
 
-            IEnumerable<string[]> parts = valuePairString.Split(kvpDelimiter).
-                Select((part) => part.Split(new char[] { kvpSeparator }, 2));
+            IEnumerable<string[]> parts = valuePairString
+                .Split(kvpDelimiter)
+                .Select((part) => part.Split(new char[] { kvpSeparator }, 2));
 
             if (parts.Any((part) => part.Length != 2))
             {
@@ -93,27 +124,36 @@ namespace Microsoft.Azure.Devices.Common
             return map;
         }
 
+        /// <summary>
+        /// Gets the IoT hub name from the message header
+        /// </summary>
+        /// <param name="requestMessage">A request message</param>
+        /// <param name="iotHubName">The hub name</param>
+        /// <returns>True, if found</returns>
         public static bool TryGetIotHubName(this HttpRequestMessage requestMessage, out string iotHubName)
         {
-            object iotHubNameObj = null;
             iotHubName = null;
 
             // IotHubMessageHandler sets the request message property with IotHubName read from hostname
-            if (!requestMessage.Properties.TryGetValue(CustomHeaderConstants.HttpIotHubName, out iotHubNameObj) ||
-                !(iotHubNameObj is string))
+            if (!requestMessage.Properties.TryGetValue(CustomHeaderConstants.HttpIotHubName, out object iotHubNameObj)
+                || !(iotHubNameObj is string))
             {
                 return false;
             }
 
-            iotHubName = (string)iotHubNameObj; ;
-
+            iotHubName = (string)iotHubNameObj;
             return true;
         }
 
+        /// <summary>
+        /// Gets the IoT hub name from the host name
+        /// </summary>
+        /// <param name="requestMessage">A request message</param>
+        /// <returns>The hub name</returns>
         public static string GetIotHubNameFromHostName(this HttpRequestMessage requestMessage)
         {
             // {IotHubname}.[env-specific-sub-domain.]IotHub[-int].net
-            //
+
             string[] hostNameParts = requestMessage.RequestUri.Host.Split('.');
             if (hostNameParts.Length < 3)
             {
@@ -123,11 +163,14 @@ namespace Microsoft.Azure.Devices.Common
             return hostNameParts[0];
         }
 
+        /// <summary>
+        /// Get the hub name from a request message
+        /// </summary>
+        /// <param name="requestMessage">A request message</param>
+        /// <returns>The hub name</returns>
         public static string GetIotHubName(this HttpRequestMessage requestMessage)
         {
-            string iotHubName;
-
-            if (!TryGetIotHubName(requestMessage, out iotHubName))
+            if (!TryGetIotHubName(requestMessage, out string iotHubName))
             {
                 throw new ArgumentException("Invalid request URI");
             }
@@ -168,7 +211,6 @@ namespace Microsoft.Azure.Devices.Common
                             addressBytes[addressBytes.Length - 4] = 0xFF;
                             maskedRemoteIpAddress = new IPAddress(addressBytes).ToString();
                         }
-
                     }
 
                     return maskedRemoteIpAddress;

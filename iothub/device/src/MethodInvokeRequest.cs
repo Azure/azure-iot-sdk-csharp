@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     /// <summary>
     /// Parameters to execute a direct method on the device or module
     /// </summary>
     internal class MethodInvokeRequest
     {
-        internal MethodInvokeRequest() { } // @ailn: for serialization only
+        internal MethodInvokeRequest()
+        {
+        } // @ailn: for serialization only
 
         /// <summary>
         /// Creates an instance of DirectMethodRequest type
@@ -36,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             this.ResponseTimeout = responseTimeout;
-            this.ConnectionTimeout = connectionTimeout; 
+            this.ConnectionTimeout = connectionTimeout;
         }
 
         /// <summary>

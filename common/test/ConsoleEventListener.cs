@@ -1,15 +1,15 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Globalization;
+using System.Linq;
 
 namespace System.Diagnostics.Tracing
 {
     public sealed class ConsoleEventListener : EventListener
     {
         private readonly string[] _eventFilters;
-        private object _lock = new object();
-
-        public ConsoleEventListener() : this(string.Empty) { }
+        private readonly object _lock = new object();
 
         public ConsoleEventListener(string filter)
         {
@@ -19,10 +19,10 @@ namespace System.Diagnostics.Tracing
             InitializeEventSources();
         }
 
-        public ConsoleEventListener(string [] filters)
+        public ConsoleEventListener(string[] filters)
         {
             _eventFilters = filters ?? throw new ArgumentNullException(nameof(filters));
-            if (_eventFilters.Length == 0) throw new ArgumentException("Filters cannot be empty");
+            if (_eventFilters.Length == 0) throw new ArgumentException("Filters cannot be empty", nameof(filters));
 
             foreach (string filter in _eventFilters)
             {
@@ -46,11 +46,13 @@ namespace System.Diagnostics.Tracing
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
             base.OnEventSourceCreated(eventSource);
-#if NET451
-            EnableEvents(eventSource, EventLevel.LogAlways);
-#else
-            EnableEvents(eventSource, EventLevel.LogAlways, EventKeywords.All);
+            EnableEvents(
+                eventSource,
+                EventLevel.LogAlways
+#if !NET451
+                , EventKeywords.All
 #endif
+                );
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
@@ -59,30 +61,16 @@ namespace System.Diagnostics.Tracing
 
             lock (_lock)
             {
-                bool shouldDisplay = false;
-            
-                if (_eventFilters.Length == 1 && eventData.EventSource.Name.StartsWith(_eventFilters[0]))
+                if (_eventFilters.Any(ef => eventData.EventSource.Name.StartsWith(ef, StringComparison.Ordinal)))
                 {
-                    shouldDisplay = true;
-                }
-                else
-                {
-                    foreach (string filter in _eventFilters)
-                    {
-                        if (eventData.EventSource.Name.StartsWith(filter))
-                        {
-                            shouldDisplay = true;
-                        }
-                    }
-                }
-
-                if (shouldDisplay)
-                {
+                    string eventIdent;
 #if NET451
-                    string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff")} [{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+                    // net451 doesn't have EventName, so we'll settle for EventId
+                    eventIdent = eventData.EventId.ToString(CultureInfo.InvariantCulture);
 #else
-                    string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff")} [{eventData.EventSource.Name}-{eventData.EventName}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+                    eventIdent = eventData.EventName;
 #endif
+                    string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture)} [{eventData.EventSource.Name}-{eventIdent}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
 
                     ConsoleColor origForeground = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.DarkYellow;

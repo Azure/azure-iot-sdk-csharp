@@ -9,9 +9,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     [Serializable]
     public class IotHubException : Exception
     {
-        const string IsTransientValueSerializationStoreName = "IotHubException-IsTransient";
-        const string TrackingIdSerializationStoreName = "IoTHubException-TrackingId";
-        const string ErrorCodeName = "ErrorCode";
+        private const string IsTransientValueSerializationStoreName = "IotHubException-IsTransient";
+        private const string TrackingIdSerializationStoreName = "IoTHubException-TrackingId";
+        private const string ErrorCodeName = "ErrorCode";
 
         public bool IsTransient { get; private set; }
 
@@ -59,7 +59,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             this.TrackingId = trackingId;
         }
 
-#if !NETSTANDARD1_3
         protected IotHubException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -76,7 +75,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             info.AddValue(IsTransientValueSerializationStoreName, this.IsTransient);
             info.AddValue(TrackingIdSerializationStoreName, this.TrackingId);
         }
-#endif
+
         public ErrorCode Code
         {
             get;

@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
-            using (var provisioningServiceClient = 
+            using (var provisioningServiceClient =
                 ProvisioningServiceClient.CreateFromConnectionString(
                     Configuration.Provisioning.ConnectionStringInvalidServiceCertificate))
             {
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var exception = await Assert.ThrowsExceptionAsync<ProvisioningServiceClientTransportException>(
                     () => q.NextAsync()).ConfigureAwait(false);
 
-#if NET47 || NET451
+#if NET472 || NET451
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
                 Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                     () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
-#if NET47 || NET451
+#if NET472 || NET451
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
                 Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
         {
-            using (var security = 
+            using (var security =
                 new SecurityProviderX509Certificate(Configuration.Provisioning.GetIndividualEnrollmentCertificate()))
             {
                 ProvisioningDeviceClient provisioningDeviceClient = ProvisioningDeviceClient.Create(

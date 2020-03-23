@@ -8,11 +8,13 @@ using Xunit;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
+    [Trait("TestCategory", "E2E")]
+    [Trait("TestCategory", "PnP")]
     public class DigitalTwinServiceClientE2ETests
     {
         private const string serviceClientTestsDevicePrefix = "digitaltwine2e-serviceclient";
 
-        DigitalTwinServiceClient digitalTwinServiceClient;
+        private DigitalTwinServiceClient digitalTwinServiceClient;
 
         public DigitalTwinServiceClientE2ETests()
         {
@@ -38,7 +40,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
             Assert.Contains(modelId, result);
             Assert.Contains("\"@type\":\"CapabilityModel\"", result);
         }
-        
+
         [Fact]
         public async void testGetModelInformationUnknownModelUrn()
         {

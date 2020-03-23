@@ -3,9 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    enum RouteDestinationType
+    internal enum RouteDestinationType
     {
         Unknown,
-        Telemetry
+        Telemetry,
     }
 }
