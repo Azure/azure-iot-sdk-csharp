@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class TwinSample
     {
-        private DeviceClient _deviceClient;
+        private readonly DeviceClient _deviceClient;
 
         public TwinSample(DeviceClient deviceClient)
         {
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync()
         {
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged, null).ConfigureAwait(false);
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync, null).ConfigureAwait(false);
 
             Console.WriteLine("Retrieving twin...");
             Twin twin = await _deviceClient.GetTwinAsync().ConfigureAwait(false);
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await Task.Delay(30 * 1000);
         }
 
-        private async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
+        private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties, object userContext)
         {
             Console.WriteLine("\tDesired property changed:");
             Console.WriteLine($"\t{desiredProperties.ToJson()}");

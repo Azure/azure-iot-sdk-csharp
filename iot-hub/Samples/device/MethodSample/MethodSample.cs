@@ -4,24 +4,19 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class MethodSample
     {
-        private DeviceClient _deviceClient;
+        private readonly DeviceClient _deviceClient;
 
         private class DeviceData
         {
-            public DeviceData(string myName)
-            {
-                this.Name = myName;
-            }
-
-            public string Name
-            {
-                get; set;
-            }
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
         }
 
         public MethodSample(DeviceClient deviceClient)
@@ -35,28 +30,32 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Method Call processing will be enabled when the first method handler is added.
             // Setup a callback for the 'WriteToConsole' method.
-            await _deviceClient.SetMethodHandlerAsync(nameof(WriteToConsole), WriteToConsole, null).ConfigureAwait(false);
+            await _deviceClient
+                .SetMethodHandlerAsync("WriteToConsole", WriteToConsoleAsync, null)
+                .ConfigureAwait(false);
 
             // Setup a callback for the 'GetDeviceName' method.
-            await _deviceClient.SetMethodHandlerAsync(nameof(GetDeviceName), GetDeviceName, new DeviceData("DeviceClientMethodSample")).ConfigureAwait(false);
+            await _deviceClient
+                .SetMethodHandlerAsync("GetDeviceName", GetDeviceNameAsync, new DeviceData { Name = "DeviceClientMethodSample" })
+                .ConfigureAwait(false);
 
             Console.WriteLine("Waiting 30 seconds for IoT Hub method calls ...");
 
-            Console.WriteLine($"Use the IoT Hub Azure Portal to call methods {nameof(GetDeviceName)} or {nameof(WriteToConsole)} within this time.");
-            await Task.Delay(30 * 1000).ConfigureAwait(false);
+            Console.WriteLine($"Use the IoT Hub Azure Portal to call methods GetDeviceName or WriteToConsole within this time.");
+            await Task.Delay(Task.FromSeconsd(30)).ConfigureAwait(false);
         }
 
         private void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
         {
             Console.WriteLine();
-            Console.WriteLine("Connection Status Changed to {0}", status);
-            Console.WriteLine("Connection Status Changed Reason is {0}", reason);
+            Console.WriteLine($"Connection status changed to {status}.");
+            Console.WriteLine($"Connection status changed reason is {reason}.");
             Console.WriteLine();
         }
 
-        private Task<MethodResponse> WriteToConsole(MethodRequest methodRequest, object userContext)
+        private Task<MethodResponse> WriteToConsoleAsync(MethodRequest methodRequest, object userContext)
         {
-            Console.WriteLine($"\t *** {nameof(WriteToConsole)} was called.");
+            Console.WriteLine($"\t *** {methodRequest.Name} was called.");
 
             Console.WriteLine();
             Console.WriteLine("\t{0}", methodRequest.DataAsJson);
@@ -65,9 +64,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.FromResult(new MethodResponse(new byte[0], 200));
         }
 
-        private Task<MethodResponse> GetDeviceName(MethodRequest methodRequest, object userContext)
+        private Task<MethodResponse> GetDeviceNameAsync(MethodRequest methodRequest, object userContext)
         {
-            Console.WriteLine($"\t *** {nameof(GetDeviceName)} was called.");
+            Console.WriteLine($"\t *** {methodRequest.Name} was called.");
 
             MethodResponse retValue;
             if (userContext == null)
@@ -77,9 +76,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             else
             {
                 var d = userContext as DeviceData;
-                string result = "{\"name\":\"" + d.Name + "\"}";
+                string result = JsonSerializer.Serialize(d);
                 retValue = new MethodResponse(Encoding.UTF8.GetBytes(result), 200);
             }
+
             return Task.FromResult(retValue);
         }
     }
