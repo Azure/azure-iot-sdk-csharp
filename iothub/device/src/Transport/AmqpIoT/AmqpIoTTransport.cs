@@ -23,7 +23,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private AmqpSettings _amqpSettings;
         private AmqpTransportSettings _amqpTransportSettings;
         private TlsTransportSettings _tlsTransportSettings;
-        private bool _certificateRevocationCheck;
 
         public AmqpIoTTransport(AmqpSettings amqpSettings, AmqpTransportSettings amqpTransportSettings, string hostName, bool disableServerCertificateValidation)
         {
@@ -38,7 +37,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Port = AmqpConstants.DefaultSecurePort,
             };
 
-            _certificateRevocationCheck = TlsVersions.Instance.CertificateRevocationCheck;
             SslProtocols protocols = TlsVersions.Instance.Preferred;
 #if NET451
             // Requires hardcoding in NET451 otherwise yields error:
@@ -198,7 +196,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 return true;
             }
 
-            if (!_certificateRevocationCheck && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors && CausedByRevocationCheckError(chain))
+            if (!TlsVersions.Instance.CertificateRevocationCheck && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors && CausedByRevocationCheckError(chain))
             {
                 return true;
             }
