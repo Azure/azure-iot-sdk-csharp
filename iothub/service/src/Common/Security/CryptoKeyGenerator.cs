@@ -2,32 +2,40 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Linq;
+using System;
+using System.Text;
 
-namespace Microsoft.Azure.Devices.Common
-{
-    using System;
-    using System.Text;
 #if !NET451
-    using System.Security.Cryptography;
+
+using System.Security.Cryptography;
+
 #else
     using System.Web.Security;
     using System.Security.Cryptography;
 #endif
 
+namespace Microsoft.Azure.Devices.Common
+{
     /// <summary>
     /// Utility methods for generating cryptographically secure keys and passwords
     /// </summary>
     static public class CryptoKeyGenerator
     {
+#if NET451
         const int DefaultPasswordLength = 16;
         const int GuidLength = 16;
+#endif
+
+        /// <summary>
+        /// Size of the SHA 512 key
+        /// </summary>
         public const int Sha512KeySize = 64;
 
         public static byte[] GenerateKeyBytes(int keySize)
         {
 #if !NET451
             var keyBytes = new byte[keySize];
-            using (var cyptoProvider = System.Security.Cryptography.RandomNumberGenerator.Create())
+            using (var cyptoProvider = RandomNumberGenerator.Create())
             {
                 while (keyBytes.Contains(byte.MinValue))
                 {
@@ -41,9 +49,14 @@ namespace Microsoft.Azure.Devices.Common
                 cyptoProvider.GetNonZeroBytes(keyBytes);
             }
 #endif
-                return keyBytes;
+            return keyBytes;
         }
 
+        /// <summary>
+        /// Generates a key of the specified size
+        /// </summary>
+        /// <param name="keySize">Desired key size</param>
+        /// <returns>A generated key</returns>
         public static string GenerateKey(int keySize)
         {
             return Convert.ToBase64String(GenerateKeyBytes(keySize));

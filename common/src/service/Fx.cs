@@ -26,7 +26,9 @@ namespace Microsoft.Azure.Devices.Common
         private const string DefaultEventSource = "Microsoft.IotHub";
 
 #if DEBUG
+#if NET451
         private const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
+#endif
         private const string AssertsFailFastName = "AssertsFailFast";
         private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
         private const string FastDebugName = "FastDebug";

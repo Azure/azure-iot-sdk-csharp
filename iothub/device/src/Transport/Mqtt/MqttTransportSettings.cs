@@ -11,6 +11,9 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
+    /// <summary>
+    /// Settings for MQTT transport
+    /// </summary>
     public class MqttTransportSettings : ITransportSettings
     {
         private readonly TransportType _transportType;
@@ -27,6 +30,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly TimeSpan DefaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan DefaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
 
+        /// <summary>
+        /// Creates an instance based on the specified type options
+        /// </summary>
+        /// <param name="transportType">The transport type, of MQTT websocket only, or MQTT TCP only</param>
         public MqttTransportSettings(TransportType transportType)
         {
             _transportType = transportType;
@@ -44,6 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 case TransportType.Mqtt:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Must specify Mqtt_WebSocket_Only or Mqtt_Tcp_Only");
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Unsupported Transport Type {0}".FormatInvariant(transportType));
             }
@@ -89,21 +97,40 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public int KeepAliveInSeconds { get; set; }
 
+        /// <summary>
+        /// Whether the transport has a will message
+        /// </summary>
         public bool HasWill { get; set; }
 
+        /// <summary>
+        /// The configured will message
+        /// </summary>
         public IWillMessage WillMessage { get; set; }
 
+        public TimeSpan DefaultReceiveTimeout { get; set; }
+
+        /// <summary>
+        /// A callback for remote certificate validation
+        /// </summary>
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
+
+        /// <summary>
+        /// The client certificate
+        /// </summary>
+        public X509Certificate ClientCertificate { get; set; }
+
+        /// <summary>
+        /// A proxy to use - optional
+        /// </summary>
+        public IWebProxy Proxy { get; set; }
+
+        /// <summary>
+        /// The conftransport type
+        /// </summary>
+        /// <returns></returns>
         public TransportType GetTransportType()
         {
             return _transportType;
         }
-
-        public TimeSpan DefaultReceiveTimeout { get; set; }
-
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
-
-        public X509Certificate ClientCertificate { get; set; }
-
-        public IWebProxy Proxy { get; set; }
     }
 }

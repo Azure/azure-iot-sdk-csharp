@@ -498,7 +498,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (Logging.IsEnabled) Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
 
-                    await OpenAsyncInternal(cancellationToken).ConfigureAwait(false);
+                    await OpenInternalAsync(cancellationToken).ConfigureAwait(false);
 
                     if (!_disposed)
                     {
@@ -506,7 +506,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         _openCalled = true;
 
                         // Send the request for transport close notification.
-                        _transportClosedTask = HandleDisconnect();
+                        _transportClosedTask = HandleDisconnectAsync();
                     }
                     else
                     {
@@ -532,7 +532,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (Logging.IsEnabled) Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
 
-                    await OpenAsyncInternal(timeoutHelper).ConfigureAwait(false);
+                    await OpenInternalAsync(timeoutHelper).ConfigureAwait(false);
 
                     if (!_disposed)
                     {
@@ -540,7 +540,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         _openCalled = true;
 
                         // Send the request for transport close notification.
-                        _transportClosedTask = HandleDisconnect();
+                        _transportClosedTask = HandleDisconnectAsync();
                     }
                     else
                     {
@@ -555,7 +555,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private Task OpenAsyncInternal(CancellationToken cancellationToken)
+        private Task OpenInternalAsync(CancellationToken cancellationToken)
         {
             return _internalRetryPolicy
                 .ExecuteAsync(
@@ -582,7 +582,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     cancellationToken);
         }
 
-        private Task OpenAsyncInternal(TimeoutHelper timeoutHelper)
+        private Task OpenInternalAsync(TimeoutHelper timeoutHelper)
         {
             return _internalRetryPolicy
                 .ExecuteAsync(
@@ -609,11 +609,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     new CancellationTokenSource(timeoutHelper.RemainingTime()).Token);
         }
 
-        private async Task HandleDisconnect()
+        private async Task HandleDisconnectAsync()
         {
             if (_disposed)
             {
-                if (Logging.IsEnabled) Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnect));
+                if (Logging.IsEnabled) Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
                 _handleDisconnectCts.Cancel();
             }
 
@@ -625,12 +625,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             catch (OperationCanceledException)
             {
                 // Canceled when the transport is being closed by the application.
-                if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnect));
+                if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
                 _onConnectionStatusChanged(ConnectionStatus.Disabled, ConnectionStatusChangeReason.Client_Close);
                 return;
             }
 
-            if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnect));
+            if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
             await _handlerLock.WaitAsync().ConfigureAwait(false);
             _opened = false;
 
@@ -638,7 +638,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubCommunicationException(), out TimeSpan delay))
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnect));
+                    if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
                     _onConnectionStatusChanged(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
                     return;
                 }
@@ -655,7 +655,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // This will recover to the state before the disconnect.
                 await _internalRetryPolicy.ExecuteAsync(async () =>
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnect));
+                    if (Logging.IsEnabled) Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));
 
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -682,18 +682,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
 
                     // Send the request for transport close notification.
-                    _transportClosedTask = HandleDisconnect();
+                    _transportClosedTask = HandleDisconnectAsync();
 
                     _opened = true;
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
-                    if (Logging.IsEnabled) Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnect));
+                    if (Logging.IsEnabled) Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
                 },
                 cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                if (Logging.IsEnabled) Logging.Error(this, ex.ToString(), nameof(HandleDisconnect));
+                if (Logging.IsEnabled) Logging.Error(this, ex.ToString(), nameof(HandleDisconnectAsync));
 
                 var hubException = ex as IotHubException;
                 if (hubException != null) HandleConnectionStatusExceptions(hubException);
@@ -737,7 +737,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             base.Dispose(disposing);
             if (disposing)
             {
-                _handleDisconnectCts.Cancel();
+                _handleDisconnectCts?.Cancel();
+                _handleDisconnectCts?.Dispose();
             }
         }
     }

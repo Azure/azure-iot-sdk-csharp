@@ -1,23 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+
+using Microsoft.Azure.Devices;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace Microsoft.Azure.Devices.Api.Test
 {
-    using System;
-    using System.IO;
-    using System.Net;
-    using System.Net.Http;
-    using System.Text;
-
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     [TestClass]
     [TestCategory("Unit")]
     public class MessageTests
     {
+        private byte[] _emptyByteArray =
+#if NET451
+            new byte[0];
+#else
+            Array.Empty<byte>();
+
+#endif
+
         [TestMethod]
         public void ConstructorTakingStreamTest()
         {
@@ -66,14 +74,14 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new Message(_emptyByteArray);
             var stream = msg.GetBodyStream();
             Assert.IsNotNull(stream);
             var ms = new MemoryStream();
             stream.CopyTo(ms);
             Assert.IsTrue(ms.GetBuffer().Length == 0);
 
-            msg = new Message(Array.Empty<byte>());
+            msg = new Message(_emptyByteArray);
             var bytes = msg.GetBytes();
             Assert.AreEqual(0, bytes.Length);
         }
@@ -81,7 +89,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void RetrievingMessageBytesAfterGetBodyStreamTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new Message(_emptyByteArray);
             msg.GetBodyStream();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBytes());
@@ -90,7 +98,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void RetrievingMessageBodyStreamAfterGetBytesTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new Message(_emptyByteArray);
             msg.GetBytes();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBodyStream());
@@ -99,7 +107,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void CallingGetBytesTwiceTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new Message(_emptyByteArray);
             msg.GetBytes();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBytes());
@@ -108,7 +116,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void CallingGetBodyStreamTwiceTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new Message(_emptyByteArray);
             msg.GetBodyStream();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBodyStream());
