@@ -53,6 +53,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 //SslProtocols = TlsVersions.Preferred,
             };
 
+            _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+
             IWebProxy webProxy = httpTransportSettings.Proxy;
             if (webProxy != DefaultWebProxySettings.Instance)
             {

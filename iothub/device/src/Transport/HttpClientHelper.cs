@@ -91,6 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 httpClientHandler = new HttpClientHandler();
             }
             httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
+            httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 
             if (clientCert != null)
             {

@@ -100,5 +100,10 @@ namespace Microsoft.Azure.Devices.Shared
             System.Net.ServicePointManager.SecurityProtocol = _net451Protocol;
 #endif
         }
+
+        /// <summary>
+        /// To enable certificate revocation check. Default to be true.
+        /// </summary>
+        public bool CertificateRevocationCheck { get; set; } = true;
     }
 }

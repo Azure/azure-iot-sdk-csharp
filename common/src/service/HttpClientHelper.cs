@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices
         private readonly TimeSpan _defaultOperationTimeout;
         private readonly IWebProxy _customHttpProxy;
         private readonly Action<HttpClient> _preRequestActionForAllRequests;
+        private readonly bool _certificateRevocationCheck;
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -50,6 +51,7 @@ namespace Microsoft.Azure.Devices
             _preRequestActionForAllRequests = preRequestActionForAllRequests;
             _customHttpProxy = customHttpProxy;
             TlsVersions.Instance.SetLegacyAcceptableVersions();
+            _certificateRevocationCheck = TlsVersions.Instance.CertificateRevocationCheck;
         }
 
         public Task<T> GetAsync<T>(
@@ -851,8 +853,9 @@ namespace Microsoft.Azure.Devices
             {
 #if !NET451
                 SslProtocols = TlsVersions.Instance.Preferred,
+                CheckCertificateRevocationList = _certificateRevocationCheck,
 #endif
-            };
+        };
 
             if (_customHttpProxy != DefaultWebProxySettings.Instance)
             {
