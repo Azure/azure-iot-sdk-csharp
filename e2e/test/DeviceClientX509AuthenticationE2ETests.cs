@@ -157,18 +157,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private ITransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
         {
-            return new MqttTransportSettings(transportType)
-            {
-                CertificateRevocationCheck = true
-            };
+            TlsVersions.Instance.CertificateRevocationCheck = true;
+            return new MqttTransportSettings(transportType);
         }
 
         private ITransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
         {
-            return new AmqpTransportSettings(transportType)
-            {
-                CertificateRevocationCheck = true
-            };
+            TlsVersions.Instance.CertificateRevocationCheck = true;
+            return new AmqpTransportSettings(transportType);
         }
 
         private async Task X509InvalidDeviceIdOpenAsyncTest(Client.TransportType transportType)
