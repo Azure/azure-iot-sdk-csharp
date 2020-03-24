@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         // The file to upload.
         private const string FilePath = "TestPayload.txt";
-        private DeviceClient _deviceClient;
+        private readonly DeviceClient _deviceClient;
 
         public FileUploadSample(DeviceClient deviceClient)
         {
@@ -26,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 Console.WriteLine("Uploading File: {0}", fileName);
 
-                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var watch = Stopwatch.StartNew();
 
                 // Note: UploadToBlobAsync will use HTTPS as protocol, regardless of the DeviceClient protocol selection.
                 await _deviceClient.UploadToBlobAsync(fileName, fileStreamSource).ConfigureAwait(false);

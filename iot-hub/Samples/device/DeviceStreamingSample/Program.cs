@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         //private static TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
         //private static TransportType s_transportType = TransportType.Mqtt_WebSocket_Only;
 
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             if (string.IsNullOrEmpty(s_deviceConnectionString) && args.Length > 0)
             {
@@ -37,16 +38,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 return 1;
             }
 
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, s_transportType))
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, s_transportType))
             {
-                if (deviceClient == null)
-                {
-                    Console.WriteLine("Failed to create DeviceClient!");
-                    return 1;
-                }
-
                 var sample = new DeviceStreamSample(deviceClient);
-                sample.RunSampleAsync().GetAwaiter().GetResult();
+                await sample.RunSampleAsync().ConfigureAwait(false);
             }
 
             Console.WriteLine("Done.\n");

@@ -9,4 +9,10 @@
 	<PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestPayload.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
