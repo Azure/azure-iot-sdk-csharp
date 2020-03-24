@@ -6,6 +6,8 @@ using Xunit;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test.Model
 {
+    [Trait("TestCategory", "Unit")]
+    [Trait("TestCategory", "PnP")]
     public class DigitalTwinCommandResponseTest
     {
         [Fact]

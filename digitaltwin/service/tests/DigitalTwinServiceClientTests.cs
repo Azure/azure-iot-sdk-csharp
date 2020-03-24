@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
 using System.Threading;
 using Azure;
@@ -7,6 +9,8 @@ using Xunit;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Service.ServiceClient.Test
 {
+    [Trait("TestCategory", "Unit")]
+    [Trait("TestCategory", "DigitalTwin")]
     public class DigitalTwinServiceClientTests
     {
         [Fact]
@@ -168,7 +172,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Service.ServiceClient.Test
         public async void ConstructorThrowsForNullCredentials()
         {
             Uri mockUri = new Uri("https://www.microsoft.com");
-            Assert.Throws<ArgumentNullException>(() => new DigitalTwinServiceClient(mockUri, (IoTServiceClientCredentials) null));
+            Assert.Throws<ArgumentNullException>(() => new DigitalTwinServiceClient(mockUri, (IoTServiceClientCredentials)null));
         }
     }
 }

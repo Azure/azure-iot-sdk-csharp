@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Runtime.InteropServices;
-using System.Text;
+using Microsoft.Azure.Devices.Shared;
 using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Security
@@ -14,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
     /// </summary>
     public class SecurityProviderTpmHsm : SecurityProviderTpm
     {
-        private bool disposed = false;
+        private bool _disposed = false;
 
         private const uint TPM_20_SRK_HANDLE = ((uint)Ht.Persistent << 24) | 0x00000001;
         private const uint TPM_20_EK_HANDLE = ((uint)Ht.Persistent << 24) | 0x00010001;
@@ -22,10 +21,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         private const uint AIOTH_PERSISTED_KEY_HANDLE = ((uint)Ht.Persistent << 24) | 0x00000100;
 
         private Tpm2Device _tpmDevice = null;
-        private Tpm2 _tpm2;
+        private Tpm2 _tpm2 = null;
 
         // TPM identity cache
         private TpmPublic _ekPub = null;
+
         private TpmPublic _srkPub = null;
         private TpmPublic _idKeyPub = null;
         private TpmHandle _idKeyHandle = TpmHandle.RhNull;
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <param name="tpm">The TPM device.</param>
         public SecurityProviderTpmHsm(string registrationId, Tpm2Device tpm) : base(registrationId)
         {
-            _tpmDevice = tpm;
+            _tpmDevice = tpm ?? throw new ArgumentNullException(nameof(tpm));
 
             _tpmDevice.Connect();
             _tpm2 = new Tpm2(_tpmDevice);
@@ -84,10 +84,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             else
             {
                 if (Logging.IsEnabled) Logging.Error(null, $"TPM not supported on {RuntimeInformation.OSDescription}");
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 throw new PlatformNotSupportedException("The library doesn't support the current OS platform.");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
             }
         }
-        
+
         /// <summary>
         /// Activates an identity key within the TPM device.
         /// </summary>
@@ -120,17 +122,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             // Perform the activation
             ekSession.Attrs &= ~SessionAttr.ContinueSession;
             _activationSecret = _tpm2[Array.Empty<byte>(), ekSession].ActivateCredential(
-                new TpmHandle(TPM_20_SRK_HANDLE), 
-                new TpmHandle(TPM_20_EK_HANDLE), 
-                cred2b.credential, 
+                new TpmHandle(TPM_20_SRK_HANDLE),
+                new TpmHandle(TPM_20_EK_HANDLE),
+                cred2b.credential,
                 encryptedSecret);
 
             TpmPrivate importedKeyBlob = _tpm2.Import(
-                new TpmHandle(TPM_20_SRK_HANDLE), 
-                _activationSecret, 
-                _idKeyPub, 
-                dupBlob, 
-                encWrapKey, 
+                new TpmHandle(TPM_20_SRK_HANDLE),
+                _activationSecret,
+                _idKeyPub,
+                dupBlob,
+                encWrapKey,
                 new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb));
 
             _idKeyHandle = _tpm2.Load(new TpmHandle(TPM_20_SRK_HANDLE), importedKeyBlob, _idKeyPub);
@@ -152,7 +154,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <returns>Base64 encoded EK.</returns>
         public override byte[] GetEndorsementKey()
         {
-            byte [] ek = _ekPub.GetTpm2BRepresentation();
+            byte[] ek = _ekPub.GetTpm2BRepresentation();
             if (Logging.IsEnabled) Logging.Info(this, $"EK={Convert.ToBase64String(ek)}");
             return ek;
         }
@@ -177,8 +179,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         {
             if (Logging.IsEnabled) Logging.Enter(this, null, nameof(Sign));
 
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             byte[] result = Array.Empty<byte>();
-            TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
+            var hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
             int dataIndex = 0;
             byte[] iterationBuffer;
 
@@ -215,33 +222,42 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposed) return;
+            if (_disposed) return;
 
             if (Logging.IsEnabled) Logging.Info(this, "Disposing");
 
             if (disposing)
             {
-                // _tpmDevice is owned by _tpm2 and will be disposed as well.
+                // _tpmDevice is owned by _tpm2, which will disposed it, but not if it is null
+                if (_tpm2 == null)
+                {
+                    _tpmDevice?.Dispose();
+                    _tpmDevice = null;
+                }
+
                 _tpm2.Dispose();
+                _tpm2 = null;
             }
 
-            disposed = true;
+            _disposed = true;
         }
-        
+
         private void Destroy()
         {
-            TpmHandle nvHandle = new TpmHandle(AIOTH_PERSISTED_URI_INDEX);
-            TpmHandle ownerHandle = new TpmHandle(TpmRh.Owner);
-            TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
+            var nvHandle = new TpmHandle(AIOTH_PERSISTED_URI_INDEX);
+            var ownerHandle = new TpmHandle(TpmRh.Owner);
+            var hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
 
             try
             {
                 // Destroy the URI
                 _tpm2.NvUndefineSpace(ownerHandle, nvHandle);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
-                // ignore 
+                // ignore
             }
 
             try
@@ -249,9 +265,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                 // Destroy the HMAC key
                 _tpm2.EvictControl(ownerHandle, hmacKeyHandle, hmacKeyHandle);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
-            { 
-                // ignore 
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                // ignore
             }
         }
 
@@ -260,9 +278,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             if (Logging.IsEnabled) Logging.Enter(this, null, nameof(CacheEkAndSrk));
 
             // Get the real EK ready.
-            TpmPublic ekTemplate = new TpmPublic(
+            var ekTemplate = new TpmPublic(
                 TpmAlgId.Sha256,
-                ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | 
+                ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin |
                 ObjectAttr.AdminWithPolicy | ObjectAttr.Restricted | ObjectAttr.Decrypt,
                 new byte[] {
                     0x83, 0x71, 0x97, 0x67, 0x44, 0x84, 0xb3, 0xf8, 0x1a, 0x90, 0xcc, 0x8d, 0x46, 0xa5, 0xd7, 0x24,
@@ -279,7 +297,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             // Get the real SRK ready.
             TpmPublic srkTemplate = new TpmPublic(
                 TpmAlgId.Sha256,
-                ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | 
+                ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin |
                 ObjectAttr.UserWithAuth | ObjectAttr.NoDA | ObjectAttr.Restricted | ObjectAttr.Decrypt,
                 Array.Empty<byte>(),
                 new RsaParms(

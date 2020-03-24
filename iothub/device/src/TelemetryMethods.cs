@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    var key = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\SQMClient");
+                    RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\SQMClient");
                     if (key != null)
                     {
                         return key.GetValue("MachineId") as string;

@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     $"Authentication key not found. OperationId=${operation?.OperationId}");
 
                 throw new ProvisioningTransportException(
-                    "Authentication key not found.", 
+                    "Authentication key not found.",
                     null,
                     false);
             }

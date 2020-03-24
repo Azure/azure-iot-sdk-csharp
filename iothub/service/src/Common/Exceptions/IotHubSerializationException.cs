@@ -14,11 +14,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
         protected IotHubSerializationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

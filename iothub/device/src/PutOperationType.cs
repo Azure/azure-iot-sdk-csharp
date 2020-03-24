@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    enum PutOperationType
+    internal enum PutOperationType
     {
         /// <summary>
         /// The PUT operation will create a new entity
@@ -18,6 +18,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The PUT operation will update (replace) an existing entity ignoring ETag rules
         /// </summary>
-        ForceUpdateEntity
+        ForceUpdateEntity,
     }
 }

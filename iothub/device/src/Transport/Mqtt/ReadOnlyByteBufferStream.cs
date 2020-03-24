@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using DotNetty.Buffers;
+using DotNetty.Common.Utilities;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-    using System.IO;
-    using DotNetty.Buffers;
-    using DotNetty.Common.Utilities;
-
-    sealed class ReadOnlyByteBufferStream : Stream
+    internal sealed class ReadOnlyByteBufferStream : Stream
     {
-        readonly IByteBuffer buffer;
-        bool releaseReferenceOnClosure;
+        private readonly IByteBuffer buffer;
+        private bool releaseReferenceOnClosure;
 
         public ReadOnlyByteBufferStream(IByteBuffer buffer, bool releaseReferenceOnClosure)
         {

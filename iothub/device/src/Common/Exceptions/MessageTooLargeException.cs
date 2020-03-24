@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
-
     /// <summary>
     /// The exception that is thrown when an attempt to send a message fails because the length of the message exceeds the maximum size allowed.
     /// </summary>
@@ -49,16 +48,14 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageTooLargeException"/> class with the specified serialization and context information.
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        MessageTooLargeException(SerializationInfo info, StreamingContext context)
+        private MessageTooLargeException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

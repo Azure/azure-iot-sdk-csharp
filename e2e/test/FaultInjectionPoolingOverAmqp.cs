@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private class AmqpConnectionStatusChange
+        public class AmqpConnectionStatusChange
         {
             private string _deviceId;
 

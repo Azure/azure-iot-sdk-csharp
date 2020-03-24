@@ -55,8 +55,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (!string.IsNullOrWhiteSpace(format))
                 {
-                    infoParts =
-                        format.Replace("{runtime}", runtime)
+                    infoParts = format
+                        .Replace("{runtime}", runtime)
                         .Replace("{operatingSystem}", operatingSystem + productType)
                         .Replace("{architecture}", processorArchitecture)
                         .Replace("{deviceId}", deviceId);
@@ -74,9 +74,9 @@ namespace Microsoft.Azure.Devices.Client
                     infoParts = string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)));
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal()) 
-            { 
-                // no-op 
+            catch (Exception ex) when (!ex.IsFatal())
+            {
+                // no-op
             }
 
             string userAgent = $"{Name}/{version} ({infoParts})";

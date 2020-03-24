@@ -90,8 +90,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             _connectionString.AmqpEndpoint,
                             _audience,
                             _audience,
-		                    AccessRightsStringArray,
-		                    _operationTimeout
+                            AccessRightsStringArray,
+                            _operationTimeout
                         ).ConfigureAwait(false);
                     }
                     catch (IotHubCommunicationException ex)

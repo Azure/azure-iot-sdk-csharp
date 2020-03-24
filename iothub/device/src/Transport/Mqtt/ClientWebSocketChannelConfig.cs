@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics.Contracts;
+using DotNetty.Buffers;
+using DotNetty.Transport.Channels;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-    using System.Diagnostics.Contracts;
-    using DotNetty.Buffers;
-    using DotNetty.Transport.Channels;
-
     public class ClientWebSocketChannelConfig : IChannelConfiguration
     {
         public T GetOption<T>(ChannelOption<T> option)

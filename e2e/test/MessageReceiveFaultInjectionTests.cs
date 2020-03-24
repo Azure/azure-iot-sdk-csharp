@@ -1,27 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics.Tracing;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics;
-using System.Diagnostics.Tracing;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
-    [TestCategory("IoTHub-FaultInjection")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
+    [TestCategory("FaultInjection")]
     public partial class MessageReceiveFaultInjectionTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveFaultInjectionTests)}_";
-        private static TestLogging _log = TestLogging.GetInstance();
 
+#pragma warning disable CA1823
+        private static TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
+#pragma warning restore CA1823
 
         public MessageReceiveFaultInjectionTests()
         {

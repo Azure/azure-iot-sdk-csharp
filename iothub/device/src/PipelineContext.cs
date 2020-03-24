@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Shared;
+using System.Collections.Generic;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using Microsoft.Azure.Devices.Shared;
-    using System.Collections.Generic;
-
-    class PipelineContext: IPipelineContext
+    internal class PipelineContext : IPipelineContext
     {
-        readonly Dictionary<string, object> context = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> context = new Dictionary<string, object>();
 
         public void Set<T>(T value)
         {

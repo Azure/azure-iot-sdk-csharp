@@ -31,10 +31,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.IsNotNull(stream);
             var ms = new MemoryStream();
             stream.CopyTo(ms);
-            Assert.IsTrue(ms.GetBuffer().Length == 0);
+
+            int buffLen = 0;
+#if NETCOREAPP1_1
+            ms.TryGetBuffer(out ArraySegment<byte> buffer);
+            buffLen = buffer.Count;
+#else
+            byte[] buffer = ms.GetBuffer();
+            buffLen = buffer.Length;
+#endif
+            Assert.AreEqual(0, buffLen);
 
             msg = new Message((Stream)null);
-            var bytes = msg.GetBytes();
+            byte[] bytes = msg.GetBytes();
             Assert.AreEqual(0, bytes.Length);
         }
 
@@ -62,22 +71,31 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new Message(new byte[0]);
             var stream = msg.GetBodyStream();
             Assert.IsNotNull(stream);
             var ms = new MemoryStream();
             stream.CopyTo(ms);
-            Assert.IsTrue(ms.GetBuffer().Length == 0);
 
-            msg = new Message(Array.Empty<byte>());
-            var bytes = msg.GetBytes();
+            int buffLen = 0;
+#if NETCOREAPP1_1
+            ms.TryGetBuffer(out ArraySegment<byte> buffer);
+            buffLen = buffer.Count;
+#else
+            byte[] buffer = ms.GetBuffer();
+            buffLen = buffer.Length;
+#endif
+            Assert.AreEqual(0, buffLen);
+
+            msg = new Message(new byte[0]);
+            byte[] bytes = msg.GetBytes();
             Assert.AreEqual(0, bytes.Length);
         }
 
         [TestMethod]
         public void RetrievingMessageBytesAfterGetBodyStreamTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new Message(new byte[0]);
             msg.GetBodyStream();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBytes());
@@ -109,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void CallingGetBodyStreamTwiceTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new Message(new byte[0]);
             msg.GetBodyStream();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBodyStream());

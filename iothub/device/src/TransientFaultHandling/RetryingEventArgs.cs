@@ -2,6 +2,8 @@
 //Microsoft would like to thank its contributors, a list
 //of whom are at http://aka.ms/entlib-contributors
 
+using System;
+
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
 //obtain a copy of the License at
@@ -20,8 +22,6 @@
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
-    using System;
-
     /// <summary>
     /// Contains information that is required for the <see cref="E:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryPolicy.Retrying" /> event.
     /// </summary>

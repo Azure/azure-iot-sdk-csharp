@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    sealed class CommonResources
+    internal sealed class CommonResources
         : Microsoft.Azure.Devices.Client.Common.Resources
     {
         internal static string GetString(string value, params object[] args)
@@ -30,11 +30,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal static string GetNewStringGuid(string postfix = "")
         {
-#if !NETSTANDARD1_3
             return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + postfix;
-#else
-            return Guid.NewGuid().ToString("N") + postfix;
-#endif
         }
     }
 }

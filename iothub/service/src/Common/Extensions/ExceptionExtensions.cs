@@ -13,9 +13,9 @@ namespace Microsoft.Azure.Devices.Common
 
     public static class ExceptionExtensions
     {
-        const string ExceptionIdentifierName = "ExceptionId";
-        static MethodInfo prepForRemotingMethodInfo;
-        
+        private const string ExceptionIdentifierName = "ExceptionId";
+        private static MethodInfo prepForRemotingMethodInfo;
+
         public static bool IsFatal(this Exception exception)
         {
             return Fx.IsFatal(exception);
@@ -29,18 +29,10 @@ namespace Microsoft.Azure.Devices.Common
                 exception = exception.InnerException;
             }
         }
-        
+
         public static IEnumerable<Exception> Unwind(this Exception exception, params Type[] targetTypes)
         {
-#if NETSTANDARD1_3
-            return exception.Unwind().Where(e => targetTypes.Any(t =>
-            {
-                var exceptionType = e.GetType();
-                return Convert.ChangeType(t, exceptionType) != null;
-            } ));
-#else
             return exception.Unwind().Where(e => targetTypes.Any(t => t.IsInstanceOfType(e)));
-#endif
         }
 
         public static IEnumerable<TException> Unwind<TException>(this Exception exception)
@@ -57,7 +49,6 @@ namespace Microsoft.Azure.Devices.Common
                 return exception;
             }
 
-#if !NETSTANDARD1_3
             if (PartialTrustHelpers.UnsafeIsInFullTrust())
             {
                 // Racing here is harmless
@@ -75,7 +66,7 @@ namespace Microsoft.Azure.Devices.Common
                     prepForRemotingMethodInfo.Invoke(exception, new object[] { });
                 }
             }
-#endif
+
             return exception;
         }
 
@@ -123,7 +114,7 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        static bool ShouldPrepareForRethrow(Exception exception)
+        private static bool ShouldPrepareForRethrow(Exception exception)
         {
             while (exception != null)
             {
@@ -139,9 +130,9 @@ namespace Microsoft.Azure.Devices.Common
 
         public static bool CheckIotHubErrorCode(this Exception ex, params ErrorCode[] errorCodeList)
         {
-            foreach(var errorCode in errorCodeList)
-            { 
-                if(ex is IotHubException && ((IotHubException) ex).Code == errorCode)
+            foreach (var errorCode in errorCodeList)
+            {
+                if (ex is IotHubException && ((IotHubException)ex).Code == errorCode)
                 {
                     return true;
                 }

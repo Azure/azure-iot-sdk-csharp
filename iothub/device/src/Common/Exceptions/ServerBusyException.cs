@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-
     /// <summary>
     /// The exception that is thrown when the IoT Hub is busy.
     /// </summary>
@@ -35,11 +35,9 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
-        ServerBusyException(SerializationInfo info, StreamingContext context)
+        private ServerBusyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

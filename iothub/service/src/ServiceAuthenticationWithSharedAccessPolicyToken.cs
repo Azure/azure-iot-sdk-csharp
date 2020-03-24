@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Common.Security;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using Microsoft.Azure.Devices.Common.Security;
-
     /// <summary>
-    /// Authentication method that uses a shared access policy token. 
+    /// Authentication method that uses a shared access policy token.
     /// </summary>
     public sealed class ServiceAuthenticationWithSharedAccessPolicyToken : IAuthenticationMethod
     {
-        string policyName;
-        string token;
+        private string _policyName;
+        private string _token;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyToken"/> class.
@@ -21,51 +21,62 @@ namespace Microsoft.Azure.Devices
         /// <param name="token">Token associated with the shared access policy.</param>
         public ServiceAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
         {
-            this.SetPolicyName(policyName);
-            this.SetToken(token);
+            SetPolicyName(policyName);
+            SetToken(token);
         }
 
+        /// <summary>
+        /// The name of the policy
+        /// </summary>
         public string PolicyName
         {
-            get { return this.policyName; }
-            set { this.SetPolicyName(value); }
+            get => _policyName;
+            set => SetPolicyName(value);
         }
 
+        /// <summary>
+        /// The SAS token
+        /// </summary>
         public string Token
         {
-            get { return this.token; }
-            set { this.SetToken(value); }
+            get => _token;
+            set => SetToken(value);
         }
 
+        /// <summary>
+        /// Updates the specified connection string builder with policy name and token
+        /// </summary>
+        /// <param name="iotHubConnectionStringBuilder">The connection string builder to update</param>
+        /// <returns>The updated connection string builder</returns>
         public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException("iotHubConnectionStringBuilder");
+                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.SharedAccessKeyName = this.PolicyName;
-            iotHubConnectionStringBuilder.SharedAccessSignature = this.Token;
+            iotHubConnectionStringBuilder.SharedAccessKeyName = PolicyName;
+            iotHubConnectionStringBuilder.SharedAccessSignature = Token;
             iotHubConnectionStringBuilder.SharedAccessKey = null;
 
             return iotHubConnectionStringBuilder;
         }
 
-        void SetPolicyName(string policyName)
+        private void SetPolicyName(string policyName)
         {
             if (string.IsNullOrWhiteSpace(policyName))
             {
-                throw new ArgumentNullException("policyName");
+                throw new ArgumentNullException(nameof(policyName));
             }
 
-            this.policyName = policyName;
+            _policyName = policyName;
         }
 
-        void SetToken(string token)
+        private void SetToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new ArgumentNullException("token");
+                throw new ArgumentNullException(nameof(token));
             }
 
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
@@ -73,7 +84,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentException("Token must be of type SharedAccessSignature");
             }
 
-            this.token = token;
+            _token = token;
         }
     }
 }

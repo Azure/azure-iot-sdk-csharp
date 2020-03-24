@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+
 namespace Microsoft.Azure.Devices.Client.Common
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
-
-    sealed class ReadOnlyMergeDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
+    internal sealed class ReadOnlyMergeDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
     {
-        readonly IDictionary<TKey, TValue> mainDictionary;
-        readonly IDictionary<TKey, TValue> secondaryDictionary;
+        private readonly IDictionary<TKey, TValue> mainDictionary;
+        private readonly IDictionary<TKey, TValue> secondaryDictionary;
 
         public ReadOnlyMergeDictionary(IDictionary<TKey, TValue> mainDictionary, IDictionary<TKey, TValue> secondaryDictionary)
         {

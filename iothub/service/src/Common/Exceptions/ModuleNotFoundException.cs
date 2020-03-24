@@ -29,11 +29,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !NETSTANDARD1_3
         public ModuleNotFoundException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
-#endif
     }
 }

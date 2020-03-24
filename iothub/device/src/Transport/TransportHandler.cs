@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Shared;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    using Microsoft.Azure.Devices.Shared;
-    using System.Threading.Tasks;
-
-    abstract class TransportHandler : DefaultDelegatingHandler
+    internal abstract class TransportHandler : DefaultDelegatingHandler
     {
         protected ITransportSettings TransportSettings;
         private TaskCompletionSource<bool> _transportShouldRetry;
@@ -32,7 +32,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 OnTransportClosedGracefully();
             }
-
         }
 
         protected void OnTransportClosedGracefully()
