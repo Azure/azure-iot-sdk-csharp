@@ -20,13 +20,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
-        private readonly InternalClient internalClient;
-
         private DeviceClient(InternalClient internalClient)
         {
-            this.internalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
+            InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
 
-            if (this.internalClient.IotHubConnectionString?.ModuleId != null)
+            if (InternalClient.IotHubConnectionString?.ModuleId != null)
             {
                 throw new ArgumentException("A module ID was specified in the connection string - please use ModuleClient for modules.");
             }
@@ -35,60 +33,60 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Create an Amqp DeviceClient from individual parameters
+        /// Creates a disposable, Amqp DeviceClient from the specified parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod)
         {
             return Create(() => ClientFactory.Create(hostname, authenticationMethod));
         }
 
         /// <summary>
-        /// Create an Amqp DeviceClient from individual parameters
+        /// Create a disposable, Amqp DeviceClient from the specified parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
         {
             return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod));
         }
 
         /// <summary>
-        /// Create a DeviceClient from individual parameters
+        /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1 or Amqp)</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
             return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportType));
         }
 
         /// <summary>
-        /// Create a DeviceClient from individual parameters
+        /// Create a disposable DeviceClient from the specified parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1 or Amqp)</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
             return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportType));
         }
 
         /// <summary>
-        /// Create a DeviceClient from individual parameters
+        /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings)
         {
@@ -96,13 +94,13 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Create a DeviceClient from individual parameters
+        /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings)
         {
@@ -110,55 +108,55 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Create a DeviceClient using Amqp transport from the specified connection string
+        /// Creates a disposable DeviceClient using Amqp transport from the specified connection string
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString));
         }
 
         /// <summary>
-        /// Create a DeviceClient using Amqp transport from the specified connection string
+        /// Creates a disposable DeviceClient using Amqp transport from the specified connection string
         /// </summary>
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the Device</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId));
         }
 
         /// <summary>
-        /// Create DeviceClient from the specified connection string using the specified transport type
+        /// Creates a disposable DeviceClient from the specified connection string using the specified transport type
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportType));
         }
 
         /// <summary>
-        /// Create DeviceClient from the specified connection string using the specified transport type
+        /// Creates a disposable DeviceClient from the specified connection string using the specified transport type
         /// </summary>
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportType">The transportType used (Http1 or Amqp)</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, TransportType transportType)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportType));
         }
 
         /// <summary>
-        /// Create DeviceClient from the specified connection string using a prioritized list of transports
+        /// Create a disposable DeviceClient from the specified connection string using a prioritized list of transports
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString,
             ITransportSettings[] transportSettings)
         {
@@ -166,12 +164,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Create DeviceClient from the specified connection string using the prioritized list of transports
+        /// Creates a disposable DeviceClient from the specified connection string using the prioritized list of transports
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
-        /// <returns>DeviceClient</returns>
+        /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
             ITransportSettings[] transportSettings)
         {
@@ -185,11 +183,11 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler
         {
-            get => this.internalClient.InnerHandler;
-            set => this.internalClient.InnerHandler = value;
+            get => InternalClient.InnerHandler;
+            set => InternalClient.InnerHandler = value;
         }
 
-        internal InternalClient InternalClient => this.internalClient;
+        internal InternalClient InternalClient { get; private set; }
 
         /// <summary>
         /// Diagnostic sampling percentage value, [0-100];
@@ -197,8 +195,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public int DiagnosticSamplingPercentage
         {
-            get => this.internalClient.DiagnosticSamplingPercentage;
-            set => this.internalClient.DiagnosticSamplingPercentage = value;
+            get => InternalClient.DiagnosticSamplingPercentage;
+            set => InternalClient.DiagnosticSamplingPercentage = value;
         }
 
         /// <summary>
@@ -210,8 +208,8 @@ namespace Microsoft.Azure.Devices.Client
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
         public uint OperationTimeoutInMilliseconds
         {
-            get => this.internalClient.OperationTimeoutInMilliseconds;
-            set => this.internalClient.OperationTimeoutInMilliseconds = value;
+            get => InternalClient.OperationTimeoutInMilliseconds;
+            set => InternalClient.OperationTimeoutInMilliseconds = value;
         }
 
         /// <summary>
@@ -219,8 +217,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string ProductInfo
         {
-            get => this.internalClient.ProductInfo;
-            set => this.internalClient.ProductInfo = value;
+            get => InternalClient.ProductInfo;
+            set => InternalClient.ProductInfo = value;
         }
 
         /// <summary>
@@ -231,8 +229,8 @@ namespace Microsoft.Azure.Devices.Client
         [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
         public RetryPolicyType RetryPolicy
         {
-            get => this.internalClient.RetryPolicy;
-            set => this.internalClient.RetryPolicy = value;
+            get => InternalClient.RetryPolicy;
+            set => InternalClient.RetryPolicy = value;
         }
 
         /// <summary>
@@ -244,25 +242,25 @@ namespace Microsoft.Azure.Devices.Client
         // parameters for calculating delay in between retries.]
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
-            this.internalClient.SetRetryPolicy(retryPolicy);
+            InternalClient.SetRetryPolicy(retryPolicy);
         }
 
         /// <summary>
         /// Explicitly open the DeviceClient instance.
         /// </summary>
-        public Task OpenAsync() => this.internalClient.OpenAsync();
+        public Task OpenAsync() => InternalClient.OpenAsync();
 
         /// <summary>
         /// Explicitly open the DeviceClient instance.
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// </summary>
-        public Task OpenAsync(CancellationToken cancellationToken) => this.internalClient.OpenAsync(cancellationToken);
+        public Task OpenAsync(CancellationToken cancellationToken) => InternalClient.OpenAsync(cancellationToken);
 
         /// <summary>
         /// Close the DeviceClient instance
         /// </summary>
-        public Task CloseAsync() => this.internalClient.CloseAsync();
+        public Task CloseAsync() => InternalClient.CloseAsync();
 
         /// <summary>
         /// Close the DeviceClient instance
@@ -270,34 +268,34 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns></returns>
-        public Task CloseAsync(CancellationToken cancellationToken) => this.internalClient.CloseAsync(cancellationToken);
+        public Task CloseAsync(CancellationToken cancellationToken) => InternalClient.CloseAsync(cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue using the default timeout.
+        /// Receive a message from the device queue using the default timeout. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
-        public Task<Message> ReceiveAsync() => this.internalClient.ReceiveAsync();
+        public Task<Message> ReceiveAsync() => InternalClient.ReceiveAsync();
 
         /// <summary>
-        /// Receive a message from the device queue using the cancellation token.
+        /// Receive a message from the device queue using the cancellation token. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The receive message or null if there was no message until CancellationToken Expired</returns>
-        public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => this.internalClient.ReceiveAsync(cancellationToken);
+        public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => InternalClient.ReceiveAsync(cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue with the specified timeout
+        /// Receive a message from the device queue with the specified timeout. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
-        public Task<Message> ReceiveAsync(TimeSpan timeout) => this.internalClient.ReceiveAsync(timeout);
+        public Task<Message> ReceiveAsync(TimeSpan timeout) => InternalClient.ReceiveAsync(timeout);
 
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task CompleteAsync(string lockToken) => this.internalClient.CompleteAsync(lockToken);
+        public Task CompleteAsync(string lockToken) => InternalClient.CompleteAsync(lockToken);
 
         /// <summary>
         /// Deletes a received message from the device queue
@@ -306,14 +304,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The lock identifier for the previously received message</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task CompleteAsync(string lockToken, CancellationToken cancellationToken) => this.internalClient.CompleteAsync(lockToken, cancellationToken);
+        public Task CompleteAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.CompleteAsync(lockToken, cancellationToken);
 
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>The previously received message</returns>
-        public Task CompleteAsync(Message message) => this.internalClient.CompleteAsync(message);
+        public Task CompleteAsync(Message message) => InternalClient.CompleteAsync(message);
 
         /// <summary>
         /// Deletes a received message from the device queue
@@ -322,14 +320,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The previously received message</returns>
-        public Task CompleteAsync(Message message, CancellationToken cancellationToken) => this.internalClient.CompleteAsync(message, cancellationToken);
+        public Task CompleteAsync(Message message, CancellationToken cancellationToken) => InternalClient.CompleteAsync(message, cancellationToken);
 
         /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The previously received message</returns>
-        public Task AbandonAsync(string lockToken) => this.internalClient.AbandonAsync(lockToken);
+        public Task AbandonAsync(string lockToken) => InternalClient.AbandonAsync(lockToken);
 
         /// <summary>
         /// Puts a received message back onto the device queue
@@ -338,14 +336,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The previously received message</returns>
-        public Task AbandonAsync(string lockToken, CancellationToken cancellationToken) => this.internalClient.AbandonAsync(lockToken, cancellationToken);
+        public Task AbandonAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.AbandonAsync(lockToken, cancellationToken);
 
         /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task AbandonAsync(Message message) => this.internalClient.AbandonAsync(message);
+        public Task AbandonAsync(Message message) => InternalClient.AbandonAsync(message);
 
         /// <summary>
         /// Puts a received message back onto the device queue
@@ -354,14 +352,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task AbandonAsync(Message message, CancellationToken cancellationToken) => this.internalClient.AbandonAsync(message, cancellationToken);
+        public Task AbandonAsync(Message message, CancellationToken cancellationToken) => InternalClient.AbandonAsync(message, cancellationToken);
 
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The previously received message</returns>
-        public Task RejectAsync(string lockToken) => this.internalClient.RejectAsync(lockToken);
+        public Task RejectAsync(string lockToken) => InternalClient.RejectAsync(lockToken);
 
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
@@ -370,14 +368,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="lockToken">The message lockToken.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The previously received message</returns>
-        public Task RejectAsync(string lockToken, CancellationToken cancellationToken) => this.internalClient.RejectAsync(lockToken, cancellationToken);
+        public Task RejectAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.RejectAsync(lockToken, cancellationToken);
 
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task RejectAsync(Message message) => this.internalClient.RejectAsync(message);
+        public Task RejectAsync(Message message) => InternalClient.RejectAsync(message);
 
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
@@ -386,30 +384,30 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task RejectAsync(Message message, CancellationToken cancellationToken) => this.internalClient.RejectAsync(message, cancellationToken);
+        public Task RejectAsync(Message message, CancellationToken cancellationToken) => InternalClient.RejectAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends an event to device hub
+        /// Sends an event to a hub
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <returns>The message containing the event</returns>
-        public Task SendEventAsync(Message message) => this.internalClient.SendEventAsync(message);
+        /// <param name="message">The message to send. Should be disposed after sending.</param>
+        /// <returns>The task to await</returns>
+        public Task SendEventAsync(Message message) => InternalClient.SendEventAsync(message);
 
         /// <summary>
-        /// Sends an event to device hub
+        /// Sends an event to a hub
         /// </summary>
-        /// <param name="message">The message.</param>
+        /// <param name="message">The message to send. Should be disposed after sending.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The message containing the event</returns>
-        public Task SendEventAsync(Message message, CancellationToken cancellationToken) => this.internalClient.SendEventAsync(message, cancellationToken);
+        /// <returns>The task to await</returns>
+        public Task SendEventAsync(Message message, CancellationToken cancellationToken) => InternalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
+        /// Sends a batch of events to a hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
-        /// <param name="messages">A list of one or more messages to send</param>
-        /// <returns>The task containing the event</returns>
-        public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
+        /// <param name="messages">A list of one or more messages to send. The messages should be disposed after sending.</param>
+        /// <returns>The task to await</returns>
+        public Task SendEventBatchAsync(IEnumerable<Message> messages) => InternalClient.SendEventBatchAsync(messages);
 
         /// <summary>
         /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
@@ -417,30 +415,29 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The task containing the event</returns>
-        public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken) => this.internalClient.SendEventBatchAsync(messages, cancellationToken);
+        /// <returns>The task to await</returns>
+        public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken) => InternalClient.SendEventBatchAsync(messages, cancellationToken);
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
         /// If the blob already exists, it will be overwritten.
         /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="source"></param>
+        /// <param name="blobName">The name of the blob to upload.</param>
+        /// <param name="source">A stream with blob contents. Should be disposed after upload completes.</param>
         /// <returns>AsncTask</returns>
-        public Task UploadToBlobAsync(String blobName, System.IO.Stream source) =>
-            this.internalClient.UploadToBlobAsync(blobName, source);
+        public Task UploadToBlobAsync(string blobName, Stream source) => InternalClient.UploadToBlobAsync(blobName, source);
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
         /// If the blob already exists, it will be overwritten.
         /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="source"></param>
+        /// <param name="blobName">The name of the blob to upload</param>
+        /// <param name="source">A stream with blob contents.. Should be disposed after upload completes.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>AsncTask</returns>
-        public Task UploadToBlobAsync(String blobName, Stream source, CancellationToken cancellationToken) =>
-            this.internalClient.UploadToBlobAsync(blobName, source, cancellationToken);
+        /// <returns>The task to await</returns>
+        public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken) =>
+            InternalClient.UploadToBlobAsync(blobName, source, cancellationToken);
 
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
@@ -450,7 +447,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
         public Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext) =>
-            this.internalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
+            InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
 
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
@@ -462,7 +459,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// </summary>
         public Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext, CancellationToken cancellationToken) =>
-            this.internalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
+            InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
 
         /// <summary>
         /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
@@ -471,7 +468,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext) =>
-            this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
+            InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
 
         /// <summary>
         /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
@@ -482,7 +479,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext, CancellationToken cancellationToken) =>
-            this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
+            InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
 
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
@@ -494,7 +491,7 @@ namespace Microsoft.Azure.Devices.Client
 
         [Obsolete("Please use SetMethodHandlerAsync.")]
         public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext) =>
-            this.internalClient.SetMethodHandler(methodName, methodHandler, userContext);
+            InternalClient.SetMethodHandler(methodName, methodHandler, userContext);
 
         /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated,
@@ -502,12 +499,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
-            this.internalClient.SetConnectionStatusChangesHandler(statusChangesHandler);
+            InternalClient.SetConnectionStatusChangesHandler(statusChangesHandler);
 
         /// <summary>
         /// Releases the unmanaged resources used by the DeviceClient and optionally disposes of the managed resources.
         /// </summary>
-        public void Dispose() => this.internalClient?.Dispose();
+        public void Dispose() => InternalClient?.Dispose();
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
@@ -518,7 +515,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Context object that will be passed into callback</param>
         [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
         public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext) =>
-            this.internalClient.SetDesiredPropertyUpdateCallback(callback, userContext);
+            InternalClient.SetDesiredPropertyUpdateCallback(callback, userContext);
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
@@ -528,7 +525,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext) =>
-            this.internalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
+            InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
@@ -540,13 +537,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken) =>
-            this.internalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
+            InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
 
         /// <summary>
         /// Retrieve a device twin object for the current device.
         /// </summary>
         /// <returns>The device twin object for the current device</returns>
-        public Task<Twin> GetTwinAsync() => this.internalClient.GetTwinAsync();
+        public Task<Twin> GetTwinAsync() => InternalClient.GetTwinAsync();
 
         /// <summary>
         /// Retrieve a device twin object for the current device.
@@ -554,14 +551,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The device twin object for the current device</returns>
-        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken) => this.internalClient.GetTwinAsync(cancellationToken);
+        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken) => InternalClient.GetTwinAsync(cancellationToken);
 
         /// <summary>
         /// Push reported property changes up to the service.
         /// </summary>
         /// <param name="reportedProperties">Reported properties to push</param>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties) =>
-            this.internalClient.UpdateReportedPropertiesAsync(reportedProperties);
+            InternalClient.UpdateReportedPropertiesAsync(reportedProperties);
 
         /// <summary>
         /// Push reported property changes up to the service.
@@ -570,6 +567,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
-            this.internalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
+            InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
     }
 }
