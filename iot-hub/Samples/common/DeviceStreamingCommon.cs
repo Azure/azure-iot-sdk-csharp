@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Samples.Common
         /// <returns>A ClientWebSocket instance connected to the Device Streaming gateway, if successful.</returns>
         public static async Task<ClientWebSocket> GetStreamingClientAsync(Uri url, string authorizationToken, CancellationToken cancellationToken)
         {
-            ClientWebSocket wsClient = new ClientWebSocket();
+            var wsClient = new ClientWebSocket();
             wsClient.Options.SetRequestHeader("Authorization", "Bearer " + authorizationToken);
 
             await wsClient.ConnectAsync(url, cancellationToken).ConfigureAwait(false);

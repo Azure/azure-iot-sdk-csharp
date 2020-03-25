@@ -42,8 +42,8 @@ namespace Microsoft.Azure.Devices.Samples
             try
             {
                 await AddDeviceWithSelfSignedCertificateAsync(
-                    DeviceId, 
-                    s_primaryThumbprint, 
+                    DeviceId,
+                    s_primaryThumbprint,
                     s_secondaryThumbprint).ConfigureAwait(false);
             }
             finally
@@ -72,12 +72,12 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 IEnumerable<Twin> twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
 
-                foreach(Twin twin in twins)
+                foreach (Twin twin in twins)
                 {
                     Console.WriteLine(
-                        "\t{0, -50} : {1, 10} : Last seen: {2, -10}", 
-                        twin.DeviceId, 
-                        twin.ConnectionState, 
+                        "\t{0, -50} : {1, 10} : Last seen: {2, -10}",
+                        twin.DeviceId,
+                        twin.ConnectionState,
                         twin.LastActivityTime);
                 }
             }
@@ -103,9 +103,9 @@ namespace Microsoft.Azure.Devices.Samples
                     X509Thumbprint = new X509Thumbprint
                     {
                         PrimaryThumbprint = primaryThumbprint,
-                        SecondaryThumbprint = secondaryThumbprint
-                    }
-                }
+                        SecondaryThumbprint = secondaryThumbprint,
+                    },
+                },
             };
 
             Console.Write($"Adding device '{deviceId}' with self signed certificate auth . . . ");
@@ -119,8 +119,8 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 Authentication = new AuthenticationMechanism
                 {
-                    Type = AuthenticationType.CertificateAuthority
-                }
+                    Type = AuthenticationType.CertificateAuthority,
+                },
             };
 
             Console.Write($"Adding device '{deviceId}' with CA authentication . . . ");
@@ -131,13 +131,13 @@ namespace Microsoft.Azure.Devices.Samples
         public async Task RemoveDeviceAsync(string deviceId)
         {
             Console.Write($"Remove device '{deviceId}' . . . ");
-            await _registryManager.RemoveDeviceAsync(deviceId);
+            await _registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
             Console.WriteLine("Done");
         }
 
         public async Task UpdateDesiredProperties(string deviceId)
         {
-            var twin = await _registryManager.GetTwinAsync(deviceId);
+            var twin = await _registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
 
             var patch =
                 @"{
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Samples
                 }
             }";
 
-            await _registryManager.UpdateTwinAsync(twin.DeviceId, patch, twin.ETag);
+            await _registryManager.UpdateTwinAsync(twin.DeviceId, patch, twin.ETag).ConfigureAwait(false);
         }
     }
 }

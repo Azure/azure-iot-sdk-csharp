@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
-using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -14,10 +12,10 @@ namespace Microsoft.Azure.Devices.Samples
 {
     public class DeviceStreamSample
     {
-        private ServiceClient _serviceClient;
-        private String _deviceId;
+        private readonly ServiceClient _serviceClient;
+        private readonly string _deviceId;
 
-        public DeviceStreamSample(ServiceClient deviceClient, String deviceId)
+        public DeviceStreamSample(ServiceClient deviceClient, string deviceId)
         {
             _serviceClient = deviceClient;
             _deviceId = deviceId;
@@ -27,30 +25,25 @@ namespace Microsoft.Azure.Devices.Samples
         {
             try
             {
-                DeviceStreamRequest deviceStreamRequest = new DeviceStreamRequest(
-                    streamName: "TestStream"
-                );
+                var deviceStreamRequest = new DeviceStreamRequest("TestStream");
 
                 DeviceStreamResponse result = await _serviceClient.CreateStreamAsync(_deviceId, deviceStreamRequest).ConfigureAwait(false);
 
-                Console.WriteLine("Stream response received: Name={0} IsAccepted={1}", deviceStreamRequest.StreamName, result.IsAccepted);
+                Console.WriteLine($"Stream response received: Name={deviceStreamRequest.StreamName} IsAccepted={result.IsAccepted}");
 
                 if (result.IsAccepted)
                 {
-                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
-                    using (var stream = await DeviceStreamingCommon.GetStreamingClientAsync(result.Url, result.AuthorizationToken, cancellationTokenSource.Token).ConfigureAwait(false))
-                    {
-                        byte[] sendBuffer = Encoding.UTF8.GetBytes("Streaming data over a stream...");
-                        byte[] receiveBuffer = new byte[1024];
+                    using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+                    using ClientWebSocket stream = await DeviceStreamingCommon.GetStreamingClientAsync(result.Url, result.AuthorizationToken, cts.Token).ConfigureAwait(false);
 
-                        await stream.SendAsync(sendBuffer, WebSocketMessageType.Binary, true, cancellationTokenSource.Token).ConfigureAwait(false);
+                    byte[] sendBuffer = Encoding.UTF8.GetBytes("Streaming data over a stream...");
+                    byte[] receiveBuffer = new byte[1024];
 
-                        Console.WriteLine("Sent stream data: {0}", Encoding.UTF8.GetString(sendBuffer, 0, sendBuffer.Length));
+                    await stream.SendAsync(sendBuffer, WebSocketMessageType.Binary, true, cts.Token).ConfigureAwait(false);
+                    Console.WriteLine($"Sent stream data: {Encoding.UTF8.GetString(sendBuffer, 0, sendBuffer.Length)}");
 
-                        var receiveResult = await stream.ReceiveAsync(receiveBuffer, cancellationTokenSource.Token).ConfigureAwait(false);
-
-                        Console.WriteLine("Received stream data: {0}", Encoding.UTF8.GetString(receiveBuffer, 0, receiveResult.Count));
-                    }
+                    var receiveResult = await stream.ReceiveAsync(receiveBuffer, cts.Token).ConfigureAwait(false);
+                    Console.WriteLine($"Received stream data: {Encoding.UTF8.GetString(receiveBuffer, 0, receiveResult.Count)}");
                 }
                 else
                 {
@@ -59,7 +52,7 @@ namespace Microsoft.Azure.Devices.Samples
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Got an exception: {0}", ex);
+                Console.WriteLine($"Got an exception: {ex}");
                 throw;
             }
         }
