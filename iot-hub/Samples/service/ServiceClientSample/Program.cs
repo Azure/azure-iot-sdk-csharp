@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Azure.Devices.Samples
         private static TransportType s_transportType = TransportType.Amqp;
         //private static TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
 
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             if (args.Length < 1)
             {
@@ -30,15 +31,17 @@ namespace Microsoft.Azure.Devices.Samples
 
             string deviceId = args[0];
 
-            if (string.IsNullOrEmpty(s_connectionString) && args.Length > 1)
+            if (string.IsNullOrWhiteSpace(s_connectionString) && args.Length > 1)
             {
                 s_connectionString = args[1];
             }
 
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, s_transportType);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, s_transportType);
 
             var sample = new ServiceClientSample(serviceClient);
-            sample.RunSampleAsync(deviceId).GetAwaiter().GetResult();
+            await sample.RunSampleAsync(deviceId).ConfigureAwait(false);
+
+            await serviceClient.CloseAsync().ConfigureAwait(false);
 
             Console.WriteLine("Done.\n");
             return 0;
