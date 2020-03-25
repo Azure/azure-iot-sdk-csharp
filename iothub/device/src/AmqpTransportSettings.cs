@@ -17,9 +17,9 @@ namespace Microsoft.Azure.Devices.Client
         private readonly TransportType _transportType;
         private TimeSpan _operationTimeout;
         private TimeSpan _openTimeout;
-        /// <summary>	
-        /// To enable certificate revocation check. Default to be false.	
-        /// </summary>	
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
         public bool CertificateRevocationCheck = TlsVersions.Instance.CertificateRevocationCheck;
 
         /// <summary>

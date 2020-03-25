@@ -30,13 +30,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly TimeSpan DefaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan DefaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
 
-        /// <summary>	
-        /// To enable certificate revocation check. Default to be false.	
-        /// </summary>	
-#pragma warning disable CA1051 // Do not declare visible instance fields	
-#pragma warning disable IDE1006 // Naming Styles	
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+#pragma warning disable CA1051 // Do not declare visible instance fields
+#pragma warning disable IDE1006 // Naming Styles
         public bool CertificateRevocationCheck = TlsVersions.Instance.CertificateRevocationCheck;
-#pragma warning restore IDE1006 // Naming Styles	
+#pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore CA1051 // Do not declare visible instance fields
 
         /// <summary>
