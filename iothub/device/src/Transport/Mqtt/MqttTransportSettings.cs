@@ -33,7 +33,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <summary>
         /// To enable certificate revocation check. Default to be true.
         /// </summary>
-#pragma warning disable CA1051 // Do not declare visible instance fields
 #pragma warning disable IDE1006 // Naming Styles
         public bool CertificateRevocationCheck
         {
@@ -41,7 +40,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             set => TlsVersions.Instance.CertificateRevocationCheck = value;
         }
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore CA1051 // Do not declare visible instance fields
 
         /// <summary>
         /// Creates an instance based on the specified type options
