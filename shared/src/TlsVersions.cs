@@ -48,6 +48,11 @@ namespace Microsoft.Azure.Devices.Shared
         private const SslProtocols PreferredProtocol = SslProtocols.Tls12;
 
         /// <summary>
+        /// To enable certificate revocation check. Default to be true.
+        /// </summary>
+        public bool CertificateRevocationCheck { get; set; } = true;
+
+        /// <summary>
         /// Sets the minimum acceptable versions of TLS.
         /// </summary>
         /// <remarks>
@@ -98,12 +103,8 @@ namespace Microsoft.Azure.Devices.Shared
         {
 #if NET451
             System.Net.ServicePointManager.SecurityProtocol = _net451Protocol;
+            System.Net.ServicePointManager.CheckCertificateRevocationList = CertificateRevocationCheck;
 #endif
         }
-
-        /// <summary>
-        /// To enable certificate revocation check. Default to be true.
-        /// </summary>
-        public bool CertificateRevocationCheck { get; set; } = true;
     }
 }
