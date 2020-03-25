@@ -18,9 +18,13 @@ namespace Microsoft.Azure.Devices.Client
         private TimeSpan _operationTimeout;
         private TimeSpan _openTimeout;
         /// <summary>
-        /// To enable certificate revocation check. Default to be false.
+        /// To enable certificate revocation check. Default to be true.
         /// </summary>
-        public bool CertificateRevocationCheck = TlsVersions.Instance.CertificateRevocationCheck;
+        public bool CertificateRevocationCheck
+        {
+            get => TlsVersions.Instance.CertificateRevocationCheck;
+            set => TlsVersions.Instance.CertificateRevocationCheck = value;
+        }
 
         /// <summary>
         /// The default operation timeout

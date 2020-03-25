@@ -96,7 +96,8 @@ namespace Microsoft.Azure.Devices.Shared
 #pragma warning restore CA5397 // Do not use deprecated SslProtocols values
 
         /// <summary>
-        /// Sets the acceptable versions of TLS over HTTPS or websocket for .NET framework 4.5.1, as it does not offer a "SystemDefault" option. No-op for other .NET versions.
+        /// Sets the acceptable versions of TLS over HTTPS or websocket for .NET framework 4.5.1, as it does not offer a "SystemDefault" option. No-op for other .NET versions. 
+        /// Sets CheckCertificateRevocationList property to value of CertificateRevocationCheck for .NET framework 4.5.1
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "NET451 requires access to an instance field.")]
         public void SetLegacyAcceptableVersions()
