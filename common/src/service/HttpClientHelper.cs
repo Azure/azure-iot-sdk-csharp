@@ -1,56 +1,91 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices
-{
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.Azure.Devices.Common.Extensions;
-    using Microsoft.Azure.Devices.Shared;
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.Azure.Devices.Common.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
+
 #if NET451
     using System.Net.Http.Formatting;
 #endif
 
-    sealed class HttpClientHelper : IHttpClientHelper
+namespace Microsoft.Azure.Devices
+{
+    internal sealed class HttpClientHelper : IHttpClientHelper
     {
 #if !NETSTANDARD1_3 && !NETSTANDARD2_0
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
-        readonly Uri baseAddress;
-        readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
-        readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
-        readonly TimeSpan defaultOperationTimeout;
-        readonly IWebProxy customHttpProxy;
-        readonly Action<HttpClient> preRequestActionForAllRequests;
+        private readonly Uri _baseAddress;
+        private readonly IAuthorizationHeaderProvider _authenticationHeaderProvider;
+        private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
+        private readonly TimeSpan _defaultOperationTimeout;
 
+        // IDisposables
+
+        private readonly HttpClient _httpClientWithDefaultTimeout;
+
+        private readonly HttpClient _httpClientWithNoTimeout;
+        private readonly HttpClientHandler _httpClientHandler;
 
         public HttpClientHelper(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            Action<HttpClient> preRequestActionForAllRequests,
             IWebProxy customHttpProxy)
         {
-            this.baseAddress = baseAddress;
-            this.authenticationHeaderProvider = authenticationHeaderProvider;
-            this.defaultErrorMapping =
-                new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
-            this.defaultOperationTimeout = timeout;
+            _baseAddress = baseAddress;
+            _authenticationHeaderProvider = authenticationHeaderProvider;
+            _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
+            _defaultOperationTimeout = timeout;
+
+            // HttpClientHandler is IDisposable, so save onto it for disposing.
+            _httpClientHandler = new HttpClientHandler
+            {
+#if !NET451
+                SslProtocols = TlsVersions.Preferred,
+#endif
+            };
+
+            if (customHttpProxy != DefaultWebProxySettings.Instance)
+            {
+                _httpClientHandler.UseProxy = customHttpProxy != null;
+                _httpClientHandler.Proxy = customHttpProxy;
+            }
+
+            // We need two types of HttpClients, one with our default operation timeout, and one without. The one without will rely on
+            // a cancellation token.
+
+            _httpClientWithDefaultTimeout = new HttpClient(_httpClientHandler)
+            {
+                BaseAddress = _baseAddress,
+                Timeout = _defaultOperationTimeout,
+            };
+            _httpClientWithDefaultTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+            _httpClientWithDefaultTimeout.DefaultRequestHeaders.ExpectContinue = false;
+
+            _httpClientWithNoTimeout = new HttpClient(_httpClientHandler)
+            {
+                BaseAddress = _baseAddress,
+                Timeout = Timeout.InfiniteTimeSpan,
+            };
+            _httpClientWithNoTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+            _httpClientWithNoTimeout.DefaultRequestHeaders.ExpectContinue = false;
+
             TlsVersions.SetLegacyAcceptableVersions();
-
-
         }
 
         public Task<T> GetAsync<T>(
@@ -59,7 +94,7 @@ namespace Microsoft.Azure.Devices
             IDictionary<string, string> customHeaders,
             CancellationToken cancellationToken)
         {
-            return this.GetAsync<T>(requestUri, this.defaultOperationTimeout, errorMappingOverrides, customHeaders, true, cancellationToken);
+            return GetAsync<T>(requestUri, _defaultOperationTimeout, errorMappingOverrides, customHeaders, true, cancellationToken);
         }
 
         public Task<T> GetAsync<T>(
@@ -69,7 +104,7 @@ namespace Microsoft.Azure.Devices
             bool throwIfNotFound,
             CancellationToken cancellationToken)
         {
-            return this.GetAsync<T>(requestUri, this.defaultOperationTimeout, errorMappingOverrides, customHeaders, throwIfNotFound, cancellationToken);
+            return GetAsync<T>(requestUri, _defaultOperationTimeout, errorMappingOverrides, customHeaders, throwIfNotFound, cancellationToken);
         }
 
         public async Task<T> GetAsync<T>(
@@ -80,61 +115,64 @@ namespace Microsoft.Azure.Devices
             bool throwIfNotFound,
             CancellationToken cancellationToken)
         {
-            T result = default(T);
+            T result = default;
 
-            if (operationTimeout != this.defaultOperationTimeout && operationTimeout > TimeSpan.Zero)
+            if (operationTimeout != _defaultOperationTimeout && operationTimeout > TimeSpan.Zero)
             {
                 if (throwIfNotFound)
                 {
-                    await this.ExecuteWithCustomOperationTimeoutAsync(
-                        HttpMethod.Get,
-                        new Uri(this.baseAddress, requestUri),
-                        operationTimeout,
-                        (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                        IsMappedToException,
-                        async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
-                        errorMappingOverrides,
-                        cancellationToken).ConfigureAwait(false);
+                    await ExecuteWithCustomOperationTimeoutAsync(
+                            HttpMethod.Get,
+                            new Uri(_baseAddress, requestUri),
+                            operationTimeout,
+                            (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
+                            IsMappedToException,
+                            async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
+                            errorMappingOverrides,
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    await this.ExecuteWithCustomOperationTimeoutAsync(
-                       HttpMethod.Get,
-                       new Uri(this.baseAddress, requestUri),
-                        operationTimeout,
-                       (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                       message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
-                       async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
-                       errorMappingOverrides,
-                       cancellationToken).ConfigureAwait(false);
+                    await ExecuteWithCustomOperationTimeoutAsync(
+                           HttpMethod.Get,
+                           new Uri(_baseAddress, requestUri),
+                            operationTimeout,
+                           (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
+                           message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
+                           async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
+                           errorMappingOverrides,
+                           cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
             else
             {
                 if (throwIfNotFound)
                 {
-                    await this.ExecuteAsync(
-                        HttpMethod.Get,
-                        new Uri(this.baseAddress, requestUri),
-                        (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                        async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
-                        errorMappingOverrides,
-                        cancellationToken).ConfigureAwait(false);
+                    await ExecuteAsync(
+                            HttpMethod.Get,
+                            new Uri(_baseAddress, requestUri),
+                            (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
+                            async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
+                            errorMappingOverrides,
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    using (var httpClient = BuildHttpClient(defaultOperationTimeout))
-                    {
-                        await this.ExecuteAsync(
-                           httpClient,
-                           HttpMethod.Get,
-                           new Uri(this.baseAddress, requestUri),
-                           (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                           message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
-                           async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
-                           errorMappingOverrides,
-                           cancellationToken).ConfigureAwait(false);
-                    }
+                    await ExecuteAsync(
+                        _httpClientWithDefaultTimeout,
+                        HttpMethod.Get,
+                        new Uri(_baseAddress, requestUri),
+                        (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
+                        message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
+                        async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound
+                            ? default
+                            : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
+                        errorMappingOverrides,
+                        cancellationToken)
+                    .ConfigureAwait(false);
                 }
             }
 
@@ -148,11 +186,11 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken) where T : IETagHolder
         {
-            T result = default(T);
+            T result = default;
 
-            await this.ExecuteAsync(
+            await ExecuteAsync(
                     HttpMethod.Put,
-                    new Uri(this.baseAddress, requestUri),
+                    new Uri(_baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
@@ -166,7 +204,8 @@ namespace Microsoft.Azure.Devices
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -177,11 +216,11 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
-            T2 result = default(T2);
+            T2 result = default;
 
-            await this.ExecuteAsync(
+            await ExecuteAsync(
                     HttpMethod.Put,
-                    new Uri(this.baseAddress, requestUri),
+                    new Uri(_baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
 #if NETSTANDARD1_3 || NETSTANDARD2_0
@@ -194,7 +233,8 @@ namespace Microsoft.Azure.Devices
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -207,23 +247,24 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
-            await this.ExecuteAsync(
-                HttpMethod.Put,
-                new Uri(this.baseAddress, requestUri),
-                (requestMsg, token) =>
-                {
-                    InsertEtag(requestMsg, etag, operationType);
+            await ExecuteAsync(
+                    HttpMethod.Put,
+                    new Uri(_baseAddress, requestUri),
+                    (requestMsg, token) =>
+                    {
+                        InsertEtag(requestMsg, etag, operationType);
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
-                    requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
+                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                        requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
-                    return Task.FromResult(0);
-                },
-                null,
-                errorMappingOverrides,
-                cancellationToken).ConfigureAwait(false);
+                        return Task.FromResult(0);
+                    },
+                    null,
+                    errorMappingOverrides,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task<T2> PutAsync<T, T2>(
@@ -234,26 +275,27 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
-            T2 result = default(T2);
+            T2 result = default;
 
-            await this.ExecuteAsync(
-                HttpMethod.Put,
-                new Uri(this.baseAddress, requestUri),
-                (requestMsg, token) =>
-                {
-                    // TODO: skintali: Use string etag when service side changes are ready
-                    InsertEtag(requestMsg, etag, operationType);
+            await ExecuteAsync(
+                    HttpMethod.Put,
+                    new Uri(_baseAddress, requestUri),
+                    (requestMsg, token) =>
+                    {
+                        // TODO: skintali: Use string etag when service side changes are ready
+                        InsertEtag(requestMsg, etag, operationType);
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
-                    requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
+                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                        requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
-                    return Task.FromResult(0);
-                },
-                async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
-                errorMappingOverrides,
-                cancellationToken).ConfigureAwait(false);
+                        return Task.FromResult(0);
+                    },
+                    async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
+                    errorMappingOverrides,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -261,9 +303,9 @@ namespace Microsoft.Azure.Devices
         public async Task PatchAsync<T>(Uri requestUri, T entity, string etag,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides, CancellationToken cancellationToken)
         {
-            await this.ExecuteAsync(
+            await ExecuteAsync(
                 new HttpMethod("PATCH"),
-                new Uri(this.baseAddress, requestUri),
+                new Uri(_baseAddress, requestUri),
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, PutOperationType.UpdateEntity);
@@ -287,9 +329,9 @@ namespace Microsoft.Azure.Devices
         {
             T2 result = default(T2);
 
-            await this.ExecuteAsync(
+            await ExecuteAsync(
                 new HttpMethod("PATCH"),
-                new Uri(this.baseAddress, requestUri),
+                new Uri(_baseAddress, requestUri),
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, putOperationType);
@@ -308,7 +350,7 @@ namespace Microsoft.Azure.Devices
             return result;
         }
 
-        static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)
+        private static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)
         {
             if (typeof(T) == typeof(HttpResponseMessage))
             {
@@ -335,7 +377,7 @@ namespace Microsoft.Azure.Devices
             return entity;
         }
 
-        static Task AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
+        private static Task AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
         {
             if (customHeaders != null)
             {
@@ -348,7 +390,7 @@ namespace Microsoft.Azure.Devices
             return Task.FromResult(0);
         }
 
-        static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
+        private static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
         {
             if (operationType == PutOperationType.CreateEntity)
             {
@@ -366,7 +408,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        static void InsertEtag(HttpRequestMessage requestMessage, string etag, PutOperationType operationType)
+        private static void InsertEtag(HttpRequestMessage requestMessage, string etag, PutOperationType operationType)
         {
             if (operationType == PutOperationType.CreateEntity)
             {
@@ -384,7 +426,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        static void InsertEtag(HttpRequestMessage requestMessage, string etag)
+        private static void InsertEtag(HttpRequestMessage requestMessage, string etag)
         {
             if (string.IsNullOrWhiteSpace(etag))
             {
@@ -404,10 +446,12 @@ namespace Microsoft.Azure.Devices
             requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(etag));
         }
 
-        IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> MergeErrorMapping(
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides)
+        private IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> MergeErrorMapping(
+            IDictionary<HttpStatusCode,
+            Func<HttpResponseMessage,
+            Task<Exception>>> errorMappingOverrides)
         {
-            var mergedMapping = this.defaultErrorMapping.ToDictionary(mapping => mapping.Key, mapping => mapping.Value);
+            var mergedMapping = _defaultErrorMapping.ToDictionary(mapping => mapping.Key, mapping => mapping.Value);
 
             if (errorMappingOverrides != null)
             {
@@ -427,7 +471,7 @@ namespace Microsoft.Azure.Devices
             IDictionary<string, string> customHeaders,
             CancellationToken cancellationToken)
         {
-            return this.PostAsyncHelper(
+            return PostAsyncHelper(
                 requestUri,
                 entity,
                 TimeSpan.Zero,
@@ -447,7 +491,7 @@ namespace Microsoft.Azure.Devices
             TimeSpan operationTimeout,
             CancellationToken cancellationToken)
         {
-            return this.PostAsyncHelper(
+            return PostAsyncHelper(
                 requestUri,
                 entity,
                 operationTimeout,
@@ -466,17 +510,18 @@ namespace Microsoft.Azure.Devices
             IDictionary<string, string> customHeaders,
             CancellationToken cancellationToken)
         {
-            T2 result = default(T2);
-            await this.PostAsyncHelper(
-                requestUri,
-                entity,
-                TimeSpan.Zero,
-                errorMappingOverrides,
-                customHeaders,
-                null,
-                null,
-                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
-                cancellationToken).ConfigureAwait(false);
+            T2 result = default;
+            await PostAsyncHelper(
+                    requestUri,
+                    entity,
+                    TimeSpan.Zero,
+                    errorMappingOverrides,
+                    customHeaders,
+                    null,
+                    null,
+                    async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -489,17 +534,18 @@ namespace Microsoft.Azure.Devices
             IDictionary<string, string> customHeaders,
             CancellationToken cancellationToken)
         {
-            T2 result = default(T2);
-            await this.PostAsyncHelper(
-                requestUri,
-                entity,
-                operationTimeout,
-                errorMappingOverrides,
-                customHeaders,
-                null,
-                null,
-                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
-                cancellationToken).ConfigureAwait(false);
+            T2 result = default;
+            await PostAsyncHelper(
+                    requestUri,
+                    entity,
+                    operationTimeout,
+                    errorMappingOverrides,
+                    customHeaders,
+                    null,
+                    null,
+                    async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -514,7 +560,7 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken)
         {
             T2 result = default(T2);
-            await this.PostAsyncHelper(
+            await PostAsyncHelper(
                 requestUri,
                 entity,
                 TimeSpan.Zero,
@@ -536,8 +582,8 @@ namespace Microsoft.Azure.Devices
             ICollection<string> customContentEncoding,
             CancellationToken cancellationToken)
         {
-            HttpResponseMessage result = default(HttpResponseMessage);
-            await this.PostAsyncHelper(
+            HttpResponseMessage result = default;
+            await PostAsyncHelper(
                 requestUri,
                 entity,
                 TimeSpan.Zero,
@@ -545,12 +591,16 @@ namespace Microsoft.Azure.Devices
                 customHeaders,
                 customContentType,
                 customContentEncoding,
-                async (message, token) => result = message,
+                (message, token) =>
+                {
+                    result = message;
+                    return TaskHelpers.CompletedTask;
+                },
                 cancellationToken).ConfigureAwait(false);
             return result;
         }
 
-        Task PostAsyncHelper<T1>(
+        private Task PostAsyncHelper<T1>(
             Uri requestUri,
             T1 entity,
             TimeSpan operationTimeout,
@@ -599,11 +649,11 @@ namespace Microsoft.Azure.Devices
                 return Task.FromResult(0);
             };
 
-            if (operationTimeout != this.defaultOperationTimeout && operationTimeout > TimeSpan.Zero)
+            if (operationTimeout != _defaultOperationTimeout && operationTimeout > TimeSpan.Zero)
             {
-                return this.ExecuteWithCustomOperationTimeoutAsync(
+                return ExecuteWithCustomOperationTimeoutAsync(
                     HttpMethod.Post,
-                    new Uri(this.baseAddress, requestUri),
+                    new Uri(_baseAddress, requestUri),
                     operationTimeout,
                     modifyRequestMessageFunc,
                     IsMappedToException,
@@ -613,9 +663,9 @@ namespace Microsoft.Azure.Devices
             }
             else
             {
-                return this.ExecuteAsync(
+                return ExecuteAsync(
                     HttpMethod.Post,
-                    new Uri(this.baseAddress, requestUri),
+                    new Uri(_baseAddress, requestUri),
                     modifyRequestMessageFunc,
                     processResponseMessageAsync,
                     errorMappingOverrides,
@@ -630,18 +680,18 @@ namespace Microsoft.Azure.Devices
             IDictionary<string, string> customHeaders,
             CancellationToken cancellationToken) where T : IETagHolder
         {
-            return this.ExecuteAsync(
-                    HttpMethod.Delete,
-                    new Uri(this.baseAddress, requestUri),
-                    (requestMsg, token) =>
-                    {
-                        InsertEtag(requestMsg, entity.ETag);
-                        AddCustomHeaders(requestMsg, customHeaders);
-                        return TaskHelpers.CompletedTask;
-                    },
-                    null,
-                    errorMappingOverrides,
-                    cancellationToken);
+            return ExecuteAsync(
+                HttpMethod.Delete,
+                new Uri(_baseAddress, requestUri),
+                (requestMsg, token) =>
+                {
+                    InsertEtag(requestMsg, entity.ETag);
+                    AddCustomHeaders(requestMsg, customHeaders);
+                    return TaskHelpers.CompletedTask;
+                },
+                null,
+                errorMappingOverrides,
+                cancellationToken);
         }
 
         public async Task<T> DeleteAsync<T>(
@@ -650,11 +700,11 @@ namespace Microsoft.Azure.Devices
             IDictionary<string, string> customHeaders,
             CancellationToken cancellationToken)
         {
-            T result = default(T);
+            T result = default;
 
-            await this.ExecuteAsync(
+            await ExecuteAsync(
                     HttpMethod.Delete,
-                    new Uri(this.baseAddress, requestUri),
+                    new Uri(_baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
                         AddCustomHeaders(requestMsg, customHeaders);
@@ -662,12 +712,13 @@ namespace Microsoft.Azure.Devices
                     },
                     async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result;
         }
 
-        async Task ExecuteAsync(
+        private async Task ExecuteAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
@@ -675,21 +726,19 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
-            using (var httpClient = BuildHttpClient(this.defaultOperationTimeout))
-            {
-                await this.ExecuteAsync(
-                    httpClient,
+            await ExecuteAsync(
+                    _httpClientWithDefaultTimeout,
                     httpMethod,
                     requestUri,
                     modifyRequestMessageAsync,
                     IsMappedToException,
                     processResponseMessageAsync,
                     errorMappingOverrides,
-                    cancellationToken).ConfigureAwait(false);
-            }
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        async Task ExecuteWithCustomOperationTimeoutAsync(
+        private async Task ExecuteWithCustomOperationTimeoutAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             TimeSpan operationTimeout,
@@ -701,19 +750,21 @@ namespace Microsoft.Azure.Devices
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var httpClient = BuildHttpClient(Timeout.InfiniteTimeSpan))
+            using (var cts = new CancellationTokenSource(operationTimeout))
             {
-                var cts = new CancellationTokenSource(operationTimeout);
-                CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
-                await this.ExecuteAsync(
-                    httpClient,
-                    httpMethod,
-                    requestUri,
-                    modifyRequestMessageAsync,
-                    isMappedToException,
-                    processResponseMessageAsync,
-                    errorMappingOverrides,
-                    linkedCts.Token).ConfigureAwait(false);
+                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token))
+                {
+                    await ExecuteAsync(
+                            _httpClientWithNoTimeout,
+                            httpMethod,
+                            requestUri,
+                            modifyRequestMessageAsync,
+                            isMappedToException,
+                            processResponseMessageAsync,
+                            errorMappingOverrides,
+                            linkedCts.Token)
+                        .ConfigureAwait(false);
+                }
             }
         }
 
@@ -737,7 +788,14 @@ namespace Microsoft.Azure.Devices
             return isMappedToException;
         }
 
-        async Task ExecuteAsync(
+        public void Dispose()
+        {
+            _httpClientHandler.Dispose();
+            _httpClientWithDefaultTimeout.Dispose();
+            _httpClientWithNoTimeout.Dispose();
+        }
+
+        private async Task ExecuteAsync(
             HttpClient httpClient,
             HttpMethod httpMethod,
             Uri requestUri,
@@ -748,11 +806,11 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken)
         {
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> mergedErrorMapping =
-                this.MergeErrorMapping(errorMappingOverrides);
+                MergeErrorMapping(errorMappingOverrides);
 
             using (var msg = new HttpRequestMessage(httpMethod, requestUri))
             {
-                msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), this.authenticationHeaderProvider.GetAuthorizationHeader());
+                msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
                 msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
 
                 if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
@@ -814,10 +872,8 @@ namespace Microsoft.Azure.Devices
 
                     throw new IotHubCommunicationException(string.Format(CultureInfo.InvariantCulture, "The {0} operation timed out.", httpMethod), ex);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
-                    if (Fx.IsFatal(ex)) throw;
-
                     throw new IotHubException(ex.Message, ex);
                 }
 
@@ -829,53 +885,20 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        static async Task<Exception> MapToExceptionAsync(
+        private static async Task<Exception> MapToExceptionAsync(
             HttpResponseMessage response,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMapping)
         {
-            Func<HttpResponseMessage, Task<Exception>> func;
-            if (!errorMapping.TryGetValue(response.StatusCode, out func))
+            if (!errorMapping.TryGetValue(response.StatusCode, out Func<HttpResponseMessage, Task<Exception>> func))
             {
                 return new IotHubException(
                     await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false),
                     isTransient: true);
             }
 
-            var mapToExceptionFunc = errorMapping[response.StatusCode];
-            var exception = mapToExceptionFunc(response);
+            Func<HttpResponseMessage, Task<Exception>> mapToExceptionFunc = errorMapping[response.StatusCode];
+            Task<Exception> exception = mapToExceptionFunc(response);
             return await exception.ConfigureAwait(false);
-        }
-
-        private HttpClient BuildHttpClient(TimeSpan timeout)
-        {
-            var httpClientHandler = new HttpClientHandler
-            {
-#if !NET451
-                SslProtocols = TlsVersions.Preferred,
-#endif
-            };
-
-            if (customHttpProxy != DefaultWebProxySettings.Instance)
-            {
-                httpClientHandler.UseProxy = (customHttpProxy != null);
-                httpClientHandler.Proxy = customHttpProxy;
-            }
-
-            var httpClient = new HttpClient(httpClientHandler)
-            {
-                BaseAddress = this.baseAddress,
-                Timeout = timeout
-            };
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
-            httpClient.DefaultRequestHeaders.ExpectContinue = false;
-
-            preRequestActionForAllRequests?.Invoke(httpClient);
-
-            return httpClient;
-        }
-
-        public void Dispose()
-        {
         }
     }
 }
