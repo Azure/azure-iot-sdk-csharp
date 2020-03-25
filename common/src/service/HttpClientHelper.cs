@@ -32,23 +32,59 @@ namespace Microsoft.Azure.Devices
         private readonly IAuthorizationHeaderProvider _authenticationHeaderProvider;
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly TimeSpan _defaultOperationTimeout;
-        private readonly IWebProxy _customHttpProxy;
-        private readonly Action<HttpClient> _preRequestActionForAllRequests;
+
+        // IDisposables
+
+        private readonly HttpClient _httpClientWithDefaultTimeout;
+
+        private readonly HttpClient _httpClientWithNoTimeout;
+        private readonly HttpClientHandler _httpClientHandler;
 
         public HttpClientHelper(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            Action<HttpClient> preRequestActionForAllRequests,
             IWebProxy customHttpProxy)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             _defaultOperationTimeout = timeout;
-            _preRequestActionForAllRequests = preRequestActionForAllRequests;
-            _customHttpProxy = customHttpProxy;
+
+            // HttpClientHandler is IDisposable, so save onto it for disposing.
+            _httpClientHandler = new HttpClientHandler
+            {
+#if !NET451
+                SslProtocols = TlsVersions.Instance.Preferred,
+#endif
+            };
+
+            if (customHttpProxy != DefaultWebProxySettings.Instance)
+            {
+                _httpClientHandler.UseProxy = customHttpProxy != null;
+                _httpClientHandler.Proxy = customHttpProxy;
+            }
+
+            // We need two types of HttpClients, one with our default operation timeout, and one without. The one without will rely on
+            // a cancellation token.
+
+            _httpClientWithDefaultTimeout = new HttpClient(_httpClientHandler)
+            {
+                BaseAddress = _baseAddress,
+                Timeout = _defaultOperationTimeout,
+            };
+            _httpClientWithDefaultTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+            _httpClientWithDefaultTimeout.DefaultRequestHeaders.ExpectContinue = false;
+
+            _httpClientWithNoTimeout = new HttpClient(_httpClientHandler)
+            {
+                BaseAddress = _baseAddress,
+                Timeout = Timeout.InfiniteTimeSpan,
+            };
+            _httpClientWithNoTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+            _httpClientWithNoTimeout.DefaultRequestHeaders.ExpectContinue = false;
+
             TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 
@@ -127,25 +163,18 @@ namespace Microsoft.Azure.Devices
                 }
                 else
                 {
-                    (HttpClient httpClient, HttpClientHandler httpClientHandler) = BuildHttpClient(_defaultOperationTimeout);
-                    using (httpClient)
-                    {
-                        using (httpClientHandler)
-                        {
-                            await ExecuteAsync(
-                            httpClient,
-                            HttpMethod.Get,
-                            new Uri(_baseAddress, requestUri),
-                            (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                            message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
-                            async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound
-                                ? default
-                                : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
-                            errorMappingOverrides,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                        }
-                    }
+                    await ExecuteAsync(
+                        _httpClientWithDefaultTimeout,
+                        HttpMethod.Get,
+                        new Uri(_baseAddress, requestUri),
+                        (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
+                        message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
+                        async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound
+                            ? default
+                            : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
+                        errorMappingOverrides,
+                        cancellationToken)
+                    .ConfigureAwait(false);
                 }
             }
 
@@ -686,23 +715,16 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
-            (HttpClient httpClient, HttpClientHandler httpClientHandler) = BuildHttpClient(_defaultOperationTimeout);
-            using (httpClient)
-            {
-                using (httpClientHandler)
-                {
-                    await ExecuteAsync(
-                            httpClient,
-                            httpMethod,
-                            requestUri,
-                            modifyRequestMessageAsync,
-                            IsMappedToException,
-                            processResponseMessageAsync,
-                            errorMappingOverrides,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                }
-            }
+            await ExecuteAsync(
+                    _httpClientWithDefaultTimeout,
+                    httpMethod,
+                    requestUri,
+                    modifyRequestMessageAsync,
+                    IsMappedToException,
+                    processResponseMessageAsync,
+                    errorMappingOverrides,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         private async Task ExecuteWithCustomOperationTimeoutAsync(
@@ -717,11 +739,11 @@ namespace Microsoft.Azure.Devices
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            (HttpClient httpClient, HttpClientHandler httpClientHandler) = BuildHttpClient(Timeout.InfiniteTimeSpan);
             using var cts = new CancellationTokenSource(operationTimeout);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+
             await ExecuteAsync(
-                    httpClient,
+                    _httpClientWithNoTimeout,
                     httpMethod,
                     requestUri,
                     modifyRequestMessageAsync,
@@ -749,6 +771,13 @@ namespace Microsoft.Azure.Devices
             }
 
             return isMappedToException;
+        }
+
+        public void Dispose()
+        {
+            _httpClientHandler.Dispose();
+            _httpClientWithDefaultTimeout.Dispose();
+            _httpClientWithNoTimeout.Dispose();
         }
 
         private async Task ExecuteAsync(
@@ -826,10 +855,8 @@ namespace Microsoft.Azure.Devices
 
                 throw new IotHubCommunicationException(string.Format(CultureInfo.InvariantCulture, "The {0} operation timed out.", httpMethod), ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                if (Fx.IsFatal(ex)) throw;
-
                 throw new IotHubException(ex.Message, ex);
             }
 
@@ -844,49 +871,16 @@ namespace Microsoft.Azure.Devices
             HttpResponseMessage response,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMapping)
         {
-            Func<HttpResponseMessage, Task<Exception>> func;
-            if (!errorMapping.TryGetValue(response.StatusCode, out func))
+            if (!errorMapping.TryGetValue(response.StatusCode, out Func<HttpResponseMessage, Task<Exception>> func))
             {
                 return new IotHubException(
                     await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false),
                     isTransient: true);
             }
 
-            var mapToExceptionFunc = errorMapping[response.StatusCode];
-            var exception = mapToExceptionFunc(response);
+            Func<HttpResponseMessage, Task<Exception>> mapToExceptionFunc = errorMapping[response.StatusCode];
+            Task<Exception> exception = mapToExceptionFunc(response);
             return await exception.ConfigureAwait(false);
-        }
-
-        private (HttpClient httpClient, HttpClientHandler httpClientHandler) BuildHttpClient(TimeSpan timeout)
-        {
-            var httpClientHandler = new HttpClientHandler
-            {
-#if !NET451
-                SslProtocols = TlsVersions.Instance.Preferred,
-#endif
-            };
-
-            if (_customHttpProxy != DefaultWebProxySettings.Instance)
-            {
-                httpClientHandler.UseProxy = _customHttpProxy != null;
-                httpClientHandler.Proxy = _customHttpProxy;
-            }
-
-            var httpClient = new HttpClient(httpClientHandler)
-            {
-                BaseAddress = _baseAddress,
-                Timeout = timeout
-            };
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
-            httpClient.DefaultRequestHeaders.ExpectContinue = false;
-
-            _preRequestActionForAllRequests?.Invoke(httpClient);
-
-            return (httpClient, httpClientHandler);
-        }
-
-        public void Dispose()
-        {
         }
     }
 }
