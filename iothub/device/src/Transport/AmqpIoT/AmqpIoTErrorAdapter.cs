@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public static readonly AmqpSymbol ClientVersion = AmqpIoTConstants.Vendor + ":client-version";
         public static readonly AmqpSymbol ApiVersion = AmqpIoTConstants.Vendor + ":api-version";
         public static readonly AmqpSymbol ChannelCorrelationId = AmqpIoTConstants.Vendor + ":channel-correlation-id";
+        public static readonly AmqpSymbol AuthChain = AmqpIoTConstants.Vendor + ":auth-chain";
 
         private const int MaxSizeInInfoMap = 32 * 1024;
 

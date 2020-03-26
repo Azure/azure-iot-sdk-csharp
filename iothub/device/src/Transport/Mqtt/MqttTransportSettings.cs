@@ -18,6 +18,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     {
         private readonly TransportType _transportType;
 
+        /// <summary>
+        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
+        /// </summary>
+        internal string AuthenticationChain { get; set; }
+
         private const bool DefaultCleanSession = false;
         private const bool DefaultDeviceReceiveAckCanTimeout = false;
         private const bool DefaultHasWill = false;
