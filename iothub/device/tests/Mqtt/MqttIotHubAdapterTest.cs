@@ -5,10 +5,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 {
     using DotNetty.Codecs.Mqtt.Packets;
     using DotNetty.Transport.Channels;
+    using FluentAssertions;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using System;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;
+    using System.Linq;
     using System.Threading.Tasks;
 
     [TestClass]
@@ -110,6 +114,34 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
             var topicName = MqttIotHubAdapter.PopulateMessagePropertiesFromMessage("", message);
             Assert.AreEqual("/%24.ifid=urn%3Aazureiot%3ASecurity%3ASecurityAgent%3A1", topicName);
+        }
+        
+        public void TestAuthenticationChain()
+        {
+            const string authChain = "leaf;edge1;edge2";
+            var passwordProvider = new Mock<IAuthorizationProvider>();
+            var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
+            var productInfo = new ProductInfo();
+            var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) { HasWill = false };
+            var channelHandlerContext = new Mock<IChannelHandlerContext>();
+            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo);
+
+            // Set an authchain on the transport settings
+            mqttTransportSetting.AuthenticationChain = authChain;
+
+            // Save all the messages from the context
+            List<object> messages = new List<object>();
+            channelHandlerContext.Setup(context => context.WriteAndFlushAsync(It.IsAny<object>())).Callback((object message) => messages.Add(message)).Returns(TaskHelpers.CompletedTask);
+
+            // Act
+            channelHandlerContext.Setup(context => context.Channel.EventLoop.ScheduleAsync(It.IsAny<Action>(), It.IsAny<TimeSpan>())).Returns(TaskHelpers.CompletedTask);
+            channelHandlerContext.SetupGet(context => context.Handler).Returns(mqttIotHubAdapter);
+            mqttIotHubAdapter.ChannelActive(channelHandlerContext.Object);
+
+            // Assert: the auth chain should be part of the username
+            ConnectPacket connectPacket = messages.First().As<ConnectPacket>();
+            NameValueCollection queryParams = System.Web.HttpUtility.ParseQueryString(connectPacket.Username);
+            Assert.AreEqual(authChain, queryParams.Get("auth-chain"));
         }
 
         private async Task SendRequestAndAcknowledgementsInSpecificOrder<T>(T requestPacket, Func<T, PacketWithId> ackFactory, bool receiveResponseBeforeSendingRequestContinues)
