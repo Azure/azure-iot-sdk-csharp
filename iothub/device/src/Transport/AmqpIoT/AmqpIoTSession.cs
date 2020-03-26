@@ -248,6 +248,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         )
         {
             if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
+
             AmqpLinkSettings amqpLinkSettings = new AmqpLinkSettings
             {
                 LinkName = linkSuffix,
@@ -264,6 +265,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (CorrelationId != null)
             {
                 amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ChannelCorrelationId, CorrelationId);
+            }
+
+            if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+            {
+                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
             }
 
             try
@@ -325,6 +331,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
             amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ClientVersion, deviceIdentity.ProductInfo.ToString());
             amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ApiVersion, ClientApiVersionHelper.ApiVersionString);
+
+            if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+            {
+                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
+            }
+
             if (correlationId != null)
             {
                 amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ChannelCorrelationId, correlationId);
