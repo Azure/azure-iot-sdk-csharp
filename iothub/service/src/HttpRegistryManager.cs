@@ -64,7 +64,6 @@ namespace Microsoft.Azure.Devices
                 connectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                client => { },
                 transportSettings.Proxy);
         }
 
@@ -844,13 +843,15 @@ namespace Microsoft.Azure.Devices
                         throw new ArgumentException(IotHubApiResources.GetString(ApiResources.InvalidImportMode, importMode));
                 }
 
-                var exportImportDevice = new ExportImportDevice();
-                exportImportDevice.Id = twin.DeviceId;
-                exportImportDevice.ModuleId = twin.ModuleId;
-                exportImportDevice.ImportMode = importMode;
-                exportImportDevice.TwinETag = importMode == ImportMode.UpdateTwinIfMatchETag ? twin.ETag : null;
-                exportImportDevice.Tags = twin.Tags;
-                exportImportDevice.Properties = new ExportImportDevice.PropertyContainer();
+                var exportImportDevice = new ExportImportDevice
+                {
+                    Id = twin.DeviceId,
+                    ModuleId = twin.ModuleId,
+                    ImportMode = importMode,
+                    TwinETag = importMode == ImportMode.UpdateTwinIfMatchETag ? twin.ETag : null,
+                    Tags = twin.Tags,
+                    Properties = new ExportImportDevice.PropertyContainer(),
+                };
                 exportImportDevice.Properties.DesiredProperties = twin.Properties?.Desired;
 
                 exportImportDeviceList.Add(exportImportDevice);
@@ -1162,7 +1163,7 @@ namespace Microsoft.Azure.Devices
             EnsureInstanceNotClosed();
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>()
             {
-                { HttpStatusCode.NotFound, async responseMessage => new ModuleNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage),  (Exception)null) }
+                { HttpStatusCode.NotFound, async responseMessage => new ModuleNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false), (Exception)null) }
             };
 
             return _httpClientHelper.GetAsync<Twin>(GetModuleTwinRequestUri(deviceId, moduleId), errorMappingOverrides, null, false, cancellationToken);
@@ -1181,7 +1182,7 @@ namespace Microsoft.Azure.Devices
             }
 
             // TODO: Do we need to deserialize Twin, only to serialize it again?
-            var twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch);
+            Twin twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch);
             return UpdateTwinAsync(deviceId, twin, etag, cancellationToken);
         }
 
@@ -1192,7 +1193,7 @@ namespace Microsoft.Azure.Devices
 
         public override Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, Twin twinPatch, string etag, CancellationToken cancellationToken)
         {
-            return UpdateTwinInternalAsync(deviceId, moduleId, twinPatch, etag, cancellationToken, false);
+            return UpdateTwinInternalAsync(deviceId, moduleId, twinPatch, etag, false, cancellationToken);
         }
 
         public override Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, string jsonTwinPatch, string etag)
@@ -1208,7 +1209,7 @@ namespace Microsoft.Azure.Devices
             }
 
             // TODO: Do we need to deserialize Twin, only to serialize it again?
-            var twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch);
+            Twin twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch);
             return UpdateTwinAsync(deviceId, moduleId, twin, etag, cancellationToken);
         }
 
@@ -1219,7 +1220,7 @@ namespace Microsoft.Azure.Devices
 
         public override Task<Twin> UpdateTwinAsync(string deviceId, Twin twinPatch, string etag, CancellationToken cancellationToken)
         {
-            return UpdateTwinInternalAsync(deviceId, twinPatch, etag, cancellationToken, false);
+            return UpdateTwinInternalAsync(deviceId, twinPatch, etag, false, cancellationToken);
         }
 
         public override Task<Twin> ReplaceTwinAsync(string deviceId, string newTwinJson, string etag)
@@ -1235,7 +1236,7 @@ namespace Microsoft.Azure.Devices
             }
 
             // TODO: Do we need to deserialize Twin, only to serialize it again?
-            var twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
+            Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
             return ReplaceTwinAsync(deviceId, twin, etag, cancellationToken);
         }
 
@@ -1246,7 +1247,7 @@ namespace Microsoft.Azure.Devices
 
         public override Task<Twin> ReplaceTwinAsync(string deviceId, string moduleId, Twin newTwin, string etag, CancellationToken cancellationToken)
         {
-            return UpdateTwinInternalAsync(deviceId, moduleId, newTwin, etag, cancellationToken, true);
+            return UpdateTwinInternalAsync(deviceId, moduleId, newTwin, etag, true, cancellationToken);
         }
 
         public override Task<Twin> ReplaceTwinAsync(string deviceId, string moduleId, string newTwinJson, string etag)
@@ -1262,7 +1263,7 @@ namespace Microsoft.Azure.Devices
             }
 
             // TODO: Do we need to deserialize Twin, only to serialize it again?
-            var twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
+            Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
             return ReplaceTwinAsync(deviceId, moduleId, twin, etag, cancellationToken);
         }
 
@@ -1273,10 +1274,10 @@ namespace Microsoft.Azure.Devices
 
         public override Task<Twin> ReplaceTwinAsync(string deviceId, Twin newTwin, string etag, CancellationToken cancellationToken)
         {
-            return UpdateTwinInternalAsync(deviceId, newTwin, etag, cancellationToken, true);
+            return UpdateTwinInternalAsync(deviceId, newTwin, etag, true, cancellationToken);
         }
 
-        private Task<Twin> UpdateTwinInternalAsync(string deviceId, Twin twin, string etag, CancellationToken cancellationToken, bool isReplace)
+        private Task<Twin> UpdateTwinInternalAsync(string deviceId, Twin twin, string etag, bool isReplace, CancellationToken cancellationToken)
         {
             EnsureInstanceNotClosed();
 
@@ -1326,7 +1327,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private Task<Twin> UpdateTwinInternalAsync(string deviceId, string moduleId, Twin twin, string etag, CancellationToken cancellationToken, bool isReplace)
+        private Task<Twin> UpdateTwinInternalAsync(string deviceId, string moduleId, Twin twin, string etag, bool isReplace, CancellationToken cancellationToken)
         {
             EnsureInstanceNotClosed();
 

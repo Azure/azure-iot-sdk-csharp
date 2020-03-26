@@ -1,42 +1,39 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-
-    class HttpJobClient : JobClient
+    internal class HttpJobClient : JobClient
     {
-        const string JobsUriFormat = "/jobs/v2/{0}?{1}";
-        const string JobsQueryFormat = "/jobs/v2/query?{0}";
-        const string CancelJobUriFormat = "/jobs/v2/{0}/cancel?{1}";
+        private const string JobsUriFormat = "/jobs/v2/{0}?{1}";
+        private const string JobsQueryFormat = "/jobs/v2/query?{0}";
+        private const string CancelJobUriFormat = "/jobs/v2/{0}/cancel?{1}";
 
-        const string ContinuationTokenHeader = "x-ms-continuation";
-        const string PageSizeHeader = "x-ms-max-item-count";
+        private const string ContinuationTokenHeader = "x-ms-continuation";
+        private const string PageSizeHeader = "x-ms-max-item-count";
 
-        static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
-        IHttpClientHelper httpClientHelper;
-        readonly string iotHubName;
+        private IHttpClientHelper _httpClientHelper;
 
         internal HttpJobClient(IotHubConnectionString connectionString, HttpTransportSettings transportSettings)
         {
-            this.iotHubName = connectionString.IotHubName;
-            this.httpClientHelper = new HttpClientHelper(
+            _httpClientHelper = new HttpClientHelper(
                 connectionString.HttpsEndpoint,
                 connectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                DefaultOperationTimeout,
-                client => { },
+                s_defaultOperationTimeout,
                 transportSettings.Proxy);
         }
 
@@ -48,8 +45,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(httpClientHelper));
             }
 
-            this.iotHubName = iotHubName;
-            this.httpClientHelper = httpClientHelper;
+            _httpClientHelper = httpClientHelper;
         }
 
         public override Task OpenAsync()
@@ -66,17 +62,17 @@ namespace Microsoft.Azure.Devices
         {
             if (disposing)
             {
-                if (this.httpClientHelper != null)
+                if (_httpClientHelper != null)
                 {
-                    this.httpClientHelper.Dispose();
-                    this.httpClientHelper = null;
+                    _httpClientHelper.Dispose();
+                    _httpClientHelper = null;
                 }
             }
         }
 
         public override Task<JobResponse> GetJobAsync(string jobId)
         {
-            return this.GetJobAsync(jobId, CancellationToken.None);
+            return GetJobAsync(jobId, CancellationToken.None);
         }
 
         public override IQuery CreateQuery()
@@ -96,17 +92,17 @@ namespace Microsoft.Azure.Devices
 
         public override IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus, int? pageSize)
         {
-            return new Query((token) => this.GetJobsAsync(jobType, jobStatus, pageSize, token, CancellationToken.None));
+            return new Query((token) => GetJobsAsync(jobType, jobStatus, pageSize, token, CancellationToken.None));
         }
 
         public override Task<JobResponse> CancelJobAsync(string jobId)
         {
-            return this.CancelJobAsync(jobId, CancellationToken.None);
+            return CancelJobAsync(jobId, CancellationToken.None);
         }
 
         public override Task<JobResponse> GetJobAsync(string jobId, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            EnsureInstanceNotClosed();
 
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
@@ -116,7 +112,7 @@ namespace Microsoft.Azure.Devices
                 }
             };
 
-            return this.httpClientHelper.GetAsync<JobResponse>(
+            return _httpClientHelper.GetAsync<JobResponse>(
                 GetJobUri(jobId),
                 errorMappingOverrides,
                 null,
@@ -125,9 +121,9 @@ namespace Microsoft.Azure.Devices
 
         public override Task<JobResponse> CancelJobAsync(string jobId, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            EnsureInstanceNotClosed();
 
-            return this.httpClientHelper.PostAsync<string, JobResponse>(
+            return _httpClientHelper.PostAsync<string, JobResponse>(
                 new Uri(CancelJobUriFormat.FormatInvariant(jobId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative),
                 null,
                 null,
@@ -137,27 +133,27 @@ namespace Microsoft.Azure.Devices
 
         /// <inheritdoc/>
         public override Task<JobResponse> ScheduleDeviceMethodAsync(
-            string jobId, 
+            string jobId,
             string queryCondition,
-            CloudToDeviceMethod methodCall, 
-            DateTime startTimeUtc, 
+            CloudToDeviceMethod methodCall,
+            DateTime startTimeUtc,
             long maxExecutionTimeInSeconds)
         {
-            return this.ScheduleDeviceMethodAsync(jobId, queryCondition, methodCall, startTimeUtc, maxExecutionTimeInSeconds, CancellationToken.None);
+            return ScheduleDeviceMethodAsync(jobId, queryCondition, methodCall, startTimeUtc, maxExecutionTimeInSeconds, CancellationToken.None);
         }
 
         /// <inheritdoc/>
         public override Task<JobResponse> ScheduleDeviceMethodAsync(
-            string jobId, 
+            string jobId,
             string queryCondition,
-            CloudToDeviceMethod cloudToDeviceMethod, 
+            CloudToDeviceMethod cloudToDeviceMethod,
             DateTime startTimeUtc,
             long maxExecutionTimeInSeconds,
             CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            EnsureInstanceNotClosed();
 
-            var jobRequest = new JobRequest()
+            var jobRequest = new JobRequest
             {
                 JobId = jobId,
                 JobType = JobType.ScheduleDeviceMethod,
@@ -167,30 +163,30 @@ namespace Microsoft.Azure.Devices
                 MaxExecutionTimeInSeconds = maxExecutionTimeInSeconds
             };
 
-            return this.CreateJobAsync(jobRequest, cancellationToken);
+            return CreateJobAsync(jobRequest, cancellationToken);
         }
 
         public override Task<JobResponse> ScheduleTwinUpdateAsync(
-            string jobId, 
+            string jobId,
             string queryCondition,
-            Twin twin, 
+            Twin twin,
             DateTime startTimeUtc,
             long maxExecutionTimeInSeconds)
         {
-            return this.ScheduleTwinUpdateAsync(jobId, queryCondition, twin, startTimeUtc, maxExecutionTimeInSeconds, CancellationToken.None);
+            return ScheduleTwinUpdateAsync(jobId, queryCondition, twin, startTimeUtc, maxExecutionTimeInSeconds, CancellationToken.None);
         }
 
         public override Task<JobResponse> ScheduleTwinUpdateAsync(
-            string jobId, 
+            string jobId,
             string queryCondition,
-            Twin twin, 
+            Twin twin,
             DateTime startTimeUtc,
             long maxExecutionTimeInSeconds,
             CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            EnsureInstanceNotClosed();
 
-            var jobRequest = new JobRequest()
+            var jobRequest = new JobRequest
             {
                 JobId = jobId,
                 JobType = JobType.ScheduleUpdateTwin,
@@ -200,10 +196,10 @@ namespace Microsoft.Azure.Devices
                 MaxExecutionTimeInSeconds = maxExecutionTimeInSeconds
             };
 
-            return this.CreateJobAsync(jobRequest, cancellationToken);
+            return CreateJobAsync(jobRequest, cancellationToken);
         }
 
-        Task<JobResponse> CreateJobAsync(JobRequest jobRequest, CancellationToken cancellationToken)
+        private Task<JobResponse> CreateJobAsync(JobRequest jobRequest, CancellationToken cancellationToken)
         {
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
@@ -216,30 +212,30 @@ namespace Microsoft.Azure.Devices
                 {
                     HttpStatusCode.NotFound, async responseMessage =>
                     {
-                        var responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
+                        string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
                         return (Exception) new DeviceNotFoundException(responseContent, (Exception) null);
                     }
                 }
             };
 
-            return this.httpClientHelper.PutAsync<JobRequest, JobResponse>(
+            return _httpClientHelper.PutAsync<JobRequest, JobResponse>(
                 GetJobUri(jobRequest.JobId),
                 jobRequest,
                 errorMappingOverrides,
                 cancellationToken);
         }
 
-        void EnsureInstanceNotClosed()
+        private void EnsureInstanceNotClosed()
         {
-            if (this.httpClientHelper == null)
+            if (_httpClientHelper == null)
             {
                 throw new ObjectDisposedException("JobClient", ApiResources.JobClientInstanceAlreadyClosed);
             }
         }
 
-        async Task<QueryResult> GetJobsAsync(JobType? jobType, JobStatus? jobStatus, int? pageSize, string continuationToken, CancellationToken cancellationToken)
+        private async Task<QueryResult> GetJobsAsync(JobType? jobType, JobStatus? jobStatus, int? pageSize, string continuationToken, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            EnsureInstanceNotClosed();
 
             var customHeaders = new Dictionary<string, string>();
             if (!string.IsNullOrWhiteSpace(continuationToken))
@@ -252,7 +248,7 @@ namespace Microsoft.Azure.Devices
                 customHeaders.Add(PageSizeHeader, pageSize.ToString());
             }
 
-            HttpResponseMessage response = await httpClientHelper.GetAsync<HttpResponseMessage>(
+            HttpResponseMessage response = await _httpClientHelper.GetAsync<HttpResponseMessage>(
                 BuildQueryJobUri(jobType, jobStatus),
                 null,
                 customHeaders,
@@ -261,9 +257,9 @@ namespace Microsoft.Azure.Devices
             return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
 
-        Uri BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
+        private static Uri BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
         {
-            StringBuilder stringBuilder = new StringBuilder(JobsQueryFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryStringDefault));
+            var stringBuilder = new StringBuilder(JobsQueryFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryStringDefault));
 
             if (jobType != null)
             {
@@ -278,7 +274,7 @@ namespace Microsoft.Azure.Devices
             return new Uri(stringBuilder.ToString(), UriKind.Relative);
         }
 
-        static Uri GetJobUri(string jobId)
+        private static Uri GetJobUri(string jobId)
         {
             return new Uri(JobsUriFormat.FormatInvariant(jobId ?? string.Empty, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
         }
