@@ -43,6 +43,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string DeviceCommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
         private const string DeviceTelemetryTopicFormat = "devices/{0}/messages/events/";
         private const string ModuleTelemetryTopicFormat = "devices/{0}/modules/{1}/messages/events/";
+        private const string ApiVersionParam = "api-version";
+        private const string DeviceClientTypeParam = "DeviceClientType";
+        private const string AuthChainParam = "auth-chain";
         private const char SegmentSeparatorChar = '/';
         private const char SingleSegmentWildcardChar = '+';
         private const char MultiSegmentWildcardChar = '#';
@@ -288,11 +291,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(this.mqttTransportSettings.ClientCertificate != null);
                 }
 
+                string usernameString = $"{this.iotHubHostName}/{id}/?{ApiVersionParam}={ClientApiVersionHelper.ApiVersionString}&{DeviceClientTypeParam}={Uri.EscapeDataString(this.productInfo.ToString())}";
+
+                if (!this.mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+                {
+                    usernameString += $"&{AuthChainParam}={Uri.EscapeDataString(this.mqttTransportSettings.AuthenticationChain)}";
+                }
+
                 var connectPacket = new ConnectPacket
                 {
                     ClientId = id,
                     HasUsername = true,
-                    Username = $"{this.iotHubHostName}/{id}/?api-version={ClientApiVersionHelper.ApiVersionString}&DeviceClientType={Uri.EscapeDataString(this.productInfo.ToString())}",
+                    Username = usernameString,
                     HasPassword = !string.IsNullOrEmpty(password),
                     Password = password,
                     KeepAliveInSeconds = this.mqttTransportSettings.KeepAliveInSeconds,
