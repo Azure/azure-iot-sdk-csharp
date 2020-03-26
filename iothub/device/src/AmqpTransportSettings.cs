@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly TransportType _transportType;
         private TimeSpan _operationTimeout;
         private TimeSpan _openTimeout;
+        internal string AuthenticationChain;
         /// <summary>
         /// To enable certificate revocation check. Default to be false.
         /// </summary>

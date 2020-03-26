@@ -288,11 +288,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(this.mqttTransportSettings.ClientCertificate != null);
                 }
 
+                string usernameString = $"{this.iotHubHostName}/{id}/?api-version={ClientApiVersionHelper.ApiVersionString}&DeviceClientType={Uri.EscapeDataString(this.productInfo.ToString())}";
+
+                if (!this.mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+                {
+                    usernameString += $"&AuthChain={Uri.EscapeDataString(this.mqttTransportSettings.AuthenticationChain)}";
+                }
+
                 var connectPacket = new ConnectPacket
                 {
                     ClientId = id,
                     HasUsername = true,
-                    Username = $"{this.iotHubHostName}/{id}/?api-version={ClientApiVersionHelper.ApiVersionString}&DeviceClientType={Uri.EscapeDataString(this.productInfo.ToString())}",
+                    Username = usernameString,
                     HasPassword = !string.IsNullOrEmpty(password),
                     Password = password,
                     KeepAliveInSeconds = this.mqttTransportSettings.KeepAliveInSeconds,
