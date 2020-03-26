@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Samples
         public async Task RunSampleAsync(string deviceId)
         {
             var str = "Hello, Cloud!";
-            var message = new Message(Encoding.ASCII.GetBytes(str));
+            using var message = new Message(Encoding.ASCII.GetBytes(str));
 
             Console.Write($"\tSending C2D message to {deviceId} . . . ");
             await _serviceClient.SendAsync(deviceId, message).ConfigureAwait(false);

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -15,19 +16,19 @@ namespace Microsoft.Azure.Devices.Samples
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
         private static string s_connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
 
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             if (args.Length > 0)
             {
                 s_connectionString = args[0];
             }
 
-            RegistryManager rm = RegistryManager.CreateFromConnectionString(s_connectionString);
+            using RegistryManager rm = RegistryManager.CreateFromConnectionString(s_connectionString);
 
             var sample = new CleanUpDevicesSample(rm);
-            sample.RunSampleAsync().GetAwaiter().GetResult();
+            await sample.RunCleanUpAsync().ConfigureAwait(false);
 
-            Console.WriteLine("Done.\n");
+            Console.WriteLine("Done.");
             return 0;
         }
     }

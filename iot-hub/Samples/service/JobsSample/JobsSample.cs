@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Samples
         private const string TestTagName = "JobsSample_Tag";
         private const int TestTagValue = 100;
 
-        private JobClient _jobClient;
+        private readonly JobClient _jobClient;
 
         public JobsSample(JobClient jobClient)
         {
@@ -32,35 +32,37 @@ namespace Microsoft.Azure.Devices.Samples
             //   IoT Hub query language in additional detail.
             string query = $"DeviceId IN ['{DeviceId}']";
 
-            Twin twin = new Twin(DeviceId);
-            twin.Tags = new TwinCollection();
+            var twin = new Twin(DeviceId)
+            {
+                Tags = new TwinCollection()
+            };
             twin.Tags[TestTagName] = TestTagValue;
 
 
             // *************************************** Schedule twin job ***************************************
             Console.WriteLine($"Schedule twin job {jobId} for {DeviceId}...");
-            JobResponse createJobResponse = 
-                await _jobClient.ScheduleTwinUpdateAsync(
-                    jobId, 
-                    query, 
-                    twin, 
-                    DateTime.UtcNow, 
-                    (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
+            JobResponse createJobResponse = await _jobClient
+                .ScheduleTwinUpdateAsync(
+                    jobId,
+                    query,
+                    twin,
+                    DateTime.UtcNow,
+                    (long)TimeSpan.FromMinutes(2).TotalSeconds)
+                .ConfigureAwait(false);
 
             Console.WriteLine("Schedule response");
-            Console.WriteLine(JsonConvert.SerializeObject(createJobResponse, Formatting.Indented));
+            Console.WriteLine(JsonSerializer.Serialize(createJobResponse, new JsonSerializerOptions { WriteIndented = true }));
             Console.WriteLine();
 
             // *************************************** Get all Jobs ***************************************
-            IEnumerable<JobResponse> queryResults = 
-                await _jobClient.CreateQuery().GetNextAsJobResponseAsync().ConfigureAwait(false);
+            IEnumerable<JobResponse> queryResults = await _jobClient.CreateQuery().GetNextAsJobResponseAsync().ConfigureAwait(false);
 
             List<JobResponse> getJobs = queryResults.ToList();
             Console.WriteLine($"getJobs return {getJobs.Count} result(s)");
 
             foreach (JobResponse job in getJobs)
             {
-                Console.WriteLine(JsonConvert.SerializeObject(job, Formatting.Indented));
+                Console.WriteLine(JsonSerializer.Serialize(job, new JsonSerializerOptions { WriteIndented = true }));
             }
 
             Console.WriteLine();
@@ -70,7 +72,7 @@ namespace Microsoft.Azure.Devices.Samples
             JobResponse jobResponse = await _jobClient.GetJobAsync(jobId).ConfigureAwait(false);
 
             Console.WriteLine("First result");
-            Console.WriteLine(JsonConvert.SerializeObject(jobResponse, Formatting.Indented));
+            Console.WriteLine(JsonSerializer.Serialize(jobResponse, new JsonSerializerOptions { WriteIndented = true }));
 
             Console.Write("Waiting for completion ");
             while (jobResponse.Status != JobStatus.Completed)

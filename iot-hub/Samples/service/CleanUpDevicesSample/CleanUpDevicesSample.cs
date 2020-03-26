@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,30 +12,30 @@ namespace Microsoft.Azure.Devices.Samples
     {
         private const int QueryBatchSize = 10000;
         private const int DeleteBatchSize = 100;
-        private RegistryManager _rm;
-        private List<string> _deleteDeviceWithPrefix =
-            new List<string>{
-                // C# E2E tests
-                "E2E_",
+        private readonly RegistryManager _rm;
+        private readonly List<string> _deleteDeviceWithPrefix = new List<string>
+        {
+            // C# E2E tests
+            "E2E_",
 
-                // C E2E tests
-                "e2e_",
-                "e2e-",
-                "symmetrickey-registration-id-",
-                "tpm-registration-id-",
-                "csdk_",
-                "someregistrationid-",
-                "EdgeDeploymentSample_",
-            };
-        
-        private List<string> _deleteConfigurationWithPrefix =
-            new List<string>{
-                // C# E2E tests
-                "edgedeploymentsampleconfiguration-",
-            };
+            // C E2E tests
+            "e2e_",
+            "e2e-",
+            "symmetrickey-registration-id-",
+            "tpm-registration-id-",
+            "csdk_",
+            "someregistrationid-",
+            "EdgeDeploymentSample_",
+        };
 
-        private List<Device> _devicesToDelete = new List<Device>();
-        private List<Configuration> _configurationsToDelete = new List<Configuration>();
+        private readonly List<string> _deleteConfigurationWithPrefix = new List<string>
+        {
+            // C# E2E tests
+            "edgedeploymentsampleconfiguration-",
+        };
+
+        private readonly List<Device> _devicesToDelete = new List<Device>();
+        private readonly List<Configuration> _configurationsToDelete = new List<Configuration>();
 
 
         public CleanUpDevicesSample(RegistryManager rm)
@@ -44,11 +43,11 @@ namespace Microsoft.Azure.Devices.Samples
             _rm = rm ?? throw new ArgumentNullException(nameof(rm));
         }
 
-        public async Task RunSampleAsync()
+        public async Task RunCleanUpAsync()
         {
             try
             {
-                await PrintDeviceCount();
+                await PrintDeviceCountAsync().ConfigureAwait(false);
 
                 int devicesDeleted = 0;
                 Console.WriteLine("Clean up devices:");
@@ -97,9 +96,9 @@ namespace Microsoft.Azure.Devices.Samples
                     _bulkDeleteList.Clear();
                 }
 
-                Console.WriteLine($"-- Total no of devices deleted: {devicesDeleted}");
+                Console.WriteLine($"-- Total # of devices deleted: {devicesDeleted}");
             
-                var configurations = await _rm.GetConfigurationsAsync(100, new CancellationToken()).ConfigureAwait(false);
+                var configurations = await _rm.GetConfigurationsAsync(100).ConfigureAwait(false);
                 {
                     foreach (var configuration in configurations)
                     {
@@ -108,7 +107,7 @@ namespace Microsoft.Azure.Devices.Samples
                         {
                             if (configurationId.StartsWith(prefix))
                             {
-                            _configurationsToDelete.Add(new Configuration(configurationId));
+                                _configurationsToDelete.Add(new Configuration(configurationId));
                             }
                         }
                     }
@@ -121,8 +120,8 @@ namespace Microsoft.Azure.Devices.Samples
                     removeConfigTasks.Add(_rm.RemoveConfigurationAsync(configuration.Id));
                 });
 
-                Task.WaitAll(removeConfigTasks.ToArray());
-                Console.WriteLine($"-- Total no of configurations deleted: {_configurationsToDelete.Count}");
+                await Task.WhenAll(removeConfigTasks).ConfigureAwait(false);
+                Console.WriteLine($"-- Total # of configurations deleted: {_configurationsToDelete.Count}");
             
             }
             catch (Exception ex)
@@ -131,7 +130,7 @@ namespace Microsoft.Azure.Devices.Samples
             }
         }
 
-        private async Task PrintDeviceCount()
+        private async Task PrintDeviceCountAsync()
         {
             string countSqlQuery = "SELECT COUNT() AS numberOfDevices FROM devices";
             IQuery countQuery = _rm.CreateQuery(countSqlQuery);
@@ -140,7 +139,7 @@ namespace Microsoft.Azure.Devices.Samples
                 IEnumerable<string> result = await countQuery.GetNextAsJsonAsync().ConfigureAwait(false);
                 foreach (var item in result)
                 {
-                    Console.WriteLine($"Total no of devices on the hub: \n{item}");
+                    Console.WriteLine($"Total # of devices in the hub: \n{item}");
                 }
             }
         }
