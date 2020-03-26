@@ -1,6 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Net;
+using System.Net.WebSockets;
+using System.Runtime.ExceptionServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
 using DotNetty.Handlers.Logging;
@@ -12,17 +22,6 @@ using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Net;
-using System.Net.WebSockets;
-using System.Runtime.ExceptionServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -31,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
     {
-        private static MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
+        private static readonly MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
 
         // TODO: Unify these constants with IoT Hub Device client.
         private const int MaxMessageSize = 256 * 1024;
@@ -56,14 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
-            if (FallbackType == TransportFallbackType.WebSocketOnly)
-            {
-                Port = WsPort;
-            }
-            else
-            {
-                Port = MqttTcpPort;
-            }
+            Port = FallbackType == TransportFallbackType.WebSocketOnly ? WsPort : MqttTcpPort;
             Proxy = DefaultWebProxySettings.Instance;
         }
 
@@ -77,7 +69,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+            }
 
             if (message == null)
             {
@@ -90,9 +85,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try
             {
-                if (message.Security is SecurityProviderX509)
+                if (message.Security is SecurityProviderX509 x509Security)
                 {
-                    SecurityProviderX509 x509Security = (SecurityProviderX509)message.Security;
                     if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback || FallbackType == TransportFallbackType.TcpOnly)
                     {
                         // TODO: Fallback not implemented.
@@ -107,10 +101,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         throw new NotSupportedException($"Not supported {nameof(FallbackType)} value: {FallbackType}");
                     }
                 }
-                else if (message.Security is SecurityProviderSymmetricKey)
+                else if (message.Security is SecurityProviderSymmetricKey symmetricKeySecurity)
                 {
-                    SecurityProviderSymmetricKey symmetricKeySecurity = (SecurityProviderSymmetricKey)message.Security;
-
                     if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback ||
                         FallbackType == TransportFallbackType.TcpOnly)
                     {
@@ -128,34 +120,44 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
                 else
                 {
-                    if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
+                    }
+
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)}");
+                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
                 }
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
-                if (Logging.IsEnabled) Logging.Error(
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(
                     this,
                     $"{nameof(ProvisioningTransportHandlerMqtt)} threw exception {ex}",
                     nameof(RegisterAsync));
+                }
 
                 throw new ProvisioningTransportException($"MQTT transport exception", ex, true);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+                }
             }
         }
 
         private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
         {
-            var status = ProvisioningRegistrationStatusType.Failed;
+            ProvisioningRegistrationStatusType status = ProvisioningRegistrationStatusType.Failed;
             Enum.TryParse(result.Status, true, out status);
 
-            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
+            ProvisioningRegistrationSubstatusType substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
             Enum.TryParse(result.Substatus, true, out substatus);
 
             return new DeviceRegistrationResult(
@@ -231,10 +233,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
                 }));
 
-            if (Logging.IsEnabled) Logging.Associate(bootstrap, this);
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(bootstrap, this);
+            }
 
             IPAddress[] addresses = await Dns.GetHostAddressesAsync(message.GlobalDeviceEndpoint).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Info(this, $"DNS resolved {addresses.Length} addresses.");
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, $"DNS resolved {addresses.Length} addresses.");
+            }
 
             IChannel channel = null;
             Exception lastException = null;
@@ -244,7 +252,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 try
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}.");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"Connecting to {address.ToString()}.");
+                    }
+
                     channel = await bootstrap.ConnectAsync(address, Port).ConfigureAwait(false);
                     break;
                 }
@@ -255,9 +267,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         if (ex is ConnectException)     // We will handle DotNetty.Transport.Channels.ConnectException
                         {
                             lastException = ex;
-                            if (Logging.IsEnabled) Logging.Info(
+                            if (Logging.IsEnabled)
+                            {
+                                Logging.Info(
                                 this,
                                 $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}");
+                            }
+
                             return true;
                         }
 
@@ -269,7 +285,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (channel == null)
             {
                 string errorMessage = "Cannot connect to Provisioning Service.";
-                if (Logging.IsEnabled) Logging.Error(this, errorMessage);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, errorMessage);
+                }
+
                 ExceptionDispatchInfo.Capture(lastException).Throw();
             }
 
@@ -306,7 +326,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             var tcs = new TaskCompletionSource<RegistrationOperationStatus>();
 
-            UriBuilder uriBuilder = new UriBuilder(WsScheme, message.GlobalDeviceEndpoint, Port);
+            var uriBuilder = new UriBuilder(WsScheme, message.GlobalDeviceEndpoint, Port);
             Uri websocketUri = uriBuilder.Uri;
 
             // TODO properly dispose of the ws.

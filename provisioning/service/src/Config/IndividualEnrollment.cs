@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </code>
         /// </example>
         /// <param name="registrationId">the <code>string</code> with a unique id for the individualEnrollment. It cannot be <code>null</code> or empty.</param>
-        /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM` or `X509`.</param>
+        /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM`, `X509` or `SymmetricKey`.</param>
         /// <param name="deviceId">the <code>string</code> with the device name. This is optional and can be <code>null</code> or empty.</param>
         /// <param name="iotHubHostName">the <code>string</code> with the target IoTHub name. This is optional and can be <code>null</code> or empty.</param>
         /// <param name="initialTwinState">the <see cref="TwinState"/> with the initial Twin condition. This is optional and can be <code>null</code>.</param>
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The <code>string</code> with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
-            string jsonPrettyPrint = Newtonsoft.Json.JsonConvert.SerializeObject(this, Formatting.Indented);
+            string jsonPrettyPrint = JsonConvert.SerializeObject(this, Formatting.Indented);
             return jsonPrettyPrint;
         }
 
@@ -201,20 +201,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="ArgumentException">if the provided string does not fit the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId")]
-        public string RegistrationId
-        {
-            get
-            {
-                return _registrationId;
-            }
-
-            private set
-            {
-                _registrationId = value;
-            }
-        }
-
-        private string _registrationId;
+        public string RegistrationId { get; private set; }
 
         /// <summary>
         /// Desired IoT Hub device ID (optional).
@@ -222,22 +209,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string DeviceId
         {
-            get
-            {
-                return _deviceId;
-            }
+            get => _deviceId;
 
-            set
-            {
-                if (value == null)
-                {
-                    _deviceId = null;
-                }
-                else
-                {
-                    _deviceId = value;
-                }
-            }
+            set => _deviceId = value ?? null;
         }
 
         private string _deviceId;
@@ -260,10 +234,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonIgnore]
         public Attestation Attestation
         {
-            get
-            {
-                return _attestation.GetAttestation();
-            }
+            get => _attestation.GetAttestation();
 
             set
             {

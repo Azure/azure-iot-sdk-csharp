@@ -1,19 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Globalization;
+using System.IO;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Globalization;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -53,7 +52,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
+            }
 
             if (message == null)
             {
@@ -83,13 +85,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 else
                 {
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)} " +
-                        $"or {nameof(SecurityProviderX509)}");
+                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)}, " +
+                        $"{nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
                 }
 
-                if (Logging.IsEnabled) Logging.Associate(authStrategy, this);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Associate(authStrategy, this);
+                }
 
-                bool useWebSocket = (FallbackType == TransportFallbackType.WebSocketOnly);
+                bool useWebSocket = FallbackType == TransportFallbackType.WebSocketOnly;
 
                 var builder = new UriBuilder()
                 {
@@ -158,32 +163,38 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
-                if (Logging.IsEnabled) Logging.Error(
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(
                     this,
                     $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}",
                     nameof(RegisterAsync));
+                }
 
                 throw new ProvisioningTransportException($"AMQP transport exception", ex, true);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
+                }
             }
         }
 
         private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo)
         {
-            var amqpDeviceSession = connection.CreateSession();
+            AmqpClientSession amqpDeviceSession = connection.CreateSession();
             await amqpDeviceSession.OpenAsync(s_timeoutConstant).ConfigureAwait(false);
 
-            var amqpReceivingLink = amqpDeviceSession.CreateReceivingLink(linkEndpoint);
+            AmqpClientLink amqpReceivingLink = amqpDeviceSession.CreateReceivingLink(linkEndpoint);
 
             amqpReceivingLink.AddClientVersion(productInfo);
             amqpReceivingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
 
             await amqpReceivingLink.OpenAsync(s_timeoutConstant).ConfigureAwait(false);
 
-            var amqpSendingLink = amqpDeviceSession.CreateSendingLink(linkEndpoint);
+            AmqpClientLink amqpSendingLink = amqpDeviceSession.CreateSendingLink(linkEndpoint);
 
             amqpSendingLink.AddClientVersion(productInfo);
             amqpSendingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
@@ -225,15 +236,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(s_timeoutConstant).ConfigureAwait(false);
                 client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
 
-                using (var streamReader = new StreamReader(amqpResponse.BodyStream))
-                {
-                    string jsonResponse = await streamReader
-                        .ReadToEndAsync()
-                        .ConfigureAwait(false);
-                    RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
-                    status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPoolingInterval);
-                    return status;
-                }
+                using var streamReader = new StreamReader(amqpResponse.BodyStream);
+                string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+                status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPoolingInterval);
+                return status;
             }
             finally
             {
@@ -246,31 +253,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string operationId,
             string correlationId)
         {
-            using (var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = DeviceOperations.GetOperationStatus }))
-            {
-                amqpMessage.Properties.CorrelationId = correlationId;
-                amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] =
-                    DeviceOperations.GetOperationStatus;
-                amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationId] = operationId;
-                var outcome = await client.AmqpSession.SendingLink
-                    .SendMessageAsync(
-                        amqpMessage,
-                        new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
-                        s_timeoutConstant)
-                    .ConfigureAwait(false);
-                ValidateOutcome(outcome);
-                AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(s_timeoutConstant)
-                    .ConfigureAwait(false);
-                client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
+            using var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = DeviceOperations.GetOperationStatus });
+            amqpMessage.Properties.CorrelationId = correlationId;
+            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] = DeviceOperations.GetOperationStatus;
+            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationId] = operationId;
 
-                using (var streamReader = new StreamReader(amqpResponse.BodyStream))
-                {
-                    string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                    RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
-                    status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPoolingInterval);
-                    return status;
-                }
-            }
+            Outcome outcome = await client.AmqpSession.SendingLink
+                .SendMessageAsync(
+                    amqpMessage,
+                    new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
+                    s_timeoutConstant)
+                .ConfigureAwait(false);
+
+            ValidateOutcome(outcome);
+            AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(s_timeoutConstant)
+                .ConfigureAwait(false);
+            client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
+
+            using var streamReader = new StreamReader(amqpResponse.BodyStream);
+            string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+            RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+            status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPoolingInterval);
+            return status;
         }
 
         private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(
@@ -300,7 +304,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 try
                 {
-                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
+                    ProvisioningErrorDetailsAmqp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
                     if (isTransient)
@@ -316,11 +320,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
                 catch (JsonException ex)
                 {
-                    if (Logging.IsEnabled) Logging.Error(
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(
                         this,
                         $"{nameof(ProvisioningTransportHandlerAmqp)} server returned malformed error response." +
                         $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
                         nameof(RegisterAsync));
+                    }
 
                     throw new ProvisioningTransportException(
                         $"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'",
