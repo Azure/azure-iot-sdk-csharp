@@ -57,6 +57,7 @@ namespace Microsoft.Azure.Devices
             {
 #if !NET451
                 SslProtocols = TlsVersions.Instance.Preferred,
+                CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck,
 #endif
             };
 

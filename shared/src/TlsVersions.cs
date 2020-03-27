@@ -48,6 +48,11 @@ namespace Microsoft.Azure.Devices.Shared
         private const SslProtocols PreferredProtocol = SslProtocols.Tls12;
 
         /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+        public bool CertificateRevocationCheck { get; set; } = false;
+
+        /// <summary>
         /// Sets the minimum acceptable versions of TLS.
         /// </summary>
         /// <remarks>
@@ -91,13 +96,15 @@ namespace Microsoft.Azure.Devices.Shared
 #pragma warning restore CA5397 // Do not use deprecated SslProtocols values
 
         /// <summary>
-        /// Sets the acceptable versions of TLS over HTTPS or websocket for .NET framework 4.5.1, as it does not offer a "SystemDefault" option. No-op for other .NET versions.
+        /// Sets the acceptable versions of TLS over HTTPS or websocket for .NET framework 4.5.1, as it does not offer a "SystemDefault" option. No-op for other .NET versions. 
+        /// Sets CheckCertificateRevocationList property to value of CertificateRevocationCheck for .NET framework 4.5.1
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "NET451 requires access to an instance field.")]
         public void SetLegacyAcceptableVersions()
         {
 #if NET451
             System.Net.ServicePointManager.SecurityProtocol = _net451Protocol;
+            System.Net.ServicePointManager.CheckCertificateRevocationList = CertificateRevocationCheck;
 #endif
         }
     }
