@@ -26,10 +26,10 @@ namespace Microsoft.Azure.Devices.Shared.Tests
         }
 
         [Fact]
-        public void CheckCertificationList_DefaultsToTrue()
+        public void CheckCertificationList_DefaultsToFalse()
         {
             // assert
-            new TlsVersions().CertificateRevocationCheck.Should().Be(true);
+            new TlsVersions().CertificateRevocationCheck.Should().BeFalse();
         }
 
 #if NET451

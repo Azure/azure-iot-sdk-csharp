@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly TimeSpan DefaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
 
         /// <summary>
-        /// To enable certificate revocation check. Default to be true.
+        /// To enable certificate revocation check. Default to be false.
         /// </summary>
 #pragma warning disable IDE1006 // Naming Styles
         public bool CertificateRevocationCheck
