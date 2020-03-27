@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </code>
         /// </example>
         /// <param name="registrationId">the <code>string</code> with a unique id for the individualEnrollment. It cannot be <code>null</code> or empty.</param>
-        /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM` or `X509`.</param>
+        /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM`, `X509` or `SymmetricKey`.</param>
         /// <param name="deviceId">the <code>string</code> with the device name. This is optional and can be <code>null</code> or empty.</param>
         /// <param name="iotHubHostName">the <code>string</code> with the target IoTHub name. This is optional and can be <code>null</code> or empty.</param>
         /// <param name="initialTwinState">the <see cref="TwinState"/> with the initial Twin condition. This is optional and can be <code>null</code>.</param>

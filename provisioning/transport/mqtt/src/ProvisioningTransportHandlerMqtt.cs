@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)}");
+                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
                 }
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
