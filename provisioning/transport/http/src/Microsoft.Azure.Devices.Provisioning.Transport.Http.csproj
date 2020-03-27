@@ -22,6 +22,9 @@
   <PropertyGroup>
     <Version>1.2.1</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client HTTP Transport</Title>
+    <IncludeSource>True</IncludeSource>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

@@ -83,8 +83,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 else
                 {
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)} " +
-                        $"or {nameof(SecurityProviderX509)}");
+                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)}, " +
+                        $"{nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
                 }
 
                 if (Logging.IsEnabled) Logging.Associate(authStrategy, this);
