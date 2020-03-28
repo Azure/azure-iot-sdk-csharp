@@ -56,15 +56,15 @@
     "variables": {
         "StorageAccountNameLower": "[toLower(parameters('StorageAccountName'))]",
         "ConsumerGroupName": "[concat(parameters('ResourceGroup'), '/events/e2e-tests')]",
-        "storageAccountId": "[concat(resourceGroup().id,'/providers/Microsoft.Storage/storageAccounts/',toLower(parameters('StorageAccountName')))]"
+        "storageAccountId": "[concat(resourceGroup().id, '/providers/Microsoft.Storage/storageAccounts/',toLower(parameters('StorageAccountName')))]",
+        "keyVaultName": "[concat('Env', parameters('ResourceGroup'))]"
     },
     "resources": [
         {
             "type": "Microsoft.KeyVault/vaults",
             "apiVersion": "2018-02-14",
-            "name": "[parameters('ResourceGroup')]",
+            "name": "[variables('keyVaultName')]",
             "location": "[parameters('Region')]",
-            "dependsOn": [],
             "tags": {},
             "properties": {
                 "enabledForDeployment": false,
@@ -74,55 +74,43 @@
                 "accessPolicies": [
                     {
                         "objectId": "[parameters('UserObjectId')]",
-                        "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                        "tenantId": "[subscription().tenantId]",
                         "permissions": {
-                            "keys": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore"
-                            ],
                             "secrets": [
-                                "Get",
-                                "List",
-                                "Set",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore"
+                                "get",
+                                "list",
+                                "set",
+                                "delete",
+                                "recover",
+                                "backup",
+                                "restore"
                             ],
                             "certificates": [
-                                "Get",
-                                "List",
-                                "Update",
-                                "Create",
-                                "Import",
-                                "Delete",
-                                "Recover",
-                                "Backup",
-                                "Restore",
-                                "ManageContacts",
-                                "ManageIssuers",
-                                "GetIssuers",
-                                "ListIssuers",
-                                "SetIssuers",
-                                "DeleteIssuers"
+                                "get",
+                                "list",
+                                "update",
+                                "create",
+                                "import",
+                                "delete",
+                                "recover",
+                                "backup",
+                                "restore",
+                                "manageContacts",
+                                "manageIssuers",
+                                "getIssuers",
+                                "listIssuers",
+                                "setIssuers",
+                                "deleteIssuers"
                             ]
                         }
                     }
                 ],
-                "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+                "tenantId": "[subscription().tenantId]",
                 "sku": {
-                    "name": "Standard",
+                    "name": "standard",
                     "family": "A"
                 },
-                "enableSoftDelete": true,
-                "softDeleteRetentionInDays": 90,
+                "enableSoftDelete": false,
                 "networkAcls": {
                     "defaultAction": "allow",
                     "bypass": "AzureServices",
@@ -336,6 +324,10 @@
         "workspaceId": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('ResourceGroup')), '2017-03-15-preview').customerId]"
+        },
+        "keyVaultName": {
+            "type": "string",
+            "value": "[variables('keyVaultName')]"
         }
     }
 }
