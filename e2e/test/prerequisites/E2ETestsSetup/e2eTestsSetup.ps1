@@ -1,3 +1,5 @@
+# NOTE: This script needs to be run using admin mode
+
 param(
     [Parameter(Mandatory)]
     [string] $Region,
@@ -75,7 +77,7 @@ $uploadCertificateName = "group1-certificate"
 ############################################################################################################################
 # Cleanup old certs and files that can cause a conflict
 ############################################################################################################################
-
+$subjectPrefix = "Azure IoT Test"
 Write-Host("`nCleanup old certs and files that can cause a conflict")
 Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") } | Remove-Item
 Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=xdevice1") } | Remove-Item
@@ -91,7 +93,6 @@ Get-ChildItem .\ | Where-Object { $_.Name.EndsWith(".p7b") } | Remove-Item
 
 Write-Host "`nGenerating self singned certs"
 
-$subjectPrefix = "Azure IoT Test"
 $rootCommonName = "$subjectPrefix Test Root CA"
 $intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA"
 $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA"
@@ -149,6 +150,7 @@ $certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -F
 # Certificate for enrollment of a device using group enrollment.
 $groupDeviceCert = New-SelfSignedCertificate `
     -DnsName "$groupCertCommonName" `
+    -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
@@ -160,6 +162,7 @@ $DPS_GROUPX509_PFX_CERTIFICATE = [Convert]::ToBase64String((Get-Content $groupPf
 # Certificate for enrollment of a device using individual enrollment.
 $individualDeviceCert = New-SelfSignedCertificate `
     -DnsName "$deviceCertCommonName" `
+    -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
@@ -171,6 +174,7 @@ $DPS_INDIVIDUALX509_PFX_CERTIFICATE = [Convert]::ToBase64String((Get-Content $in
 # IoT hub certificate for authemtication. The tests are not setup to use a password for the certificate so create the certificate is created with no password.
 $iotHubCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertCommonName" `
+    -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
@@ -200,7 +204,7 @@ if ($InstallDependencies) {
     Write-Host "`nSetting up docker"
     Set-ExecutionPolicy Bypass -Scope Process -Force
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
     choco install docker-desktop -y
     # Refresh paths after installation of choco    
     refreshenv
@@ -232,7 +236,7 @@ $userObjectId = az ad signed-in-user show --query objectId --output tsv
 $rgExists = az group exists --name $ResourceGroup
 if ($rgExists -eq "False") {
     Write-Host "`nCreating Resource Group $ResourceGroup in $Region"
-    $rg = az group create --name $ResourceGroup --location $Region
+    az group create --name $ResourceGroup --location $Region --output none
 }
 
 #######################################################################################################
@@ -296,7 +300,7 @@ if ($certExits) {
     az iot dps certificate delete -g $ResourceGroup --dps-name $deviceProvisioningServiceName  --name $uploadCertificateName --etag $etag
 }
 Write-Host "`nUploading new certificate to DPS"
-$dpsCert = az iot dps certificate create -g $ResourceGroup --path $rootCertPath --dps-name $deviceProvisioningServiceName --certificate-name $uploadCertificateName
+az iot dps certificate create -g $ResourceGroup --path $rootCertPath --dps-name $deviceProvisioningServiceName --certificate-name $uploadCertificateName --output none
 
 $isVerified = az iot dps certificate show -g $ResourceGroup --dps-name $deviceProvisioningServiceName --certificate-name $uploadCertificateName --query 'properties.isVerified' --output tsv
 if ($isVerified -eq 'false') {
@@ -327,7 +331,7 @@ az iot dps enrollment-group create -g $ResourceGroup --dps-name $deviceProvision
 $individualEnrollmentId = "iothubx509device1"
 $individualDeviceId = "provisionedx509device1"
 $individualEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $deviceProvisioningServiceName --query "[?deviceId=='$individualDeviceId'].deviceId" --output tsv
-if ($groupEnrollmentExists) {
+if ($individualEnrollmentExists) {
     Write-Host "`nDeleting existing individual enrollment $individualEnrollmentId for device $individualDeviceId"
     az iot dps enrollment delete -g $ResourceGroup --dps-name $deviceProvisioningServiceName --enrollment-id $individualEnrollmentId
 }
@@ -404,7 +408,7 @@ Write-Host("`nWriting secrets to KeyVault $secretsKeyVaultName")
 az keyvault set-policy -g $ResourceGroup --name $secretsKeyVaultName --object-id $userObjectId --secret-permissions delete get list set --output none
 az keyvault secret set --vault-name $secretsKeyVaultName --name "IOTHUB-CONN-STRING-CSHARP" --value $iotHubConnectionString --output none
 az keyvault secret set --vault-name $secretsKeyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
-az keyvault secret set --vault-name $secretsKeyVaultName --name "IOTHUB-EVENTHUB-CONN-STRING-CSHARP" --value $iotHubConnectionString --output none
+az keyvault secret set --vault-name $secretsKeyVaultName --name "IOTHUB-EVENTHUB-CONN-STRING-CSHARP" --value $eventHubConnectionString --output none
 az keyvault secret set --vault-name $secretsKeyVaultName --name "IOTHUB-EVENTHUB-COMPATIBLE-NAME" --value $eventResourceGroup --output none
 az keyvault secret set --vault-name $secretsKeyVaultName --name "IOTHUB-EVENTHUB-CONSUMER-GROUP" --value $consumerGroups --output none
 az keyvault secret set --vault-name $secretsKeyVaultName --name "IOTHUB-PROXY-SERVER-ADDRESS" --value $proxyServerAddress --output none
@@ -426,6 +430,7 @@ az keyvault secret set --vault-name $secretsKeyVaultName --name "LA-WORKSPACE-ID
 az keyvault secret set --vault-name $secretsKeyVaultName --name "LA-AAD-TENANT" --value "72f988bf-86f1-41af-91ab-2d7cd011db47" --output none
 az keyvault secret set --vault-name $secretsKeyVaultName --name "LA-AAD-APP-ID" --value $appId --output none
 az keyvault secret set --vault-name $secretsKeyVaultName --name "LA-AAD-APP-CERT-BASE64" --value $fileContentB64String --output none
+az keyvault secret set --vault-name $secretsKeyVaultName --name "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" --value "invalidcertgde1.westus.cloudapp.azure.com" --output none
 
 ###################################################################################################################################
 #Run docker containers for TPM simulators and Proxy
