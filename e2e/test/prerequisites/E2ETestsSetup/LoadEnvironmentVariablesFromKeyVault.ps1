@@ -6,22 +6,28 @@
     [string] $KeyVaultName
 )
 
-Function Connect-AzureSubscription() {
+Function Connect-AzureSubscription()
+{
     # Ensure the user is logged in
-    try {
+    try
+    {
         $azureContext = az account show
     }
-    catch {
+    catch
+    {
     }
 
-    if (-not $azureContext) {
+    if (-not $azureContext)
+    {
         Write-Host "`nPlease login to Azure..."
         az login
         $azureContext = az account show
     }
 
     # Ensure the desired subscription is selected
-    if ($azureContext.id -ne $SubscriptionId) {
+    $sub = az account show --output tsv --query id
+    if ($sub -ne $SubscriptionId)
+    {
         Write-Host "`nSelecting subscription $SubscriptionId`n"
         az account set --subscription $SubscriptionId
     }
@@ -33,7 +39,8 @@ Connect-AzureSubscription | Out-Null
 
 # Load all secrets from KeyVault and set the appropriate Environment Variable
 $ids = az keyvault secret list --subscription $SubscriptionId --vault-name $KeyVaultName --query '[*].id' --output tsv
-ForEach ($id in $ids) {
+ForEach ($id in $ids)
+{
     # az keyvault secret show does not return a name in its properties so we need to extract it from the id
     # The ids have parts seperated by / and extracting the 5th part gets us the name of the Key
     # After we extract the name of the Key, we also want to replace dashes with underscores so that we convert it to the correct Environment Vairable name to be set
