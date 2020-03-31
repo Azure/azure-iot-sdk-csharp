@@ -1,503 +1,509 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "UserObjectId": {
-            "type": "string",
-            "metadata": {
-                "description": "Signed in users's objectId"
-            }
-        },
-        "DpsCustomAllocatorRunCsxContent": {
-            "type": "string",
-            "metadata": {
-                "description": "Contents of run.csx file for the azure function."
-            }
-        },
-        "DpsCustomAllocatorProjContent": {
-            "type": "string",
-            "metadata": {
-                "description": "Contents of proj file for the azure function."
-            }
-        },
-        "KeyVaultName": {
-            "type": "string",
-            "defaultValue": "[uniqueString(resourceGroup().id)]",
-            "metadata": {
-                "description": "The name of the KeyVault that holds the secrets."
-            }
-        },
-        "BlobServiceName": {
-            "type": "string",
-            "defaultValue": "default",
-            "metadata": {
-                "description": "The name of BlobService inside the StorageAccount."
-            }
-        },
-        "ContainerName": {
-            "type": "string",
-            "defaultValue": "fileupload",
-            "metadata": {
-                "description": "The name of the Container inside the BlobService."
-            }
-        },
-        "ConsumerGroupName": {
-            "type": "string",
-            "defaultValue": "e2e-tests",
-            "metadata": {
-                "description": "The IotHub ConsumerGroupName."
-            }
-        },
-        "WorkspaceName": {
-            "type": "string",
-            "defaultValue": "[uniqueString(resourceGroup().id)]",
-            "metadata": {
-                "description": "The Workspace name."
-            }
-        },
-        "IotSecuritySolutionName": {
-            "type": "string",
-            "defaultValue": "[uniqueString(resourceGroup().id)]",
-            "metadata": {
-                "description": "The name of IoT security solution."
-            }
-        },
-        "IotSecuritySolutionDisplayName": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().name]",
-            "metadata": {
-                "description": "The IoT security solution display name."
-            }
-        },
-        "ServerFarmsName": {
-            "type": "string",
-            "defaultValue": "[uniqueString(resourceGroup().id)]",
-            "metadata": {
-                "description": "The ServerFarm name."
-            }
-        },
-        "WebsiteName": {
-            "type": "string",
-            "defaultValue": "[uniqueString(resourceGroup().id)]",
-            "metadata": {
-                "description": "The name of web app."
-            }
-        },
-        "StorageAccountName": {
-            "type": "string",
-            "defaultValue": "[uniqueString(resourceGroup().id)]",
-            "minLength": 3,
-            "maxLength": 24,
-            "metadata": {
-                "description": "The name of the storage account used by the IoT hub."
-            }
-        },
-        "DeviceProvisioningServiceName": {
-            "type": "string",
-            "defaultValue": "[uniqueString(resourceGroup().id)]",
-            "metadata": {
-                "description": "The name of the DPS used by tests."
-            }
-        },
-        "FarRegion": {
-            "type": "string",
-            "defaultValue": "southeastasia",
-            "metadata": {
-                "description": "The region for the second IoT hub in a DPS that is far away from the test devices."
-            }
-        },
-        "HubName": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().name]",
-            "metadata": {
-                "description": "The name of the main IoT hub used by tests."
-            }
-        },
-        "FarHubName": {
-            "type": "string",
-            "defaultValue": "[concat(resourceGroup().name, 'Far')]",
-            "metadata": {
-                "description": "The name of the far away IoT hub used by tests."
-            }
-        },
-        "DpsCustomAllocatorByHubNameLength": {
-            "type": "string",
-            "defaultValue": "DpsCustomAllocatorByHubNameLength",
-            "metadata": {
-                "description": "The name of the Azure function to determing  which hub to use."
-            }
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "StorageAccountName": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 24,
+      "metadata": {
+        "description": "The name of the storage account used by the IoT hub."
+      }
     },
-    "variables": {
-        "storageAccountId": "[concat(resourceGroup().id, '/providers/Microsoft.Storage/storageAccounts/', parameters('StorageAccountName'))]"
+    "UserObjectId": {
+      "type": "string",
+      "metadata": {
+        "description": "Signed in users's objectId"
+      }
     },
-    "resources": [
-        {
-            "type": "Microsoft.KeyVault/vaults",
-            "apiVersion": "2018-02-14",
-            "name": "[parameters('KeyVaultName')]",
-            "location": "[resourceGroup().location]",
-            "tags": {},
-            "properties": {
-                "enabledForDeployment": false,
-                "enabledForTemplateDeployment": false,
-                "enabledForDiskEncryption": false,
-                "enableRbacAuthorization": false,
-                "accessPolicies": [
-                    {
-                        "objectId": "[parameters('UserObjectId')]",
-                        "tenantId": "[subscription().tenantId]",
-                        "permissions": {
-                            "secrets": [
-                                "get",
-                                "list",
-                                "set",
-                                "delete",
-                                "recover",
-                                "backup",
-                                "restore"
-                            ],
-                            "certificates": [
-                                "get",
-                                "list",
-                                "update",
-                                "create",
-                                "import",
-                                "delete",
-                                "recover",
-                                "backup",
-                                "restore",
-                                "manageContacts",
-                                "manageIssuers",
-                                "getIssuers",
-                                "listIssuers",
-                                "setIssuers",
-                                "deleteIssuers"
-                            ]
-                        }
-                    }
-                ],
-                "tenantId": "[subscription().tenantId]",
-                "sku": {
-                    "name": "standard",
-                    "family": "A"
-                },
-                "enableSoftDelete": false,
-                "networkAcls": {
-                    "defaultAction": "allow",
-                    "bypass": "AzureServices",
-                    "ipRules": [],
-                    "virtualNetworkRules": []
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "name": "[parameters('StorageAccountName')]",
-            "location": "[resourceGroup().location]",
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "Storage",
-            "properties": {
-                "supportsHttpsTrafficOnly": true,
-                "encryption": {
-                    "services": {
-                        "file": {
-                            "keyType": "Account",
-                            "enabled": true
-                        },
-                        "blob": {
-                            "keyType": "Account",
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/blobServices",
-            "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('StorageAccountName'), '/', parameters('BlobServiceName'))]",
-            "sku": {
-                "name": "Standard_LRS"
-            },
-            "properties": {
-                "deleteRetentionPolicy": {
-                    "enabled": false
-                }
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-            "apiVersion": "2019-06-01",
-            "name": "[concat(parameters('StorageAccountName'), '/', parameters('BlobServiceName'), '/', parameters('ContainerName'))]",
-            "properties": {
-                "publicAccess": "None"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('StorageAccountName'), parameters('BlobServiceName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Devices/IotHubs",
-            "apiVersion": "2019-11-04",
-            "name": "[parameters('HubName')]",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "eventHubEndpoints": {
-                    "events": {
-                        "retentionTimeInDays": 1,
-                        "partitionCount": 4
-                    }
-                },
-                "cloudToDevice": {
-                    "defaultTtlAsIso8601": "PT1H",
-                    "maxDeliveryCount": 10,
-                    "feedback": {
-                        "ttlAsIso8601": "PT1H",
-                        "lockDurationAsIso8601": "PT60S",
-                        "maxDeliveryCount": 10
-                    }
-                },
-                "messagingEndpoints": {
-                    "fileNotifications": {
-                        "ttlAsIso8601": "PT1H",
-                        "lockDurationAsIso8601": "PT1M",
-                        "maxDeliveryCount": 10
-                    }
-                },
-                "StorageEndPoints": {
-                    "$default": {
-                        "sasTtlAsIso8601": "PT1H",
-                        "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=',concat(listKeys(variables('storageAccountId'),'2019-06-01').keys[0].value))]",
-                        "containerName": "[parameters('ContainerName')]"
-                    }
-                },
-                "enableFileUploadNotifications": true
-            },
-            "sku": {
-                "name": "S1",
-                "tier": "Standard",
-                "capacity": 1
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('StorageAccountName'), parameters('BlobServiceName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
-            "apiVersion": "2018-04-01",
-            "name": "[concat(resourceGroup().name, '/events/', parameters('ConsumerGroupName'))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Devices/IotHubs",
-            "apiVersion": "2019-11-04",
-            "name": "[parameters('FarHubName')]",
-            "location": "[parameters('FarRegion')]",
-            "sku": {
-                "name": "S1",
-                "tier": "Standard",
-                "capacity": 1
-            }
-        },
-        {
-            "type": "Microsoft.Devices/provisioningServices",
-            "sku": {
-                "name": "S1",
-                "capacity": 1
-            },
-            "name": "[parameters('DeviceProvisioningServiceName')]",
-            "apiVersion": "2017-11-15",
-            "location": "[resourceGroup().location]",
-            "tags": {},
-            "properties": {
-                "iotHubs": [
-                    {
-                        "connectionString": "[concat('HostName=',parameters('HubName'),'.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner'), '2019-11-04').primaryKey)]",
-                        "location": "[resourceGroup().location]",
-                        "name": "[concat(parameters('HubName'),'.azure-devices.net')]"
-                    },
-                    {
-                        "connectionString": "[concat('HostName=',parameters('FarHubName'),'.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('FarHubName'), 'iothubowner'), '2019-11-04').primaryKey)]",
-                        "location": "[parameters('FarRegion')]",
-                        "name": "[concat(parameters('FarHubName'),'.azure-devices.net')]"
-                    }
-                ]
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]",
-                "[resourceId('Microsoft.Devices/IotHubs', parameters('FarHubName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.OperationalInsights/workspaces",
-            "apiVersion": "2017-03-15-preview",
-            "name": "[parameters('WorkspaceName')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
-            ],
-            "properties": {}
-        },
-        {
-            "type": "Microsoft.Security/IoTSecuritySolutions",
-            "apiVersion": "2019-08-01",
-            "name": "[parameters('IotSecuritySolutionName')]",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "workspace": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('WorkspaceName'))]",
-                "status": "Enabled",
-                "export": [
-                    "RawEvents"
-                ],
-                "disabledDataSources": [],
-                "displayName": "[parameters('IotSecuritySolutionDisplayName')]",
-                "iotHubs": [
-                    "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
-                ],
-                "recommendationsConfiguration": [],
-                "unmaskedIpLoggingStatus": "Enabled"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]",
-                "[resourceId('Microsoft.OperationalInsights/workspaces',  parameters('WorkspaceName'))]"
-            ]
-        },
-        {
-            "apiVersion": "2018-11-01",
-            "name": "[parameters('ServerFarmsName')]",
-            "type": "Microsoft.Web/serverfarms",
-            "location": "[resourceGroup().location]",
-            "kind": "",
-            "tags": {},
-            "dependsOn": [],
-            "properties": {
-                "name": "[parameters('ServerFarmsName')]"
-            },
-            "sku": {
-                "Tier": "Dynamic",
-                "Name": "Y1"
-            }
-        },
-        {
-            "apiVersion": "2018-11-01",
-            "name": "[parameters('WebsiteName')]",
-            "type": "Microsoft.Web/sites",
-            "kind": "functionapp",
-            "location": "[resourceGroup().location]",
-            "tags": {},
-            "dependsOn": [
-                "[concat('Microsoft.Web/serverfarms/', parameters('ServerFarmsName'))]",
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('StorageAccountName'))]"
-            ],
-            "properties": {
-                "name": "[parameters('WebsiteName')]",
-                "siteConfig": {
-                    "appSettings": [
-                        {
-                            "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~3"
-                        },
-                        {
-                            "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "dotnet"
-                        },
-                        {
-                            "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('StorageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2019-06-01').keys[0].value, ';EndpointSuffix=', 'core.windows.net')]"
-                        }
-                    ]
-                },
-                "serverFarmId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/Microsoft.Web/serverfarms/', parameters('ServerFarmsName'))]"
-            }
-        },
-        {
-            "name": "[concat(parameters('WebsiteName'), '/', parameters('DpsCustomAllocatorByHubNameLength'))]",
-            "type": "Microsoft.Web/sites/functions",
-            "apiVersion": "2019-08-01",
-            "properties": {
-                "config": {
-                    "bindings": [
-                        {
-                            "name": "req",
-                            "type": "httpTrigger",
-                            "direction": "in",
-                            "schedule": "[parameters('DpsCustomAllocatorByHubNameLength')]"
-                        },
-                        {
-                            "name": "$return",
-                            "type": "http",
-                            "direction": "out"
-                        }
-                    ],
-                    "disabled": false
-                },
-                "files": {
-                    "run.csx": "[base64ToString(parameters('DpsCustomAllocatorRunCsxContent'))]",
-                    "function.proj": "[base64ToString(parameters('DpsCustomAllocatorProjContent'))]"
-                }
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('WebsiteName'))]"
-            ]
-        }
-    ],
-    "outputs": {
-        "hubConnectionString": {
-            "type": "string",
-            "value": "[concat('HostName=',parameters('HubName'),'.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner'), '2019-11-04').primaryKey)]"
-        },
-        "farHubConnectionString": {
-            "type": "string",
-            "value": "[concat('HostName=',parameters('FarHubName'),'.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('FarHubName'), 'iothubowner'), '2019-11-04').primaryKey)]"
-        },
-        "eventHubConnectionString": {
-            "type": "string",
-            "value": "[concat('Endpoint=', reference(resourceId('Microsoft.Devices/IoTHubs', parameters('HubName')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', parameters('HubName')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).value[0].primaryKey, ';EntityPath=', reference(resourceId('Microsoft.Devices/IoTHubs', parameters('HubName')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).eventHubEndpoints.events.path)]"
-        },
-        "deviceProvisioningServiceName": {
-            "type": "string",
-            "value": "[parameters('DeviceProvisioningServiceName')]"
-        },
-        "deviceProvisioningServiceConnectionString": {
-            "type": "string",
-            "value": "[concat('HostName=',parameters('DeviceProvisioningServiceName'),'.azure-devices-provisioning.net;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DeviceProvisioningServiceName'), 'provisioningserviceowner'), '2017-11-15').primaryKey)]"
-        },
-        "storageAccountConnectionString": {
-            "type": "string",
-            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('StorageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')),'2019-06-01').keys[0].value, ';EndpointSuffix=core.windows.net')]"
-        },
-        "workspaceId": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('WorkspaceName')), '2017-03-15-preview').customerId]"
-        },
-        "keyVaultName": {
-            "type": "string",
-            "value": "[parameters('KeyVaultName')]"
-        },
-        "customAllocationPolicyWebhook": {
-            "type": "string",
-            "value": "[concat('https://', parameters('WebsiteName'), '.azurewebsites.net/api/', parameters('DpsCustomAllocatorByHubNameLength'),'?code=', listKeys(resourceId('Microsoft.Web/sites/functions', parameters('WebsiteName'), parameters('DpsCustomAllocatorByHubNameLength')), '2019-08-01').default)]"
-        },
-        "farHubHostName": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Devices/Iothubs', parameters('FarHubName'))).hostName]"
-        },
-        "eventHubCompatibleName": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Devices/IoTHubs',parameters('HubName'))).eventHubEndpoints.events.path]"
-        }
+    "DpsCustomAllocatorRunCsxContent": {
+      "type": "string"
+    },
+    "DpsCustomAllocatorProjContent": {
+      "type": "string"
+    },
+    "FarRegion": {
+      "type": "string",
+      "defaultValue": "southeastasia",
+      "metadata": {
+        "description": "The region for the second IoT hub in a DPS that is far away from the test devices."
+      }
+    },
+    "HubName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-hub')]",
+      "metadata": {
+        "description": "The name of the main IoT hub used by tests."
+      }
+    },
+    "ConsumerGroupName": {
+      "type": "string",
+      "defaultValue": "e2e-tests",
+      "metadata": {
+        "description": "The IotHub consumer group name."
+      }
+    },
+    "FarHubName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-hubfar')]",
+      "metadata": {
+        "description": "The name of the far away IoT hub used by tests."
+      }
+    },
+    "DpsName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-dps')]",
+      "metadata": {
+        "description": "The name of DPS used by tests."
+      }
+    },
+    "DpsCustomAllocatorFunctionName": {
+      "type": "string",
+      "defaultValue": "DpsCustomAllocator"
+    },
+    "KeyVaultName": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 24,
+      "defaultValue": "[concat('env-', resourceGroup().name, '-kv')]",
+      "metadata": {
+        "description": "The name of the key vault for storing secrets needed for running tests."
+      }
+    },
+    "OperationalInsightsName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-oi')]",
+      "metadata": {
+        "description": "The name of the operational insights instance."
+      }
+    },
+    "SecuritySolutionName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-ss')]",
+      "metadata": {
+        "description": "The name of the security solution instance."
+      }
+    },
+    "ServerFarmName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-srv')]",
+      "metadata": {
+        "description": "The name of the server farm to host a function app for DPS custom allocation"
+      }
+    },
+    "WebsiteName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-web')]",
+      "metadata": {
+        "description": "The name of the server farm to host a function app for DPS custom allocation"
+      }
+    },
+    "BlobServiceName": {
+      "type": "string",
+      "defaultValue": "default",
+      "metadata": {
+        "description": "The name of BlobService inside the StorageAccount."
+      }
+    },
+    "ContainerName": {
+      "type": "string",
+      "defaultValue": "fileupload",
+      "metadata": {
+        "description": "The name of the Container inside the BlobService."
+      }
     }
+  },
+  "variables": {
+    "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]",
+    "hubId": "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]",
+    "farHubId": "[resourceId('Microsoft.Devices/IotHubs', parameters('FarHubName'))]",
+    "defaultBlobId": "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('StorageAccountName'), parameters('BlobServiceName'))]",
+    "opInsightsId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName'))]",
+    "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarmName'))]",
+    "websiteId": "[resourceId('Microsoft.Web/sites', parameters('WebsiteName'))]",
+    "hubKeysId": "[resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner')]",
+    "farHubKeysId": "[resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('FarHubName'), 'iothubowner')]",
+    "consumerGroupFullName": "[concat(parameters('HubName'), '/events/', parameters('ConsumerGroupName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2018-02-14",
+      "name": "[parameters('KeyVaultName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+      },
+      "properties": {
+        "enabledForDeployment": false,
+        "enabledForTemplateDeployment": false,
+        "enabledForDiskEncryption": false,
+        "enableRbacAuthorization": false,
+        "accessPolicies": [
+          {
+            "objectId": "[parameters('UserObjectId')]",
+            "tenantId": "[subscription().tenantId]",
+            "permissions": {
+              "secrets": [
+                "all"
+              ],
+              "certificates": [
+                "all"
+              ],
+              "keys": [
+                "all"
+              ]
+            }
+          }
+        ],
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "name": "standard",
+          "family": "A"
+        },
+        "enableSoftDelete": false,
+        "networkAcls": {
+          "defaultAction": "allow",
+          "bypass": "AzureServices",
+          "ipRules": [
+          ],
+          "virtualNetworkRules": [
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-06-01",
+      "name": "[parameters('StorageAccountName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "properties": {
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "keyType": "Account",
+              "enabled": true
+            },
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        }
+      },
+      "resources": [
+        {
+          "type": "blobServices",
+          "apiVersion": "2019-06-01",
+          "name": "[parameters('BlobServiceName')]",
+          "sku": {
+            "name": "Standard_LRS"
+          },
+          "properties": {
+            "deleteRetentionPolicy": {
+              "enabled": false
+            }
+          },
+          "resources": [
+            {
+              "type": "containers",
+              "apiVersion": "2019-06-01",
+              "name": "[parameters('ContainerName')]",
+              "properties": {
+                "publicAccess": "None"
+              },
+              "dependsOn": [
+                "[variables('defaultBlobId')]",
+                "[variables('storageAccountId')]"
+              ]
+            }
+          ],
+          "dependsOn": [
+            "[variables('storageAccountId')]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2019-11-04",
+      "name": "[parameters('HubName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eventHubEndpoints": {
+          "events": {
+            "retentionTimeInDays": 1,
+            "partitionCount": 4
+          }
+        },
+        "cloudToDevice": {
+          "defaultTtlAsIso8601": "PT1H",
+          "maxDeliveryCount": 10,
+          "feedback": {
+            "ttlAsIso8601": "PT1H",
+            "lockDurationAsIso8601": "PT60S",
+            "maxDeliveryCount": 10
+          }
+        },
+        "messagingEndpoints": {
+          "fileNotifications": {
+            "ttlAsIso8601": "PT1H",
+            "lockDurationAsIso8601": "PT1M",
+            "maxDeliveryCount": 10
+          }
+        },
+        "StorageEndPoints": {
+          "$default": {
+            "sasTtlAsIso8601": "PT1H",
+            "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('StorageAccountName'), ';AccountKey=', concat(listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value))]",
+            "containerName": "[parameters('ContainerName')]"
+          }
+        },
+        "enableFileUploadNotifications": true
+      },
+      "sku": {
+        "name": "S1",
+        "tier": "Standard",
+        "capacity": 1
+      },
+      "dependsOn": [
+        "[variables('defaultBlobId')]",
+        "[variables('storageAccountId')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups",
+      "apiVersion": "2018-04-01",
+      "name": "[variables('consumerGroupFullName')]",
+      "properties": {
+      },
+      "dependsOn": [
+        "[variables('hubId')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2019-11-04",
+      "name": "[parameters('FarHubName')]",
+      "location": "[parameters('FarRegion')]",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard",
+        "capacity": 1
+      },
+      "properties": {
+      }
+    },
+    {
+      "type": "Microsoft.Devices/provisioningServices",
+      "apiVersion": "2017-11-15",
+      "name": "[parameters('DpsName')]",
+      "sku": {
+        "name": "S1",
+        "capacity": 1
+      },
+      "location": "[resourceGroup().location]",
+      "tags": {
+      },
+      "properties": {
+        "iotHubs": [
+          {
+            "connectionString": "[concat('HostName=', parameters('HubName'), '.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(variables('hubKeysId'), '2019-11-04').primaryKey)]",
+            "location": "[resourceGroup().location]",
+            "name": "[concat(parameters('HubName'),'.azure-devices.net')]"
+          },
+          {
+            "connectionString": "[concat('HostName=', parameters('FarHubName'), '.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(variables('farHubKeysId'), '2019-11-04').primaryKey)]",
+            "location": "[parameters('FarRegion')]",
+            "name": "[concat(parameters('FarHubName'),'.azure-devices.net')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[variables('hubId')]",
+        "[variables('farHubId')]"
+      ]
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2017-03-15-preview",
+      "name": "[parameters('OperationalInsightsName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+      },
+      "dependsOn": [
+        "[variables('hubId')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Security/IoTSecuritySolutions",
+      "apiVersion": "2019-08-01",
+      "name": "[parameters('SecuritySolutionName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "workspace": "[variables('opInsightsId')]",
+        "status": "Enabled",
+        "export": [
+          "RawEvents"
+        ],
+        "disabledDataSources": [
+        ],
+        "displayName": "[parameters('SecuritySolutionName')]",
+        "iotHubs": [
+          "[variables('hubId')]"
+        ],
+        "recommendationsConfiguration": [
+        ],
+        "unmaskedIpLoggingStatus": "Enabled"
+      },
+      "dependsOn": [
+        "[variables('hubId')]",
+        "[variables('opInsightsId')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-11-01",
+      "name": "[parameters('ServerFarmName')]",
+      "location": "[resourceGroup().location]",
+      "kind": "",
+      "tags": {
+      },
+      "dependsOn": [
+      ],
+      "properties": {
+        "name": "[parameters('ServerFarmName')]"
+      },
+      "sku": {
+        "Tier": "Dynamic",
+        "Name": "Y1"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-11-01",
+      "name": "[parameters('WebsiteName')]",
+      "kind": "functionapp",
+      "location": "[resourceGroup().location]",
+      "tags": {
+      },
+      "dependsOn": [
+        "[variables('serverFarmId')]",
+        "[variables('storageAccountId')]"
+      ],
+      "properties": {
+        "name": "[parameters('WebsiteName')]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~3"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('StorageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', 'core.windows.net')]"
+            }
+          ]
+        },
+        "serverFarmId": "[variables('serverFarmId')]"
+      },
+      "resources": [
+        {
+          "type": "functions",
+          "apiVersion": "2018-11-01",
+          "name": "[parameters('DpsCustomAllocatorFunctionName')]",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "config": {
+              "bindings": [
+                {
+                  "name": "req",
+                  "type": "httpTrigger",
+                  "direction": "in",
+                  "schedule": "[parameters('DpsCustomAllocatorFunctionName')]"
+                },
+                {
+                  "name": "$return",
+                  "type": "http",
+                  "direction": "out"
+                }
+              ],
+              "disabled": false
+            },
+            "files": {
+              "run.csx": "[base64ToString(parameters('DpsCustomAllocatorRunCsxContent'))]",
+              "function.proj": "[base64ToString(parameters('DpsCustomAllocatorProjContent'))]"
+            }
+          },
+          "dependsOn": [
+            "[variables('websiteId')]"
+          ]
+        }
+      ]
+    }
+  ],
+  "outputs": {
+    "hubName": {
+      "type": "string",
+      "value": "[parameters('HubName')]"
+    },
+    "hubConnectionString": {
+      "type": "string",
+      "value": "[concat('HostName=', parameters('HubName'), '.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(variables('hubKeysId'), '2019-11-04').primaryKey)]"
+    },
+    "eventHubCompatibleName": {
+      "type": "string",
+      "value": "[reference(variables('hubId')).eventHubEndpoints.events.path]"
+    },
+    "eventHubConnectionString": {
+      "type": "string",
+      "value": "[concat('Endpoint=', reference(variables('hubId'), providers('Microsoft.Devices', 'IotHubs').apiVersions[0]).eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(variables('hubId'), providers('Microsoft.Devices', 'IotHubs').apiVersions[0]).value[0].primaryKey, ';EntityPath=', reference(variables('hubId'), providers('Microsoft.Devices', 'IotHubs').apiVersions[0]).eventHubEndpoints.events.path)]"
+    },
+    "consumerGroupName": {
+      "type": "string",
+      "value": "[parameters('ConsumerGroupName')]"
+    },
+    "farHubHostName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Devices/Iothubs', parameters('FarHubName'))).hostName]"
+    },
+    "farHubConnectionString": {
+      "type": "string",
+      "value": "[concat('HostName=', parameters('FarHubName'), '.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(variables('farHubKeysId'), '2019-11-04').primaryKey)]"
+    },
+    "dpsName": {
+      "type": "string",
+      "value": "[parameters('DpsName')]"
+    },
+    "dpsConnectionString": {
+      "type": "string",
+      "value": "[concat('HostName=', parameters('DpsName'), '.azure-devices-provisioning.net;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DpsName'), 'provisioningserviceowner'), '2017-11-15').primaryKey)]"
+    },
+    "storageAccountConnectionString": {
+      "type": "string",
+      "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('StorageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2019-06-01').keys[0].value, ';EndpointSuffix=core.windows.net')]"
+    },
+    "workspaceId": {
+      "type": "string",
+      "value": "[reference(variables('opInsightsId'), '2017-03-15-preview').customerId]"
+    },
+    "customAllocationPolicyWebhook": {
+      "type": "string",
+      "value": "[concat('https://', parameters('WebsiteName'), '.azurewebsites.net/api/', parameters('DpsCustomAllocatorFunctionName'),'?code=', listKeys(resourceId('Microsoft.Web/sites/functions', parameters('WebsiteName'), parameters('DpsCustomAllocatorFunctionName')), '2019-08-01').default)]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "value": "[parameters('KeyVaultName')]"
+    }
+  }
 }
