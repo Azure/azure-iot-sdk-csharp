@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             PurgeMessageQueueResult result = await serviceClient.PurgeMessageQueueAsync("TestDevice", CancellationToken.None).ConfigureAwait(false);
         }
 
-        Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> SetupPurgeMessageQueueTests()
+        private Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> SetupPurgeMessageQueueTests()
         {
             // Create expected return object
             var deviceId = "TestDevice";
