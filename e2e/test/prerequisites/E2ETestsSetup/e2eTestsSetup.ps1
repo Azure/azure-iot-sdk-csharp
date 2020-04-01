@@ -299,6 +299,7 @@ Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), re
 Write-Host "`nGetting secrets from ARM template output"
 $iotHubThumbprint = "CADB8E398FA9C7DD382E2ED092258BB3D916652C"
 $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
+$farHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubConnectionString.value' --output tsv
 $eventHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.eventHubConnectionString.value' --output tsv
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
 $deviceProvisioningServiceConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.deviceProvisioningServiceConnectionString.value' --output tsv
@@ -439,6 +440,8 @@ Remove-Item -r $selfSignedCerts
 Write-Host("`nWriting secrets to KeyVault $keyVaultName")
 az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id $userObjectId --secret-permissions delete get list set --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONN-STRING-CSHARP" --value $iotHubConnectionString --output none
+# Iot Hub Connection string Environment variable for Java
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB_CONNECTION_STRING" --value $iotHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-CONN-STRING-CSHARP" --value $eventHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-COMPATIBLE-NAME" --value $eventResourceGroup --output none
@@ -446,7 +449,11 @@ az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-CONSUM
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PROXY-SERVER-ADDRESS" --value $proxyServerAddress --output none
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value "$farHubName.azure-devices.net" --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-IDSCOPE" --value $dpsIdScope --output none
+# DPS ID Scope Environment variable for Java
+az keyvault secret set --vault-name $keyVaultName --name "IOT_DPS_ID_SCOPE" --value $dpsIdScope --output none
 az keyvault secret set --vault-name $keyVaultName --name "PROVISIONING-CONNECTION-STRING" --value $deviceProvisioningServiceConnectionString --output none
+# DPS Connection string Environment variable for Java
+az keyvault secret set --vault-name $keyVaultName --name "IOT_DPS_CONNECTION_STRING" --value $deviceProvisioningServiceConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "CUSTOM-ALLOCATION-POLICY-WEBHOOK" --value $CustomAllocationPolicyWebHook --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT" --value "global.azure-devices-provisioning.net" --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-X509-PFX-CERTIFICATE-PASSWORD" --value $DPS_X509_PFX_CERTIFICATE_PASSWORD --output none
@@ -463,7 +470,9 @@ az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-TENANT" --value
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value $appId --output none
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-CERT-BASE64" --value $fileContentB64String --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" --value "invalidcertgde1.westus.cloudapp.azure.com" --output none
-
+# Below Environment variables are only used in Java
+az keyvault secret set --vault-name $keyVaultName --name "FAR_AWAY_IOTHUB_CONNECTION_STRING" --value $farHubConnectionString--output none
+az keyvault secret set --vault-name $keyVaultName --name "IS_BASIC_TIER_HUB" --value "false" --output none
 ###################################################################################################################################
 # Run docker containers for TPM simulators and Proxy
 ###################################################################################################################################
