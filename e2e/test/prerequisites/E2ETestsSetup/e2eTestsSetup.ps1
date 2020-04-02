@@ -13,10 +13,6 @@ param(
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
 
-    # Provide the webhook link
-    [Parameter(Mandatory)]
-    [string] $CustomAllocationPolicyWebHook,
-
     # Set this to true on the first execution to get everything installed in poweshell. Does not need to be run everytime.
     [Parameter()]
     [bool] $InstallDependencies = $true
@@ -96,6 +92,23 @@ $deviceProvisioningServiceName = $ResourceGroup
 $farRegion = "southeastasia"
 $farHubName = $ResourceGroup + "Far"
 $uploadCertificateName = "group1-certificate"
+
+
+#################################################################################################
+# Get Function App contents to pass to deployment
+#################################################################################################
+$dpsCustomAllocatorFunctionName = "DpsCustomAllocator"
+
+$dpsCustomAllocatorRunCsxPath = resolve-path ./DpsCustomAllocatorFunctionFiles/run.csx
+$dpsCustomAllocatorProjPath = resolve-path ./DpsCustomAllocatorFunctionFiles/function.proj
+
+# Read bytes from files
+$dpsCustomAllocatorRunCsxBytes = [System.IO.File]::ReadAllBytes($dpsCustomAllocatorRunCsxPath); 
+$dpsCustomAllocatorProjBytes = [System.IO.File]::ReadAllBytes($dpsCustomAllocatorProjPath); 
+
+# convert contents to base64 string, which will be decoded in the ARM template to ensure all the characters are interpreted correctly
+$dpsCustomAllocatorRunCsxContent = [System.Convert]::ToBase64String($dpsCustomAllocatorRunCsxBytes);
+$dpsCustomAllocatorProjContent = [System.Convert]::ToBase64String($dpsCustomAllocatorProjBytes);
 
 ########################################################################################################
 # Generate self-signed certs and to use in DPS and IoT Hub
@@ -288,7 +301,10 @@ az deployment group create  `
     HubName=$hubName `
     FarHubName=$farHubName `
     FarRegion=$farRegion `
-    UserObjectId=$userObjectId
+    UserObjectId=$userObjectId `
+    DpsCustomAllocatorFunctionName=$dpsCustomAllocatorFunctionName `
+    DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
+    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
 
 Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), resource group ($ResourceGroup)"
 
@@ -304,6 +320,7 @@ $eventHubConnectionString = az deployment group show -g $ResourceGroup -n $deplo
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
 $deviceProvisioningServiceConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.deviceProvisioningServiceConnectionString.value' --output tsv
 $eventResourceGroup = az resource show -g $ResourceGroup --resource-type microsoft.devices/iothubs -n $ResourceGroup --query 'properties.eventHubEndpoints.events.path' --output tsv
+$customAllocationPolicyWebhook = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.customAllocationPolicyWebhook.value' --output tsv
 $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
 $keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
 $consumerGroups = "e2e-tests"
@@ -441,7 +458,7 @@ Write-Host("`nWriting secrets to KeyVault $keyVaultName")
 az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id $userObjectId --secret-permissions delete get list set --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONN-STRING-CSHARP" --value $iotHubConnectionString --output none
 # Iot Hub Connection string Environment variable for Java
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB_CONNECTION_STRING" --value $iotHubConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-CONN-STRING-CSHARP" --value $eventHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-COMPATIBLE-NAME" --value $eventResourceGroup --output none
@@ -450,10 +467,10 @@ az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PROXY-SERVER-AD
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value "$farHubName.azure-devices.net" --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-IDSCOPE" --value $dpsIdScope --output none
 # DPS ID Scope Environment variable for Java
-az keyvault secret set --vault-name $keyVaultName --name "IOT_DPS_ID_SCOPE" --value $dpsIdScope --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-ID-SCOPE" --value $dpsIdScope --output none
 az keyvault secret set --vault-name $keyVaultName --name "PROVISIONING-CONNECTION-STRING" --value $deviceProvisioningServiceConnectionString --output none
 # DPS Connection string Environment variable for Java
-az keyvault secret set --vault-name $keyVaultName --name "IOT_DPS_CONNECTION_STRING" --value $deviceProvisioningServiceConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $deviceProvisioningServiceConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "CUSTOM-ALLOCATION-POLICY-WEBHOOK" --value $CustomAllocationPolicyWebHook --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT" --value "global.azure-devices-provisioning.net" --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-X509-PFX-CERTIFICATE-PASSWORD" --value $DPS_X509_PFX_CERTIFICATE_PASSWORD --output none
@@ -471,8 +488,8 @@ az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-CERT-BASE64" --value $fileContentB64String --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" --value "invalidcertgde1.westus.cloudapp.azure.com" --output none
 # Below Environment variables are only used in Java
-az keyvault secret set --vault-name $keyVaultName --name "FAR_AWAY_IOTHUB_CONNECTION_STRING" --value $farHubConnectionString--output none
-az keyvault secret set --vault-name $keyVaultName --name "IS_BASIC_TIER_HUB" --value "false" --output none
+az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-CONNECTION-STRING" --value $farHubConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "IS-BASIC-TIER-HUB" --value "false" --output none
 ###################################################################################################################################
 # Run docker containers for TPM simulators and Proxy
 ###################################################################################################################################
