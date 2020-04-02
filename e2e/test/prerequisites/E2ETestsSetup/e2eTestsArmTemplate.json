@@ -309,6 +309,10 @@
             "type": "string",
             "value": "[concat('HostName=',parameters('HubName'),'.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner'), '2019-11-04').primaryKey)]"
         },
+        "farHubConnectionString": {
+            "type": "string",
+            "value": "[concat('HostName=',parameters('FarHubName'),'.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('FarHubName'), 'iothubowner'), '2019-11-04').primaryKey)]"
+        },
         "eventHubConnectionString": {
             "type": "string",
             "value": "[concat('Endpoint=', reference(resourceId('Microsoft.Devices/IoTHubs', parameters('ResourceGroup')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', parameters('ResourceGroup')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).value[0].primaryKey, ';EntityPath=', reference(resourceId('Microsoft.Devices/IoTHubs', parameters('ResourceGroup')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).eventHubEndpoints.events.path)]"
