@@ -761,7 +761,7 @@ namespace Microsoft.Azure.Devices.Client
                 var context = new PipelineContext();
                 context.Set(_productInfo);
 
-                //Use the proxy of the first transport settings if there is a proxy, regardless of protocol
+                // Use the proxy of the first transport settings if there is a proxy, regardless of protocol
                 IWebProxy proxy = GetDefaultProxySettings(_transportSettings);
 
                 var transportSettings = new Http1TransportSettings()
