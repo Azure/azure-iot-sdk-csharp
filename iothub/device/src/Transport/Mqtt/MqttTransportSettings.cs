@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     public class MqttTransportSettings : ITransportSettings
     {
         private readonly TransportType _transportType;
-        internal string AuthenticationChain;
+        internal string AuthenticationChain { get; set; }
 
         private const bool DefaultCleanSession = false;
         private const bool DefaultDeviceReceiveAckCanTimeout = false;
