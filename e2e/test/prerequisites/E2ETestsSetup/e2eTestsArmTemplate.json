@@ -51,6 +51,16 @@
             "metadata": {
                 "description": "The name of the DPS used by tests."
             }
+        },        
+        "DpsCustomAllocatorFunctionName": {
+            "type": "string",
+            "defaultValue": "DpsCustomAllocator"
+        },
+        "DpsCustomAllocatorRunCsxContent": {
+            "type": "string"
+        },
+        "DpsCustomAllocatorProjContent": {
+            "type": "string"
         }
     },
     "variables": {
@@ -302,6 +312,84 @@
                 "recommendationsConfiguration": [],
                 "unmaskedIpLoggingStatus": "Enabled"
             }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('ResourceGroup')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('Region')]",
+            "kind": "",
+            "tags": {},
+            "dependsOn": [],
+            "properties": {
+                "name": "[parameters('ResourceGroup')]"
+            },
+            "sku": {
+                "Tier": "Dynamic",
+                "Name": "Y1"
+            }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('ResourceGroup')]",
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp",
+            "location": "[parameters('Region')]",
+            "tags": {},
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', parameters('ResourceGroup'))]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('StorageAccountNameLower'))]"
+            ],
+            "properties": {
+                "name": "[parameters('ResourceGroup')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('StorageAccountNameLower'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountNameLower')), '2019-06-01').keys[0].value, ';EndpointSuffix=', 'core.windows.net')]"
+                        }
+                    ]
+                },
+                "serverFarmId": "[concat('/subscriptions/', '9369ce74-9012-40d8-99a2-8b5fc0194d93', '/resourcegroups/', parameters('ResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('ResourceGroup'))]"
+            }
+        },       
+        {
+            "name": "[concat(parameters('ResourceGroup'), '/', parameters('DpsCustomAllocatorFunctionName'))]",
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2019-08-01",
+            "properties": {
+                "config": {
+                    "bindings": [
+                        {
+                            "name": "req",
+                            "type": "httpTrigger",
+                            "direction": "in",
+                            "schedule": "[parameters('DpsCustomAllocatorFunctionName')]"
+                        },
+                        {
+                          "name": "$return",
+                          "type": "http",
+                          "direction": "out"
+                        }
+                    ],
+                    "disabled": false
+                },
+                "files": {
+                    "run.csx": "[base64ToString(parameters('DpsCustomAllocatorRunCsxContent'))]",
+                    "function.proj": "[base64ToString(parameters('DpsCustomAllocatorProjContent'))]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('ResourceGroup'))]"
+            ]
         }
     ],
     "outputs": {
@@ -332,6 +420,10 @@
         "keyVaultName": {
             "type": "string",
             "value": "[variables('keyVaultName')]"
+        },
+        "customAllocationPolicyWebhook": {
+            "type": "string",
+            "value": "[concat('https://', parameters('ResourceGroup'), '.azurewebsites.net/api/', parameters('DpsCustomAllocatorFunctionName'),'?code=', listKeys(resourceId('Microsoft.Web/sites/functions', parameters('ResourceGroup'), parameters('DpsCustomAllocatorFunctionName')), '2019-08-01').default)]"
         }
     }
 }
