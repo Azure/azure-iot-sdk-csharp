@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _httpClientHandler.Proxy = webProxy;
             }
 
-            _httpClientObj = new HttpClient(_httpClientHandler)
+            _httpClientObj = new HttpClient(_httpClientHandler, false)
             {
                 BaseAddress = _baseAddress,
                 Timeout = s_defaultOperationTimeout,
