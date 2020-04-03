@@ -150,7 +150,7 @@ Below is a table showing the mapping of the LTS branches to the packages release
 
 | Release | Github Branch | LTS Status | LTS Start Date | Maintenance End Date | Removed Date |
 | :-----------: | :-----------: | :--------: | :------------: | :------------------: | :----------: |
-| [2020-1-31](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31) | lts_2020_01   | Active     | 2020-01-31     | 2020-06-30           | 2020-12-31   |
+| [2020-1-31](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020-1-31_patch1) | lts_2020_01   | Active     | 2020-01-31     | 2020-06-30           | 2020-12-31   |
 | [2018-1-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2018-1-23) | lts_2018_01   | Deprecated     | 2018-01-23     | 2018-06-30           | 2018-12-31   |
 
 - <sup>1</sup> All scheduled dates are subject to change by the Azure IoT SDK team.
