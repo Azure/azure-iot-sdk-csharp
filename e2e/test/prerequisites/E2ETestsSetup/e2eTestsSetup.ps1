@@ -84,21 +84,13 @@ if (-not $isAdmin)
 #################################################################################################
 
 $Region = $Region.Replace(' ', '')
-
-$storageAccountName = "$($ResourceGroup.ToLower())sa"
-$hubName = $ResourceGroup
 $appRegistrationName = $ResourceGroup
-$deviceProvisioningServiceName = $ResourceGroup
-$farRegion = "southeastasia"
-$farHubName = $ResourceGroup + "Far"
 $uploadCertificateName = "group1-certificate"
 
 
 #################################################################################################
 # Get Function App contents to pass to deployment
 #################################################################################################
-$dpsCustomAllocatorFunctionName = "DpsCustomAllocator"
-
 $dpsCustomAllocatorRunCsxPath = resolve-path ./DpsCustomAllocatorFunctionFiles/run.csx
 $dpsCustomAllocatorProjPath = resolve-path ./DpsCustomAllocatorFunctionFiles/function.proj
 
@@ -294,17 +286,9 @@ az deployment group create  `
     --template-file "$PSScriptRoot\e2eTestsArmTemplate.json" `
     --output none `
     --parameters `
-    Region=$Region `
-    ResourceGroup=$ResourceGroup `
-    StorageAccountName=$storageAccountName `
-    DeviceProvisioningServiceName=$deviceProvisioningServiceName `
-    HubName=$hubName `
-    FarHubName=$farHubName `
-    FarRegion=$farRegion `
     UserObjectId=$userObjectId `
-    DpsCustomAllocatorFunctionName=$dpsCustomAllocatorFunctionName `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
-    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
+    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent
 
 Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), resource group ($ResourceGroup)"
 
@@ -316,10 +300,12 @@ Write-Host "`nGetting secrets from ARM template output"
 $iotHubThumbprint = "CADB8E398FA9C7DD382E2ED092258BB3D916652C"
 $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
 $farHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubConnectionString.value' --output tsv
+$farHubHostName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubHostName.value' --output tsv
 $eventHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.eventHubConnectionString.value' --output tsv
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
+$deviceProvisioningServiceName = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.deviceProvisioningServiceName.value' --output tsv
 $deviceProvisioningServiceConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.deviceProvisioningServiceConnectionString.value' --output tsv
-$eventResourceGroup = az resource show -g $ResourceGroup --resource-type microsoft.devices/iothubs -n $ResourceGroup --query 'properties.eventHubEndpoints.events.path' --output tsv
+$eventHubCompatibleName = az resource show -g $ResourceGroup --resource-type microsoft.devices/iothubs -n $ResourceGroup --query 'properties.eventHubCompatibleName' --output tsv
 $customAllocationPolicyWebhook = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.customAllocationPolicyWebhook.value' --output tsv
 $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
 $keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
@@ -461,10 +447,10 @@ az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONN-STRING-CSH
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-CONN-STRING-CSHARP" --value $eventHubConnectionString --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-COMPATIBLE-NAME" --value $eventResourceGroup --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-COMPATIBLE-NAME" --value $eventHubCompatibleName --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-CONSUMER-GROUP" --value $consumerGroups --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PROXY-SERVER-ADDRESS" --value $proxyServerAddress --output none
-az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value "$farHubName.azure-devices.net" --output none
+az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value $farHubHostName --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-IDSCOPE" --value $dpsIdScope --output none
 # DPS ID Scope Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-ID-SCOPE" --value $dpsIdScope --output none
