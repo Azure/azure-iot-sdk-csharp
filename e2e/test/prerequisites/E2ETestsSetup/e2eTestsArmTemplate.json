@@ -489,7 +489,7 @@
         },
         "customAllocationPolicyWebhook": {
             "type": "string",
-            "value": "[concat('https://', resourceGroup().name, '.azurewebsites.net/api/', parameters('DpsCustomAllocatorByHubNameLength'),'?code=', listKeys(resourceId('Microsoft.Web/sites/functions', parameters('WebsiteName'), parameters('DpsCustomAllocatorByHubNameLength')), '2019-08-01').default)]"
+            "value": "[concat('https://', parameters('WebsiteName'), '.azurewebsites.net/api/', parameters('DpsCustomAllocatorByHubNameLength'),'?code=', listKeys(resourceId('Microsoft.Web/sites/functions', parameters('WebsiteName'), parameters('DpsCustomAllocatorByHubNameLength')), '2019-08-01').default)]"
         },
         "farHubHostName": {
             "type": "string",
