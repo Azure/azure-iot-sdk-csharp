@@ -29,6 +29,13 @@
         "description": "The region for the second IoT hub in a DPS that is far away from the test devices."
       }
     },
+    "WebRegion": {
+      "type": "string",
+      "defaultValue": "CentralUS",
+      "metadata": {
+        "description": "The region for the website hosting the Azure function."
+      }
+    },
     "HubName": {
       "type": "string",
       "defaultValue": "[concat(resourceGroup().name, '-hub')]",
@@ -371,7 +378,7 @@
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2018-11-01",
       "name": "[parameters('ServerFarmName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('WebRegion')]",
       "kind": "",
       "tags": {
       },
@@ -390,7 +397,7 @@
       "apiVersion": "2018-11-01",
       "name": "[parameters('WebsiteName')]",
       "kind": "functionapp",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('WebRegion')]",
       "tags": {
       },
       "dependsOn": [
@@ -422,7 +429,7 @@
           "type": "functions",
           "apiVersion": "2018-11-01",
           "name": "[parameters('DpsCustomAllocatorFunctionName')]",
-          "location": "[resourceGroup().location]",
+          "location": "[parameters('WebRegion')]",
           "properties": {
             "config": {
               "bindings": [

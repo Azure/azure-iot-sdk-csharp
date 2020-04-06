@@ -506,6 +506,7 @@ az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOI
 # Below Environment variables are only used in Java
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-CONNECTION-STRING" --value $farHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IS-BASIC-TIER-HUB" --value "false" --output none
+
 ###################################################################################################################################
 # Run docker containers for TPM simulators and Proxy
 ###################################################################################################################################
