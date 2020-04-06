@@ -1,9 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -87,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static async Task StartReceivingLoopAsync()
         {
             s_log.WriteLine("Starting receiving file notification loop...");
-            
+
             CancellationToken cancellationToken = new CancellationTokenSource(s_duration).Token;
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -102,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         await s_fileNotificationReceiver.AbandonAsync(fileNotification).ConfigureAwait(false);
                     }
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     s_log.WriteLine("Ignore any exception while receiving/abandon file upload notification.");
                 }

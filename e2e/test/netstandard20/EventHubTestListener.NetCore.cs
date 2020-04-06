@@ -1,16 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.EventHubs;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.EventHubs;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -51,7 +45,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: Cannot create receiver for partitionID {partitionId}: {ex}");
                 }
             }
-
         }
     }
 }
