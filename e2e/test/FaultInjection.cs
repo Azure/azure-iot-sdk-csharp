@@ -76,9 +76,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        public static async Task ActivateFaultInjection(Client.TransportType transport, string faultType, string reason, int delayInSec, int durationInSec, DeviceClient deviceClient)
+        public static async Task ActivateFaultInjectionAsync(Client.TransportType transport, string faultType, string reason, int delayInSec, int durationInSec, DeviceClient deviceClient)
         {
-            s_log.WriteLine($"{nameof(ActivateFaultInjection)}: Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={FaultInjection.DefaultDurationInSec}s");
+            s_log.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={FaultInjection.DefaultDurationInSec}s");
 
             uint oldTimeout = deviceClient.OperationTimeoutInMilliseconds;
 
@@ -104,14 +104,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (IotHubCommunicationException ex)
             {
-                s_log.WriteLine($"{nameof(ActivateFaultInjection)}: {ex}");
+                s_log.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
                 if (transport == Client.TransportType.Http1) throw;
             }
             catch (TimeoutException ex)
             {
-                s_log.WriteLine($"{nameof(ActivateFaultInjection)}: {ex}");
+                s_log.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
                 if (transport == Client.TransportType.Http1) throw;
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             finally
             {
                 deviceClient.OperationTimeoutInMilliseconds = oldTimeout;
-                s_log.WriteLine($"{nameof(ActivateFaultInjection)}: Fault injection requested.");
+                s_log.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Fault injection requested.");
             }
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 int countBeforeFaultInjection = connectionStatusChangeCount;
                 watch.Start();
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
-                await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
+                await ActivateFaultInjectionAsync(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
                 s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delayInSec} seconds.");
                 await Task.Delay(TimeSpan.FromSeconds(delayInSec)).ConfigureAwait(false);
 

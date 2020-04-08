@@ -15,10 +15,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const int SingleConnection_PoolSize = 1;
         public const int MultipleConnections_DevicesCount = 4;
         public const int MultipleConnections_PoolSize = 2;
-        public const int maxTestRunCount = 5;
-        public const int testSuccessRate = 80; // 4 out of 5 (80%) test runs should pass (even after accounting for network instability issues).
+        public const int MaxTestRunCount = 5;
+        public const int TestSuccessRate = 80; // 4 out of 5 (80%) test runs should pass (even after accounting for network instability issues).
 
-        private static TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogging s_log = TestLogging.GetInstance();
 
         public static async Task TestPoolAmqpAsync(
             string devicePrefix,
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
-            Func<IList<DeviceClient>, Task> cleanupOperation,
+            Func<Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             bool ignoreConnectionStatus)
         {
@@ -73,8 +73,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClients.Add(deviceClient);
                     amqpConnectionStatuses.Add(amqpConnectionStatusChange);
 
-                    operations.Add(initOperation(deviceClient, testDevice));
+                    if (initOperation != null)
+                    {
+                        operations.Add(initOperation(deviceClient, testDevice));
+                    }
                 }
+
                 await Task.WhenAll(operations).ConfigureAwait(false);
                 operations.Clear();
 
@@ -102,8 +106,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                             }
 
                             // The connection status should be "Disabled", with connection status change reason "Client_close"
-                            Assert.AreEqual(ConnectionStatus.Disabled, amqpConnectionStatuses[i].LastConnectionStatus, $"The actual connection status is = {amqpConnectionStatuses[i].LastConnectionStatus}");
-                            Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, amqpConnectionStatuses[i].LastConnectionStatusChangeReason, $"The actual connection status change reason is = {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
+                            Assert.AreEqual(
+                                ConnectionStatus.Disabled,
+                                amqpConnectionStatuses[i].LastConnectionStatus,
+                                $"The actual connection status is = {amqpConnectionStatuses[i].LastConnectionStatus}");
+                            Assert.AreEqual(
+                                ConnectionStatusChangeReason.Client_Close,
+                                amqpConnectionStatuses[i].LastConnectionStatusChangeReason,
+                                $"The actual connection status change reason is = {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
                         }
                     }
                     if (deviceConnectionStatusAsExpected)
@@ -112,19 +122,27 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
 
                     currentSuccessRate = (int)((double)successfulRuns / totalRuns * 100);
-                    reRunTest = currentSuccessRate < testSuccessRate;
+                    reRunTest = currentSuccessRate < TestSuccessRate;
                 }
                 finally
                 {
                     // Close the service-side components and dispose the device client instances.
-                    await cleanupOperation(deviceClients).ConfigureAwait(false);
+                    if (cleanupOperation != null)
+                    {
+                        await cleanupOperation().ConfigureAwait(false);
+                    }
+
+                    foreach (DeviceClient deviceClient in deviceClients)
+                    {
+                        deviceClient.Dispose();
+                    }
 
                     // Clean up the local lists
                     testDevices.Clear();
                     deviceClients.Clear();
                     amqpConnectionStatuses.Clear();
                 }
-            } while (reRunTest && totalRuns < maxTestRunCount);
+            } while (reRunTest && totalRuns < MaxTestRunCount);
 
             Assert.IsFalse(reRunTest, $"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {currentSuccessRate}%.");
         }

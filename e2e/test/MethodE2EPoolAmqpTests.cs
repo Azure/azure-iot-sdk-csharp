@@ -16,14 +16,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class MethodE2EPoolAmqpTests : IDisposable
     {
         private const string MethodName = "MethodE2EPoolAmqpTests";
-        private readonly string DevicePrefix = $"E2E_{nameof(MethodE2EPoolAmqpTests)}_";
-        private readonly ConsoleEventListener _listener;
-        private static TestLogging _log = TestLogging.GetInstance();
-
-        public MethodE2EPoolAmqpTests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
+        private readonly string _devicePrefix = $"E2E_{nameof(MethodE2EPoolAmqpTests)}_";
+        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
+        private static readonly TestLogging s_log = TestLogging.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -31,10 +26,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_SingleConnection_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
-                PoolingOverAmqp.SingleConnection_PoolSize,
-                PoolingOverAmqp.SingleConnection_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethod).ConfigureAwait(false);
+                    Client.TransportType.Amqp_Tcp_Only,
+                    PoolingOverAmqp.SingleConnection_PoolSize,
+                    PoolingOverAmqp.SingleConnection_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodAsync)
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -43,10 +39,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.SingleConnection_PoolSize,
-                PoolingOverAmqp.SingleConnection_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethod).ConfigureAwait(false);
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.SingleConnection_PoolSize,
+                    PoolingOverAmqp.SingleConnection_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodAsync)
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -55,11 +52,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_SingleConnection_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
-                PoolingOverAmqp.SingleConnection_PoolSize,
-                PoolingOverAmqp.SingleConnection_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethod,
-                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                    Client.TransportType.Amqp_Tcp_Only,
+                    PoolingOverAmqp.SingleConnection_PoolSize,
+                    PoolingOverAmqp.SingleConnection_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodAsync,
+                    authScope: ConnectionStringAuthScope.IoTHub)
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -68,11 +66,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.SingleConnection_PoolSize,
-                PoolingOverAmqp.SingleConnection_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethod,
-                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.SingleConnection_PoolSize,
+                    PoolingOverAmqp.SingleConnection_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodAsync,
+                    authScope: ConnectionStringAuthScope.IoTHub)
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -81,10 +80,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_SingleConnection_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
-                PoolingOverAmqp.SingleConnection_PoolSize,
-                PoolingOverAmqp.SingleConnection_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
+                    Client.TransportType.Amqp_Tcp_Only,
+                    PoolingOverAmqp.SingleConnection_PoolSize,
+                    PoolingOverAmqp.SingleConnection_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync)
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -93,10 +93,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.SingleConnection_PoolSize,
-                PoolingOverAmqp.SingleConnection_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.SingleConnection_PoolSize,
+                    PoolingOverAmqp.SingleConnection_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync)
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -105,11 +106,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_SingleConnection_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
-                PoolingOverAmqp.SingleConnection_PoolSize,
-                PoolingOverAmqp.SingleConnection_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethodDefaultHandler,
-                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                    Client.TransportType.Amqp_Tcp_Only,
+                    PoolingOverAmqp.SingleConnection_PoolSize,
+                    PoolingOverAmqp.SingleConnection_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync,
+                    authScope: ConnectionStringAuthScope.IoTHub)
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -118,95 +120,104 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_SingleConnection_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.SingleConnection_PoolSize,
-                PoolingOverAmqp.SingleConnection_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethodDefaultHandler,
-                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.SingleConnection_PoolSize,
+                    PoolingOverAmqp.SingleConnection_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync,
+                    authScope: ConnectionStringAuthScope.IoTHub)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethod).ConfigureAwait(false);
+                    Client.TransportType.Amqp_Tcp_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodAsync)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethod).ConfigureAwait(false);
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodAsync)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethod,
-                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                    Client.TransportType.Amqp_Tcp_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodAsync,
+                    authScope: ConnectionStringAuthScope.IoTHub)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethod,
-                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodAsync,
+                    authScope: ConnectionStringAuthScope.IoTHub)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
+                    Client.TransportType.Amqp_Tcp_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethodDefaultHandler,
-                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                    Client.TransportType.Amqp_Tcp_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync,
+                    authScope: ConnectionStringAuthScope.IoTHub)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                MethodE2ETests.SetDeviceReceiveMethodDefaultHandler,
-                authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync,
+                    authScope: ConnectionStringAuthScope.IoTHub)
+                .ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondPoolOverAmqp(
@@ -218,46 +229,39 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                _log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
+                s_log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
                 Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                _log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
-                await MethodE2ETests.ServiceSendMethodAndVerifyResponse(
-                    testDevice.Id, MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson).ConfigureAwait(false);
+                s_log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
+                await MethodE2ETests
+                    .ServiceSendMethodAndVerifyResponseAsync(
+                        testDevice.Id,
+                        MethodName,
+                        MethodE2ETests.DeviceResponseJson,
+                        MethodE2ETests.ServiceRequestJson)
+                    .ConfigureAwait(false);
             };
 
-            Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
-            {
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    deviceClient.Dispose();
-                }
-                await Task.FromResult<bool>(false).ConfigureAwait(false);
-            };
-
-            await PoolingOverAmqp.TestPoolAmqpAsync(
-                DevicePrefix,
-                transport,
-                poolSize,
-                devicesCount,
-                initOperation,
-                testOperation,
-                cleanupOperation,
-                authScope,
-                true).ConfigureAwait(false);
+            await PoolingOverAmqp
+                .TestPoolAmqpAsync(
+                    _devicePrefix,
+                    transport,
+                    poolSize,
+                    devicesCount,
+                    initOperation,
+                    testOperation,
+                    null,
+                    authScope,
+                    true)
+                .ConfigureAwait(false);
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
+            _listener.Dispose();
         }
     }
 }

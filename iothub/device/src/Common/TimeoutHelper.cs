@@ -10,9 +10,10 @@ namespace Microsoft.Azure.Devices.Client
     [DebuggerStepThrough]
     internal struct TimeoutHelper
     {
-        private DateTime deadline;
-        private bool deadlineSet;
-        private TimeSpan originalTimeout;
+        private DateTime _deadline;
+        private bool _isDeadlineSet;
+        private TimeSpan _originalTimeout;
+
         public static readonly TimeSpan MaxWait = TimeSpan.FromMilliseconds(Int32.MaxValue);
 
         public TimeoutHelper(TimeSpan timeout) :
@@ -24,13 +25,13 @@ namespace Microsoft.Azure.Devices.Client
         {
             Fx.Assert(timeout >= TimeSpan.Zero, "timeout must be non-negative");
 
-            this.originalTimeout = timeout;
-            this.deadline = DateTime.MaxValue;
-            this.deadlineSet = (timeout == TimeSpan.MaxValue);
+            _originalTimeout = timeout;
+            _deadline = DateTime.MaxValue;
+            _isDeadlineSet = timeout == TimeSpan.MaxValue;
 
-            if (startTimeout && !this.deadlineSet)
+            if (startTimeout && !_isDeadlineSet)
             {
-                this.SetDeadline();
+                SetDeadline();
             }
         }
 
@@ -40,52 +41,45 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return Timeout.Infinite;
             }
-            else
+             
+            long ticks = Ticks.FromTimeSpan(timeout);
+            if (ticks / TimeSpan.TicksPerMillisecond > Int32.MaxValue)
             {
-                long ticks = Ticks.FromTimeSpan(timeout);
-                if (ticks / TimeSpan.TicksPerMillisecond > int.MaxValue)
-                {
-                    return int.MaxValue;
-                }
-                return Ticks.ToMilliseconds(ticks);
+                return Int32.MaxValue;
             }
+
+            return Ticks.ToMilliseconds(ticks);
         }
 
-        public TimeSpan RemainingTime()
+        public TimeSpan GetRemainingTime()
         {
-            if (!this.deadlineSet)
+            if (!_isDeadlineSet)
             {
-                this.SetDeadline();
-                return this.originalTimeout;
+                SetDeadline();
+                return _originalTimeout;
             }
-            else if (this.deadline == DateTime.MaxValue)
+
+            if (_deadline == DateTime.MaxValue)
             {
                 return TimeSpan.MaxValue;
             }
-            else
-            {
-                TimeSpan remaining = this.deadline - DateTime.UtcNow;
-                if (remaining <= TimeSpan.Zero)
-                {
-                    return TimeSpan.Zero;
-                }
-                else
-                {
-                    return remaining;
-                }
-            }
+
+            TimeSpan remaining = _deadline - DateTime.UtcNow;
+            return remaining <= TimeSpan.Zero
+                ? TimeSpan.Zero
+                : remaining;
         }
 
         private void SetDeadline()
         {
-            Fx.Assert(!deadlineSet, "TimeoutHelper deadline set twice.");
-            this.deadline = DateTime.UtcNow + this.originalTimeout;
+            Fx.Assert(!_isDeadlineSet, "TimeoutHelper deadline set twice.");
+            _deadline = DateTime.UtcNow + _originalTimeout;
 
 #if NOTIMEOUT
-            this.deadline = DateTime.MaxValue;
+            deadline = DateTime.MaxValue;
 #endif
 
-            this.deadlineSet = true;
+            _isDeadlineSet = true;
         }
     }
 }

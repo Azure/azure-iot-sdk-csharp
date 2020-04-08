@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             try
             {
-                await _amqpUnit.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                await _amqpUnit.OpenAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
             }
             finally
             {
@@ -182,10 +182,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
-            Message message = await _amqpUnit.ReceiveMessageAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, timeoutHelper.GetRemainingTime(), $"{nameof(ReceiveAsync)}");
+            Message message = await _amqpUnit.ReceiveMessageAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
 
-            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, timeoutHelper.GetRemainingTime(), $"{nameof(ReceiveAsync)}");
             return message;
         }
 

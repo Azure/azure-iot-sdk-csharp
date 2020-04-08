@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await EnsureOpenedAsync(timeoutHelper).ConfigureAwait(false);
                             return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
                         },
-                        new CancellationTokenSource(timeoutHelper.RemainingTime()).Token)
+                        new CancellationTokenSource(timeoutHelper.GetRemainingTime()).Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -524,7 +524,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private async Task EnsureOpenedAsync(TimeoutHelper timeoutHelper)
         {
             if (Volatile.Read(ref _opened)) return;
-            bool gain = await _handlerLock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await _handlerLock.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
             if (!gain) throw new TimeoutException("Timed out to acquire handler lock.");
             try
             {
@@ -582,9 +582,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     cancellationToken);
         }
 
-        private Task OpenInternalAsync(TimeoutHelper timeoutHelper)
+        private async Task OpenInternalAsync(TimeoutHelper timeoutHelper)
         {
-            return _internalRetryPolicy
+            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            await _internalRetryPolicy
                 .ExecuteAsync(
                     async () =>
                     {
@@ -606,7 +607,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
                         }
                     },
-                    new CancellationTokenSource(timeoutHelper.RemainingTime()).Token);
+                    cts.Token)
+                .ConfigureAwait(false);
         }
 
         private async Task HandleDisconnectAsync()

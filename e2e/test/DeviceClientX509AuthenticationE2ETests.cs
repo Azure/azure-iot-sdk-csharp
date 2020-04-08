@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -25,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public DeviceClientX509AuthenticationE2ETests()
         {
             _listener = TestConfig.StartEventListener();
-            _hostName = TestDevice.GetHostName(Configuration.IoTHub.ConnectionString);
+            _hostName = GetHostName(Configuration.IoTHub.ConnectionString);
         }
 
         [TestMethod]

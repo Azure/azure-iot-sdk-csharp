@@ -225,13 +225,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveMessageInOperationTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        public static (Message message, string messageId, string payload, string p1Value) ComposeC2DTestMessage()
+        public static (Message message, string messageId, string payload, string p1Value) ComposeC2dTestMessage()
         {
             var payload = Guid.NewGuid().ToString();
             var messageId = Guid.NewGuid().ToString();
             var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            _log.WriteLine($"{nameof(ComposeC2dTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
@@ -344,120 +344,118 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task ReceiveMessageInOperationTimeout(TestDeviceType type, Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
+
+            _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling OpenAsync() for transport={transport}");
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            if (transport == Client.TransportType.Mqtt_Tcp_Only
+                || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling OpenAsync() for transport={transport}");
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
+                await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
+            }
 
-                if (transport == Client.TransportType.Mqtt_Tcp_Only ||
-                    transport == Client.TransportType.Mqtt_WebSocket_Only)
+            try
+            {
+                deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(TIMESPAN_ONE_MINUTE.TotalMilliseconds);
+                _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - setting device client default operation timeout={deviceClient.OperationTimeoutInMilliseconds} ms");
+
+                if (transport == Client.TransportType.Amqp
+                    || transport == Client.TransportType.Amqp_Tcp_Only
+                    || transport == Client.TransportType.Amqp_WebSocket_Only)
                 {
-                    // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
-                }
+                    // TODO: this extra minute on the timeout is undesirable by customers, and tests seems to be failing on a slight timing issue.
+                    // For now, add an additional 5 second buffer to prevent tests from failing, and meanwhile address issue 1203.
 
-                try
+                    // For AMQP because of static 1 min interval check the cancellation token, in worst case it will block upto extra 1 min to return
+                    await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_ONE_MINUTE + TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                }
+                else
                 {
-                    deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(TIMESPAN_ONE_MINUTE.TotalMilliseconds);
-                    _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - setting device client default operation timeout={deviceClient.OperationTimeoutInMilliseconds} ms");
-
-                    if (transport == Client.TransportType.Amqp || transport == Client.TransportType.Amqp_Tcp_Only || transport == Client.TransportType.Amqp_WebSocket_Only)
-                    {
-                        // TODO: this extra minute on the timeout is undesirable by customers, and tests seems to be failing on a slight timing issue.
-                        // For now, add an additional 5 second buffer to prevent tests from failing, and meanwhile address issue 1203.
-
-                        // For AMQP because of static 1 min interval check the cancellation token, in worst case it will block upto extra 1 min to return
-                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_ONE_MINUTE + TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
-                    }
+                    await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
                 }
-                finally
-                {
-                    _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling CloseAsync() for transport={transport}");
-                    deviceClient.OperationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
-                    await deviceClient.CloseAsync().ConfigureAwait(false);
-                }
+            }
+            finally
+            {
+                _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling CloseAsync() for transport={transport}");
+                deviceClient.OperationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
+                await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
 
         private async Task ReceiveMessageWithTimeout(TestDeviceType type, Client.TransportType transport, TimeSpan timeout)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            if (transport == Client.TransportType.Mqtt_Tcp_Only
+                || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-
-                if (transport == Client.TransportType.Mqtt_Tcp_Only ||
-                    transport == Client.TransportType.Mqtt_WebSocket_Only)
-                {
-                    // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
-                }
-
-                await ReceiveMessageWithTimeoutCheck(deviceClient, timeout).ConfigureAwait(false);
-
-                await deviceClient.CloseAsync().ConfigureAwait(false);
+                // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
+                await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
             }
+
+            await ReceiveMessageWithTimeoutCheck(deviceClient, timeout).ConfigureAwait(false);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task ReceiveSingleMessage(TestDeviceType type, Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            if (transport == Client.TransportType.Mqtt_Tcp_Only
+                || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-
-                if (transport == Client.TransportType.Mqtt_Tcp_Only ||
-                    transport == Client.TransportType.Mqtt_WebSocket_Only)
-                {
-                    // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
-                }
-
-                await serviceClient.OpenAsync().ConfigureAwait(false);
-
-                (Message msg, string messageId, string payload, string p1Value) = ComposeC2DTestMessage();
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                await VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
-
-                await deviceClient.CloseAsync().ConfigureAwait(false);
-                await serviceClient.CloseAsync().ConfigureAwait(false);
+                // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
+                await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
             }
+
+            await serviceClient.OpenAsync().ConfigureAwait(false);
+
+            (Message msg, string messageId, string payload, string p1Value) = ComposeC2dTestMessage();
+            await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+            await VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task ReceiveSingleMessageWithCancellationToken(TestDeviceType type, Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            if (transport == Client.TransportType.Mqtt_Tcp_Only
+                || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-
-                if (transport == Client.TransportType.Mqtt_Tcp_Only ||
-                    transport == Client.TransportType.Mqtt_WebSocket_Only)
-                {
-                    // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
-                }
-
-                await serviceClient.OpenAsync().ConfigureAwait(false);
-
-                (Message msg, string messageId, string payload, string p1Value) = ComposeC2DTestMessage();
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                await VerifyReceivedC2DMessageWithCancellationTokenAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
-
-                await deviceClient.CloseAsync().ConfigureAwait(false);
-                await serviceClient.CloseAsync().ConfigureAwait(false);
+                // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
+                await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
             }
+
+            await serviceClient.OpenAsync().ConfigureAwait(false);
+
+            (Message msg, string messageId, string payload, string p1Value) = ComposeC2dTestMessage();
+            await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+            await VerifyReceivedC2DMessageWithCancellationTokenAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private static async Task ReceiveMessageWithoutTimeoutCheck(DeviceClient dc, TimeSpan bufferTime)
         {
-            Stopwatch sw = new Stopwatch();
+            var sw = new Stopwatch();
             while (true)
             {
                 try
@@ -465,7 +463,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     _log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheck)} - Calling ReceiveAsync()");
 
                     sw.Restart();
-                    Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
+                    using Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
                     sw.Stop();
 
                     _log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheck)} - Received message={message}; time taken={sw.ElapsedMilliseconds} ms");
@@ -492,7 +490,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             while (true)
             {
-                Stopwatch sw = new Stopwatch();
+                var sw = new Stopwatch();
                 try
                 {
                     sw.Start();

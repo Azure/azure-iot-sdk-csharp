@@ -127,17 +127,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task TestSecurityMessageAsync(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            try
             {
-                try
-                {
-                    await SendSingleSecurityMessageAsync(deviceClient, testDevice.Id, _logAnalyticsClient).ConfigureAwait(false);
-                }
-                finally
-                {
-                    await deviceClient.CloseAsync().ConfigureAwait(false);
-                }
+                await SendSingleSecurityMessageAsync(deviceClient, testDevice.Id, _logAnalyticsClient).ConfigureAwait(false);
+            }
+            finally
+            {
+                await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
 
