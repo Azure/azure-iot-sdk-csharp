@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             byte[] byteContent = await responseMessage.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
-            using var message = byteContent != null
+            Message message = byteContent != null
                 ? new Message(byteContent)
                 : new Message();
 
