@@ -1,7 +1,21 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - docs/*
+    - tools/CaptureLogs/*
+    - iothub/device/devdoc/*
+    - iothub/service/devdoc/*
+
 resources:
   - repo: self
     clean: true
+
 jobs:
   ### Linux build ###
   - job: LINUX
