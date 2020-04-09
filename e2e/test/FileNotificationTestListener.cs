@@ -91,7 +91,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             s_log.WriteLine("Starting receiving file notification loop...");
 
-            CancellationToken cancellationToken = new CancellationTokenSource(s_duration).Token;
+            using var cts = new CancellationTokenSource(s_duration);
+            var cancellationToken = cts.Token;
             while (!cancellationToken.IsCancellationRequested)
             {
                 try

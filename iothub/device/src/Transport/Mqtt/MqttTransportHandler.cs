@@ -355,6 +355,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     Cleanup();
                 }
+
+                _disconnectAwaitersCancellationSource.Dispose();
             }
         }
 

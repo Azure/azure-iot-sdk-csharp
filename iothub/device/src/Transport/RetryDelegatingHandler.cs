@@ -173,6 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
 
+                using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
                 return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
@@ -180,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await EnsureOpenedAsync(timeoutHelper).ConfigureAwait(false);
                             return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
                         },
-                        new CancellationTokenSource(timeoutHelper.GetRemainingTime()).Token)
+                        cts.Token)
                     .ConfigureAwait(false);
             }
             finally

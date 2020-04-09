@@ -202,11 +202,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         continue;
                     }
 
-                    await _webSocket.SendAsync(
-                        byteBuffer.GetIoBuffer(),
-                        WebSocketMessageType.Binary,
-                        true,
-                        _writeCancellationTokenSource.Token).ConfigureAwait(false);
+                    await _webSocket
+                        .SendAsync(
+                            byteBuffer.GetIoBuffer(),
+                            WebSocketMessageType.Binary,
+                            true,
+                            _writeCancellationTokenSource.Token)
+                        .ConfigureAwait(false);
 
                     channelOutboundBuffer.Remove();
                 }
@@ -225,9 +227,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task<int> DoReadBytes(IByteBuffer byteBuffer)
         {
-            WebSocketReceiveResult receiveResult = await _webSocket.ReceiveAsync(
-                new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes),
-                CancellationToken.None).ConfigureAwait(false);
+            WebSocketReceiveResult receiveResult = await _webSocket
+                .ReceiveAsync(
+                    new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes),
+                    CancellationToken.None)
+                .ConfigureAwait(false);
 
             if (receiveResult.MessageType == WebSocketMessageType.Text)
             {

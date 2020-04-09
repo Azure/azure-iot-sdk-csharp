@@ -1491,7 +1491,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 var testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
-                var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
+                using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 var propName = twinProperties[0];

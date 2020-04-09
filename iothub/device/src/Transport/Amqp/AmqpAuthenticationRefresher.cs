@@ -43,14 +43,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             CancellationToken newToken = _cancellationTokenSource.Token;
             oldTokenSource?.Cancel();
 
-            DateTime refreshOn = await _amqpIoTCbsLink.SendTokenAsync(
+            DateTime refreshOn = await _amqpIoTCbsLink
+                .SendTokenAsync(
                     _amqpIoTCbsTokenProvider,
                     _connectionString.AmqpEndpoint,
                     _audience,
                     _audience,
                     AccessRightsStringArray,
-                    timeout
-                ).ConfigureAwait(false);
+                    timeout)
+                .ConfigureAwait(false);
 
             if (refreshOn < DateTime.MaxValue)
             {
@@ -85,14 +86,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     try
                     {
-                        refreshesOn = await _amqpIoTCbsLink.SendTokenAsync(
-                            _amqpIoTCbsTokenProvider,
-                            _connectionString.AmqpEndpoint,
-                            _audience,
-                            _audience,
-                            AccessRightsStringArray,
-                            _operationTimeout
-                        ).ConfigureAwait(false);
+                        refreshesOn = await _amqpIoTCbsLink
+                            .SendTokenAsync(
+                                _amqpIoTCbsTokenProvider,
+                                _connectionString.AmqpEndpoint,
+                                _audience,
+                                _audience,
+                                AccessRightsStringArray,
+                                _operationTimeout)
+                            .ConfigureAwait(false);
                     }
                     catch (IotHubCommunicationException ex)
                     {
@@ -128,6 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (disposing)
             {
                 StopLoop();
+                _cancellationTokenSource.Dispose();
             }
 
             _disposed = true;

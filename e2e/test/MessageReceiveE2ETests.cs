@@ -19,19 +19,14 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("LongRunning")]
     public partial class MessageReceiveE2ETests : IDisposable
     {
-        private static readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
-        private static readonly TestLogging _log = TestLogging.GetInstance();
-        private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan TIMESPAN_ONE_SECOND = TimeSpan.FromSeconds(1);
-        private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan TIMESPAN_TWENDY_SECONDS = TimeSpan.FromSeconds(20);
+        private static readonly string s_devicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
+        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan s_oneSecond = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan s_fiveSeconds = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan s_twentySeconds = TimeSpan.FromSeconds(20);
 
-        private readonly ConsoleEventListener _listener;
-
-        public MessageReceiveE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
+        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         [TestMethod]
         public async Task Message_DeviceReceiveSingleMessage_Amqp()
@@ -156,49 +151,49 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithLessTimeout_Amqp()
         {
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, TIMESPAN_ONE_SECOND).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, s_oneSecond).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithMoreTimeout_Amqp()
         {
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, TIMESPAN_TWENDY_SECONDS).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, s_twentySeconds).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithLessTimeout_AmqpWs()
         {
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, TIMESPAN_ONE_SECOND).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, s_oneSecond).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithMoreTimeout_AmqpWs()
         {
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, TIMESPAN_TWENDY_SECONDS).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, s_twentySeconds).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithLessTimeout_Mqtt()
         {
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, TIMESPAN_ONE_SECOND).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, s_oneSecond).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithMoreTimeout_Mqtt()
         {
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, TIMESPAN_TWENDY_SECONDS).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, s_twentySeconds).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithLessTimeout_MqttWs()
         {
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, TIMESPAN_ONE_SECOND).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, s_oneSecond).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithMoreTimeout_MqttWs()
         {
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, TIMESPAN_TWENDY_SECONDS).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, s_twentySeconds).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -231,7 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var messageId = Guid.NewGuid().ToString();
             var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeC2dTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            s_log.WriteLine($"{nameof(ComposeC2dTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
@@ -252,7 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             while (!received && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
-                _log.WriteLine($"Receiving messages for device {deviceId}.");
+                s_log.WriteLine($"Receiving messages for device {deviceId}.");
 
                 if (transport == Client.TransportType.Http1)
                 {
@@ -261,12 +256,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    receivedMessage = await dc.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
+                    receivedMessage = await dc.ReceiveAsync(s_oneMinute).ConfigureAwait(false);
                 }
 
                 if (receivedMessage == null)
                 {
-                    Assert.Fail($"No message is received for device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
+                    Assert.Fail($"No message is received for device {deviceId} in {s_oneMinute}.");
                 }
 
                 try
@@ -280,7 +275,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
+                s_log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
                 if (Equals(payload, messageData))
                 {
                     Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
@@ -297,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task VerifyReceivedC2DMessageWithCancellationTokenAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
         {
-            Stopwatch sw = new Stopwatch();
+            var sw = new Stopwatch();
             bool received = false;
 
             sw.Start();
@@ -306,13 +301,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             while (!received && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
-                _log.WriteLine($"Receiving messages for device {deviceId}.");
+                s_log.WriteLine($"Receiving messages for device {deviceId}.");
 
-                receivedMessage = await dc.ReceiveAsync(new CancellationTokenSource(TIMESPAN_ONE_MINUTE).Token).ConfigureAwait(false);
+                using var cts = new CancellationTokenSource(s_oneMinute);
+                receivedMessage = await dc.ReceiveAsync(cts.Token).ConfigureAwait(false);
 
                 if (receivedMessage == null)
                 {
-                    Assert.Fail($"No message is received for device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
+                    Assert.Fail($"No message is received for device {deviceId} in {s_oneMinute}.");
                 }
 
                 try
@@ -326,7 +322,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
+                s_log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
                 if (Equals(payload, messageData))
                 {
                     Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
@@ -343,23 +339,23 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ReceiveMessageInOperationTimeout(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
-            _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling OpenAsync() for transport={transport}");
+            s_log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling OpenAsync() for transport={transport}");
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             if (transport == Client.TransportType.Mqtt_Tcp_Only
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
                 // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
+                await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
             }
 
             try
             {
-                deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(TIMESPAN_ONE_MINUTE.TotalMilliseconds);
-                _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - setting device client default operation timeout={deviceClient.OperationTimeoutInMilliseconds} ms");
+                deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(s_oneMinute.TotalMilliseconds);
+                s_log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - setting device client default operation timeout={deviceClient.OperationTimeoutInMilliseconds} ms");
 
                 if (transport == Client.TransportType.Amqp
                     || transport == Client.TransportType.Amqp_Tcp_Only
@@ -369,16 +365,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // For now, add an additional 5 second buffer to prevent tests from failing, and meanwhile address issue 1203.
 
                     // For AMQP because of static 1 min interval check the cancellation token, in worst case it will block upto extra 1 min to return
-                    await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_ONE_MINUTE + TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                    await ReceiveMessageWithoutTimeoutCheck(deviceClient, s_oneMinute + TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                 }
                 else
                 {
-                    await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
+                    await ReceiveMessageWithoutTimeoutCheck(deviceClient, s_fiveSeconds).ConfigureAwait(false);
                 }
             }
             finally
             {
-                _log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling CloseAsync() for transport={transport}");
+                s_log.WriteLine($"{nameof(ReceiveMessageInOperationTimeout)} - calling CloseAsync() for transport={transport}");
                 deviceClient.OperationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
@@ -386,7 +382,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ReceiveMessageWithTimeout(TestDeviceType type, Client.TransportType transport, TimeSpan timeout)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -395,7 +391,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
                 // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
+                await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
             }
 
             await ReceiveMessageWithTimeoutCheck(deviceClient, timeout).ConfigureAwait(false);
@@ -405,7 +401,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ReceiveSingleMessage(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
             using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
@@ -415,7 +411,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
                 // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
+                await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
             }
 
             await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -430,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ReceiveSingleMessageWithCancellationToken(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
             using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
@@ -440,7 +436,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
                 // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
+                await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
             }
 
             await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -460,13 +456,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 try
                 {
-                    _log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheck)} - Calling ReceiveAsync()");
+                    s_log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheck)} - Calling ReceiveAsync()");
 
                     sw.Restart();
                     using Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
                     sw.Stop();
 
-                    _log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheck)} - Received message={message}; time taken={sw.ElapsedMilliseconds} ms");
+                    s_log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheck)} - Received message={message}; time taken={sw.ElapsedMilliseconds} ms");
 
                     if (message == null)
                     {
@@ -506,7 +502,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 finally
                 {
-                    if (sw.Elapsed > (timeout + TIMESPAN_FIVE_SECONDS))
+                    if (sw.Elapsed > (timeout + s_fiveSeconds))
                     {
                         Assert.Fail("ReceiveAsync did not return in Operation Timeout time.");
                     }
@@ -516,12 +512,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
+            _listener.Dispose();
         }
     }
 }
