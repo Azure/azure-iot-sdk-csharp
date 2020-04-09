@@ -2,16 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     public class TestModule
     {
-        private Module _module;
+        private readonly Module _module;
 
         private TestModule(Module module)
         {
@@ -31,20 +30,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             string deviceName = testDevice.Id;
             string moduleName = moduleNamePrefix + Guid.NewGuid();
 
-            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
-            {
-                log.WriteLine($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
+            using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            log.WriteLine($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
 
-                Module requestModule = new Module(deviceName, moduleName);
-                Module module = await rm.AddModuleAsync(requestModule).ConfigureAwait(false);
+            var requestModule = new Module(deviceName, moduleName);
+            Module module = await rm.AddModuleAsync(requestModule).ConfigureAwait(false);
 
-                await rm.CloseAsync().ConfigureAwait(false);
+            await rm.CloseAsync().ConfigureAwait(false);
 
-                TestModule ret = new TestModule(module);
+            var ret = new TestModule(module);
 
-                log.WriteLine($"{nameof(GetTestModuleAsync)}: Using device {ret.DeviceId} with module {ret.Id}.");
-                return ret;
-            }
+            log.WriteLine($"{nameof(GetTestModuleAsync)}: Using device {ret.DeviceId} with module {ret.Id}.");
+            return ret;
         }
 
         /// <summary>
@@ -62,29 +59,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// <summary>
         /// Module ID
         /// </summary>
-        public string Id
-        {
-            get
-            {
-                return _module.Id;
-            }
-        }
+        public string Id => _module.Id;
 
         /// <summary>
         /// Device ID
         /// </summary>
-        public string DeviceId
-        {
-            get
-            {
-                return _module.DeviceId;
-            }
-        }
-
-        private static string GetHostName(string iotHubConnectionString)
-        {
-            Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
-            return regex.Match(iotHubConnectionString).Groups[1].Value;
-        }
+        public string DeviceId => _module.DeviceId;
     }
 }

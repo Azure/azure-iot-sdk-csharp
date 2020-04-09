@@ -26,155 +26,180 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodName = "MethodE2ETest";
         private static TestLogging s_log = TestLogging.GetInstance();
 
-        private readonly ConsoleEventListener _listener;
-
-        public MethodFaultInjectionTests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
+        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                FaultInjection.FaultType_GracefulShutdownMqtt,
-                FaultInjection.FaultCloseReason_Bye,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    FaultInjection.FaultType_GracefulShutdownMqtt,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                FaultInjection.FaultType_GracefulShutdownMqtt,
-                FaultInjection.FaultCloseReason_Bye,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    FaultInjection.FaultType_GracefulShutdownMqtt,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_AmqpConn,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpConn,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_AmqpConn,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpConn,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_AmqpSess,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpSess,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_AmqpSess,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpSess,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_AmqpMethodReq,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpMethodReq,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_AmqpMethodReq,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpMethodReq,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_AmqpMethodResp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpMethodResp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_AmqpMethodResp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpMethodResp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_GracefulShutdownAmqp,
-                FaultInjection.FaultCloseReason_Bye,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_GracefulShutdownAmqp,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_GracefulShutdownAmqp,
-                FaultInjection.FaultCloseReason_Bye,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMethodAndRespondRecovery(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_GracefulShutdownAmqp,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson)
@@ -190,23 +215,24 @@ namespace Microsoft.Azure.Devices.E2ETests
                 attempt++;
                 try
                 {
-                    using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
-                    {
-                        s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
-                        CloudToDeviceMethodResult response =
-                            await serviceClient.InvokeDeviceMethodAsync(
+                    using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+                    s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
+                    CloudToDeviceMethodResult response =
+                        await serviceClient
+                            .InvokeDeviceMethodAsync(
                                 deviceName,
-                                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)).ConfigureAwait(false);
+                                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson))
+                            .ConfigureAwait(false);
 
-                        s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
+                    s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
 
-                        Assert.AreEqual(200, response.Status, $"The expected respose status should be 200 but was {response.Status}");
-                        string payload = response.GetPayloadAsJson();
-                        Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
+                    Assert.AreEqual(200, response.Status, $"The expected respose status should be 200 but was {response.Status}");
+                    string payload = response.GetPayloadAsJson();
+                    Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
 
-                        await serviceClient.CloseAsync().ConfigureAwait(false);
-                        done = true;
-                    }
+                    await serviceClient.CloseAsync().ConfigureAwait(false);
+                    done = true;
                 }
                 catch (DeviceNotFoundException ex)
                 {
@@ -231,7 +257,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
-                await testDeviceCallbackHandler.SetDeviceReceiveMethodAsync(MethodName, DeviceResponseJson, ServiceRequestJson).ConfigureAwait(false);
+                await testDeviceCallbackHandler
+                    .SetDeviceReceiveMethodAsync(MethodName, DeviceResponseJson, ServiceRequestJson)
+                    .ConfigureAwait(false);
             };
 
             // Call the method from the service side and verify the device received the call.
@@ -249,27 +277,24 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            await FaultInjection.TestErrorInjectionAsync(
-                DevicePrefix,
-                TestDeviceType.Sasl,
-                transport,
-                faultType,
-                reason,
-                delayInSec,
-                FaultInjection.DefaultDelayInSec,
-                initOperation,
-                testOperation,
-                () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
+            await FaultInjection
+                .TestErrorInjectionAsync(
+                    DevicePrefix,
+                    TestDeviceType.Sasl,
+                    transport,
+                    faultType,
+                    reason,
+                    delayInSec,
+                    FaultInjection.DefaultDelayInSec,
+                    initOperation,
+                    testOperation,
+                    () => { return Task.FromResult<bool>(false); })
+                .ConfigureAwait(false);
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
+            _listener.Dispose();
         }
     }
 }

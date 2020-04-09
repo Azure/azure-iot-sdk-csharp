@@ -17,21 +17,11 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private static TestLogging _log = TestLogging.GetInstance();
 
-        private readonly ConsoleEventListener _listener;
-
-        public FaultInjectionPoolAmqpTests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
+        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
+            _listener.Dispose();
         }
     }
 }
