@@ -1,43 +1,43 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
+using System;
+using System.Diagnostics.Contracts;
+using System.Net;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+using DotNetty.Buffers;
+using DotNetty.Transport.Channels;
+
 namespace Microsoft.Azure.Devices.Client.Test
 {
-    using System;
-    using System.Diagnostics.Contracts;
-    using System.Net;
-    using System.Net.WebSockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using DotNetty.Buffers;
-    using DotNetty.Transport.Channels;
-
     public class ServerWebSocketChannel : AbstractChannel
     {
-        readonly WebSocket webSocket;
-        readonly CancellationTokenSource writeCancellationTokenSource;
-        bool active;
+        private readonly WebSocket _webSocket;
+        private readonly CancellationTokenSource _writeCancellationTokenSource;
+        private bool _active;
+
+        public ServerWebSocketChannel(IChannel parent, WebSocket webSocket, EndPoint remoteEndPoint)
+            : base(parent)
+        {
+            _webSocket = webSocket;
+            RemoteAddressInternal = remoteEndPoint;
+            _active = true;
+            Metadata = new ChannelMetadata(false, 16);
+            Configuration = new ServerWebSocketChannelConfig();
+            _writeCancellationTokenSource = new CancellationTokenSource();
+        }
 
         internal bool ReadPending { get; set; }
 
         internal bool WriteInProgress { get; set; }
 
-        public ServerWebSocketChannel(IChannel parent, WebSocket webSocket, EndPoint remoteEndPoint)
-            : base(parent)
-        {
-            this.webSocket = webSocket;
-            this.RemoteAddressInternal = remoteEndPoint;
-            this.active = true;
-            this.Metadata = new ChannelMetadata(false, 16);
-            this.Configuration = new ServerWebSocketChannelConfig();
-            this.writeCancellationTokenSource = new CancellationTokenSource();
-        }
-
         public override IChannelConfiguration Configuration { get; }
 
-        public override bool Open => this.webSocket.State == WebSocketState.Open;
+        public override bool Open => _webSocket.State == WebSocketState.Open;
 
-        public override bool Active => this.active;
+        public override bool Active => _active;
 
         public override ChannelMetadata Metadata { get; }
 
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             Contract.Requires(option != null);
 
-            this.Configuration.SetOption(option, value);
+            Configuration.SetOption(option, value);
             return this;
         }
 
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 // Flush immediately only when there's no pending flush.
                 // If there's a pending flush operation, event loop will call FinishWrite() later,
                 // and thus there's no need to call it now.
-                if (((ServerWebSocketChannel)this.channel).WriteInProgress)
+                if (((ServerWebSocketChannel)channel).WriteInProgress)
                 {
                     return;
                 }
@@ -97,22 +97,22 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             try
             {
-                WebSocketState webSocketState = this.webSocket.State;
+                WebSocketState webSocketState = _webSocket.State;
                 if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
                 {
                     // Cancel any pending write
-                    this.CancelPendingWrite();
-                    this.active = false;
+                    CancelPendingWrite();
+                    _active = false;
 
                     using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
             }
             catch (Exception)// when (!e.IsFatal())
             {
-                this.Abort();
+                Abort();
             }
         }
 
@@ -123,15 +123,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool close = false;
             try
             {
-                if (!this.Open || this.ReadPending)
+                if (!Open || ReadPending)
                 {
                     return;
                 }
 
-                this.ReadPending = true;
-                IByteBufferAllocator allocator = this.Configuration.Allocator;
-                allocHandle = this.Configuration.RecvByteBufAllocator.NewHandle();
-                allocHandle.Reset(this.Configuration);
+                ReadPending = true;
+                IByteBufferAllocator allocator = Configuration.Allocator;
+                allocHandle = Configuration.RecvByteBufAllocator.NewHandle();
+                allocHandle.Reset(Configuration);
                 do
                 {
                     byteBuffer = allocHandle.Allocate(allocator);
@@ -145,29 +145,29 @@ namespace Microsoft.Azure.Devices.Client.Test
                         break;
                     }
 
-                    this.Pipeline.FireChannelRead(byteBuffer);
+                    Pipeline.FireChannelRead(byteBuffer);
                     allocHandle.IncMessagesRead(1);
                 }
                 while (allocHandle.ContinueReading());
 
                 allocHandle.ReadComplete();
-                this.ReadPending = false;
-                this.Pipeline.FireChannelReadComplete();
+                ReadPending = false;
+                Pipeline.FireChannelReadComplete();
             }
             catch (Exception e) //when (!e.IsFatal())
             {
                 // Since this method returns void, all exceptions must be handled here.
                 byteBuffer?.Release();
                 allocHandle?.ReadComplete();
-                this.ReadPending = false;
-                this.Pipeline.FireChannelReadComplete();
-                this.Pipeline.FireExceptionCaught(e);
+                ReadPending = false;
+                Pipeline.FireChannelReadComplete();
+                Pipeline.FireExceptionCaught(e);
                 close = true;
             }
 
             if (close)
             {
-                if (this.Active)
+                if (Active)
                 {
                     await HandleCloseAsync().ConfigureAwait(false);
                 }
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             try
             {
-                this.WriteInProgress = true;
+                WriteInProgress = true;
                 while (true)
                 {
                     object currentMessage = channelOutboundBuffer.Current;
@@ -197,25 +197,25 @@ namespace Microsoft.Azure.Devices.Client.Test
                         continue;
                     }
 
-                    await webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, writeCancellationTokenSource.Token).ConfigureAwait(false);
+                    await _webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, _writeCancellationTokenSource.Token).ConfigureAwait(false);
                     channelOutboundBuffer.Remove();
                 }
 
-                this.WriteInProgress = false;
+                WriteInProgress = false;
             }
             catch (Exception e) //when (!e.IsFatal())
             {
                 // Since this method returns void, all exceptions must be handled here.
 
-                this.WriteInProgress = false;
-                this.Pipeline.FireExceptionCaught(e);
+                WriteInProgress = false;
+                Pipeline.FireExceptionCaught(e);
                 await HandleCloseAsync().ConfigureAwait(false);
             }
         }
 
         async Task<int> DoReadBytes(IByteBuffer byteBuffer)
         {
-            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None).ConfigureAwait(false);
+            WebSocketReceiveResult receiveResult = await _webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None).ConfigureAwait(false);
             if (receiveResult.MessageType == WebSocketMessageType.Text)
             {
                 throw new ProtocolViolationException("Mqtt over WS message cannot be in text");
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             try
             {
-                this.writeCancellationTokenSource.Cancel();
+                _writeCancellationTokenSource.Cancel();
             }
             catch (ObjectDisposedException)
             {
@@ -251,105 +251,20 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
             catch (Exception) //when (!ex.IsFatal())
             {
-                this.Abort();
+                Abort();
             }
         }
 
         void Abort()
         {
-            this.webSocket.Abort();
-            this.webSocket.Dispose();
-            this.writeCancellationTokenSource.Dispose();
+            _webSocket.Abort();
+            _webSocket.Dispose();
+            _writeCancellationTokenSource.Dispose();
         }
     }
 
     public class ServerWebSocketChannelConfig : IChannelConfiguration
     {
-        public T GetOption<T>(ChannelOption<T> option)
-        {
-            Contract.Requires(option != null);
-
-            if (ChannelOption.ConnectTimeout.Equals(option))
-            {
-                return (T)(object)this.ConnectTimeout; // no boxing will happen, compiler optimizes away such casts
-            }
-            if (ChannelOption.WriteSpinCount.Equals(option))
-            {
-                return (T)(object)this.WriteSpinCount;
-            }
-            if (ChannelOption.Allocator.Equals(option))
-            {
-                return (T)this.Allocator;
-            }
-            if (ChannelOption.RcvbufAllocator.Equals(option))
-            {
-                return (T)this.RecvByteBufAllocator;
-            }
-            if (ChannelOption.AutoRead.Equals(option))
-            {
-                return (T)(object)this.AutoRead;
-            }
-            if (ChannelOption.WriteBufferHighWaterMark.Equals(option))
-            {
-                return (T)(object)this.WriteBufferHighWaterMark;
-            }
-            if (ChannelOption.WriteBufferLowWaterMark.Equals(option))
-            {
-                return (T)(object)this.WriteBufferLowWaterMark;
-            }
-            if (ChannelOption.MessageSizeEstimator.Equals(option))
-            {
-                return (T)this.MessageSizeEstimator;
-            }
-            return default(T);
-        }
-
-        public bool SetOption(ChannelOption option, object value) => option.Set(this, value);
-
-        public bool SetOption<T>(ChannelOption<T> option, T value)
-        {
-            // this.Validate(option, value);
-
-            if (ChannelOption.ConnectTimeout.Equals(option))
-            {
-                this.ConnectTimeout = (TimeSpan)(object)value;
-            }
-            else if (ChannelOption.WriteSpinCount.Equals(option))
-            {
-                this.WriteSpinCount = (int)(object)value;
-            }
-            else if (ChannelOption.Allocator.Equals(option))
-            {
-                this.Allocator = (IByteBufferAllocator)value;
-            }
-            else if (ChannelOption.RcvbufAllocator.Equals(option))
-            {
-                this.RecvByteBufAllocator = (IRecvByteBufAllocator)value;
-            }
-            else if (ChannelOption.AutoRead.Equals(option))
-            {
-                this.AutoRead = (bool)(object)value;
-            }
-            else if (ChannelOption.WriteBufferHighWaterMark.Equals(option))
-            {
-                this.WriteBufferHighWaterMark = (int)(object)value;
-            }
-            else if (ChannelOption.WriteBufferLowWaterMark.Equals(option))
-            {
-                this.WriteBufferLowWaterMark = (int)(object)value;
-            }
-            else if (ChannelOption.MessageSizeEstimator.Equals(option))
-            {
-                this.MessageSizeEstimator = (IMessageSizeEstimator)value;
-            }
-            else
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         public TimeSpan ConnectTimeout { get; set; }
 
         public int WriteSpinCount { get; set; }
@@ -365,5 +280,90 @@ namespace Microsoft.Azure.Devices.Client.Test
         public int WriteBufferLowWaterMark { get; set; }
 
         public IMessageSizeEstimator MessageSizeEstimator { get; set; }
+
+        public T GetOption<T>(ChannelOption<T> option)
+        {
+            Contract.Requires(option != null);
+
+            if (ChannelOption.ConnectTimeout.Equals(option))
+            {
+                return (T)(object)ConnectTimeout; // no boxing will happen, compiler optimizes away such casts
+            }
+            if (ChannelOption.WriteSpinCount.Equals(option))
+            {
+                return (T)(object)WriteSpinCount;
+            }
+            if (ChannelOption.Allocator.Equals(option))
+            {
+                return (T)Allocator;
+            }
+            if (ChannelOption.RcvbufAllocator.Equals(option))
+            {
+                return (T)RecvByteBufAllocator;
+            }
+            if (ChannelOption.AutoRead.Equals(option))
+            {
+                return (T)(object)AutoRead;
+            }
+            if (ChannelOption.WriteBufferHighWaterMark.Equals(option))
+            {
+                return (T)(object)WriteBufferHighWaterMark;
+            }
+            if (ChannelOption.WriteBufferLowWaterMark.Equals(option))
+            {
+                return (T)(object)WriteBufferLowWaterMark;
+            }
+            if (ChannelOption.MessageSizeEstimator.Equals(option))
+            {
+                return (T)MessageSizeEstimator;
+            }
+            return default(T);
+        }
+
+        public bool SetOption(ChannelOption option, object value) => option.Set(this, value);
+
+        public bool SetOption<T>(ChannelOption<T> option, T value)
+        {
+            // Validate(option, value);
+
+            if (ChannelOption.ConnectTimeout.Equals(option))
+            {
+                ConnectTimeout = (TimeSpan)(object)value;
+            }
+            else if (ChannelOption.WriteSpinCount.Equals(option))
+            {
+                WriteSpinCount = (int)(object)value;
+            }
+            else if (ChannelOption.Allocator.Equals(option))
+            {
+                Allocator = (IByteBufferAllocator)value;
+            }
+            else if (ChannelOption.RcvbufAllocator.Equals(option))
+            {
+                RecvByteBufAllocator = (IRecvByteBufAllocator)value;
+            }
+            else if (ChannelOption.AutoRead.Equals(option))
+            {
+                AutoRead = (bool)(object)value;
+            }
+            else if (ChannelOption.WriteBufferHighWaterMark.Equals(option))
+            {
+                WriteBufferHighWaterMark = (int)(object)value;
+            }
+            else if (ChannelOption.WriteBufferLowWaterMark.Equals(option))
+            {
+                WriteBufferLowWaterMark = (int)(object)value;
+            }
+            else if (ChannelOption.MessageSizeEstimator.Equals(option))
+            {
+                MessageSizeEstimator = (IMessageSizeEstimator)value;
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

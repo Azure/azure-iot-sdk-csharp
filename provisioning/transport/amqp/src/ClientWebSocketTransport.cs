@@ -212,11 +212,15 @@ namespace Microsoft.Azure.Amqp.Transport
 
         protected override void AbortInternal()
         {
-            if (!_disposed && _webSocket.State != WebSocketState.Aborted)
+            if (!_disposed)
             {
+                if (_webSocket.State != WebSocketState.Aborted)
+                {
+                    _webSocket.Abort();
+                    _webSocket.Dispose();
+                }
+
                 _disposed = true;
-                _webSocket.Abort();
-                _webSocket.Dispose();
             }
         }
 

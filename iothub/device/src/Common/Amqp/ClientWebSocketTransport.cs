@@ -1,57 +1,45 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Net;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.Azure.Devices.Client;
+
 namespace Microsoft.Azure.Amqp.Transport
 {
-    using System;
-    using System.IO;
-    using System.Net;
-    using System.Net.WebSockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Microsoft.Azure.Devices.Client;
-
     internal sealed class ClientWebSocketTransport : TransportBase
     {
-        private static readonly AsyncCallback onReadComplete = OnReadComplete;
-        private static readonly AsyncCallback onWriteComplete = OnWriteComplete;
-        private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly AsyncCallback s_onReadComplete = OnReadComplete;
+        private static readonly AsyncCallback s_onWriteComplete = OnWriteComplete;
+        private static readonly TimeSpan s_closeTimeout = TimeSpan.FromSeconds(30);
 
-        private readonly ClientWebSocket webSocket;
-        private readonly EndPoint localEndPoint;
-        private readonly EndPoint remoteEndPoint;
-        private volatile CancellationTokenSource writeCancellationTokenSource;
-        private bool disposed;
+        private readonly ClientWebSocket _webSocket;
+        private readonly EndPoint _localEndPoint;
+        private readonly EndPoint _remoteEndPoint;
+        private volatile CancellationTokenSource _writeCancellationTokenSource;
+        private bool _disposed;
 
         public ClientWebSocketTransport(ClientWebSocket webSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
             : base("clientwebsocket")
         {
-            this.webSocket = webSocket;
-            this.localEndPoint = localEndpoint;
-            this.remoteEndPoint = remoteEndpoint;
-            this.writeCancellationTokenSource = new CancellationTokenSource();
+            _webSocket = webSocket;
+            _localEndPoint = localEndpoint;
+            _remoteEndPoint = remoteEndpoint;
+            _writeCancellationTokenSource = new CancellationTokenSource();
         }
 
-        public override string LocalEndPoint
-        {
-            get { return this.localEndPoint.ToString(); }
-        }
+        public override string LocalEndPoint => _localEndPoint.ToString();
 
-        public override string RemoteEndPoint
-        {
-            get { return this.remoteEndPoint.ToString(); }
-        }
+        public override string RemoteEndPoint => _remoteEndPoint.ToString();
 
-        public override bool RequiresCompleteFrames
-        {
-            get { return true; }
-        }
+        public override bool RequiresCompleteFrames => true;
 
-        public override bool IsSecure
-        {
-            get { return true; }
-        }
+        public override bool IsSecure => true;
 
         public override void SetMonitor(ITransportMonitor usageMeter)
         {
@@ -60,23 +48,23 @@ namespace Microsoft.Azure.Amqp.Transport
 
         public override bool WriteAsync(TransportAsyncCallbackArgs args)
         {
-            this.ThrowIfNotOpen();
+            ThrowIfNotOpen();
 
             Fx.AssertAndThrow(args.Buffer != null || args.ByteBufferList != null, "must have a buffer to write");
             Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
             args.Exception = null; // null out any exceptions
 
-            Task taskResult = this.WriteAsyncCore(args);
+            Task taskResult = WriteAsyncCoreAsync(args);
             if (WriteTaskDone(taskResult, args))
             {
                 return false;
             }
 
-            taskResult.ToAsyncResult(onWriteComplete, args);
+            taskResult.ToAsyncResult(s_onWriteComplete, args);
             return true;
         }
 
-        private async Task WriteAsyncCore(TransportAsyncCallbackArgs args)
+        private async Task WriteAsyncCoreAsync(TransportAsyncCallbackArgs args)
         {
             bool succeeded = false;
             try
@@ -84,14 +72,21 @@ namespace Microsoft.Azure.Amqp.Transport
                 if (args.Buffer != null)
                 {
                     var arraySegment = new ArraySegment<byte>(args.Buffer, args.Offset, args.Count);
-                    await this.webSocket.SendAsync(arraySegment, WebSocketMessageType.Binary, true, this.writeCancellationTokenSource.Token).ConfigureAwait(false);
+                    await _webSocket
+                        .SendAsync(arraySegment, WebSocketMessageType.Binary, true, _writeCancellationTokenSource.Token)
+                        .ConfigureAwait(false);
                 }
                 else
                 {
                     foreach (ByteBuffer byteBuffer in args.ByteBufferList)
                     {
-                        await this.webSocket.SendAsync(new ArraySegment<byte>(byteBuffer.Buffer, byteBuffer.Offset, byteBuffer.Length),
-                            WebSocketMessageType.Binary, true, this.writeCancellationTokenSource.Token).ConfigureAwait(false);
+                        await _webSocket
+                            .SendAsync(
+                                new ArraySegment<byte>(byteBuffer.Buffer, byteBuffer.Offset, byteBuffer.Length),
+                                WebSocketMessageType.Binary,
+                                true,
+                                _writeCancellationTokenSource.Token)
+                            .ConfigureAwait(false);
                     }
                 }
 
@@ -113,14 +108,14 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 if (!succeeded)
                 {
-                    this.Abort();
+                    Abort();
                 }
             }
         }
 
         public override bool ReadAsync(TransportAsyncCallbackArgs args)
         {
-            this.ThrowIfNotOpen();
+            ThrowIfNotOpen();
 
             // Read with buffer list not supported
             Fx.AssertAndThrow(args.Buffer != null, "must have buffer to read");
@@ -129,23 +124,24 @@ namespace Microsoft.Azure.Amqp.Transport
             Utils.ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
             args.Exception = null; // null out any exceptions
 
-            Task<int> taskResult = this.ReadAsyncCore(args);
+            Task<int> taskResult = ReadAsyncCoreAsync(args);
             if (ReadTaskDone(taskResult, args))
             {
                 return false;
             }
 
-            taskResult.ToAsyncResult(onReadComplete, args);
+            taskResult.ToAsyncResult(s_onReadComplete, args);
             return true;
         }
 
-        private async Task<int> ReadAsyncCore(TransportAsyncCallbackArgs args)
+        private async Task<int> ReadAsyncCoreAsync(TransportAsyncCallbackArgs args)
         {
             bool succeeded = false;
             try
             {
-                WebSocketReceiveResult receiveResult = await this.webSocket.ReceiveAsync(
-                    new ArraySegment<byte>(args.Buffer, args.Offset, args.Count), CancellationToken.None).ConfigureAwait(false);
+                WebSocketReceiveResult receiveResult = await _webSocket
+                    .ReceiveAsync(new ArraySegment<byte>(args.Buffer, args.Offset, args.Count), CancellationToken.None)
+                    .ConfigureAwait(false);
 
                 succeeded = true;
                 return receiveResult.Count;
@@ -166,24 +162,24 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 if (!succeeded)
                 {
-                    this.Abort();
+                    Abort();
                 }
             }
         }
 
         protected override bool OpenInternal()
         {
-            this.ThrowIfNotOpen();
+            ThrowIfNotOpen();
 
             return true;
         }
 
         protected override bool CloseInternal()
         {
-            var webSocketState = this.webSocket.State;
+            WebSocketState webSocketState = _webSocket.State;
             if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
             {
-                this.CloseInternalAsync(CloseTimeout);
+                CloseInternalAsync(s_closeTimeout).GetAwaiter().GetResult();
             }
 
             return true;
@@ -194,12 +190,10 @@ namespace Microsoft.Azure.Amqp.Transport
             try
             {
                 // Cancel any pending write
-                this.CancelPendingWrite();
+                CancelPendingWrite();
 
-                using (var cancellationTokenSource = new CancellationTokenSource(timeout))
-                {
-                    await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
-                }
+                using var cancellationTokenSource = new CancellationTokenSource(timeout);
+                await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -210,14 +204,14 @@ namespace Microsoft.Azure.Amqp.Transport
             }
 
             // Call Abort anyway to ensure that all WebSocket Resources are released
-            this.Abort();
+            Abort();
         }
 
         private void CancelPendingWrite()
         {
             try
             {
-                this.writeCancellationTokenSource.Cancel();
+                _writeCancellationTokenSource.Cancel();
             }
             catch (ObjectDisposedException)
             {
@@ -227,11 +221,17 @@ namespace Microsoft.Azure.Amqp.Transport
 
         protected override void AbortInternal()
         {
-            if (!this.disposed && this.webSocket.State != WebSocketState.Aborted)
+            if (!_disposed)
             {
-                this.disposed = true;
-                this.webSocket.Abort();
-                this.webSocket.Dispose();
+                if (_webSocket.State != WebSocketState.Aborted)
+                {
+                    _webSocket.Abort();
+                    _webSocket.Dispose();
+                }
+                
+                _writeCancellationTokenSource.Dispose();
+
+                _disposed = true;
             }
         }
 
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Amqp.Transport
                 args.CompletedSynchronously = result.CompletedSynchronously;
                 return true;
             }
-            else if (taskResult.IsCanceled)  // This should not happen since TaskCanceledException is handled in ReadAsyncCore.
+            else if (taskResult.IsCanceled) // This should not happen since TaskCanceledException is handled in ReadAsyncCore.
             {
                 return true;
             }
@@ -320,18 +320,18 @@ namespace Microsoft.Azure.Amqp.Transport
 
         private void ThrowIfNotOpen()
         {
-            var webSocketState = this.webSocket.State;
+            WebSocketState webSocketState = _webSocket.State;
             if (webSocketState == WebSocketState.Open)
             {
                 return;
             }
 
-            if (webSocketState == WebSocketState.Aborted ||
-                webSocketState == WebSocketState.Closed ||
-                webSocketState == WebSocketState.CloseReceived ||
-                webSocketState == WebSocketState.CloseSent)
+            if (webSocketState == WebSocketState.Aborted
+                || webSocketState == WebSocketState.Closed
+                ||webSocketState == WebSocketState.CloseReceived
+                || webSocketState == WebSocketState.CloseSent)
             {
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
             }
 
             throw new AmqpException(AmqpErrorCode.IllegalState, null);

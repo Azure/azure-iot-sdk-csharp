@@ -487,7 +487,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     security,
                     transport);
 
-                var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
+                using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
                 _log.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
@@ -546,7 +546,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Configuration.Provisioning.IdScope,
                     security,
                     transport);
-                var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
+                using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
                 //Test registering with valid additional data payload
                 DeviceRegistrationResult result = await provClient
@@ -614,7 +614,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     security,
                     transport);
 
-                var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
                 _log.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
@@ -724,7 +724,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     security,
                     transport);
 
-                var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
                 var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                     () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
@@ -774,23 +774,23 @@ namespace Microsoft.Azure.Devices.E2ETests
             EnrollmentType? enrollmentType,
             string groupId = "")
         {
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
-            using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false))
-            {
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
-                    InvalidGlobalAddress,
-                    Configuration.Provisioning.IdScope,
-                    security,
-                    transport);
+            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
+            using SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
 
-                var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+InvalidGlobalAddress,
+Configuration.Provisioning.IdScope,
+security,
+transport);
 
-                _log.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
-                var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
-                    () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-                _log.WriteLine($"Exception: {exception}");
-            }
+            _log.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
+            ProvisioningTransportException exception = await Assert.
+                ThrowsExceptionAsync<ProvisioningTransportException>(() => provClient.RegisterAsync(cts.Token))
+                .ConfigureAwait(false);
+
+            _log.WriteLine($"Exception: {exception}");
         }
 
         #endregion InvalidGlobalAddress
