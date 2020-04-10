@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -16,21 +17,20 @@ namespace Microsoft.Azure.Devices.Samples
 
         private static string s_connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
 
-        public static int Main(string[] args)
+        public static async Task Main(string[] args)
         {
             if (string.IsNullOrEmpty(s_connectionString) && args.Length > 0)
             {
                 s_connectionString = args[0];
             }
 
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(s_connectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(s_connectionString);
 
             var sample = new AutomaticDeviceManagementSample(registryManager);
 
-            sample.RunSampleAsync().GetAwaiter().GetResult();
+            await sample.RunSampleAsync().ConfigureAwait(false);
 
             Console.WriteLine("Done.\n");
-            return 0;
         }
     }
 }
