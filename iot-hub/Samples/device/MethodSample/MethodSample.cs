@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine("Waiting 30 seconds for IoT Hub method calls ...");
 
             Console.WriteLine($"Use the IoT Hub Azure Portal to call methods GetDeviceName or WriteToConsole within this time.");
-            await Task.Delay(Task.FromSeconsd(30)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
         }
 
         private void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
