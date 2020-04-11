@@ -16,150 +16,158 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("FaultInjection")]
     public partial class MessageSendFaultInjectionTests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
+        private readonly string _devicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
 
 #pragma warning disable CA1823
         private static TestLogging _log = TestLogging.GetInstance();
-        private readonly ConsoleEventListener _listener;
+        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 #pragma warning restore CA1823
-
-        public MessageSendFaultInjectionTests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Mqtt_Tcp_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Mqtt_WebSocket_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_AmqpConnectionLossSendRecovery_Amqp()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_AmqpConn,
-                "",
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpConn,
+                    "",
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_AmqpConnectionLossSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_AmqpConn,
-                "",
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpConn,
+                    "",
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_AmqpSessionLossSendRecovery_Amqp()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_AmqpSess,
-                "",
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpSess,
+                    "",
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_AmqpSessionLossSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_AmqpSess,
-                "",
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpSess,
+                    "",
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_AmqpD2CLinkDropSendRecovery_Amqp()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_AmqpD2C,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpD2C,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_AmqpD2CLinkDropSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_AmqpD2C,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpD2C,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
-            await SendMessageRecovery(
+            await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
-                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+                    FaultInjection.DefaultDurationInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
+        [TestCategory("Flaky")]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
+            await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
-                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+                    FaultInjection.DefaultDurationInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -167,14 +175,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                await SendMessageRecovery(
-                    TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
-                    FaultInjection.FaultType_Throttle,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec,
-                    FaultInjection.DefaultDurationInSec,
-                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                await SendMessageRecoveryAsync(
+                        TestDeviceType.Sasl,
+                        Client.TransportType.Amqp_Tcp_Only,
+                        FaultInjection.FaultType_Throttle,
+                        FaultInjection.FaultCloseReason_Boom,
+                        FaultInjection.DefaultDelayInSec,
+                        FaultInjection.DefaultDurationInSec,
+                        FaultInjection.ShortRetryInMilliSec)
+                    .ConfigureAwait(false);
 
                 Assert.Fail("None of the expected exceptions were thrown.");
             }
@@ -191,14 +200,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                await SendMessageRecovery(
-                    TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
-                    FaultInjection.FaultType_Throttle,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec,
-                    FaultInjection.DefaultDurationInSec,
-                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                await SendMessageRecoveryAsync(
+                        TestDeviceType.Sasl,
+                        Client.TransportType.Amqp_WebSocket_Only,
+                        FaultInjection.FaultType_Throttle,
+                        FaultInjection.FaultCloseReason_Boom,
+                        FaultInjection.DefaultDelayInSec,
+                        FaultInjection.DefaultDurationInSec,
+                        FaultInjection.ShortRetryInMilliSec)
+                    .ConfigureAwait(false);
                 Assert.Fail("None of the expected exceptions were thrown.");
             }
             catch (IotHubThrottledException) { }
@@ -214,14 +224,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                await SendMessageRecovery(
-                    TestDeviceType.Sasl,
-                    Client.TransportType.Http1,
-                    FaultInjection.FaultType_Throttle,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec,
-                    FaultInjection.DefaultDurationInSec,
-                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                await SendMessageRecoveryAsync(
+                        TestDeviceType.Sasl,
+                        Client.TransportType.Http1,
+                        FaultInjection.FaultType_Throttle,
+                        FaultInjection.FaultCloseReason_Boom,
+                        FaultInjection.DefaultDelayInSec,
+                        FaultInjection.DefaultDurationInSec,
+                        FaultInjection.ShortRetryInMilliSec)
+                    .ConfigureAwait(false);
 
                 Assert.Fail("None of the expected exceptions were thrown.");
             }
@@ -238,13 +249,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
-            await SendMessageRecovery(
+            await SendMessageRecoveryAsync(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 FaultInjection.FaultType_QuotaExceeded,
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDurationInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -253,13 +265,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_QuotaExceeded,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_QuotaExceeded,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -268,14 +281,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                await SendMessageRecovery(
-                    TestDeviceType.Sasl,
-                    Client.TransportType.Http1,
-                    FaultInjection.FaultType_QuotaExceeded,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec,
-                    FaultInjection.DefaultDurationInSec,
-                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                await SendMessageRecoveryAsync(
+                        TestDeviceType.Sasl,
+                        Client.TransportType.Http1,
+                        FaultInjection.FaultType_QuotaExceeded,
+                        FaultInjection.FaultCloseReason_Boom,
+                        FaultInjection.DefaultDelayInSec,
+                        FaultInjection.DefaultDurationInSec,
+                        FaultInjection.ShortRetryInMilliSec)
+                    .ConfigureAwait(false);
 
                 Assert.Fail("None of the expected exceptions were thrown.");
             }
@@ -291,87 +305,94 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_AuthenticationRecovery_Amqp()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_Auth,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_Auth,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_AuthenticationRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_Auth,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_Auth,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_AuthenticationWontRecover_Http()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Http1,
-                FaultInjection.FaultType_Auth,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec,
-                FaultInjection.RecoveryTimeMilliseconds).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Http1,
+                    FaultInjection.FaultType_Auth,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.RecoveryTimeMilliseconds)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_GracefulShutdownSendRecovery_Amqp()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_GracefulShutdownAmqp,
-                FaultInjection.FaultCloseReason_Bye,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_GracefulShutdownAmqp,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_GracefulShutdownSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_GracefulShutdownAmqp,
-                FaultInjection.FaultCloseReason_Bye,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_GracefulShutdownAmqp,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_GracefulShutdownSendRecovery_Mqtt()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Mqtt_Tcp_Only,
-                FaultInjection.FaultType_GracefulShutdownMqtt,
-                FaultInjection.FaultCloseReason_Bye,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    FaultInjection.FaultType_GracefulShutdownMqtt,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_GracefulShutdownSendRecovery_MqttWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Mqtt_WebSocket_Only,
-                FaultInjection.FaultType_GracefulShutdownMqtt,
-                FaultInjection.FaultCloseReason_Bye,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    FaultInjection.FaultType_GracefulShutdownMqtt,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
         }
 
-        internal async Task SendMessageRecovery(
+        internal async Task SendMessageRecoveryAsync(
             TestDeviceType type,
             Client.TransportType transport,
             string faultType,
@@ -388,7 +409,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                (Client.Message testMessage, string messageId, string payload, string p1Value) = MessageSendE2ETests.ComposeD2CTestMessage();
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage();
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = false;
@@ -398,7 +419,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await FaultInjection
                 .TestErrorInjectionAsync(
-                    DevicePrefix,
+                    _devicePrefix,
                     type,
                     transport,
                     faultType,
@@ -413,12 +434,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
+            _listener.Dispose();
         }
     }
 }

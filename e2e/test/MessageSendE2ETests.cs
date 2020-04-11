@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task SendSingleMessageAndVerifyAsync(DeviceClient deviceClient, string deviceId)
         {
-            (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
+            (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2cTestMessage();
 
             using (testMessage)
             {
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var props = new List<Tuple<string, string>>();
                 for (int i = 0; i < MESSAGE_BATCH_COUNT; i++)
                 {
-                    (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
+                    (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2cTestMessage();
                     messages.Add(testMessage);
                     props.Add(Tuple.Create(payload, p1Value));
                 }
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendSingleMessageModuleAndVerifyAsync(ModuleClient moduleClient, string deviceId)
         {
-            (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
+            (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2cTestMessage();
 
             using (testMessage)
             {
@@ -332,13 +332,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static (Client.Message message, string messageId, string payload, string p1Value) ComposeD2CTestMessage()
+        public static (Client.Message message, string messageId, string payload, string p1Value) ComposeD2cTestMessage()
         {
             var messageId = Guid.NewGuid().ToString();
             var payload = Guid.NewGuid().ToString();
             var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            _log.WriteLine($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
