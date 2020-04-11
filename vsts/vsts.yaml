@@ -1,89 +1,59 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
 resources:
-- repo: self
-  clean: true
-phases:
+  - repo: self
+    clean: true
 
-### Linux build ###
-- phase: LINUX
-  displayName: Linux
+jobs:
+  ### Linux build ###
+  - job: LINUX
+    displayName: Linux
+    condition: succeeded()
+    pool:
+      vmImage: 'ubuntu-latest'
+    timeoutInMinutes: 60
+    steps:
+      - task: Docker@1
+        displayName: 'Start TPM Simulator'
+        inputs:
+          containerregistrytype: 'Container Registry'
+          command: 'Run an image'
+          imageName: aziotbld/testtpm
+          containerName: 'testtpm-instance'
+          ports: |  
+            127.0.0.1:2321:2321
+            127.0.0.1:2322:2322
+          restartPolicy: unlessStopped
 
-  condition: succeeded()
-  queue:
-    name: Hosted Ubuntu 1604
-    timeoutInMinutes: 180
-  steps:
+      - powershell: ./build.ps1 -clean -configuration Release -run
+        displayName: build and run
+        env:
+          IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
+          IOTHUB_DEVICE_CONN_STRING2: $(IOTHUB-DEVICE-CONN-STRING2)
+          IOTHUB_MODULE_CONN_STRING: $(IOTHUB-MODULE-CONN-STRING)
+          IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
 
-  - task: Docker@1
-    displayName: 'Start TPM Simulator'
-    inputs:
-      containerregistrytype: 'Container Registry'
-      command: 'Run an image'
-      imageName: aziotbld/testtpm
-      containerName: 'testtpm-instance'
-      ports: |  
-       127.0.0.1:2321:2321
-       127.0.0.1:2322:2322
-      restartPolicy: unlessStopped
-
-  - script: |  
-       # Run dotnet first experience.
-       dotnet new
-       
-       # List active docker containers
-       docker ps -a
-       
-       # Start build
-       vsts/linux_csharp_netcore.sh 
-    displayName: build
-    env:
-      IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
-      IOTHUB_DEVICE_CONN_STRING2: $(IOTHUB-DEVICE-CONN-STRING2)
-      IOTHUB_MODULE_CONN_STRING: $(IOTHUB-MODULE-CONN-STRING)
-      IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
-      IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-      DPS_IDSCOPE: $(DPS-IDSCOPE)
-      PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
-
-### Windows build ###
-
-- phase: WINDOWS
-  displayName: Windows
-  # Since the samples run against the same Azure resources, CRUD operations will fight for the same resources. So, the builds have been serialized. Comment out the line below to run them in parallel.
-  dependsOn: LINUX
-
-  condition: succeeded()
-  queue:
-    name: Hosted VS2017
-    timeoutInMinutes: 180
-  steps:
-
-  - script: |  
-       rem Run dotnet first experience.
-       dotnet new
-       
-       rem List active docker containers
-       docker ps -a
-
-       rem Start 
-
-       rem Start ETL logging
-       logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
-       logman start IotTrace
-       
-       rem Start build
-       vsts/windows_csharp.cmd
-
-       ren Stop ETL logging
-       logman stop IotTrace
-       logman delete IotTrace
-        
-    displayName: build
-    env:
-      IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
-      IOTHUB_DEVICE_CONN_STRING2: $(IOTHUB-DEVICE-CONN-STRING2)
-      IOTHUB_MODULE_CONN_STRING: $(IOTHUB-MODULE-CONN-STRING)
-      IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
-      IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-      DPS_IDSCOPE: $(DPS-IDSCOPE)
-      PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+    ### Windows build ###
+  - job: WINDOWS
+    displayName: Windows
+    # Since the samples run against the same Azure resources, CRUD operations will fight for the same resources. 
+    # So, the builds have been serialized. Comment out the line below to run them in parallel.
+    dependsOn: LINUX
+    condition: succeeded()
+    pool:
+      vmImage: 'windows-latest'
+    timeoutInMinutes: 60
+    steps:
+      - powershell: ./build.ps1 -clean -configuration Release -run
+        displayName: build and run
+        env:
+          IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
+          IOTHUB_DEVICE_CONN_STRING2: $(IOTHUB-DEVICE-CONN-STRING2)
+          IOTHUB_MODULE_CONN_STRING: $(IOTHUB-MODULE-CONN-STRING)
+          IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)

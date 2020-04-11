@@ -11,7 +11,8 @@ Builds Azure IoT SDK samples.
 
 Parameters:
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
-    -nobuild: Skips build step (use if re-running tests after a successful build).
+    -build: Builds the project.
+    -run: Runs the sample. The required environmental variables need to be set beforehand.
     -configuration {Debug|Release}
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
 
@@ -34,8 +35,8 @@ https://github.com/azure/azure-iot-sdk-csharp
 
 Param(
     [switch] $clean,
-    [switch] $nobuild,
-    [switch] $norun,
+    [switch] $build,
+    [switch] $run,
     [string] $configuration = "Debug",
     [string] $verbosity = "q"
 )
@@ -88,7 +89,7 @@ $buildFailed = $true
 $errorMessage = ""
 
 try {
-    if (-not $nobuild)
+    if ($build)
     {
         BuildProject iot-hub\Samples\device "IoTHub Device Samples"
         BuildProject iot-hub\Samples\module "IoTHub Module Samples"
@@ -100,8 +101,12 @@ try {
         BuildProject security\Samples "Security Samples"
     }
 
-    if (-not $norun)
+    if ($run)
     {
+        # Run cleanup first so the samples don't get overloaded with old device instances
+        RunApp provisioning\Samples\service\CleanupEnrollmentsSample "Provisioning\Service\CleanupEnrollmentsSample"
+        RunApp iot-hub\Samples\service\CleanUpDevicesSample "IoTHub\Service\CleanUpDevicesSample"
+
         RunApp iot-hub\Samples\device\FileUploadSample "IoTHub\Device\FileUploadSample"
         RunApp iot-hub\Samples\device\KeysRolloverSample "IoTHub\Device\KeysRolloverSample"
         RunApp iot-hub\Samples\device\MessageSample "IoTHub\Device\MessageSample"
@@ -109,7 +114,7 @@ try {
         RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample"
 
         RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
-        RunApp iot-hub\Samples\module\MethodSample "IoTHub\Module\TwinSample"
+        RunApp iot-hub\Samples\module\TwinSample "IoTHub\Module\TwinSample"
 
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
         RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
