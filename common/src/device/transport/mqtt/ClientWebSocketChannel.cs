@@ -1,19 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
+using System.Net;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+using DotNetty.Buffers;
+using DotNetty.Transport.Channels;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-    using System.Diagnostics.Contracts;
-    using System.Net;
-    using System.Net.WebSockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using DotNetty.Buffers;
-    using DotNetty.Transport.Channels;
-    using System.Diagnostics;
-
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable - WS is owned by the caller.
+
     internal class ClientWebSocketChannel : AbstractChannel
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable
     {
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override IChannelConfiguration Configuration { get; }
 
-        public override bool Open => (_webSocket.State == WebSocketState.Open && Active);
+        public override bool Open => _webSocket.State == WebSocketState.Open && Active;
 
         public override bool Active => _active;
 
@@ -106,13 +107,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     CancelPendingWrite();
                     _active = false;
 
-                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
-                    {
-                        await _webSocket.CloseAsync(
-                            WebSocketCloseStatus.NormalClosure,
-                            string.Empty,
-                            cancellationTokenSource.Token).ConfigureAwait(false);
-                    }
+                    using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                    await _webSocket.CloseAsync(
+                        WebSocketCloseStatus.NormalClosure,
+                        string.Empty,
+                        cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
             catch (Exception)
@@ -140,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 do
                 {
                     byteBuffer = allocHandle.Allocate(allocator);
-                    allocHandle.LastBytesRead = await DoReadBytes(byteBuffer).ConfigureAwait(false);
+                    allocHandle.LastBytesRead = await DoReadBytesAsync(byteBuffer).ConfigureAwait(false);
                     if (allocHandle.LastBytesRead <= 0)
                     {
                         // nothing was read -> release the buffer.
@@ -225,7 +224,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private async Task<int> DoReadBytes(IByteBuffer byteBuffer)
+        private async Task<int> DoReadBytesAsync(IByteBuffer byteBuffer)
         {
             WebSocketReceiveResult receiveResult = await _webSocket
                 .ReceiveAsync(
@@ -286,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return true;
             }
 
-            if (ReferenceEquals(obj, null))
+            if (obj is null)
             {
                 return false;
             }
@@ -301,12 +300,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public static bool operator ==(ClientWebSocketChannel left, ClientWebSocketChannel right)
         {
-            if (ReferenceEquals(left, null))
-            {
-                return ReferenceEquals(right, null);
-            }
-
-            return left.Equals(right);
+            return left is null ? right is null : left.Equals(right);
         }
 
         public static bool operator !=(ClientWebSocketChannel left, ClientWebSocketChannel right)
@@ -316,34 +310,36 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public static bool operator <(ClientWebSocketChannel left, ClientWebSocketChannel right)
         {
-            return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
+            return left is null ? right is object : left.CompareTo(right) < 0;
         }
 
         public static bool operator <=(ClientWebSocketChannel left, ClientWebSocketChannel right)
         {
-            return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
+            return left is null || left.CompareTo(right) <= 0;
         }
 
         public static bool operator >(ClientWebSocketChannel left, ClientWebSocketChannel right)
         {
-            return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
+            return left is object && left.CompareTo(right) > 0;
         }
 
         public static bool operator >=(ClientWebSocketChannel left, ClientWebSocketChannel right)
         {
-            return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
+            return left is null ? right is null : left.CompareTo(right) >= 0;
         }
 
 #pragma warning disable CA1822
+
         public int CompareTo(ClientWebSocketChannel other)
         {
-            if (ReferenceEquals(other, null))
+            if (other is null)
             {
                 return 1;
             }
 
             throw new NotImplementedException();
         }
+
 #pragma warning restore CA1822
     }
 }
