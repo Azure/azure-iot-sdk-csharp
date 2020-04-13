@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task OpenAsyncInternal(CancellationToken cancellationToken)
         {
-            if (_webProxy != DefaultWebProxySettings.Instance)
+            if (isProxyConfigured())
             {
                 //No need to do a DNS lookup since we have the proxy address already
                 _serverAddresses = new IPAddress[0];
@@ -976,7 +976,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 try
                 {
-                    if (_webProxy != DefaultWebProxySettings.Instance)
+                    if (isProxyConfigured())
                     {
                         // Configure proxy server
                         websocket.Options.Proxy = _webProxy;
@@ -1107,6 +1107,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (Logging.IsEnabled) Logging.Info(null, "EventLoopGroup threads count was not set.");
             return new MultithreadEventLoopGroup();
+        }
+
+        private bool isProxyConfigured()
+        {
+            return _webProxy != null && _webProxy != DefaultWebProxySettings.Instance;
         }
     }
 }
