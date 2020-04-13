@@ -68,6 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private IChannel _channel;
         private ExceptionDispatchInfo _fatalException;
         private IPAddress[] _serverAddresses;
+        private IWebProxy _webProxy;
 
         private int _state = (int)TransportState.NotInitialized;
         public TransportState State => (TransportState)Volatile.Read(ref _state);
@@ -135,6 +136,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePrefixPattern, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
 
             _qos = settings.PublishToServerQoS;
+
+            _webProxy = settings.Proxy;
 
             if (channelFactory == null)
             {
@@ -565,11 +568,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task OpenAsyncInternal(CancellationToken cancellationToken)
         {
+            if (_webProxy != DefaultWebProxySettings.Instance)
+            {
+                //No need to do a DNS lookup since we have the proxy address already
+                _serverAddresses = new IPAddress[0];
+            }
+            else
+            {
 #if NET451
-            _serverAddresses = Dns.GetHostEntry(_hostName).AddressList;
+                _serverAddresses = Dns.GetHostEntry(_hostName).AddressList;
 #else
-            _serverAddresses = await Dns.GetHostAddressesAsync(_hostName).ConfigureAwait(true);
+                _serverAddresses = await Dns.GetHostAddressesAsync(_hostName).ConfigureAwait(true);
 #endif
+            }
+
             if (TryStateTransition(TransportState.NotInitialized, TransportState.Opening))
             {
                 try
@@ -962,15 +974,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
-                // Check if we're configured to use a proxy server
-                IWebProxy webProxy = settings.Proxy;
-
                 try
                 {
-                    if (webProxy != DefaultWebProxySettings.Instance)
+                    if (_webProxy != DefaultWebProxySettings.Instance)
                     {
                         // Configure proxy server
-                        websocket.Options.Proxy = webProxy;
+                        websocket.Options.Proxy = _webProxy;
                         if (Logging.IsEnabled)
                         {
                             Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting ClientWebSocket.Options.Proxy");

@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [TestCategory("Proxy")]
-        public async Task Message_DeviceSendSingleMessage_Http_WithCustomeProxy()
+        public async Task Message_DeviceSendSingleMessage_Http_WithCustomProxy()
         {
             Http1TransportSettings httpTransportSettings = new Http1TransportSettings();
             CustomWebProxy proxy = new CustomWebProxy();
