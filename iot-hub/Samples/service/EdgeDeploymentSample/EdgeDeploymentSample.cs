@@ -15,6 +15,8 @@ namespace Microsoft.Azure.Devices.Samples
         private const int BasePriority = 2;
         private readonly RegistryManager _registryManager;
 
+        private readonly List<Configuration> _configurationsToDelete = new List<Configuration>();
+
         public EdgeDeploymentSample(RegistryManager registryManager)
         {
             _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
@@ -82,12 +84,43 @@ namespace Microsoft.Azure.Devices.Samples
                 var addOnConfigTask = _registryManager.AddConfigurationAsync(addOnConfiguration);
                 await Task.WhenAll(baseConfigTask, addOnConfigTask).ConfigureAwait(false);
 
-                Console.WriteLine("Finsihed");
+                Console.WriteLine($"Cleaning up configuration created...");
+                await CleanUpConfigurations().ConfigureAwait(false);
+
+                Console.WriteLine("Finished.");
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+        }
+
+        private async Task CleanUpConfigurations()
+        {
+            var configurations = await _registryManager.GetConfigurationsAsync(100).ConfigureAwait(false);
+            {
+                foreach (var configuration in configurations)
+                {
+                    string configurationId = configuration.Id;
+                    foreach (var prefix in ConfigurationIdPrefix)
+                    {
+                        if (configurationId.StartsWith(prefix))
+                        {
+                            _configurationsToDelete.Add(new Configuration(configurationId));
+                        }
+                    }
+                }
+            }
+
+            var removeConfigTasks = new List<Task>();
+            _configurationsToDelete.ForEach(configuration =>
+            {
+                Console.WriteLine($"Remove: {configuration.Id}");
+                removeConfigTasks.Add(_registryManager.RemoveConfigurationAsync(configuration.Id));
+            });
+
+            await Task.WhenAll(removeConfigTasks).ConfigureAwait(false);
+            Console.WriteLine($"-- Total # of configurations deleted: {_configurationsToDelete.Count}");
         }
 
         private static IEnumerable<Device> GenerateEdgeDevices(string deviceIdPrefix, int numToAdd)

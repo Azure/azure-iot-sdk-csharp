@@ -13,65 +13,32 @@ namespace Microsoft.Azure.Devices.Samples
         private const int QueryBatchSize = 10000;
         private const int DeleteBatchSize = 100;
         private readonly RegistryManager _rm;
-        private readonly List<string> _deleteDeviceWithPrefix = new List<string>
-        {
-            // C# E2E tests
-            "E2E_",
-
-            // C E2E tests
-            "e2e_",
-            "e2e-",
-            "symmetrickey-registration-id-",
-            "tpm-registration-id-",
-            "csdk_",
-            "someregistrationid-",
-            "EdgeDeploymentSample_",
-        };
-
-        private readonly List<string> _deleteConfigurationWithPrefix = new List<string>
-        {
-            // C# E2E tests
-            "edgedeploymentsampleconfiguration-",
-        };
-
+        private readonly List<string> _deleteDeviceWithPrefix;
         private readonly List<Device> _devicesToDelete = new List<Device>();
-        private readonly List<Configuration> _configurationsToDelete = new List<Configuration>();
 
-
-        public CleanUpDevicesSample(RegistryManager rm)
+        public CleanUpDevicesSample(RegistryManager rm, List<string> deleteDeviceWithPrefix)
         {
             _rm = rm ?? throw new ArgumentNullException(nameof(rm));
+            _deleteDeviceWithPrefix = deleteDeviceWithPrefix;
         }
 
         public async Task RunCleanUpAsync()
         {
-            try
+            // Clean up devices
+            await PrintDeviceCountAsync().ConfigureAwait(false);
+            await CreateDevicesListForDeletion().ConfigureAwait(false);
+            await CleanUpDevices().ConfigureAwait(false);
+        }
+
+        private async Task CleanUpDevices()
+        {
+            int devicesDeleted = 0;
+
+            Console.WriteLine("Clean up devices:");
+            var _bulkDeleteList = new List<Device>(DeleteBatchSize);
+            while (_devicesToDelete.Count > 0)
             {
-                await PrintDeviceCountAsync().ConfigureAwait(false);
-
-                int devicesDeleted = 0;
-                Console.WriteLine("Clean up devices:");
-                string sqlQueryString = "select * from devices";
-                IQuery query = _rm.CreateQuery(sqlQueryString, QueryBatchSize);
-
-                while (query.HasMoreResults)
-                {
-                    IEnumerable<Shared.Twin> result = await query.GetNextAsTwinAsync();
-                    foreach (var twinResult in result)
-                    {
-                        string deviceId = twinResult.DeviceId;
-                        foreach (string prefix in _deleteDeviceWithPrefix)
-                        {
-                            if (deviceId.StartsWith(prefix))
-                            {
-                                _devicesToDelete.Add(new Device(deviceId));
-                            }
-                        }
-                    }
-                }
-
-                var _bulkDeleteList = new List<Device>(DeleteBatchSize);
-                while (_devicesToDelete.Count > 0)
+                try
                 {
                     int i;
                     for (i = 0; (i < DeleteBatchSize) && (i < _devicesToDelete.Count); i++)
@@ -80,11 +47,11 @@ namespace Microsoft.Azure.Devices.Samples
                         Console.WriteLine($"\tRemove: {_devicesToDelete[i].Id}");
                     }
 
-                    _devicesToDelete.RemoveRange(0, i);
-
                     BulkRegistryOperationResult ret = await _rm.RemoveDevices2Async(_bulkDeleteList, true, CancellationToken.None).ConfigureAwait(false);
-                    devicesDeleted += _bulkDeleteList.Count - ret.Errors.Length;
-                    Console.WriteLine($"BATCH DELETE: {devicesDeleted}/{_bulkDeleteList.Count}");
+                    int successfulDeletionCount = _bulkDeleteList.Count - ret.Errors.Length;
+                    devicesDeleted += successfulDeletionCount;
+                    Console.WriteLine($"BATCH DELETE: Current batch - {successfulDeletionCount}");
+                    Console.WriteLine($"BATCH DELETE: Running total - {devicesDeleted}");
                     if (!ret.IsSuccessful)
                     {
                         foreach (DeviceRegistryOperationError error in ret.Errors)
@@ -92,41 +59,42 @@ namespace Microsoft.Azure.Devices.Samples
                             Console.WriteLine($"\tERROR: {error.DeviceId} - {error.ErrorCode}: {error.ErrorStatus}");
                         }
                     }
-
+                    _devicesToDelete.RemoveRange(0, i);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception thrown, continue to next batch: {ex}");
+                }
+                finally
+                {
                     _bulkDeleteList.Clear();
                 }
+            }
 
-                Console.WriteLine($"-- Total # of devices deleted: {devicesDeleted}");
-            
-                var configurations = await _rm.GetConfigurationsAsync(100).ConfigureAwait(false);
+            Console.WriteLine($"-- Total # of devices deleted: {devicesDeleted}");
+        }
+
+        private async Task CreateDevicesListForDeletion()
+        {
+            Console.WriteLine("Query devices for cleanup:");
+            string sqlQueryString = "select * from devices";
+            IQuery query = _rm.CreateQuery(sqlQueryString, QueryBatchSize);
+
+            while (query.HasMoreResults)
+            {
+                IEnumerable<Shared.Twin> result = await query.GetNextAsTwinAsync().ConfigureAwait(false);
+                foreach (var twinResult in result)
                 {
-                    foreach (var configuration in configurations)
+                    string deviceId = twinResult.DeviceId;
+                    foreach (string prefix in _deleteDeviceWithPrefix)
                     {
-                        string configurationId = configuration.Id;
-                        foreach (var prefix in _deleteConfigurationWithPrefix)
+                        if (deviceId.StartsWith(prefix))
                         {
-                            if (configurationId.StartsWith(prefix))
-                            {
-                                _configurationsToDelete.Add(new Configuration(configurationId));
-                            }
+                            _devicesToDelete.Add(new Device(deviceId));
                         }
                     }
                 }
-                
-                var removeConfigTasks = new List<Task>();
-                _configurationsToDelete.ForEach(configuration =>
-                {
-                    Console.WriteLine($"Remove: {configuration.Id}");
-                    removeConfigTasks.Add(_rm.RemoveConfigurationAsync(configuration.Id));
-                });
-
-                await Task.WhenAll(removeConfigTasks).ConfigureAwait(false);
-                Console.WriteLine($"-- Total # of configurations deleted: {_configurationsToDelete.Count}");
-            
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
+                Console.WriteLine($"Retrieved {_devicesToDelete.Count} devices for deletion...");
             }
         }
 
