@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         public RegistrationOperationStatus()
         {
-          CustomInit();
+            CustomInit();
         }
 
         /// <summary>
@@ -37,9 +37,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <param name="registrationState">Device registration
         /// status.</param>
         public RegistrationOperationStatus(
-            string operationId = default(string), 
-            string status = default(string), 
-            DeviceRegistrationResult registrationState = default(DeviceRegistrationResult))
+            string operationId = default,
+            string status = default,
+            DeviceRegistrationResult registrationState = default)
         {
             OperationId = operationId;
             Status = status;

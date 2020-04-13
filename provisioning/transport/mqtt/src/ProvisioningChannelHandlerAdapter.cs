@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private async Task ProcessMessageAsync(IChannelHandlerContext context, Packet message)
         {
-            State currentState = (State)Volatile.Read(ref _state);
+            var currentState = (State)Volatile.Read(ref _state);
 
             switch (currentState)
             {
@@ -188,22 +188,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     break;
 
                 case State.WaitForConnack:
-                    await VerifyExpectedPacketType(context, PacketType.CONNACK, message).ConfigureAwait(true);
+                    await VerifyExpectedPacketTypeAsync(context, PacketType.CONNACK, message).ConfigureAwait(true);
                     await ProcessConnAckAsync(context, (ConnAckPacket)message).ConfigureAwait(true);
                     break;
 
                 case State.WaitForSuback:
-                    await VerifyExpectedPacketType(context, PacketType.SUBACK, message).ConfigureAwait(true);
+                    await VerifyExpectedPacketTypeAsync(context, PacketType.SUBACK, message).ConfigureAwait(true);
                     await ProcessSubAckAsync(context, (SubAckPacket)message).ConfigureAwait(true);
                     break;
 
                 case State.WaitForPubAck:
                     ChangeState(State.WaitForPubAck, State.WaitForStatus);
-                    await VerifyExpectedPacketType(context, PacketType.PUBACK, message).ConfigureAwait(true);
+                    await VerifyExpectedPacketTypeAsync(context, PacketType.PUBACK, message).ConfigureAwait(true);
                     break;
 
                 case State.WaitForStatus:
-                    await VerifyExpectedPacketType(context, PacketType.PUBLISH, message).ConfigureAwait(true);
+                    await VerifyExpectedPacketTypeAsync(context, PacketType.PUBLISH, message).ConfigureAwait(true);
                     await ProcessRegistrationStatusAsync(context, (PublishPacket)message).ConfigureAwait(true);
                     break;
 
@@ -299,13 +299,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (_message.Payload != null && _message.Payload.Length > 0)
             {
                 var deviceRegistration = new DeviceRegistration { Payload = new JRaw(_message.Payload) };
-                using (var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration))))
-                {
-                    long streamLength = customContentStream.Length;
-                    int length = (int)streamLength;
-                    packagePayload = context.Channel.Allocator.Buffer(length, length);
-                    await packagePayload.WriteBytesAsync(customContentStream, length).ConfigureAwait(false);
-                }
+                using var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                long streamLength = customContentStream.Length;
+                int length = (int)streamLength;
+                packagePayload = context.Channel.Allocator.Buffer(length, length);
+                await packagePayload.WriteBytesAsync(customContentStream, length).ConfigureAwait(false);
             }
 
             int packetId = GetNextPacketId();
@@ -351,8 +349,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private async Task ProcessRegistrationStatusAsync(IChannelHandlerContext context, PublishPacket packet)
         {
-            string operationId = null;
-
             try // TODO : extract generic method for exception handling.
             {
                 await PubAckAsync(context, packet.PacketId).ConfigureAwait(true);
@@ -364,9 +360,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 await VerifyPublishPacketTopicAsync(context, packet.TopicName, jsonData).ConfigureAwait(true);
 
-                //"{\"operationId\":\"0.indcertdevice1.e50c0fa7-8b9b-4b3d-8374-02d71377886f\",\"status\":\"assigning\"}"
                 var operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonData);
-                operationId = operation.OperationId;
+                string operationId = operation.OperationId;
                 operation.RetryAfter = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(packet.TopicName, s_defaultOperationPoolingInterval);
 
                 if (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0 ||
@@ -381,7 +376,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     ChangeState(State.WaitForStatus, State.Done);
                     _taskCompletionSource.TrySetResult(operation);
 
-                    await this.DoneAsync(context).ConfigureAwait(true);
+                    await DoneAsync(context).ConfigureAwait(true);
                 }
             }
             catch (ProvisioningTransportException te)
@@ -423,7 +418,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return context.WriteAndFlushAsync(message);
         }
 
-        private async Task VerifyExpectedPacketType(IChannelHandlerContext context, PacketType expectedPacketType, Packet message)
+        private async Task VerifyExpectedPacketTypeAsync(IChannelHandlerContext context, PacketType expectedPacketType, Packet message)
         {
             if (message.PacketType != expectedPacketType)
             {
@@ -453,7 +448,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private async Task VerifyCancellationAsync(IChannelHandlerContext context)
         {
             if (_cancellationToken.IsCancellationRequested &&
-                (Volatile.Read(ref _state) != (int)State.Failed))
+                Volatile.Read(ref _state) != (int)State.Failed)
             {
                 if (Logging.IsEnabled) Logging.Error(this, "CancellationRequested", nameof(VerifyCancellationAsync));
 
