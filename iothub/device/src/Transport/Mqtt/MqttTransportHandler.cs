@@ -83,6 +83,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string TwinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
         private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
+        private const string DeviceBoundMessagesTopicFilter = "devices/{0}/messages/devicebound/#";
+        private const string DeviceBoundMessagesTopicPrefix = "devices/{0}/messages/devicebound/";
 
         // outgoing topic names
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
@@ -104,6 +106,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly string _receiveEventMessageFilter;
         private readonly string _receiveEventMessagePrefix;
+
+        private readonly string _deviceboundMessageFilter;
+        private readonly string _deviceboundMessagePrefix;
 
         internal MqttTransportHandler(
             IPipelineContext context,
@@ -134,6 +139,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _hostName = iotHubConnectionString.HostName;
             _receiveEventMessageFilter = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePatternFilter, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
             _receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePrefixPattern, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
+
+            _deviceboundMessageFilter = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicFilter, iotHubConnectionString.DeviceId);
+            _deviceboundMessagePrefix = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicPrefix, iotHubConnectionString.DeviceId);
 
             _qos = settings.PublishToServerQoS;
 
@@ -229,7 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (State != TransportState.Receiving)
             {
-                await SubscribeAsync().ConfigureAwait(true);
+                await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(true);
             }
 
             // -1 millisecond represents for SemaphoreSlim to wait indefinitely
@@ -249,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (State != TransportState.Receiving)
             {
-                await SubscribeAsync().ConfigureAwait(true);
+                await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(true);
             }
 
             TimeSpan timeout = timeoutHelper.GetRemainingTime();
@@ -444,26 +452,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if ((State & TransportState.Open) == TransportState.Open)
                 {
-                    if (message.MqttTopicName.StartsWith(TwinResponseTopicPrefix, StringComparison.OrdinalIgnoreCase))
+                    string topic = message.MqttTopicName;
+                    if (topic.StartsWith(TwinResponseTopicPrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         _twinResponseEvent(message);
                     }
-                    else if (message.MqttTopicName.StartsWith(TwinPatchTopicPrefix, StringComparison.OrdinalIgnoreCase))
+                    else if (topic.StartsWith(TwinPatchTopicPrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         await HandleIncomingTwinPatch(message).ConfigureAwait(true);
                     }
-                    else if (message.MqttTopicName.StartsWith(MethodPostTopicPrefix, StringComparison.OrdinalIgnoreCase))
+                    else if (topic.StartsWith(MethodPostTopicPrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         await HandleIncomingMethodPost(message).ConfigureAwait(true);
                     }
-                    else if (message.MqttTopicName.StartsWith(_receiveEventMessagePrefix, StringComparison.OrdinalIgnoreCase))
+                    else if (topic.StartsWith(_receiveEventMessagePrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         await HandleIncomingEventMessage(message).ConfigureAwait(true);
                     }
-                    else
+                    else if (topic.StartsWith(_deviceboundMessagePrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         _messageQueue.Enqueue(message);
                         _receivingSemaphore.Release();
+                    }
+                    else
+                    {
+                        if (Logging.IsEnabled) Logging.Error(this, "Recevied mqtt message on an unrecognized topic, ignoring message. Topic: " + topic);
                     }
                 }
             }
@@ -648,11 +661,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return true;
         }
 
-        private async Task SubscribeAsync()
+        private async Task SubscribeCloudToDeviceMessagesAsync()
         {
             if (TryStateTransition(TransportState.Open, TransportState.Subscribing))
             {
-                await _channel.WriteAsync(new SubscribePacket()).ConfigureAwait(true);
+                await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(_deviceboundMessageFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
 
                 if (TryStateTransition(TransportState.Subscribing, TransportState.Receiving))
                 {
