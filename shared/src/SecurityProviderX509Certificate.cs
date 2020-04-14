@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Shared
@@ -18,12 +19,15 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="clientCertificate">The client certificate used for authentication.</param>
         /// <param name="certificateChain">The certificate chain leading to the root certificate uploaded to the Provisioning service.</param>
+        /// <param name="certificateValidationCallback">The certificate validation callback used to validate remote certificate.</param>
         public SecurityProviderX509Certificate(
             X509Certificate2 clientCertificate,
-            X509Certificate2Collection certificateChain = null)
+            X509Certificate2Collection certificateChain = null,
+            RemoteCertificateValidationCallback certificateValidationCallback = null)
         {
             _clientCertificate = clientCertificate;
             _certificateChain = certificateChain;
+            CertificateValidationCallback = certificateValidationCallback;
         }
 
         /// <summary>

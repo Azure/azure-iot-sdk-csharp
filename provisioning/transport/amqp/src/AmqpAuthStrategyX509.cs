@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy)
         {
             X509Certificate2 clientCert = _security.GetAuthenticationCertificate();
-            return connection.OpenAsync(timeout, useWebSocket, clientCert, proxy);
+            return connection.OpenAsync(timeout, useWebSocket, clientCert, _security.CertificateValidationCallback, proxy);
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)

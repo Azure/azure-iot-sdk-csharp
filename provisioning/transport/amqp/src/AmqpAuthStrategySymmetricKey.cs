@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy)
         {
-            return connection.OpenAsync(timeout, useWebSocket, null, proxy);
+            return connection.OpenAsync(timeout, useWebSocket, null, null, proxy);
         }
 
         public override void SaveCredentials(RegistrationOperationStatus operation)

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Shared
@@ -31,5 +32,10 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <returns>The client certificate used during TLS communications.</returns>
         public abstract X509Certificate2 GetAuthenticationCertificate();
+
+        /// <summary>
+        /// A remote certification validation callback that is called when the remote certificate is validated.
+        /// </summary>
+        public RemoteCertificateValidationCallback CertificateValidationCallback { get; protected set; }
     }
 }

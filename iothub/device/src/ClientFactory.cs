@@ -83,11 +83,6 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
                 }
 
-                if (!connectionStringBuilder.Certificate.HasPrivateKey)
-                {
-                    throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
-                }
-
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
                 dc.Certificate = connectionStringBuilder.Certificate;
                 return dc;
@@ -136,11 +131,6 @@ namespace Microsoft.Azure.Devices.Client
                 if (connectionStringBuilder.Certificate == null)
                 {
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
-                }
-
-                if (!connectionStringBuilder.Certificate.HasPrivateKey)
-                {
-                    throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
                 }
 
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings));
