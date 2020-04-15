@@ -171,6 +171,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     websocket.Options.ClientCertificates.Add(_amqpTransportSettings.ClientCertificate);
                 }
 
+                // Attempt to set a certificate validation callback if underlying WebSocket options instance supports it.
+                // Otherwise, a global certificate validator will be used.
+                if (_amqpTransportSettings.RemoteCertificateValidationCallback != null)
+                {
+                    var prop = websocket.Options.GetType().GetProperty("RemoteCertificateValidationCallback");
+
+                    if (prop != null)
+                    {
+                        if (Logging.IsEnabled)
+                        {
+                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.RemoteCertificateValidationCallback");
+                        }
+
+                        prop.SetValue(websocket.Options, _amqpTransportSettings.RemoteCertificateValidationCallback);
+                    }
+                }
+
                 using (var cancellationTokenSource = new CancellationTokenSource(timeout))
                 {
                     await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);

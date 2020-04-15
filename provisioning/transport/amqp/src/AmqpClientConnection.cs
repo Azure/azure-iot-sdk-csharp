@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Security;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -49,7 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private ProtocolHeader _sentHeader;
 
-        public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert, IWebProxy proxy)
+        public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert, RemoteCertificateValidationCallback certificateValidationCallback, IWebProxy proxy)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}");
             var hostName = _uri.Host;
@@ -58,7 +59,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportSettings = new TlsTransportSettings(tcpSettings)
             {
                 TargetHost = hostName,
-                Certificate = clientCert
+                Certificate = clientCert,
+                CertificateValidationCallback = certificateValidationCallback
             };
 
             TransportBase transport;
@@ -183,6 +185,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (TransportSettings.Certificate != null)
             {
                 websocket.Options.ClientCertificates.Add(TransportSettings.Certificate);
+            }
+
+            // Attempt to set a certificate validation callback if underlying WebSocket options instance supports it.
+            // Otherwise, a global certificate validator will be used.
+            if (TransportSettings.CertificateValidationCallback != null)
+            {
+                var prop = websocket.Options.GetType().GetProperty("RemoteCertificateValidationCallback");
+
+                if (prop != null)
+                {
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.RemoteCertificateValidationCallback");
+                    }
+
+                    prop.SetValue(websocket.Options, TransportSettings.CertificateValidationCallback);
+                }
             }
 
             using (var cancellationTokenSource = new CancellationTokenSource(timeout))
