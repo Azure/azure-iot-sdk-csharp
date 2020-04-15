@@ -26,17 +26,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.
         /// </summary>
-        public ProvisioningTransportHandler() {}
+        public ProvisioningTransportHandler() { }
 
         /// <summary>
         /// Gets or sets the inner handler.
         /// </summary>
         public ProvisioningTransportHandler InnerHandler
         {
-            get
-            {
-                return _innerHandler;
-            }
+            get => _innerHandler;
             set
             {
                 if (value == null)
@@ -54,10 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// </summary>
         public int Port
         {
-            get
-            {
-                return _port;
-            }
+            get => _port;
             set
             {
                 if (value < 1 || value > 65535)

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
     {
-        private static MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
+        private static readonly MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
 
         // TODO: Unify these constants with IoT Hub Device client.
         private const int MaxMessageSize = 256 * 1024;
@@ -56,14 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
-            if (FallbackType == TransportFallbackType.WebSocketOnly)
-            {
-                Port = WsPort;
-            }
-            else
-            {
-                Port = MqttTcpPort;
-            }
+            Port = FallbackType == TransportFallbackType.WebSocketOnly ? WsPort : MqttTcpPort;
             Proxy = DefaultWebProxySettings.Instance;
         }
 
@@ -90,9 +83,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try
             {
-                if (message.Security is SecurityProviderX509)
+                if (message.Security is SecurityProviderX509 x509Security)
                 {
-                    SecurityProviderX509 x509Security = (SecurityProviderX509)message.Security;
                     if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback || FallbackType == TransportFallbackType.TcpOnly)
                     {
                         // TODO: Fallback not implemented.
@@ -107,10 +99,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         throw new NotSupportedException($"Not supported {nameof(FallbackType)} value: {FallbackType}");
                     }
                 }
-                else if (message.Security is SecurityProviderSymmetricKey)
+                else if (message.Security is SecurityProviderSymmetricKey symmetricKeySecurity)
                 {
-                    SecurityProviderSymmetricKey symmetricKeySecurity = (SecurityProviderSymmetricKey)message.Security;
-
                     if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback ||
                         FallbackType == TransportFallbackType.TcpOnly)
                     {
@@ -224,7 +214,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     ch.Pipeline.AddLast(
                         new ReadTimeoutHandler(ReadTimeoutSeconds),
-                        new TlsHandler(tlsSettings), //TODO: Ensure SystemDefault is used.
+                        new TlsHandler(tlsSettings),
                         MqttEncoder.Instance,
                         new MqttDecoder(isServer: false, maxMessageSize: MaxMessageSize),
                         new LoggingHandler(LogLevel.DEBUG),
@@ -306,11 +296,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             var tcs = new TaskCompletionSource<RegistrationOperationStatus>();
 
-            UriBuilder uriBuilder = new UriBuilder(WsScheme, message.GlobalDeviceEndpoint, Port);
+            var uriBuilder = new UriBuilder(WsScheme, message.GlobalDeviceEndpoint, Port);
             Uri websocketUri = uriBuilder.Uri;
 
-            // TODO properly dispose of the ws.
-            var websocket = new ClientWebSocket();
+            using var websocket = new ClientWebSocket();
             websocket.Options.AddSubProtocol(WsMqttSubprotocol);
             if (clientCertificate != null)
             {
@@ -326,7 +315,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     websocket.Options.Proxy = Proxy;
                     if (Logging.IsEnabled)
                     {
-                        Logging.Info(this, $"{nameof(ProvisionOverWssUsingX509CertificateAsync)} Setting ClientWebSocket.Options.Proxy");
+                        Logging.Info(this, $"{nameof(ProvisionOverWssUsingX509CertificateAsync)} Setting ClientWebSocket.Options.Proxy: {Proxy}");
                     }
                 }
             }
