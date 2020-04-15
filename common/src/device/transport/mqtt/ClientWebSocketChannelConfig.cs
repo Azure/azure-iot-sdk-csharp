@@ -16,37 +16,37 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (ChannelOption.ConnectTimeout.Equals(option))
             {
-                return (T)(object)this.ConnectTimeout; // no boxing will happen, compiler optimizes away such casts
+                return (T)(object)ConnectTimeout; // no boxing will happen, compiler optimizes away such casts
             }
             if (ChannelOption.WriteSpinCount.Equals(option))
             {
-                return (T)(object)this.WriteSpinCount;
+                return (T)(object)WriteSpinCount;
             }
             if (ChannelOption.Allocator.Equals(option))
             {
-                return (T)this.Allocator;
+                return (T)Allocator;
             }
             if (ChannelOption.RcvbufAllocator.Equals(option))
             {
-                return (T)this.RecvByteBufAllocator;
+                return (T)RecvByteBufAllocator;
             }
             if (ChannelOption.AutoRead.Equals(option))
             {
-                return (T)(object)this.AutoRead;
+                return (T)(object)AutoRead;
             }
             if (ChannelOption.WriteBufferHighWaterMark.Equals(option))
             {
-                return (T)(object)this.WriteBufferHighWaterMark;
+                return (T)(object)WriteBufferHighWaterMark;
             }
             if (ChannelOption.WriteBufferLowWaterMark.Equals(option))
             {
-                return (T)(object)this.WriteBufferLowWaterMark;
+                return (T)(object)WriteBufferLowWaterMark;
             }
             if (ChannelOption.MessageSizeEstimator.Equals(option))
             {
-                return (T)this.MessageSizeEstimator;
+                return (T)MessageSizeEstimator;
             }
-            return default(T);
+            return default;
         }
 
         public bool SetOption(ChannelOption option, object value) => option.Set(this, value);
@@ -55,35 +55,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (ChannelOption.ConnectTimeout.Equals(option))
             {
-                this.ConnectTimeout = (TimeSpan)(object)value;
+                ConnectTimeout = (TimeSpan)(object)value;
             }
             else if (ChannelOption.WriteSpinCount.Equals(option))
             {
-                this.WriteSpinCount = (int)(object)value;
+                WriteSpinCount = (int)(object)value;
             }
             else if (ChannelOption.Allocator.Equals(option))
             {
-                this.Allocator = (IByteBufferAllocator)value;
+                Allocator = (IByteBufferAllocator)value;
             }
             else if (ChannelOption.RcvbufAllocator.Equals(option))
             {
-                this.RecvByteBufAllocator = (IRecvByteBufAllocator)value;
+                RecvByteBufAllocator = (IRecvByteBufAllocator)value;
             }
             else if (ChannelOption.AutoRead.Equals(option))
             {
-                this.AutoRead = (bool)(object)value;
+                AutoRead = (bool)(object)value;
             }
             else if (ChannelOption.WriteBufferHighWaterMark.Equals(option))
             {
-                this.WriteBufferHighWaterMark = (int)(object)value;
+                WriteBufferHighWaterMark = (int)(object)value;
             }
             else if (ChannelOption.WriteBufferLowWaterMark.Equals(option))
             {
-                this.WriteBufferLowWaterMark = (int)(object)value;
+                WriteBufferLowWaterMark = (int)(object)value;
             }
             else if (ChannelOption.MessageSizeEstimator.Equals(option))
             {
-                this.MessageSizeEstimator = (IMessageSizeEstimator)value;
+                MessageSizeEstimator = (IMessageSizeEstimator)value;
             }
             else
             {

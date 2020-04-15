@@ -40,14 +40,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// </summary>
         public string ProductInfo
         {
-            get
-            {
-                return _productInfo.ToString();
-            }
-            set
-            {
-                _productInfo.Extra = value;
-            }
+            get => _productInfo.ToString();
+            set => _productInfo.Extra = value;
         }
 
         /// <summary>
@@ -65,6 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             IdScope = idScope;
             Security = security;
         }
+
         /// <summary>
         /// Creates a new instance of the ProvisioningTransportRegisterMessage class.
         /// </summary>
@@ -81,11 +76,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             GlobalDeviceEndpoint = globalDeviceEndpoint;
             IdScope = idScope;
             Security = security;
-            if (payload != null && payload.Length > 0)
+            if (!string.IsNullOrEmpty(payload))
             {
                 Payload = payload;
             }
         }
-
     }
 }
