@@ -90,6 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // act
 
                 JobProperties exportJobResponse = null;
+                string jobId = null;
                 for (int i = 0; i < MaxIterationWait; ++i)
                 {
                     try
@@ -102,6 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                                     null,
                                     storageAuthenticationType))
                            .ConfigureAwait(false);
+                        jobId = exportJobResponse.JobId;
                         break;
                     }
                     // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
@@ -117,9 +119,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 for (int i = 0; i < MaxIterationWait; ++i)
                 {
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                    exportJobResponse = await registryManager.GetJobAsync(exportJobResponse.JobId).ConfigureAwait(false);
-                    _log.WriteLine($"Job {exportJobResponse.JobId} is {exportJobResponse.Status} with progress {exportJobResponse.Progress}%");
-                    if (!s_incompleteJobs.Contains(exportJobResponse.Status))
+                    exportJobResponse = await registryManager.GetJobAsync(jobId).ConfigureAwait(false);
+                    _log.WriteLine($"Job {jobId} is [{exportJobResponse?.Status}] with progress [{exportJobResponse?.Progress}%]");
+                    if (exportJobResponse != null
+                        && !s_incompleteJobs.Contains(exportJobResponse.Status))
                     {
                         break;
                     }
