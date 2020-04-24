@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -20,12 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 
-        private ConsoleEventListener _listener;
-
-        public FileUploadFaultInjectionTests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
+        private ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         [TestMethod]
         public async Task FileUploadSuccess_TcpLoss_Amqp()
@@ -83,29 +78,28 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            using (var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport))
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+
+            deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
+
+            await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
+
+            using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
-                deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
+                Task fileUploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
+                Task errorInjectionTask = SendErrorInjectionMessageAsync(deviceClient, faultType, reason, delayInSec, durationInSec);
+                await Task.WhenAll(fileUploadTask, errorInjectionTask).ConfigureAwait(false);
 
-                await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
+                await FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id).ConfigureAwait(false);
+            }
 
-                using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
-                {
-                    Task fileUploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
-                    Task errorInjectionTask = SendErrorInjectionMessageAsync(deviceClient, faultType, reason, delayInSec, durationInSec);
-                    await Task.WhenAll(fileUploadTask, errorInjectionTask).ConfigureAwait(false);
-
-                    await FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id).ConfigureAwait(false);
-                }
-
-                try
-                {
-                    await deviceClient.CloseAsync().ConfigureAwait(false);
-                }
-                catch
-                {
-                    // catch and ignore exceptions resulted incase device client close failed while offline
-                }
+            try
+            {
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
+            catch
+            {
+                // catch and ignore exceptions resulted incase device client close failed while offline
             }
         }
 
@@ -145,12 +139,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
         {
             if (_listener != null)
             {

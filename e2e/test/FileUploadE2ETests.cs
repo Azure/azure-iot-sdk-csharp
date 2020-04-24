@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 using System.IO;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -35,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_SmallFile_Http()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            await UploadFile(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
+            await UploadFile(GetDefaultTransportSettings(), smallFile).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -43,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_BigFile_Http()
         {
             string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
-            await UploadFile(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
+            await UploadFile(GetDefaultTransportSettings(), bigFile).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -51,10 +52,32 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_X509_SmallFile_Http()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            await UploadFile(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
+            await UploadFile(GetDefaultTransportSettings(), smallFile, true).ConfigureAwait(false);
         }
 
-        private async Task UploadFile(Client.TransportType transport, string filename, bool x509auth = false)
+        [TestMethod]
+        [TestCategory("Proxy")]
+        [TestCategory("LongRunning")]
+        public async Task FileUpload_SmallFile_Http_WithProxy()
+        {
+            string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
+            var httpTransportSettings = new Http1TransportSettings()
+            {
+                Proxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
+            };
+
+            ITransportSettings[] transportSettingsWithProxy = { httpTransportSettings };
+
+            await UploadFile(transportSettingsWithProxy, smallFile).ConfigureAwait(false);
+        }
+
+        private ITransportSettings[] GetDefaultTransportSettings()
+        {
+            ITransportSettings[] transportSettings = { new Http1TransportSettings() };
+            return transportSettings;
+        }
+
+        private async Task UploadFile(Client.ITransportSettings[] transportSettings, string filename, bool x509auth = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
                 DevicePrefix,
@@ -66,11 +89,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
                 var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
-                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
+                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transportSettings);
             }
             else
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportSettings);
             }
 
             await FileNotificationTestListener.InitAsync().ConfigureAwait(false);

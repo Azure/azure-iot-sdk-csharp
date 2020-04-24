@@ -25,6 +25,13 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             new TlsVersions().Preferred.Should().Be(SslProtocols.None);
         }
 
+        [Fact]
+        public void CheckCertificationList_DefaultsToFalse()
+        {
+            // assert
+            new TlsVersions().CertificateRevocationCheck.Should().BeFalse();
+        }
+
 #if NET451
         [Fact]
         public void SetLegacyAcceptableVersions_Sets()

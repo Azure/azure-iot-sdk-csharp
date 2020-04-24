@@ -377,7 +377,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     await webSocketContext.WebSocket.SendAsync(responseSegment, WebSocketMessageType.Binary, true, responseCancellationToken).ConfigureAwait(false);
 
                     // Have a pending read
-                    var source = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+                    using var source = new CancellationTokenSource(TimeSpan.FromSeconds(60));
                     WebSocketReceiveResult result = await webSocketContext.WebSocket.ReceiveAsync(arraySegment, source.Token).ConfigureAwait(false);
                     int bytes = result.Count;
                 }

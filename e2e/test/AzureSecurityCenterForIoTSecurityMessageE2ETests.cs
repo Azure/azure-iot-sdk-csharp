@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string _devicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
         private readonly string _modulePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
 
-        private ConsoleEventListener _listener;
-        private AzureSecurityCenterForIoTLogAnalyticsClient _logAnalyticsClient;
+        private readonly ConsoleEventListener _listener;
+        private readonly AzureSecurityCenterForIoTLogAnalyticsClient _logAnalyticsClient;
 
         public AzureSecurityCenterForIoTSecurityMessageE2ETests()
         {
@@ -42,6 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("Flaky")]
         public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
             return TestSecurityMessageAsync(Client.TransportType.Amqp_WebSocket_Only);
@@ -127,17 +128,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task TestSecurityMessageAsync(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            try
             {
-                try
-                {
-                    await SendSingleSecurityMessageAsync(deviceClient, testDevice.Id, _logAnalyticsClient).ConfigureAwait(false);
-                }
-                finally
-                {
-                    await deviceClient.CloseAsync().ConfigureAwait(false);
-                }
+                await SendSingleSecurityMessageAsync(deviceClient, testDevice.Id, _logAnalyticsClient).ConfigureAwait(false);
+            }
+            finally
+            {
+                await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
 
@@ -194,31 +193,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             bool isReceivedEventHub = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value, TimeSpan.FromSeconds(10));
             Assert.IsFalse(isReceivedEventHub, "Security message received in customer event hub.");
             bool isReceivedOms = await logAnalticsTestClient.IsRawEventExist(deviceId, eventId).ConfigureAwait(false);
-            Assert.IsTrue(isReceivedOms, "Security message was not recived in customer log analytics");
+            Assert.IsTrue(isReceivedOms, "Security message was not received in customer log analytics");
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (_logAnalyticsClient != null)
-                {
-                    _logAnalyticsClient.Dispose();
-                    _logAnalyticsClient = null;
-                }
-
-                if (_listener != null)
-                {
-                    _listener.Dispose();
-                    _listener = null;
-                }
-            }
+            _logAnalyticsClient.Dispose();
+            _listener.Dispose();
         }
     }
 }

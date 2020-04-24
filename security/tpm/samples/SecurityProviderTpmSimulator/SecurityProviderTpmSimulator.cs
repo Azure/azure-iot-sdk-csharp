@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.Devices.Shared;
 using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
@@ -79,22 +79,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 throw new PlatformNotSupportedException(
-                    "TSS.MSR Simulator.exe is available only for Windows. On Linux, ensure that the simulator is " + 
+                    "TSS.MSR Simulator.exe is available only for Windows. On Linux, ensure that the simulator is " +
                     $"started and listening to TCP connections on {SimulatorAddress}:{SimulatorPort}.");
             }
 
             if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)).Length > 0) return;
-            
+
             string[] files = Directory.GetFiles(
-                Directory.GetCurrentDirectory(), 
-                SimulatorExeName, 
+                Directory.GetCurrentDirectory(),
+                SimulatorExeName,
                 SearchOption.AllDirectories);
 
             if (files.Length == 0)
             {
                 files = Directory.GetFiles(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
-                    SimulatorExeName, 
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    SimulatorExeName,
                     SearchOption.AllDirectories);
             }
 

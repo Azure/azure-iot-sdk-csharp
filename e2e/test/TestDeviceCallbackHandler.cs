@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Volatile.Write(ref _expectedTwinPropertyValue, value);
             }
         }
-        
+
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
         {
             await _deviceClient.SetMethodHandlerAsync(methodName,
@@ -102,7 +102,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
 
                     return Task.FromResult<bool>(true);
-
                 }, userContext).ConfigureAwait(false);
         }
 

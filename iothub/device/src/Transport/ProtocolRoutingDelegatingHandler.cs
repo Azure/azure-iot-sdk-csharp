@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -38,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
 
-                bool gain = await _handlerLock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                bool gain = await _handlerLock.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
                 if (!gain) throw new TimeoutException("Timed out to acquire handler lock.");
                 SelectTransport();
 

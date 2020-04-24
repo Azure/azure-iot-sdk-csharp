@@ -1,10 +1,15 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -21,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public DeviceClientX509AuthenticationE2ETests()
         {
             _listener = TestConfig.StartEventListener();
-            _hostName = TestDevice.GetHostName(Configuration.IoTHub.ConnectionString);
+            _hostName = GetHostName(Configuration.IoTHub.ConnectionString);
         }
 
         [TestMethod]
@@ -101,6 +106,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task X509_Enable_CertificateRevocationCheck_Httt_Tcp()
+        {
+            ITransportSettings transportSetting
+                = CreateHttpTransportSettingWithCertificateRevocationCheck();
+            await SendMessageTest(transportSetting).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task X509_Enable_CertificateRevocationCheck_Mqtt_Tcp()
         {
             ITransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType.Mqtt_Tcp_Only);
@@ -140,20 +153,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+        private ITransportSettings CreateHttpTransportSettingWithCertificateRevocationCheck()
+        {
+            TlsVersions.Instance.CertificateRevocationCheck = true;
+            return new Http1TransportSettings();
+        }
+
         private ITransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
         {
-            return new MqttTransportSettings(transportType)
-            {
-                CertificateRevocationCheck = true
-            };
+            TlsVersions.Instance.CertificateRevocationCheck = true;
+            return new MqttTransportSettings(transportType);
         }
 
         private ITransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType transportType)
         {
-            return new AmqpTransportSettings(transportType)
-            {
-                CertificateRevocationCheck = true
-            };
+            TlsVersions.Instance.CertificateRevocationCheck = true;
+            return new AmqpTransportSettings(transportType);
         }
 
         private async Task X509InvalidDeviceIdOpenAsyncTest(Client.TransportType transportType)

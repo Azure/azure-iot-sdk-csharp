@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
@@ -12,6 +9,9 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             int buffer = 50;
-            Device device = testDevice.Identity;
+            Device device = testDevice.Device;
             SemaphoreSlim deviceDisconnected = new SemaphoreSlim(0);
 
             var refresher = new TestTokenRefresher(
@@ -238,10 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _transport = transport;
             }
 
-            public TimeSpan DetectedRefreshInterval
-            {
-                get => _stopwatch.Elapsed;
-            }
+            public TimeSpan DetectedRefreshInterval => _stopwatch.Elapsed;
 
             public Task WaitForTokenRefreshAsync(CancellationToken cancellationToken)
             {
@@ -257,7 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     suggestedTimeToLive = -IoTHubServerTimeAllowanceSeconds + 30; // Create an expired token.
                 }
 
-                var builder = new SharedAccessSignatureBuilder()
+                var builder = new SharedAccessSignatureBuilder
                 {
                     Key = _key,
                     TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
