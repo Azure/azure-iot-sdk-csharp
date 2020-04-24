@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class DeviceClient : IDisposable
     {
         /// <summary>
-        /// Default operation timeout.
+        /// Default operation timeout - 4mins
         /// </summary>
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
