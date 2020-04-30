@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("LongRunning")]
         [Timeout(120000)]
+        [DoNotParallelize]
         [DataRow(StorageAuthenticationType.KeyBased)]
         [DataRow(StorageAuthenticationType.IdentityBased)]
         public async Task RegistryManager_ExportDevices(StorageAuthenticationType storageAuthenticationType)
