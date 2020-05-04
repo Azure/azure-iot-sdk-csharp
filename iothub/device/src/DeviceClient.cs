@@ -542,13 +542,15 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
 
         /// <summary>
-        /// Retrieve a device twin object for the current device.
+        /// Retrieve the device twin properties for the current device.
+        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync() => InternalClient.GetTwinAsync();
 
         /// <summary>
-        /// Retrieve a device twin object for the current device.
+        /// Retrieve the device twin properties for the current device.
+        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
