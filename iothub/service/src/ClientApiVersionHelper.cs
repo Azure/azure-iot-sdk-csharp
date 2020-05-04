@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     {
         private const string ApiVersionQueryPrefix = "api-version=";
         private const string ApiVersionGA = "2016-02-03";
-        private const string ApiVersionDefault = "2019-03-30";
+        private const string ApiVersionDefault = "2019-10-01";
         private const string ApiVersionLimitedAvailability = "2020-03-13";
 
         // For import/export devices jobs, a new parameter is available in a
