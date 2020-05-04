@@ -597,6 +597,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         }
                         break;
 
+                    case AmqpTwinMessageType.Put:
+                        amqpIoTOutcome = await _twinSendingLink.SubscribeToDesiredPropertiesAsync(correlationId, timeout).ConfigureAwait(false);
+                        if (amqpIoTOutcome != null)
+                        {
+                            amqpIoTOutcome.ThrowIfNotAccepted();
+                        }
+                        break;
+
                     default:
                         break;
                 }
