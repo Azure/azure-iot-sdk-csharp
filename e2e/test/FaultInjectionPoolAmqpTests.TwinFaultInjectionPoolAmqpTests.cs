@@ -1432,7 +1432,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 _log.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient).ConfigureAwait(false);
+                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString()).ConfigureAwait(false);
             };
 
             Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
