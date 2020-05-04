@@ -10,7 +10,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal enum AmqpTwinMessageType
     {
         Get,
-        Patch
+        Patch,
+        Put
     }
 
     internal static class AmqpIoTConstants
