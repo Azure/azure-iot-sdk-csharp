@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportType">The transportType used (Http1 or Amqp)</param>
+        /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportType">The transportType used (Http1 or Amqp)</param>
+        /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a disposable DeviceClient from the specified connection string using the specified transport type
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
-        /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
+        /// <param name="transportType">Specifies whether Http1, Amqp or Mqtt transport is used, <see cref="TransportType"/></param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType)
         {
