@@ -300,20 +300,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="deviceId">Device Id</param>
         /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
-        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
-        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, DeviceStreamRequest deviceStreamRequest)
-        {
-            return this.CreateStreamAsync(deviceId, deviceStreamRequest, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Initiates a new cloud-to-device stream.
-        /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
         /// <param name="cancellationToken">Token used for controlling the termination of the asynchronous call.</param>
         /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
-        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, DeviceStreamRequest deviceStreamRequest, CancellationToken cancellationToken)
+        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, DeviceStreamRequest deviceStreamRequest, CancellationToken cancellationToken = default)
         {
             return this.CreateStreamAsync(GetDeviceStreamUri(deviceId, deviceStreamRequest.StreamName), deviceStreamRequest, cancellationToken);
         }
@@ -324,21 +313,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">Device Id</param>
         /// <param name="moduleId">Module ID</param>
         /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
-        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
-        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, string moduleId, DeviceStreamRequest deviceStreamRequest)
-        {
-            return this.CreateStreamAsync(GetModuleStreamUri(deviceId, moduleId, deviceStreamRequest.StreamName), deviceStreamRequest, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Initiates a new cloud-to-device stream.
-        /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="moduleId">Module Id</param>
-        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
         /// <param name="cancellationToken">Token used for controlling the termination of the asynchronous call.</param>
         /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
-        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, string moduleId, DeviceStreamRequest deviceStreamRequest, CancellationToken cancellationToken)
+        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, string moduleId, DeviceStreamRequest deviceStreamRequest, CancellationToken cancellationToken = default)
         {
             return this.CreateStreamAsync(GetModuleStreamUri(deviceId, moduleId, deviceStreamRequest.StreamName), deviceStreamRequest, cancellationToken);
         }
