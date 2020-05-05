@@ -1150,7 +1150,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Retrieve a device twin object for the current device.
+        /// Retrieve the device twin properties for the current device.
+        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <returns>The device twin object for the current device</returns>
         public async Task<Twin> GetTwinAsync()
@@ -1169,7 +1170,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Retrieve a device twin object for the current device.
+        /// Retrieve the device twin properties for the current device.
+        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)

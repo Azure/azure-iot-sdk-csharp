@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class AmqpTransportHandler : TransportHandler
     {
         #region Members-Constructor
+
         private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
         private readonly AmqpUnit _amqpUnit;
@@ -23,6 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
         private bool _closed;
 #pragma warning disable CA1810 // Initialize reference type static fields inline: We use the static ctor to have init-once semantics.
+
         static AmqpTransportHandler()
 #pragma warning restore CA1810 // Initialize reference type static fields inline
         {
@@ -52,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 deviceIdentity,
                 methodHandler,
-                TwinMessageListener, 
+                TwinMessageListener,
                 eventListener,
                 OnDisconnected
             );
@@ -62,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void OnDisconnected()
         {
-            lock(_lock)
+            lock (_lock)
             {
                 if (!_closed)
                 {
@@ -70,11 +72,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
             }
         }
-        #endregion
+
+        #endregion Members-Constructor
 
         public override bool IsUsable => !_disposed;
 
         #region Open-Close
+
         public override async Task OpenAsync(TimeoutHelper timeoutHelper)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, $"{nameof(OpenAsync)}");
@@ -141,9 +145,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(CloseAsync)}");
             }
         }
-        #endregion
+
+        #endregion Open-Close
 
         #region Telemetry
+
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, cancellationToken, $"{nameof(SendEventAsync)}");
@@ -206,9 +212,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, cancellationToken, $"{nameof(ReceiveAsync)}");
             return message;
         }
-        #endregion
+
+        #endregion Telemetry
 
         #region Methods
+
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(EnableMethodsAsync)}");
@@ -218,7 +226,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await _amqpUnit.EnableMethodsAsync(_operationTimeout).ConfigureAwait(false);
-
             }
             finally
             {
@@ -259,9 +266,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Exit(this, methodResponse, cancellationToken, $"{nameof(SendMethodResponseAsync)}");
             }
         }
-        #endregion
+
+        #endregion Methods
 
         #region Twin
+
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(EnableTwinPatchAsync)}");
@@ -269,6 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await _amqpUnit.EnableTwinLinksAsync(_operationTimeout).ConfigureAwait(false);
+                await _amqpUnit.SendTwinMessageAsync(AmqpTwinMessageType.Put, Guid.NewGuid().ToString(), null, _operationTimeout).ConfigureAwait(false);
             }
             finally
             {
@@ -309,7 +319,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private async Task<Twin> RoundTripTwinMessage(AmqpTwinMessageType amqpTwinMessageType, TwinCollection reportedProperties, CancellationToken cancellationToken )
+        private async Task<Twin> RoundTripTwinMessage(AmqpTwinMessageType amqpTwinMessageType, TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(RoundTripTwinMessage)}");
             string correlationId = Guid.NewGuid().ToString();
@@ -349,9 +359,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             return response;
         }
-        #endregion
+
+        #endregion Twin
 
         #region Events
+
         public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(EnableEventReceiveAsync)}");
@@ -367,10 +379,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(EnableEventReceiveAsync)}");
             }
         }
-        
-        #endregion
+
+        #endregion Events
 
         #region Accept-Dispose
+
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, lockToken, cancellationToken, $"{nameof(CompleteAsync)}");
@@ -422,8 +435,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 // Currently, the same mechanism is used for sending feedback for C2D messages and events received by modules.
                 // However, devices only support C2D messages (they cannot receive events), and modules only support receiving events
                 // (they cannot receive C2D messages). So we use this to distinguish whether to dispose the message (i.e. send outcome on)
-                // the DeviceBoundReceivingLink or the EventsReceivingLink. 
-                // If this changes (i.e. modules are able to receive C2D messages, or devices are able to receive telemetry), this logic 
+                // the DeviceBoundReceivingLink or the EventsReceivingLink.
+                // If this changes (i.e. modules are able to receive C2D messages, or devices are able to receive telemetry), this logic
                 // will have to be updated.
                 disposeOutcome = await _amqpUnit.DisposeMessageAsync(lockToken, outcome, _operationTimeout).ConfigureAwait(false);
                 disposeOutcome.ThrowIfError();
@@ -433,9 +446,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
             }
         }
-        #endregion
+
+        #endregion Accept-Dispose
 
         #region Helpers
+
         private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection)
         {
             if (correlationId != null)
@@ -453,9 +468,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 _desiredPropertyListener(twinCollection);
             }
         }
-        #endregion
+
+        #endregion Helpers
 
         #region IDispose
+
         protected override void Dispose(bool disposing)
         {
             lock (_lock)
@@ -470,9 +487,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     _disposed = true;
                 }
             }
-
         }
-        #endregion
 
+        #endregion IDispose
     }
 }
