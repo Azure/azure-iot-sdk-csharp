@@ -19,13 +19,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="requestId">ID of this request.</param>
         /// <param name="name">Name of the stream</param>
-        /// <param name="url">Url to the Device Streaming gateway</param>
+        /// <param name="uri">Uri to the device streaming gateway</param>
         /// <param name="authorizationToken">Authorization token used to connect to the gateway</param>
-        public DeviceStreamRequest(String requestId, string name, Uri url, string authorizationToken)
+        public DeviceStreamRequest(String requestId, string name, Uri uri, string authorizationToken)
         {
             RequestId = requestId;
             Name = name;
-            Url = url;
+            Uri = uri;
             AuthorizationToken = authorizationToken;
         }
 
@@ -40,9 +40,9 @@ namespace Microsoft.Azure.Devices.Client
         public string Name { get; private set; }
 
         /// <summary>
-        /// Url for connecting to the IoT Hub streaming gateway.
+        /// Uri for connecting to the IoT Hub streaming gateway.
         /// </summary>
-        public Uri Url { get; private set; }
+        public Uri Uri { get; private set; }
 
         /// <summary>
         /// Authorization token provided by the Streaming gateway for the client endpoint to connect to it.

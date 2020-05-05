@@ -229,13 +229,13 @@ namespace Microsoft.Azure.Devices.Api.Test
             if (acceptRequest)
             {
                 Assert.IsTrue(response.IsAccepted);
-                Assert.AreEqual(response.Url.ToString(), FakeDeviceStreamSGWUrl);
+                Assert.AreEqual(response.Uri.ToString(), FakeDeviceStreamSGWUrl);
                 Assert.AreEqual(response.AuthorizationToken, FakeDeviceStreamAuthToken);
             }
             else
             {
                 Assert.IsFalse(response.IsAccepted);
-                Assert.IsNull(response.Url);
+                Assert.IsNull(response.Uri);
                 Assert.IsNull(response.AuthorizationToken);
             }
         }

@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Uri for connecting to the IoT Hub streaming gateway.
         /// </summary>
-        public Uri Url { get; private set; }
+        public Uri Uri { get; private set; }
 
         /// <summary>
         /// Result for a Cloud-to-Device streaming request.
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices
             StreamName = streamName;
             IsAccepted = isAccepted;
             AuthorizationToken = authorizationToken;
-            Url = streamingGatewayUri;
+            Uri = streamingGatewayUri;
         }
     }
 }
