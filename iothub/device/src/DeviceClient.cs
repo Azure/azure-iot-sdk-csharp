@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
-        /// <param name="transportType">The transportType used (Http1 or Amqp)</param>
+        /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, TransportType transportType)
         {
