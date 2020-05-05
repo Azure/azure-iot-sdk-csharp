@@ -877,7 +877,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             Assert.IsNotNull(request);
             Assert.AreEqual(request.RequestId, requestId);
             Assert.AreEqual(request.Name, streamName);
-            Assert.AreEqual(request.Url, fakeDeviceStreamSGWUrl);
+            Assert.AreEqual(request.Uri, fakeDeviceStreamSGWUrl);
             Assert.AreEqual(request.AuthorizationToken, fakeDeviceStreamAuthToken);
         }
 

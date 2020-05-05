@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices
         /// Initiates a new cloud-to-device stream.
         /// </summary>
         /// <param name="deviceId">Device Id</param>
-        /// <param name="moduleId"></param>
+        /// <param name="moduleId">Module ID</param>
         /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
         /// <param name="cancellationToken">Token used for controlling the termination of the asynchronous call.</param>
         /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>

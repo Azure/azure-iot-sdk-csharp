@@ -35,7 +35,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             _listener = TestConfig.StartEventListener();
         }
 
-#region Device Client Tests
+        #region Device Client Tests
+
         [TestMethod]
         public async Task DeviceStreaming_RequestAccepted_Sas_Amqp()
         {
@@ -189,9 +190,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
         }
+
         #endregion Device Client Tests
 
         #region Module Client Tests
+
         [TestMethod]
         public async Task ModuleStreaming_RequestAccepted_Sas_Amqp()
         {
@@ -267,9 +270,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
         }
-#endregion Module Client Tests
 
-#region Private Methods
+        #endregion Module Client Tests
+
+        #region Private Methods
+
         private async Task TestDeviceStreamingAsync(TestDeviceType type, ITransportSettings[] transportSettings, bool acceptRequest)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
@@ -289,7 +294,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Assert.IsNotNull(clientRequest, "Received an unexpected null device streaming request");
 
-                _log.WriteLine("Device streaming request received (name=" + clientRequest.Name + "; url=" + clientRequest.Url + "; authToken=" + clientRequest.AuthorizationToken + ")");
+                _log.WriteLine("Device streaming request received (name=" + clientRequest.Name + "; uri=" + clientRequest.Uri + "; authToken=" + clientRequest.AuthorizationToken + ")");
 
                 if (acceptRequest)
                 {
@@ -299,7 +304,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     Assert.IsNotNull(serviceResponse, "Received an unexpected null device streaming response");
 
-                    _log.WriteLine("Device streaming response received (name=" + serviceResponse.StreamName + "; accepted=" + serviceResponse.IsAccepted + "; url=" + serviceResponse.Url + "; authToken=" + serviceResponse.AuthorizationToken + ")");
+                    _log.WriteLine("Device streaming response received (name=" + serviceResponse.StreamName + "; accepted=" + serviceResponse.IsAccepted + "; uri=" + serviceResponse.Uri + "; authToken=" + serviceResponse.AuthorizationToken + ")");
 
                     Assert.IsTrue(serviceResponse.IsAccepted, "Service expected Device Streaming respose with IsAccepted true, but got false");
 
@@ -313,7 +318,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     Assert.IsNotNull(serviceResponse, "Received an unexpected null device streaming response");
 
-                    _log.WriteLine("Device streaming response received (name=" + serviceResponse.StreamName + "; accepted=" + serviceResponse.IsAccepted + "; url=" + serviceResponse.Url + "; auth_token=" + serviceResponse.AuthorizationToken + ")");
+                    _log.WriteLine("Device streaming response received (name=" + serviceResponse.StreamName + "; accepted=" + serviceResponse.IsAccepted + "; uri=" + serviceResponse.Uri + "; auth_token=" + serviceResponse.AuthorizationToken + ")");
 
                     Assert.IsFalse(serviceResponse.IsAccepted, "Service expected Device Streaming respose with IsAccepted false, but got true");
                 }
@@ -342,7 +347,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Assert.IsNotNull(clientRequest, "Received an unexpected null device streaming request");
 
-                _log.WriteLine("Device streaming request received (name=" + clientRequest.Name + "; url=" + clientRequest.Url + "; authToken=" + clientRequest.AuthorizationToken + ")");
+                _log.WriteLine("Device streaming request received (name=" + clientRequest.Name + "; uri=" + clientRequest.Uri + "; authToken=" + clientRequest.AuthorizationToken + ")");
 
                 if (acceptRequest)
                 {
@@ -352,7 +357,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     Assert.IsNotNull(serviceResponse, "Received an unexpected null device streaming response");
 
-                    _log.WriteLine("Device streaming response received (name=" + serviceResponse.StreamName + "; accepted=" + serviceResponse.IsAccepted + "; url=" + serviceResponse.Url + "; authToken=" + serviceResponse.AuthorizationToken + ")");
+                    _log.WriteLine("Device streaming response received (name=" + serviceResponse.StreamName + "; accepted=" + serviceResponse.IsAccepted + "; uri=" + serviceResponse.Uri + "; authToken=" + serviceResponse.AuthorizationToken + ")");
 
                     Assert.IsTrue(serviceResponse.IsAccepted, "Service expected Device Streaming respose with IsAccepted true, but got false");
 
@@ -366,7 +371,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     Assert.IsNotNull(serviceResponse, "Received an unexpected null device streaming response");
 
-                    _log.WriteLine("Device streaming response received (name=" + serviceResponse.StreamName + "; accepted=" + serviceResponse.IsAccepted + "; url=" + serviceResponse.Url + "; authToken=" + serviceResponse.AuthorizationToken + ")");
+                    _log.WriteLine("Device streaming response received (name=" + serviceResponse.StreamName + "; accepted=" + serviceResponse.IsAccepted + "; uri=" + serviceResponse.Uri + "; authToken=" + serviceResponse.AuthorizationToken + ")");
 
                     Assert.IsFalse(serviceResponse.IsAccepted, "Service expected Device Streaming respose with IsAccepted false, but got true");
                 }
@@ -376,20 +381,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static async Task<ClientWebSocket> GetStreamingClientAsync(Uri url, string authorizationToken, CancellationToken cancellationToken)
+        public static async Task<ClientWebSocket> GetStreamingClientAsync(Uri uri, string authorizationToken, CancellationToken cancellationToken)
         {
             ClientWebSocket wsClient = new ClientWebSocket();
             wsClient.Options.SetRequestHeader("Authorization", "Bearer " + authorizationToken);
 
-            await wsClient.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+            await wsClient.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
 
             return wsClient;
         }
 
         private async Task TestEchoThroughStreamingGatewayAsync(ClientDeviceStreamingRequest clientRequest, DeviceStreamResponse serviceResponse, CancellationTokenSource cts)
         {
-            Task<ClientWebSocket> deviceWSClientTask = GetStreamingClientAsync(clientRequest.Url, clientRequest.AuthorizationToken, cts.Token);
-            Task<ClientWebSocket> serviceWSClientTask = GetStreamingClientAsync(serviceResponse.Url, serviceResponse.AuthorizationToken, cts.Token);
+            Task<ClientWebSocket> deviceWSClientTask = GetStreamingClientAsync(clientRequest.Uri, clientRequest.AuthorizationToken, cts.Token);
+            Task<ClientWebSocket> serviceWSClientTask = GetStreamingClientAsync(serviceResponse.Uri, serviceResponse.AuthorizationToken, cts.Token);
 
             await Task.WhenAll(deviceWSClientTask, serviceWSClientTask).ConfigureAwait(false);
 
@@ -401,7 +406,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await Task.WhenAll(
                 serviceWSClient.SendAsync(new ArraySegment<byte>(serviceBuffer), WebSocketMessageType.Binary, true, cts.Token),
-                deviceWSClient.ReceiveAsync(new ArraySegment<byte>(clientBuffer), cts.Token).ContinueWith((wsrr) => {
+                deviceWSClient.ReceiveAsync(new ArraySegment<byte>(clientBuffer), cts.Token).ContinueWith((wsrr) =>
+                {
                     Assert.AreEqual(wsrr.Result.Count, serviceBuffer.Length, "Number of bytes received by device WS client is different than sent by service WS client");
                     Assert.IsTrue(clientBuffer.SequenceEqual(serviceBuffer), "Content received by device WS client is different than sent by service WS client");
                 }, TaskScheduler.Current)
@@ -409,7 +415,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await Task.WhenAll(
                 deviceWSClient.SendAsync(new ArraySegment<byte>(clientBuffer), WebSocketMessageType.Binary, true, cts.Token),
-                serviceWSClient.ReceiveAsync(new ArraySegment<byte>(serviceBuffer), cts.Token).ContinueWith((wsrr) => {
+                serviceWSClient.ReceiveAsync(new ArraySegment<byte>(serviceBuffer), cts.Token).ContinueWith((wsrr) =>
+                {
                     Assert.AreEqual(wsrr.Result.Count, serviceBuffer.Length, "Number of bytes received by service WS client is different than sent by device WS client");
                     Assert.IsTrue(clientBuffer.SequenceEqual(serviceBuffer), "Content received by service WS client is different than sent by device WS client");
                 }, TaskScheduler.Current)
@@ -423,7 +430,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceWSClient.Dispose();
             serviceWSClient.Dispose();
         }
-#endregion Private Methods
+
+        #endregion Private Methods
 
         public void Dispose()
         {
