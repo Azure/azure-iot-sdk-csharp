@@ -665,7 +665,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (TryStateTransition(TransportState.Open, TransportState.Subscribing))
             {
-                await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(_deviceboundMessageFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+                await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(_deviceboundMessageFilter, QualityOfService.AtLeastOnce))).ConfigureAwait(true);
 
                 if (TryStateTransition(TransportState.Subscribing, TransportState.Receiving))
                 {
