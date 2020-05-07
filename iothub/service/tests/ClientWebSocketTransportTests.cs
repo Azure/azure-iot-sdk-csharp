@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     public class ClientWebSocketTransportTests
     {
         const string IotHubName = "localhost";
-        const int Port = 12346;
+        const int Port = 13456;
         static HttpListener listener;
         static readonly Action<TransportAsyncCallbackArgs> onReadOperationComplete = OnReadOperationComplete;
         static readonly Action<TransportAsyncCallbackArgs> onWriteOperationComplete = OnWriteOperationComplete;
