@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string SASHeaderName = "SharedAccessSignature";
         private volatile string _sasToken;
 
-        public TpmCredentials(): base()
+        public TpmCredentials() : base()
         {
         }
 
@@ -25,7 +25,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 Action<string> action = (value) =>
                 {
+#if NETSTANDARD2_1
+                    _sasToken = value.Replace(SASHeaderName + " ", "", StringComparison.Ordinal);
+#else
                     _sasToken = value.Replace(SASHeaderName + " ", "");
+#endif
                     SetAuthorizationHeader(request, _sasToken);
                 };
 
