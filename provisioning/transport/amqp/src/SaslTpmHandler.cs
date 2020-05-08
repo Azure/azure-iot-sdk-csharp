@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class SaslTpmHandler : SaslHandler
     {
-        static readonly byte[] EmptyByte = { 0 };
+        private static readonly byte[] EmptyByte = { 0 };
         private const string MechanismName = "TPM";
 
         private readonly byte[] _endorsementKey;
@@ -25,8 +25,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private string _hostName => $"{_idScope}/registrations/{_security.GetRegistrationID()}";
 
         public SaslTpmHandler(
-            byte[] endorsementKey, 
-            byte[] storageRootKey, 
+            byte[] endorsementKey,
+            byte[] storageRootKey,
             string idScope,
             SecurityProviderTpm security)
         {
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((SaslTpmHandler) obj);
+            return Equals((SaslTpmHandler)obj);
         }
 
         public override int GetHashCode()
@@ -65,7 +65,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 var hashCode = _endorsementKey != null ? _endorsementKey.GetHashCode() : 0;
                 hashCode = (hashCode * 397) ^ (_storageRootKey != null ? _storageRootKey.GetHashCode() : 0);
+#if NETSTANDARD2_1
+                hashCode = (hashCode * 397) ^ (_idScope != null ? _idScope.GetHashCode(StringComparison.Ordinal) : 0);
+#else
                 hashCode = (hashCode * 397) ^ (_idScope != null ? _idScope.GetHashCode() : 0);
+#endif
                 hashCode = (hashCode * 397) ^ (_security != null ? _security.GetHashCode() : 0);
 
                 return hashCode;
@@ -96,10 +100,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 case SaslChallengeAction.First:
                     SendStorageRootKey();
                     break;
+
                 case SaslChallengeAction.Interim:
                     SaveEncodedNonceSegment(challenge);
                     SendInterimResponse();
                     break;
+
                 case SaslChallengeAction.Final:
                     SaveEncodedNonceSegment(challenge);
                     SendLastResponse();
@@ -109,7 +115,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void SendInterimResponse()
         {
-            var response = new SaslResponse {Response = new ArraySegment<byte>(EmptyByte)};
+            var response = new SaslResponse { Response = new ArraySegment<byte>(EmptyByte) };
             Negotiator.WriteFrame(response, true);
         }
 
@@ -124,7 +130,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             responseBuffer[0] = 0x0;
             Buffer.BlockCopy(Encoding.UTF8.GetBytes(sas), 0, responseBuffer, 1, sas.Length);
 
-            var response = new SaslResponse {Response = new ArraySegment<byte>(responseBuffer)};
+            var response = new SaslResponse { Response = new ArraySegment<byte>(responseBuffer) };
             Negotiator.WriteFrame(response, true);
         }
 
@@ -151,12 +157,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private static byte GetSequenceNumber(SaslChallenge saslChallenge)
         {
-            return (byte) (saslChallenge.Challenge.Array[0] & SaslControlByteMask.SequenceNumber);
+            return (byte)(saslChallenge.Challenge.Array[0] & SaslControlByteMask.SequenceNumber);
         }
 
         private void SendStorageRootKey()
         {
-            var response = new SaslResponse {Response = new ArraySegment<byte>(CreateStorageRootKeyMessage())};
+            var response = new SaslResponse { Response = new ArraySegment<byte>(CreateStorageRootKeyMessage()) };
             Negotiator.WriteFrame(response, true);
         }
 
