@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net472;net451</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.1;netstandard2.0;net472;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <!-- TODO #176: Enable warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -49,6 +49,10 @@
     <common>$(RootDir)\common\src</common>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <SupportsNetStandard20AndAbove Condition="'$(TargetFramework)' == 'netstandard2.1' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net472'">true</SupportsNetStandard20AndAbove>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
     <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
@@ -90,8 +94,8 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
-  <!-- NetStandard 2.0 and net472 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net472' ">
+  <!-- NetStandard 2.1, NetStandard 2.0 and net472 -->
+  <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="ModernDotNet\Common\IOThreadTimerSlim.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
@@ -99,7 +103,7 @@
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net472'">
+  <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>

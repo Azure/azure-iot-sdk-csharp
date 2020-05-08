@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472;net451</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net472;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <!-- TODO #176: Enable warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -36,6 +36,10 @@
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>IoT Microsoft Azure IoTHub Service Client SDK Manage Devices .NET</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SupportsNetStandard20AndAbove Condition="'$(TargetFramework)' == 'netstandard2.1' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net472'">true</SupportsNetStandard20AndAbove>
   </PropertyGroup>
 
   <ItemGroup>
@@ -146,12 +150,12 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-  <!-- NetStandard 2.0 and net472 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net472' ">
+  <!-- NetStandard 2.1, NetStandard 2.0 and net472 -->
+  <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="ModernDotNet\Common\IOThreadTimerSlim.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net472' ">
+  <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
   </ItemGroup>
