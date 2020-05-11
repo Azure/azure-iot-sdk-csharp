@@ -10,57 +10,53 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal abstract class Singleton<TValue> : IDisposable where TValue : class
     {
-        private readonly object syncLock;
-
-        private TaskCompletionSource<TValue> taskCompletionSource;
-        private volatile bool disposed;
+        private readonly object _syncLock;
+        
+        private TaskCompletionSource<TValue> _taskCompletionSource;
+        private volatile bool _isDisposed;
 
         public Singleton()
         {
-            this.syncLock = new object();
+            _syncLock = new object();
         }
 
-        protected TaskCompletionSource<TValue> TaskCompletionSource
-        {
-            get
-            {
-                return this.taskCompletionSource;
-            }
-        }
+        protected TaskCompletionSource<TValue> TaskCompletionSource => _taskCompletionSource;
 
         // Test verification only
         internal TValue Value
         {
             get
             {
-                var thisTaskCompletionSource = this.taskCompletionSource;
-                return thisTaskCompletionSource != null && thisTaskCompletionSource.Task.Status == TaskStatus.RanToCompletion ? thisTaskCompletionSource.Task.Result : null;
+                TaskCompletionSource<TValue> thisTaskCompletionSource = _taskCompletionSource;
+                return thisTaskCompletionSource != null && thisTaskCompletionSource.Task.Status == TaskStatus.RanToCompletion
+                    ? thisTaskCompletionSource.Task.Result
+                    : null;
             }
         }
 
         public Task OpenAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            return this.GetOrCreateAsync(timeout, cancellationToken);
+            return GetOrCreateAsync(timeout, cancellationToken);
         }
 
         public Task CloseAsync(CancellationToken cancellationToken)
         {
-            this.Dispose();
+            Dispose();
 
             return TaskHelpers.CompletedTask;
         }
 
         public void Close()
         {
-            this.Dispose();
+            Dispose();
         }
 
         public void Dispose()
         {
-            if (!this.disposed)
+            if (!_isDisposed)
             {
-                this.disposed = true;
-                var thisTaskCompletionSource = this.taskCompletionSource;
+                _isDisposed = true;
+                TaskCompletionSource<TValue> thisTaskCompletionSource = _taskCompletionSource;
                 if (thisTaskCompletionSource != null && thisTaskCompletionSource.Task.Status == TaskStatus.RanToCompletion)
                 {
                     OnSafeClose(thisTaskCompletionSource.Task.Result);
@@ -72,41 +68,39 @@ namespace Microsoft.Azure.Devices.Client
         {
             var timeoutHelper = new TimeoutHelper(timeout);
 
-            while (!this.disposed && timeoutHelper.RemainingTime() > TimeSpan.Zero)
+            while (!_isDisposed && timeoutHelper.GetRemainingTime() > TimeSpan.Zero)
             {
-                TaskCompletionSource<TValue> tcs;
-
-                if (this.TryGet(out tcs))
+                if (TryGet(out TaskCompletionSource<TValue> tcs))
                 {
                     return await tcs.Task.ConfigureAwait(false);
                 }
 
                 tcs = new TaskCompletionSource<TValue>();
-                if (this.TrySet(tcs))
+                if (TrySet(tcs))
                 {
-                    this.CreateValue(tcs, timeoutHelper.RemainingTime(), cancellationToken);
+                    await CreateValueAsync(tcs, timeoutHelper.GetRemainingTime(), cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            if (this.disposed)
+            if (_isDisposed)
             {
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
             }
             else
             {
-                throw new TimeoutException("Timed out trying to create {0}".FormatInvariant(this.GetType().Name));
+                throw new TimeoutException("Timed out trying to create {0}".FormatInvariant(GetType().Name));
             }
         }
 
         protected void Invalidate(TValue instance)
         {
-            lock (this.syncLock)
+            lock (_syncLock)
             {
-                if (this.taskCompletionSource != null &&
-                    this.taskCompletionSource.Task.Status == TaskStatus.RanToCompletion &&
-                    this.taskCompletionSource.Task.Result == instance)
+                if (_taskCompletionSource != null
+                    && _taskCompletionSource.Task.Status == TaskStatus.RanToCompletion
+                    && _taskCompletionSource.Task.Result == instance)
                 {
-                    Volatile.Write<TaskCompletionSource<TValue>>(ref this.taskCompletionSource, null);
+                    Volatile.Write<TaskCompletionSource<TValue>>(ref _taskCompletionSource, null);
                 }
             }
         }
@@ -117,17 +111,17 @@ namespace Microsoft.Azure.Devices.Client
 
         private bool TryGet(out TaskCompletionSource<TValue> tcs)
         {
-            tcs = Volatile.Read<TaskCompletionSource<TValue>>(ref this.taskCompletionSource);
+            tcs = Volatile.Read<TaskCompletionSource<TValue>>(ref _taskCompletionSource);
             return tcs != null;
         }
 
         private bool TrySet(TaskCompletionSource<TValue> tcs)
         {
-            lock (this.syncLock)
+            lock (_syncLock)
             {
-                if (this.taskCompletionSource == null)
+                if (_taskCompletionSource == null)
                 {
-                    Volatile.Write<TaskCompletionSource<TValue>>(ref this.taskCompletionSource, tcs);
+                    Volatile.Write<TaskCompletionSource<TValue>>(ref _taskCompletionSource, tcs);
                     return true;
                 }
                 else
@@ -139,11 +133,11 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool TryRemove()
         {
-            lock (this.syncLock)
+            lock (_syncLock)
             {
-                if (this.taskCompletionSource != null)
+                if (_taskCompletionSource != null)
                 {
-                    Volatile.Write<TaskCompletionSource<TValue>>(ref this.taskCompletionSource, null);
+                    Volatile.Write<TaskCompletionSource<TValue>>(ref _taskCompletionSource, null);
                     return true;
                 }
                 else
@@ -153,14 +147,14 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private async Task CreateValue(TaskCompletionSource<TValue> tcs, TimeSpan timeout, CancellationToken cancellationToken)
+        private async Task CreateValueAsync(TaskCompletionSource<TValue> tcs, TimeSpan timeout, CancellationToken cancellationToken)
         {
             try
             {
                 TValue value = await OnCreateAsync(timeout, cancellationToken).ConfigureAwait(false);
                 tcs.SetResult(value);
 
-                if (this.disposed)
+                if (_isDisposed)
                 {
                     OnSafeClose(value);
                 }
@@ -172,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client
                     throw;
                 }
 
-                this.TryRemove();
+                TryRemove();
                 tcs.SetException(ex);
             }
         }

@@ -212,6 +212,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return new AmqpIoTOutcome(outcome);
         }
 
+        internal async Task<AmqpIoTOutcome> SubscribeToDesiredPropertiesAsync(string correlationId, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(SubscribeToDesiredPropertiesAsync)}");
+
+            AmqpMessage amqpMessage = AmqpMessage.Create();
+            amqpMessage.Properties.CorrelationId = correlationId;
+            amqpMessage.MessageAnnotations.Map["operation"] = "PUT";
+            amqpMessage.MessageAnnotations.Map["resource"] = "/notifications/twin/properties/desired";
+            amqpMessage.MessageAnnotations.Map["version"] = null;
+
+            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(SubscribeToDesiredPropertiesAsync)}");
+
+            return new AmqpIoTOutcome(outcome);
+        }
+
         #endregion Twin handling
     }
 }

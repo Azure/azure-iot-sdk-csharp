@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net472;net451</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
     <!-- TODO #176: Enable warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices.Client</RootNamespace>
@@ -26,6 +27,9 @@
   <PropertyGroup>
     <Version>1.29.0-preview-004</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
+    <IncludeSource>True</IncludeSource>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

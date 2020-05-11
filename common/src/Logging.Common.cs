@@ -42,8 +42,10 @@ namespace Microsoft.Azure.Devices.Shared
 
         private const string MissingMember = "(?)";
         private const string NullInstance = "(null)";
-        private const string NoParameters = "";
         private const int MaxDumpSize = 1024;
+#if !NET451
+        private const string NoParameters = "";
+#endif
 
         #endregion Metadata
 

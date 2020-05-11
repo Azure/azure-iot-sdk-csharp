@@ -20,7 +20,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// To enable certificate revocation check. Default to be false.
         /// </summary>
-        public bool CertificateRevocationCheck = false;
+        public bool CertificateRevocationCheck
+        {
+            get => TlsVersions.Instance.CertificateRevocationCheck;
+            set => TlsVersions.Instance.CertificateRevocationCheck = value;
+        }
 
         /// <summary>
         /// The default operation timeout

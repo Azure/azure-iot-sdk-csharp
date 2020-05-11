@@ -326,6 +326,32 @@ namespace Microsoft.Azure.Devices.Client
             return ReadFullStream(_bodyStream);
         }
 
+        /// <summary>
+        /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="byteArray"/> on it.
+        /// </summary>
+        /// <param name="byteArray">Message content to be set after clone.</param>
+        /// <returns>A new instance of <see cref="Message"/> with body content defined by <paramref name="byteArray"/>,
+        /// and user/system properties of the cloned <see cref="Message"/> instance.
+        /// </returns>
+        /// <remarks>user should treat the input byte array as immutable when
+        /// sending the message.</remarks>
+        public Message CloneWithBody(in byte[] byteArray)
+        {
+            var result = new Message(byteArray);
+
+            foreach (string key in Properties.Keys)
+            {
+                result.Properties.Add(key, Properties[key]);
+            }
+
+            foreach (string key in SystemProperties.Keys)
+            {
+                result.SystemProperties.Add(key, SystemProperties[key]);
+            }
+
+            return result;
+        }
+
         internal void ResetBody()
         {
             if (_originalStreamPosition == StreamCannotSeek)

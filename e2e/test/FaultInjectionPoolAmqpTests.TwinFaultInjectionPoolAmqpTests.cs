@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -1505,7 +1504,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 _log.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
+                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString()).ConfigureAwait(false);
             };
 
             Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
@@ -1564,7 +1563,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 var testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
-                var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
+                using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 var propName = twinProperties[0];

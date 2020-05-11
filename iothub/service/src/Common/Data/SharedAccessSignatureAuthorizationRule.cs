@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Common.Data
 {
-    using System;
-    using Microsoft.Azure.Devices.Common.Security;
-    using Newtonsoft.Json;
-
     public sealed class SharedAccessSignatureAuthorizationRule : IEquatable<SharedAccessSignatureAuthorizationRule>
     {
-        string primaryKey;
-        string secondaryKey;
+        private string _primaryKey;
+        private string _secondaryKey;
 
         [JsonProperty(PropertyName = "keyName")]
         public string KeyName { get; set; }
@@ -18,30 +16,24 @@ namespace Microsoft.Azure.Devices.Common.Data
         [JsonProperty(PropertyName = "primaryKey")]
         public string PrimaryKey
         {
-            get
-            {
-                return this.primaryKey;
-            }
+            get => _primaryKey;
 
             set
             {
                 StringValidationHelper.EnsureNullOrBase64String(value, "PrimaryKey");
-                this.primaryKey = value;
+                _primaryKey = value;
             }
         }
 
         [JsonProperty(PropertyName = "secondaryKey")]
         public string SecondaryKey
         {
-            get
-            {
-                return this.secondaryKey;
-            }
+            get => _secondaryKey;
 
             set
             {
                 StringValidationHelper.EnsureNullOrBase64String(value, "SecondaryKey");
-                this.secondaryKey = value;
+                _secondaryKey = value;
             }
         }
 
@@ -55,10 +47,10 @@ namespace Microsoft.Azure.Devices.Common.Data
                 return false;
             }
 
-            bool equals = string.Equals(this.KeyName, other.KeyName, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(this.PrimaryKey, other.PrimaryKey, StringComparison.Ordinal) &&
-                string.Equals(this.SecondaryKey, other.SecondaryKey, StringComparison.Ordinal) &&
-                Equals(this.Rights, other.Rights);
+            bool equals = string.Equals(KeyName, other.KeyName, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(PrimaryKey, other.PrimaryKey, StringComparison.Ordinal) &&
+                string.Equals(SecondaryKey, other.SecondaryKey, StringComparison.Ordinal) &&
+                Equals(Rights, other.Rights);
 
             return equals;
         }

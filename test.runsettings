@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+   <MSTest>
+      <!--
+         Specify timeout in milliseconds.
+         Current timeout is set to 6mins (Long running tests - DeviceClient_TokenIsRefreshed_Ok_Mqtt, DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP take a little over 5mins to complete.)
+      -->
+      <TestTimeout>360000</TestTimeout>
+   </MSTest>
+</RunSettings>

@@ -964,7 +964,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public static void PopulateMessagePropertiesFromPacket(Message message, PublishPacket publish)
         {
-            message.LockToken = publish.QualityOfService == QualityOfService.AtLeastOnce ? publish.PacketId.ToString() : null;
+            message.LockToken = publish.QualityOfService == QualityOfService.AtLeastOnce ? publish.PacketId.ToString(CultureInfo.InvariantCulture) : null;
 
             // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
             // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
@@ -1136,7 +1136,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public static Message CompleteMessageFromPacket(Message message, PublishPacket packet, MqttTransportSettings mqttTransportSettings)
         {
-            message.MessageId = Guid.NewGuid().ToString("N");
+            message.MessageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             if (packet.RetainRequested)
             {
                 message.Properties[mqttTransportSettings.RetainPropertyName] = IotHubTrueString;

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
@@ -55,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var messages = new List<Client.Message>();
                 for (int i = 0; i < MESSAGE_COUNT; i++)
                 {
-                    (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2DTestMessage();
+                    (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
                     await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                     Client.Message message = await deviceClient.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                     if (message == null)

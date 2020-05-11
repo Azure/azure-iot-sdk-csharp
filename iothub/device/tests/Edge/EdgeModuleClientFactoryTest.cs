@@ -10,23 +10,22 @@ using NSubstitute;
 
 namespace Microsoft.Azure.Devices.Client.Test.Edge
 {
-
     [TestClass]
     [TestCategory("Unit")]
     public class EdgeModuleClientFactoryTest
     {
-        readonly string serverUrl;
-        readonly byte[] sasKey = System.Text.Encoding.UTF8.GetBytes("key");
-        readonly string iotHubConnectionString;
+        private readonly string serverUrl;
+        private readonly byte[] sasKey = System.Text.Encoding.UTF8.GetBytes("key");
+        private readonly string iotHubConnectionString;
 
-        const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
-        const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
-        const string IotHubHostnameVariableName = "IOTEDGE_IOTHUBHOSTNAME";
-        const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
-        const string DeviceIdVariableName = "IOTEDGE_DEVICEID";
-        const string ModuleIdVariableName = "IOTEDGE_MODULEID";
-        const string AuthSchemeVariableName = "IOTEDGE_AUTHSCHEME";
-        const string ModuleGeneratioIdVariableName = "IOTEDGE_MODULEGENERATIONID";
+        private const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
+        private const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
+        private const string IotHubHostnameVariableName = "IOTEDGE_IOTHUBHOSTNAME";
+        private const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
+        private const string DeviceIdVariableName = "IOTEDGE_DEVICEID";
+        private const string ModuleIdVariableName = "IOTEDGE_MODULEID";
+        private const string AuthSchemeVariableName = "IOTEDGE_AUTHSCHEME";
+        private const string ModuleGeneratioIdVariableName = "IOTEDGE_MODULEGENERATIONID";
 
         public EdgeModuleClientFactoryTest()
         {
@@ -71,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromEnvironment_MissingVariable_ShouldThrow()
         {
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            
+
             var settings = new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) };
             await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle).CreateAsync()).ConfigureAwait(false);
 
@@ -101,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public void TestCreate_FromEnvironment_UnsupportedAuth_ShouldThrow()
+        public async Task TestCreate_FromEnvironment_UnsupportedAuth_ShouldThrow()
         {
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this.serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
@@ -112,7 +111,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "x509Cert");
             var settings = new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) };
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle).CreateAsync());
+            await TestAssert
+                .ThrowsAsync<InvalidOperationException>(async () => await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync().ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, null);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, null);

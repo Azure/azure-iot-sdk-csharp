@@ -7,9 +7,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Threading;
 
 namespace Microsoft.Azure.Devices.Client
 {
+#pragma warning disable CA1033 // Interface methods should be callable by child types - should have marked this class as sealed, but too late now
+
     /// <summary>
     /// Read-only wrapper for another generic dictionary.
     /// </summary>
@@ -17,22 +20,26 @@ namespace Microsoft.Azure.Devices.Client
     /// <typeparam name="TValue">Type to be used for values</typeparam>
     [Serializable]
     [DebuggerDisplay("Count = {Count}")]
-    public class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary //, IReadOnlyDictionary<TKey, TValue>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
+    public class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
-        private readonly IDictionary<TKey, TValue> m_dictionary;
+        [NonSerialized]
+        private object _syncRoot;
 
         [NonSerialized]
-        private object m_syncRoot;
+        private KeyCollection _keys;
 
         [NonSerialized]
-        private KeyCollection m_keys;
+        private ValueCollection _values;
 
         [NonSerialized]
-        private ValueCollection m_values;
+        private IReadOnlyIndicator _readOnlyIndicator;
 
-        [NonSerialized]
-        private IReadOnlyIndicator m_readOnlyIndicator;
-
+        /// <summary>
+        /// Creates an instance of ReadOnlyDictionary45 weeded with a supplied IDictionary
+        /// </summary>
+        /// <param name="dictionary"></param>
         public ReadOnlyDictionary45(IDictionary<TKey, TValue> dictionary)
             : this(dictionary, new AlwaysReadOnlyIndicator())
         {
@@ -40,51 +47,58 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ReadOnlyDictionary45(IDictionary<TKey, TValue> dictionary, IReadOnlyIndicator readOnlyIndicator)
         {
-            if (dictionary == null)
-            {
-                throw new ArgumentNullException("dictionary");
-            }
+            Dictionary = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
             Contract.EndContractBlock();
-            m_dictionary = dictionary;
-            m_readOnlyIndicator = readOnlyIndicator;
+            _readOnlyIndicator = readOnlyIndicator;
         }
 
-        protected IDictionary<TKey, TValue> Dictionary
-        {
-            get { return m_dictionary; }
-        }
+        /// <summary>
+        /// The dictionary
+        /// </summary>
+        protected IDictionary<TKey, TValue> Dictionary { get; private set; }
 
+        /// <summary>
+        /// They keys in the dictionary
+        /// </summary>
         public KeyCollection Keys
         {
             get
             {
                 Contract.Ensures(Contract.Result<KeyCollection>() != null);
-                if (m_keys == null)
+                if (_keys == null)
                 {
-                    m_keys = new KeyCollection(m_dictionary.Keys, this.m_readOnlyIndicator);
+                    _keys = new KeyCollection(Dictionary.Keys, _readOnlyIndicator);
                 }
-                return m_keys;
+                return _keys;
             }
         }
 
+        /// <summary>
+        /// The values in the dictionary
+        /// </summary>
         public ValueCollection Values
         {
             get
             {
                 Contract.Ensures(Contract.Result<ValueCollection>() != null);
-                if (m_values == null)
+                if (_values == null)
                 {
-                    m_values = new ValueCollection(m_dictionary.Values, this.m_readOnlyIndicator);
+                    _values = new ValueCollection(Dictionary.Values, _readOnlyIndicator);
                 }
-                return m_values;
+                return _values;
             }
         }
 
         #region IDictionary<TKey, TValue> Members
 
+        /// <summary>
+        /// Reports whether a key exists in the dictionary
+        /// </summary>
+        /// <param name="key">The key to check</param>
+        /// <returns>True if exists, othewise fals</returns>
         public bool ContainsKey(TKey key)
         {
-            return m_dictionary.ContainsKey(key);
+            return Dictionary.ContainsKey(key);
         }
 
         ICollection<TKey> IDictionary<TKey, TValue>.Keys
@@ -95,61 +109,64 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        /// <summary>
+        /// Gets the value of the specified key, if exists
+        /// </summary>
+        /// <param name="key">The desired key</param>
+        /// <param name="value">The value found</param>
+        /// <returns>True if key was found</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return m_dictionary.TryGetValue(key, out value);
+            return Dictionary.TryGetValue(key, out value);
         }
 
-        ICollection<TValue> IDictionary<TKey, TValue>.Values
-        {
-            get
-            {
-                return Values;
-            }
-        }
+        ICollection<TValue> IDictionary<TKey, TValue>.Values => Values;
 
+        /// <summary>
+        /// Enables accessing values by indexing with a key
+        /// </summary>
+        /// <param name="key">The desired key</param>
+        /// <returns>The corresponding value</returns>
         public TValue this[TKey key]
         {
             get
             {
-                return m_dictionary[key];
+                return Dictionary[key];
             }
         }
 
         void IDictionary<TKey, TValue>.Add(TKey key, TValue value)
+
         {
-            if (this.m_readOnlyIndicator.IsReadOnly)
+            if (_readOnlyIndicator.IsReadOnly)
             {
                 throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
             }
 
-            m_dictionary.Add(key, value);
+            Dictionary.Add(key, value);
         }
 
         bool IDictionary<TKey, TValue>.Remove(TKey key)
         {
-            if (this.m_readOnlyIndicator.IsReadOnly)
+            if (_readOnlyIndicator.IsReadOnly)
             {
                 throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
             }
 
-            return m_dictionary.Remove(key);
+            return Dictionary.Remove(key);
         }
 
         TValue IDictionary<TKey, TValue>.this[TKey key]
         {
-            get
-            {
-                return m_dictionary[key];
-            }
+            get => Dictionary[key];
             set
             {
-                if (this.m_readOnlyIndicator.IsReadOnly)
+                if (_readOnlyIndicator.IsReadOnly)
                 {
                     throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
                 }
 
-                m_dictionary[key] = value;
+                Dictionary[key] = value;
             }
         }
 
@@ -157,54 +174,51 @@ namespace Microsoft.Azure.Devices.Client
 
         #region ICollection<KeyValuePair<TKey, TValue>> Members
 
-        public int Count
-        {
-            get { return m_dictionary.Count; }
-        }
+        /// <summary>
+        /// The count of items in the dictionary
+        /// </summary>
+        public int Count => Dictionary.Count;
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            return m_dictionary.Contains(item);
+            return Dictionary.Contains(item);
         }
 
         void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
-            m_dictionary.CopyTo(array, arrayIndex);
+            Dictionary.CopyTo(array, arrayIndex);
         }
 
-        bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly
-        {
-            get { return true; }
-        }
+        bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => true;
 
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
-            if (this.m_readOnlyIndicator.IsReadOnly)
+            if (_readOnlyIndicator.IsReadOnly)
             {
                 throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
             }
 
-            m_dictionary.Add(item);
+            Dictionary.Add(item);
         }
 
         void ICollection<KeyValuePair<TKey, TValue>>.Clear()
         {
-            if (this.m_readOnlyIndicator.IsReadOnly)
+            if (_readOnlyIndicator.IsReadOnly)
             {
                 throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
             }
 
-            m_dictionary.Clear();
+            Dictionary.Clear();
         }
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            if (this.m_readOnlyIndicator.IsReadOnly)
+            if (_readOnlyIndicator.IsReadOnly)
             {
                 throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
             }
 
-            return m_dictionary.Remove(item);
+            return Dictionary.Remove(item);
         }
 
         #endregion ICollection<KeyValuePair<TKey, TValue>> Members
@@ -213,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            return m_dictionary.GetEnumerator();
+            return Dictionary.GetEnumerator();
         }
 
         #endregion IEnumerable<KeyValuePair<TKey, TValue>> Members
@@ -222,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)m_dictionary).GetEnumerator();
+            return ((IEnumerable)Dictionary).GetEnumerator();
         }
 
         #endregion IEnumerable Members
@@ -233,29 +247,29 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (key == null)
             {
-                throw Fx.Exception.ArgumentNull("key");
+                throw Fx.Exception.ArgumentNull(nameof(key));
             }
             return key is TKey;
         }
 
         void IDictionary.Add(object key, object value)
         {
-            if (this.m_readOnlyIndicator.IsReadOnly)
+            if (_readOnlyIndicator.IsReadOnly)
             {
                 throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
             }
 
-            m_dictionary.Add((TKey)key, (TValue)value);
+            Dictionary.Add((TKey)key, (TValue)value);
         }
 
         void IDictionary.Clear()
         {
-            if (this.m_readOnlyIndicator.IsReadOnly)
+            if (_readOnlyIndicator.IsReadOnly)
             {
                 throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
             }
 
-            m_dictionary.Clear();
+            Dictionary.Clear();
         }
 
         bool IDictionary.Contains(object key)
@@ -265,49 +279,31 @@ namespace Microsoft.Azure.Devices.Client
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
         {
-            IDictionary d = m_dictionary as IDictionary;
+            IDictionary d = Dictionary as IDictionary;
             if (d != null)
             {
                 return d.GetEnumerator();
             }
-            return new DictionaryEnumerator(m_dictionary);
+            return new DictionaryEnumerator(Dictionary);
         }
 
-        bool IDictionary.IsFixedSize
-        {
-            get { return true; }
-        }
+        bool IDictionary.IsFixedSize => true;
 
-        bool IDictionary.IsReadOnly
-        {
-            get { return true; }
-        }
+        bool IDictionary.IsReadOnly => true;
 
-        ICollection IDictionary.Keys
-        {
-            get
-            {
-                return Keys;
-            }
-        }
+        ICollection IDictionary.Keys => Keys;
 
         void IDictionary.Remove(object key)
         {
-            if (this.m_readOnlyIndicator.IsReadOnly)
+            if (_readOnlyIndicator.IsReadOnly)
             {
                 throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
             }
 
-            m_dictionary.Remove((TKey)key);
+            Dictionary.Remove((TKey)key);
         }
 
-        ICollection IDictionary.Values
-        {
-            get
-            {
-                return Values;
-            }
-        }
+        ICollection IDictionary.Values => Values;
 
         object IDictionary.this[object key]
         {
@@ -321,12 +317,12 @@ namespace Microsoft.Azure.Devices.Client
             }
             set
             {
-                if (this.m_readOnlyIndicator.IsReadOnly)
+                if (_readOnlyIndicator.IsReadOnly)
                 {
                     throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
                 }
 
-                m_dictionary[(TKey)key] = (TValue)value;
+                Dictionary[(TKey)key] = (TValue)value;
             }
         }
 
@@ -334,35 +330,35 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (array == null)
             {
-                Fx.Exception.ArgumentNull("array");
+                Fx.Exception.ArgumentNull(nameof(array));
             }
 
             if (array.Rank != 1 || array.GetLowerBound(0) != 0)
             {
-                throw Fx.Exception.Argument("array", Resources.InvalidBufferSize);
+                throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
             }
 
             if (index < 0 || index > array.Length)
             {
-                throw Fx.Exception.ArgumentOutOfRange("index", index, Resources.ValueMustBeNonNegative);
+                throw Fx.Exception.ArgumentOutOfRange(nameof(index), index, Resources.ValueMustBeNonNegative);
             }
 
             if (array.Length - index < Count)
             {
-                throw Fx.Exception.Argument("array", Resources.InvalidBufferSize);
+                throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
             }
 
             KeyValuePair<TKey, TValue>[] pairs = array as KeyValuePair<TKey, TValue>[];
             if (pairs != null)
             {
-                m_dictionary.CopyTo(pairs, index);
+                Dictionary.CopyTo(pairs, index);
             }
             else
             {
                 DictionaryEntry[] dictEntryArray = array as DictionaryEntry[];
                 if (dictEntryArray != null)
                 {
-                    foreach (var item in m_dictionary)
+                    foreach (var item in Dictionary)
                     {
                         dictEntryArray[index++] = new DictionaryEntry(item.Key, item.Value);
                     }
@@ -372,19 +368,19 @@ namespace Microsoft.Azure.Devices.Client
                     object[] objects = array as object[];
                     if (objects == null)
                     {
-                        throw Fx.Exception.Argument("array", Resources.InvalidBufferSize);
+                        throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
                     }
 
                     try
                     {
-                        foreach (var item in m_dictionary)
+                        foreach (var item in Dictionary)
                         {
                             objects[index++] = new KeyValuePair<TKey, TValue>(item.Key, item.Value);
                         }
                     }
                     catch (ArrayTypeMismatchException)
                     {
-                        throw Fx.Exception.Argument("array", Resources.InvalidBufferSize);
+                        throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
                     }
                 }
             }
@@ -399,19 +395,19 @@ namespace Microsoft.Azure.Devices.Client
         {
             get
             {
-                if (m_syncRoot == null)
+                if (_syncRoot == null)
                 {
-                    ICollection c = m_dictionary as ICollection;
+                    ICollection c = Dictionary as ICollection;
                     if (c != null)
                     {
-                        m_syncRoot = c.SyncRoot;
+                        _syncRoot = c.SyncRoot;
                     }
                     else
                     {
-                        System.Threading.Interlocked.CompareExchange<Object>(ref m_syncRoot, new Object(), null);
+                        System.Threading.Interlocked.CompareExchange<Object>(ref _syncRoot, new Object(), null);
                     }
                 }
-                return m_syncRoot;
+                return _syncRoot;
             }
         }
 
@@ -427,25 +423,13 @@ namespace Microsoft.Azure.Devices.Client
                 m_enumerator = m_dictionary.GetEnumerator();
             }
 
-            public DictionaryEntry Entry
-            {
-                get { return new DictionaryEntry(m_enumerator.Current.Key, m_enumerator.Current.Value); }
-            }
+            public DictionaryEntry Entry => new DictionaryEntry(m_enumerator.Current.Key, m_enumerator.Current.Value);
 
-            public object Key
-            {
-                get { return m_enumerator.Current.Key; }
-            }
+            public object Key => m_enumerator.Current.Key;
 
-            public object Value
-            {
-                get { return m_enumerator.Current.Value; }
-            }
+            public object Value => m_enumerator.Current.Value;
 
-            public object Current
-            {
-                get { return Entry; }
-            }
+            public object Current => Entry;
 
             public bool MoveNext()
             {
@@ -460,96 +444,107 @@ namespace Microsoft.Azure.Devices.Client
 
         #endregion IDictionary Members
 
+        /// <summary>
+        /// A collection of dictionary keys
+        /// </summary>
         [DebuggerDisplay("Count = {Count}")]
         [Serializable]
+#pragma warning disable CA1034 // Nested types should not be visible
         public sealed class KeyCollection : ICollection<TKey>, ICollection
+#pragma warning restore CA1034 // Nested types should not be visible
         {
-            private readonly ICollection<TKey> m_collection;
+            private readonly ICollection<TKey> _collection;
 
             [NonSerialized]
-            private object m_syncRoot;
+            private object _syncRoot;
 
             [NonSerialized]
-            private readonly IReadOnlyIndicator m_readOnlyIndicator;
+            private readonly IReadOnlyIndicator _readOnlyIndicator;
 
             internal KeyCollection(ICollection<TKey> collection, IReadOnlyIndicator readOnlyIndicator)
             {
                 if (collection == null)
                 {
-                    throw Fx.Exception.ArgumentNull("collection");
+                    throw Fx.Exception.ArgumentNull(nameof(collection));
                 }
-                m_collection = collection;
-                m_readOnlyIndicator = readOnlyIndicator;
+                _collection = collection;
+                _readOnlyIndicator = readOnlyIndicator;
             }
 
             #region ICollection<T> Members
 
             void ICollection<TKey>.Add(TKey item)
             {
-                if (this.m_readOnlyIndicator.IsReadOnly)
+                if (_readOnlyIndicator.IsReadOnly)
                 {
                     throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
                 }
 
-                m_collection.Add(item);
+                _collection.Add(item);
             }
 
             void ICollection<TKey>.Clear()
             {
-                if (this.m_readOnlyIndicator.IsReadOnly)
+                if (_readOnlyIndicator.IsReadOnly)
                 {
                     throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
                 }
 
-                m_collection.Clear();
+                _collection.Clear();
             }
 
             bool ICollection<TKey>.Contains(TKey item)
             {
-                return m_collection.Contains(item);
+                return _collection.Contains(item);
             }
 
+            /// <summary>
+            /// Copies the key collection to the specified array
+            /// </summary>
+            /// <param name="array">Destination array</param>
+            /// <param name="arrayIndex">Starting index to copy to</param>
             public void CopyTo(TKey[] array, int arrayIndex)
             {
-                m_collection.CopyTo(array, arrayIndex);
+                _collection.CopyTo(array, arrayIndex);
             }
 
-            public int Count
-            {
-                get { return m_collection.Count; }
-            }
+            /// <summary>
+            /// The count of keys
+            /// </summary>
+            public int Count => _collection.Count;
 
-            bool ICollection<TKey>.IsReadOnly
-            {
-                get { return true; }
-            }
+            bool ICollection<TKey>.IsReadOnly => true;
 
             bool ICollection<TKey>.Remove(TKey item)
             {
-                if (this.m_readOnlyIndicator.IsReadOnly)
+                if (_readOnlyIndicator.IsReadOnly)
                 {
                     throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
                 }
 
-                return m_collection.Remove(item);
+                return _collection.Remove(item);
             }
 
             #endregion ICollection<T> Members
 
             #region IEnumerable<T> Members
 
+            /// <summary>
+            /// Gets an enumerator
+            /// </summary>
+            /// <returns>The enumerator</returns>
             public IEnumerator<TKey> GetEnumerator()
             {
-                return m_collection.GetEnumerator();
+                return _collection.GetEnumerator();
             }
 
             #endregion IEnumerable<T> Members
 
             #region IEnumerable Members
 
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            IEnumerator IEnumerable.GetEnumerator()
             {
-                return ((IEnumerable)m_collection).GetEnumerator();
+                return ((IEnumerable)_collection).GetEnumerator();
             }
 
             #endregion IEnumerable Members
@@ -561,37 +556,39 @@ namespace Microsoft.Azure.Devices.Client
                 throw Fx.Exception.AsError(new NotImplementedException());
             }
 
-            bool ICollection.IsSynchronized
-            {
-                get { return false; }
-            }
+            bool ICollection.IsSynchronized => false;
 
             object ICollection.SyncRoot
             {
                 get
                 {
-                    if (m_syncRoot == null)
+                    if (_syncRoot == null)
                     {
-                        ICollection c = m_collection as ICollection;
+                        ICollection c = _collection as ICollection;
                         if (c != null)
                         {
-                            m_syncRoot = c.SyncRoot;
+                            _syncRoot = c.SyncRoot;
                         }
                         else
                         {
-                            System.Threading.Interlocked.CompareExchange<Object>(ref m_syncRoot, new Object(), null);
+                            Interlocked.CompareExchange<object>(ref _syncRoot, new object(), null);
                         }
                     }
-                    return m_syncRoot;
+                    return _syncRoot;
                 }
             }
 
             #endregion ICollection Members
         }
 
+        /// <summary>
+        /// A collection of dictionary values
+        /// </summary>
         [DebuggerDisplay("Count = {Count}")]
         [Serializable]
+#pragma warning disable CA1034 // Nested types should not be visible
         public sealed class ValueCollection : ICollection<TValue>, ICollection
+#pragma warning restore CA1034 // Nested types should not be visible
         {
             private readonly ICollection<TValue> m_collection;
 
@@ -605,7 +602,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (collection == null)
                 {
-                    throw Fx.Exception.ArgumentNull("collection");
+                    throw Fx.Exception.ArgumentNull(nameof(collection));
                 }
 
                 m_collection = collection;
@@ -616,7 +613,7 @@ namespace Microsoft.Azure.Devices.Client
 
             void ICollection<TValue>.Add(TValue item)
             {
-                if (this.m_readOnlyIndicator.IsReadOnly)
+                if (m_readOnlyIndicator.IsReadOnly)
                 {
                     throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
                 }
@@ -626,7 +623,7 @@ namespace Microsoft.Azure.Devices.Client
 
             void ICollection<TValue>.Clear()
             {
-                if (this.m_readOnlyIndicator.IsReadOnly)
+                if (m_readOnlyIndicator.IsReadOnly)
                 {
                     throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
                 }
@@ -639,11 +636,19 @@ namespace Microsoft.Azure.Devices.Client
                 return m_collection.Contains(item);
             }
 
+            /// <summary>
+            /// Copies the values to the specified array
+            /// </summary>
+            /// <param name="array">The destination array</param>
+            /// <param name="arrayIndex">The starting index</param>
             public void CopyTo(TValue[] array, int arrayIndex)
             {
                 m_collection.CopyTo(array, arrayIndex);
             }
 
+            /// <summary>
+            /// The count of values in the collection
+            /// </summary>
             public int Count
             {
                 get { return m_collection.Count; }
@@ -656,7 +661,7 @@ namespace Microsoft.Azure.Devices.Client
 
             bool ICollection<TValue>.Remove(TValue item)
             {
-                if (this.m_readOnlyIndicator.IsReadOnly)
+                if (m_readOnlyIndicator.IsReadOnly)
                 {
                     throw Fx.Exception.AsError(new NotSupportedException(Resources.ObjectIsReadOnly));
                 }
@@ -668,6 +673,10 @@ namespace Microsoft.Azure.Devices.Client
 
             #region IEnumerable<T> Members
 
+            /// <summary>
+            /// Gets an enumerator
+            /// </summary>
+            /// <returns>The enumerator</returns>
             public IEnumerator<TValue> GetEnumerator()
             {
                 return m_collection.GetEnumerator();
@@ -709,7 +718,7 @@ namespace Microsoft.Azure.Devices.Client
                         }
                         else
                         {
-                            System.Threading.Interlocked.CompareExchange<Object>(ref m_syncRoot, new Object(), null);
+                            Interlocked.CompareExchange<Object>(ref m_syncRoot, new Object(), null);
                         }
                     }
                     return m_syncRoot;
@@ -721,15 +730,20 @@ namespace Microsoft.Azure.Devices.Client
 
         private class AlwaysReadOnlyIndicator : IReadOnlyIndicator
         {
-            public bool IsReadOnly
-            {
-                get { return true; }
-            }
+            public bool IsReadOnly => true;
         }
     }
 
+    /// <summary>
+    /// Indicates if a class is read-only
+    /// </summary>
     public interface IReadOnlyIndicator
     {
+        /// <summary>
+        /// Indicates if the entity is read-only
+        /// </summary>
         bool IsReadOnly { get; }
     }
+
+#pragma warning restore CA1033 // Interface methods should be callable by child types
 }

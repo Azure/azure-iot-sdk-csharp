@@ -112,12 +112,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (lockToken == null)
             {
-                throw new ArgumentNullException("lockToken");
+                throw new ArgumentNullException(nameof(lockToken));
             }
 
             if (!Guid.TryParse(lockToken, out Guid lockTokenGuid))
             {
-                throw new ArgumentException("Should be a valid Guid", "lockToken");
+                throw new ArgumentException("Should be a valid Guid", nameof(lockToken));
             }
 
             return new ArraySegment<byte>(lockTokenGuid.ToByteArray());

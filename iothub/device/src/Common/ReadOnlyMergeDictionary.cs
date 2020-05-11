@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                 TValue value;
                 if (!this.TryGetValue(key, out value))
                 {
-                    throw new ArgumentException("Specified key was not found in the dictionary.", "key");
+                    throw new ArgumentException("Specified key was not found in the dictionary.", nameof(key));
                 }
                 return value;
             }

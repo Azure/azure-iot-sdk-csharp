@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("LongRunning")]
         [Timeout(120000)]
+        [DoNotParallelize]
         [DataRow(StorageAuthenticationType.KeyBased)]
         [DataRow(StorageAuthenticationType.IdentityBased)]
         public async Task RegistryManager_ExportDevices(StorageAuthenticationType storageAuthenticationType)
@@ -90,7 +91,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // act
 
                 JobProperties exportJobResponse = null;
-                for (int i = 0; i < MaxIterationWait; ++i)
+                int tryCount = 0;
+                while (true)
                 {
                     try
                     {
@@ -105,9 +107,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                         break;
                     }
                     // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                    catch (JobQuotaExceededException)
+                    catch (JobQuotaExceededException) when (++tryCount < MaxIterationWait)
                     {
-                        _log.WriteLine($"JobQuoteExceededException... waiting.");
+                        _log.WriteLine($"JobQuotaExceededException... waiting.");
                         await Task.Delay(s_waitDuration).ConfigureAwait(false);
                         continue;
                     }

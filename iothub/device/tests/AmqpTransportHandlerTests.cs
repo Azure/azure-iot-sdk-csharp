@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
-            var tokenSource = new CancellationTokenSource();
+            using var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
 
             try

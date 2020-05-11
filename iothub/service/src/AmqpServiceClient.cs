@@ -1,27 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Data;
+using Microsoft.Azure.Devices.Common.Exceptions;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Amqp.Framing;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Data;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.Azure.Devices.Common.WebApi;
-
     internal sealed class AmqpServiceClient : ServiceClient
     {
-        private static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
         private const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
@@ -29,82 +26,61 @@ namespace Microsoft.Azure.Devices
         private const string DeviceStreamUriFormat = "/twins/{0}/streams/{1}?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
         private const string ModuleStreamUriFormat = "/twins/{0}/modules/{1}/streams/{2}?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
 
-        private readonly IotHubConnection iotHubConnection;
-        private readonly TimeSpan openTimeout;
-        private readonly TimeSpan operationTimeout;
-        private readonly FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantSendingLink;
-        private readonly string sendingPath;
-        private readonly AmqpFeedbackReceiver feedbackReceiver;
-        private readonly AmqpFileNotificationReceiver fileNotificationReceiver;
-        private readonly IHttpClientHelper httpClientHelper;
-        private readonly string iotHubName;
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
-        private int sendingDeliveryTag;
+        private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
+        private readonly string _sendingPath;
+        private readonly AmqpFeedbackReceiver _feedbackReceiver;
+        private readonly AmqpFileNotificationReceiver _fileNotificationReceiver;
+        private readonly IHttpClientHelper _httpClientHelper;
+        private readonly string _iotHubName;
+
+        private int _sendingDeliveryTag;
 
         public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
             var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly, transportSettings);
-            this.iotHubConnection = iotHubConnection;
-            this.openTimeout = IotHubConnection.DefaultOpenTimeout;
-            this.operationTimeout = IotHubConnection.DefaultOperationTimeout;
-            this.sendingPath = "/messages/deviceBound";
-            this.faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateSendingLinkAsync, this.iotHubConnection.CloseLink);
-            this.feedbackReceiver = new AmqpFeedbackReceiver(this.iotHubConnection);
-            this.fileNotificationReceiver = new AmqpFileNotificationReceiver(this.iotHubConnection);
-            this.iotHubName = iotHubConnectionString.IotHubName;
-            this.httpClientHelper = new HttpClientHelper(
+            Connection = iotHubConnection;
+            OpenTimeout = IotHubConnection.DefaultOpenTimeout;
+            OperationTimeout = IotHubConnection.DefaultOperationTimeout;
+            _sendingPath = "/messages/deviceBound";
+            _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
+            _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
+            _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
+            _iotHubName = iotHubConnectionString.IotHubName;
+            _httpClientHelper = new HttpClientHelper(
                 iotHubConnectionString.HttpsEndpoint,
                 iotHubConnectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                DefaultOperationTimeout,
-                client => { },
+                s_defaultOperationTimeout,
                 transportSettings.HttpProxy);
         }
 
         internal AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, IHttpClientHelper httpClientHelper) : base()
         {
-            this.httpClientHelper = httpClientHelper;
+            _httpClientHelper = httpClientHelper;
         }
 
         internal AmqpServiceClient(IotHubConnection iotHubConnection, IHttpClientHelper httpClientHelper)
         {
-            this.iotHubConnection = iotHubConnection;
-            this.faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateSendingLinkAsync, iotHubConnection.CloseLink);
-            this.feedbackReceiver = new AmqpFeedbackReceiver(iotHubConnection);
-            this.fileNotificationReceiver = new AmqpFileNotificationReceiver(iotHubConnection);
-            this.httpClientHelper = httpClientHelper;
+            Connection = iotHubConnection;
+            _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, iotHubConnection.CloseLink);
+            _feedbackReceiver = new AmqpFeedbackReceiver(iotHubConnection);
+            _fileNotificationReceiver = new AmqpFileNotificationReceiver(iotHubConnection);
+            _httpClientHelper = httpClientHelper;
         }
 
-        public TimeSpan OpenTimeout
-        {
-            get
-            {
-                return this.openTimeout;
-            }
-        }
+        public TimeSpan OpenTimeout { get; private set; }
 
-        public TimeSpan OperationTimeout
-        {
-            get
-            {
-                return this.operationTimeout;
-            }
-        }
+        public TimeSpan OperationTimeout { get; private set; }
 
-        public IotHubConnection Connection
-        {
-            get
-            {
-                return this.iotHubConnection;
-            }
-        }
+        public IotHubConnection Connection { get; private set; }
 
         public SendingAmqpLink SendingLink
         {
             get
             {
-                SendingAmqpLink sendingLink;
-                this.faultTolerantSendingLink.TryGetOpenedObject(out sendingLink);
+                _faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink);
                 return sendingLink;
             }
         }
@@ -112,15 +88,15 @@ namespace Microsoft.Azure.Devices
         public override async Task OpenAsync()
         {
             await GetSendingLinkAsync().ConfigureAwait(false);
-            await feedbackReceiver.OpenAsync().ConfigureAwait(false);
+            await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
         }
 
         public async override Task CloseAsync()
         {
-            await faultTolerantSendingLink.CloseAsync().ConfigureAwait(false);
-            await feedbackReceiver.CloseAsync().ConfigureAwait(false);
-            await fileNotificationReceiver.CloseAsync().ConfigureAwait(false);
-            await iotHubConnection.CloseAsync().ConfigureAwait(false);
+            await _faultTolerantSendingLink.CloseAsync().ConfigureAwait(false);
+            await _feedbackReceiver.CloseAsync().ConfigureAwait(false);
+            await _fileNotificationReceiver.CloseAsync().ConfigureAwait(false);
+            await Connection.CloseAsync().ConfigureAwait(false);
         }
 
         public async override Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
@@ -144,25 +120,24 @@ namespace Microsoft.Azure.Devices
                     SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
                     if (timeout != null)
                     {
-                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout).ConfigureAwait(false);
+                        outcome = await sendingLink
+                            .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout)
+                            .ConfigureAwait(false);
                     }
                     else
                     {
-                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref sendingDeliveryTag), AmqpConstants.NullBinary, OperationTimeout).ConfigureAwait(false);
+                        outcome = await sendingLink
+                            .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, OperationTimeout)
+                            .ConfigureAwait(false);
                     }
                 }
-                catch (TimeoutException exception)
+                catch (TimeoutException)
                 {
-                    throw exception;
+                    throw;
                 }
-                catch (Exception exception)
+                catch (Exception ex) when (!ex.IsFatal())
                 {
-                    if (exception.IsFatal())
-                    {
-                        throw;
-                    }
-
-                    throw AmqpClientHelper.ToIotHubClientContract(exception);
+                    throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }
             if (outcome.DescriptorCode != Accepted.Code)
@@ -173,41 +148,41 @@ namespace Microsoft.Azure.Devices
 
         public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId)
         {
-            return this.PurgeMessageQueueAsync(deviceId, CancellationToken.None);
+            return PurgeMessageQueueAsync(deviceId, CancellationToken.None);
         }
 
         public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken)
         {
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>();
             errorMappingOverrides.Add(HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new DeviceNotFoundException(deviceId)));
-            return this.httpClientHelper.DeleteAsync<PurgeMessageQueueResult>(GetPurgeMessageQueueAsyncUri(deviceId), errorMappingOverrides, null, cancellationToken);
+            return _httpClientHelper.DeleteAsync<PurgeMessageQueueResult>(GetPurgeMessageQueueAsyncUri(deviceId), errorMappingOverrides, null, cancellationToken);
         }
 
         public override FeedbackReceiver<FeedbackBatch> GetFeedbackReceiver()
         {
-            return this.feedbackReceiver;
+            return _feedbackReceiver;
         }
 
         public override FileNotificationReceiver<FileNotification> GetFileNotificationReceiver()
         {
-            return this.fileNotificationReceiver;
+            return _fileNotificationReceiver;
         }
 
         public override Task<ServiceStatistics> GetServiceStatisticsAsync()
         {
-            return this.GetServiceStatisticsAsync(CancellationToken.None);
+            return GetServiceStatisticsAsync(CancellationToken.None);
         }
 
         public override Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken)
         {
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>();
-            errorMappingOverrides.Add(HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new IotHubNotFoundException(this.iotHubName)));
-            return this.httpClientHelper.GetAsync<ServiceStatistics>(GetStatisticsUri(), errorMappingOverrides, null, cancellationToken);
+            errorMappingOverrides.Add(HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new IotHubNotFoundException(_iotHubName)));
+            return _httpClientHelper.GetAsync<ServiceStatistics>(GetStatisticsUri(), errorMappingOverrides, null, cancellationToken);
         }
 
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod)
         {
-            return this.InvokeDeviceMethodAsync(deviceId, cloudToDeviceMethod, CancellationToken.None);
+            return InvokeDeviceMethodAsync(deviceId, cloudToDeviceMethod, CancellationToken.None);
         }
 
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId,
@@ -223,7 +198,7 @@ namespace Microsoft.Azure.Devices
         {
             TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(cloudToDeviceMethod);
 
-            return this.httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
+            return _httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
                 uri,
                 cloudToDeviceMethod,
                 timeout,
@@ -234,7 +209,7 @@ namespace Microsoft.Azure.Devices
 
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod)
         {
-            return this.InvokeDeviceMethodAsync(deviceId, moduleId, cloudToDeviceMethod, CancellationToken.None);
+            return InvokeDeviceMethodAsync(deviceId, moduleId, cloudToDeviceMethod, CancellationToken.None);
         }
 
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken)
@@ -275,8 +250,8 @@ namespace Microsoft.Azure.Devices
                 amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
                 try
                 {
-                    SendingAmqpLink sendingLink = await this.GetSendingLinkAsync().ConfigureAwait(false);
-                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout).ConfigureAwait(false);
+                    SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
+                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, OperationTimeout).ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
@@ -341,7 +316,7 @@ namespace Microsoft.Azure.Devices
                 customHeaders["iothub-streaming-response-timeout-in-seconds"] = deviceStreamRequest.ResponseTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             }
 
-            var httpResponse = await this.httpClientHelper.PostAsync<byte[], HttpResponseMessage>(
+            var httpResponse = await _httpClientHelper.PostAsync<byte[], HttpResponseMessage>(
                  uri,
                  null as byte[],
                  timeout,
@@ -380,10 +355,9 @@ namespace Microsoft.Azure.Devices
 
         private async Task<SendingAmqpLink> GetSendingLinkAsync()
         {
-            SendingAmqpLink sendingLink;
-            if (!this.faultTolerantSendingLink.TryGetOpenedObject(out sendingLink))
+            if (!_faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink))
             {
-                sendingLink = await faultTolerantSendingLink.GetOrCreateAsync(OpenTimeout).ConfigureAwait(false);
+                sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(OpenTimeout).ConfigureAwait(false);
             }
 
             return sendingLink;
@@ -391,7 +365,7 @@ namespace Microsoft.Azure.Devices
 
         private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)
         {
-            return this.iotHubConnection.CreateSendingLinkAsync(this.sendingPath, timeout);
+            return Connection.CreateSendingLinkAsync(_sendingPath, timeout);
         }
 
         /// <inheritdoc/>
@@ -399,11 +373,11 @@ namespace Microsoft.Azure.Devices
         {
             if (disposing)
             {
-                this.faultTolerantSendingLink.Dispose();
-                this.fileNotificationReceiver.Dispose();
-                this.feedbackReceiver.Dispose();
-                this.iotHubConnection.Dispose();
-                this.httpClientHelper.Dispose();
+                _faultTolerantSendingLink.Dispose();
+                _fileNotificationReceiver.Dispose();
+                _feedbackReceiver.Dispose();
+                Connection.Dispose();
+                _httpClientHelper.Dispose();
             }
         }
 
@@ -425,7 +399,7 @@ namespace Microsoft.Azure.Devices
             TimeSpan timeout = TimeSpan.FromSeconds(15); // For wire time
             timeout += connectionTimeout;
             timeout += responseTimeout;
-            return timeout <= DefaultOperationTimeout ? DefaultOperationTimeout : timeout;
+            return timeout <= s_defaultOperationTimeout ? s_defaultOperationTimeout : timeout;
         }
 
         private static Uri GetStatisticsUri()

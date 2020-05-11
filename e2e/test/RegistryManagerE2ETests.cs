@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -85,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Device actual = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
                 await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
 
-                Assert.IsTrue(actual.Capabilities != null && actual.Capabilities.IotEdge);
+                Assert.IsTrue(actual.Capabilities.IotEdge);
             }
         }
 
@@ -102,6 +105,50 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 var device = new Device(deviceId);
                 await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
+            }
+        }
+
+        [TestMethod]
+        public async Task RegistryManager_Query_Works()
+        {
+            // arrange
+            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            string deviceId = $"{_devicePrefix}{Guid.NewGuid()}";
+
+            try
+            {
+                Device device = await registryManager
+                    .AddDeviceAsync(new Device(deviceId))
+                    .ConfigureAwait(false);
+
+                // act
+
+                IQuery query = null;
+                IEnumerable<Twin> twins = null;
+                for (int i = 0; i < 30; ++i)
+                {
+                    string queryText = $"select * from devices where deviceId = '{deviceId}'";
+                    query = registryManager.CreateQuery(queryText);
+
+                    twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
+
+                    if (twins.Count() > 0)
+                    {
+                        break;
+                    }
+
+                    // A new device may not return immediately from a query, so give it some time and some retries to appear
+                    await Task.Delay(250).ConfigureAwait(false);
+                }
+
+                // assert
+                twins.Count().Should().Be(1, "only asked for 1 device by its Id");
+                twins.First().DeviceId.Should().Be(deviceId, "The Id of the device returned should match");
+                query.HasMoreResults.Should().BeFalse("We've processed the single, expected result");
+            }
+            finally
+            {
+                await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
             }
         }
     }
