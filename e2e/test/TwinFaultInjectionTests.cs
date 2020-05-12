@@ -142,8 +142,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
@@ -156,8 +154,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
@@ -194,8 +190,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
@@ -208,8 +202,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
