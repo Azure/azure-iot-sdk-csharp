@@ -1,21 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace Microsoft.Azure.Devices.Shared
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     /// <summary>
     /// Represents a collection of properties for <see cref="Twin"/>
     /// </summary>
     [SuppressMessage(
-        "Microsoft.Design", 
-        "CA1010:CollectionsShouldImplementGenericInterface", 
+        "Microsoft.Design",
+        "CA1010:CollectionsShouldImplementGenericInterface",
         Justification = "Public API: this was not designed to be a generic collection.")]
     [JsonConverter(typeof(TwinCollectionJsonConverter))]
     public class TwinCollection : IEnumerable
@@ -24,9 +24,7 @@ namespace Microsoft.Azure.Devices.Shared
         private const string LastUpdatedName = "$lastUpdated";
         private const string LastUpdatedVersionName = "$lastUpdatedVersion";
         private const string VersionName = "$version";
-
-        private JObject _jObject;
-        private JObject _metadata;
+        private readonly JObject _metadata;
 
         /// <summary>
         /// Creates instance of <see cref="TwinCollection"/>.
@@ -61,10 +59,9 @@ namespace Microsoft.Azure.Devices.Shared
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         internal TwinCollection(JObject twinJson)
         {
-            _jObject = twinJson ?? new JObject();
+            JObject = twinJson ?? new JObject();
 
-            JToken metadataJToken;
-            if (_jObject.TryGetValue(MetadataName, out metadataJToken))
+            if (JObject.TryGetValue(MetadataName, out JToken metadataJToken))
             {
                 _metadata = metadataJToken as JObject;
             }
@@ -77,7 +74,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
         public TwinCollection(JObject twinJson, JObject metadataJson)
         {
-            _jObject = twinJson ?? new JObject();
+            JObject = twinJson ?? new JObject();
             _metadata = metadataJson;
         }
 
@@ -88,8 +85,7 @@ namespace Microsoft.Azure.Devices.Shared
         {
             get
             {
-                JToken versionToken;
-                if (!_jObject.TryGetValue(VersionName, out versionToken))
+                if (!JObject.TryGetValue(VersionName, out JToken versionToken))
                 {
                     return default(long);
                 }
@@ -105,17 +101,16 @@ namespace Microsoft.Azure.Devices.Shared
         {
             get
             {
-                int count = _jObject.Count;
+                int count = JObject.Count;
                 if (count > 0)
                 {
                     // Metadata and Version should not count towards this value
-                    JToken ignored;
-                    if (_jObject.TryGetValue(MetadataName, out ignored))
+                    if (JObject.TryGetValue(MetadataName, out _))
                     {
                         count--;
                     }
 
-                    if (_jObject.TryGetValue(VersionName, out ignored))
+                    if (JObject.TryGetValue(VersionName, out _))
                     {
                         count--;
                     }
@@ -125,7 +120,7 @@ namespace Microsoft.Azure.Devices.Shared
             }
         }
 
-        internal JObject JObject => _jObject;
+        internal JObject JObject { get; private set; }
 
         /// <summary>
         /// Property Indexer
@@ -138,7 +133,6 @@ namespace Microsoft.Azure.Devices.Shared
         {
             get
             {
-                dynamic value;
                 if (propertyName == MetadataName)
                 {
                     return GetMetadata();
@@ -151,7 +145,7 @@ namespace Microsoft.Azure.Devices.Shared
                 {
                     return GetLastUpdatedVersion();
                 }
-                else if (TryGetMemberInternal(propertyName, out value))
+                else if (TryGetMemberInternal(propertyName, out dynamic value))
                 {
                     return value;
                 }
@@ -160,13 +154,13 @@ namespace Microsoft.Azure.Devices.Shared
                     throw new ArgumentOutOfRangeException(nameof(propertyName));
                 }
             }
-            set { TrySetMemberInternal(propertyName, value); }
+            set => TrySetMemberInternal(propertyName, value);
         }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return _jObject.ToString();
+            return JObject.ToString();
         }
 
         /// <summary>
@@ -203,7 +197,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>JSON string</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
-            return JsonConvert.SerializeObject(_jObject, formatting);
+            return JsonConvert.SerializeObject(JObject, formatting);
         }
 
         /// <summary>
@@ -213,14 +207,13 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>true if the specified property is present; otherwise, false</returns>
         public bool Contains(string propertyName)
         {
-            JToken ignored;
-            return _jObject.TryGetValue(propertyName, out ignored);
+            return JObject.TryGetValue(propertyName, out JToken ignored);
         }
 
         /// <inheritdoc />
         public IEnumerator GetEnumerator()
         {
-            foreach (KeyValuePair<string, JToken> kvp in _jObject)
+            foreach (KeyValuePair<string, JToken> kvp in JObject)
             {
                 if (kvp.Key == MetadataName || kvp.Key == VersionName)
                 {
@@ -233,23 +226,17 @@ namespace Microsoft.Azure.Devices.Shared
 
         private bool TryGetMemberInternal(string propertyName, out object result)
         {
-            JToken value;
-            if (!_jObject.TryGetValue(propertyName, out value))
-            { 
+            if (!JObject.TryGetValue(propertyName, out JToken value))
+            {
                 result = null;
                 return false;
             }
-            
+
             if (_metadata?[propertyName] is JObject)
             {
-                if (value is JValue)
-                {
-                    result = new TwinCollectionValue((JValue)value, (JObject)_metadata[propertyName]);
-                }
-                else
-                {
-                    result = new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
-                }
+                result = value is JValue
+                    ? new TwinCollectionValue((JValue)value, (JObject)_metadata[propertyName])
+                    : (object)new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
             }
             else
             {
@@ -262,15 +249,14 @@ namespace Microsoft.Azure.Devices.Shared
 
         private bool TrySetMemberInternal(string propertyName, object value)
         {
-            JToken valueJToken =  value == null ? null : JToken.FromObject(value);
-            JToken ignored;
-            if (_jObject.TryGetValue(propertyName, out ignored))
+            JToken valueJToken = value == null ? null : JToken.FromObject(value);
+            if (JObject.TryGetValue(propertyName, out _))
             {
-                _jObject[propertyName] = valueJToken;
+                JObject[propertyName] = valueJToken;
             }
             else
             {
-                _jObject.Add(propertyName, valueJToken);
+                JObject.Add(propertyName, valueJToken);
             }
 
             return true;
@@ -278,10 +264,9 @@ namespace Microsoft.Azure.Devices.Shared
 
         private void TryClearMetadata(string propertyName)
         {
-            JToken ignored;
-            if (_jObject.TryGetValue(propertyName, out ignored))
+            if (JObject.TryGetValue(propertyName, out _))
             {
-                _jObject.Remove(propertyName);
+                JObject.Remove(propertyName);
             }
         }
 
@@ -295,6 +280,5 @@ namespace Microsoft.Azure.Devices.Shared
             TryClearMetadata(LastUpdatedVersionName);
             TryClearMetadata(VersionName);
         }
-
     }
 }

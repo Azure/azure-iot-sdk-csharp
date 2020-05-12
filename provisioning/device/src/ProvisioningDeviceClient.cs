@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>An instance of the ProvisioningDeviceClient</returns>
         public static ProvisioningDeviceClient Create(
             string globalDeviceEndpoint,
-            string idScope, 
-            SecurityProvider securityProvider, 
+            string idScope,
+            SecurityProvider securityProvider,
             ProvisioningTransportHandler transport)
         {
             if (securityProvider is SecurityProviderX509)
@@ -82,6 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             return RegisterAsync(data, CancellationToken.None);
         }
+
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
         /// </summary>
@@ -91,8 +92,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (Logging.IsEnabled) Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security);
-            request.ProductInfo = ProductInfo;
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security)
+            {
+                ProductInfo = ProductInfo
+            };
             return _transport.RegisterAsync(request, cancellationToken);
         }
 
@@ -106,8 +109,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (Logging.IsEnabled) Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData);
-            request.ProductInfo = ProductInfo;
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData)
+            {
+                ProductInfo = ProductInfo
+            };
             return _transport.RegisterAsync(request, cancellationToken);
         }
     }

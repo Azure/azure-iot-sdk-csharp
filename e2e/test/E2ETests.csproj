@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net472;net451</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp3.1</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>

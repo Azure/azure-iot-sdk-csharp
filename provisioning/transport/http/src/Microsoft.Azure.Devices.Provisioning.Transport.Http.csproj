@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Transport</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -19,8 +20,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client HTTP Transport</Title>
+    <IncludeSource>True</IncludeSource>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

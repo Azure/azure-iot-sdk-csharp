@@ -18,25 +18,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     /// <typeparam name="TWork"></typeparam>
     internal class SimpleWorkQueue<TWork>
     {
-        private readonly Func<IChannelHandlerContext, TWork, Task> worker;
+        private readonly Func<IChannelHandlerContext, TWork, Task> _worker;
 
-        private readonly Queue<TWork> backlogQueue;
-        private readonly TaskCompletionSource completionSource;
+        private readonly Queue<TWork> _backlogQueue;
+        private readonly TaskCompletionSource _completionSource;
         protected States State { get; set; }
 
         public SimpleWorkQueue(Func<IChannelHandlerContext, TWork, Task> worker)
         {
-            this.worker = worker;
-            this.completionSource = new TaskCompletionSource();
-            this.backlogQueue = new Queue<TWork>();
+            _worker = worker;
+            _completionSource = new TaskCompletionSource();
+            _backlogQueue = new Queue<TWork>();
         }
 
-        public Task Completion => this.completionSource.Task;
+        public Task Completion => _completionSource.Task;
 
         /// <summary>
         /// Current backlog size
         /// </summary>
-        public int BacklogSize => this.backlogQueue.Count;
+        public int BacklogSize => _backlogQueue.Count;
 
         /// <summary>
         /// Puts the new work to backlog queue and resume work if worker is idle.
@@ -45,17 +45,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <param name="workItem"></param>
         public virtual void Post(IChannelHandlerContext context, TWork workItem)
         {
-            switch (this.State)
+            switch (State)
             {
                 case States.Idle:
-                    this.backlogQueue.Enqueue(workItem);
-                    this.State = States.Processing;
-                    this.StartWorkQueueProcessingAsync(context);
+                    _backlogQueue.Enqueue(workItem);
+                    State = States.Processing;
+                    StartWorkQueueProcessingAsync(context);
                     break;
 
                 case States.Processing:
                 case States.FinalProcessing:
-                    this.backlogQueue.Enqueue(workItem);
+                    _backlogQueue.Enqueue(workItem);
                     break;
 
                 case States.Aborted:
@@ -63,7 +63,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly - should not change exception type now, even though it is the wrong type
+                    throw new ArgumentOutOfRangeException(nameof(State), "Unexpected state.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
         }
 
@@ -72,14 +74,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </summary>
         public void Complete()
         {
-            switch (this.State)
+            switch (State)
             {
                 case States.Idle:
-                    this.completionSource.TryComplete();
+                    _completionSource.TryComplete();
                     break;
 
                 case States.Processing:
-                    this.State = States.FinalProcessing;
+                    State = States.FinalProcessing;
                     break;
 
                 case States.FinalProcessing:
@@ -87,7 +89,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly - should not change exception type now, even though it is the wrong type
+                    throw new ArgumentOutOfRangeException(nameof(State), "Unexpected state.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
         }
 
@@ -98,14 +102,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public virtual void Abort(Exception exception)
         {
-            switch (this.State)
+            switch (State)
             {
                 case States.Idle:
                 case States.Processing:
                 case States.FinalProcessing:
-                    this.State = States.Aborted;
+                    State = States.Aborted;
 
-                    Queue<TWork> queue = this.backlogQueue;
+                    Queue<TWork> queue = _backlogQueue;
                     while (queue.Count > 0)
                     {
                         TWork workItem = queue.Dequeue();
@@ -125,45 +129,49 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly - should not change exception type now, even though it is the wrong type
+                    throw new ArgumentOutOfRangeException(nameof(State), "Unexpected state.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
         }
 
         protected virtual Task DoWorkAsync(IChannelHandlerContext context, TWork work)
         {
-            return this.worker(context, work);
+            return _worker(context, work);
         }
 
         private async void StartWorkQueueProcessingAsync(IChannelHandlerContext context)
         {
             try
             {
-                Queue<TWork> queue = this.backlogQueue;
-                while (queue.Count > 0 && this.State != States.Aborted)
+                Queue<TWork> queue = _backlogQueue;
+                while (queue.Count > 0 && State != States.Aborted)
                 {
                     TWork workItem = queue.Dequeue();
-                    await this.DoWorkAsync(context, workItem).ConfigureAwait(false);
+                    await DoWorkAsync(context, workItem).ConfigureAwait(false);
                 }
 
-                switch (this.State)
+                switch (State)
                 {
                     case States.Processing:
-                        this.State = States.Idle;
+                        State = States.Idle;
                         break;
 
                     case States.FinalProcessing:
                     case States.Aborted:
-                        this.completionSource.TryComplete();
+                        _completionSource.TryComplete();
                         break;
 
                     default:
-                        throw new ArgumentOutOfRangeException();
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly - should not change exception type now, even though it is the wrong type
+                        throw new ArgumentOutOfRangeException(nameof(State), "Unexpected state.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
                 }
             }
             catch (Exception ex)
             {
-                this.Abort();
-                this.completionSource.TrySetException(new ChannelMessageProcessingException(ex, context));
+                Abort();
+                _completionSource.TrySetException(new ChannelMessageProcessingException(ex, context));
             }
         }
 

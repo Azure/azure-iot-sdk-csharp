@@ -1,0 +1,18 @@
+﻿using System.Text.RegularExpressions;
+
+namespace Microsoft.Azure.Devices.E2ETests.Helpers
+{
+    internal static class HostNameHelper
+    {
+        // Look for "HostName=", and then grab all the characters until just before the next semi-colon.
+        private static readonly Regex s_hostNameRegex = new Regex("(?<=HostName=).*?(?=;)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Extracts the IoT Hub host name from the specified connection string
+        /// </summary>
+        public static string GetHostName(string iotHubConnectionString)
+        {
+            return s_hostNameRegex.Match(iotHubConnectionString).Value;
+        }
+    }
+}

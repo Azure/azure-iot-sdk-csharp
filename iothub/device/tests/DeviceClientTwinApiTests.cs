@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using System.Threading.Tasks;
@@ -25,7 +27,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var context = new object();
 
             // act
+#pragma warning disable CS0618 // Type or member is obsolete
             await client.SetDesiredPropertyUpdateCallback(myCallback, context).ConfigureAwait(false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // assert
             await innerHandler.
@@ -161,7 +165,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.InnerHandler = innerHandler;
 
             // act and assert
+#pragma warning disable CS0618 // Type or member is obsolete
             await client.SetDesiredPropertyUpdateCallback(null, null).ConfigureAwait(false);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         // Tests_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null
@@ -196,7 +202,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                 receivedPatch = p;
                 return TaskHelpers.CompletedTask;
             };
+#pragma warning disable CS0618 // Type or member is obsolete
             await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // act
             client.InternalClient.OnReportedStatePatchReceived(myPatch);

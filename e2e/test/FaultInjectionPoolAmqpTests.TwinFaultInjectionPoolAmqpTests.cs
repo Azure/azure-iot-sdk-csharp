@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -700,7 +699,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_SingleConnection_Amqp()
@@ -716,7 +714,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_SingleConnection_AmqpWs()
@@ -732,7 +729,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_SingleConnection_Amqp()
@@ -748,7 +744,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_SingleConnection_AmqpWs()
@@ -764,7 +759,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_SingleConnection_Amqp()
@@ -780,7 +774,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_SingleConnection_AmqpWs()
@@ -797,7 +790,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_SingleConnection_Amqp()
@@ -814,7 +806,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_SingleConnection_AmqpWs()
@@ -831,7 +822,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_SingleConnection_Amqp()
@@ -848,7 +838,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_SingleConnection_AmqpWs()
@@ -865,7 +854,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_SingleConnection_Amqp()
@@ -882,7 +870,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_SingleConnection_AmqpWs()
@@ -898,7 +885,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTcpConnRecovery_SingleConnection_Amqp()
@@ -915,7 +901,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTcpConnRecovery_SingleConnection_AmqpWs()
@@ -932,7 +917,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_SingleConnection_Amqp()
@@ -949,7 +933,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_SingleConnection_AmqpWs()
@@ -966,7 +949,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_SingleConnection_Amqp()
@@ -983,7 +965,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_SingleConnection_AmqpWs()
@@ -1001,7 +982,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_SingleConnection_Amqp()
@@ -1019,7 +999,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_SingleConnection_AmqpWs()
@@ -1037,7 +1016,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_SingleConnection_Amqp()
@@ -1055,7 +1033,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_SingleConnection_AmqpWs()
@@ -1073,7 +1050,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_SingleConnection_Amqp()
@@ -1091,7 +1067,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_SingleConnection_AmqpWs()
@@ -1107,8 +1082,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MultipleConnections_Amqp()
         {
@@ -1122,8 +1095,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MultipleConnections_AmqpWs()
         {
@@ -1137,8 +1108,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MultipleConnections_Amqp()
         {
@@ -1152,8 +1121,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MultipleConnections_AmqpWs()
         {
@@ -1167,8 +1134,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_MultipleConnections_Amqp()
         {
@@ -1182,8 +1147,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_MultipleConnections_AmqpWs()
         {
@@ -1198,7 +1161,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_MultipleConnections_Amqp()
@@ -1214,7 +1176,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_MultipleConnections_AmqpWs()
@@ -1230,7 +1191,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_MultipleConnections_Amqp()
@@ -1246,7 +1206,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_MultipleConnections_AmqpWs()
@@ -1262,7 +1221,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_MultipleConnections_Amqp()
@@ -1278,7 +1236,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_MultipleConnections_AmqpWs()
@@ -1293,8 +1250,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MultipleConnections_Amqp()
         {
@@ -1309,8 +1264,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MultipleConnections_AmqpWs()
         {
@@ -1325,8 +1278,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MultipleConnections_Amqp()
         {
@@ -1341,8 +1292,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MultipleConnections_AmqpWs()
         {
@@ -1357,8 +1306,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_MultipleConnections_Amqp()
         {
@@ -1373,8 +1320,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
-        [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_MultipleConnections_AmqpWs()
         {
@@ -1390,7 +1335,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_MultipleConnections_Amqp()
@@ -1407,7 +1351,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_MultipleConnections_AmqpWs()
@@ -1424,7 +1367,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_MultipleConnections_Amqp()
@@ -1441,7 +1383,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_MultipleConnections_AmqpWs()
@@ -1458,7 +1399,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_MultipleConnections_Amqp()
@@ -1475,7 +1415,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        // TODO: #1132 - Twin desired property updates not received after fault injection on AMQP
         [Ignore]
         [TestMethod]
         public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_MultipleConnections_AmqpWs()
@@ -1505,7 +1444,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 _log.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
+                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString()).ConfigureAwait(false);
             };
 
             Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
@@ -1564,7 +1503,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 var testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
-                var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
+                using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 var propName = twinProperties[0];

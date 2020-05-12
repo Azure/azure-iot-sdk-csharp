@@ -1,7 +1,21 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - docs/*
+    - tools/CaptureLogs/*
+    - iothub/device/devdoc/*
+    - iothub/service/devdoc/*
+
 resources:
   - repo: self
     clean: true
+
 jobs:
   ### Linux build ###
   - job: LINUX
@@ -256,6 +270,7 @@ jobs:
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
         displayName: "Run CredScan"
         inputs:
+          toolMajorVersion: V2
           suppressionsFile: vsts/CredScanSuppressions.json
           regexMatchTimeoutInSeconds: 5
 

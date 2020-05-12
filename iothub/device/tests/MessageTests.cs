@@ -165,5 +165,63 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(CommonConstants.SecurityMessageInterfaceId, msg.SystemProperties[MessageSystemPropertyNames.InterfaceId]);
             Assert.IsTrue(msg.IsSecurityMessage);
         }
+
+        [TestMethod]
+        public void CloneWithBodyTest()
+        {
+            using (var original = new Message(Encoding.UTF8.GetBytes("Original copy")))
+            {
+                original.Properties["test1"] = "test_v_1";
+                original.Properties["test2"] = "test_v_2";
+
+                original.ContentEncoding = "gzip";
+                original.ContentType = "text/plain";
+                original.UserId = "JohnDoe";
+
+                using (var clone = original.CloneWithBody(Encoding.UTF8.GetBytes("Cloned version")))
+                { 
+                    Assert.AreEqual("test_v_1", clone.Properties["test1"]);
+                    Assert.AreEqual("test_v_2", clone.Properties["test2"]);
+
+                    Assert.AreEqual("gzip", clone.ContentEncoding);
+                    Assert.AreEqual("text/plain", clone.ContentType);
+                    Assert.AreEqual("JohnDoe", clone.UserId);
+
+                    var clonedContent = default(string);
+
+                    using (var reader = new StreamReader(clone.BodyStream, Encoding.UTF8))
+                    {
+                        clonedContent = reader.ReadToEnd();
+                    }
+                
+                    Assert.AreEqual("Cloned version", clonedContent);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void CloneWithBodyWithNullTest()
+        {
+            using (var original = new Message(Encoding.UTF8.GetBytes("Original copy")))
+            {
+                original.Properties["test1"] = "test_v_1";
+                original.Properties["test2"] = null;
+
+                original.ContentEncoding = "gzip";
+                original.ContentType = null;
+
+                using (var clone = original.CloneWithBody(Encoding.UTF8.GetBytes("Cloned version")))
+                {                    
+                    Assert.AreEqual("test_v_1", clone.Properties["test1"]);
+                    Assert.AreEqual(null, clone.Properties["test2"]);
+                    Assert.AreEqual(2, clone.Properties.Count);
+
+                    Assert.AreEqual("gzip", clone.ContentEncoding);                    
+                    Assert.IsTrue(clone.SystemProperties.Keys.Contains(MessageSystemPropertyNames.ContentType));
+                    Assert.IsNull(clone.SystemProperties[MessageSystemPropertyNames.ContentType]);
+                    Assert.IsFalse(clone.SystemProperties.Keys.Contains(MessageSystemPropertyNames.UserId));
+                }
+            }
+        }
     }
 }

@@ -51,6 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
                 //SslProtocols = TlsVersions.Preferred,
+                CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck
             };
 
             IWebProxy webProxy = httpTransportSettings.Proxy;
@@ -60,7 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _httpClientHandler.Proxy = webProxy;
             }
 
-            _httpClientObj = new HttpClient(_httpClientHandler)
+            _httpClientObj = new HttpClient(_httpClientHandler, false)
             {
                 BaseAddress = _baseAddress,
                 Timeout = s_defaultOperationTimeout,

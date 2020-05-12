@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Security.Cryptography.X509Certificates;
@@ -248,86 +248,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             _ = DeviceClient.Create(hostName, authMethod, new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100) });
-        }
-
-        [TestMethod]
-        [Ignore] // TODO #582
-        public void DeviceClient_ValidCertAmqp()
-        {
-            // arrange
-            const string hostName = "acme.azure-devices.net";
-            var authMethod = new DeviceAuthenticationWithX509Certificate(
-                "device1",
-                CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile));
-
-            // act
-            _ = DeviceClient.Create(hostName, authMethod, new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100) });
-
-            // assert?
-        }
-
-        [TestMethod]
-        [Ignore] // TODO #582
-        public void DeviceClient_ValidCertHttp()
-        {
-            // arrange
-            const string hostName = "acme.azure-devices.net";
-            var authMethod = new DeviceAuthenticationWithX509Certificate(
-                "device1",
-                CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile));
-
-            // act
-            _ = DeviceClient.Create(hostName, authMethod, new ITransportSettings[] { new Http1TransportSettings() });
-
-            // assert?
-        }
-
-        [TestMethod]
-        [Ignore] // TODO #582
-        public void DeviceClient_ValidCertMqtt()
-        {
-            // arrange
-            const string hostName = "acme.azure-devices.net";
-            X509Certificate2 cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
-            var authMethod = new DeviceAuthenticationWithX509Certificate("device1", cert);
-
-            // act
-            var deviceClient = DeviceClient.Create(
-                hostName,
-                authMethod,
-                new ITransportSettings[]
-                {
-                    new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
-                    {
-                        ClientCertificate = cert,
-                        RemoteCertificateValidationCallback = (a, b, c, d) => true,
-                    },
-                    new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                    {
-                        ClientCertificate = cert,
-                        RemoteCertificateValidationCallback = (a, b, c, d) => true,
-                    }
-                });
-
-            // assert?
-        }
-
-        [TestMethod]
-        [Ignore] // TODO #582
-        public void DeviceClient_InvalidX509Certificate()
-        {
-            // arrange
-            const string hostName = "acme.azure-devices.net";
-            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, new AmqpConnectionPoolSettings());
-            var authMethod1 = new DeviceAuthenticationWithRegistrySymmetricKey("device1", "dGVzdFN0cmluZzE=");
-            X509Certificate2 cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
-            var authMethod2 = new DeviceAuthenticationWithX509Certificate("device2", cert);
-
-            // act
-            _ = DeviceClient.Create(hostName, authMethod1, new ITransportSettings[] { transportSetting });
-            _ = DeviceClient.Create(hostName, authMethod2, new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100) });
-
-            // assert?
         }
     }
 }

@@ -28,20 +28,15 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class ReprovisioningE2ETests : IDisposable
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
-        private static string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
-        private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private static readonly string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
+        private static string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private readonly string _devicePrefix = $"E2E_{nameof(ProvisioningE2ETests)}_";
 
 #pragma warning disable CA1823
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
-        private readonly ConsoleEventListener _listener;
+        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 #pragma warning restore CA1823
-
-        public ReprovisioningE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_MqttWs_SymmetricKey_RegisterOk_Individual()
@@ -266,41 +261,48 @@ namespace Microsoft.Azure.Devices.E2ETests
             ICollection<string> iotHubsToReprovisionTo,
             string proxyServerAddress = null)
         {
-            ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
+            ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
             string groupId = _devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             bool twinOperationsAllowed = transportProtocol != Client.TransportType.Http1;
 
-            using (ProvisioningTransportHandler transport = ProvisioningE2ETests.CreateTransportHandlerFromName(transportProtocol))
-            using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iotHubsToStartAt).ConfigureAwait(false))
+            using ProvisioningTransportHandler transport = ProvisioningE2ETests.CreateTransportHandlerFromName(transportProtocol);
+            using SecurityProvider security = await CreateSecurityProviderFromName(
+                    attestationType,
+                    enrollmentType,
+                    groupId,
+                    reprovisionPolicy,
+                    allocationPolicy,
+                    customAllocationDefinition,
+                    iotHubsToStartAt)
+                .ConfigureAwait(false);
+
+            //Check basic provisioning
+            if (ProvisioningE2ETests.ImplementsWebProxy(transportProtocol) && setCustomProxy)
             {
-                //Check basic provisioning
-                if (ProvisioningE2ETests.ImplementsWebProxy(transportProtocol) && setCustomProxy)
-                {
-                    transport.Proxy = (proxyServerAddress != null) ? new WebProxy(ProxyServerAddress) : null;
-                }
+                transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
+            }
 
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
-                    s_globalDeviceEndpoint,
-                    Configuration.Provisioning.IdScope,
-                    security,
-                    transport);
-                var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
-                DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                ValidateDeviceRegistrationResult(result);
-                Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
-                await ConfirmRegisteredDeviceWorks(result, auth, transportProtocol, twinOperationsAllowed).ConfigureAwait(false);
+            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+                s_globalDeviceEndpoint,
+                Configuration.Provisioning.IdScope,
+                security,
+                transport);
+            using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
+            DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+            ValidateDeviceRegistrationResult(result);
+            Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
+            await ConfirmRegisteredDeviceWorks(result, auth, transportProtocol, twinOperationsAllowed).ConfigureAwait(false);
 
-                //Check reprovisioning
-                await UpdateEnrollmentToForceReprovision(enrollmentType, provisioningServiceClient, iotHubsToReprovisionTo, security, groupId).ConfigureAwait(false);
-                result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
-                await ConfirmDeviceWorksAfterReprovisioning(result, auth, transportProtocol, reprovisionPolicy, twinOperationsAllowed).ConfigureAwait(false);
+            //Check reprovisioning
+            await UpdateEnrollmentToForceReprovision(enrollmentType, provisioningServiceClient, iotHubsToReprovisionTo, security, groupId).ConfigureAwait(false);
+            result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+            ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
+            await ConfirmDeviceWorksAfterReprovisioning(result, auth, transportProtocol, reprovisionPolicy, twinOperationsAllowed).ConfigureAwait(false);
 
-                if (attestationType != AttestationType.x509) //x509 enrollments are hardcoded, should never be deleted
-                {
-                    await ProvisioningE2ETests.DeleteCreatedEnrollment(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
-                }
+            if (attestationType != AttestationType.x509) //x509 enrollments are hardcoded, should never be deleted
+            {
+                await ProvisioningE2ETests.DeleteCreatedEnrollment(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
             }
         }
 
@@ -552,12 +554,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
+            _listener.Dispose();
         }
     }
 }
