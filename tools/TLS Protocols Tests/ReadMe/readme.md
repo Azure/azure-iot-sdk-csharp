@@ -20,8 +20,8 @@ To run it, you will need:
 1. Set the necessary environment variables specified in the Program.cs file.
   - If using VS, open the project properties' Debug tab. You can configure environment variables in there.
 1. Run the project:
-  - If using VS, open Program.cs and select either net451 or netcoreapp2.0., and set **TLS protocol tests** as the startup project.
-  - If running from command-line, use `dotnet run -f net451` or `dotnet run -f netcoreapp2.0`
+  - If using VS, open Program.cs and select either net451 or netcoreapp2.1., and set **TLS protocol tests** as the startup project.
+  - If running from command-line, use `dotnet run -f net451` or `dotnet run -f netcoreapp2.1`
 1. Observe output of the tool.
   - If the device client failed to connect it will report the exception types and messages.
     - The key error for when a common TLS protocol could not be negotiated is: _System.ComponentModel.Win32Exception: The client and server cannot communicate, because they do not possess a common algorithm_

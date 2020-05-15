@@ -7,6 +7,31 @@ This repository contains the following:
 - **Microsoft Azure Provisioning device SDK for C#** to provision devices to Azure IoT Hub with .NET
 - **Microsoft Azure Provisioning service SDK for C#** to manage your Provisioning service instance from a back-end .NET application
 
+### Build status
+
+Due to security considerations, build logs are not publicly available.
+
+| Service Environment                                                   | Status |
+| ---                                                                   | ---    |
+| [Master](https://github.com/Azure/azure-iot-sdk-csharp/tree/master)   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-westus1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=44&_a=summary&repositoryFilter=9&branchFilter=23)|
+| [Preview](https://github.com/Azure/azure-iot-sdk-csharp/tree/preview) | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=43&_a=summary&repositoryFilter=9&branchFilter=72)|
+
+### Recommended NuGet packages
+
+| Package Name                                          | Release Version                                           | Pre-release Version   |
+| ---                                                   | ---                                                       | ---                   |
+| Microsoft.Azure.Devices.Client                        | [![NuGet][iothub-device-release]][iothub-device-nuget]    | [![NuGet][iothub-device-prerelease]][iothub-device-nuget]     |
+| Microsoft.Azure.Devices                               | [![NuGet][iothub-service-release]][iothub-service-nuget]  | [![NuGet][iothub-service-prerelease]][iothub-service-nuget]   |
+| Microsoft.Azure.Devices.Shared                        | [![NuGet][iothub-shared-release]][iothub-shared-nuget]    | [![NuGet][iothub-shared-prerelease]][iothub-shared-nuget]     |
+| Microsoft.Azure.Devices.Provisioning.Client           | [![NuGet][dps-device-release]][dps-device-nuget]          | [![NuGet][dps-device-prerelease]][dps-device-nuget]       |
+| Microsoft.Azure.Devices.Provisioning.Transport.Amqp   | [![NuGet][dps-device-amqp-release]][dps-device-amqp-nuget]| [![NuGet][dps-device-amqp-prerelease]][dps-device-amqp-nuget] |
+| Microsoft.Azure.Devices.Provisioning.Transport.Http   | [![NuGet][dps-device-http-release]][dps-device-http-nuget]| [![NuGet][dps-device-http-prerelease]][dps-device-http-nuget] |
+| Microsoft.Azure.Devices.Provisioning.Transport.Mqtt   | [![NuGet][dps-device-mqtt-release]][dps-device-mqtt-nuget]| [![NuGet][dps-device-mqtt-prerelease]][dps-device-mqtt-nuget] |
+| Microsoft.Azure.Devices.Provisioning.Service          | [![NuGet][dps-service-release]][dps-service-nuget]        | [![NuGet][dps-service-prerelease]][dps-service-nuget]     |
+| Microsoft.Azure.Devices.Provisioning.Security.Tpm     | [![NuGet][dps-tpm-release]][dps-tpm-nuget]                | [![NuGet][dps-tpm-prerelease]][dps-tpm-nuget]     |
+| Microsoft.Azure.Devices.DigitalTwin.Client            | NA                                                        | [![NuGet][pnp-device-prerelease]][pnp-device-nuget]  |
+| Microsoft.Azure.Devices.DigitalTwin.Service           | NA                                                        | [![NuGet][pnp-service-prerelease]][pnp-service-nuget] |
+
 The API reference documentation for .NET SDK is [here][dotnet-api-reference].
 
 To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
@@ -31,15 +56,6 @@ Samples are available at [Azure IoT Samples for C#](https://github.com/Azure-Sam
 
 If you would like to build or change the SDK source code, please follow the [devguide](doc/devguide.md).
 
-### Build status
-
-Due to security considerations, build logs are not publicly available.
-
-| Service Environment      | Status |
-| ---                      | ---    |
-| Master                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-westus1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=44&_a=summary&repositoryFilter=9&branchFilter=23)|
-| Preview                  | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=43&_a=summary&repositoryFilter=9&branchFilter=72)|
-
 ## OS platforms and hardware compatibility
 
 > .NET MicroFramework will not be supported in future versions of the SDK.
@@ -49,6 +65,7 @@ Due to security considerations, build logs are not publicly available.
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
 
 The NuGet packages provide support for the following .NET flavors:
+- .NET Standard 2.1
 - .NET Standard 2.0
 - .NET Framework 4.7.2 (IoT Hub SDKs only)
 - .NET Framework 4.5.1 (IoT Hub SDKs only)
@@ -170,3 +187,34 @@ Microsoft collects performance and usage information which may be used to provid
 [dotnet-api-reference]: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/iot/client?view=azure-dotnet
 [devbox-setup]: ./doc/devbox_setup.md
 [get-started-dotnet]: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted
+[iothub-device-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Client.svg?style=plastic
+[iothub-device-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Client.svg?style=plastic
+[iothub-device-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Client/
+[iothub-service-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.svg?style=plastic
+[iothub-service-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.svg?style=plastic
+[iothub-service-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices/
+[iothub-shared-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Shared.svg?style=plastic
+[iothub-shared-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Shared.svg?style=plastic
+[iothub-shared-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Shared/
+[dps-device-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Provisioning.Client.svg?style=plastic
+[dps-device-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Provisioning.Client.svg?style=plastic
+[dps-device-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Client/
+[dps-device-amqp-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Provisioning.Transport.Amqp.svg?style=plastic
+[dps-device-amqp-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Provisioning.Transport.Amqp.svg?style=plastic
+[dps-device-amqp-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Transport.Amqp/
+[dps-device-http-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Provisioning.Transport.Http.svg?style=plastic
+[dps-device-http-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Provisioning.Transport.Http.svg?style=plastic
+[dps-device-http-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Transport.Http/
+[dps-device-mqtt-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.svg?style=plastic
+[dps-device-mqtt-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.svg?style=plastic
+[dps-device-mqtt-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Transport.Mqtt/
+[dps-service-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Provisioning.Service.svg?style=plastic
+[dps-service-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Provisioning.Service.svg?style=plastic
+[dps-service-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Service/
+[dps-tpm-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Provisioning.Security.Tpm.svg?style=plastic
+[dps-tpm-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Provisioning.Security.Tpm.svg?style=plastic
+[dps-tpm-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Security.Tpm/
+[pnp-device-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.DigitalTwin.Client.svg?style=plastic
+[pnp-device-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.DigitalTwin.Client/
+[pnp-service-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.DigitalTwin.Service.svg?style=plastic
+[pnp-service-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.DigitalTwin.Service/
