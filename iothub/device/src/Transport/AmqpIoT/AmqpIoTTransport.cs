@@ -176,6 +176,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (_amqpTransportSettings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback;
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
+                    }
                 }
 #endif
 

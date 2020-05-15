@@ -1018,6 +1018,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (settings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting RemoteCertificateValidationCallback");
+                    }
                 }
 #endif
 
