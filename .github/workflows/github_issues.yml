@@ -19,4 +19,4 @@ jobs:
           ado_wit: "Bug"
           ado_new_state: "New"
           ado_close_state: "Done"
-          ado_bypassrules: true
+          ado_bypassrules: false
