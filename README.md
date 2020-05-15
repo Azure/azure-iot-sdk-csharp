@@ -16,7 +16,9 @@ azure-iot-samples-csharp provides a set of easy-to-understand, continuously-test
 
 ## Prerequisites
 
-- .NET Core SDK 2.1.0 or greater on your development machine.  You can download the .NET Core SDK for multiple platforms from [.NET](https://www.microsoft.com/net/download/all).  You can verify the current version of C# on your development machine using 'dotnet --version'.
+- .NET Core SDK 3.0.0 or greater on your development machine.  You can download the .NET Core SDK for multiple platforms from [.NET](https://www.microsoft.com/net/download/all).  You can verify the current version of C# on your development machine using 'dotnet --version'.
+
+  **Note:** The samples can be compiled using the NET Core SDK 2.1 SDK if the language version of projects using C# 8 features are changed to `preview`.
 
 
 ## Resources
