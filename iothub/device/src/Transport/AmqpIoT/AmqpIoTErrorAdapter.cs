@@ -38,121 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private const int MaxSizeInInfoMap = 32 * 1024;
 
-        public static AmqpException ToAmqpException(Exception exception, string gatewayId)
-        {
-            return ToAmqpException(exception, gatewayId, false);
-        }
-
-        public static AmqpException ToAmqpException(Exception exception, string gatewayId, bool includeStackTrace)
-        {
-            Error amqpError = ToAmqpError(exception, gatewayId, includeStackTrace);
-            return new AmqpException(amqpError);
-        }
-
-        public static Error ToAmqpError(Exception exception, string gatewayId)
-        {
-            return ToAmqpError(exception, gatewayId, false);
-        }
-
-        public static Error ToAmqpError(Exception exception, string gatewayId, bool includeStackTrace)
-        {
-            if (exception == null)
-            {
-                throw new ArgumentNullException("exception");
-            }
-
-            Error error = new Error();
-            error.Description = exception.Message;
-
-            if (exception is AmqpException)
-            {
-                AmqpException amqpException = (AmqpException)exception;
-                error.Condition = amqpException.Error.Condition;
-                error.Info = amqpException.Error.Info;
-            }
-            else if (exception is UnauthorizedAccessException || exception is UnauthorizedException)
-            {
-                error.Condition = AmqpErrorCode.UnauthorizedAccess;
-            }
-            else if (exception is NotSupportedException)
-            {
-                error.Condition = AmqpErrorCode.NotImplemented;
-            }
-            else if (exception is DeviceNotFoundException)
-            {
-                error.Condition = AmqpErrorCode.NotFound;
-            }
-            else if (exception is IotHubNotFoundException)
-            {
-                error.Condition = IotHubNotFoundError;
-            }
-            else if (exception is DeviceMessageLockLostException)
-            {
-                error.Condition = MessageLockLostError;
-            }
-            else if (exception is MessageTooLargeException)
-            {
-                error.Condition = AmqpErrorCode.MessageSizeExceeded;
-            }
-            else if (exception is DeviceMaximumQueueDepthExceededException)
-            {
-                error.Condition = AmqpErrorCode.ResourceLimitExceeded;
-            }
-            else if (exception is TimeoutException)
-            {
-                error.Condition = TimeoutError;
-            }
-            else if (exception is InvalidOperationException)
-            {
-                error.Condition = AmqpErrorCode.NotAllowed;
-            }
-            else if (exception is ArgumentOutOfRangeException)
-            {
-                error.Condition = ArgumentOutOfRangeError;
-            }
-            else if (exception is ArgumentException)
-            {
-                error.Condition = ArgumentError;
-            }
-            else if (exception is IotHubSuspendedException)
-            {
-                error.Condition = IotHubSuspended;
-            }
-            else
-            {
-                error.Condition = AmqpErrorCode.InternalError;
-                error.Description = error.Description;
-            }
-            // we will always need this to add trackingId
-            if (error.Info == null)
-            {
-                error.Info = new Fields();
-            }
-
-            string stackTrace;
-            if (includeStackTrace && !string.IsNullOrEmpty(stackTrace = exception.StackTrace))
-            {
-                if (stackTrace.Length > MaxSizeInInfoMap)
-                {
-                    stackTrace = stackTrace.Substring(0, MaxSizeInInfoMap);
-                }
-
-                // error.Info came from AmqpExcpetion then it contains StackTraceName already.
-                string dummy;
-                if (!error.Info.TryGetValue(StackTraceName, out dummy))
-                {
-                    error.Info.Add(StackTraceName, stackTrace);
-                }
-            }
-
-            string trackingId;
-            error.Info.TryGetValue(TrackingId, out trackingId);
-            trackingId = AmqpIoTTrackingHelper.CheckAndAddGatewayIdToTrackingId(gatewayId, trackingId);
-            error.Info.Add(TrackingId, trackingId);
-
-            return error;
-        }
-
         public static Exception GetExceptionFromOutcome(Outcome outcome)
         {
             Exception retException = null;
@@ -376,6 +261,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             else if (error.Condition.Equals(IotHubSuspended))
             {
                 retException = new IotHubSuspendedException(message);
+            }
+            else if (error.Condition.Equals(IotHubNotFoundError))
+            {
+                retException = new AmqpIoTResourceException(message);
             }
             else
             {
