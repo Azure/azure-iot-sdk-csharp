@@ -20,6 +20,8 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test
     [Trait("TestCategory", "PnP")]
     public class DigitalTwinInterfaceClientTest
     {
+        private readonly string DeviceConnectionString = "HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=dGVzdFN0cmluZzE=";
+
         [Fact]
         public void TestConstructorWhenIdIsNull()
         {
@@ -151,7 +153,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test
             var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             var properties = new List<DigitalTwinPropertyReport>();
             properties.Add(new DigitalTwinPropertyReport("propertyName1", "propertyValue1"));
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
             var digitalTwinClientMock = Substitute.For<DigitalTwinClient>(deviceClient);
             digitalTwinClientMock.ReportPropertiesAsync("instanceName", properties, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
             client.Initialize(digitalTwinClientMock);
@@ -195,7 +197,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test
         {
             var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
 
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
             var digitalTwinClientMock = Substitute.For<DigitalTwinClient>(deviceClient);
 
             digitalTwinClientMock.SendTelemetryAsync("urn:id", "instanceName", "telemetryName", "telemetryValue", CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
@@ -244,7 +246,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test
             var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             var cmdUpdate = new DigitalTwinAsyncCommandUpdate("TestName", "TestReqId", 999, "TestPayload");
 
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
             var digitalTwinClientMock = Substitute.For<DigitalTwinClient>(deviceClient);
 
             digitalTwinClientMock.UpdateAsyncCommandStatusAsync("urn:id", "instanceName", cmdUpdate, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
