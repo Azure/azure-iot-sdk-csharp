@@ -8,12 +8,13 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using System.Net;
+using System.Net.Security;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpAuthStrategyX509 : AmqpAuthStrategy
     {
-        SecurityProviderX509 _security;
+        private SecurityProviderX509 _security;
 
         public AmqpAuthStrategyX509(SecurityProviderX509 security)
         {
@@ -25,10 +26,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return new AmqpSettings();
         }
 
-        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy)
+        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy, RemoteCertificateValidationCallback remoteCertificateValidationCallback)
         {
             X509Certificate2 clientCert = _security.GetAuthenticationCertificate();
-            return connection.OpenAsync(timeout, useWebSocket, clientCert, proxy);
+            return connection.OpenAsync(timeout, useWebSocket, clientCert, proxy, remoteCertificateValidationCallback);
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)

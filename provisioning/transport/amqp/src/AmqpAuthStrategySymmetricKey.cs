@@ -12,6 +12,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.Security;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -41,14 +42,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return settings;
         }
 
-        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy)
+        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy, RemoteCertificateValidationCallback remoteCertificateValidationCallback)
         {
-            return connection.OpenAsync(timeout, useWebSocket, null, proxy);
+            return connection.OpenAsync(timeout, useWebSocket, null, proxy, remoteCertificateValidationCallback);
         }
 
         public override void SaveCredentials(RegistrationOperationStatus operation)
         {
-            
         }
     }
 }
