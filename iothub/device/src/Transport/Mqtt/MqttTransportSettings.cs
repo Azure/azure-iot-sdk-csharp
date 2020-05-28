@@ -126,7 +126,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public TimeSpan DefaultReceiveTimeout { get; set; }
 
         /// <summary>
-        /// A callback for remote certificate validation
+        /// A callback for remote certificate validation.
+        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulrenabilities.
         /// </summary>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 

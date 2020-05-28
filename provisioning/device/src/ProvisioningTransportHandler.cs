@@ -25,7 +25,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public IWebProxy Proxy { get; set; }
 
         /// <summary>
-        /// A callback for remote certificate validation
+        /// A callback for remote certificate validation.
+        /// If incorrectly implemented, your device may fail to connect to DPS and/or be open to security vulrenabilities.
         /// </summary>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
