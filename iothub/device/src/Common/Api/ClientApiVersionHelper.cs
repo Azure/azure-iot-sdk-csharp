@@ -8,7 +8,12 @@ namespace Microsoft.Azure.Devices.Client
         internal const string ApiVersionQueryPrefix = "api-version=";
         internal const string ApiVersionLatest = "2019-07-01-preview";
 
+        // The preview API version support has been added to enable support for PnP features. This will be removed once the service goes GA.
+        internal const string ApiVersionPreview = "2020-05-31-preview";
+
         public const string ApiVersionString = ApiVersionLatest;
-        public const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionString;
+        public const string ApiVersionQueryStringLatest = ApiVersionQueryPrefix + ApiVersionString;
+
+        public const string ApiVersionQueryStringPreview = ApiVersionQueryPrefix + ApiVersionPreview;
     }
 }
