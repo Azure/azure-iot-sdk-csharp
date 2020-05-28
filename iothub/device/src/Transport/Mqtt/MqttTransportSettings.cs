@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         /// <summary>
         /// A callback for remote certificate validation.
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulrenabilities.
+        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
         /// </summary>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
