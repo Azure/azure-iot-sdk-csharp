@@ -5,6 +5,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +23,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Gets or sets the proxy for Provisioning Client operations.
         /// </summary>
         public IWebProxy Proxy { get; set; }
+
+        /// <summary>
+        /// A callback for remote certificate validation.
+        /// If incorrectly implemented, your device may fail to connect to DPS and/or be open to security vulnerabilities.
+        /// </summary>
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.

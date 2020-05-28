@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
                 connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
-                await authStrategy.OpenConnectionAsync(connection, s_timeoutConstant, useWebSocket, Proxy).ConfigureAwait(false);
+                await authStrategy.OpenConnectionAsync(connection, s_timeoutConstant, useWebSocket, Proxy, RemoteCertificateValidationCallback).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await CreateLinksAsync(
