@@ -46,6 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string ApiVersionParam = "api-version";
         private const string DeviceClientTypeParam = "DeviceClientType";
         private const string AuthChainParam = "auth-chain";
+        private const string ModelIdParam = "digital-twin-model-id";
         private const char SegmentSeparatorChar = '/';
         private const char SingleSegmentWildcardChar = '+';
         private const char MultiSegmentWildcardChar = '#';
@@ -82,6 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private int InboundBacklogSize => this.deviceBoundOneWayProcessor.BacklogSize + this.deviceBoundTwoWayProcessor.BacklogSize;
 
         private ProductInfo productInfo;
+        private ClientOptions _options;
 
         private ushort _packetId = 0;
         private SpinLock _packetIdLock = new SpinLock();
@@ -94,7 +96,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             MqttTransportSettings mqttTransportSettings,
             IWillMessage willMessage,
             IMqttIotHubEventHandler mqttIotHubEventHandler,
-            ProductInfo productInfo)
+            ProductInfo productInfo,
+            ClientOptions options)
         {
             Contract.Requires(deviceId != null);
             Contract.Requires(iotHubHostName != null);
@@ -112,6 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.mqttIotHubEventHandler = mqttIotHubEventHandler;
             this.pingRequestInterval = this.mqttTransportSettings.KeepAliveInSeconds > 0 ? TimeSpan.FromSeconds(this.mqttTransportSettings.KeepAliveInSeconds / 4d) : TimeSpan.MaxValue;
             this.productInfo = productInfo;
+            _options = options;
 
             this.deviceBoundOneWayProcessor = new SimpleWorkQueue<PublishPacket>(this.AcceptMessageAsync);
             this.deviceBoundTwoWayProcessor = new OrderedTwoPhaseWorkQueue<int, PublishPacket>(this.AcceptMessageAsync, p => p.PacketId, this.SendAckAsync);
@@ -291,7 +295,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(this.mqttTransportSettings.ClientCertificate != null);
                 }
 
-                string usernameString = $"{this.iotHubHostName}/{id}/?{ApiVersionParam}={ClientApiVersionHelper.ApiVersionString}&{DeviceClientTypeParam}={Uri.EscapeDataString(this.productInfo.ToString())}";
+                // This check is added to enable the device client to avail plug and play features. For devices that pass in the model Id, the SDK will enable plug and play features
+                // by using the PnP-enabled service API version, and appending the model Id to the MQTT CONNECT packet (in the username).
+                // For devices that do not have the model Id set, the SDK will use the GA service API version. 
+                string serviceParams = null;
+                if (string.IsNullOrWhiteSpace(_options?.ModelId))
+                {
+                    serviceParams = ClientApiVersionHelper.ApiVersionQueryStringLatest;
+                }
+                else
+                {
+                    serviceParams = $"{ClientApiVersionHelper.ApiVersionQueryStringPreview}&{ModelIdParam}={_options.ModelId}";
+                }
+
+                string usernameString = $"{this.iotHubHostName}/{id}/?{serviceParams}&{DeviceClientTypeParam}={Uri.EscapeDataString(this.productInfo.ToString())}";
 
                 if (!this.mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
                 {
