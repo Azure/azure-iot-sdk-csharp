@@ -24,22 +24,24 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient Create(string hostname, IAuthenticationMethod authenticationMethod)
+        public static InternalClient Create(string hostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
         {
-            return Create(hostname, authenticationMethod, TransportType.Amqp);
+            return Create(hostname, authenticationMethod, TransportType.Amqp, options);
         }
 
         /// <summary>
         /// Create an Amqp InternalClient from individual parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
+        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
+        public static InternalClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
         {
-            return Create(hostname, gatewayHostname, authenticationMethod, TransportType.Amqp);
+            return Create(hostname, gatewayHostname, authenticationMethod, TransportType.Amqp, options);
         }
 
         /// <summary>
@@ -48,10 +50,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
+        public static InternalClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)
         {
-            return Create(hostname, null, authenticationMethod, transportType);
+            return Create(hostname, null, authenticationMethod, transportType, options);
         }
 
         /// <summary>
@@ -61,8 +64,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
+        public static InternalClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)
         {
             if (hostname == null)
             {
@@ -83,12 +87,12 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
                 }
 
-                InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
+                InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType), options);
                 dc.Certificate = connectionStringBuilder.Certificate;
                 return dc;
             }
 
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportType, null);
+            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportType, null, options);
         }
 
         /// <summary>
@@ -97,11 +101,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient Create(string hostname, IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings)
+        public static InternalClient Create(string hostname, IAuthenticationMethod authenticationMethod, ITransportSettings[] transportSettings, ClientOptions options = default)
         {
-            return Create(hostname, null, authenticationMethod, transportSettings);
+            return Create(hostname, null, authenticationMethod, transportSettings, options);
         }
 
         /// <summary>
@@ -111,9 +115,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
         public static InternalClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings, ClientOptions options = default)
         {
             if (hostname == null)
             {
@@ -133,21 +138,22 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
                 }
 
-                InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings));
+                InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings), options);
                 dc.Certificate = connectionStringBuilder.Certificate;
                 return dc;
             }
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportSettings, null);
+            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportSettings, null, options);
         }
 
         /// <summary>
         /// Create a InternalClient using Amqp transport from the specified connection string
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient CreateFromConnectionString(string connectionString)
+        public static InternalClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
         {
-            return CreateFromConnectionString(connectionString, TransportType.Amqp);
+            return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
         }
 
         /// <summary>
@@ -155,10 +161,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the Device</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient CreateFromConnectionString(string connectionString, string deviceId)
+        public static InternalClient CreateFromConnectionString(string connectionString, string deviceId, ClientOptions options = default)
         {
-            return CreateFromConnectionString(connectionString, deviceId, TransportType.Amqp);
+            return CreateFromConnectionString(connectionString, deviceId, TransportType.Amqp, options);
         }
 
         /// <summary>
@@ -166,15 +173,16 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="transportType">Specifies whether Http1, Amqp or Mqtt transport is used, <see cref="TransportType"/></param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient CreateFromConnectionString(string connectionString, TransportType transportType)
+        public static InternalClient CreateFromConnectionString(string connectionString, TransportType transportType, ClientOptions options = default)
         {
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new ArgumentNullException(nameof(connectionString));
             }
 
-            return CreateFromConnectionString(connectionString, null, transportType, null);
+            return CreateFromConnectionString(connectionString, null, transportType, null, options);
         }
 
         /// <summary>
@@ -183,8 +191,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient CreateFromConnectionString(string connectionString, string deviceId, TransportType transportType)
+        public static InternalClient CreateFromConnectionString(string connectionString, string deviceId, TransportType transportType, ClientOptions options = default)
         {
             if (connectionString == null)
             {
@@ -201,7 +210,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
             }
 
-            return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportType);
+            return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportType, options);
         }
 
         /// <summary>
@@ -209,11 +218,12 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
         public static InternalClient CreateFromConnectionString(string connectionString,
-            ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings, ClientOptions options = default)
         {
-            return CreateFromConnectionString(connectionString, null, transportSettings, null);
+            return CreateFromConnectionString(connectionString, null, transportSettings, null, options);
         }
 
         /// <summary>
@@ -222,9 +232,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
-        public static InternalClient CreateFromConnectionString(string connectionString, string deviceId,
-            ITransportSettings[] transportSettings)
+        public static InternalClient CreateFromConnectionString(string connectionString, string deviceId, ITransportSettings[] transportSettings, ClientOptions options = default)
         {
             if (connectionString == null)
             {
@@ -241,18 +251,23 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
             }
 
-            return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings);
+            return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings, options);
         }
 
         internal static InternalClient CreateFromConnectionString(
             string connectionString,
             IAuthenticationMethod authenticationMethod,
             TransportType transportType,
-            IDeviceClientPipelineBuilder pipelineBuilder)
+            IDeviceClientPipelineBuilder pipelineBuilder,
+            ClientOptions options = default)
         {
             ITransportSettings[] transportSettings = GetTransportSettings(transportType);
-            return CreateFromConnectionString(connectionString, authenticationMethod, transportSettings,
-                pipelineBuilder);
+            return CreateFromConnectionString(
+                connectionString,
+                authenticationMethod,
+                transportSettings,
+                pipelineBuilder,
+                options);
         }
 
         internal static ITransportSettings[] GetTransportSettings(TransportType transportType)
@@ -299,7 +314,8 @@ namespace Microsoft.Azure.Devices.Client
             string connectionString,
             IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings,
-            IDeviceClientPipelineBuilder pipelineBuilder)
+            IDeviceClientPipelineBuilder pipelineBuilder,
+            ClientOptions options = default)
         {
             if (connectionString == null)
             {
@@ -357,9 +373,9 @@ namespace Microsoft.Azure.Devices.Client
             pipelineBuilder = pipelineBuilder ?? BuildPipeline();
 
             // Defer concrete InternalClient creation to OpenAsync
-            var client = new InternalClient(iotHubConnectionString, transportSettings, pipelineBuilder);
+            var client = new InternalClient(iotHubConnectionString, transportSettings, pipelineBuilder, options);
 
-            if (Logging.IsEnabled) Logging.CreateFromConnectionString(client, $"HostName={iotHubConnectionString.HostName};DeviceId={iotHubConnectionString.DeviceId};ModuleId={iotHubConnectionString.ModuleId}", transportSettings);
+            if (Logging.IsEnabled) Logging.CreateFromConnectionString(client, $"HostName={iotHubConnectionString.HostName};DeviceId={iotHubConnectionString.DeviceId};ModuleId={iotHubConnectionString.ModuleId}", transportSettings, options);
             return client;
         }
 

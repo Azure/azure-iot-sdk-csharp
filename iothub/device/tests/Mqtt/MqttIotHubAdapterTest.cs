@@ -111,9 +111,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var productInfo = new ProductInfo();
+            var options = new ClientOptions();
             var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) { HasWill = false };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
-            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo);
+            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo, options);
 
             // Set an authchain on the transport settings
             mqttTransportSetting.AuthenticationChain = authChain;
@@ -129,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
             // Assert: the auth chain should be part of the username
             ConnectPacket connectPacket = messages.First().As<ConnectPacket>();
-            NameValueCollection queryParams = System.Web.HttpUtility.ParseQueryString(connectPacket.Username);
+            NameValueCollection queryParams = ExtractQueryParamsFromConnectUsername(connectPacket.Username);
             Assert.AreEqual(authChain, queryParams.Get("auth-chain"));
         }
 
@@ -138,10 +139,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var productInfo = new ProductInfo();
+            var options = new ClientOptions();
             var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) { HasWill = false };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
 
-            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo);
+            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo, options);
 
             // Setup internal state to be "Connected". Only then can we manage subscriptions
             // "NotConnected" -> (ChannelActive) -> "Connecting" -> (ChannelRead ConnAck) -> "Connected".
@@ -172,6 +174,71 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
             // Assert: No matter the event ordering, sending should be awaitable without errors
             await sendRequest.ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public void SettingPnpModelIdShouldSetPreviewApiVersionAndModelIdOnConnectPacket()
+        {
+            // arrange
+            string ApiVersionParam = "api-version";
+            string ModelIdParam = "digital-twin-model-id";
+            var passwordProvider = new Mock<IAuthorizationProvider>();
+            var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
+            var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            var productInfo = new ProductInfo();
+            var options = new ClientOptions { ModelId = "someModel" };
+            var channelHandlerContext = new Mock<IChannelHandlerContext>();
+            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo, options);
+
+            // Save all the messages from the context
+            var messages = new List<object>();
+            channelHandlerContext.Setup(context => context.WriteAndFlushAsync(It.IsAny<object>())).Callback((object message) => messages.Add(message)).Returns(TaskHelpers.CompletedTask);
+
+            // Act
+            channelHandlerContext.SetupGet(context => context.Handler).Returns(mqttIotHubAdapter);
+            mqttIotHubAdapter.ChannelActive(channelHandlerContext.Object);
+
+            // Assert: the username should use the preview API version and have the model ID appended
+            ConnectPacket connectPacket = messages.First().As<ConnectPacket>();
+            NameValueCollection queryParams = ExtractQueryParamsFromConnectUsername(connectPacket.Username);
+            Assert.AreEqual(ClientApiVersionHelper.ApiVersionPreview, queryParams.Get(ApiVersionParam));
+            Assert.AreEqual(options.ModelId, queryParams.Get(ModelIdParam));
+        }
+
+        [TestMethod]
+        public void NotSettingPnpModelIdShouldSetLatestApiVersionAndNoModelIdOnConnectPacket()
+        {
+            // arrange
+            string ApiVersionParam = "api-version";
+            string ModelIdParam = "digital-twin-model-id";
+            var passwordProvider = new Mock<IAuthorizationProvider>();
+            var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
+            var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            var productInfo = new ProductInfo();
+            var options = new ClientOptions();
+            var channelHandlerContext = new Mock<IChannelHandlerContext>();
+            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo, options);
+
+            // Save all the messages from the context
+            var messages = new List<object>();
+            channelHandlerContext.Setup(context => context.WriteAndFlushAsync(It.IsAny<object>())).Callback((object message) => messages.Add(message)).Returns(TaskHelpers.CompletedTask);
+
+            // Act
+            channelHandlerContext.SetupGet(context => context.Handler).Returns(mqttIotHubAdapter);
+            mqttIotHubAdapter.ChannelActive(channelHandlerContext.Object);
+
+            // Assert: the username should use the GA API version and not have the model ID appended
+            ConnectPacket connectPacket = messages.First().As<ConnectPacket>();
+            NameValueCollection queryParams = ExtractQueryParamsFromConnectUsername(connectPacket.Username);
+            Assert.AreEqual(ClientApiVersionHelper.ApiVersionLatest, queryParams.Get(ApiVersionParam));
+            Assert.IsFalse(queryParams.AllKeys.Contains(ModelIdParam));
+        }
+
+        private static NameValueCollection ExtractQueryParamsFromConnectUsername(string connectUsername)
+        {
+            int pos = connectUsername.LastIndexOf("?") + 1;
+            string queryParams = connectUsername.Substring(pos, connectUsername.Length - pos);
+            return System.Web.HttpUtility.ParseQueryString(queryParams);
         }
     }
 }

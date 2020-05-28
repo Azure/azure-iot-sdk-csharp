@@ -149,14 +149,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (channelFactory == null)
             {
+                ClientOptions options = context.Get<ClientOptions>();
                 switch (settings.GetTransportType())
                 {
                     case TransportType.Mqtt_Tcp_Only:
-                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>());
+                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>(), options);
                         break;
 
                     case TransportType.Mqtt_WebSocket_Only:
-                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>());
+                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>(), options);
                         break;
 
                     default:
@@ -893,7 +894,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(true);
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
+        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo, ClientOptions options)
         {
             return async (addresses, port) =>
             {
@@ -938,7 +939,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 MqttEncoder.Instance,
                                 new MqttDecoder(false, MaxMessageSize),
                                 new LoggingHandler(LogLevel.DEBUG),
-                                _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
+                                _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options));
                     }));
 
                 foreach (IPAddress address in addresses)
@@ -977,7 +978,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
+        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo, ClientOptions options)
         {
             return async (address, port) =>
             {
@@ -1040,7 +1041,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
                         new LoggingHandler(LogLevel.DEBUG),
-                        _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
+                        _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options));
 
                 await s_eventLoopGroup.Value.RegisterAsync(clientChannel).ConfigureAwait(false);
 

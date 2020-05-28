@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.Shared
         public static void CreateFromConnectionString(
             object thisOrContextObject, 
             string iotHubConnectionStringWithNoKey,
-            ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings,
+            ClientOptions options)
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(iotHubConnectionStringWithNoKey);
@@ -31,6 +32,11 @@ namespace Microsoft.Azure.Devices.Shared
                 foreach (ITransportSettings transport in transportSettings)
                 {
                     sb.Append(transport.GetTransportType().ToString());
+                }
+
+                if (!string.IsNullOrWhiteSpace(options?.ModelId))
+                {
+                    sb.Append(options.ModelId);
                 }
 
                 Log.CreateFromConnectionString(

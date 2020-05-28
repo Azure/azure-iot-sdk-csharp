@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         internal DesiredPropertyUpdateCallback _desiredPropertyUpdateCallback;
 
-        public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
+        public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder, ClientOptions options)
         {
             if (Logging.IsEnabled) Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
@@ -140,6 +140,7 @@ namespace Microsoft.Azure.Devices.Client
             pipelineContext.Set<ConnectionStatusChangesHandler>(OnConnectionStatusChanged);
             pipelineContext.Set<OnReceiveEventMessageCalledDelegate>(OnReceiveEventMessageCalled);
             pipelineContext.Set(_productInfo);
+            pipelineContext.Set(options);
 
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 

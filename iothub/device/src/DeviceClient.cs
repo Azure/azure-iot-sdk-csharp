@@ -37,22 +37,24 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod)
+        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, authenticationMethod));
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod, options));
         }
 
         /// <summary>
         /// Create a disposable, Amqp DeviceClient from the specified parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
+        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
+        public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod));
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, options));
         }
 
         /// <summary>
@@ -61,10 +63,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
+        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportType));
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportType, options));
         }
 
         /// <summary>
@@ -74,10 +77,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
+        public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportType));
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportType, options));
         }
 
         /// <summary>
@@ -86,11 +90,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportSettings));
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportSettings, options));
         }
 
         /// <summary>
@@ -100,21 +105,23 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportSettings));
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportSettings, options));
         }
 
         /// <summary>
         /// Creates a disposable DeviceClient using Amqp transport from the specified connection string
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString)
+        public static DeviceClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString));
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, options));
         }
 
         /// <summary>
@@ -122,10 +129,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the Device</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId)
+        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId));
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, options));
         }
 
         /// <summary>
@@ -133,10 +141,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="transportType">Specifies whether Http1, Amqp or Mqtt transport is used, <see cref="TransportType"/></param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType)
+        public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportType));
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportType, options));
         }
 
         /// <summary>
@@ -145,10 +154,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, TransportType transportType)
+        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, TransportType transportType, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportType));
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportType, options));
         }
 
         /// <summary>
@@ -156,11 +166,12 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString,
-            ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings));
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings, options));
         }
 
         /// <summary>
@@ -171,9 +182,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
-            ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings, ClientOptions options = default)
         {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportSettings));
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportSettings, options));
         }
 
         private static DeviceClient Create(Func<InternalClient> internalClientCreator)
