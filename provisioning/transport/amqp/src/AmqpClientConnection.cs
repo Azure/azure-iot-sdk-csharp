@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Security;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -18,8 +19,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpClientConnection
     {
-        readonly AmqpSettings _amqpSettings;
-        readonly Uri _uri;
+        private readonly AmqpSettings _amqpSettings;
+        private readonly Uri _uri;
 
         internal AmqpClientConnection(Uri uri, AmqpSettings amqpSettings)
         {
@@ -49,7 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private ProtocolHeader _sentHeader;
 
-        public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert, IWebProxy proxy)
+        public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert, IWebProxy proxy, RemoteCertificateValidationCallback remoteCerificateValidationCallback)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}");
             var hostName = _uri.Host;
@@ -58,7 +59,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportSettings = new TlsTransportSettings(tcpSettings)
             {
                 TargetHost = hostName,
-                Certificate = clientCert
+                Certificate = clientCert,
+                CertificateValidationCallback = remoteCerificateValidationCallback,
             };
 
             TransportBase transport;
@@ -83,7 +85,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     bool operationPending = transport.WriteAsync(args);
 
                     if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
-                    
+
                     if (!operationPending)
                     {
                         args.CompletedCallback(args);
@@ -130,12 +132,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return AmqpSession;
         }
 
-        void OnConnectionClosed(object o, EventArgs args)
+        private void OnConnectionClosed(object o, EventArgs args)
         {
             _isConnectionClosed = true;
         }
 
-        async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout, IWebProxy proxy)
+        private async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout, IWebProxy proxy)
         {
             UriBuilder webSocketUriBuilder = new UriBuilder
             {
@@ -150,7 +152,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 null);
         }
 
-        async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout, IWebProxy webProxy)
+        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout, IWebProxy webProxy)
         {
             var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
@@ -184,6 +186,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 websocket.Options.ClientCertificates.Add(TransportSettings.Certificate);
             }
+
+            // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
+#if NETSTANDARD2_1
+            if (TransportSettings.CertificateValidationCallback != null)
+            {
+                websocket.Options.RemoteCertificateValidationCallback = TransportSettings.CertificateValidationCallback;
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
+                }
+            }
+#endif
 
             using (var cancellationTokenSource = new CancellationTokenSource(timeout))
             {

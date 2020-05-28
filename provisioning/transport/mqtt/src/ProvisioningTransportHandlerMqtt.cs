@@ -17,7 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Net;
+using System.Net.Security;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography.X509Certificates;
@@ -205,6 +207,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             var tcs = new TaskCompletionSource<RegistrationOperationStatus>();
 
+            Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, RemoteCertificateValidationCallback);
+
             Bootstrap bootstrap = new Bootstrap()
                 .Group(s_eventLoopGroup)
                 .Channel<TcpSocketChannel>()
@@ -214,7 +218,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     ch.Pipeline.AddLast(
                         new ReadTimeoutHandler(ReadTimeoutSeconds),
-                        new TlsHandler(tlsSettings),
+                        new TlsHandler(streamFactory, tlsSettings),
                         MqttEncoder.Instance,
                         new MqttDecoder(isServer: false, maxMessageSize: MaxMessageSize),
                         new LoggingHandler(LogLevel.DEBUG),
@@ -306,6 +310,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 websocket.Options.ClientCertificates.Add(clientCertificate);
             }
 
+            // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
+#if NETSTANDARD2_1
+            if (RemoteCertificateValidationCallback != null)
+            {
+                websocket.Options.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"{nameof(ProvisionOverWssCommonAsync)} Setting RemoteCertificateValidationCallback");
+                }
+            }
+#endif
+
             //Check if we're configured to use a proxy server
             try
             {
@@ -315,7 +331,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     websocket.Options.Proxy = Proxy;
                     if (Logging.IsEnabled)
                     {
-                        Logging.Info(this, $"{nameof(ProvisionOverWssUsingX509CertificateAsync)} Setting ClientWebSocket.Options.Proxy: {Proxy}");
+                        Logging.Info(this, $"{nameof(ProvisionOverWssCommonAsync)} Setting ClientWebSocket.Options.Proxy: {Proxy}");
                     }
                 }
             }
