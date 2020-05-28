@@ -408,7 +408,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             deviceId = WebUtility.UrlEncode(deviceId);
 
-            var stringBuilder = new StringBuilder("{0}?{1}".FormatInvariant(path.FormatInvariant(deviceId), ClientApiVersionHelper.ApiVersionQueryString));
+            var stringBuilder = new StringBuilder("{0}?{1}".FormatInvariant(path.FormatInvariant(deviceId), ClientApiVersionHelper.ApiVersionQueryStringLatest));
 
             if (queryValueDictionary != null)
             {

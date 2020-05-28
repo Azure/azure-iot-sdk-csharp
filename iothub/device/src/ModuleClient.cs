@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class ModuleClient : IDisposable
     {
-        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
+        private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private readonly InternalClient internalClient;
         private readonly ICertificateValidator certValidator;
 
