@@ -22,9 +22,9 @@ namespace Microsoft.Azure.Devices
         private const string AdminUriFormat = "/$admin/{0}?{1}";
         private const string RequestUriFormat = "/devices/{0}?{1}";
         private const string JobsUriFormat = "/jobs{0}?{1}";
-        private const string StatisticsUriFormat = "/statistics/devices?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
+        private const string StatisticsUriFormat = "/statistics/devices?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string DevicesRequestUriFormat = "/devices/?top={0}&{1}";
-        private const string DevicesQueryUriFormat = "/devices/query?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
+        private const string DevicesQueryUriFormat = "/devices/query?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string WildcardEtag = "*";
 
         private const string ContinuationTokenHeader = "x-ms-continuation";
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices
         private const string ConfigurationRequestUriFormat = "/configurations/{0}?{1}";
         private const string ConfigurationsRequestUriFormat = "/configurations/?top={0}&{1}";
 
-        private const string ApplyConfigurationOnDeviceUriFormat = "/devices/{0}/applyConfigurationContent?" + ClientApiVersionHelper.ApiVersionQueryStringDefault;
+        private const string ApplyConfigurationOnDeviceUriFormat = "/devices/{0}/applyConfigurationContent?" + ClientApiVersionHelper.ApiVersionQueryString;
 
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
 
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices
 
             return BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
                exportImportDeviceList,
-               ClientApiVersionHelper.ApiVersionQueryStringDefault,
+               ClientApiVersionHelper.ApiVersionQueryString,
                cancellationToken);
         }
 
@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices
         {
             return BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
                 GenerateExportImportDeviceListForBulkOperations(devices, ImportMode.Create),
-                ClientApiVersionHelper.ApiVersionQueryStringDefault,
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -519,7 +519,7 @@ namespace Microsoft.Azure.Devices
         {
             return BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
                 GenerateExportImportDeviceListForBulkOperations(devices, forceUpdate ? ImportMode.Update : ImportMode.UpdateIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryStringDefault,
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -621,7 +621,7 @@ namespace Microsoft.Azure.Devices
         {
             return BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
                 GenerateExportImportDeviceListForBulkOperations(devices, forceRemove ? ImportMode.Delete : ImportMode.DeleteIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryStringDefault,
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -1051,19 +1051,7 @@ namespace Microsoft.Azure.Devices
                 { HttpStatusCode.Forbidden, async (responseMessage) => new JobQuotaExceededException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))}
             };
 
-            // The new api-version is only available in a few initial regions
-            // Control access via an environment variable. If a user wishes to try it out,
-            // they can set "EnabledStorageIdentity" to "1". Otherwise, the SDK will still
-            // default to the latest, broadly-supported api-version used in this SDK.
-            string clientApiVersion = ClientApiVersionHelper.ApiVersionQueryStringDefault;
-            if (ClientApiVersionHelper.IsStorageIdentityEnabled)
-            {
-                clientApiVersion = ClientApiVersionHelper.ApiVersionQueryStringLimitedAvailability;
-            }
-            else
-            {
-                jobProperties.StorageAuthenticationType = null;
-            }
+            string clientApiVersion = ClientApiVersionHelper.ApiVersionQueryString;
 
             return _httpClientHelper.PostAsync<JobProperties, JobProperties>(
                 GetJobUri("/create", clientApiVersion),
@@ -1400,7 +1388,7 @@ namespace Microsoft.Azure.Devices
         {
             return BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
                 GenerateExportImportDeviceListForTwinBulkOperations(twins, forceUpdate ? ImportMode.UpdateTwin : ImportMode.UpdateTwinIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryStringDefault,
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -1449,38 +1437,38 @@ namespace Microsoft.Azure.Devices
         private static Uri GetRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(RequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(RequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetModulesRequestUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(ModulesRequestUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(ModulesRequestUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetModulesOnDeviceRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(ModulesOnDeviceRequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(ModulesOnDeviceRequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetModuleTwinRequestUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(ModuleTwinUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(ModuleTwinUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetConfigurationRequestUri(string configurationId)
         {
             configurationId = WebUtility.UrlEncode(configurationId);
-            return new Uri(ConfigurationRequestUriFormat.FormatInvariant(configurationId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(ConfigurationRequestUriFormat.FormatInvariant(configurationId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetConfigurationsRequestUri(int maxCount)
         {
-            return new Uri(ConfigurationsRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(ConfigurationsRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetApplyConfigurationOnDeviceRequestUri(string deviceId)
@@ -1495,14 +1483,14 @@ namespace Microsoft.Azure.Devices
 
         // apiVersion parameter should be removed after the "next" api-version is available in all regions
         // and go back to hard-coding
-        private static Uri GetJobUri(string jobId, string apiVersion = ClientApiVersionHelper.ApiVersionQueryStringDefault)
+        private static Uri GetJobUri(string jobId, string apiVersion = ClientApiVersionHelper.ApiVersionQueryString)
         {
             return new Uri(JobsUriFormat.FormatInvariant(jobId, apiVersion), UriKind.Relative);
         }
 
         private static Uri GetDevicesRequestUri(int maxCount)
         {
-            return new Uri(DevicesRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(DevicesRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri QueryDevicesRequestUri()
@@ -1512,7 +1500,7 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetAdminUri(string operation)
         {
-            return new Uri(AdminUriFormat.FormatInvariant(operation, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(AdminUriFormat.FormatInvariant(operation, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetStatisticsUri()
@@ -1523,19 +1511,19 @@ namespace Microsoft.Azure.Devices
         private static Uri GetTwinUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(TwinUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(TwinUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetTwinTagsUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(TwinTagsUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(TwinTagsUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetTwinDesiredPropertiesUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(TwinDesiredPropertiesUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryStringDefault), UriKind.Relative);
+            return new Uri(TwinDesiredPropertiesUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static void ValidateDeviceId(Device device)
