@@ -1481,8 +1481,6 @@ namespace Microsoft.Azure.Devices
             return new Uri(RequestUriFormat.FormatInvariant(string.Empty, apiVersionQueryString), UriKind.Relative);
         }
 
-        // apiVersion parameter should be removed after the "next" api-version is available in all regions
-        // and go back to hard-coding
         private static Uri GetJobUri(string jobId, string apiVersion = ClientApiVersionHelper.ApiVersionQueryString)
         {
             return new Uri(JobsUriFormat.FormatInvariant(jobId, apiVersion), UriKind.Relative);
