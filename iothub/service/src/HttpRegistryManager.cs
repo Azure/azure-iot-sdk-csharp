@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices
         {
             return BulkDeviceOperationsAsync<string[]>(
                 GenerateExportImportDeviceListForBulkOperations(devices, ImportMode.Create),
-                ClientApiVersionHelper.ApiVersionQueryStringGA,
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -506,7 +506,7 @@ namespace Microsoft.Azure.Devices
         {
             return BulkDeviceOperationsAsync<string[]>(
                 GenerateExportImportDeviceListForBulkOperations(devices, forceUpdate ? ImportMode.Update : ImportMode.UpdateIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryStringGA,
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -608,7 +608,7 @@ namespace Microsoft.Azure.Devices
         {
             return BulkDeviceOperationsAsync<string[]>(
                 GenerateExportImportDeviceListForBulkOperations(devices, forceRemove ? ImportMode.Delete : ImportMode.DeleteIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryStringGA,
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 

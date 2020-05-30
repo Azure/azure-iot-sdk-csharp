@@ -11,14 +11,11 @@ namespace Microsoft.Azure.Devices
     internal class ClientApiVersionHelper
     {
         private const string ApiVersionQueryPrefix = "api-version=";
-        private const string ApiVersionGA = "2016-02-03";
         private const string ApiVersionDefault = "2020-03-13";
 
         /// <summary>
         /// The default API version to use for all data-plane service calls
         /// </summary>
         public const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionDefault;
-
-        public const string ApiVersionQueryStringGA = ApiVersionQueryPrefix + ApiVersionGA;
     }
 }
