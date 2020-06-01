@@ -22,7 +22,7 @@ jobs:
     displayName: Linux
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 3
+      maxParallel: 100
       matrix:
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
@@ -121,7 +121,7 @@ jobs:
     displayName: Windows
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 3
+      maxParallel: 100
       matrix:
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
