@@ -11,24 +11,11 @@ namespace Microsoft.Azure.Devices
     internal class ClientApiVersionHelper
     {
         private const string ApiVersionQueryPrefix = "api-version=";
-        private const string ApiVersionGA = "2016-02-03";
-        private const string ApiVersionDefault = "2019-10-01";
-        private const string ApiVersionLimitedAvailability = "2020-03-13";
-
-        // For import/export devices jobs, a new parameter is available in a
-        // new api-version, which is only available in a few initial regions.
-        // Control access via an environment variable. If a user wishes to try it out,
-        // they can set "EnabledStorageIdentity" to "1". Otherwise, the SDK will still
-        // default to the latest, broadly-supported api-version used in this SDK.
-        internal static bool IsStorageIdentityEnabled => StringComparer.OrdinalIgnoreCase.Equals("1", Environment.GetEnvironmentVariable("EnableStorageIdentity"));
+        private const string ApiVersionDefault = "2020-03-13";
 
         /// <summary>
         /// The default API version to use for all data-plane service calls
         /// </summary>
-        public const string ApiVersionQueryStringDefault = ApiVersionQueryPrefix + ApiVersionDefault;
-
-        public const string ApiVersionQueryStringLimitedAvailability = ApiVersionQueryPrefix + ApiVersionLimitedAvailability;
-
-        public const string ApiVersionQueryStringGA = ApiVersionQueryPrefix + ApiVersionGA;
+        public const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionDefault;
     }
 }

@@ -114,8 +114,6 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Specifies authentication type being used for connecting to storage account.
-        /// For a short time, the feature that uses this enum is only available in limited regions.
-        /// Enable use of it by setting an environment variable of "EnableStorageIdentity" to "1".
         /// </summary>
         [JsonProperty(PropertyName = "storageAuthenticationType", NullValueHandling = NullValueHandling.Ignore)]
         public StorageAuthenticationType? StorageAuthenticationType { get; set; }
