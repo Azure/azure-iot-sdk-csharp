@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     public class ClientOptions
     {
         /// <summary>
-        /// The Digital Twin Model Id associated with the device client instance.
+        /// The digital twins model Id associated with the device client instance.
         /// </summary>
         public string ModelId { get; set; }
     }
