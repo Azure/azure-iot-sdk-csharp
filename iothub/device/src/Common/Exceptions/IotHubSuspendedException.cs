@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceMaximumQueueDepthExceededException"/> class with the message string set to the message parameter and a reference to the inner exception that is the cause of this exception.
+        /// Initializes a new instance of the <see cref="IotHubSuspendedException"/> class with the message string set to the message parameter and a reference to the inner exception that is the cause of this exception.
         /// </summary>
         /// <param name="message">A description of the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception</param>
