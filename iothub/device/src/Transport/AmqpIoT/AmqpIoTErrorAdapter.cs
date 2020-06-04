@@ -262,10 +262,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 retException = new IotHubSuspendedException(message);
             }
-            else if (error.Condition.Equals(IotHubNotFoundError))
-            {
-                retException = new AmqpIoTResourceException(message);
-            }
             else
             {
                 retException = new IotHubException(message);
