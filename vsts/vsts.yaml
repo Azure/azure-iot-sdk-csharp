@@ -5,6 +5,7 @@ trigger:
   branches:
     include:
     - master
+    - preview
   paths:
     exclude:
     - docs/*
