@@ -8,10 +8,12 @@ jobs:
     displayName: Linux
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 3
+      maxParallel: 100
       matrix:
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
+        .Net Core 2.1.18:
+          FRAMEWORK: netcoreapp2.1.18
 
     condition: succeeded()
     pool:
@@ -116,10 +118,12 @@ jobs:
     displayName: Windows
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 3
+      maxParallel: 100
       matrix:
-        .Net Core 2.1:
-          FRAMEWORK: netcoreapp2.1
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
+        .Net Core 2.1.18:
+          FRAMEWORK: netcoreapp2.1.18
         .Net Framework 4.7.2:
           FRAMEWORK: net472
         .Net Framework 4.5.1:
@@ -213,7 +217,7 @@ jobs:
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: testresults'
         inputs:
-          ArtifactName: testresults_windows
+          ArtifactName: testresults_windows_$(FRAMEWORK)
         condition: always()
 
       - task: PublishTestResults@2
@@ -223,5 +227,5 @@ jobs:
           testResultsFiles: '**/*.trx'
           testRunTitle: 'Windows Tests $(FRAMEWORK)'
           platform: Windows
-          configuration: 'Debug UT + Release E2E'
+          configuration: 'Debug UT + Release E2E ($(FRAMEWORK))'
         condition: always()
