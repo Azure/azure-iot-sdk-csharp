@@ -12,8 +12,6 @@ using Microsoft.Azure.Devices.Shared;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using System.Net;
 
 #if NET451
 
@@ -718,8 +716,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten. If a proxy is set in the first transport settings of this
-        /// client, then this blob upload will use that same proxy
+        /// If the blob already exists, it will be overwritten.
         /// </summary>
         /// <param name="blobName"></param>
         /// <param name="source"></param>
@@ -731,8 +728,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten. If a proxy is set in the first transport settings of this
-        /// client, then this blob upload will use that same proxy
+        /// If the blob already exists, it will be overwritten.
         /// </summary>
         /// <param name="blobName"></param>
         /// <param name="source"></param>
@@ -765,13 +761,7 @@ namespace Microsoft.Azure.Devices.Client
                 var context = new PipelineContext();
                 context.Set(_productInfo);
 
-                // Use the proxy of the first transport settings if there is a proxy, regardless of protocol
-                IWebProxy proxy = GetDefaultProxySettings(_transportSettings);
-
-                var transportSettings = new Http1TransportSettings()
-                {
-                    Proxy = proxy
-                };
+                var transportSettings = new Http1TransportSettings();
 
                 //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
                 if (Certificate != null)
@@ -1711,30 +1701,6 @@ namespace Microsoft.Azure.Devices.Client
                 || (ex is IotHubCommunicationException
                     && (ex.InnerException is OperationCanceledException
                     || ex.InnerException is TimeoutException));
-        }
-
-        private static IWebProxy GetDefaultProxySettings(ITransportSettings[] transportSettings)
-        {
-            // TransportSettings should always have a first entry, and we can ignore the rest since file upload doesn't have retry logic
-            // to fallback to other settings with
-            ITransportSettings defaultTransportSettings = transportSettings[0];
-            if (defaultTransportSettings is AmqpTransportSettings)
-            {
-                var amqpTransportSetting = (AmqpTransportSettings)defaultTransportSettings;
-                return amqpTransportSetting.Proxy;
-            }
-            else if (defaultTransportSettings is MqttTransportSettings)
-            {
-                var mqttTransportSetting = (MqttTransportSettings)defaultTransportSettings;
-                return mqttTransportSetting.Proxy;
-            }
-            else if (defaultTransportSettings is Http1TransportSettings)
-            {
-                var httpTransportSetting = (Http1TransportSettings)defaultTransportSettings;
-                return httpTransportSetting.Proxy;
-            }
-
-            return null;
         }
     }
 }

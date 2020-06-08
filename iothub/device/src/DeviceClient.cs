@@ -431,8 +431,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten. If a proxy is set in the first transport settings of this
-        /// client, then this blob upload will use that same proxy
+        /// If the blob already exists, it will be overwritten.
         /// </summary>
         /// <param name="blobName">The name of the blob to upload.</param>
         /// <param name="source">A stream with blob contents. Should be disposed after upload completes.</param>
@@ -441,8 +440,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten. If a proxy is set in the first transport settings of this
-        /// client, then this blob upload will use that same proxy
+        /// If the blob already exists, it will be overwritten.
         /// </summary>
         /// <param name="blobName">The name of the blob to upload</param>
         /// <param name="source">A stream with blob contents.. Should be disposed after upload completes.</param>
