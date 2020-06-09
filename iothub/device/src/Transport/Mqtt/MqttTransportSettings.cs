@@ -23,6 +23,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </summary>
         internal string AuthenticationChain { get; set; }
 
+        /// <summary>
+        /// Used by Edge runtime to specify the device capability model ID of Plug and Play devices
+        /// </summary>
+        internal string DeviceCapabilityModelId { get; set; }
+
         private const bool DefaultCleanSession = false;
         private const bool DefaultDeviceReceiveAckCanTimeout = false;
         private const bool DefaultHasWill = false;

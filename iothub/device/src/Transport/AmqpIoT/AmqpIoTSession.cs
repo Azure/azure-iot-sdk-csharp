@@ -232,6 +232,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
             }
 
+            if (!deviceIdentity.AmqpTransportSettings.DeviceCapabilityModelId.IsNullOrWhiteSpace())
+            {
+                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.DeviceCapabilityModelId, deviceIdentity.AmqpTransportSettings.DeviceCapabilityModelId);
+            }
+
             try
             {
                 SendingAmqpLink sendingLink = new SendingAmqpLink(amqpLinkSettings);
@@ -295,6 +300,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
             {
                 amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
+            }
+
+            if (!deviceIdentity.AmqpTransportSettings.DeviceCapabilityModelId.IsNullOrWhiteSpace())
+            {
+                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.DeviceCapabilityModelId, deviceIdentity.AmqpTransportSettings.DeviceCapabilityModelId);
             }
 
             if (correlationId != null)

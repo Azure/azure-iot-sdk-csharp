@@ -22,6 +22,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
         /// </summary>
         internal string AuthenticationChain { get; set; }
+
+        /// <summary>
+        /// Used by Edge runtime for Plug and Play devices
+        /// </summary>
+        internal string DeviceCapabilityModelId { get; set; }
         
         /// <summary>
         /// To enable certificate revocation check. Default to be false.
