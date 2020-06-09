@@ -1,8 +1,8 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
+title: '[Bug Report]'
+labels: 'bug'
 assignees: ''
 
 ---
@@ -23,7 +23,6 @@ Please follow the instructions and template below to save us time requesting add
 3. Do not share information from your Azure subscription here (connection strings, service names (IoT Hub name, Device Provisioning Service scope ID), etc...). If you need to share any of this information, you can create a ticket and [get assistance from Microsoft Support](https://docs.microsoft.com/en-us/azure/azure-supportability/how-to-create-azure-support-request).
 
 4. Include enough information for us to address the bug:
-
    -  A detailed description.
    -  A [Minimal Complete Reproducible Example](https://stackoverflow.com/help/mcve). This is code we can cut and paste into a readily available sample and run, or a link to a project you've written that we can compile to reproduce the bug. 
    -  Console logs.
@@ -37,10 +36,10 @@ Below is a generic bug report format. We recommend you use it as a template and 
 
 # Context
 
-- **OS, version, SKU and CPU architecture used:** <VERSION> <!-- Windows 10 Desktop x64, Ubuntu 15.04 x86, Windows 10 IoT Core arm32, etc. -->
-- **Application's .NET Target Framework :** <NETVERSION> <!-- See https://docs.microsoft.com/en-us/dotnet/standard/frameworks. E.g. netcoreapp2.1, net451, uap10.0, xamarin -->
-- **Device:** <DEVICETYPE> <!-- Laptop, Raspberry PI3, Android APIv25 etc. -->
-- **SDK version used:** <VERSION> <!-- Please include the NuGet package version for all involved components. -->
+- **OS, version, SKU and CPU architecture used:** <VERSION> (Windows 10 Desktop x64, Ubuntu 15.04 x86, Windows 10 IoT Core arm32, etc.)
+- **Application's .NET Target Framework :** <NETVERSION> (See https://docs.microsoft.com/en-us/dotnet/standard/frameworks. E.g. netcoreapp2.1, net451, uap10.0, xamarin)
+- **Device:** <DEVICETYPE> (Laptop, Raspberry PI3, Android APIv25 etc.)
+- **SDK version used:** <VERSION> (Please include the NuGet package version for all involved components)
 
 
 ## Description of the issue
