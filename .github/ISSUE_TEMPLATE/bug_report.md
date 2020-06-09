@@ -18,14 +18,14 @@ Please follow the instructions and template below to save us time requesting add
 
 1. Search existing issues to avoid creating duplicates.
 
-2. If possible test using the [latest release](https://github.com/Azure/azure-iot-sdk-csharp/releases) to make sure your issues has not already been fixed.
+2. If possible test using the [latest release](https://github.com/Azure/azure-iot-sdk-csharp/releases) to make sure your issue has not already been fixed.
 
 3. Do not share information from your Azure subscription here (connection strings, service names (IoT Hub name, Device Provisioning Service scope ID), etc...). If you need to share any of this information, you can create a ticket and [get assistance from Microsoft Support](https://docs.microsoft.com/en-us/azure/azure-supportability/how-to-create-azure-support-request).
 
 4. Include enough information for us to address the bug:
    -  A detailed description.
    -  A [Minimal Complete Reproducible Example](https://stackoverflow.com/help/mcve). This is code we can cut and paste into a readily available sample and run, or a link to a project you've written that we can compile to reproduce the bug. 
-   -  Console logs.
+   -  Console logs (https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs).
 
 5. Delete these instructions before submitting the bug.
 
