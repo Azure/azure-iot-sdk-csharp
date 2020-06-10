@@ -19,26 +19,26 @@ namespace Microsoft.Azure.Devices.E2ETests
                 EntityPath = Configuration.IoTHub.EventHubCompatibleName
             };
 
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(builder.ToString());
-            var eventRuntimeInformation = eventHubClient.GetRuntimeInformationAsync().Result;
-            var eventHubPartitionsCount = eventRuntimeInformation.PartitionCount;
+            var eventHubClient = EventHubClient.CreateFromConnectionString(builder.ToString());
+            EventHubRuntimeInformation eventRuntimeInformation = eventHubClient.GetRuntimeInformationAsync().Result;
+            int eventHubPartitionsCount = eventRuntimeInformation.PartitionCount;
             string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
 
             foreach (string partitionId in eventRuntimeInformation.PartitionIds)
             {
                 try
                 {
-                    PartitionReceiver receiver = eventHubClient.CreateReceiver(PartitionReceiver.DefaultConsumerGroupName, partitionId, DateTime.Now.AddMinutes(-LookbackTimeInMinutes));
-                    s_log.WriteLine($"EventHub receiver created for partition {partitionId}, listening from {LookbackTimeInMinutes}");
+                    PartitionReceiver receiver = eventHubClient.CreateReceiver(PartitionReceiver.DefaultConsumerGroupName, partitionId, DateTime.Now.AddMinutes(-s_lookbackTimeInMinutes.TotalMinutes));
+                    s_log.WriteLine($"EventHub receiver created for partition {partitionId}, listening from {s_lookbackTimeInMinutes}");
 
-                    new Task(async () =>
+                    Task.Run(async () =>
                     {
                         while (true)
                         {
                             IEnumerable<EventData> eventDatas = await receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
                             ProcessEventData(eventDatas);
                         }
-                    }).Start();
+                    });
                 }
                 catch (EventHubsException ex)
                 {
