@@ -137,13 +137,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 };
 
                 deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-                _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(deviceClient)}");
+                _log.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(DeviceClient)} with device Id={testDevice.Id}");
 
-                Console.WriteLine("DeviceClient OpenAsync.");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 // Receiving the module twin should succeed right now.
-                Console.WriteLine("ModuleClient GetTwinAsync.");
+                _log.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: DeviceClient GetTwinAsync.");
                 var twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(twin);
 
@@ -152,6 +151,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     await registryManagerOperation(registryManager, deviceId).ConfigureAwait(false);
                 }
+
+                _log.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
                 // Artificial sleep waiting for the connection status change handler to get triggered.
                 int sleepCount = 50;
@@ -163,6 +164,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         break;
                     }
                 }
+
+                _log.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Asserting connection status change.");
 
                 Assert.AreEqual(1, deviceDisabledReceivedCount);
                 Assert.AreEqual(ConnectionStatus.Disconnected, status);
@@ -193,13 +196,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))
             {
                 moduleClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-                _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(moduleClient)}");
+                _log.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(ModuleClient)} with moduleId={testModule.Id}");
 
-                Console.WriteLine("ModuleClient OpenAsync.");
                 await moduleClient.OpenAsync().ConfigureAwait(false);
 
                 // Receiving the module twin should succeed right now.
-                Console.WriteLine("ModuleClient GetTwinAsync.");
+                _log.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: ModuleClient GetTwinAsync.");
                 var twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(twin);
 
@@ -208,6 +210,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     await registryManagerOperation(registryManager, testModule.DeviceId).ConfigureAwait(false);
                 }
+
+                _log.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
                 // Artificial sleep waiting for the connection status change handler to get triggered.
                 int sleepCount = 50;
@@ -219,6 +223,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         break;
                     }
                 }
+
+                _log.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Asserting connection status change.");
 
                 Assert.AreEqual(1, deviceDisabledReceivedCount);
                 Assert.AreEqual(ConnectionStatus.Disconnected, status);
