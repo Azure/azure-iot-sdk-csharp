@@ -29,13 +29,14 @@ namespace Microsoft.Azure.Devices.Shared
 
         // Common event reservations: [1, 10)
         private const int EnterEventId = 1;
-
         private const int ExitEventId = 2;
         private const int AssociateEventId = 3;
         private const int InfoEventId = 4;
         private const int ErrorEventId = 5;
         private const int CriticalFailureEventId = 6;
         private const int DumpArrayEventId = 7;
+
+        private const int WriteKeysEventId = 8;
 
         // Provisioning event reservations: [10, 20)
         // IoT Hub event reservations: [20, 30)
@@ -366,6 +367,26 @@ namespace Microsoft.Azure.Devices.Shared
             WriteEvent(DumpArrayEventId, thisOrContextObject, memberName ?? MissingMember, buffer);
 
         #endregion DumpBuffer
+
+        #region WriteKeys
+
+        /// <summary>Logs the authentication keys.</summary>
+        /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
+        /// <param name="arg0">The keys to be logged.</param>
+        /// <param name="memberName">The calling member.</param>
+        [NonEvent]
+        public static void WriteKeys(object thisOrContextObject, object arg0, [CallerMemberName] string memberName = null)
+        {
+            DebugValidateArg(thisOrContextObject);
+            DebugValidateArg(arg0);
+            if (IsEnabled) Log.WriteKeys(IdOf(thisOrContextObject), memberName, $"({arg0})");
+        }
+
+        [Event(WriteKeysEventId, Level = EventLevel.Verbose, Keywords = Keywords.Debug)]
+        private void WriteKeys(string thisOrContextObject, string memberName, string keys) =>
+            WriteEvent(WriteKeysEventId, thisOrContextObject, memberName ?? MissingMember, keys);
+
+        #endregion WriteKeys
 
         #region Associate
 

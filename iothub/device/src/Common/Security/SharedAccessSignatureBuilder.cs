@@ -8,6 +8,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -77,6 +78,7 @@ namespace Microsoft.Azure.Devices.Client
                     SharedAccessSignatureConstants.KeyNameFieldName, WebUtility.UrlEncode(keyName));
             }
 
+            if (Logging.IsEnabled) Logging.WriteKeys(this, buffer.ToString(), nameof(BuildSignature));
             return buffer.ToString();
         }
 

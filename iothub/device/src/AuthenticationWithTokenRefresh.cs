@@ -90,6 +90,7 @@ namespace Microsoft.Azure.Devices.Client
                 UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
 
                 if (Logging.IsEnabled) Logging.GenerateToken(this, ExpiresOn);
+                if (Logging.IsEnabled) Logging.WriteKeys(this, _token, nameof(GetTokenAsync));
 
                 return _token;
             }

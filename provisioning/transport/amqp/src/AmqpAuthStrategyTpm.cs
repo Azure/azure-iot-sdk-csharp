@@ -58,6 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);
             if (Logging.IsEnabled) Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
+            if (Logging.IsEnabled) Logging.WriteKeys(this, operation.RegistrationState.Tpm.AuthenticationKey, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
 
             _security.ActivateIdentityKey(key);
         }

@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     "skn", WebUtility.UrlEncode(keyName));
             }
 
+            if (Logging.IsEnabled) Logging.WriteKeys(null, buffer.ToString(), nameof(BuildSasSignature));
             return buffer.ToString();
         }
 

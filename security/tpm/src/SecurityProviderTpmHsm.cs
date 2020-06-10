@@ -178,6 +178,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         public override byte[] Sign(byte[] data)
         {
             if (Logging.IsEnabled) Logging.Enter(this, null, nameof(Sign));
+            if (Logging.IsEnabled) Logging.WriteKeys(this, System.Text.Encoding.UTF8.GetString(data), nameof(Sign));
 
             if (data == null)
             {
