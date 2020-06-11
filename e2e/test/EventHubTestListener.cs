@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public sealed partial class EventHubTestListener
     {
-        private static readonly TimeSpan MaximumWaitTime = TimeSpan.FromMinutes(1);
-        private const int LookbackTimeInMinutes = 5;
+        private static readonly TimeSpan s_maximumWaitTime = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan s_lookbackTimeInMinutes = TimeSpan.FromMinutes(5);
         private const int OperationTimeoutInSeconds = 10;
 
         private static TestLogging s_log = TestLogging.GetInstance();
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (!maxWaitTime.HasValue)
             {
-                maxWaitTime = MaximumWaitTime;
+                maxWaitTime = s_maximumWaitTime;
             }
 
             s_log.WriteLine($"Expected payload: deviceId={deviceId}; payload={payload}; property1={p1Value}");
@@ -92,23 +92,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static string GetEventDataBody(EventData eventData)
         {
 #if NET451
-            var bodyBytes = new byte[1024];
-            int totalRead = 0;
-            int read = 0;
-
             Stream bodyStream = eventData.GetBodyStream();
-            do
-            {
-                read = bodyStream.Read(bodyBytes, totalRead, bodyBytes.Length - totalRead);
-                totalRead += read;
-            } while (read > 0 && (bodyBytes.Length - totalRead > 0));
 
-            if (read > 0)
-            {
-                throw new InternalBufferOverflowException("EventHub message exceeded internal buffer.");
-            }
-
-            return Encoding.UTF8.GetString(bodyBytes, 0, totalRead);
+            var reader = new StreamReader(bodyStream);
+            return reader.ReadToEnd();
 #else
             return Encoding.UTF8.GetString(eventData.Body.ToArray());
 #endif
