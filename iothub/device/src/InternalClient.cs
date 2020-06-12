@@ -90,6 +90,8 @@ namespace Microsoft.Azure.Devices.Client
         private volatile Tuple<MessageHandler, object> _defaultEventCallback;
         private readonly ProductInfo _productInfo = new ProductInfo();
 
+        private HttpTransportHandler _fileUploadHttpTransportHandler;
+
         /// <summary>
         /// Stores Methods supported by the client device and their associated delegate.
         /// </summary>
@@ -148,6 +150,24 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Logging.IsEnabled) Logging.Associate(this, transportSettings, nameof(InternalClient));
             _transportSettings = transportSettings;
+
+            if (options != null && options.FileUploadTransportSettings != null)
+            {
+                var fileUploadTransportSettings = options.FileUploadTransportSettings;
+                if (fileUploadTransportSettings.ClientCertificate == null)
+                {
+                    // Kind of strange to take file upload transport settings from the non-file upload transport settings,
+                    // but this is the established behavior from when upload to blob didn't have transport settings,
+                    // and it shouldn't be broken for existing users
+                    fileUploadTransportSettings.ClientCertificate = Certificate;
+                }
+
+                _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, options.FileUploadTransportSettings);
+            }
+            else
+            {
+                _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, new Http1TransportSettings());
+            }
 
             if (Logging.IsEnabled) Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
@@ -718,6 +738,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="blobName"></param>
         /// <param name="source"></param>
         /// <returns>AsncTask</returns>
+        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
         public Task UploadToBlobAsync(String blobName, Stream source)
         {
             return UploadToBlobAsync(blobName, source, CancellationToken.None);
@@ -731,6 +752,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="source"></param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>AsncTask</returns>
+        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
         public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
         {
             try
@@ -779,6 +801,16 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (Logging.IsEnabled) Logging.Exit(this, blobName, nameof(UploadToBlobAsync));
             }
+        }
+
+        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken = default)
+        {
+            return await _fileUploadHttpTransportHandler.GetFileUploadSasUri(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
+        {
+            await _fileUploadHttpTransportHandler.CompleteFileUpload(notification, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1070,6 +1102,7 @@ namespace Microsoft.Azure.Devices.Client
             InnerHandler?.Dispose();
             _methodsDictionarySemaphore?.Dispose();
             _receiveSemaphore?.Dispose();
+            _fileUploadHttpTransportHandler?.Dispose();
         }
 
         /// <summary>
