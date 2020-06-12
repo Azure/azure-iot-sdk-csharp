@@ -138,12 +138,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var fileUploadRequest = new FileUploadRequest()
+            var fileUploadRequest = new FileUploadSasUriRequest()
             {
                 BlobName = blobName
             };
 
-            var fileUploadResponse = await _httpClientHelper.PostAsync<FileUploadRequest, FileUploadResponse>(
+            var fileUploadResponse = await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
             GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
             fileUploadRequest,
             ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Uri.EscapeDataString(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters
                 fileUploadResponse.SasToken);
 
-            var notification = new FileUploadNotificationResponse();
+            var notification = new FileUploadCompletionNotification();
 
             try
             {
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 notification.StatusDescription = uploadTask.IsCompleted ? null : "Failed to upload to storage.";
 
                 // 3. POST to IoTHub with upload status
-                await _httpClientHelper.PostAsync<FileUploadNotificationResponse>(
+                await _httpClientHelper.PostAsync<FileUploadCompletionNotification>(
                     GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
                     notification,
                     ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 notification.StatusDescription = ex.Message;
 
                 await _httpClientHelper
-                    .PostAsync<FileUploadNotificationResponse>(
+                    .PostAsync<FileUploadCompletionNotification>(
                         GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications/" + fileUploadResponse.CorrelationId, null),
                         notification,
                         ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -198,6 +198,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 throw;
             }
+        }
+
+        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUri(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
+                GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
+                request,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                null,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        internal async Task CompleteFileUpload(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _httpClientHelper.PostAsync(
+                GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
+                notification,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                null,
+                cancellationToken).ConfigureAwait(false);
         }
 
         public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
