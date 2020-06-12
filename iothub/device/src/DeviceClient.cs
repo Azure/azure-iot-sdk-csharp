@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
@@ -436,6 +437,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="blobName">The name of the blob to upload.</param>
         /// <param name="source">A stream with blob contents. Should be disposed after upload completes.</param>
         /// <returns>AsncTask</returns>
+        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
         public Task UploadToBlobAsync(string blobName, Stream source) => InternalClient.UploadToBlobAsync(blobName, source);
 
         /// <summary>
@@ -447,8 +449,27 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task to await</returns>
+        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
         public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken) =>
             InternalClient.UploadToBlobAsync(blobName, source, cancellationToken);
+
+        /// <summary>
+        /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device. See <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload#initialize-a-file-upload">this documentation for more details</see>
+        /// </summary>
+        /// <param name="request">The request details for getting the SAS URI, including the destination blob name.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The file upload details to be used with the Azure Storage SDK in order to upload a file from this device.</returns>
+        public async Task<FileUploadSasUriResponse> GetFileUploadSasUri(FileUploadSasUriRequest request, CancellationToken cancellationToken = default) =>
+            await InternalClient.GetFileUploadSasUriAsync(request, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        /// Notify IoT Hub that a device's file upload has finished. See <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload">this documentation for more details</see>
+        /// </summary>
+        /// <param name="notification">The notification details, including if the file upload succeeded.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The task to await.</returns>
+        public async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default) =>
+            await InternalClient.CompleteFileUploadAsync(notification, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
