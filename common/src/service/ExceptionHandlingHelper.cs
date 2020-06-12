@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
 
     using Microsoft.Azure.Devices.Common.Exceptions;
 
-    class ExceptionHandlingHelper
+    internal class ExceptionHandlingHelper
     {
         public static IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping()
         {
