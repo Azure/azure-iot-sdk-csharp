@@ -459,7 +459,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="request">The request details for getting the SAS URI, including the destination blob name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The file upload details to be used with the Azure Storage SDK in order to upload a file from this device.</returns>
-        public Task<FileUploadSasUriResponse> GetFileUploadSasUri(FileUploadSasUriRequest request, CancellationToken cancellationToken = default) =>
+        public Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken = default) =>
             InternalClient.GetFileUploadSasUriAsync(request, cancellationToken);
 
         /// <summary>

@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 BlobName = filename
             };
 
-            var fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUri(fileUploadSasUriRequest).ConfigureAwait(false);
+            var fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
 
             CloudBlockBlob blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
             var uploadTask = blob.UploadFromStreamAsync(source);
