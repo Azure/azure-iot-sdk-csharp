@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using Newtonsoft.Json;
 
@@ -20,19 +18,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public string CorrelationId { get; set; }
 
         /// <summary>
-        /// Whether the file upload was successful or not.
+        /// Whether the file upload was successful or not. This field is mandatory.
         /// </summary>
         [JsonProperty(PropertyName = "isSuccess")]
         public bool IsSuccess { get; set; }
 
         /// <summary>
-        /// The status code for the file upload.
+        /// The status code for the file upload. This is user defined and will be presented to the service client listening
+        /// for file upload notifications. This field is optional.
         /// </summary>
         [JsonProperty(PropertyName = "statusCode")]
         public int StatusCode { get; set; }
 
         /// <summary>
-        /// A brief description of the file upload status.
+        /// A brief description of the file upload status. This is user defined and will be presented to the service client listening
+        /// for file upload notifications. This field is optional.
         /// </summary>
         [JsonProperty(PropertyName = "statusDescription")]
         public string StatusDescription { get; set; }

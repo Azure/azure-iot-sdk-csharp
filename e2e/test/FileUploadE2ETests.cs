@@ -135,8 +135,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             var notification = new FileUploadCompletionNotification();
             notification.CorrelationId = fileUploadSasUriResponse.CorrelationId;
             notification.IsSuccess = uploadTask.IsCompleted;
-            notification.StatusCode = uploadTask.IsCompleted ? 0 : -1;
-            notification.StatusDescription = uploadTask.IsCompleted ? null : "Failed to upload to storage.";
 
             await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
 
