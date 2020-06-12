@@ -156,8 +156,9 @@ namespace Microsoft.Azure.Devices.Client
                 var fileUploadTransportSettings = options.FileUploadTransportSettings;
                 if (fileUploadTransportSettings.ClientCertificate == null)
                 {
-                    //Kind of strange to take file upload transport settings from the non-file upload transport settings,
-                    // but this is the established behavior, and it shouldn't be broken for existing users
+                    // Kind of strange to take file upload transport settings from the non-file upload transport settings,
+                    // but this is the established behavior from when upload to blob didn't have transport settings,
+                    // and it shouldn't be broken for existing users
                     fileUploadTransportSettings.ClientCertificate = Certificate;
                 }
 
