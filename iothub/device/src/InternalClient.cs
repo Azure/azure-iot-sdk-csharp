@@ -737,7 +737,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="blobName"></param>
         /// <param name="source"></param>
         /// <returns>AsncTask</returns>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
+        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
         public Task UploadToBlobAsync(String blobName, Stream source)
         {
             return UploadToBlobAsync(blobName, source, CancellationToken.None);
@@ -751,7 +751,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="source"></param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>AsncTask</returns>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
+        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
         public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
         {
             try

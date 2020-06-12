@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             Http1TransportSettings fileUploadTransportSettings = new Http1TransportSettings();
 
-            await UploadFileManual(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
+            await UploadFileGranular(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             Http1TransportSettings fileUploadTransportSettings = new Http1TransportSettings();
 
-            await UploadFileManual(fileStreamSource, filename, fileUploadTransportSettings, true).ConfigureAwait(false);
+            await UploadFileGranular(fileStreamSource, filename, fileUploadTransportSettings, true).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -92,10 +92,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Proxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
             };
 
-            await UploadFileManual(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
+            await UploadFileGranular(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
         }
 
-        private async Task UploadFileManual(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool x509auth = false)
+        private async Task UploadFileGranular(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool x509auth = false)
         {
             await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
 

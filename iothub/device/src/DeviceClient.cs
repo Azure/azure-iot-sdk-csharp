@@ -459,8 +459,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="request">The request details for getting the SAS URI, including the destination blob name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The file upload details to be used with the Azure Storage SDK in order to upload a file from this device.</returns>
-        public async Task<FileUploadSasUriResponse> GetFileUploadSasUri(FileUploadSasUriRequest request, CancellationToken cancellationToken = default) =>
-            await InternalClient.GetFileUploadSasUriAsync(request, cancellationToken).ConfigureAwait(false);
+        public Task<FileUploadSasUriResponse> GetFileUploadSasUri(FileUploadSasUriRequest request, CancellationToken cancellationToken = default) =>
+            InternalClient.GetFileUploadSasUriAsync(request, cancellationToken);
 
         /// <summary>
         /// Notify IoT Hub that a device's file upload has finished. See <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload">this documentation for more details</see>
@@ -468,8 +468,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="notification">The notification details, including if the file upload succeeded.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The task to await.</returns>
-        public async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default) =>
-            await InternalClient.CompleteFileUploadAsync(notification, cancellationToken).ConfigureAwait(false);
+        public Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default) =>
+            InternalClient.CompleteFileUploadAsync(notification, cancellationToken);
 
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
