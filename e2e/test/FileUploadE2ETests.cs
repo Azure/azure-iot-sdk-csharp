@@ -125,17 +125,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 BlobName = filename
             };
+
             var fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUri(fileUploadSasUriRequest).ConfigureAwait(false);
 
-            string blobUriString = String.Format(
-                CultureInfo.InvariantCulture,
-                "https://{0}/{1}/{2}{3}",
-                fileUploadSasUriResponse.HostName,
-                fileUploadSasUriResponse.ContainerName,
-                Uri.EscapeDataString(fileUploadSasUriResponse.BlobName), // Pass URL encoded device name and blob name to support special characters
-                fileUploadSasUriResponse.SasToken);
-
-            CloudBlockBlob blob = new CloudBlockBlob(new Uri(blobUriString));
+            CloudBlockBlob blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
             var uploadTask = blob.UploadFromStreamAsync(source);
             await uploadTask.ConfigureAwait(false);
 
