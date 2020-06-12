@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled) Logging.Associate(this, transportSettings, nameof(InternalClient));
             _transportSettings = transportSettings;
 
-            if (options != null)
+            if (options != null && options.FileUploadTransportSettings != null)
             {
                 var fileUploadTransportSettings = options.FileUploadTransportSettings;
                 if (fileUploadTransportSettings.ClientCertificate == null)
