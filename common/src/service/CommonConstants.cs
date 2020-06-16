@@ -7,6 +7,9 @@ namespace Microsoft.Azure.Devices.Common
 
     static class CommonConstants
     {
+        // Custom HTTP response contents
+        internal const string ErrorCode = "errorCode";
+
         // TODO: move these to ConfigProvider
         public const string DeviceAudienceFormat = "{0}/devices/{1}";
         public const string MediaTypeForDeviceManagementApis = "application/json";
@@ -116,9 +119,6 @@ namespace Microsoft.Azure.Devices.Common
         // Custom HTTP headers
         public const string IotHubErrorCode = "IotHubErrorCode";
         public const string HttpErrorCodeName = "iothub-errorcode";
-
-        // Custom HTTP response contents
-        public const string ErrorCode = "errorCode";
 
         //Service Analytics related
         public static class ServiceAnalytics

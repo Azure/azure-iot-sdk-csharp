@@ -21,37 +21,37 @@ namespace Microsoft.Azure.Devices
         {
             var mappings = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>();
 
-            mappings.Add(HttpStatusCode.NoContent, async (response) => new DeviceNotFoundException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                   await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.NoContent, async (response) => new DeviceNotFoundException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                   message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.NotFound, async (response) => new DeviceNotFoundException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                  await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.NotFound, async (response) => new DeviceNotFoundException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                  message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.Conflict, async (response) => new DeviceAlreadyExistsException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                       await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.Conflict, async (response) => new DeviceAlreadyExistsException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                       message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.BadRequest, async (response) => new ArgumentException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.BadRequest, async (response) => new ArgumentException(message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.Unauthorized, async (response) => new UnauthorizedException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                    await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.Unauthorized, async (response) => new UnauthorizedException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.Forbidden, async (response) => new QuotaExceededException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                  await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.Forbidden, async (response) => new QuotaExceededException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                  message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.PreconditionFailed, async (response) => new DeviceMessageLockLostException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                                   await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.PreconditionFailed, async (response) => new DeviceMessageLockLostException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                                   message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.RequestEntityTooLarge, async (response) => new MessageTooLargeException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                                await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.RequestEntityTooLarge, async (response) => new MessageTooLargeException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                                message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.InternalServerError, async (response) => new ServerErrorException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                          await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.InternalServerError, async (response) => new ServerErrorException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                          message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add(HttpStatusCode.ServiceUnavailable, async (response) => new ServerBusyException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                                        await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.ServiceUnavailable, async (response) => new ServerBusyException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
-            mappings.Add((HttpStatusCode)429, async (response) => new ThrottlingException(await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                                                                                          await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add((HttpStatusCode)429, async (response) => new ThrottlingException(code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                                                                                          message: await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
             return mappings;
         }

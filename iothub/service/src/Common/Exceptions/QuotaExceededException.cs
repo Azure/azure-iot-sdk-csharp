@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         public QuotaExceededException(ErrorCode code, string message)
-            : base(code, message, true)
+            : base(code, message, isTransient: true)
         {
         }
 
