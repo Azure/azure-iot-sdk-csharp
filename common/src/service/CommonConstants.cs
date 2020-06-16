@@ -117,6 +117,9 @@ namespace Microsoft.Azure.Devices.Common
         public const string IotHubErrorCode = "IotHubErrorCode";
         public const string HttpErrorCodeName = "iothub-errorcode";
 
+        // Custom HTTP response contents
+        public const string ErrorCode = "errorCode";
+
         //Service Analytics related
         public static class ServiceAnalytics
         {
