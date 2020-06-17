@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-
     [Serializable]
     public class IotHubException : Exception
     {
@@ -47,9 +47,21 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
+        public IotHubException(ErrorCode code, string message, Exception innerException = null)
+            : this(message, innerException, false, string.Empty)
+        {
+            Code = code;
+        }
+
         protected IotHubException(string message, Exception innerException, bool isTransient)
             : this(message, innerException, isTransient, trackingId: string.Empty)
         {
+        }
+
+        protected IotHubException(ErrorCode code, string message, bool isTransient, Exception innerException = null)
+            : this(message, innerException, isTransient, trackingId: string.Empty)
+        {
+            Code = code;
         }
 
         protected IotHubException(string message, Exception innerException, bool isTransient, string trackingId)

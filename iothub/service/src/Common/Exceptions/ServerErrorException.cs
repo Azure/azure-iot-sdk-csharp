@@ -1,16 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-
     [Serializable]
     public sealed class ServerErrorException : IotHubException
     {
         public ServerErrorException(string message)
             : base(message, isTransient: true)
+        {
+        }
+
+        public ServerErrorException(ErrorCode code, string message)
+            : base(code, message, isTransient: true)
         {
         }
 
