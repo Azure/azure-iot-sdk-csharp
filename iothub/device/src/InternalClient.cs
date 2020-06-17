@@ -153,15 +153,6 @@ namespace Microsoft.Azure.Devices.Client
 
             if (options != null && options.FileUploadTransportSettings != null)
             {
-                var fileUploadTransportSettings = options.FileUploadTransportSettings;
-                if (fileUploadTransportSettings.ClientCertificate == null)
-                {
-                    // Kind of strange to take file upload transport settings from the non-file upload transport settings,
-                    // but this is the established behavior from when upload to blob didn't have transport settings,
-                    // and it shouldn't be broken for existing users
-                    fileUploadTransportSettings.ClientCertificate = Certificate;
-                }
-
                 _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, options.FileUploadTransportSettings);
             }
             else
