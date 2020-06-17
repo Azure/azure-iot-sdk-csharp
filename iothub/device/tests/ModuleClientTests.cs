@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void ModuleClient_CreateFromConnectionString_WithClientOptions()
+        public void ModuleClient_CreateFromConnectionStringWithClientOptions_DoesNotThrow()
         {
             // setup
             var clientOptions = new ClientOptions
@@ -83,9 +83,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, clientOptions);
-
-            // assert
-            Assert.IsNotNull(moduleClient);
         }
 
         [TestMethod]
