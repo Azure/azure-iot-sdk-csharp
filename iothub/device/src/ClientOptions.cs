@@ -4,12 +4,12 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Options that allow configuration of the device client instance during initialization.
+    /// Options that allow configuration of the device or module client instance during initialization.
     /// </summary>
     public class ClientOptions
     {
         /// <summary>
-        /// The digital twins model Id associated with the device client instance.
+        /// The digital twins model Id associated with the device or module client instance.
         /// This feature is currently supported only over MQTT.
         /// </summary>
         public string ModelId { get; set; }
