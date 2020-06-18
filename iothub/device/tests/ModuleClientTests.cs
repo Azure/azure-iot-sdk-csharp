@@ -78,6 +78,19 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public void ModuleClient_CreateFromConnectionStringWithClientOptions_DoesNotThrow()
+        {
+            // setup
+            var clientOptions = new ClientOptions
+            {
+                ModelId = "tempModuleId"
+            };
+
+            // act
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, clientOptions);
+        }
+
+        [TestMethod]
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback()
         {
