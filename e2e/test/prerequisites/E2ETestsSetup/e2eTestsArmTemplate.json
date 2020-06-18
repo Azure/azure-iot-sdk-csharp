@@ -246,23 +246,23 @@
         "eventHubEndpoints": {
           "events": {
             "retentionTimeInDays": 1,
-            "partitionCount": 4
+            "partitionCount": 10
           }
         },
         "cloudToDevice": {
           "defaultTtlAsIso8601": "PT1H",
-          "maxDeliveryCount": 10,
+          "maxDeliveryCount": 100,
           "feedback": {
             "ttlAsIso8601": "PT1H",
-            "lockDurationAsIso8601": "PT60S",
-            "maxDeliveryCount": 10
+            "lockDurationAsIso8601": "PT5S",
+            "maxDeliveryCount": 100
           }
         },
         "messagingEndpoints": {
           "fileNotifications": {
             "ttlAsIso8601": "PT1H",
-            "lockDurationAsIso8601": "PT1M",
-            "maxDeliveryCount": 10
+            "lockDurationAsIso8601": "PT5S",
+            "maxDeliveryCount": 100
           }
         },
         "StorageEndPoints": {
