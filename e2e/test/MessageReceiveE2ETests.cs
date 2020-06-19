@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class MessageReceiveE2ETests : IDisposable
     {
         private static readonly string s_devicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
+
         private static readonly TestLogging s_log = TestLogging.GetInstance();
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_oneSecond = TimeSpan.FromSeconds(1);
@@ -220,29 +221,32 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveMessageInOperationTimeoutAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        public static (Message message, string messageId, string payload, string p1Value) ComposeC2dTestMessage()
+        public static (Message message, string payload, string p1Value) ComposeC2dTestMessage()
         {
             var payload = Guid.NewGuid().ToString();
             var messageId = Guid.NewGuid().ToString();
             var p1Value = Guid.NewGuid().ToString();
+            var userId = Guid.NewGuid().ToString();
 
-            s_log.WriteLine($"{nameof(ComposeC2dTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            s_log.WriteLine($"{nameof(ComposeC2dTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
+                UserId = userId,
                 Properties = { ["property1"] = p1Value }
             };
 
-            return (message, messageId, payload, p1Value);
+            return (message, payload, p1Value);
         }
 
-        public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
+        public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, Message message, string payload)
         {
+            string receivedMessageDestination = $"/devices/{deviceId}/messages/deviceBound";
+
             var sw = new Stopwatch();
             bool received = false;
 
             sw.Start();
-
 
             while (!received && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
@@ -277,14 +281,19 @@ namespace Microsoft.Azure.Devices.E2ETests
                         // ignore exception from CompleteAsync
                     }
 
+                    Assert.AreEqual(receivedMessage.MessageId, message.MessageId, "Recieved message Id is not what was sent by service");
+                    Assert.AreEqual(receivedMessage.UserId, message.UserId, "Recieved user Id is not what was sent by service");
+                    Assert.AreEqual(receivedMessage.To, receivedMessageDestination, "Recieved message destination is not what was sent by service");
+
                     string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
                     s_log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
                     if (Equals(payload, messageData))
                     {
                         Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
                         System.Collections.Generic.KeyValuePair<string, string> prop = receivedMessage.Properties.Single();
-                        Assert.AreEqual("property1", prop.Key, $"The key \"property1\" did not match for device {deviceId}");
-                        Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
+                        string propertyKey = "property1";
+                        Assert.AreEqual(propertyKey, prop.Key, $"The key \"property1\" did not match for device {deviceId}");
+                        Assert.AreEqual(message.Properties[propertyKey], prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
                         received = true;
                     }
                 }
@@ -422,11 +431,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await serviceClient.OpenAsync().ConfigureAwait(false);
 
-            (Message msg, string messageId, string payload, string p1Value) = ComposeC2dTestMessage();
+            (Message msg, string payload, string p1Value) = ComposeC2dTestMessage();
             using (msg)
             {
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                await VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                await VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msg, payload).ConfigureAwait(false);
             }
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -450,7 +459,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await serviceClient.OpenAsync().ConfigureAwait(false);
 
-            (Message msg, string messageId, string payload, string p1Value) = ComposeC2dTestMessage();
+            (Message msg, string payload, string p1Value) = ComposeC2dTestMessage();
             using (msg)
             {
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
