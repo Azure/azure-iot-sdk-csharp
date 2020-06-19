@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var messages = new List<Client.Message>();
                 for (int i = 0; i < MESSAGE_COUNT; i++)
                 {
-                    (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
+                    (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
                     await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                     Client.Message message = await deviceClient.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                     if (message == null)
