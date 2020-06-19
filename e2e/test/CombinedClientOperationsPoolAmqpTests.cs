@@ -122,8 +122,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Initialize service client for service-side operations
             using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
-            // Message payload for C2D operation
-            var messagesSent = new Dictionary<string, List<string>>();
+            // Message payload and properties for C2D operation
+            var messagesSent = new Dictionary<string, Tuple<Message, string>>();
 
             // Twin properties
             var twinPropertyMap = new Dictionary<string, List<string>>();
@@ -134,10 +134,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Send C2D Message
                 s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
-                (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
+                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
                 using (msg)
                 {
-                    messagesSent.Add(testDevice.Id, new List<string> { payload, p1Value });
+                    messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
                     Task sendC2dMessage = serviceClient.SendAsync(testDevice.Id, msg);
                     initOperations.Add(sendC2dMessage);
 
@@ -170,10 +170,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // C2D Operation
                 s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 2: Receive C2D for device={testDevice.Id}");
-                List<string> msgSent = messagesSent[testDevice.Id];
-                string payload = msgSent[0];
-                string p1Value = msgSent[1];
-                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value);
+                Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
+                Message msg = msgSent.Item1;
+                string payload = msgSent.Item2;
+
+                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msg, payload);
                 clientOperations.Add(verifyDeviceClientReceivesMessage);
 
                 // Invoke direct methods
