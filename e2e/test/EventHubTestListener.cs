@@ -42,14 +42,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // verify required message is present in the dictionary
-        public static bool VerifyIfMessageIsReceived(string deviceId, string payload, string p1Value, TimeSpan? maxWaitTime = null)
+        public static bool VerifyIfMessageIsReceived(string deviceId, Client.Message message, string payload, string p1Value, TimeSpan? maxWaitTime = null)
         {
             if (!maxWaitTime.HasValue)
             {
                 maxWaitTime = s_maximumWaitTime;
             }
 
-            s_log.WriteLine($"Expected payload: deviceId={deviceId}; payload={payload}; property1={p1Value}");
+            s_log.WriteLine($"Expected payload: deviceId={deviceId}; messageId = {message.MessageId}, userId={message.UserId}, payload={payload}; property1={p1Value}");
 
             bool isReceived = false;
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     continue;
                 }
 
-                isReceived = VerifyTestMessage(eventData, deviceId, p1Value);
+                isReceived = VerifyTestMessage(eventData, deviceId, message, p1Value);
             }
 
             sw.Stop();
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
         }
 
-        private static bool VerifyTestMessage(EventData eventData, string deviceName, string p1Value)
+        private static bool VerifyTestMessage(EventData eventData, string deviceName, Client.Message message, string p1Value)
         {
 #if NET451
             var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
