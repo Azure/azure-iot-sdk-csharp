@@ -110,5 +110,13 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Ignore)]
         public virtual string Scope { get; set; }
+
+        /// <summary>
+        /// The DTDL model id of the device.
+        /// The value will be null for a non-pnp device.
+        /// The value will be null for a pnp device until the device connects and registers with the model id.
+        /// </summary>
+        [JsonProperty(PropertyName = "digital-twin-model-id", NullValueHandling = NullValueHandling.Ignore)]
+        public virtual string ModelId { get; set; }
     }
 }
