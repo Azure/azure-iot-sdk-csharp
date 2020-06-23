@@ -45,6 +45,24 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
+        public void TestCreate_FromConnectionStringEnvironment_ShouldCreateClientWithOptions()
+        {
+            // setup
+            var clientOptions = new ClientOptions
+            {
+                ModelId = "tempModuleId"
+            };
+            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
+
+            // act
+            ModuleClient dc = ModuleClient.CreateFromEnvironmentAsync(clientOptions).Result;
+
+            Assert.IsNotNull(dc);
+
+            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, null);
+        }
+
+        [TestMethod]
         public void TestCreate_FromConnectionStringEnvironment_SetTransportType_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
