@@ -114,15 +114,15 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            var messagesSent = new Dictionary<string, List<string>>();
+            var messagesSent = new Dictionary<string, Tuple<Message, string>>();
 
             // Initialize the service client
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
-                messagesSent.Add(testDevice.Id, new List<string> { payload, p1Value });
+                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
+                messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             };
@@ -132,11 +132,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                List<string> msgSent = messagesSent[testDevice.Id];
-                string payload = msgSent[0];
-                string p1Value = msgSent[1];
-
-                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
+                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2).ConfigureAwait(false);
             };
 
             Func<Task> cleanupOperation = async () =>
