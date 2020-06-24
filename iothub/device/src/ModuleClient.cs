@@ -164,10 +164,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a ModuleClient instance in an IoT Edge deployment
         /// based on environment variables.
         /// </summary>
+        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient instance</returns>
-        public static Task<ModuleClient> CreateFromEnvironmentAsync()
+        public static Task<ModuleClient> CreateFromEnvironmentAsync(ClientOptions options = default)
         {
-            return CreateFromEnvironmentAsync(TransportType.Amqp);
+            return CreateFromEnvironmentAsync(TransportType.Amqp, options);
         }
 
         /// <summary>
@@ -175,10 +176,11 @@ namespace Microsoft.Azure.Devices.Client
         /// based on environment variables.
         /// </summary>
         /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
+        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient instance</returns>
-        public static Task<ModuleClient> CreateFromEnvironmentAsync(TransportType transportType)
+        public static Task<ModuleClient> CreateFromEnvironmentAsync(TransportType transportType, ClientOptions options = default)
         {
-            return CreateFromEnvironmentAsync(ClientFactory.GetTransportSettings(transportType));
+            return CreateFromEnvironmentAsync(ClientFactory.GetTransportSettings(transportType), options);
         }
 
         /// <summary>
@@ -186,10 +188,11 @@ namespace Microsoft.Azure.Devices.Client
         /// based on environment variables.
         /// </summary>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
+        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient instance</returns>
-        public static Task<ModuleClient> CreateFromEnvironmentAsync(ITransportSettings[] transportSettings)
+        public static Task<ModuleClient> CreateFromEnvironmentAsync(ITransportSettings[] transportSettings, ClientOptions options = default)
         {
-            return new EdgeModuleClientFactory(transportSettings, new TrustBundleProvider()).CreateAsync();
+            return new EdgeModuleClientFactory(transportSettings, new TrustBundleProvider(), options).CreateAsync();
         }
 
         private static ModuleClient Create(Func<InternalClient> internalClientCreator)
