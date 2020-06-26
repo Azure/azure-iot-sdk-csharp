@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         operationId,
                         message.IdScope).ConfigureAwait(false);
                     }
-                    catch(HttpOperationException oe) when (oe.Response.StatusCode == (HttpStatusCode)429)
+                    catch(HttpOperationException oe) when (oe.Response.StatusCode >= (HttpStatusCode)429)
                     {
                         try
                         {
