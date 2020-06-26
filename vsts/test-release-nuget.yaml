@@ -24,7 +24,7 @@ jobs:
         inputs:
           buildType: 'specific'
           project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-          pipeline: '278'
+          pipeline: '355'
           buildVersionToDownload: 'latest'
           downloadType: 'single'
           downloadPath: '$(System.ArtifactsDirectory)'
