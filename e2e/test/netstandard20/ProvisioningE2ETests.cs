@@ -584,7 +584,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (ProvisioningTransportException ex)
             {
-                Assert.IsTrue(ex.Message.Contains("404201"));
+                Assert.IsTrue(ex.Message.Contains("HTTP transport exception"));
             }
         }
 
