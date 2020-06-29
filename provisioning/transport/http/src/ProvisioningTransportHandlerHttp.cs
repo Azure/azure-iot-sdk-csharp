@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     catch(HttpOperationException oe)
                     {
                         bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError
-                            || (int)oe.Response.StatusCode == 429;
+                            || oe.Response.StatusCode == HttpStatusCode.TooManyRequests;
                         try
                         {
                             var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(oe.Response.Content);
@@ -168,6 +168,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                             }
                             else
                             {
+                                if (Logging.IsEnabled) Logging.Error(
+                                   this,
+                                   $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {oe}",
+                                   nameof(RegisterAsync));
                                 throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
                             }
                         }
@@ -212,7 +216,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                    nameof(RegisterAsync));
 
                 bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError
-                    || (int)oe.Response.StatusCode == 429;
+                    || oe.Response.StatusCode == HttpStatusCode.TooManyRequests;
 
                 try
                 {
