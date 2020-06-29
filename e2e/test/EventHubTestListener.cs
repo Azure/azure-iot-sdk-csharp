@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private EventHubTestListener()
         {
-            // empty private constructor, since we don't want external intilization of an instance
+            // empty private constructor, since we don't want external initialization of an instance
         }
 
         // verify required message is present in the dictionary
