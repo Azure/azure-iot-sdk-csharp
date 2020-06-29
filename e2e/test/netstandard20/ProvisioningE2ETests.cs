@@ -584,6 +584,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (ProvisioningTransportException ex)
             {
+                // Exception message must contain the errorCode value as below
                 Assert.IsTrue(ex.Message.Contains("404201"));
             }
         }
@@ -599,6 +600,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (ProvisioningTransportException ex)
             {
+                // Exception message must contain the errorCode value as below
                 Assert.IsTrue(ex.Message.Contains("404201"));
             }
         }
@@ -624,6 +626,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
                 Assert.IsNull(result.AssignedHub);
                 Assert.IsNull(result.DeviceId);
+                // Exception message must contain the errorCode value as below
                 Assert.AreEqual(404201, result.ErrorCode);
             }
         }
