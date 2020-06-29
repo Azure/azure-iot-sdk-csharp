@@ -155,12 +155,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         operationId,
                         message.IdScope).ConfigureAwait(false);
                     }
-                    catch(HttpOperationException oe) when (oe.Response.StatusCode >= (HttpStatusCode)429)
+                    catch(HttpOperationException oe)
                     {
+                        bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError
+                            || (int)oe.Response.StatusCode == 429;
                         try
                         {
                             var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(oe.Response.Content);
-                            serviceRecommendedDelay = errorDetails.RetryAfter;
+                            if (isTransient)
+                            {
+                                serviceRecommendedDelay = errorDetails.RetryAfter;
+                            }
+                            else
+                            {
+                                throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
+                            }
                         }
                         catch (JsonException ex)
                         {
@@ -194,6 +203,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
+            }
+            catch (HttpOperationException oe)
+            {
+                if (Logging.IsEnabled) Logging.Error(
+                   this,
+                   $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {oe}",
+                   nameof(RegisterAsync));
+
+                bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError
+                    || (int)oe.Response.StatusCode == 429;
+
+                try
+                {
+                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(oe.Response.Content);
+                    throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
+                }
+                catch (JsonException ex)
+                {
+                    if (Logging.IsEnabled) Logging.Error(
+                        this,
+                        $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response." +
+                        $"Parsing error: {ex}. Server response: {oe.Response.Content}",
+                        nameof(RegisterAsync));
+
+                    throw new ProvisioningTransportException(
+                        $"HTTP transport exception: malformed server error message: '{oe.Response.Content}'",
+                        ex,
+                        false);
+                }
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
