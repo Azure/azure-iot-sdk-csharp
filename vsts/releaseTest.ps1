@@ -16,6 +16,10 @@ Write-Host List active docker containers
 docker ps -a
 
 $runTestCmd = ".\build.ps1 -build -clean -configuration RELEASE -framework $env:FRAMEWORK -e2etests"
+
+Write-Host "SKIPPING ALL PNP TESTS REGARDLESS"
+$runTestCmd += " -skipPnPTests"
+
 Invoke-Expression $runTestCmd
 
 $gateFailed = $LASTEXITCODE
