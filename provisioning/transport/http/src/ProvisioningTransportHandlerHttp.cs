@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     catch(HttpOperationException oe)
                     {
                         bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError
-                            || oe.Response.StatusCode == HttpStatusCode.TooManyRequests;
+                            || (int)oe.Response.StatusCode == 429;
                         try
                         {
                             var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(oe.Response.Content);
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                    nameof(RegisterAsync));
 
                 bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError
-                    || oe.Response.StatusCode == HttpStatusCode.TooManyRequests;
+                    || (int)oe.Response.StatusCode == 429;
 
                 try
                 {
