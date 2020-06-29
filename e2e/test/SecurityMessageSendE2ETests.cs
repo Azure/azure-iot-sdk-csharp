@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeTestSecurityMessage();
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value);
+                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, testMessage, payload, p1Value);
                 Assert.IsFalse(isReceived, "Secured message should not be received.");
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
@@ -103,8 +103,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await moduleClient.OpenAsync().ConfigureAwait(false);
                 (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeTestSecurityMessage();
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
-                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value);
-                Assert.IsFalse(isReceived, "Secured essage should not be received.");
+                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, testMessage, payload, p1Value);
+                Assert.IsFalse(isReceived, "Secured message should not be received.");
                 await moduleClient.CloseAsync().ConfigureAwait(false);
             }
         }
