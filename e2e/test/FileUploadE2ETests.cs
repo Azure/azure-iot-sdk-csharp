@@ -3,16 +3,11 @@
 
 using System;
 using System.Diagnostics.Tracing;
-using System.Globalization;
 using System.IO;
-using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Transport;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Net;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -21,13 +16,13 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class FileUploadE2ETests : IDisposable
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(FileUploadE2ETests)}_";
+        private readonly string DevicePrefix = $"E2E_{nameof(FileUploadE2ETests)}_";
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 
 #pragma warning disable CA1823
         private readonly ConsoleEventListener _listener;
-        private static TestLogging s_log = TestLogging.GetInstance();
+        private static TestLogging _log = TestLogging.GetInstance();
 #pragma warning restore CA1823
 
         public FileUploadE2ETests()
@@ -40,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_SmallFile_Http()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            await UploadFileAsync(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
+            await UploadFile(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -48,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_BigFile_Http()
         {
             string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
-            await UploadFileAsync(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
+            await UploadFile(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -56,101 +51,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_X509_SmallFile_Http()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            await UploadFileAsync(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
+            await UploadFile(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        [TestCategory("LongRunning")]
-        public async Task FileUpload_SmallFile_Http_GranularSteps()
-        {
-            string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var fileUploadTransportSettings = new Http1TransportSettings();
-
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("LongRunning")]
-        public async Task FileUpload_SmallFile_Http_GranularSteps_x509()
-        {
-            string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var fileUploadTransportSettings = new Http1TransportSettings();
-
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, x509auth: true).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("LongRunning")]
-        public async Task FileUpload_SmallFile_Http_GranularSteps_Proxy()
-        {
-            string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var fileUploadTransportSettings = new Http1TransportSettings()
-            {
-                Proxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
-            };
-
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
-        }
-
-        private async Task UploadFileGranularAsync(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool x509auth = false)
-        {
-            await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
-
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
-                _devicePrefix,
-                x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
-
-            DeviceClient deviceClient;
-            var clientOptions = new ClientOptions()
-            {
-                FileUploadTransportSettings = fileUploadTransportSettings
-            };
-
-            if (x509auth)
-            {
-                X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
-
-                var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
-
-                // The X509 certificate being used for device authentication needs to be set into FileUploadTransportSettings as well,
-                // so that the HttpClient created for file upload operation has access to those certificates.
-                clientOptions.FileUploadTransportSettings.ClientCertificate = cert;
-                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, Client.TransportType.Http1, clientOptions);
-            }
-            else
-            {
-                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Http1, clientOptions);
-            }
-
-            var fileUploadSasUriRequest = new FileUploadSasUriRequest()
-            {
-                BlobName = filename
-            };
-
-            FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
-
-            var blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
-            Task uploadTask = blob.UploadFromStreamAsync(source);
-            await uploadTask.ConfigureAwait(false);
-
-            var notification = new FileUploadCompletionNotification
-            {
-                CorrelationId = fileUploadSasUriResponse.CorrelationId,
-                IsSuccess = uploadTask.IsCompleted
-            };
-
-            await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
-
-            await FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id).ConfigureAwait(false);
-        }
-
-        private async Task UploadFileAsync(Client.TransportType transport, string filename, bool x509auth = false)
+        private async Task UploadFile(Client.TransportType transport, string filename, bool x509auth = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
-                _devicePrefix,
+                DevicePrefix,
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
             DeviceClient deviceClient;
@@ -170,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using (deviceClient)
             {
-                using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
+                using (FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
                 {
                     await deviceClient.UploadToBlobAsync(filename, fileStreamSource).ConfigureAwait(false);
                 }

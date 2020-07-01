@@ -25,11 +25,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-        public MessageTooLargeException(ErrorCode code, string message)
-            : base(code, message)
-        {
-        }
-
         public MessageTooLargeException(string message, Exception innerException)
             : base(message, innerException)
         {
