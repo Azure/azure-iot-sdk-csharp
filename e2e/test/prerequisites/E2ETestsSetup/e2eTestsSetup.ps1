@@ -123,6 +123,7 @@ if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 # New certs will be generated each time you run the script as the script cleans up in the end
 ########################################################################################################
 
+$subjectPrefix = "IoT Test"
 $rootCommonName = "$subjectPrefix Test Root CA"
 $intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA"
 $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA"
