@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan s_defaultMethodOperationTimeout = TimeSpan.FromSeconds(100);
 
-        private static readonly IDictionary<string, string> s_mapMessageProperties2HttpHeaders = new Dictionary<string, string>
+        private static readonly IDictionary<string, string> s_mapMessagePropertiesToHttpHeaders = new Dictionary<string, string>
         {
             { MessageSystemPropertyNames.Ack, CustomHeaderConstants.Ack },
             { MessageSystemPropertyNames.CorrelationId, CustomHeaderConstants.CorrelationId },
@@ -39,6 +39,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             { MessageSystemPropertyNames.ContentType, CustomHeaderConstants.ContentType },
             { MessageSystemPropertyNames.ContentEncoding, CustomHeaderConstants.ContentEncoding },
             { MessageSystemPropertyNames.InterfaceId, CustomHeaderConstants.InterfaceId }
+        };
+
+        private static readonly IDictionary<string, string> s_mapHttpHeadersToMessageProperties = new Dictionary<string, string>
+        {
+            { HttpResponseHeader.ETag.ToString(), MessageSystemPropertyNames.LockToken },
+            { CustomHeaderConstants.MessageId, MessageSystemPropertyNames.MessageId },
+            { CustomHeaderConstants.SequenceNumber, MessageSystemPropertyNames.SequenceNumber },
+            { CustomHeaderConstants.To, MessageSystemPropertyNames.To },
+            { CustomHeaderConstants.ExpiryTimeUtc, MessageSystemPropertyNames.ExpiryTimeUtc },
+            { CustomHeaderConstants.CorrelationId, MessageSystemPropertyNames.CorrelationId },
+            { CustomHeaderConstants.UserId, MessageSystemPropertyNames.UserId },
+            { CustomHeaderConstants.Ack, MessageSystemPropertyNames.Ack },
+            { CustomHeaderConstants.EnqueuedTime, MessageSystemPropertyNames.EnqueuedTime },
+            { CustomHeaderConstants.DeliveryCount, MessageSystemPropertyNames.DeliveryCount },
         };
 
         private readonly IHttpClientHelper _httpClientHelper;
@@ -87,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             foreach (var property in message.SystemProperties)
             {
                 string strValue = property.Value is DateTime ? ((DateTime)property.Value).ToString("o") : property.Value.ToString();
-                customHeaders.Add(s_mapMessageProperties2HttpHeaders[property.Key], strValue);
+                customHeaders.Add(s_mapMessagePropertiesToHttpHeaders[property.Key], strValue);
             }
 
             foreach (var property in message.Properties)
@@ -138,12 +152,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var fileUploadRequest = new FileUploadRequest()
+            var fileUploadRequest = new FileUploadSasUriRequest()
             {
                 BlobName = blobName
             };
 
-            var fileUploadResponse = await _httpClientHelper.PostAsync<FileUploadRequest, FileUploadResponse>(
+            var fileUploadResponse = await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
             GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
             fileUploadRequest,
             ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -158,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Uri.EscapeDataString(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters
                 fileUploadResponse.SasToken);
 
-            var notification = new FileUploadNotificationResponse();
+            var notification = new FileUploadCompletionNotification();
 
             try
             {
@@ -173,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 notification.StatusDescription = uploadTask.IsCompleted ? null : "Failed to upload to storage.";
 
                 // 3. POST to IoTHub with upload status
-                await _httpClientHelper.PostAsync<FileUploadNotificationResponse>(
+                await _httpClientHelper.PostAsync<FileUploadCompletionNotification>(
                     GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
                     notification,
                     ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -188,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 notification.StatusDescription = ex.Message;
 
                 await _httpClientHelper
-                    .PostAsync<FileUploadNotificationResponse>(
+                    .PostAsync<FileUploadCompletionNotification>(
                         GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications/" + fileUploadResponse.CorrelationId, null),
                         notification,
                         ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -198,6 +212,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 throw;
             }
+        }
+
+        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUri(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
+                GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
+                request,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                null,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        internal async Task CompleteFileUpload(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _httpClientHelper.PostAsync(
+                GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
+                notification,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                null,
+                cancellationToken).ConfigureAwait(false);
         }
 
         public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
@@ -229,51 +266,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return null;
             }
 
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.MessageId, out IEnumerable<string> messageId);
-            responseMessage.Headers.TryGetValues(HttpResponseHeader.ETag.ToString(), out IEnumerable<string> lockToken);
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.EnqueuedTime, out IEnumerable<string> enqueuedTime);
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.DeliveryCount, out IEnumerable<string> deliveryCountAsStr);
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.ExpiryTimeUtc, out IEnumerable<string> expiryTime);
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.CorrelationId, out IEnumerable<string> correlationId);
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.SequenceNumber, out IEnumerable<string> sequenceNumber);
-
             byte[] byteContent = await responseMessage.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
             Message message = byteContent != null
                 ? new Message(byteContent)
                 : new Message();
 
-            message.MessageId = messageId?.First();
-            message.LockToken = lockToken?.First().Trim('\"');
-
-            if (enqueuedTime != null)
+            // Read Http headers and map them to message system properties.
+            foreach (KeyValuePair<string, IEnumerable<string>> header in responseMessage.Headers)
             {
-                if (DateTime.TryParse(enqueuedTime.First(), out DateTime enqueuedTimeUtc))
+                string headerKey = header.Key;
+
+                if (s_mapHttpHeadersToMessageProperties.ContainsKey(headerKey))
                 {
-                    message.EnqueuedTimeUtc = enqueuedTimeUtc;
+                    string messagePropertyKey = s_mapHttpHeadersToMessageProperties[headerKey];
+                    object messagePropertyValue = ConvertToMessageSystemProperty(messagePropertyKey, header.Value);
+                    if (messagePropertyValue != null)
+                    {
+                        message.SystemProperties[messagePropertyKey] = messagePropertyValue;
+                    }
                 }
             }
-
-            if (deliveryCountAsStr != null)
-            {
-                if (byte.TryParse(deliveryCountAsStr.First(), out byte deliveryCount))
-                {
-                    message.DeliveryCount = deliveryCount;
-                }
-            }
-
-            if (expiryTime != null)
-            {
-                if (DateTime.TryParse(expiryTime.First(), out DateTime absoluteExpiryTime))
-                {
-                    message.ExpiryTimeUtc = absoluteExpiryTime;
-                }
-            }
-
-            message.CorrelationId = correlationId?.First();
-            message.SequenceNumber = sequenceNumber == null
-                ? 0
-                : Convert.ToUInt64(sequenceNumber.First(), CultureInfo.InvariantCulture);
 
             // Read custom headers and map them to properties.
             foreach (KeyValuePair<string, IEnumerable<string>> keyValue in responseMessage.Headers)
@@ -404,6 +417,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return customHeaders;
         }
 
+        private static object ConvertToMessageSystemProperty(string messagePropertyName, IEnumerable<string> messagePropertyValues)
+        {
+            string propertyValue = messagePropertyValues?.First();
+
+            switch (messagePropertyName)
+            {
+                case MessageSystemPropertyNames.LockToken:
+                    return propertyValue.Trim('\"');
+
+                case MessageSystemPropertyNames.EnqueuedTime:
+                case MessageSystemPropertyNames.ExpiryTimeUtc:
+                    return DateTime.TryParse(propertyValue, out DateTime dateTime) ? dateTime : (object)null;
+
+                case MessageSystemPropertyNames.SequenceNumber:
+                    return propertyValue == null ? 0 : Convert.ToUInt64(propertyValue, CultureInfo.InvariantCulture);
+
+                case MessageSystemPropertyNames.DeliveryCount:
+                    return byte.TryParse(propertyValue, out byte deliveryCount) ? deliveryCount : (object)null;
+
+                default:
+                    return propertyValue;
+            }
+        }
+
         private static Uri GetRequestUri(string deviceId, string path, IDictionary<string, string> queryValueDictionary)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
@@ -455,7 +492,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 foreach (var property in message.SystemProperties)
                 {
-                    writer.WritePropertyName(s_mapMessageProperties2HttpHeaders[property.Key]);
+                    writer.WritePropertyName(s_mapMessagePropertiesToHttpHeaders[property.Key]);
                     writer.WriteValue(property.Value);
                 }
 

@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public sealed partial class EventHubTestListener
     {
-        private static readonly TimeSpan MaximumWaitTime = TimeSpan.FromMinutes(1);
-        private const int LookbackTimeInMinutes = 5;
+        private static readonly TimeSpan s_maximumWaitTime = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan s_lookbackTimeInMinutes = TimeSpan.FromMinutes(5);
         private const int OperationTimeoutInSeconds = 10;
 
         private static TestLogging s_log = TestLogging.GetInstance();
@@ -38,18 +38,18 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private EventHubTestListener()
         {
-            // empty private constructor, since we don't want external intilization of an instance
+            // empty private constructor, since we don't want external initialization of an instance
         }
 
         // verify required message is present in the dictionary
-        public static bool VerifyIfMessageIsReceived(string deviceId, string payload, string p1Value, TimeSpan? maxWaitTime = null)
+        public static bool VerifyIfMessageIsReceived(string deviceId, Client.Message message, string payload, string p1Value, TimeSpan? maxWaitTime = null)
         {
             if (!maxWaitTime.HasValue)
             {
-                maxWaitTime = MaximumWaitTime;
+                maxWaitTime = s_maximumWaitTime;
             }
 
-            s_log.WriteLine($"Expected payload: deviceId={deviceId}; payload={payload}; property1={p1Value}");
+            s_log.WriteLine($"Expected payload: deviceId={deviceId}; messageId = {message.MessageId}, userId={message.UserId}, payload={payload}; property1={p1Value}");
 
             bool isReceived = false;
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     continue;
                 }
 
-                isReceived = VerifyTestMessage(eventData, deviceId, p1Value);
+                isReceived = VerifyTestMessage(eventData, deviceId, message, p1Value);
             }
 
             sw.Stop();
@@ -92,29 +92,16 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static string GetEventDataBody(EventData eventData)
         {
 #if NET451
-            var bodyBytes = new byte[1024];
-            int totalRead = 0;
-            int read = 0;
-
             Stream bodyStream = eventData.GetBodyStream();
-            do
-            {
-                read = bodyStream.Read(bodyBytes, totalRead, bodyBytes.Length - totalRead);
-                totalRead += read;
-            } while (read > 0 && (bodyBytes.Length - totalRead > 0));
 
-            if (read > 0)
-            {
-                throw new InternalBufferOverflowException("EventHub message exceeded internal buffer.");
-            }
-
-            return Encoding.UTF8.GetString(bodyBytes, 0, totalRead);
+            var reader = new StreamReader(bodyStream);
+            return reader.ReadToEnd();
 #else
             return Encoding.UTF8.GetString(eventData.Body.ToArray());
 #endif
         }
 
-        private static bool VerifyTestMessage(EventData eventData, string deviceName, string p1Value)
+        private static bool VerifyTestMessage(EventData eventData, string deviceName, Client.Message message, string p1Value)
         {
 #if NET451
             var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
