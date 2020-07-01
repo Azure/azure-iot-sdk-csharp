@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
@@ -23,6 +25,11 @@ namespace TemperatureController
         private static readonly Random s_random = new Random();
 
         private static DeviceClient s_deviceClient;
+
+        // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
+        // The key for this dictionary is the componentName.
+        // TODO - Implementation for a root property.
+        private static ConcurrentDictionary<string, DesiredPropertyUpdateCallback> s_desiredPropertyUpdateCallbacks = new ConcurrentDictionary<string, DesiredPropertyUpdateCallback>();
 
         public static async Task Main(string[] _)
         {
@@ -60,12 +67,9 @@ namespace TemperatureController
             await SendCurrentTemperatureAsync(Thermostat2);
 
             PrintLog($"Set handler to receive \"target temperature\" updates.");
-            var componentPropertyMapping = new Dictionary<string, List<string>>()
-            {
-                { Thermostat1, new List<string> { "targetTemperature" } },
-                { Thermostat2, new List<string> { "targetTemperature" } },
-            };
-            await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, componentPropertyMapping);
+            await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallbackAsync, null);
+            s_desiredPropertyUpdateCallbacks.TryAdd(Thermostat1, TargetTemperatureUpdateCallbackAsync);
+            s_desiredPropertyUpdateCallbacks.TryAdd(Thermostat2, TargetTemperatureUpdateCallbackAsync);
 
             PrintLog($"Press any key to exit");
             Console.ReadKey();
@@ -139,7 +143,7 @@ namespace TemperatureController
             Message msg = PnpHelper.CreateIothubMessageUtf8(telemetryName, JsonConvert.SerializeObject(targetTemperature), componentName);
 
             await s_deviceClient.SendEventAsync(msg);
-            PrintLog($"Sent current temperature {targetTemperature}°C over telemetry.");
+            PrintLog($"Sent current temperature {targetTemperature}°C for component {componentName} over telemetry.");
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
@@ -155,33 +159,43 @@ namespace TemperatureController
             return new MethodResponse(200);
         }
 
+        private static async Task SetDesiredPropertyUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
+        {
+            bool callbackNotInvoked = true;
+
+            foreach(KeyValuePair<string, object> propertyUpdate in desiredProperties)
+            {
+                string componentName = propertyUpdate.Key;
+                if (s_desiredPropertyUpdateCallbacks.ContainsKey(componentName))
+                {
+                    s_desiredPropertyUpdateCallbacks[componentName]?.Invoke(desiredProperties, componentName);
+                    callbackNotInvoked = false;
+                }
+            }
+
+            if (callbackNotInvoked)
+            {
+                PrintLog($"Received a property update that is not implemented by any associated component.");
+            }
+
+            await Task.CompletedTask;
+        }
+
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry.
         private static async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
         {
-            var componentPropertyMapping = (Dictionary<string, List<string>>)userContext;
-            bool targetTemperatureUpdateReceived = false;
+            string componentName = (string)userContext;
+            string propertyName = "targetTemperature";
 
-            foreach(KeyValuePair<string, List<string>> entry in componentPropertyMapping)
+            (bool targetTempUpdateReceived, double targetTemperature) = PnpHelper.GetPropertyFromTwin<double>(desiredProperties, propertyName, componentName);
+            if (targetTempUpdateReceived)
             {
-                string componentName = entry.Key;
-                foreach (string propertyName in entry.Value)
-                {
-                    (bool targetTempUpdateReceived, double targetTemperature) = PnpHelper.GetPropertyFromTwin<double>(desiredProperties, propertyName, componentName);
-                    if (targetTempUpdateReceived)
-                    {
-                        PrintLog($"Received an update for target temperature of {targetTemperature}°C for component {componentName}");
-                        await UpdateCurrentTemperatureAsync(targetTemperature, componentName);
-
-                        targetTemperatureUpdateReceived = true;
-                    }
-                }
+                PrintLog($"Received an update for target temperature of {targetTemperature}°C for component {componentName}");
+                await UpdateCurrentTemperatureAsync(targetTemperature, componentName);
             }
 
-            if (!targetTemperatureUpdateReceived)
-            {
-                PrintLog($"Received a property update that is not implemented by any associated component.");
-            }
+            // TODO: targetTempUpdateReceived value needs to be relayed to SetDesiredPropertyUpdateCallbackAsync as well.
         }
 
         private static void PrintLog(string message)
