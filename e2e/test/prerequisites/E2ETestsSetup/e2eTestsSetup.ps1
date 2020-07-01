@@ -65,9 +65,35 @@ Function Connect-AzureSubscription()
 Function CleanUp-Certs()
 {
     Write-Host("`nCleaning up old certs and files that may cause conflicts.")
-    Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") } | Remove-Item
-    Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$groupCertCommonName") } | Remove-Item
-    Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$deviceCertCommonName") } | Remove-Item
+    $certsToDelete1 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
+    $certsToDelete2 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$groupCertCommonName") } 
+    $certsToDelete3 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$deviceCertCommonName") }
+
+    $certsToDelete = $certsToDelete1 + $certsToDelete2 + $certsToDelete3
+    
+    $title = "Clenaing up certs"
+    $certsToDeleteSubjectNames = $certsToDelete | foreach-object  {$_.Subject} 
+    $certsToDeleteSubjectNames = $certsToDeleteSubjectNames -join "`n"
+    $question = "Are you sure you want to delete the following certs?`n`n$certsToDeleteSubjectNames"
+    $choices  = '&Yes', '&No'
+    $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+
+    if($certsToDelete.Count -ne 0)
+    {
+        if($decision -eq 0)
+        {
+            #Remove
+            Write-Host 'confirmed'
+            $certsToDelete | Remove-Item
+        }
+        else
+        {
+            #Don't remove certs and exit
+            Write-Host 'cancelled'
+            exit
+        }
+    }
+
     Get-ChildItem $PSScriptRoot | Where-Object { $_.Name.EndsWith(".pfx") } | Remove-Item
     Get-ChildItem $PSScriptRoot | Where-Object { $_.Name.EndsWith(".cer") } | Remove-Item
     Get-ChildItem $PSScriptRoot | Where-Object { $_.Name.EndsWith(".p7b") } | Remove-Item
