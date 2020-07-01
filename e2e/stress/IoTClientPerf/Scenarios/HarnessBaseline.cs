@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public override async Task SetupAsync(CancellationToken ct)
         {
             _sw.Restart();
-            _m.OperationType = "baseline_setup";
+            _m.Clear("baseline_setup");
             await Task.Delay(100).ConfigureAwait(false);
             _m.ExecuteTime = _sw.ElapsedMilliseconds;
             _m.ScheduleTime = null; // sync operation
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public override async Task RunTestAsync(CancellationToken ct)
         {
             _sw.Restart();
-            _m.OperationType = "baseline_run";
+            _m.Clear("baseline_run");
             await Task.Delay(100).ConfigureAwait(false);
             _m.ExecuteTime = _sw.ElapsedMilliseconds;
             _m.ScheduleTime = null; // sync operation
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public override async Task TeardownAsync(CancellationToken ct)
         {
             _sw.Restart();
-            _m.OperationType = "baseline_teardown";
+            _m.Clear("baseline_teardown");
             await Task.Delay(100).ConfigureAwait(false);
             _m.ExecuteTime = _sw.ElapsedMilliseconds;
             _m.ScheduleTime = null; // sync operation

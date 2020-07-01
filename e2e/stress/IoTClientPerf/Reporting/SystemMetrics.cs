@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -12,10 +13,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public static class SystemMetrics
     {
-        private const int RefreshIntervalMs = 1000;
-        private static readonly Stopwatch _sw = new Stopwatch();
-        private static double s_lastTotalCpuUsageMs = 0.0;
-        private static int s_cpuPercent;
+        private const int RefreshIntervalMs = 500;
+        private static readonly Stopwatch s_sw = new Stopwatch();
+        private static TimeSpan s_lastProcCpuUsageMs = TimeSpan.Zero;
+        private static int s_cpuLoad;
         private static long s_totalMemoryBytes;
         private static long s_lastGcBytes;
         private static long s_lastTcpConnections;
@@ -23,12 +24,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static long s_devicesConnected;
 
-        private static object s_lock = new object();
+        private static readonly object s_lock = new object();
 
-        public static void GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn, out long devicesConn)
+        public static void GetMetrics(out int cpuLoad, out long memoryBytes, out long gcBytes, out long tcpConn, out long devicesConn)
         {
             EnsureUpToDate();
-            cpuPercent = s_cpuPercent;
+            cpuLoad = s_cpuLoad;
             memoryBytes = s_totalMemoryBytes;
             gcBytes = s_lastGcBytes;
             tcpConn = s_lastTcpConnections;
@@ -52,15 +53,23 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static void UpdateCpuUsage()
         {
-            var proc = Process.GetCurrentProcess();
-            double currentTotalCpuUsageMs = proc.TotalProcessorTime.TotalMilliseconds / Environment.ProcessorCount;
-            double timeDeltaMs = _sw.Elapsed.TotalMilliseconds;
+            TimeSpan elapsed = s_sw.Elapsed;
+            Process proc = Process.GetCurrentProcess();
 
-            double usedTimeDeltaMs = currentTotalCpuUsageMs - s_lastTotalCpuUsageMs;
-            if (timeDeltaMs > 0.1) s_cpuPercent = (int)(usedTimeDeltaMs * 100 / timeDeltaMs);
-            if (s_cpuPercent > 100) s_cpuPercent = 100;
+            if ((elapsed.Ticks != 0) && (s_lastProcCpuUsageMs != TimeSpan.Zero))
+            {
 
-            s_lastTotalCpuUsageMs = currentTotalCpuUsageMs;
+                TimeSpan currentTotalCpuUsageMs = proc.TotalProcessorTime;
+                TimeSpan usedTimeDelta = currentTotalCpuUsageMs - s_lastProcCpuUsageMs;
+
+                s_cpuLoad = (int)(((double)usedTimeDelta.Ticks / elapsed.Ticks) * 100);
+            }
+            else
+            {
+                s_cpuLoad = -1;
+            }
+
+            s_lastProcCpuUsageMs = proc.TotalProcessorTime;
         }
 
         private static void UpdateTotalMemoryBytes()
@@ -91,16 +100,20 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static void EnsureUpToDate()
         {
-            if (!_sw.IsRunning || _sw.ElapsedMilliseconds > RefreshIntervalMs)
+            if (!s_sw.IsRunning)
+            {
+                s_sw.Start();
+            }
+            else if (s_sw.ElapsedMilliseconds > RefreshIntervalMs)
             {
                 lock (s_lock)
                 {
-                    UpdateCpuUsage();
                     UpdateGCMemoryBytes();
                     UpdateTCPConnections();
                     UpdateTotalMemoryBytes();
+                    UpdateCpuUsage();
 
-                    _sw.Restart();
+                    s_sw.Restart();
                 }
             }
         }

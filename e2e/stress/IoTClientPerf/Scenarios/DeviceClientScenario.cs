@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using System;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
@@ -17,41 +18,35 @@ namespace Microsoft.Azure.Devices.E2ETests
         private DeviceClient _dc;
 
         // Shared by Create, Open and Send
-        private TelemetryMetrics _m = new TelemetryMetrics();
-        private Stopwatch _sw = new Stopwatch();
+        private readonly TelemetryMetrics _m = new TelemetryMetrics();
+        private readonly Stopwatch _sw = new Stopwatch();
 
         // Separate metrics and time calculation for operations that can be parallelized.
-        private TelemetryMetrics _mRecv = new TelemetryMetrics();
-        private Stopwatch _swRecv = new Stopwatch();
+        private readonly TelemetryMetrics _mRecv = new TelemetryMetrics();
+        private readonly Stopwatch _swRecv = new Stopwatch();
 
         private const string TestMethodName = "PerfTestMethod";
-        private TelemetryMetrics _mMethod = new TelemetryMetrics();
-        private Stopwatch _swMethod = new Stopwatch();
-        private SemaphoreSlim _methodSemaphore = new SemaphoreSlim(0);
+        private readonly TelemetryMetrics _mMethod = new TelemetryMetrics();
+        private readonly Stopwatch _swMethod = new Stopwatch();
+        private readonly SemaphoreSlim _methodSemaphore = new SemaphoreSlim(0);
         private static readonly MethodResponse s_methodResponse = new MethodResponse(200);
 
-        private TelemetryMetrics _mConnectionStatus = new TelemetryMetrics();
-        private SemaphoreSlim _connectionStatusChangedSemaphore = new SemaphoreSlim(0);
-        private SemaphoreSlim _waitForDisconnectSemaphore = new SemaphoreSlim(0);
+        private readonly TelemetryMetrics _mConnectionStatus = new TelemetryMetrics();
+        private readonly SemaphoreSlim _connectionStatusChangedSemaphore = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim _waitForDisconnectSemaphore = new SemaphoreSlim(0, 1);
         private bool _connected;
 
-        private byte[] _messageBytes;
+        private readonly byte[] _messageBytes;
 
-        private bool _pooled;
-        private int _poolSize;
+        private readonly bool _pooled;
+        private readonly int _poolSize;
 
         public DeviceClientScenario(PerfScenarioConfig config) : base(config)
         {
             _m.Id = _id;
-
             _mRecv.Id = _id;
-            _mRecv.OperationType = TelemetryMetrics.DeviceOperationReceive;
-
             _mMethod.Id = _id;
-
             _mConnectionStatus.Id = _id;
-            _mConnectionStatus.ExecuteTime = null;
-            _mConnectionStatus.ScheduleTime = null;
 
             _messageBytes = new byte[_sizeBytes];
 
@@ -64,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         protected async Task CreateDeviceAsync()
         {
             _sw.Restart();
-            _m.OperationType = TelemetryMetrics.DeviceOperationCreate;
+            _m.Clear(TelemetryMetrics.DeviceOperationCreate);
 
             ITransportSettings transportSettings = null;
 
@@ -108,7 +103,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             _dc.SetConnectionStatusChangesHandler(OnConnectionStatusChanged);
 
             _m.ExecuteTime = _sw.ElapsedMilliseconds;
-            _m.ScheduleTime = null; // sync operation
             await _writer.WriteAsync(_m).ConfigureAwait(false);
         }
 
@@ -132,8 +126,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                             _connected = false;
                         }
 
-                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnected;
-                        _waitForDisconnectSemaphore.Release();
+                        _mConnectionStatus.Clear(TelemetryMetrics.DeviceStateDisconnected);
+                        try
+                        {
+                            _waitForDisconnectSemaphore.Release();
+                        }
+                        catch (SemaphoreFullException) { }
+
                         break;
                     case ConnectionStatus.Connected:
                         if (!_connected)
@@ -142,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             _connected = true;
                         }
 
-                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateConnected;
+                        _mConnectionStatus.Clear(TelemetryMetrics.DeviceStateConnected);
                         break;
                     case ConnectionStatus.Disconnected_Retrying:
                         if (_connected)
@@ -151,8 +150,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                             _connected = false;
                         }
 
-                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnectedRetrying;
-                        _waitForDisconnectSemaphore.Release();
+                        _mConnectionStatus.Clear(TelemetryMetrics.DeviceStateDisconnectedRetrying);
+
+                        try
+                        {
+                            _waitForDisconnectSemaphore.Release();
+                        }
+                        catch (SemaphoreFullException) { }
+
                         break;
                     case ConnectionStatus.Disabled:
                         if (_connected)
@@ -161,14 +166,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                             _connected = false;
                         }
 
-                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnected;
+                        _mConnectionStatus.Clear(TelemetryMetrics.DeviceStateDisconnected);
                         break;
                     default:
-                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateUnknown;
+                        _mConnectionStatus.Clear(TelemetryMetrics.DeviceStateUnknown);
                         break;
                 }
 
-                _mConnectionStatus.ErrorMessage = $"ConnectionStatus: {status} reason: {reason}";
+                _mConnectionStatus.ErrorMessage = $"ConnectionStatus: {status} reason: {reason} id: {ResultWriter.IdOf(_dc)}";
                 await _writer.WriteAsync(_mConnectionStatus).ConfigureAwait(false);
             }
             finally
@@ -184,8 +189,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task OpenDeviceAsync(CancellationToken ct)
         {
-            _m.OperationType = TelemetryMetrics.DeviceOperationOpen;
-            _m.ScheduleTime = null;
+            _m.Clear(TelemetryMetrics.DeviceOperationOpen);
+
             _sw.Restart();
             try
             {
@@ -197,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_m, ex);
                 throw;
             }
             finally
@@ -209,8 +214,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task SendMessageAsync(CancellationToken ct)
         {
-            _m.OperationType = TelemetryMetrics.DeviceOperationSend;
-            _m.ScheduleTime = null;
+            _m.Clear(TelemetryMetrics.DeviceOperationSend);
+
             _sw.Restart();
 
             try
@@ -224,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_m, ex);
                 throw;
             }
             finally
@@ -236,7 +241,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task ReceiveMessageAsync(CancellationToken ct)
         {
-            _mRecv.ScheduleTime = null;
+            _mRecv.Clear(TelemetryMetrics.DeviceOperationReceive);
             _swRecv.Restart();
 
             try
@@ -253,7 +258,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _mRecv.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_mRecv, ex);
                 throw;
             }
             finally
@@ -265,8 +270,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task EnableMethodsAsync(CancellationToken ct)
         {
-            _mMethod.ScheduleTime = null;
-            _mMethod.OperationType = TelemetryMetrics.DeviceOperationMethodEnable;
+            _mMethod.Clear(TelemetryMetrics.DeviceOperationMethodEnable);
             _swMethod.Restart();
 
             try
@@ -279,7 +283,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_mMethod, ex);
                 throw;
             }
             finally
@@ -297,8 +301,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task WaitForMethodAsync(CancellationToken ct)
         {
-            _mMethod.ScheduleTime = null;
-            _mMethod.OperationType = TelemetryMetrics.DeviceOperationMethodCalled;
+            _mMethod.Clear(TelemetryMetrics.DeviceOperationMethodCalled);
             _swMethod.Restart();
 
             try
@@ -311,7 +314,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_mMethod, ex);
                 throw;
             }
             finally
@@ -325,8 +328,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (_dc == null) return;
 
-            _m.ScheduleTime = null;
-            _m.OperationType = TelemetryMetrics.DeviceOperationClose;
+            _m.Clear(TelemetryMetrics.DeviceOperationClose);
             _sw.Restart();
 
             try
@@ -335,7 +337,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_m, ex);
                 throw;
             }
             finally
@@ -345,9 +347,42 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        protected void DisposeDevice()
+        private void SetErrorMessage(TelemetryMetrics m, Exception ex)
         {
+            m.ErrorMessage = $"{ex.GetType().Name} id: {ResultWriter.IdOf(_dc)} - {ex.Message}";
+            if (IsFatalException(ex))
+            {
+                throw new ParallelRunFatalException(ExceptionDispatchInfo.Capture(ex));
+            }
+        }
+
+        private bool IsFatalException(Exception ex)
+        {
+            // List of known exceptions:
+            if (ex is IotHubCommunicationException || /* Expected during fault injection if no retry policy or the retry policy expired.*/
+                ex is ObjectDisposedException) /* Expected during fault injection, in the no-retry case as the DeviceClient is thrown away and reconstructed during pending operations.*/ 
+            {
+                return false;
+            }
+
+            if (ex is IotHubException)
+            {
+                // AMQP-only, expected during faults in the no-retry case:
+                if (ex.Message == "Device is now offline." && 
+                    (_transport == Client.TransportType.Amqp || _transport == Client.TransportType.Amqp_Tcp_Only || _transport == Client.TransportType.Amqp_WebSocket_Only))
+                {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        protected async Task DisposeDevice()
+        {
+            _m.Clear(TelemetryMetrics.DeviceOperationDispose);
             _dc.Dispose();
+            await _writer.WriteAsync(_m).ConfigureAwait(false);
         }
     }
 }

@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -43,10 +45,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public async Task RunAsync(bool runOnce, CancellationToken ct)
         {
-            int cursor_left, cursor_top;
-            cursor_left = Console.CursorLeft;
-            cursor_top = Console.CursorTop;
+            int cursor_left = 0, cursor_top = 0;
 
+            try 
+            {
+                cursor_left = Console.CursorLeft;
+                cursor_top = Console.CursorTop;
+            } 
+            catch (IOException) { /* Avoid "The handle is invalid" exception in DevOps */ } 
+            
             int actualParallel = Math.Min(_parallelOperations, _tests.Length);
             int currentInstance = 0;
 
@@ -82,6 +89,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                         break;
                     case TaskStatus.Faulted:
                         statInterimFaulted++;
+                        foreach (Exception ex in finished.Exception.InnerExceptions)
+                        {
+                            if (ex is ParallelRunFatalException)
+                            {
+                                // Crash the process to simplify analysis. Recover original stack.
+                                ((ParallelRunFatalException)ex).ThrowInner();
+                            }
+                        }
                         break;
                     case TaskStatus.RanToCompletion:
                         statInterimCompleted++;
@@ -103,9 +118,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                     double statInterimSeconds = statInterimSw.Elapsed.TotalSeconds;
                     statTotalCompleted += statInterimCompleted;
 
-                    Console.SetCursorPosition(cursor_left, cursor_top);
-                    cursor_left = Console.CursorLeft;
-                    cursor_top = Console.CursorTop;
+                    try
+                    {
+                        Console.SetCursorPosition(cursor_left, cursor_top);
+                        cursor_left = Console.CursorLeft;
+                        cursor_top = Console.CursorTop;
+                    }
+                    catch (IOException) { /* Avoid "The handle is invalid" exception in DevOps */ } 
 
                     _updateStatistics(statInterimCompleted, statInterimFaulted, statInterimCancelled, statInterimSeconds);
                     if (drain) Console.Write("Waiting for tasks to finish...\r");
@@ -140,6 +159,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                     if (tasks.Count == 0) return;
                 }
             }
+        }
+    }
+
+    public class ParallelRunFatalException : Exception
+    {
+        private ExceptionDispatchInfo _exceptionDispatchInfo;
+
+        public ParallelRunFatalException(ExceptionDispatchInfo innerExceptionDispatchInfo) 
+        {
+            _exceptionDispatchInfo = innerExceptionDispatchInfo;
+        }
+
+        public void ThrowInner()
+        {
+            _exceptionDispatchInfo.Throw();
         }
     }
 }

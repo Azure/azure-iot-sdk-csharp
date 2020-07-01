@@ -1,0 +1,169 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+resources:
+- repo: self
+  clean: true
+#variables:
+  #SIM_DEVICE_COUNT: 100
+  #SIM_PROTOCOL: amqp
+  #SIM_CONNECTIONS: 10
+  #SIM_DURATION_SECONDS: 120
+  #SIM_SCENARIO: device_all_noretry
+  #SIM_FAULT: yes
+  #SIM_FAULT_START_DELAY: 30
+  #SIM_FAULT_DURATION: 30
+  #KPI_CONNECTED_DEVICES_PERCENTAGE: 100
+  #KPI_TCP_CONNECTIONS_PERCENTAGE: 100
+  #KPI_RPS_AVG_MIN: 1500
+  #KPI_RPS_STD_MAX: 2000
+  #KPI_GC_MEM_MAX: 600000000
+  #KPI_SUCCESS_DEVICE: 95
+  #KPI_SUCCESS_SERVICE: 65
+  #AZURE_IOT_LOCALPACKAGES: 
+
+phases:
+
+### DeviceSim box ###
+- phase: DEVICECLIENT_SIM
+  displayName: DeviceClientSim
+
+  condition: succeeded()
+  queue:
+    name: csharp-perf
+    timeoutInMinutes: 180
+  steps:
+
+  - powershell: |
+       cd ./e2e/stress/IoTClientPerf/
+       ./scripts/blockPortToHub.ps1 -cleanOnly
+    displayName: Remove all test firewall rules
+
+
+  - script: |
+       dotnet new
+       cd e2e\stress\IoTClientPerf\
+       dotnet build -c Release
+    displayName: build
+    env:
+      AZURE_IOT_LOCALPACKAGES: $(AZURE_IOT_LOCALPACKAGES)
+  
+  - powershell: |
+       cd ./e2e/stress/IoTClientPerf/
+
+       if ($env:SIM_FAULT -eq "yes")
+       {
+          ./scripts/runClient.ps1 -clients $env:SIM_DEVICE_COUNT -protocol $env:SIM_PROTOCOL -connections $env:SIM_CONNECTIONS -durationSeconds $env:SIM_DURATION_SECONDS -scenario $env:SIM_SCENARIO -fault -faultStartDelaySeconds $env:SIM_FAULT_START_DELAY -faultDurationSeconds $env:SIM_FAULT_DURATION
+       }
+       else
+       {
+          ./scripts/runClient.ps1 -clients $env:SIM_DEVICE_COUNT -protocol $env:SIM_PROTOCOL -connections $env:SIM_CONNECTIONS -durationSeconds $env:SIM_DURATION_SECONDS -scenario $env:SIM_SCENARIO
+       }
+
+    displayName: runDeviceClient
+    env:
+      IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+      IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+      IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
+      IOTHUB_DEVICE_CONN_STRING2: $(IOTHUB-DEVICE-CONN-STRING2)
+      SIM_DEVICE_COUNT: $(SIM_DEVICE_COUNT)
+      SIM_PROTOCOL: $(SIM_PROTOCOL)
+      SIM_CONNECTIONS: $(SIM_CONNECTIONS)
+      SIM_DURATION_SECONDS: $(SIM_DURATION_SECONDS)
+      SIM_SCENARIO: $(SIM_SCENARIO)
+      SIM_FAULT: $(SIM_FAULT)
+      SIM_FAULT_START_DELAY: $(SIM_FAULT_START_DELAY)
+      SIM_FAULT_DURATION: $(SIM_FAULT_START_DELAY)
+      IOTHUB_PERF_CONNECTED_PERCENTAGE: $(KPI_CONNECTED_DEVICES_PERCENTAGE)
+      IOTHUB_PERF_TCP_PERCENTAGE: $(KPI_TCP_CONNECTIONS_PERCENTAGE)
+      IOTHUB_PERF_RPS_MIN_AVG: $(KPI_RPS_AVG_MIN)
+      IOTHUB_PERF_RPS_MAX_STD: $(KPI_RPS_STD_MAX)
+      IOTHUB_PERF_GC_MEM_BYTES_MAX: $(KPI_GC_MEM_MAX)
+      IOTHUB_PERF_SUCCESS_RATE_PERCENTAGE: $(KPI_SUCCESS_DEVICE)
+
+  - powershell: |
+        cd ./e2e/stress/IoTClientPerf/
+        ./scripts/zipLogs.ps1
+    displayName: zipLogs
+    condition: always()
+
+  - task: CopyFiles@2
+    displayName: 'Copy files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.zip'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: perflogs_device'
+    inputs:
+      ArtifactName: perflogs_device
+
+    condition: always()
+
+### ServiceSim box ###
+- phase: SERVICECLIENT_SIM
+  displayName: ServiceClientSim
+
+  condition: succeeded()
+  queue:
+    name: csharp-perf
+    timeoutInMinutes: 180
+  steps:
+  - powershell: |
+       cd ./e2e/stress/IoTClientPerf/
+       ./scripts/blockPortToHub.ps1 -cleanOnly
+    displayName: Remove all test firewall rules
+
+  - script: |
+       dotnet new
+       cd e2e\stress\IoTClientPerf\
+       dotnet build -c Release
+    displayName: build
+    env:
+      AZURE_IOT_LOCALPACKAGES: $(AZURE_IOT_LOCALPACKAGES)
+
+  - powershell: |
+        cd ./e2e/stress/IoTClientPerf/
+        ./scripts/runServer.ps1 -clients $env:SIM_DEVICE_COUNT -durationSeconds $env:SIM_DURATION_SECONDS
+    displayName: runServiceClient
+    env:
+      IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+      IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+      IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
+      IOTHUB_DEVICE_CONN_STRING2: $(IOTHUB-DEVICE-CONN-STRING2)
+      SIM_DEVICE_COUNT: $(SIM_DEVICE_COUNT)
+      SIM_PROTOCOL: $(SIM_PROTOCOL)
+      SIM_CONNECTIONS: $(SIM_CONNECTIONS)
+      SIM_DURATION_SECONDS: $(SIM_DURATION_SECONDS)
+      SIM_SCENARIO: $(SIM_SCENARIO)
+      SIM_FAULT: $(SIM_FAULT)
+      SIM_FAULT_START_DELAY: $(SIM_FAULT_START_DELAY)
+      SIM_FAULT_DURATION: $(SIM_FAULT_START_DELAY)
+      IOTHUB_PERF_SUCCESS_RATE_PERCENTAGE: $(KPI_SUCCESS_SERVICE)
+
+  - powershell: |
+        cd ./e2e/stress/IoTClientPerf/
+        ./scripts/zipLogs.ps1
+    displayName: zipLogs
+    condition: always()
+
+  - task: CopyFiles@2
+    displayName: 'Copy files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.zip'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: perflogs_service'
+    inputs:
+      ArtifactName: perflogs_service
+
+    condition: always()

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.E2ETests.Scenarios;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Net.NetworkInformation;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -16,8 +15,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             {"generate_iothub_config",
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Generate the IoT Hub configuration required for the test (creates multiple devices).",
+                    "Generate the IoT Hub configuration required for the test (creates multiple devices). Uses -a (auth type) and -n (device count).",
                     (c) => {return new GenerateIotHubConfigTest(c);})},
+
+            {"import_iothub_config",
+                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
+                    "Imports the IoT Hub configuration from the Azure Blob URI specified in the IOTHUB_IMPORTEXPORT_BLOB_URI environment variable. (No other argument used).",
+                    (c) => {return new ImportIotHubConfigTest(c);})},
 
             { "device_all",
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
@@ -48,21 +52,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
                     "Devices receiving method calls from IoT Hub.",
                     (c) => {return new DeviceMethodTest(c);}) },
-
-            { "device_d2c_noretry",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Like device_d2c but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
-                    (c) => {return new DeviceD2CNoRetry(c);})},
-
-            { "device_c2d_noretry",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Like device_c2d but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
-                    (c) => {return new DeviceC2DNoRetry(c);})},
-
-            { "device_methods_noretry",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Like device_methods but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
-                    (c) => {return new DeviceMethodsNoRetry(c);})},
 
             {"service_c2d",
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
@@ -253,18 +242,32 @@ namespace Microsoft.Azure.Devices.E2ETests
                 i,
                 scenarioFactory);
 
+            int ret = 0;
+
             try
             {
-                runner.RunTestAsync().GetAwaiter().GetResult();
+                ret = runner.RunTestAsync().GetAwaiter().GetResult();
             }
-            finally
+            catch (Exception ex)
             {
-                Console.Write("Writing output . . . ");
-                resultWriter.FlushAsync().GetAwaiter().GetResult();
-                Console.WriteLine("OK");
+                Console.WriteLine(ex);
+                ret = -1;
             }
 
-            return 0;
+            Console.Write("Writing output . . . ");
+            resultWriter.FlushAsync().GetAwaiter().GetResult();
+            Console.WriteLine("OK");
+
+            if (ret == 0)
+            {
+                Console.WriteLine("Test PASSED.");
+            }
+            else
+            {
+                Console.WriteLine("Test FAILED. See logs above for reason.");
+            }
+
+            return ret;
         }
     }
 }
