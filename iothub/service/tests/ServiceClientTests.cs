@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
-            var serviceClient = new AmqpServiceClient(restOpMock.Object);
+            var serviceClient = new AmqpServiceClient(builder.ToIotHubConnectionString(), false, restOpMock.Object);
 
             // Execute method under test
             PurgeMessageQueueResult result = await serviceClient.PurgeMessageQueueAsync("TestDevice", CancellationToken.None).ConfigureAwait(false);
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
-            var serviceClient = new AmqpServiceClient(restOpMock.Object);
+            var serviceClient = new AmqpServiceClient(builder.ToIotHubConnectionString(), false, restOpMock.Object);
 
             return Tuple.Create(restOpMock, serviceClient, expectedResult);
         }

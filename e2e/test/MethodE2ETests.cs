@@ -7,7 +7,6 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -125,31 +124,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodAsync, TimeSpan.FromMinutes(5), serviceClientTransportSettings).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
-        {
-            // setup
-            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
-            methodInvocation.SetPayloadJson("10");
-
-            // act
-            ErrorCode actualErrorCode = ErrorCode.InvalidErrorCode;
-            try
-            {
-                // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.InvokeDeviceMethodAsync("MyDummyDevice", methodInvocation);
-            }
-            catch (DeviceNotFoundException ex)
-            {
-                actualErrorCode = ex.Code;
-            }
-
-            Assert.AreEqual(ErrorCode.DeviceNotFound, actualErrorCode);
-
-            await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         public static async Task ServiceSendMethodAndVerifyResponseAsync(string deviceName, string methodName, string respJson, string reqJson)
