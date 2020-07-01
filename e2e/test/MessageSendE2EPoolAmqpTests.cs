@@ -130,11 +130,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($"{nameof(MessageSendE2EPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage();
-                s_log.WriteLine($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage();
+                s_log.WriteLine($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, testMessage, payload, p1Value);
+                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, payload, p1Value);
                 Assert.IsTrue(isReceived, "Message is not received.");
             };
 
