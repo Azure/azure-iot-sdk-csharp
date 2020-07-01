@@ -33,19 +33,16 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
         private readonly ITransportSettings[] _transportSettings;
         private readonly ITrustBundleProvider _trustBundleProvider;
-        private readonly ClientOptions _options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EdgeModuleClientFactory"/> class with transport settings.
         /// </summary>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        public EdgeModuleClientFactory(ITransportSettings[] transportSettings, ITrustBundleProvider trustBundleProvider, ClientOptions options = default)
+        public EdgeModuleClientFactory(ITransportSettings[] transportSettings, ITrustBundleProvider trustBundleProvider)
         {
             _transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
             _trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));
-            _options = options;
         }
 
         /// <summary>
@@ -75,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     certificateValidator = GetCertificateValidator(new List<X509Certificate2>() { expectedRoot });
                 }
 
-                return new ModuleClient(CreateInternalClientFromConnectionString(connectionString, _options), certificateValidator);
+                return new ModuleClient(CreateInternalClientFromConnectionString(connectionString), certificateValidator);
             }
             else
             {
@@ -104,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     certificateValidator = GetCertificateValidator(certs);
                 }
 
-                return new ModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod, _options), certificateValidator);
+                return new ModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod), certificateValidator);
             }
         }
 
@@ -130,14 +127,14 @@ namespace Microsoft.Azure.Devices.Client.Edge
             return NullCertificateValidator.Instance;
         }
 
-        private InternalClient CreateInternalClientFromConnectionString(string connectionString, ClientOptions options)
+        private InternalClient CreateInternalClientFromConnectionString(string connectionString)
         {
-            return ClientFactory.CreateFromConnectionString(connectionString, _transportSettings, options);
+            return ClientFactory.CreateFromConnectionString(connectionString, _transportSettings);
         }
 
-        private InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod, ClientOptions options)
+        private InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod)
         {
-            return ClientFactory.Create(hostname, gateway, authMethod, _transportSettings, options);
+            return ClientFactory.Create(hostname, gateway, authMethod, _transportSettings);
         }
 
         private static string GetValueFromEnvironment(IDictionary envVariables, string variableName)

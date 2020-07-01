@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices
                 transportSettings.HttpProxy);
         }
 
-        internal AmqpServiceClient(IHttpClientHelper httpClientHelper) : base()
+        internal AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, IHttpClientHelper httpClientHelper) : base()
         {
             _httpClientHelper = httpClientHelper;
         }

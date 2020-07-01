@@ -295,9 +295,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(this.mqttTransportSettings.ClientCertificate != null);
                 }
 
-                // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id, 
-                // the SDK will enable plug and play features by using the PnP-enabled service API version, and appending the model Id to the MQTT CONNECT packet (in the username).
-                // For devices or modules that do not have the model Id set, the SDK will use the GA service API version. 
+                // This check is added to enable the device client to avail plug and play features. For devices that pass in the model Id, the SDK will enable plug and play features
+                // by using the PnP-enabled service API version, and appending the model Id to the MQTT CONNECT packet (in the username).
+                // For devices that do not have the model Id set, the SDK will use the GA service API version. 
                 string serviceParams = null;
                 if (string.IsNullOrWhiteSpace(_options?.ModelId))
                 {
