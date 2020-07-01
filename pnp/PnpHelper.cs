@@ -21,7 +21,7 @@ namespace PnpHelpers
             return $"{{ \"{telemetryName}\": {serializedTelemetryValue} }}";
         }
 
-        public static Message CreateIothubMessageUtf8(string telemetryName, string serializedTelemetryValue, string componentName = null)
+        public static Message CreateIothubMessageUtf8(string telemetryName, string serializedTelemetryValue, string componentName = default)
         {
             string payload = $"{{ \"{telemetryName}\": {serializedTelemetryValue} }}";
 
@@ -39,7 +39,8 @@ namespace PnpHelpers
             return message;
         }
 
-        public static string CreateReportedPropertiesPatch(string propertyName, string serializedPropertyValue, string componentName = null)
+        // A read-only property is one which can be updated only by the device.
+        public static string CreateReadonlyReportedPropertiesPatch(string propertyName, string serializedPropertyValue, string componentName = default)
         {
             if (string.IsNullOrWhiteSpace(componentName))
             {
@@ -58,6 +59,41 @@ namespace PnpHelpers
                 $"      {{" +
                 $"          \"{PropertyComponentIdentifierKey}\": \"{PropertyComponentIdentifierValue}\"," +
                 $"          \"value\": {serializedPropertyValue}" +
+                $"      }} " +
+                $"}}";
+        }
+
+        // A writeable property is one which can be updated by an external source, eg. the service application, etc.
+        public static string CreateWriteableReportedPropertyPatch(
+            string propertyName,
+            string serializedPropertyValue,
+            int ackCode, int ackVersion,
+            string serializedAckDescription = default,
+            string componentName = default)
+        {
+            if (string.IsNullOrWhiteSpace(componentName))
+            {
+                return $"" +
+                    $"{{" +
+                    $"  \"{propertyName}\": " +
+                    $"      {{ " +
+                    $"          \"value\" : {serializedPropertyValue}," +
+                    $"          \"ac\" : \"{ackCode}\" " +
+                    $"          \"av\" : \"{ackVersion}\" " +
+                    $"          {(!string.IsNullOrWhiteSpace(serializedAckDescription) ? $"\"ad\": {serializedAckDescription}" : "")}" +
+                    $"      }} " +
+                    $"}}";
+            }
+
+            return $"" +
+                $"{{" +
+                $"  \"{componentName}\": " +
+                $"      {{" +
+                $"          \"{PropertyComponentIdentifierKey}\": \"{PropertyComponentIdentifierValue}\"," +
+                $"          \"value\": {serializedPropertyValue}" +
+                $"          \"ac\" : \"{ackCode}\" " +
+                $"          \"av\" : \"{ackVersion}\" " +
+                $"          {(!string.IsNullOrWhiteSpace(serializedAckDescription) ? $"\"ad\": {serializedAckDescription}" : "")}" +
                 $"      }} " +
                 $"}}";
         }

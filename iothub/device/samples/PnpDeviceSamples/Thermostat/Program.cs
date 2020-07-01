@@ -114,7 +114,7 @@ namespace TemperatureController
         private static async Task SendDeviceSerialNumberAsync()
         {
             string propertyName = "serialNumber";
-            string propertyPatch = PnpHelper.CreateReportedPropertiesPatch(propertyName, JsonConvert.SerializeObject(SerialNumber));
+            string propertyPatch = PnpHelper.CreateReadonlyReportedPropertiesPatch(propertyName, JsonConvert.SerializeObject(SerialNumber));
             var reportedProperties = new TwinCollection(propertyPatch);
 
             await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
@@ -193,6 +193,16 @@ namespace TemperatureController
             {
                 PrintLog($"Received an update for target temperature of {targetTemperature}°C for component {componentName}");
                 await UpdateCurrentTemperatureAsync(targetTemperature, componentName);
+
+                string reportedPropertyPatch = PnpHelper.CreateWriteableReportedPropertyPatch(
+                    propertyName,
+                    JsonConvert.SerializeObject(targetTemperature),
+                    ackCode: 200,
+                    ackVersion: 1);
+
+                var reportedProperty = new TwinCollection(reportedPropertyPatch);
+                await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
+                PrintLog($"Sent target temperature of {targetTemperature}°C for component {componentName} over property update.");
             }
 
             // TODO: targetTempUpdateReceived value needs to be relayed to SetDesiredPropertyUpdateCallbackAsync as well.
