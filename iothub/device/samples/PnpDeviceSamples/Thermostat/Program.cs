@@ -2,10 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PnpHelpers;
 
 namespace TemperatureController
@@ -15,6 +17,7 @@ namespace TemperatureController
         private const string ModelId = "dtmi:com:example:TemperatureController;1";
         private const string Thermostat1 = "thermostat1";
         private const string Thermostat2 = "thermostat2";
+        private const string SerialNumber = "SR-123456";
 
         private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONNECTION_STRING");
         private static readonly Random s_random = new Random();
@@ -30,13 +33,39 @@ namespace TemperatureController
         {
             // This sample follows the following workflow:
             // -> Initialize device client instance.
-            // -> Send "current temperature" over both telemetry and property updates.
+            // -> Following root interface implementations -
+            //      -> Send "working set of device memory" over telemetry.
+            //      -> Send "device serial no" over property update.
+            //      -> Set handler to receive "reboot" command.
+            // -> Following Thermostat interface implementations -
+            //      -> Send "current temperature" over telemetry.
+            //      -> Set handler to receive "target temperature" property update.
+            //      -> Send "max temperature since last reboot" over property update.
+            //      -> Set handler to receive "getMaxMinReport" command.
 
             PrintLog($"Initialize the device client.");
             await InitializeDeviceClientAsync();
 
+            PrintLog($"Send working set of device memory.");
+            await SendDeviceMemoryAsync();
+
+            PrintLog($"Send device serial no.");
+            await SendDeviceSerialNumberAsync();
+
+            PrintLog($"Set handler for \"reboot\" command");
+            await s_deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, s_deviceClient);
+
             PrintLog($"Send current temperature reading.");
-            await SendCurrentTemperatureAsync();
+            await SendCurrentTemperatureAsync(Thermostat1);
+            await SendCurrentTemperatureAsync(Thermostat2);
+
+            PrintLog($"Set handler to receive \"target temperature\" updates.");
+            var componentPropertyMapping = new Dictionary<string, List<string>>()
+            {
+                { Thermostat1, new List<string> { "targetTemperature" } },
+                { Thermostat2, new List<string> { "targetTemperature" } },
+            };
+            await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, componentPropertyMapping);
 
             PrintLog($"Press any key to exit");
             Console.ReadKey();
@@ -65,42 +94,94 @@ namespace TemperatureController
             await s_deviceClient.OpenAsync();
         }
 
-        // Send the current temperature over telemetry and reported property.
-        private static async Task SendCurrentTemperatureAsync()
+        // Send working set of device memory over telemetry.
+        private static async Task SendDeviceMemoryAsync()
+        {
+            string telemetryName = "workingSet";
+            long workingSet = Environment.WorkingSet / 1024;
+
+            Message msg = PnpHelper.CreateIothubMessageUtf8(telemetryName, JsonConvert.SerializeObject(workingSet));
+
+            await s_deviceClient.SendEventAsync(msg);
+            PrintLog($"Sent working set availability over telemetry - {workingSet}KiB.");
+        }
+
+        // Send device serial number over property update.
+        private static async Task SendDeviceSerialNumberAsync()
+        {
+            string propertyName = "serialNumber";
+            string propertyPatch = PnpHelper.CreateReportedPropertiesPatch(propertyName, JsonConvert.SerializeObject(SerialNumber));
+            var reportedProperties = new TwinCollection(propertyPatch);
+
+            await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+            PrintLog($"Sent device serial number \"{SerialNumber}\" over property update.");
+        }
+
+        // Send the current temperature over telemetry.
+        private static async Task SendCurrentTemperatureAsync(string componentName)
         {
             // Send current temperature over telemetry.
             string telemetryName = "temperature";
 
-            // Generate a random value between 40F and 90F for the current temperature reading.
-            double currentTemperature = s_random.Next(40, 90);
+            // Generate a random value between 10°C and 30°C for the current temperature reading.
+            double currentTemperature = s_random.Next(10, 30);
+            Message msg = PnpHelper.CreateIothubMessageUtf8(telemetryName, JsonConvert.SerializeObject(currentTemperature), componentName);
 
-            string telemetryPayload = PnpHelper.CreateTelemetryPayload(telemetryName, currentTemperature);
-            var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
-            {
-                ContentEncoding = "utf-8",
-                ContentType = "application/json",
-            };
-
-            message.Properties.Add(PnpHelper.TelemetryComponentPropertyName, Thermostat1);
-
-            // Alternate usage
-            Message msg = PnpHelper.CreateIothubMessageUtf8(telemetryName, currentTemperature, Thermostat1);
             await s_deviceClient.SendEventAsync(msg);
-            // end
-
-            await s_deviceClient.SendEventAsync(message);
-            PrintLog($"Sent current temperature {currentTemperature}F over telemetry.");
-
-            // Send current temperature over reported property.
-            string reportedPropertyPatch = PnpHelper.CreateReportedPropertiesPatch("currentTemperature", currentTemperature, Thermostat1);
-            var reportedProperty = new TwinCollection(reportedPropertyPatch);
-            await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
-            PrintLog($"Sent current temperature {currentTemperature}F over reported property update.");
+            PrintLog($"Sent current temperature {currentTemperature}°C for component {componentName} over telemetry.");
         }
 
-        private static (bool, T) GetPropertyFromTwin<T>(TwinCollection collection, string propertyName)
+        // Update the temperature over telemetry, based on the target temperature update or "reboot" command received.
+        private static async Task UpdateCurrentTemperatureAsync(double targetTemperature, string componentName)
         {
-            return collection.Contains(propertyName) ? (true, (T)collection[propertyName]) : (false, default);
+            // Send temperature update over telemetry.
+            string telemetryName = "temperature";
+            Message msg = PnpHelper.CreateIothubMessageUtf8(telemetryName, JsonConvert.SerializeObject(targetTemperature), componentName);
+
+            await s_deviceClient.SendEventAsync(msg);
+            PrintLog($"Sent current temperature {targetTemperature}°C over telemetry.");
+        }
+
+        // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
+        private static async Task<MethodResponse> HandleRebootCommandAsync(MethodRequest request, object userContext)
+        {
+            int delay = JObject.Parse(request.DataAsJson).Value<int>("delay");
+
+            PrintLog($"Rebooting thermostat: resetting current temperature reading to 0°C after {delay} seconds");
+            await Task.Delay(delay * 1000);
+            await UpdateCurrentTemperatureAsync(0, Thermostat1);
+            await UpdateCurrentTemperatureAsync(0, Thermostat2);
+
+            return new MethodResponse(200);
+        }
+
+        // The desired property update callback, which receives the target temperature as a desired property update,
+        // and updates the current temperature value over telemetry.
+        private static async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
+        {
+            var componentPropertyMapping = (Dictionary<string, List<string>>)userContext;
+            bool targetTemperatureUpdateReceived = false;
+
+            foreach(KeyValuePair<string, List<string>> entry in componentPropertyMapping)
+            {
+                string componentName = entry.Key;
+                foreach (string propertyName in entry.Value)
+                {
+                    (bool targetTempUpdateReceived, double targetTemperature) = PnpHelper.GetPropertyFromTwin<double>(desiredProperties, propertyName, componentName);
+                    if (targetTempUpdateReceived)
+                    {
+                        PrintLog($"Received an update for target temperature of {targetTemperature}°C for component {componentName}");
+                        await UpdateCurrentTemperatureAsync(targetTemperature, componentName);
+
+                        targetTemperatureUpdateReceived = true;
+                    }
+                }
+            }
+
+            if (!targetTemperatureUpdateReceived)
+            {
+                PrintLog($"Received a property update that is not implemented by any associated component.");
+            }
         }
 
         private static void PrintLog(string message)
