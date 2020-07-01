@@ -11,8 +11,10 @@ namespace SimpleThermostat
 {
     public class Program
     {
-        private const string DeviceConnectionString = "device_connection_string_here";
         private const string ModelId = "dtmi:com:example:simplethermostat;1";
+
+        private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONNECTION_STRING");
+        private static readonly Random s_random = new Random();
 
         private static DeviceClient s_deviceClient;
 
@@ -57,7 +59,7 @@ namespace SimpleThermostat
 
             // Initialize the device client instance using the device connection string, transport of Mqtt over TCP (with fallback to Websocket),
             // and the device ModelId set in ClientOptions.
-            s_deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt, options);
+            s_deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, TransportType.Mqtt, options);
 
             // Register a connection status change callback, that will get triggered any time the device's connection status changes.
             s_deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
@@ -92,7 +94,7 @@ namespace SimpleThermostat
             string telemetryName = "temperature";
 
             // Generate a random value between 40F and 90F for the current temperature reading.
-            double currentTemperature = new Random().Next(40, 90);
+            double currentTemperature = s_random.Next(40, 90);
 
             string telemetryPayload = $"{{ \"{telemetryName}\": {currentTemperature} }}";
             var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
