@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string ApiVersionParam = "api-version";
         private const string DeviceClientTypeParam = "DeviceClientType";
         private const string AuthChainParam = "auth-chain";
-        private const string ModelIdParam = "digital-twin-model-id";
+        private const string ModelIdParam = "model-id";
         private const char SegmentSeparatorChar = '/';
         private const char SingleSegmentWildcardChar = '+';
         private const char MultiSegmentWildcardChar = '#';
