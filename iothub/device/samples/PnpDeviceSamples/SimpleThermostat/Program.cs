@@ -50,7 +50,7 @@ namespace SimpleThermostat
                 {
                     if (temperatureReset)
                     {
-                        // Generate a random value between 5°C and 45°C for the initial current temperature reading.
+                        // Generate a random value between 5°C and 45°C for the current temperature reading.
                         s_temperature = s_random.Next(5, 45);
                     }
 

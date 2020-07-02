@@ -55,9 +55,9 @@ namespace TemperatureController
             // -> Initialize device client instance.
             // -> Send initial device info - "workingSet" over telemetry, "serialNumber" over reported property update - root interface.
             // -> Set handler to receive "reboot" command - root interface.
-            // -> Set handler to receive "getMaxMinReport" command - on "Thermostat" component.
-            // -> Set handler to receive "targetTemperature" property updates from service - on "Thermostat" component.
-            // -> Periodically send "current temperature" over telemetry - on "Thermostat" component.
+            // -> Set handler to receive "getMaxMinReport" command - on "Thermostat" components.
+            // -> Set handler to receive "targetTemperature" property updates from service - on "Thermostat" components.
+            // -> Periodically send "current temperature" over telemetry and "max temperature since last reboot" over property update - on "Thermostat" components.
 
             PrintLog($"Initialize the device client.");
             await InitializeDeviceClientAsync();
@@ -87,13 +87,16 @@ namespace TemperatureController
                 {
                     if (temperatureReset)
                     {
-                        // Generate a random value between 5°C and 45°C for the initial current temperature reading for each "Thermostat" component.
+                        // Generate a random value between 5°C and 45°C for the current temperature reading for each "Thermostat" component.
                         s_temperature.Add(Thermostat1, s_random.Next(5, 45));
                         s_temperature.Add(Thermostat2, s_random.Next(5, 45));
                     }
 
                     await SendTemperatureTelemetryAsync(Thermostat1);
                     await SendTemperatureTelemetryAsync(Thermostat2);
+
+                    await SendMaxTemperatureSinceLastRebootAsync(Thermostat1);
+                    await SendMaxTemperatureSinceLastRebootAsync(Thermostat2);
 
                     temperatureReset = s_temperature[Thermostat1] == 0 && s_temperature[Thermostat2] == 0;
                     await Task.Delay(5 * 1000);
@@ -158,6 +161,18 @@ namespace TemperatureController
             {
                 s_temperatureReadings.TryAdd(componentName, new Dictionary<DateTimeOffset, double>() { { DateTimeOffset.Now, currentTemperature } });
             }
+        }
+
+        private static async Task SendMaxTemperatureSinceLastRebootAsync(string componentName)
+        {
+            string propertyName = "maxTempSinceLastReboot";
+            double maxTemp = s_temperatureReadings[componentName].Values.Max<double>();
+
+            string propertyPatch = PnpHelper.CreateReadonlyReportedPropertiesPatch(propertyName, JsonConvert.SerializeObject(maxTemp), componentName);
+            var reportedProperties = new TwinCollection(propertyPatch);
+
+            await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+            PrintLog($"Sent max temperature since last reboot {maxTemp}°C for component {componentName} over property update.");
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
