@@ -70,7 +70,7 @@ namespace PnpHelpers
             string propertyName,
             string serializedPropertyValue,
             int ackCode,
-            int ackVersion,
+            long ackVersion,
             string serializedAckDescription = default,
             string componentName = default)
         {

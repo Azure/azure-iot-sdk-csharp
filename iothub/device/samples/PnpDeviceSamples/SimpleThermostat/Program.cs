@@ -19,6 +19,8 @@ namespace SimpleThermostat
 
         private static DeviceClient s_deviceClient;
 
+        private static double s_temperature = 0d;
+
         public static async Task Main(string[] _)
         {
             await RunSampleAsync();
@@ -28,10 +30,9 @@ namespace SimpleThermostat
         {
             // This sample follows the following workflow:
             // -> Initialize device client instance.
-            // -> Set handler to receive "target temperature" updates.
-            // -> Set handler to receive "reboot" command.
-            // -> Retrieve current "target temperature".
-            // -> Send "current temperature" over both telemetry and property updates.
+            // -> Set handler to receive "targetTemperature" updates, and send the received update over reported property.
+            // -> Set handler to receive "reboot" command, and reset the "Temperature" over telemetry and reported property.
+            // -> Periodically send "currentTemperature" over both telemetry and property updates.
 
             PrintLog($"Initialize the device client.");
             await InitializeDeviceClientAsync();
@@ -42,33 +43,35 @@ namespace SimpleThermostat
             PrintLog($"Set handler for \"reboot\" command");
             await s_deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, s_deviceClient);
 
-            PrintLog($"Send current temperature reading.");
-            await SendCurrentTemperatureAsync();
+            // Generate a random value between 5°C and 45°C for the initial current temperature reading.
+            s_temperature = s_random.Next(5, 45);
 
-            PrintLog($"Press any key to exit");
-            Console.ReadKey();
+            await Task.Run(async () =>
+            {
+                while (true)
+                {
+                    // Send the current temperature over telemetry and reported property.
+                    await SendTemperatureTelemetryAsync();
+                    await SendCurrentTemperaturePropertyAsync();
+                    await Task.Delay(10 * 1000);
+                }
+            });
         }
 
-        // Initialize the device client instance over Mqtt protocol, setting the ModelId into ClientOptions, and open the connection.
-        // This method also sets a connection status change callback.
+        // Initialize the device client instance over Mqtt protocol (TCP, with fallback over Websocket), setting the ModelId into ClientOptions, and open the connection.
+        // This method also sets a connection status change callback, that will get triggered any time the device's connection status changes.
         private static async Task InitializeDeviceClientAsync()
         {
             var options = new ClientOptions
             {
                 ModelId = ModelId,
             };
-
-            // Initialize the device client instance using the device connection string, transport of Mqtt over TCP (with fallback to Websocket),
-            // and the device ModelId set in ClientOptions.
             s_deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, TransportType.Mqtt, options);
-
-            // Register a connection status change callback, that will get triggered any time the device's connection status changes.
             s_deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
             {
                 PrintLog($"Connection status change registered - status={status}, reason={reason}");
             });
 
-            // This will open the device client connection over Mqtt.
             await s_deviceClient.OpenAsync();
         }
 
@@ -80,7 +83,14 @@ namespace SimpleThermostat
             if (targetTempUpdateReceived)
             {
                 PrintLog($"Received an update for target temperature");
-                await UpdateCurrentTemperatureAsync(targetTemperature);
+
+                // TODO: increment Temperature in steps
+                s_temperature = targetTemperature;
+
+                string jsonProperty = $"{{ \"targetTemperature\": {{ \"value\": {targetTemperature}, \"ac\": 200, \"av\": {desiredProperties.Version} }} }}";
+                var reportedProperty = new TwinCollection(jsonProperty);
+                await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
+                PrintLog($"Processed an update for target temperature {targetTemperature}°C over reported property.");
             }
             else
             {
@@ -88,16 +98,11 @@ namespace SimpleThermostat
             }
         }
 
-        // Send the current temperature over telemetry and reported property.
-        private static async Task SendCurrentTemperatureAsync()
+        private static async Task SendTemperatureTelemetryAsync()
         {
-            // Send current temperature over telemetry.
             string telemetryName = "temperature";
 
-            // Generate a random value between 10°C and 30°C for the current temperature reading.
-            double currentTemperature = s_random.Next(10, 30);
-
-            string telemetryPayload = $"{{ \"{telemetryName}\": {currentTemperature} }}";
+            string telemetryPayload = $"{{ \"{telemetryName}\": {s_temperature} }}";
             var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
             {
                 ContentEncoding = "utf-8",
@@ -105,35 +110,15 @@ namespace SimpleThermostat
             };
 
             await s_deviceClient.SendEventAsync(message);
-            PrintLog($"Sent current temperature {currentTemperature}°C over telemetry.");
-
-            // Send current temperature over reported property.
-            var reportedProperty = new TwinCollection();
-            reportedProperty["currentTemperature"] = currentTemperature;
-            await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
-            PrintLog($"Sent current temperature {currentTemperature}°C over reported property update.");
+            PrintLog($"Sent current temperature {s_temperature}°C over telemetry.");
         }
 
-        // Update the temperature over telemetry, based on the target temperature update or "reboot" command received.
-        private static async Task UpdateCurrentTemperatureAsync(double targetTemperature)
+        private static async Task SendCurrentTemperaturePropertyAsync()
         {
-            // Send temperature update over telemetry.
-            string telemetryName = "temperature";
-            string telemetryPayload = $"{{ \"{telemetryName}\": {targetTemperature} }}";
-            var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
-            {
-                ContentEncoding = "utf-8",
-                ContentType = "application/json",
-            };
-
-            await s_deviceClient.SendEventAsync(message);
-            PrintLog($"Sent current temperature {targetTemperature}°C over telemetry.");
-
-            // Send temperature update over reported property.
             var reportedProperty = new TwinCollection();
-            reportedProperty["currentTemperature"] = targetTemperature;
+            reportedProperty["currentTemperature"] = s_temperature;
             await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
-            PrintLog($"Sent current temperature {targetTemperature}°C over reported property update.");
+            PrintLog($"Sent current temperature {s_temperature}°C over reported property update.");
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry,
@@ -144,7 +129,7 @@ namespace SimpleThermostat
 
             PrintLog($"Rebooting thermostat: resetting current temperature reading to 0°C after {delay} seconds");
             await Task.Delay(delay * 1000);
-            await UpdateCurrentTemperatureAsync(0);
+            s_temperature = 0;
 
             return new MethodResponse(200);
         }
