@@ -16,11 +16,6 @@ namespace PnpHelpers
         private const string PropertyComponentIdentifierKey = "__t";
         private const string PropertyComponentIdentifierValue = "c";
 
-        public static string CreateTelemetryPayload(string telemetryName, string serializedTelemetryValue)
-        {
-            return $"{{ \"{telemetryName}\": {serializedTelemetryValue} }}";
-        }
-
         public static Message CreateIothubMessageUtf8(string telemetryName, string serializedTelemetryValue, string componentName = default)
         {
             string payload = $"{{ \"{telemetryName}\": {serializedTelemetryValue} }}";

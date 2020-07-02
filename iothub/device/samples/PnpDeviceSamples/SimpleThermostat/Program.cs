@@ -53,7 +53,7 @@ namespace SimpleThermostat
                     // Send the current temperature over telemetry and reported property.
                     await SendTemperatureTelemetryAsync();
                     await SendCurrentTemperaturePropertyAsync();
-                    await Task.Delay(10 * 1000);
+                    await Task.Delay(5 * 1000);
                 }
             });
         }

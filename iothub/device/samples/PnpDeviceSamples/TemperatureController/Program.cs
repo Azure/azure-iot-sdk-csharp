@@ -91,7 +91,7 @@ namespace TemperatureController
                     await SendTemperatureTelemetryAsync(Thermostat1);
                     await SendTemperatureTelemetryAsync(Thermostat2);
 
-                    await Task.Delay(10 * 1000);
+                    await Task.Delay(5 * 1000);
                 }
             });
         }
@@ -165,8 +165,6 @@ namespace TemperatureController
 
             s_temperature[Thermostat1] = 0;
             s_temperature[Thermostat2] = 0;
-            await SendTemperatureTelemetryAsync(Thermostat1);
-            await SendTemperatureTelemetryAsync(Thermostat2);
 
             s_temperatureReadings.Clear();
 
@@ -255,7 +253,6 @@ namespace TemperatureController
 
                 // TODO: increment Temperature in steps
                 s_temperature[componentName] = targetTemperature;
-                await SendTemperatureTelemetryAsync(componentName);
 
                 string completedPropertyPatch = PnpHelper.CreateWriteableReportedPropertyPatch(
                     propertyName,
