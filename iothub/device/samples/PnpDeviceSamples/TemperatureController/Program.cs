@@ -35,7 +35,6 @@ namespace TemperatureController
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the componentName.
-        // TODO - Implementation for a root property.
         private static readonly IDictionary<string, DesiredPropertyUpdateCallback> s_desiredPropertyUpdateCallbacks = new Dictionary<string, DesiredPropertyUpdateCallback>();
 
         // Dictionary to hold the temperature updates sent over each "Thermostat" component.
@@ -87,9 +86,10 @@ namespace TemperatureController
                 {
                     if (temperatureReset)
                     {
-                        // Generate a random value between 5°C and 45°C for the current temperature reading for each "Thermostat" component.
-                        s_temperature.Add(Thermostat1, s_random.Next(5, 45));
-                        s_temperature.Add(Thermostat2, s_random.Next(5, 45));
+                        // Generate a random value between 5.0°C and 45.0°C for the current temperature reading for each "Thermostat" component.
+                        // Generate a random value between 5.0°C and 45.0°C for the current temperature reading.
+                        s_temperature.Add(Thermostat1, Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1));
+                        s_temperature.Add(Thermostat2, Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1));
                     }
 
                     await SendTemperatureTelemetryAsync(Thermostat1);
@@ -271,8 +271,13 @@ namespace TemperatureController
                 await s_deviceClient.UpdateReportedPropertiesAsync(pendingReportedProperty);
                 PrintLog($"Property update for {{\"{propertyName}\": {targetTemperature}°C }} for component \"{componentName}\" is {StatusCode.InProgress}");
 
-                // TODO: increment Temperature in steps
-                s_temperature[componentName] = targetTemperature;
+                // Increment Temperature in 2 steps
+                double step = (targetTemperature - s_temperature[componentName]) / 2d;
+                for (int i = 1; i <= 2; i++)
+                {
+                    s_temperature[componentName] += step;
+                    await Task.Delay(6 * 1000);
+                }
 
                 string completedPropertyPatch = PnpHelper.CreateWriteableReportedPropertyPatch(
                     propertyName,

@@ -50,8 +50,8 @@ namespace SimpleThermostat
                 {
                     if (temperatureReset)
                     {
-                        // Generate a random value between 5°C and 45°C for the current temperature reading.
-                        s_temperature = s_random.Next(5, 45);
+                        // Generate a random value between 5.0°C and 45.0°C for the current temperature reading.
+                        s_temperature = Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1);
                     }
 
                     // Send the current temperature over telemetry and reported property.
@@ -88,15 +88,20 @@ namespace SimpleThermostat
             (bool targetTempUpdateReceived, double targetTemperature) = GetPropertyFromTwin<double>(desiredProperties, "targetTemperature");
             if (targetTempUpdateReceived)
             {
-                PrintLog($"Received an update for target temperature");
+                PrintLog($"Received an update for target temperature {targetTemperature}°C");
 
-                // TODO: increment Temperature in steps
-                s_temperature = targetTemperature;
+                // Increment Temperature in 2 steps
+                double step = (targetTemperature - s_temperature) / 2d;
+                for (int i = 1; i <= 2; i++)
+                {
+                    s_temperature += step;
+                    await Task.Delay(6 * 1000);
+                }
 
-                string jsonProperty = $"{{ \"targetTemperature\": {{ \"value\": {targetTemperature}, \"ac\": 200, \"av\": {desiredProperties.Version} }} }}";
+                string jsonProperty = $"{{ \"targetTemperature\": {{ \"value\": {s_temperature}, \"ac\": 200, \"av\": {desiredProperties.Version} }} }}";
                 var reportedProperty = new TwinCollection(jsonProperty);
                 await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
-                PrintLog($"Processed an update for target temperature {targetTemperature}°C over reported property.");
+                PrintLog($"Processed an update for target temperature {s_temperature}°C over reported property.");
             }
             else
             {
@@ -135,7 +140,7 @@ namespace SimpleThermostat
 
             PrintLog($"Rebooting thermostat: resetting current temperature reading to 0°C after {delay} seconds");
             await Task.Delay(delay * 1000);
-            s_temperature = 0;
+            s_temperature = 0d;
 
             return new MethodResponse(200);
         }
