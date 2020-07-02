@@ -2,17 +2,26 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace SimpleThermostat
 {
+    internal enum StatusCode
+    {
+        Completed = 200,
+        InProgress = 202,
+    }
+
     public class Program
     {
-        private const string ModelId = "dtmi:com:example:simplethermostat;1";
+        private const string ModelId = "dtmi:com:example:Thermostat;1";
 
         private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONNECTION_STRING");
         private static readonly Random s_random = new Random();
@@ -20,6 +29,9 @@ namespace SimpleThermostat
         private static DeviceClient s_deviceClient;
 
         private static double s_temperature = 0d;
+
+        // Dictionary to hold the temperature updates sent over.
+        private static readonly Dictionary<DateTimeOffset, double> s_temperatureReadings = new Dictionary<DateTimeOffset, double>();
 
         public static async Task Main(string[] _)
         {
@@ -31,8 +43,8 @@ namespace SimpleThermostat
             // This sample follows the following workflow:
             // -> Initialize device client instance.
             // -> Set handler to receive "targetTemperature" updates, and send the received update over reported property.
-            // -> Set handler to receive "reboot" command, and reset the "Temperature" over telemetry and reported property.
-            // -> Periodically send "currentTemperature" over both telemetry and property updates.
+            // -> Set handler to receive "getMaxMinReport" command, and send the generated report as command response.
+            // -> Periodically send "current temperature" over telemetry and "max temperature since last reboot" over property update.
 
             PrintLog($"Initialize the device client.");
             await InitializeDeviceClientAsync();
@@ -40,8 +52,8 @@ namespace SimpleThermostat
             PrintLog($"Set handler to receive \"target temperature\" updates.");
             await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, s_deviceClient);
 
-            PrintLog($"Set handler for \"reboot\" command");
-            await s_deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, s_deviceClient);
+            PrintLog($"Set handler for \"getMaxMinReport\" command");
+            await s_deviceClient.SetMethodHandlerAsync("getMaxMinReport", HandleMaxMinReportCommandAsync, s_deviceClient);
 
             bool temperatureReset = true;
             await Task.Run(async () =>
@@ -54,9 +66,8 @@ namespace SimpleThermostat
                         s_temperature = Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1);
                     }
 
-                    // Send the current temperature over telemetry and reported property.
                     await SendTemperatureTelemetryAsync();
-                    await SendCurrentTemperaturePropertyAsync();
+                    await SendMaxTemperatureSinceLastRebootAsync();
 
                     temperatureReset = s_temperature == 0;
                     await Task.Delay(5 * 1000);
@@ -85,10 +96,17 @@ namespace SimpleThermostat
         // and updates the current temperature value over telemetry and reported property update.
         private static async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
         {
+            string propertyName = "targetTemperature";
+
             (bool targetTempUpdateReceived, double targetTemperature) = GetPropertyFromTwin<double>(desiredProperties, "targetTemperature");
             if (targetTempUpdateReceived)
             {
                 PrintLog($"Received an update for target temperature {targetTemperature}°C");
+
+                string jsonPropertyPending = $"{{ \"{propertyName}\": {{ \"value\": {s_temperature}, \"ac\": {(int)StatusCode.InProgress}, \"av\": {desiredProperties.Version} }} }}";
+                var reportedPropertyPending = new TwinCollection(jsonPropertyPending);
+                await s_deviceClient.UpdateReportedPropertiesAsync(reportedPropertyPending);
+                PrintLog($"Property update for {{\"{propertyName}\": {targetTemperature}°C }} is {StatusCode.InProgress}");
 
                 // Increment Temperature in 2 steps
                 double step = (targetTemperature - s_temperature) / 2d;
@@ -98,10 +116,10 @@ namespace SimpleThermostat
                     await Task.Delay(6 * 1000);
                 }
 
-                string jsonProperty = $"{{ \"targetTemperature\": {{ \"value\": {s_temperature}, \"ac\": 200, \"av\": {desiredProperties.Version} }} }}";
+                string jsonProperty = $"{{ \"{propertyName}\": {{ \"value\": {s_temperature}, \"ac\": {(int) StatusCode.Completed}, \"av\": {desiredProperties.Version} }} }}";
                 var reportedProperty = new TwinCollection(jsonProperty);
                 await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
-                PrintLog($"Processed an update for target temperature {s_temperature}°C over reported property.");
+                PrintLog($"Property update for {{\"{propertyName}\": {targetTemperature}°C }} is {StatusCode.Completed}");
             }
             else
             {
@@ -122,27 +140,44 @@ namespace SimpleThermostat
 
             await s_deviceClient.SendEventAsync(message);
             PrintLog($"Sent current temperature {s_temperature}°C over telemetry.");
+
+            s_temperatureReadings.Add(DateTimeOffset.Now, s_temperature);
         }
 
-        private static async Task SendCurrentTemperaturePropertyAsync()
+        private static async Task SendMaxTemperatureSinceLastRebootAsync()
         {
-            var reportedProperty = new TwinCollection();
-            reportedProperty["currentTemperature"] = s_temperature;
-            await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
-            PrintLog($"Sent current temperature {s_temperature}°C over reported property update.");
+            string propertyName = "maxTempSinceLastReboot";
+            double maxTemp = s_temperatureReadings.Values.Max<double>();
+
+            var reportedProperties = new TwinCollection();
+            reportedProperties[propertyName] = maxTemp;
+
+            await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+            PrintLog($"Sent max temperature since last reboot {maxTemp}°C over property update.");
         }
 
-        // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry,
-        // and also reset the temperature property to 0.
-        private static async Task<MethodResponse> HandleRebootCommandAsync(MethodRequest request, object userContext)
+        // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the specified time to the current time.
+        private static async Task<MethodResponse> HandleMaxMinReportCommandAsync(MethodRequest request, object userContext)
         {
-            int delay = JObject.Parse(request.DataAsJson).Value<int>("delay");
+            DateTimeOffset since = JObject.Parse(request.DataAsJson).Value<DateTime>("since");
+            PrintLog($"Generating min, max, avg temperature report since {since}.");
 
-            PrintLog($"Rebooting thermostat: resetting current temperature reading to 0°C after {delay} seconds");
-            await Task.Delay(delay * 1000);
-            s_temperature = 0d;
+            var filteredReadings = s_temperatureReadings.Where(i => i.Key > since).ToDictionary(i => i.Key, i => i.Value);
 
-            return new MethodResponse(200);
+            var report = new
+            {
+                maxTemp = filteredReadings.Values.Max<double>(),
+                minTemp = filteredReadings.Values.Min<double>(),
+                avgTemp = filteredReadings.Values.Average(),
+                startTime = filteredReadings.Keys.Min().DateTime.ToUniversalTime(),
+                endTime = filteredReadings.Keys.Max().DateTime.ToUniversalTime(),
+            };
+
+            PrintLog($"MinMaxReport since {since}:" +
+                $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
+
+            byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
+            return await Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
         }
 
         private static (bool, T) GetPropertyFromTwin<T>(TwinCollection collection, string propertyName)

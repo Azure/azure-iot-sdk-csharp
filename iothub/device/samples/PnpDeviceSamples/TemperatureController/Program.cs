@@ -87,7 +87,6 @@ namespace TemperatureController
                     if (temperatureReset)
                     {
                         // Generate a random value between 5.0°C and 45.0°C for the current temperature reading for each "Thermostat" component.
-                        // Generate a random value between 5.0°C and 45.0°C for the current temperature reading.
                         s_temperature.Add(Thermostat1, Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1));
                         s_temperature.Add(Thermostat2, Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1));
                     }

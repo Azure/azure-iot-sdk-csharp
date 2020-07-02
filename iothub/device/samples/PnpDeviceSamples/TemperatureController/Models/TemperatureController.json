@@ -4,17 +4,15 @@
   "@type": "Interface",
   "displayName": "Temperature Controller",
   "description": "Device with two thermostats and remote reboot.",
-  "contents": [
-    {
+  "contents": [    {
       "@type": [
-        "Telemetry",
-        "DataSize"
+        "Telemetry", "DataSize"
       ],
       "name": "workingSet",
       "displayName": "Working Set",
       "description": "Current working set of the device memory in KiB.",
       "schema": "double",
-      "unit": "kibibyte"
+      "unit" : "kibibyte"
     },
     {
       "@type": "Property",
@@ -36,14 +34,14 @@
       }
     },
     {
-      "@type": "Component",
+      "@type" : "Component",
       "schema": "dtmi:com:example:Thermostat;1",
       "name": "thermostat1",
       "displayName": "Thermostat One",
       "description": "Thermostat One of Two."
     },
     {
-      "@type": "Component",
+      "@type" : "Component",
       "schema": "dtmi:com:example:Thermostat;1",
       "name": "thermostat2",
       "displayName": "Thermostat Two",
