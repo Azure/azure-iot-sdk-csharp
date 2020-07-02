@@ -40,6 +40,7 @@ namespace PnpHelpers
         }
 
         // A read-only property is one which can be updated only by the device.
+        // TODO: too much whitespace
         public static string CreateReadonlyReportedPropertiesPatch(string propertyName, string serializedPropertyValue, string componentName = default)
         {
             if (string.IsNullOrWhiteSpace(componentName))
@@ -64,10 +65,12 @@ namespace PnpHelpers
         }
 
         // A writeable property is one which can be updated by an external source, eg. the service application, etc.
+        // TODO: too much whitespace
         public static string CreateWriteableReportedPropertyPatch(
             string propertyName,
             string serializedPropertyValue,
-            int ackCode, int ackVersion,
+            int ackCode,
+            int ackVersion,
             string serializedAckDescription = default,
             string componentName = default)
         {
@@ -78,8 +81,8 @@ namespace PnpHelpers
                     $"  \"{propertyName}\": " +
                     $"      {{ " +
                     $"          \"value\" : {serializedPropertyValue}," +
-                    $"          \"ac\" : \"{ackCode}\" " +
-                    $"          \"av\" : \"{ackVersion}\" " +
+                    $"          \"ac\" : {ackCode}, " +
+                    $"          \"av\" : {ackVersion}, " +
                     $"          {(!string.IsNullOrWhiteSpace(serializedAckDescription) ? $"\"ad\": {serializedAckDescription}" : "")}" +
                     $"      }} " +
                     $"}}";
@@ -90,9 +93,9 @@ namespace PnpHelpers
                 $"  \"{componentName}\": " +
                 $"      {{" +
                 $"          \"{PropertyComponentIdentifierKey}\": \"{PropertyComponentIdentifierValue}\"," +
-                $"          \"value\": {serializedPropertyValue}" +
-                $"          \"ac\" : \"{ackCode}\" " +
-                $"          \"av\" : \"{ackVersion}\" " +
+                $"          \"value\": {serializedPropertyValue}," +
+                $"          \"ac\" : {ackCode}, " +
+                $"          \"av\" : {ackVersion}, " +
                 $"          {(!string.IsNullOrWhiteSpace(serializedAckDescription) ? $"\"ad\": {serializedAckDescription}" : "")}" +
                 $"      }} " +
                 $"}}";

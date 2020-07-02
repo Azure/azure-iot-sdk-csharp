@@ -198,7 +198,8 @@ namespace TemperatureController
                     propertyName,
                     JsonConvert.SerializeObject(targetTemperature),
                     ackCode: 200,
-                    ackVersion: 1);
+                    ackVersion: 1,
+                    componentName: componentName);
 
                 var reportedProperty = new TwinCollection(reportedPropertyPatch);
                 await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
