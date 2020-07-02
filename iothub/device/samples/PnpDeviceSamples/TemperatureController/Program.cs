@@ -80,17 +80,22 @@ namespace TemperatureController
             s_desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
             s_desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
 
-            // Generate a random value between 5°C and 45°C for the initial current temperature reading for each "Thermostat" component.
-            s_temperature.Add(Thermostat1, s_random.Next(5, 45));
-            s_temperature.Add(Thermostat2, s_random.Next(5, 45));
-
+            bool temperatureReset = true;
             await Task.Run(async () =>
             {
                 while (true)
                 {
+                    if (temperatureReset)
+                    {
+                        // Generate a random value between 5°C and 45°C for the initial current temperature reading for each "Thermostat" component.
+                        s_temperature.Add(Thermostat1, s_random.Next(5, 45));
+                        s_temperature.Add(Thermostat2, s_random.Next(5, 45));
+                    }
+
                     await SendTemperatureTelemetryAsync(Thermostat1);
                     await SendTemperatureTelemetryAsync(Thermostat2);
 
+                    temperatureReset = s_temperature[Thermostat1] == 0 && s_temperature[Thermostat2] == 0;
                     await Task.Delay(5 * 1000);
                 }
             });

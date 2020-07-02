@@ -43,16 +43,22 @@ namespace SimpleThermostat
             PrintLog($"Set handler for \"reboot\" command");
             await s_deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, s_deviceClient);
 
-            // Generate a random value between 5°C and 45°C for the initial current temperature reading.
-            s_temperature = s_random.Next(5, 45);
-
+            bool temperatureReset = true;
             await Task.Run(async () =>
             {
                 while (true)
                 {
+                    if (temperatureReset)
+                    {
+                        // Generate a random value between 5°C and 45°C for the initial current temperature reading.
+                        s_temperature = s_random.Next(5, 45);
+                    }
+
                     // Send the current temperature over telemetry and reported property.
                     await SendTemperatureTelemetryAsync();
                     await SendCurrentTemperaturePropertyAsync();
+
+                    temperatureReset = s_temperature == 0;
                     await Task.Delay(5 * 1000);
                 }
             });
