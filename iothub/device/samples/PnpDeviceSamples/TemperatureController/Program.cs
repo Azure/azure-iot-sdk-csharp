@@ -274,7 +274,7 @@ namespace TemperatureController
                 double step = (targetTemperature - s_temperature[componentName]) / 2d;
                 for (int i = 1; i <= 2; i++)
                 {
-                    s_temperature[componentName] += step;
+                    s_temperature[componentName] = Math.Round(s_temperature[componentName] + step, 1);
                     await Task.Delay(6 * 1000);
                 }
 

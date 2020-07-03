@@ -112,7 +112,7 @@ namespace Thermostat
                 double step = (targetTemperature - s_temperature) / 2d;
                 for (int i = 1; i <= 2; i++)
                 {
-                    s_temperature += step;
+                    s_temperature = Math.Round(s_temperature + step, 1);
                     await Task.Delay(6 * 1000);
                 }
 
