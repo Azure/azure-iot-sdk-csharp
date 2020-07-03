@@ -8,14 +8,14 @@ namespace PnpServiceSample
     public class Program
     {        
         // Get connection string and device id inputs
-        private static readonly string hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
-        private static readonly string deviceId = Environment.GetEnvironmentVariable("DEVICE_ID");
+        private static readonly string s_hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
+        private static readonly string s_deviceId = Environment.GetEnvironmentVariable("DEVICE_ID");
 
-        // These are default values as per PnP no Component device client sample.
-        private const string propertyName = "targetTemperature";
-        private const double propertyValue = 60;
-        private const string methodToInvoke = "reboot";
-        private const string methodPayload = "{\"delay\":10}";
+        // These are values as defined in DTMI used for PnP no Component device client sample.
+        private const string PropertyName = "targetTemperature";
+        private const double PropertyValue = 60;
+        private const string MethodToInvoke = "reboot";
+        private const string MethodPayload = "{\"delay\":10}";
 
         private static ServiceClient s_serviceClient;
         private static RegistryManager s_registryManager;
@@ -35,16 +35,20 @@ namespace PnpServiceSample
 
             PrintLog($"Invoke a method");
             await InvokeMethodAsync();
-
-            PrintLog($"Press any key to exit");
-            Console.ReadKey();
         }
 
         private static async Task InvokeMethodAsync()
         {
-            var methodInvocation = new CloudToDeviceMethod(methodToInvoke) { ResponseTimeout = TimeSpan.FromSeconds(30) };
-            methodInvocation.SetPayloadJson(methodPayload);
-            await s_serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
+            var methodInvocation = new CloudToDeviceMethod(MethodToInvoke) { ResponseTimeout = TimeSpan.FromSeconds(30) };
+            methodInvocation.SetPayloadJson(MethodPayload);
+            CloudToDeviceMethodResult result = await s_serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
+
+            if(result == null)
+            {
+                throw new IOException("Method invoke returns null");
+            }
+
+            PrintLog("Method result status is: " + result.Status);
         }
 
         private static async Task GetAndUpdateTwinAsync()
@@ -55,14 +59,14 @@ namespace PnpServiceSample
 
             // Update the twin
             Twin twinPatch = new Twin();
-            twinPatch.Properties.Desired[propertyName] = propertyValue;
-            await s_registryManager.UpdateTwinAsync(deviceId, twinPatch, twin.ETag);
+            twinPatch.Properties.Desired[PropertyName] = PropertyValue;
+            await s_registryManager.UpdateTwinAsync(s_deviceId, twinPatch, twin.ETag);
         }
 
         private static void InitializeServiceClient()
         {
-            s_registryManager = RegistryManager.CreateFromConnectionString(hubConnectionString);
-            s_serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
+            s_registryManager = RegistryManager.CreateFromConnectionString(s_hubConnectionString);
+            s_serviceClient = ServiceClient.CreateFromConnectionString(s_hubConnectionString);
         }
 
         private static void PrintLog(string message)
