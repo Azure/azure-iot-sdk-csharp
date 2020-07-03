@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace SimpleThermostat
+namespace Thermostat
 {
     internal enum StatusCode
     {
@@ -44,7 +44,7 @@ namespace SimpleThermostat
             // -> Initialize device client instance.
             // -> Set handler to receive "targetTemperature" updates, and send the received update over reported property.
             // -> Set handler to receive "getMaxMinReport" command, and send the generated report as command response.
-            // -> Periodically send "current temperature" over telemetry and "max temperature since last reboot" over property update.
+            // -> Periodically send "temperature" over telemetry and "max temperature since last reboot" over property update.
 
             PrintLog($"Initialize the device client.");
             await InitializeDeviceClientAsync();
@@ -98,7 +98,7 @@ namespace SimpleThermostat
         {
             string propertyName = "targetTemperature";
 
-            (bool targetTempUpdateReceived, double targetTemperature) = GetPropertyFromTwin<double>(desiredProperties, "targetTemperature");
+            (bool targetTempUpdateReceived, double targetTemperature) = GetPropertyFromTwin<double>(desiredProperties, propertyName);
             if (targetTempUpdateReceived)
             {
                 PrintLog($"Received an update for target temperature {targetTemperature}°C");
