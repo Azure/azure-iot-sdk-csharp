@@ -113,6 +113,11 @@ namespace PnpHelpers
             return (false, default);
         }
 
+        public static string CreatePnpCommandName(string commandName, string componentName = default)
+        {
+            return string.IsNullOrWhiteSpace(componentName) ? commandName : $"{componentName}*{commandName}";
+        }
+
         public static string RemoveWhitespace(this string input)
         {
             return new string(input.ToCharArray()
