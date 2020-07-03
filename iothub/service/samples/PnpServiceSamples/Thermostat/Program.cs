@@ -6,7 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace PnpServiceSample
 {
     public class Program
-    {        
+    {
         // Get connection string and device id inputs
         private static readonly string s_hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
         private static readonly string s_deviceId = Environment.GetEnvironmentVariable("DEVICE_ID");
@@ -41,11 +41,11 @@ namespace PnpServiceSample
         {
             var methodInvocation = new CloudToDeviceMethod(MethodToInvoke) { ResponseTimeout = TimeSpan.FromSeconds(30) };
             methodInvocation.SetPayloadJson(MethodPayload);
-            CloudToDeviceMethodResult result = await s_serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
+            CloudToDeviceMethodResult result = await s_serviceClient.InvokeDeviceMethodAsync(s_deviceId, methodInvocation);
 
             if(result == null)
             {
-                throw new IOException("Method invoke returns null");
+                throw new Exception("Method invoke returns null");
             }
 
             PrintLog("Method result status is: " + result.Status);
@@ -54,7 +54,7 @@ namespace PnpServiceSample
         private static async Task GetAndUpdateTwinAsync()
         {
             // Get a Twin and retrieves model Id set by Device client
-            Twin twin = await s_registryManager.GetTwinAsync(deviceId);
+            Twin twin = await s_registryManager.GetTwinAsync(s_deviceId);
             Console.WriteLine("Model Id of this Twin is: " + twin.ModelId);
 
             // Update the twin
