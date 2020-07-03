@@ -67,14 +67,14 @@ namespace TemperatureController
             PrintLog($"Send device serial no.");
             await SendDeviceSerialNumberAsync();
 
-            PrintLog($"Set handler for \"reboot\" command");
+            PrintLog($"Set handler for \"reboot\" command.");
             await s_deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, s_deviceClient);
 
-            PrintLog($"Set handler for \"getMaxMinReport\" command");
+            PrintLog($"Set handler for \"getMaxMinReport\" command.");
             await s_deviceClient.SetMethodHandlerAsync("thermostat1*getMaxMinReport", HandleMaxMinReportCommandAsync, Thermostat1);
             await s_deviceClient.SetMethodHandlerAsync("thermostat2*getMaxMinReport", HandleMaxMinReportCommandAsync, Thermostat2);
 
-            PrintLog($"Set handler to receive \"target temperature\" updates.");
+            PrintLog($"Set handler to receive \"targetTemperature\" updates.");
             await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallbackAsync, null);
             s_desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
             s_desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
@@ -87,8 +87,8 @@ namespace TemperatureController
                     if (temperatureReset)
                     {
                         // Generate a random value between 5.0°C and 45.0°C for the current temperature reading for each "Thermostat" component.
-                        s_temperature.Add(Thermostat1, Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1));
-                        s_temperature.Add(Thermostat2, Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1));
+                        s_temperature[Thermostat1] = Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1);
+                        s_temperature[Thermostat2] = Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1);
                     }
 
                     await SendTemperatureTelemetryAsync(Thermostat1);
@@ -114,7 +114,7 @@ namespace TemperatureController
             s_deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, TransportType.Mqtt, options);
             s_deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
             {
-                PrintLog($"Connection status change registered - status={status}, reason={reason}");
+                PrintLog($"Connection status change registered - status={status}, reason={reason}.");
             });
 
             await s_deviceClient.OpenAsync();
@@ -129,7 +129,7 @@ namespace TemperatureController
             Message msg = PnpHelper.CreateIothubMessageUtf8(telemetryName, JsonConvert.SerializeObject(workingSet));
 
             await s_deviceClient.SendEventAsync(msg);
-            PrintLog($"Sent working set memory availability over telemetry - {workingSet}KiB.");
+            PrintLog($"Sent telemetry: {{ \"{telemetryName}\": {workingSet}KiB }}.");
         }
 
         // Send device serial number over property update.
@@ -140,7 +140,7 @@ namespace TemperatureController
             var reportedProperties = new TwinCollection(propertyPatch);
 
             await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-            PrintLog($"Sent device serial number \"{SerialNumber}\" over property update.");
+            PrintLog($"Sent property: {{ \"{propertyName}\": \"{SerialNumber}\" }}.");
         }
 
         private static async Task SendTemperatureTelemetryAsync(string componentName)
@@ -150,7 +150,7 @@ namespace TemperatureController
             Message msg = PnpHelper.CreateIothubMessageUtf8(telemetryName, JsonConvert.SerializeObject(currentTemperature), componentName);
 
             await s_deviceClient.SendEventAsync(msg);
-            PrintLog($"Sent current temperature {currentTemperature}°C for component {componentName} over telemetry.");
+            PrintLog($"Sent telemetry: component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature}°C }}.");
 
             if (s_temperatureReadings.ContainsKey(componentName))
             {
@@ -171,7 +171,7 @@ namespace TemperatureController
             var reportedProperties = new TwinCollection(propertyPatch);
 
             await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-            PrintLog($"Sent max temperature since last reboot {maxTemp}°C for component {componentName} over property update.");
+            PrintLog($"Sent property: component=\"{componentName}\", {{ \"{propertyName}\": {maxTemp}°C }}.");
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
@@ -194,11 +194,11 @@ namespace TemperatureController
         private static async Task<MethodResponse> HandleMaxMinReportCommandAsync(MethodRequest request, object userContext)
         {
             string componentName = (string)userContext;
-            DateTimeOffset since = JObject.Parse(request.DataAsJson).Value<DateTime>("since");
+            DateTime since = JObject.Parse(request.DataAsJson).Value<DateTime>("since");
 
             if (s_temperatureReadings.ContainsKey(componentName))
             {
-                PrintLog($"Generating min, max, avg temperature report since {since} for component {componentName}");
+                PrintLog($"Received command: component=\"{componentName}\", generating min, max, avg temperature report since {since}.");
 
                 Dictionary<DateTimeOffset, double> allReadings = s_temperatureReadings[componentName];
                 var filteredReadings = allReadings.Where(i => i.Key > since).ToDictionary(i => i.Key, i => i.Value);
@@ -208,8 +208,8 @@ namespace TemperatureController
                     maxTemp = filteredReadings.Values.Max<double>(),
                     minTemp = filteredReadings.Values.Min<double>(),
                     avgTemp = filteredReadings.Values.Average(),
-                    startTime = filteredReadings.Keys.Min().DateTime.ToUniversalTime(),
-                    endTime = filteredReadings.Keys.Max().DateTime.ToUniversalTime(),
+                    startTime = filteredReadings.Keys.Min().DateTime,
+                    endTime = filteredReadings.Keys.Max().DateTime,
                 };
 
                 PrintLog($"MinMaxReport for \"{componentName}\" since {since}:" +
@@ -257,7 +257,7 @@ namespace TemperatureController
             (bool targetTempUpdateReceived, double targetTemperature) = PnpHelper.GetPropertyFromTwin<double>(desiredProperties, propertyName, componentName);
             if (targetTempUpdateReceived)
             {
-                PrintLog($"Received an update for target temperature of {targetTemperature}°C for component {componentName}");
+                PrintLog($"Received property: component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
                 string pendingPropertyPatch = PnpHelper.CreateWriteableReportedPropertyPatch(
                     propertyName,
@@ -268,7 +268,7 @@ namespace TemperatureController
 
                 var pendingReportedProperty = new TwinCollection(pendingPropertyPatch);
                 await s_deviceClient.UpdateReportedPropertiesAsync(pendingReportedProperty);
-                PrintLog($"Property update for {{\"{propertyName}\": {targetTemperature}°C }} for component \"{componentName}\" is {StatusCode.InProgress}");
+                PrintLog($"Property update: component=\"{componentName}\", {{\"{propertyName}\": {targetTemperature}°C }} is {StatusCode.InProgress}");
 
                 // Increment Temperature in 2 steps
                 double step = (targetTemperature - s_temperature[componentName]) / 2d;
@@ -287,7 +287,7 @@ namespace TemperatureController
 
                 var completedReportedProperty = new TwinCollection(completedPropertyPatch);
                 await s_deviceClient.UpdateReportedPropertiesAsync(completedReportedProperty);
-                PrintLog($"Property update for {{\"{propertyName}\": {targetTemperature}°C }} for component \"{componentName}\" is {StatusCode.Completed}");
+                PrintLog($"Property update: component=\"{componentName}\", {{\"{propertyName}\": {targetTemperature}°C }} is {StatusCode.Completed}");
             }
 
             // TODO: targetTempUpdateReceived value needs to be relayed to SetDesiredPropertyUpdateCallbackAsync as well.
