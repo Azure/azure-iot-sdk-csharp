@@ -136,7 +136,7 @@ namespace TemperatureController
         private static async Task SendDeviceSerialNumberAsync()
         {
             string propertyName = "serialNumber";
-            string propertyPatch = PnpHelper.CreateReadonlyReportedPropertiesPatch(propertyName, JsonConvert.SerializeObject(SerialNumber));
+            string propertyPatch = PnpHelper.CreatePropertyPatch(propertyName, JsonConvert.SerializeObject(SerialNumber));
             var reportedProperties = new TwinCollection(propertyPatch);
 
             await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
@@ -167,7 +167,7 @@ namespace TemperatureController
             string propertyName = "maxTempSinceLastReboot";
             double maxTemp = s_temperatureReadings[componentName].Values.Max<double>();
 
-            string propertyPatch = PnpHelper.CreateReadonlyReportedPropertiesPatch(propertyName, JsonConvert.SerializeObject(maxTemp), componentName);
+            string propertyPatch = PnpHelper.CreatePropertyPatch(propertyName, JsonConvert.SerializeObject(maxTemp), componentName);
             var reportedProperties = new TwinCollection(propertyPatch);
 
             await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
@@ -259,7 +259,7 @@ namespace TemperatureController
             {
                 PrintLog($"Received property: component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
-                string pendingPropertyPatch = PnpHelper.CreateWriteableReportedPropertyPatch(
+                string pendingPropertyPatch = PnpHelper.CreatePropertyEmbeddedValuePatch(
                     propertyName,
                     JsonConvert.SerializeObject(targetTemperature),
                     ackCode: (int) StatusCode.InProgress,
@@ -278,7 +278,7 @@ namespace TemperatureController
                     await Task.Delay(6 * 1000);
                 }
 
-                string completedPropertyPatch = PnpHelper.CreateWriteableReportedPropertyPatch(
+                string completedPropertyPatch = PnpHelper.CreatePropertyEmbeddedValuePatch(
                     propertyName,
                     JsonConvert.SerializeObject(targetTemperature),
                     ackCode: (int) StatusCode.Completed,
