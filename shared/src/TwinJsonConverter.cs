@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Shared
         private const string CloudToDeviceMessageCountTag = "cloudToDeviceMessageCount";
         private const string AuthenticationTypeTag = "authenticationType";
         private const string X509ThumbprintTag = "x509Thumbprint";
-        private const string ModelId = "digital-twin-model-id";
+        private const string ModelId = "modelId";
 
         /// <summary>
         /// Converts <see cref="Twin"/> to its equivalent Json representation.
