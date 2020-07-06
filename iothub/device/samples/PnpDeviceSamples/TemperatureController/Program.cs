@@ -222,7 +222,7 @@ namespace TemperatureController
 
             if (s_temperatureReadings.ContainsKey(componentName))
             {
-                s_logger.LogDebug($"Command: Received - component=\"{componentName}\", generating min, max, avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
+                s_logger.LogDebug($"Command: Received - component=\"{componentName}\", generating max, min and avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
 
                 Dictionary<DateTimeOffset, double> allReadings = s_temperatureReadings[componentName];
                 var filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset).ToDictionary(i => i.Key, i => i.Value);
@@ -238,7 +238,7 @@ namespace TemperatureController
                         endTime = filteredReadings.Keys.Max().DateTime,
                     };
 
-                    s_logger.LogDebug($"Command: component=\"{componentName}\", MinMaxReport since {sinceInDateTimeOffset.LocalDateTime}:" +
+                    s_logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
                         $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
 
                     byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));

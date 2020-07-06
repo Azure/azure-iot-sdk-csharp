@@ -80,11 +80,10 @@ namespace Thermostat
                     {
                         // Generate a random value between 5.0°C and 45.0°C for the current temperature reading.
                         s_temperature = Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1);
+                        temperatureReset = false;
                     }
 
                     await SendTemperatureAsync();
-
-                    temperatureReset = s_temperature == 0;
                     await Task.Delay(5 * 1000);
                 }
             });
@@ -185,7 +184,7 @@ namespace Thermostat
         {
             DateTime since = JObject.Parse(request.DataAsJson).SelectToken("commandRequest.value").Value<DateTime>();
             var sinceInDateTimeOffset = new DateTimeOffset(since);
-            s_logger.LogDebug($"Command: Received - Generating min, max, avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
+            s_logger.LogDebug($"Command: Received - Generating max, min and avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
 
             var filteredReadings = s_temperatureReadings.Where(i => i.Key > sinceInDateTimeOffset).ToDictionary(i => i.Key, i => i.Value);
 
@@ -200,7 +199,7 @@ namespace Thermostat
                     endTime = filteredReadings.Keys.Max().DateTime,
                 };
 
-                s_logger.LogDebug($"Command: MinMaxReport since {sinceInDateTimeOffset.LocalDateTime}:" +
+                s_logger.LogDebug($"Command: MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
                     $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
 
                 byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
