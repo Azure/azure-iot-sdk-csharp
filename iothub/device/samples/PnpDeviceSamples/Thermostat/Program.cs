@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -17,6 +18,7 @@ namespace Thermostat
     {
         Completed = 200,
         InProgress = 202,
+        NotFound = 404
     }
 
     public class Program
@@ -27,14 +29,27 @@ namespace Thermostat
         private static readonly Random s_random = new Random();
 
         private static DeviceClient s_deviceClient;
+        private static ILogger s_logger;
 
         private static double s_temperature = 0d;
+        private static double s_maxTemp = 0d;
 
         // Dictionary to hold the temperature updates sent over.
         private static readonly Dictionary<DateTimeOffset, double> s_temperatureReadings = new Dictionary<DateTimeOffset, double>();
 
         public static async Task Main(string[] _)
         {
+            ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder
+                .AddFilter(level => level >= LogLevel.Debug)
+                .AddConsole(options =>
+                {
+                    options.TimestampFormat = "[MM/dd/yyyy HH:mm:ss]";
+                });
+            });
+            s_logger = loggerFactory.CreateLogger<Program>();
+
             await RunSampleAsync();
         }
 
@@ -44,15 +59,16 @@ namespace Thermostat
             // -> Initialize device client instance.
             // -> Set handler to receive "targetTemperature" updates, and send the received update over reported property.
             // -> Set handler to receive "getMaxMinReport" command, and send the generated report as command response.
-            // -> Periodically send "temperature" over telemetry and "max temperature since last reboot" over property update.
+            // -> Periodically send "temperature" over telemetry.
+            // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set.
 
-            PrintLog($"Initialize the device client.");
-            await InitializeDeviceClientAsync();
+            s_logger.LogDebug($"Initialize the device client.");
+            InitializeDeviceClientAsync();
 
-            PrintLog($"Set handler to receive \"target temperature\" updates.");
+            s_logger.LogDebug($"Set handler to receive \"targetTemperature\" updates.");
             await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, s_deviceClient);
 
-            PrintLog($"Set handler for \"getMaxMinReport\" command.");
+            s_logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
             await s_deviceClient.SetMethodHandlerAsync("getMaxMinReport", HandleMaxMinReportCommandAsync, s_deviceClient);
 
             bool temperatureReset = true;
@@ -66,8 +82,7 @@ namespace Thermostat
                         s_temperature = Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1);
                     }
 
-                    await SendTemperatureTelemetryAsync();
-                    await SendMaxTemperatureSinceLastRebootAsync();
+                    await SendTemperatureAsync();
 
                     temperatureReset = s_temperature == 0;
                     await Task.Delay(5 * 1000);
@@ -75,9 +90,9 @@ namespace Thermostat
             });
         }
 
-        // Initialize the device client instance over Mqtt protocol (TCP, with fallback over Websocket), setting the ModelId into ClientOptions, and open the connection.
+        // Initialize the device client instance over Mqtt protocol (TCP, with fallback over Websocket), setting the ModelId into ClientOptions.
         // This method also sets a connection status change callback, that will get triggered any time the device's connection status changes.
-        private static async Task InitializeDeviceClientAsync()
+        private static void InitializeDeviceClientAsync()
         {
             var options = new ClientOptions
             {
@@ -86,10 +101,8 @@ namespace Thermostat
             s_deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, TransportType.Mqtt, options);
             s_deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
             {
-                PrintLog($"Connection status change registered - status={status}, reason={reason}.");
+                s_logger.LogDebug($"Connection status change registered - status={status}, reason={reason}.");
             });
-
-            await s_deviceClient.OpenAsync();
         }
 
         // The desired property update callback, which receives the target temperature as a desired property update,
@@ -101,14 +114,14 @@ namespace Thermostat
             (bool targetTempUpdateReceived, double targetTemperature) = GetPropertyFromTwin<double>(desiredProperties, propertyName);
             if (targetTempUpdateReceived)
             {
-                PrintLog($"Received property: {{ \"{propertyName}\": {targetTemperature}°C }}.");
+                s_logger.LogDebug($"Property: Received - {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
                 string jsonPropertyPending = $"{{ \"{propertyName}\": {{ \"value\": {s_temperature}, \"ac\": {(int)StatusCode.InProgress}, \"av\": {desiredProperties.Version} }} }}";
                 var reportedPropertyPending = new TwinCollection(jsonPropertyPending);
                 await s_deviceClient.UpdateReportedPropertiesAsync(reportedPropertyPending);
-                PrintLog($"Property update: {{\"{propertyName}\": {targetTemperature}°C }} is {StatusCode.InProgress}.");
+                s_logger.LogDebug($"Property: Update - {{\"{propertyName}\": {targetTemperature}°C }} is {StatusCode.InProgress}.");
 
-                // Increment Temperature in 2 steps
+                // Update Temperature in 2 steps
                 double step = (targetTemperature - s_temperature) / 2d;
                 for (int i = 1; i <= 2; i++)
                 {
@@ -116,14 +129,26 @@ namespace Thermostat
                     await Task.Delay(6 * 1000);
                 }
 
-                string jsonProperty = $"{{ \"{propertyName}\": {{ \"value\": {s_temperature}, \"ac\": {(int) StatusCode.Completed}, \"av\": {desiredProperties.Version} }} }}";
+                string jsonProperty = $"{{ \"{propertyName}\": {{ \"value\": {s_temperature}, \"ac\": {(int) StatusCode.Completed}, \"av\": {desiredProperties.Version}, \"ad\": \"Successfully updated target temperature\" }} }}";
                 var reportedProperty = new TwinCollection(jsonProperty);
                 await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
-                PrintLog($"Property update: {{\"{propertyName}\": {targetTemperature}°C }} is {StatusCode.Completed}.");
+                s_logger.LogDebug($"Property: Update - {{\"{propertyName}\": {s_temperature}°C }} is {StatusCode.Completed}.");
             }
             else
             {
-                PrintLog($"Received an unrecognized property update from service.");
+                s_logger.LogDebug($"Property: Received an unrecognized property update from service.");
+            }
+        }
+
+        private static async Task SendTemperatureAsync()
+        {
+            await SendTemperatureTelemetryAsync();
+
+            double maxTemp = s_temperatureReadings.Values.Max<double>();
+            if (maxTemp > s_maxTemp)
+            {
+                s_maxTemp = maxTemp;
+                await UpdateMaxTemperatureSinceLastRebootAsync();
             }
         }
 
@@ -139,55 +164,56 @@ namespace Thermostat
             };
 
             await s_deviceClient.SendEventAsync(message);
-            PrintLog($"Sent telemetry: {{ \"{telemetryName}\": {s_temperature}°C }}.");
+            s_logger.LogDebug($"Telemetry: Sent - {{ \"{telemetryName}\": {s_temperature}°C }}.");
 
             s_temperatureReadings.Add(DateTimeOffset.Now, s_temperature);
         }
 
-        private static async Task SendMaxTemperatureSinceLastRebootAsync()
+        private static async Task UpdateMaxTemperatureSinceLastRebootAsync()
         {
             string propertyName = "maxTempSinceLastReboot";
-            double maxTemp = s_temperatureReadings.Values.Max<double>();
 
             var reportedProperties = new TwinCollection();
-            reportedProperties[propertyName] = maxTemp;
+            reportedProperties[propertyName] = s_maxTemp;
 
             await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-            PrintLog($"Sent property: {{ \"{propertyName}\": {maxTemp}°C }}.");
+            s_logger.LogDebug($"Property: Update - {{ \"{propertyName}\": {s_maxTemp}°C }} is {StatusCode.Completed}.");
         }
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the specified time to the current time.
         private static async Task<MethodResponse> HandleMaxMinReportCommandAsync(MethodRequest request, object userContext)
         {
-            DateTime since = JObject.Parse(request.DataAsJson).Value<DateTime>("since");
-            PrintLog($"Received command: Generating min, max, avg temperature report since {since}.");
+            DateTime since = JObject.Parse(request.DataAsJson).SelectToken("commandRequest.value").Value<DateTime>();
+            var sinceInDateTimeOffset = new DateTimeOffset(since);
+            s_logger.LogDebug($"Command: Received - Generating min, max, avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
 
-            var filteredReadings = s_temperatureReadings.Where(i => i.Key > since).ToDictionary(i => i.Key, i => i.Value);
+            var filteredReadings = s_temperatureReadings.Where(i => i.Key > sinceInDateTimeOffset).ToDictionary(i => i.Key, i => i.Value);
 
-            var report = new
+            if (filteredReadings != null && filteredReadings.Any())
             {
-                maxTemp = filteredReadings.Values.Max<double>(),
-                minTemp = filteredReadings.Values.Min<double>(),
-                avgTemp = filteredReadings.Values.Average(),
-                startTime = filteredReadings.Keys.Min().DateTime,
-                endTime = filteredReadings.Keys.Max().DateTime,
-            };
+                var report = new
+                {
+                    maxTemp = filteredReadings.Values.Max<double>(),
+                    minTemp = filteredReadings.Values.Min<double>(),
+                    avgTemp = filteredReadings.Values.Average(),
+                    startTime = filteredReadings.Keys.Min().DateTime,
+                    endTime = filteredReadings.Keys.Max().DateTime,
+                };
 
-            PrintLog($"MinMaxReport since {since}:" +
-                $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
+                s_logger.LogDebug($"Command: MinMaxReport since {sinceInDateTimeOffset.LocalDateTime}:" +
+                    $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
 
-            byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-            return await Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+                byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
+                return await Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+            }
+
+            s_logger.LogDebug($"Command: No relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, cannot generate any report.");
+            return await Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
         }
 
         private static (bool, T) GetPropertyFromTwin<T>(TwinCollection collection, string propertyName)
         {
             return collection.Contains(propertyName) ? (true, (T)collection[propertyName]) : (false, default);
-        }
-
-        private static void PrintLog(string message)
-        {
-            Console.WriteLine($">> {DateTime.Now}: {message}");
         }
     }
 }
