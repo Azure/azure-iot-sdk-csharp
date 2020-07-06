@@ -39,6 +39,8 @@ namespace TemperatureController
         private static readonly IDictionary<string, DesiredPropertyUpdateCallback> s_desiredPropertyUpdateCallbacks = new Dictionary<string, DesiredPropertyUpdateCallback>();
 
         // Dictionary to hold the temperature updates sent over each "Thermostat" component.
+        // NOTE: Memory constrained devices should leverage storage capabilities of an external service to store this information and perform computation.
+        // See https://docs.microsoft.com/en-us/azure/event-grid/compare-messaging-services for more details.
         private static readonly Dictionary<string, Dictionary<DateTimeOffset, double>> s_temperatureReadings = new Dictionary<string, Dictionary<DateTimeOffset, double>>();
 
         // Dictionary to hold the current temperature for each "Thermostat" component.

@@ -35,6 +35,8 @@ namespace Thermostat
         private static double s_maxTemp = 0d;
 
         // Dictionary to hold the temperature updates sent over.
+        // NOTE: Memory constrained devices should leverage storage capabilities of an external service to store this information and perform computation.
+        // See https://docs.microsoft.com/en-us/azure/event-grid/compare-messaging-services for more details.
         private static readonly Dictionary<DateTimeOffset, double> s_temperatureReadings = new Dictionary<DateTimeOffset, double>();
 
         public static async Task Main(string[] _)
