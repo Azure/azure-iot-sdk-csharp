@@ -97,6 +97,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Sha
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.PnpServiceSample", "iothub\service\samples\PnpServiceSamples\Thermostat\Microsoft.Azure.Devices.PnpServiceSample.csproj", "{5B7C14D6-1441-489B-B9FB-1EEEA43B8C48}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pnp", "pnp", "{A54AE4D2-95D0-4795-B24E-2B95ED7B2752}"
+	ProjectSection(SolutionItems) = preProject
+		pnp\PnpHelper.cs = pnp\PnpHelper.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
