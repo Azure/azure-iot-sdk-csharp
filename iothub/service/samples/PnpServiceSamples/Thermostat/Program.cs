@@ -68,7 +68,7 @@ namespace Thermostat
                 throw new Exception($"Method {MethodName} invovation returned null");
             }
 
-            s_logger.LogDebug("Method result status is: " + result.Status);
+            s_logger.LogDebug("Method invocation result status is: " + result.Status);
         }
 
         private static async Task GetAndUpdateTwinAsync()

@@ -22,7 +22,7 @@ namespace TemperatureController
         private const string PropertyName = "targetTemperature";
         private const double PropertyValue = 60;
 
-        // Method on a given component
+        // Method on a specified component
         private const string MethodName = "getMaxMinReport";
         private static readonly DateTime dateTime = DateTime.Now;
 
@@ -75,7 +75,7 @@ namespace TemperatureController
                 throw new Exception($"Method {MethodName} invovation returned null");
             }
 
-            s_logger.LogDebug("Method result status is: " + result.Status);
+            s_logger.LogDebug("Method invocation result status is: " + result.Status);
         }
 
         private static async Task GetAndUpdateTwinAsync()
@@ -86,7 +86,7 @@ namespace TemperatureController
 
             // Update the twin
             string propertyUpdate = PnpHelper.CreatePropertyPatch(PropertyName, JsonConvert.SerializeObject(PropertyValue), ComponentName);
-            string twinPatch = $"{{ \"properties\": {{\"desired\": {propertyUpdate}}}}}";
+            string twinPatch = $"{{ \"properties\": {{\"desired\": {propertyUpdate} }} }}";
 
             await s_registryManager.UpdateTwinAsync(s_deviceId, twinPatch, twin.ETag);
         }
