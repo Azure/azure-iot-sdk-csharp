@@ -23,6 +23,7 @@ namespace Thermostat
 
     public class Program
     {
+        // DTDL interface used: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/samples/Thermostat.json
         private const string ModelId = "dtmi:com:example:Thermostat;1";
 
         private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONNECTION_STRING");
