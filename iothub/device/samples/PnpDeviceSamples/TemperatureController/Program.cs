@@ -23,6 +23,7 @@ namespace TemperatureController
 
     public class Program
     {
+        // DTDL interface used: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/samples/TemperatureController.json
         private const string ModelId = "dtmi:com:example:TemperatureController;1";
         private const string Thermostat1 = "thermostat1";
         private const string Thermostat2 = "thermostat2";
