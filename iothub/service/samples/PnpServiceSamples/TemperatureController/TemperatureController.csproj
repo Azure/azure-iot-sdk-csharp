@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\Microsoft.Azure.Devices.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 
 </Project>

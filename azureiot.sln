@@ -95,9 +95,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.Tests", "shared\tests\Microsoft.Azure.Devices.Shared.Tests.csproj", "{CEEE435F-32FC-4DE5-8735-90F6AC950A01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thermostat", "iothub\service\samples\PnpServiceSamples\SimpleThermostat\Thermostat.csproj", "{08A383A4-9FA3-4585-A745-57A7CDBAB9DC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{810FAC63-974E-4B5A-8E56-4B95FA0E3FAE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemperatureController", "iothub\service\samples\PnpServiceSamples\TemperatureController\Microsoft.Azure.Devices.TemperatureController\TemperatureController.csproj", "{901872DC-DE34-4BEA-BB60-58A9B56AD136}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemperatureController", "iothub\service\samples\PnpServiceSamples\TemperatureController\TemperatureController.csproj", "{66B7F96C-249D-4F26-9266-D9B270E5F96D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thermostat", "iothub\service\samples\PnpServiceSamples\Thermostat\Thermostat.csproj", "{BEE44A43-6DD4-452A-93E3-B4B2DE2081E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -190,14 +192,14 @@ Global
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{08A383A4-9FA3-4585-A745-57A7CDBAB9DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{08A383A4-9FA3-4585-A745-57A7CDBAB9DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{08A383A4-9FA3-4585-A745-57A7CDBAB9DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{08A383A4-9FA3-4585-A745-57A7CDBAB9DC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{901872DC-DE34-4BEA-BB60-58A9B56AD136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{901872DC-DE34-4BEA-BB60-58A9B56AD136}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{901872DC-DE34-4BEA-BB60-58A9B56AD136}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{901872DC-DE34-4BEA-BB60-58A9B56AD136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66B7F96C-249D-4F26-9266-D9B270E5F96D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66B7F96C-249D-4F26-9266-D9B270E5F96D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66B7F96C-249D-4F26-9266-D9B270E5F96D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66B7F96C-249D-4F26-9266-D9B270E5F96D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEE44A43-6DD4-452A-93E3-B4B2DE2081E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEE44A43-6DD4-452A-93E3-B4B2DE2081E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEE44A43-6DD4-452A-93E3-B4B2DE2081E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEE44A43-6DD4-452A-93E3-B4B2DE2081E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -240,8 +242,9 @@ Global
 		{BFF03EEB-A6B7-45B9-BFBB-FAE5FC3BF94B} = {AD5062A3-72EA-4273-9858-E01594763C39}
 		{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814} = {F997B975-3764-450B-9D35-CDD76C320885}
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01} = {3AA089A9-A035-439E-BAF6-C3975A334379}
-		{08A383A4-9FA3-4585-A745-57A7CDBAB9DC} = {3AE168FC-23DB-4BB6-9A85-C6D2055BADEB}
-		{901872DC-DE34-4BEA-BB60-58A9B56AD136} = {3AE168FC-23DB-4BB6-9A85-C6D2055BADEB}
+		{810FAC63-974E-4B5A-8E56-4B95FA0E3FAE} = {3AE168FC-23DB-4BB6-9A85-C6D2055BADEB}
+		{66B7F96C-249D-4F26-9266-D9B270E5F96D} = {810FAC63-974E-4B5A-8E56-4B95FA0E3FAE}
+		{BEE44A43-6DD4-452A-93E3-B4B2DE2081E1} = {810FAC63-974E-4B5A-8E56-4B95FA0E3FAE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

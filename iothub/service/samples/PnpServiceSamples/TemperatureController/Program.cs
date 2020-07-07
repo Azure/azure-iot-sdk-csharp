@@ -24,7 +24,7 @@ namespace TemperatureController
 
         // Method on a given component
         private const string MethodName = "getMaxMinReport";
-        private static readonly DateTime dateTime = DateTime.Now ;
+        private static readonly DateTime dateTime = DateTime.Now;
 
         private static ServiceClient s_serviceClient;
         private static RegistryManager s_registryManager;

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Thermostat
 {
@@ -14,10 +15,14 @@ namespace Thermostat
 
         // These are values as defined in DTMI used for PnP no Component device client sample.
         // DTDL interface used: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/samples/Thermostat.json
+
+        // Writable property to update
         private const string PropertyName = "targetTemperature";
         private const double PropertyValue = 60;
-        private const string MethodToInvoke = "reboot";
-        private const string MethodPayload = "{\"delay\":10}";
+
+        // Method on a given component
+        private const string MethodName = "getMaxMinReport";
+        private static readonly DateTime dateTime = DateTime.Now;
 
         private static ServiceClient s_serviceClient;
         private static RegistryManager s_registryManager;
@@ -41,35 +46,36 @@ namespace Thermostat
 
         private static async Task RunSampleAsync()
         {
-            PrintLog($"Initialize the service client.");
+            s_logger.LogDebug($"Initialize the service client.");
             InitializeServiceClient();
 
-            PrintLog($"Get Twin model Id and Update Twin");
+            s_logger.LogDebug($"Get Twin model Id and Update Twin");
             await GetAndUpdateTwinAsync();
 
-            PrintLog($"Invoke a method");
+            s_logger.LogDebug($"Invoke a method");
             await InvokeMethodAsync();
         }
 
         private static async Task InvokeMethodAsync()
         {
-            var methodInvocation = new CloudToDeviceMethod(MethodToInvoke) { ResponseTimeout = TimeSpan.FromSeconds(30) };
-            methodInvocation.SetPayloadJson(MethodPayload);
+            var methodInvocation = new CloudToDeviceMethod(MethodName) { ResponseTimeout = TimeSpan.FromSeconds(30) };
+            var payload = "{\"since\":" + JsonConvert.SerializeObject(dateTime) + "}";
+            methodInvocation.SetPayloadJson(payload);
             CloudToDeviceMethodResult result = await s_serviceClient.InvokeDeviceMethodAsync(s_deviceId, methodInvocation);
 
             if(result == null)
             {
-                throw new Exception($"Method {MethodToInvoke} invovation returned null");
+                throw new Exception($"Method {MethodName} invovation returned null");
             }
 
-            PrintLog("Method result status is: " + result.Status);
+            s_logger.LogDebug("Method result status is: " + result.Status);
         }
 
         private static async Task GetAndUpdateTwinAsync()
         {
             // Get a Twin and retrieves model Id set by Device client
             Twin twin = await s_registryManager.GetTwinAsync(s_deviceId);
-            Console.WriteLine("Model Id of this Twin is: " + twin.ModelId);
+            s_logger.LogDebug("Model Id of this Twin is: " + twin.ModelId);
 
             // Update the twin
             Twin twinPatch = new Twin();
@@ -81,11 +87,6 @@ namespace Thermostat
         {
             s_registryManager = RegistryManager.CreateFromConnectionString(s_hubConnectionString);
             s_serviceClient = ServiceClient.CreateFromConnectionString(s_hubConnectionString);
-        }
-
-        private static void PrintLog(string message)
-        {
-            Console.WriteLine($">> {DateTime.Now}: {message}");
         }
     }
 }
