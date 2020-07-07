@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Thermostat
+namespace Thermostat
 {
     public class Program
     {

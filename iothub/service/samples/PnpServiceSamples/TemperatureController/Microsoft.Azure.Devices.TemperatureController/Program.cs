@@ -5,7 +5,7 @@ using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using PnpHelpers;
 
-namespace Microsoft.Azure.Devices.TemperatureController
+namespace TemperatureController
 {
     public class Program
     {
