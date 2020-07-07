@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         {
             // arrange
             string ApiVersionParam = "api-version";
-            string ModelIdParam = "digital-twin-model-id";
+            string ModelIdParam = "model-id";
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         {
             // arrange
             string ApiVersionParam = "api-version";
-            string ModelIdParam = "digital-twin-model-id";
+            string ModelIdParam = "model-id";
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
