@@ -190,11 +190,11 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             if (String.IsNullOrEmpty(moduleId))
             {
-                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryStringDefault}", UriKind.Relative);
+                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryString}", UriKind.Relative);
             }
             else
             {
-                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryStringDefault}", UriKind.Relative);
+                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryString}", UriKind.Relative);
             }
 
             restOpMock.Setup(m => m.PostAsync<byte[], HttpResponseMessage>(
