@@ -101,6 +101,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemperatureController", "io
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thermostat", "iothub\service\samples\PnpServiceSamples\Thermostat\Thermostat.csproj", "{BEE44A43-6DD4-452A-93E3-B4B2DE2081E1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pnp", "pnp", "{A54AE4D2-95D0-4795-B24E-2B95ED7B2752}"
+	ProjectSection(SolutionItems) = preProject
+		pnp\PnpHelper.cs = pnp\PnpHelper.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -53,13 +53,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(StorageAuthenticationType.IdentityBased)]
         public async Task RegistryManager_ExportDevices(StorageAuthenticationType storageAuthenticationType)
         {
-            // Remove after removal of environment variable
-            if (storageAuthenticationType == StorageAuthenticationType.IdentityBased
-                && Environment.GetEnvironmentVariable("EnableStorageIdentity") != "1")
-            {
-                return;
-            }
-
             // arrange
 
             StorageContainer storageContainer = null;
