@@ -4,6 +4,7 @@ using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using PnpHelpers;
 
 namespace Thermostat
 {
@@ -59,8 +60,11 @@ namespace Thermostat
         private static async Task InvokeMethodAsync()
         {
             var methodInvocation = new CloudToDeviceMethod(MethodName) { ResponseTimeout = TimeSpan.FromSeconds(30) };
-            var payload = "{\"since\":" + JsonConvert.SerializeObject(dateTime) + "}";
-            methodInvocation.SetPayloadJson(payload);
+
+            // Set Method Payload    
+            var componentMethodPayload = PnpHelper.CreatePnpCommandRequestPayload(JsonConvert.SerializeObject(dateTime));
+            methodInvocation.SetPayloadJson(componentMethodPayload);
+
             CloudToDeviceMethodResult result = await s_serviceClient.InvokeDeviceMethodAsync(s_deviceId, methodInvocation);
 
             if(result == null)
