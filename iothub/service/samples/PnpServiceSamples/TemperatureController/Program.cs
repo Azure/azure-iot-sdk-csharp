@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PnpHelpers;
 
-namespace Thermostat
+namespace TemperatureController
 {
     public class Program
     {
@@ -14,14 +14,15 @@ namespace Thermostat
         private static readonly string s_hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
         private static readonly string s_deviceId = Environment.GetEnvironmentVariable("DEVICE_ID");
 
-        // These are values as defined in DTMI used for PnP no Component device client sample.
-        // DTDL interface used: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/samples/Thermostat.json
+        // These are values as defined in DTMI used for device client sample with component.
+        // DTDL interface used: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/samples/TemperatureController.json
+        private const string ComponentName = "thermostat1";
 
         // Writable property to update
         private const string PropertyName = "targetTemperature";
         private const double PropertyValue = 60;
 
-        // Method on a given component
+        // Method on a specified component
         private const string MethodName = "getMaxMinReport";
         private static readonly DateTime dateTime = DateTime.Now;
 
@@ -50,16 +51,18 @@ namespace Thermostat
             s_logger.LogDebug($"Initialize the service client.");
             InitializeServiceClient();
 
-            s_logger.LogDebug($"Get Twin model Id and Update Twin");
+            s_logger.LogDebug($"Get model Id and Update Component Property");
             await GetAndUpdateTwinAsync();
 
-            s_logger.LogDebug($"Invoke a method");
+            s_logger.LogDebug($"Invoke a method on a Component");
             await InvokeMethodAsync();
         }
 
         private static async Task InvokeMethodAsync()
         {
-            var methodInvocation = new CloudToDeviceMethod(MethodName) { ResponseTimeout = TimeSpan.FromSeconds(30) };
+            // Create method name to invoke for component
+            string methodToInvoke = PnpHelper.CreatePnpCommandName(MethodName, ComponentName);
+            var methodInvocation = new CloudToDeviceMethod(methodToInvoke) { ResponseTimeout = TimeSpan.FromSeconds(30) };
 
             // Set Method Payload    
             var componentMethodPayload = PnpHelper.CreatePnpCommandRequestPayload(JsonConvert.SerializeObject(dateTime));
@@ -67,7 +70,7 @@ namespace Thermostat
 
             CloudToDeviceMethodResult result = await s_serviceClient.InvokeDeviceMethodAsync(s_deviceId, methodInvocation);
 
-            if(result == null)
+            if (result == null)
             {
                 throw new Exception($"Method {MethodName} invovation returned null");
             }
@@ -79,11 +82,12 @@ namespace Thermostat
         {
             // Get a Twin and retrieves model Id set by Device client
             Twin twin = await s_registryManager.GetTwinAsync(s_deviceId);
-            s_logger.LogDebug("Model Id of this Twin is: " + twin.ModelId);
+            Console.WriteLine("Model Id of this Twin is: " + twin.ModelId);
 
             // Update the twin
-            Twin twinPatch = new Twin();
-            twinPatch.Properties.Desired[PropertyName] = PropertyValue;
+            string propertyUpdate = PnpHelper.CreatePropertyPatch(PropertyName, JsonConvert.SerializeObject(PropertyValue), ComponentName);
+            string twinPatch = $"{{ \"properties\": {{\"desired\": {propertyUpdate} }} }}";
+
             await s_registryManager.UpdateTwinAsync(s_deviceId, twinPatch, twin.ETag);
         }
 
