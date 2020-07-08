@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace PnpHelpers
@@ -49,7 +50,7 @@ namespace PnpHelpers
         /// <param name="propertyName">The property name, as defined in the DTDL interface.</param>
         /// <param name="serializedPropertyValue">The serialized property value, in the format defined in the DTDL interface.</param>
         /// <param name="componentName">(optional) The name of the component in which the property is defined. Can be null for property defined under the root interface.</param>
-        /// <returns>The property path for read-only and read-write property updates.</returns>
+        /// <returns>The property patch for read-only and read-write property updates.</returns>
         public static string CreatePropertyPatch(string propertyName, string serializedPropertyValue, string componentName = default)
         {
             return string.IsNullOrWhiteSpace(componentName)
@@ -128,7 +129,7 @@ namespace PnpHelpers
             {
                 return collection.Contains(propertyName) ? (true, (T)collection[propertyName]) : (false, default);
             }
-            
+
             if (collection.Contains(componentName))
             {
                 JObject componentProperty = collection[componentName];
@@ -175,7 +176,7 @@ namespace PnpHelpers
         /// <returns>The plug and play command request value.</returns>
         public static T GetPnpCommandRequestValue<T>(string jsonPayload)
         {
-            return JObject.Parse(jsonPayload).SelectToken("commandRequest.value").Value<T>();
+            return JsonConvert.DeserializeObject<T>(jsonPayload);
         }
 
         /// <summary>
