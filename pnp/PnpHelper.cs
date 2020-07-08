@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace PnpHelpers
@@ -152,8 +151,6 @@ namespace PnpHelpers
         }
 
         /// <summary>
-<<<<<<< HEAD
-=======
         /// Create a plug and play compatible command payload.
         /// </summary>
         /// <param name="serializedPayload">The serialized payload, in the format defined in the DTDL interface.</param>
@@ -181,7 +178,6 @@ namespace PnpHelpers
         }
 
         /// <summary>
->>>>>>> 740e95d4... refactor(samples): Refactor pnp device samples based on updated command request format (#1440)
         /// Helper to remove extra whitespace from the supplied string.
         /// </summary>
         /// <param name="input">The string to be formatted.</param>
