@@ -131,7 +131,7 @@ namespace Thermostat
                     await Task.Delay(6 * 1000);
                 }
 
-                string jsonProperty = $"{{ \"{propertyName}\": {{ \"value\": {s_temperature}, \"ac\": {(int) StatusCode.Completed}, \"av\": {desiredProperties.Version}, \"ad\": \"Successfully updated target temperature\" }} }}";
+                string jsonProperty = $"{{ \"{propertyName}\": {{ \"value\": {s_temperature}, \"ac\": {(int)StatusCode.Completed}, \"av\": {desiredProperties.Version}, \"ad\": \"Successfully updated target temperature\" }} }}";
                 var reportedProperty = new TwinCollection(jsonProperty);
                 await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
                 s_logger.LogDebug($"Property: Update - {{\"{propertyName}\": {s_temperature}°C }} is {StatusCode.Completed}.");
@@ -185,7 +185,7 @@ namespace Thermostat
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the specified time to the current time.
         private static async Task<MethodResponse> HandleMaxMinReportCommandAsync(MethodRequest request, object userContext)
         {
-            DateTime since = JObject.Parse(request.DataAsJson).SelectToken("commandRequest.value").Value<DateTime>();
+            DateTime since = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
             var sinceInDateTimeOffset = new DateTimeOffset(since);
             s_logger.LogDebug($"Command: Received - Generating max, min and avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
 
