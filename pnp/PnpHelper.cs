@@ -3,8 +3,7 @@
 
 using System.Linq;
 using System.Text;
-using Microsoft.Azure.Devices;
-using Microsoft.Azure.Devices;
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json.Linq;
 
