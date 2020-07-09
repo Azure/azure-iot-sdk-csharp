@@ -25,6 +25,7 @@ namespace TemperatureController
     {
         // DTDL interface used: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/samples/TemperatureController.json
         private const string ModelId = "dtmi:com:example:TemperatureController;1";
+
         private const string Thermostat1 = "thermostat1";
         private const string Thermostat2 = "thermostat2";
         private const string SerialNumber = "SR-123456";
@@ -49,7 +50,6 @@ namespace TemperatureController
 
         // Dictionary to hold the max temperature since last reboot, for each "Thermostat" component.
         private static readonly Dictionary<string, double> s_maxTemp = new Dictionary<string, double>();
-
 
         public static async Task Main(string[] _)
         {
@@ -203,7 +203,7 @@ namespace TemperatureController
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
         private static async Task<MethodResponse> HandleRebootCommandAsync(MethodRequest request, object userContext)
         {
-            int delay = PnpHelper.GetPnpCommandRequestValue<int>(request.DataAsJson);
+            int delay = JsonConvert.DeserializeObject<int>(request.DataAsJson);
 
             s_logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
             await Task.Delay(delay * 1000);
@@ -213,14 +213,14 @@ namespace TemperatureController
 
             s_temperatureReadings.Clear();
 
-            return new MethodResponse((int) StatusCode.Completed);
+            return new MethodResponse((int)StatusCode.Completed);
         }
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the specified time to the current time.
         private static async Task<MethodResponse> HandleMaxMinReportCommandAsync(MethodRequest request, object userContext)
         {
             string componentName = (string)userContext;
-            DateTime since = PnpHelper.GetPnpCommandRequestValue<DateTime>(request.DataAsJson);
+            DateTime since = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
             var sinceInDateTimeOffset = new DateTimeOffset(since);
 
             if (s_temperatureReadings.ContainsKey(componentName))
@@ -260,7 +260,7 @@ namespace TemperatureController
         {
             bool callbackNotInvoked = true;
 
-            foreach(KeyValuePair<string, object> propertyUpdate in desiredProperties)
+            foreach (KeyValuePair<string, object> propertyUpdate in desiredProperties)
             {
                 string componentName = propertyUpdate.Key;
                 if (s_desiredPropertyUpdateCallbacks.ContainsKey(componentName))
@@ -293,7 +293,7 @@ namespace TemperatureController
                 string pendingPropertyPatch = PnpHelper.CreatePropertyEmbeddedValuePatch(
                     propertyName,
                     JsonConvert.SerializeObject(targetTemperature),
-                    ackCode: (int) StatusCode.InProgress,
+                    ackCode: (int)StatusCode.InProgress,
                     ackVersion: desiredProperties.Version,
                     componentName: componentName);
 
@@ -312,7 +312,7 @@ namespace TemperatureController
                 string completedPropertyPatch = PnpHelper.CreatePropertyEmbeddedValuePatch(
                     propertyName,
                     JsonConvert.SerializeObject(s_temperature[componentName]),
-                    ackCode: (int) StatusCode.Completed,
+                    ackCode: (int)StatusCode.Completed,
                     ackVersion: desiredProperties.Version,
                     serializedAckDescription: JsonConvert.SerializeObject("Successfully updated target temperature"),
                     componentName: componentName);

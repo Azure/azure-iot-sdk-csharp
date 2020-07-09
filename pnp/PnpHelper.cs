@@ -49,7 +49,7 @@ namespace PnpHelpers
         /// <param name="propertyName">The property name, as defined in the DTDL interface.</param>
         /// <param name="serializedPropertyValue">The serialized property value, in the format defined in the DTDL interface.</param>
         /// <param name="componentName">(optional) The name of the component in which the property is defined. Can be null for property defined under the root interface.</param>
-        /// <returns>The property path for read-only and read-write property updates.</returns>
+        /// <returns>The property patch for read-only and read-write property updates.</returns>
         public static string CreatePropertyPatch(string propertyName, string serializedPropertyValue, string componentName = default)
         {
             return string.IsNullOrWhiteSpace(componentName)
@@ -128,7 +128,7 @@ namespace PnpHelpers
             {
                 return collection.Contains(propertyName) ? (true, (T)collection[propertyName]) : (false, default);
             }
-            
+
             if (collection.Contains(componentName))
             {
                 JObject componentProperty = collection[componentName];
@@ -149,33 +149,6 @@ namespace PnpHelpers
         public static string CreatePnpCommandName(string commandName, string componentName = default)
         {
             return string.IsNullOrWhiteSpace(componentName) ? commandName : $"{componentName}*{commandName}";
-        }
-
-        /// <summary>
-        /// Create a plug and play compatible command payload.
-        /// </summary>
-        /// <param name="serializedPayload">The serialized payload, in the format defined in the DTDL interface.</param>
-        /// <returns>A plug and play compatible command payload.</returns>
-        public static string CreatePnpCommandRequestPayload(string serializedPayload)
-        {
-            return
-                $"{{ " +
-                $"  \"commandRequest\": " +
-                $"      {{ " +
-                $"          \"value\": {serializedPayload} " +
-                $"      }} " +
-                $"}}";
-        }
-
-        /// <summary>
-        /// Helper to retrieve the command request value from a plug and play compatible command invocation request received.
-        /// </summary>
-        /// <typeparam name="T">The data type of the command request payload, as defined in the DTDL interface.</typeparam>
-        /// <param name="jsonPayload">The command payload in json format.</param>
-        /// <returns>The plug and play command request value.</returns>
-        public static T GetPnpCommandRequestValue<T>(string jsonPayload)
-        {
-            return JObject.Parse(jsonPayload).SelectToken("commandRequest.value").Value<T>();
         }
 
         /// <summary>
