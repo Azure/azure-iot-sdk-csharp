@@ -22,7 +22,7 @@ In order to run the device samples on Linux or Windows, you will first need the 
 Find development setup and prerequistes [here][lnk-prereq].
 
 ### Get and run the samples
-You need to first clone the repository or download the sample project folder on your machine.
+You need to first clone the repository or download the sample project folder to your machine.
 
 ### Plug and Play Samples
 
