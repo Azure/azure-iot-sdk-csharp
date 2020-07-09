@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace PnpHelpers
@@ -149,6 +150,33 @@ namespace PnpHelpers
         public static string CreatePnpCommandName(string commandName, string componentName = default)
         {
             return string.IsNullOrWhiteSpace(componentName) ? commandName : $"{componentName}*{commandName}";
+        }
+
+        /// <summary>
+        /// Create a plug and play compatible command payload.
+        /// </summary>
+        /// <param name="serializedPayload">The serialized payload, in the format defined in the DTDL interface.</param>
+        /// <returns>A plug and play compatible command payload.</returns>
+        public static string CreatePnpCommandRequestPayload(string serializedPayload)
+        {
+            return
+                $"{{ " +
+                $"  \"commandRequest\": " +
+                $"      {{ " +
+                $"          \"value\": {serializedPayload} " +
+                $"      }} " +
+                $"}}";
+        }
+
+        /// <summary>
+        /// Helper to retrieve the command request value from a plug and play compatible command invocation request received.
+        /// </summary>
+        /// <typeparam name="T">The data type of the command request payload, as defined in the DTDL interface.</typeparam>
+        /// <param name="jsonPayload">The command payload in json format.</param>
+        /// <returns>The plug and play command request value.</returns>
+        public static T GetPnpCommandRequestValue<T>(string jsonPayload)
+        {
+            return JsonConvert.DeserializeObject<T>(jsonPayload);
         }
 
         /// <summary>

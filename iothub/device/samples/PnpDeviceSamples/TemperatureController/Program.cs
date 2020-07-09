@@ -203,7 +203,7 @@ namespace TemperatureController
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
         private static async Task<MethodResponse> HandleRebootCommandAsync(MethodRequest request, object userContext)
         {
-            int delay = JsonConvert.DeserializeObject<int>(request.DataAsJson);
+            int delay = PnpHelper.GetPnpCommandRequestValue<int>(request.DataAsJson);
 
             s_logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
             await Task.Delay(delay * 1000);
@@ -220,7 +220,7 @@ namespace TemperatureController
         private static async Task<MethodResponse> HandleMaxMinReportCommandAsync(MethodRequest request, object userContext)
         {
             string componentName = (string)userContext;
-            DateTime since = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
+            DateTime since = PnpHelper.GetPnpCommandRequestValue<DateTime>(request.DataAsJson);
             var sinceInDateTimeOffset = new DateTimeOffset(since);
 
             if (s_temperatureReadings.ContainsKey(componentName))
