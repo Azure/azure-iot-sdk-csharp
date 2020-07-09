@@ -4,6 +4,10 @@
     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.2</TargetFrameworks>
     <IsPackable>false</IsPackable>
+
+    <!-- Disabling this test project because we don't need to run it -->
+    <IsTestProject>false</IsTestProject>
+
     <RootNamespace>Microsoft.Azure.Devices.DigitalTwin.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.DigitalTwin.E2ETests</AssemblyName>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
@@ -25,8 +29,8 @@
     <ProjectReference Include="$(RootDir)\digitaltwin\device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj" />
     <ProjectReference Include="$(RootDir)\digitaltwin\service\src\Microsoft.Azure.Devices.DigitalTwin.Service.csproj" />
   </ItemGroup>
-  
-   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
+
+  <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
     <PackageReference Include="Microsoft.Azure.Devices.DigitalTwin.Client" Version="1.0.0-preview-*" />
     <PackageReference Include="Microsoft.Azure.Devices.DigitalTwin.Service" Version="1.0.0-preview-*" />
   </ItemGroup>
