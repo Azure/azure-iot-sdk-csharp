@@ -10,13 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(MSBuildProjectDirectory)\..\..\..\..\..\pnp\PnpHelper.cs">
-      <Link>Common\PnpHelper.cs</Link>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
-
 </Project>
