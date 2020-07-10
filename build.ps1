@@ -71,7 +71,8 @@ Param(
     [string] $framework = "*",
     [switch] $skipIotHubTests,
     [switch] $skipDPSTests,
-    [switch] $skipPnPTests
+    [switch] $skipPnPTests,
+    [switch] $noBuildBeforeTesting
 )
 
 Function CheckSignTools()
@@ -164,7 +165,12 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     Write-Host
     Write-Host -ForegroundColor Cyan $label
 
-    $runTestCmd = "dotnet test -s test.runsettings --verbosity $verbosity --configuration $configuration --no-build --logger trx"
+    $runTestCmd = "dotnet test -s test.runsettings --verbosity $verbosity --configuration $configuration --logger trx"
+
+    if ($noBuildBeforeTesting)
+    {
+        $runTestCmd += " --no-build"
+    }
     if ($filterTestCategory -ne "*")
     {
         $runTestCmd += " --filter '$filterTestCategory'"
@@ -321,12 +327,8 @@ try
             throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
         }
 
-        # Clear the NuGet cache and the old packages.
-        dotnet nuget locals --clear all
-        Remove-Item $env:AZURE_IOT_LOCALPACKAGES\*.*
-
-        # Copy new packages.
-        Copy-Item (Join-Path $rootDir "bin\pkg\*.*") $env:AZURE_IOT_LOCALPACKAGES
+        Write-Host Following local packages found:
+        Get-ChildItem -Path $env:AZURE_IOT_LOCALPACKAGES
     }
 
     if ($e2etests)
