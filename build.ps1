@@ -327,12 +327,8 @@ try
             throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
         }
 
-        # Clear the NuGet cache and the old packages.
-        dotnet nuget locals --clear all
-        Remove-Item $env:AZURE_IOT_LOCALPACKAGES\*.*
-
-        # Copy new packages.
-        Copy-Item (Join-Path $rootDir "bin\pkg\*.*") $env:AZURE_IOT_LOCALPACKAGES
+        Write-Host Following local packages found:
+        Get-ChildItem -Path $env:AZURE_IOT_LOCALPACKAGES
     }
 
     if ($e2etests)

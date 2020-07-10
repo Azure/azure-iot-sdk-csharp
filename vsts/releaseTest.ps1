@@ -11,20 +11,15 @@ if (isWindows)
 	logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
 	logman start IotTrace
 }
-else
-{
-	Write-Host Install nuget CLI for Linux
-	sudo apt install nuget
-}
 
 Write-Host List active docker containers
 docker ps -a
 
 Write-Host Add DevOps artifacts location as local NuGet source
-nuget sources Add -Name "LocalPackages" -Source $env:AZURE_IOT_LOCALPACKAGES
+dotnet nuget add source $env:AZURE_IOT_LOCALPACKAGES -n "LocalPackages"
 
 Write-Host List all NuGet sources
-nuget sources List
+dotnet nuget list source
 
 $runTestCmd = ".\build.ps1 -build -clean -configuration RELEASE -framework $env:FRAMEWORK -e2etests"
 
