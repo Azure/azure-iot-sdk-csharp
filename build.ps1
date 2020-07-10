@@ -71,7 +71,8 @@ Param(
     [string] $framework = "*",
     [switch] $skipIotHubTests,
     [switch] $skipDPSTests,
-    [switch] $skipPnPTests
+    [switch] $skipPnPTests,
+    [switch] $noBuildBeforeTesting
 )
 
 Function CheckSignTools()
@@ -164,7 +165,12 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     Write-Host
     Write-Host -ForegroundColor Cyan $label
 
-    $runTestCmd = "dotnet test -s test.runsettings --verbosity $verbosity --configuration $configuration --no-build --logger trx"
+    $runTestCmd = "dotnet test -s test.runsettings --verbosity $verbosity --configuration $configuration --logger trx"
+
+    if ($noBuildBeforeTesting)
+    {
+        $runTestCmd += "--no-build"
+    }
     if ($filterTestCategory -ne "*")
     {
         $runTestCmd += " --filter '$filterTestCategory'"
