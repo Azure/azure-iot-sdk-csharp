@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <Compile Include="$(RootDir)\iothub\device\samples\pnp\PnpHelper.cs">
+    <Compile Include="$(RootDir)\iothub\device\samples\pnp\PnpHelper.cs">
       <Link>Common\PnpHelper.cs</Link>
     </Compile>
   </ItemGroup>
