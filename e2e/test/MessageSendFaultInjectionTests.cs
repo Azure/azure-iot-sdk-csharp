@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("FaultInjection")]
     public partial class MessageSendFaultInjectionTests : IDisposable
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
+        private readonly string _devicePrefix = $"{nameof(MessageSendFaultInjectionTests)}_";
 
 #pragma warning disable CA1823
         private static TestLogging _log = TestLogging.GetInstance();

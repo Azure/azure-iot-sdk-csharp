@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class CombinedClientOperationsPoolAmqpTests : IDisposable
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";
-        private readonly string _devicePrefix = $"E2E_{nameof(CombinedClientOperationsPoolAmqpTests)}_";
+        private readonly string _devicePrefix = $"{nameof(CombinedClientOperationsPoolAmqpTests)}_";
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
         private static readonly TestLogging s_log = TestLogging.GetInstance();
 

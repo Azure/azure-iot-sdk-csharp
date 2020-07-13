@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class MethodE2EPoolAmqpTests : IDisposable
     {
         private const string MethodName = "MethodE2EPoolAmqpTests";
-        private readonly string _devicePrefix = $"E2E_{nameof(MethodE2EPoolAmqpTests)}_";
+        private readonly string _devicePrefix = $"{nameof(MethodE2EPoolAmqpTests)}_";
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
         private static readonly TestLogging s_log = TestLogging.GetInstance();
 

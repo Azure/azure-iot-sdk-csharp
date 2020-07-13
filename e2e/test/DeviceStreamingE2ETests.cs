@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public partial class DeviceStreamingTests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(DeviceStreamingTests)}_";
-        private readonly string ModulePrefix = $"E2E_{nameof(DeviceStreamingTests)}_";
+        private readonly string DevicePrefix = $"{nameof(DeviceStreamingTests)}_";
+        private readonly string ModulePrefix = $"{nameof(DeviceStreamingTests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
 

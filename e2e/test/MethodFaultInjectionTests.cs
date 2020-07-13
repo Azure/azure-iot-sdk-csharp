@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("FaultInjection")]
     public class MethodFaultInjectionTests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(MethodFaultInjectionTests)}_";
+        private readonly string DevicePrefix = $"{nameof(MethodFaultInjectionTests)}_";
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";

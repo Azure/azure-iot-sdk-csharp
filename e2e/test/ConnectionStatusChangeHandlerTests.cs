@@ -14,8 +14,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class ConnectionStatusChangeHandlerTests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}_Device";
-        private readonly string ModulePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}";
+        private readonly string DevicePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}_Device";
+        private readonly string ModulePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}";
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;

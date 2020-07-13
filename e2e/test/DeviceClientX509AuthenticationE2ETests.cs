@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class DeviceClientX509AuthenticationE2ETests : IDisposable
     {
-        private static readonly string s_devicePrefix = $"E2E_{nameof(DeviceClientX509AuthenticationE2ETests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(DeviceClientX509AuthenticationE2ETests)}_";
 
         private readonly ConsoleEventListener _listener;
         private readonly string _hostName;

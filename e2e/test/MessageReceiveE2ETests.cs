@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("LongRunning")]
     public partial class MessageReceiveE2ETests : IDisposable
     {
-        private static readonly string s_devicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(MessageReceiveE2ETests)}_";
 
         private static readonly TestLogging s_log = TestLogging.GetInstance();
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class NoRetryE2ETests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(NoRetryE2ETests)}_";
+        private readonly string DevicePrefix = $"{nameof(NoRetryE2ETests)}_";
         private static TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
