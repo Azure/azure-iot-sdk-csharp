@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class FaultInjectionPoolAmqpTests
     {
-        private const string MethodDevicePrefix = "E2E_MethodFaultInjectionPoolAmqpTests";
+        private const string MethodDevicePrefix = "MethodFaultInjectionPoolAmqpTests";
         private const string MethodName = "MethodE2EFaultInjectionPoolAmqpTests";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.

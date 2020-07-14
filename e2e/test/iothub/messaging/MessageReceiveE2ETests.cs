@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("LongRunning")]
     public partial class MessageReceiveE2ETests : E2EMsTestBase
     {
-        private static readonly string s_devicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(MessageReceiveE2ETests)}_";
 
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_oneSecond = TimeSpan.FromSeconds(1);

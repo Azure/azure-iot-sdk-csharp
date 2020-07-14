@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("FaultInjection")]
     public partial class MessageReceiveFaultInjectionTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveFaultInjectionTests)}_";
+        private readonly string DevicePrefix = $"{nameof(MessageReceiveFaultInjectionTests)}_";
 
         [LoggedTestMethod]
         public async Task Message_TcpConnectionLossReceiveRecovery_Amqp()
