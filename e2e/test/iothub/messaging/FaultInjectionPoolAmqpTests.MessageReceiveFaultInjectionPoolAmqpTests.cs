@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class FaultInjectionPoolAmqpTests
     {
-        private readonly string MessageReceive_DevicePrefix = $"E2E_MessageReceiveFaultInjectionPoolAmqpTests";
+        private readonly string MessageReceive_DevicePrefix = $"MessageReceiveFaultInjectionPoolAmqpTests";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
