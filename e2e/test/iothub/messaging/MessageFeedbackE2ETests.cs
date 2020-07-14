@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private const int MESSAGE_COUNT = 5;
 
-        private static readonly string s_devicePrefix = $"E2E_{nameof(MessageFeedbackE2ETests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(MessageFeedbackE2ETests)}_";
         private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
 

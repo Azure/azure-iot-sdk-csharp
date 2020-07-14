@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     [TestCategory("IoTHub")]
     public class BulkOperationsE2ETests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(BulkOperationsE2ETests)}_";
-        private readonly string ModulePrefix = $"E2E_{nameof(BulkOperationsE2ETests)}_";
+        private readonly string DevicePrefix = $"{nameof(BulkOperationsE2ETests)}_";
+        private readonly string ModulePrefix = $"{nameof(BulkOperationsE2ETests)}_";
 
         [LoggedTestMethod]
         public async Task BulkOperations_UpdateTwins2Device_Ok()

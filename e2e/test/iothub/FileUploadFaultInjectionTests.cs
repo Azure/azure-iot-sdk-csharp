@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("FaultInjection")]
     public class FileUploadFaultInjectionTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(FileUploadFaultInjectionTests)}_";
+        private readonly string DevicePrefix = $"{nameof(FileUploadFaultInjectionTests)}_";
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 
