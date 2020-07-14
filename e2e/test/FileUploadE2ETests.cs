@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class FileUploadE2ETests : IDisposable
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(FileUploadE2ETests)}_";
+        private readonly string _devicePrefix = $"{nameof(FileUploadE2ETests)}_";
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 

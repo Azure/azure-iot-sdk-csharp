@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class FaultInjectionPoolAmqpTests : IDisposable
     {
-        private readonly string Twin_DevicePrefix = $"E2E_TwinFaultInjectionPoolAmqpTests";
+        private readonly string Twin_DevicePrefix = $"TwinFaultInjectionPoolAmqpTests";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]

@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
         {
-            string deviceName = prefix + Guid.NewGuid();
+            string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
             // Delete existing devices named this way and create a new one.
             using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);

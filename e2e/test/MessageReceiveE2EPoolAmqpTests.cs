@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class MessageReceiveE2EPoolAmqpTests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2EPoolAmqpTests)}_";
+        private readonly string DevicePrefix = $"{nameof(MessageReceiveE2EPoolAmqpTests)}_";
         private readonly ConsoleEventListener _listener;
         private static TestLogging _log = TestLogging.GetInstance();
 

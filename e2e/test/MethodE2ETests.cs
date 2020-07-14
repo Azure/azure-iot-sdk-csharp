@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         public const string ServiceRequestJson = "{\"a\":123}";
 
-        private readonly string _devicePrefix = $"E2E_{nameof(MethodE2ETests)}_";
+        private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_";
         private const string MethodName = "MethodE2ETest";
         private static readonly TestLogging s_log = TestLogging.GetInstance();
 

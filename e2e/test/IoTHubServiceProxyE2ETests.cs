@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("Proxy")]
     public class IoTHubServiceProxyE2ETests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(IoTHubServiceProxyE2ETests)}_";
+        private readonly string DevicePrefix = $"{nameof(IoTHubServiceProxyE2ETests)}_";
         private const string JobDeviceId = "JobsSample_Device";
         private const string JobTestTagName = "JobsSample_Tag";
         private static string s_connectionString = Configuration.IoTHub.ConnectionString;

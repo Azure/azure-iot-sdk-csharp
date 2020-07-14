@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class FaultInjectionPoolAmqpTests : IDisposable
     {
-        private const string MethodDevicePrefix = "E2E_MethodFaultInjectionPoolAmqpTests";
+        private const string MethodDevicePrefix = "MethodFaultInjectionPoolAmqpTests";
         private const string MethodName = "MethodE2EFaultInjectionPoolAmqpTests";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_AmqpConn,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_AmqpConn,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_AmqpConn,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_AmqpConn,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_AmqpSess,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_AmqpSess,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_AmqpSess,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_AmqpSess,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_AmqpMethodReq,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_AmqpMethodReq,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_AmqpMethodReq,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_AmqpMethodReq,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_AmqpMethodResp,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_AmqpMethodResp,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_AmqpMethodResp,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -354,7 +354,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_AmqpMethodResp,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -370,7 +370,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -400,7 +400,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -429,7 +429,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -444,7 +444,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     authScope: ConnectionStringAuthScope.IoTHub)
-				.ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         [TestMethod]

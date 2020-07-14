@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false);
 
             string deviceName = testDevice.Id;
-            string moduleName = moduleNamePrefix + Guid.NewGuid();
+            string moduleName = "E2E_" + moduleNamePrefix + Guid.NewGuid();
 
             using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             log.WriteLine($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");

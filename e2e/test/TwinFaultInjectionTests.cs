@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class TwinFaultInjectionTests : IDisposable
     {
-        private static readonly string s_devicePrefix = $"E2E_{nameof(TwinFaultInjectionTests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(TwinFaultInjectionTests)}_";
         private static readonly TestLogging s_log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
