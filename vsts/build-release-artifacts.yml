@@ -1,9 +1,10 @@
 # update .csproj file versions and create a release branch/commit
 name: BumpVersion_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
 
-phases:
+jobs:
 
-- phase: Phase_1
+- job: Phase_1
+  timeoutInMinutes: 120
   steps:
   - task: EsrpClientTool@1
   - task: DownloadBuildArtifacts@0
