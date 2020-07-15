@@ -30,14 +30,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public static readonly AmqpSymbol PartitionNotFound = AmqpIoTConstants.Vendor + ":partition-not-found";
         public static readonly AmqpSymbol IotHubSuspended = AmqpIoTConstants.Vendor + ":iot-hub-suspended";
 
-        public static readonly AmqpSymbol TrackingId = AmqpIoTConstants.Vendor + ":tracking-id";
-        public static readonly AmqpSymbol ClientVersion = AmqpIoTConstants.Vendor + ":client-version";
-        public static readonly AmqpSymbol ApiVersion = AmqpIoTConstants.Vendor + ":api-version";
-        public static readonly AmqpSymbol ChannelCorrelationId = AmqpIoTConstants.Vendor + ":channel-correlation-id";
-        public static readonly AmqpSymbol AuthChain = AmqpIoTConstants.Vendor + ":auth-chain";
-
-        private const int MaxSizeInInfoMap = 32 * 1024;
-
         public static Exception GetExceptionFromOutcome(Outcome outcome)
         {
             Exception retException = null;
@@ -205,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             string message = error.Description;
 
             string trackingId = null;
-            if (error.Info != null && error.Info.TryGetValue(TrackingId, out trackingId))
+            if (error.Info != null && error.Info.TryGetValue(AmqpIoTConstants.TrackingId, out trackingId))
             {
                 message = "{0}{1}{2}".FormatInvariant(message, Environment.NewLine, "Tracking Id:" + trackingId);
             }

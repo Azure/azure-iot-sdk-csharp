@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
@@ -38,6 +39,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         internal const string MethodName = "IoThub-methodname";
         internal const string Status = "IoThub-status";
+
+        public static readonly AmqpSymbol TrackingId = Vendor + ":tracking-id";
+        public static readonly AmqpSymbol ClientVersion = Vendor + ":client-version";
+        public static readonly AmqpSymbol ApiVersion = Vendor + ":api-version";
+        public static readonly AmqpSymbol ChannelCorrelationId = Vendor + ":channel-correlation-id";
+        public static readonly AmqpSymbol AuthChain = Vendor + ":auth-chain";
+        public static readonly AmqpSymbol ModelId = Vendor + ":model-id";
 
         internal const string IotHubSasTokenType = CbsConstants.IotHubSasTokenType;
     }
