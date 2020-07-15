@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Samples
                     string deviceId = twinResult.DeviceId;
                     foreach (string prefix in _deleteDeviceWithPrefix)
                     {
-                        if (deviceId.StartsWith(prefix))
+                        if (deviceId.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                         {
                             _devicesToDelete.Add(new Device(deviceId));
                         }
