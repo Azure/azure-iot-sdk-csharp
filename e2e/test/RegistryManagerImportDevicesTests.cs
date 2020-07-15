@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private const string ImportFileNameDefault = "devices.txt";
         private const int MaxIterationWait = 30;
-        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
         private static readonly IReadOnlyList<JobStatus> s_incompleteJobs = new[]
         {
@@ -100,23 +100,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
                     catch (JobQuotaExceededException) when (++tryCount < MaxIterationWait)
                     {
-                        // Cancel any jobs submitted by previous runs and are still running.
-                        IEnumerable<JobProperties> jobs = await registryManager.GetJobsAsync().ConfigureAwait(false);
-                        foreach (var job in jobs)
-                        {
-                            if (job.Status == JobStatus.Running)
-                            {
-                                try
-                                {
-                                    _log.WriteLine($"JobQuotaExceededException... Canceling existing running jobs.");
-                                    await registryManager.CancelJobAsync(job.JobId).ConfigureAwait(false);
-                                }
-                                catch
-                                {
-                                    // Do nothing. Best effort cancellation only.
-                                }
-                            }
-                        }
                         _log.WriteLine($"JobQuotaExceededException... waiting.");
                         await Task.Delay(s_waitDuration).ConfigureAwait(false);
                         continue;
