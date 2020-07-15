@@ -31,22 +31,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         public AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity, 
-            Func<MethodRequestInternal, Task> methodHandler, 
-            Action<Twin, string, TwinCollection> twinMessageListener, 
+            DeviceIdentity deviceIdentity,
+            Func<MethodRequestInternal, Task> methodHandler,
+            Action<Twin, string, TwinCollection> twinMessageListener,
             Func<string, Message, Task> eventListener,
             Action onUnitDisconnected)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
 
-            AmqpUnit amqpUnit = new AmqpUnit(
-                deviceIdentity, 
+            var amqpUnit = new AmqpUnit(
+                deviceIdentity,
                 this,
                 methodHandler,
-                twinMessageListener, 
+                twinMessageListener,
                 eventListener,
                 onUnitDisconnected);
-            lock(_unitsLock)
+            lock (_unitsLock)
             {
                 _amqpUnits.Add(amqpUnit);
             }

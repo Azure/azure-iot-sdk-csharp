@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _amqpConnectionPools = new Dictionary<string, IAmqpUnitManager>();
         }
+
         internal static AmqpUnitManager GetInstance()
         {
             return s_instance;
@@ -63,6 +64,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 return amqpConnectionPool;
             }
         }
-
     }
 }

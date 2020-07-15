@@ -203,11 +203,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             string deviceTemplate,
             string moduleTemplate,
             string linkSuffix,
-            string CorrelationId,
+            string correlationId,
             TimeSpan timeout
         )
         {
             if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
+
+            string serviceApiVersion = ClientApiVersionHelper.ApiVersionString;
 
             AmqpLinkSettings amqpLinkSettings = new AmqpLinkSettings
             {
@@ -220,21 +222,32 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             amqpLinkSettings.SndSettleMode = senderSettleMode;
             amqpLinkSettings.RcvSettleMode = receiverSettleMode;
             amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
-            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ClientVersion, deviceIdentity.ProductInfo.ToString());
-            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ApiVersion, ClientApiVersionHelper.ApiVersionString);
-            if (CorrelationId != null)
+            amqpLinkSettings.AddProperty(AmqpIoTConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
+
+            if (correlationId != null)
             {
-                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ChannelCorrelationId, CorrelationId);
+                amqpLinkSettings.AddProperty(AmqpIoTConstants.ChannelCorrelationId, correlationId);
             }
 
             if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
             {
-                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
+                amqpLinkSettings.AddProperty(AmqpIoTConstants.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
             }
+
+            // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
+            // the SDK will enable plug and play features by using the PnP-enabled service API version, and setting the modelId to Amqp link settings.
+            // For devices or modules that do not have the model Id set, the SDK will use the GA service API version.
+            if (!string.IsNullOrWhiteSpace(deviceIdentity.Options?.ModelId))
+            {
+                amqpLinkSettings.AddProperty(AmqpIoTConstants.ModelId, deviceIdentity.Options.ModelId);
+                serviceApiVersion = ClientApiVersionHelper.ApiVersionPreview;
+            }
+
+            amqpLinkSettings.AddProperty(AmqpIoTConstants.ApiVersion, serviceApiVersion);
 
             try
             {
-                SendingAmqpLink sendingLink = new SendingAmqpLink(amqpLinkSettings);
+                var sendingLink = new SendingAmqpLink(amqpLinkSettings);
                 sendingLink.AttachTo(amqpSession);
                 await sendingLink.OpenAsync(timeout).ConfigureAwait(false);
                 return new AmqpIoTSendingLink(sendingLink);
@@ -289,17 +302,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             amqpLinkSettings.SndSettleMode = senderSettleMode;
             amqpLinkSettings.RcvSettleMode = receiverSettleMode;
             amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
-            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ClientVersion, deviceIdentity.ProductInfo.ToString());
-            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ApiVersion, ClientApiVersionHelper.ApiVersionString);
+            amqpLinkSettings.AddProperty(AmqpIoTConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
+            amqpLinkSettings.AddProperty(AmqpIoTConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
 
             if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
             {
-                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
+                amqpLinkSettings.AddProperty(AmqpIoTConstants.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
             }
 
             if (correlationId != null)
             {
-                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ChannelCorrelationId, correlationId);
+                amqpLinkSettings.AddProperty(AmqpIoTConstants.ChannelCorrelationId, correlationId);
             }
 
             try

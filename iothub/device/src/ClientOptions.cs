@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         /// <summary>
         /// The digital twins model Id associated with the device or module client instance.
-        /// This feature is currently supported only over MQTT.
+        /// This feature is currently supported only over MQTT and AMQP.
         /// </summary>
         public string ModelId { get; set; }
 
