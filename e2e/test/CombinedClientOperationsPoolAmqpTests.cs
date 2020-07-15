@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class CombinedClientOperationsPoolAmqpTests : IDisposable
+    public class CombinedClientOperationsPoolAmqpTests : E2ETestBase, IDisposable
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";
         private readonly string _devicePrefix = $"E2E_{nameof(CombinedClientOperationsPoolAmqpTests)}_";
