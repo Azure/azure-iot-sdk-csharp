@@ -13,8 +13,8 @@ Due to security considerations, build logs are not publicly available.
 
 | Service Environment                                                   | Status |
 | ---                                                                   | ---    |
-| [Master](https://github.com/Azure/azure-iot-sdk-csharp/tree/master)   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-westus1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=44&_a=summary&repositoryFilter=9&branchFilter=23)|
-| [Preview](https://github.com/Azure/azure-iot-sdk-csharp/tree/preview) | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=43&_a=summary&repositoryFilter=9&branchFilter=72)|
+| [Master](https://github.com/Azure/azure-iot-sdk-csharp/tree/master)   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-westus1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=44&repositoryFilter=9&branchName=master)|
+| [Preview](https://github.com/Azure/azure-iot-sdk-csharp/tree/preview) | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=402&repositoryFilter=9&branchName=preview)|
 
 ### Recommended NuGet packages
 

@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private const string ExportFileNameDefault = "devices.txt";
         private const int MaxIterationWait = 30;
-        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(5);
 
         private static readonly char[] s_newlines = new char[]
         {
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     catch (JobQuotaExceededException) when (++tryCount < MaxIterationWait)
                     {
                         _log.WriteLine($"JobQuotaExceededException... waiting.");
-                        await Task.Delay(s_waitDuration).ConfigureAwait(false);
+                        await Task.Delay(_waitDuration).ConfigureAwait(false);
                         continue;
                     }
                 }
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // wait for job to complete
                 for (int i = 0; i < MaxIterationWait; ++i)
                 {
-                    await Task.Delay(s_waitDuration).ConfigureAwait(false);
+                    await Task.Delay(_waitDuration).ConfigureAwait(false);
                     exportJobResponse = await registryManager.GetJobAsync(exportJobResponse.JobId).ConfigureAwait(false);
                     _log.WriteLine($"Job {exportJobResponse.JobId} is {exportJobResponse.Status} with progress {exportJobResponse.Progress}%");
                     if (!s_incompleteJobs.Contains(exportJobResponse.Status))

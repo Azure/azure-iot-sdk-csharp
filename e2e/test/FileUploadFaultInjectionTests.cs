@@ -82,15 +82,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
 
-            await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
-
             using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
                 Task fileUploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
                 Task errorInjectionTask = SendErrorInjectionMessageAsync(deviceClient, faultType, reason, delayInSec, durationInSec);
                 await Task.WhenAll(fileUploadTask, errorInjectionTask).ConfigureAwait(false);
-
-                await FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id).ConfigureAwait(false);
             }
 
             try

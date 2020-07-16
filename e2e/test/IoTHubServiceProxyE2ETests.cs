@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,6 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string JobTestTagName = "JobsSample_Tag";
         private static string s_connectionString = Configuration.IoTHub.ConnectionString;
         private static string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private const int MaxIterationWait = 30;
+        private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(5);
 
 #pragma warning disable CA1823
         private static TestLogging _log = TestLogging.GetInstance();
@@ -89,17 +92,30 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task JobClient_ScheduleAndRunTwinJob(HttpTransportSettings httpTransportSettings)
         {
-            string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
-            string query = $"DeviceId IN ['{JobDeviceId}']";
-
             Twin twin = new Twin(JobDeviceId);
             twin.Tags = new TwinCollection();
             twin.Tags[JobTestTagName] = JobDeviceId;
 
             using (JobClient jobClient = JobClient.CreateFromConnectionString(s_connectionString, httpTransportSettings))
             {
-                JobResponse createJobResponse = await jobClient.ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
-                JobResponse jobResponse = await jobClient.GetJobAsync(jobId).ConfigureAwait(false);
+                int tryCount = 0;
+                while (true)
+                {
+                    try
+                    {
+                        string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
+                        string query = $"DeviceId IN ['{JobDeviceId}']";
+                        JobResponse createJobResponse = await jobClient.ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
+                        break;
+                    }
+                    // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
+                    catch (ThrottlingException) when (++tryCount < MaxIterationWait)
+                    {
+                        _log.WriteLine($"ThrottlingException... waiting.");
+                        await Task.Delay(_waitDuration).ConfigureAwait(false);
+                        continue;
+                    }
+                }
             }
         }
 
