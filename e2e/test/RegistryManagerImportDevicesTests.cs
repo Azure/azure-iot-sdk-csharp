@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private const string ImportFileNameDefault = "devices.txt";
         private const int MaxIterationWait = 30;
-        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
         private static readonly IReadOnlyList<JobStatus> s_incompleteJobs = new[]
         {

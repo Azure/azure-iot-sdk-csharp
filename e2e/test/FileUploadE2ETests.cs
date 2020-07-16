@@ -97,8 +97,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task UploadFileGranularAsync(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool x509auth = false)
         {
-            await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
-
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
                 _devicePrefix,
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
@@ -143,8 +141,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
-
-            await FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id).ConfigureAwait(false);
         }
 
         private async Task UploadFileAsync(Client.TransportType transport, string filename, bool x509auth = false)
@@ -166,8 +162,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
             }
 
-            await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
-
             using (deviceClient)
             {
                 using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
@@ -175,7 +169,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await deviceClient.UploadToBlobAsync(filename, fileStreamSource).ConfigureAwait(false);
                 }
 
-                await FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
