@@ -255,6 +255,16 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// The DTDL component name from where the telemetry message has originated.
+        /// This is relevant only for plug and play certified devices.
+        /// </summary>
+        public string ComponentName
+        {
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.ComponentName);
+            set => SystemProperties[MessageSystemPropertyNames.ComponentName] = value;
+        }
+
+        /// <summary>
         /// Gets the dictionary of user properties which are set when user send the data.
         /// </summary>
         public IDictionary<string, string> Properties { get; private set; }

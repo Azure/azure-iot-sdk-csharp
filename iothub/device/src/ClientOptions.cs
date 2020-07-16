@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     public class ClientOptions
     {
         /// <summary>
-        /// The digital twins model Id associated with the device or module client instance.
+        /// The DTDL model Id associated with the device or module client instance.
         /// This feature is currently supported only over MQTT and AMQP.
         /// </summary>
         public string ModelId { get; set; }

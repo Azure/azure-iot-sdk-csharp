@@ -295,9 +295,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(this.mqttTransportSettings.ClientCertificate != null);
                 }
 
-                // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id, 
+                // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
                 // the SDK will enable plug and play features by using the PnP-enabled service API version, and appending the model Id to the MQTT CONNECT packet (in the username).
-                // For devices or modules that do not have the model Id set, the SDK will use the GA service API version. 
+                // For devices or modules that do not have the model Id set, the SDK will use the GA service API version.
                 string serviceParams = null;
                 if (string.IsNullOrWhiteSpace(_options?.ModelId))
                 {
@@ -1032,6 +1032,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             public const string MqttDiagIdKey = "$.diagid";
             public const string MqttDiagCorrelationContextKey = "$.diagctx";
             public const string InterfaceId = "$.ifid";
+            public const string ComponentName = "$.sub";
         }
 
         private static readonly Dictionary<string, string> ToSystemPropertiesMap = new Dictionary<string, string>
@@ -1070,7 +1071,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
             {MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey},
             {MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey},
-            {MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId}
+            {MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId},
+            {MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName }
         };
 
         private static string ConvertFromSystemProperties(object systemProperty)

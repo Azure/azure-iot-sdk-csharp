@@ -249,6 +249,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.InterfaceId] = (string)propertyValue;
             }
 
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ComponentName, out propertyValue))
+            {
+                amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.ComponentName] = (string)propertyValue;
+            }
+
             if (copyUserProperties && data.Properties.Count > 0)
             {
                 foreach (var pair in data.Properties)
