@@ -33,10 +33,10 @@ namespace SimulatedDevice
     {
         private static DeviceClient s_deviceClient;
         private readonly static string s_myDeviceId = "Contoso-Test-Device";
-        private readonly static string s_iotHubUri = "{your hub name}.azure-devices.net";
+        private readonly static string s_iotHubUri = "ContosoTestHubdlxlud5h.azure-devices.net";
         // This is the primary key for the device. This is in the portal. 
         // Find your IoT hub in the portal > IoT devices > select your device > copy the key. 
-        private readonly static string s_deviceKey = "{your device key}";
+        private readonly static string s_deviceKey = "RClD0LGxZCYavagk8tS2M7L1MI5bcKcyR+tJHzj+gDk=";
 
         // If this is false, it will submit messages to the iot hub. 
         // If this is true, it will read one of the output files and convert it to ASCII.
