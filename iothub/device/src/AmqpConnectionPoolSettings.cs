@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The default size of the pool
         /// </summary>
         /// <remarks>
-        /// Allows up to 100,000 devices
+        /// Allows up to 100,000 devices. This is a temp addition, to trigger pipeline.
         /// </remarks>
         private const uint DefaultPoolSize = 100;
 
