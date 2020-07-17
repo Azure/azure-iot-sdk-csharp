@@ -13,11 +13,6 @@ function IsPullRequestBuild
 
 function ShouldSkipIotHubTests 
 {	
-	if (IsPullRequestBuild) 
-	{
-		return $false
-	}
-	
 	return !(DoChangesAffectAnyOfFolders @("iothub", "common", "shared", "e2e", "vsts"))
 }
 
