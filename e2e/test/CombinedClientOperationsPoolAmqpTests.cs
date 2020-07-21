@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class CombinedClientOperationsPoolAmqpTests : E2ETestBase, IDisposable
+    public class CombinedClientOperationsPoolAmqpTests : E2EMsTestBase, IDisposable
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";
         private readonly string _devicePrefix = $"E2E_{nameof(CombinedClientOperationsPoolAmqpTests)}_";
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task DeviceSak_DeviceCombinedClientOperations_SingleConnection_Amqp()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task DeviceSak_DeviceCombinedClientOperations_SingleConnection_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task IoTHubSak_DeviceCombinedClientOperations_SingleConnection_Amqp()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task IoTHubSak_DeviceCombinedClientOperations_SingleConnection_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task DeviceSak_DeviceCombinedClientOperations_MultipleConnections_Amqp()
         {
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task DeviceSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_Amqp()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(

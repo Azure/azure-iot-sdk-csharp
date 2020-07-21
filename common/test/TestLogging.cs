@@ -4,13 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.Versioning;
+using System.Threading;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -19,20 +16,18 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class TestLogging
     {
-        public const string Language = "C#";
+        public const string SdkLanguage = ".NET";
         public const string Service = "IotHub";
         private static object _initLock = new object();
 
-        // Client to log to application insights
+        // Client to log to application insights.
         private static TelemetryClient _telemetryClient;
 
-        // Unique ID for all tests of a run.
-        private static string _testRunId;
+        private static IDictionary<string, string> _commonProperties;
 
-        public TestContext Context { get; set; }
-        public string TargetFramework { get; set; }
+        public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
-        private TestLogging()
+        protected TestLogging()
         {
             // Thread-safe initialization of the telemetry client and run Id.
             lock (_initLock)
@@ -50,7 +45,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                             InstrumentationKey = intrumentationKey,
                         };
                         _telemetryClient = new TelemetryClient(config);
-                        _testRunId = Guid.NewGuid().ToString();
+
+                        InitializeCommonProperties();
                     }
                 }
             }
@@ -62,25 +58,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static int GetHashCode(object value) => value?.GetHashCode() ?? 0;
 
-        public static TestLogging GetInstance(TestContext testContext = null)
+        public static TestLogging GetInstance()
         {
-            var logger = new TestLogging();
-
-            if (_telemetryClient != null)
-            {
-                // Set logger properties for the current test.
-                var targetFramework = (TargetFrameworkAttribute)Assembly
-                    .GetExecutingAssembly()
-                    .GetCustomAttributes(typeof(TargetFrameworkAttribute), false)
-                    .SingleOrDefault();
-                logger.Context = testContext;
-                logger.TargetFramework = targetFramework.FrameworkName;
-            };
-
-            return logger;
+            return new TestLogging();
         }
 
-        public void WriteLine(string message, SeverityLevel severity = SeverityLevel.Information, IDictionary<string, string> propertyBag = null, [CallerMemberName] string caller = null)
+        // TODO: Rename to Trace
+        public void WriteLine(string message, SeverityLevel severity = SeverityLevel.Information, IDictionary<string, string> extraProperties = null)
         {
             // Log to event source
             EventSourceTestLogging.Log.TestMessage(message);
@@ -88,36 +72,68 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Log to Application insights
             if (_telemetryClient != null)
             {
-                if (propertyBag == null)
-                {
-                    propertyBag = new Dictionary<string, string>();
-                }
-
-                // Add common properties
-                propertyBag.Add(LoggingPropertyNames.TestRunId, _testRunId);
-                propertyBag.Add(LoggingPropertyNames.TestFramework, TargetFramework);
-                propertyBag.Add(LoggingPropertyNames.Language, Language);
-                propertyBag.Add(LoggingPropertyNames.Service, Service);
-                if (Context != null)
-                {
-                    propertyBag.Add(LoggingPropertyNames.TestName, Context.TestName);
-                    propertyBag.Add(LoggingPropertyNames.ClassName, Context.FullyQualifiedTestClassName ?? caller);
-                    propertyBag.Add(LoggingPropertyNames.TestStatus, Context?.CurrentTestOutcome.ToString());
-                }
-
-                // Environment Variable set in Azure pipelines to correlate logs with the build number.
-                propertyBag.Add("BuildId", Environment.GetEnvironmentVariable("BUILD_BUILDID"));
-
-                _telemetryClient.TrackTrace(message, severity, propertyBag);
+                IDictionary<string, string>[] bagsToMerge = new[] { _commonProperties, Properties, extraProperties };
+                _telemetryClient.TrackTrace(message, severity, MergePropertyBags(bagsToMerge));
             }
         }
 
-        public void Flush()
+        public void Event(string eventName, IDictionary<string, string> extraProperties = null)
+        {
+            // Log event to Application insights
+            if (_telemetryClient != null)
+            {
+                IDictionary<string, string>[] bagsToMerge = new[] { _commonProperties, Properties, extraProperties };
+                _telemetryClient.TrackEvent(eventName, MergePropertyBags(bagsToMerge));
+            }
+        }
+
+        /// <summary>
+        /// Flush to ensure logs are not lost before quiting an application.
+        /// </summary>
+        public void SafeFlush()
         {
             if (_telemetryClient != null)
             {
                 _telemetryClient.Flush();
+
+                // Hold on to the thread context to allow flushing to complete.
+                Thread.Sleep(5000);
             }
+        }
+
+        private IDictionary<string, string> MergePropertyBags(IDictionary<string, string>[] propertyBags)
+        {
+            var result = new Dictionary<string, string>();
+
+            foreach (IDictionary<string, string> bag in propertyBags)
+            {
+                if (bag == null)
+                {
+                    continue;
+                }
+
+                foreach (KeyValuePair<string, string> property in bag)
+                {
+                    result.Add(property.Key, property.Value);
+                }
+            }
+
+            return result;
+        }
+
+        private void InitializeCommonProperties()
+        {
+            _commonProperties = new Dictionary<string, string>
+            {
+                // The SDK language.
+                { LoggingPropertyNames.SdkLanguage, SdkLanguage },
+                // The Service for which we are logging.
+                { LoggingPropertyNames.Service, Service },
+                // Unique ID for all tests of a run.
+                { LoggingPropertyNames.TestRunId, Guid.NewGuid().ToString() },
+                // Build Id in the pipeline.
+                { LoggingPropertyNames.BuildId, Environment.GetEnvironmentVariable("BUILD_BUILDID") },
+            };
         }
     }
 }
