@@ -16,9 +16,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly object _lock = new object();
 
         public AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity, 
-            Func<MethodRequestInternal, Task> methodHandler, 
-            Action<Twin, string, TwinCollection> twinMessageListener, 
+            DeviceIdentity deviceIdentity,
+            Func<MethodRequestInternal, Task> methodHandler,
+            Action<Twin, string, TwinCollection> twinMessageListener,
             Func<string, Message, Task> eventListener,
             Action onUnitDisconnected)
         {
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 string scope = deviceIdentity.IotHubConnectionString.SharedAccessKeyName;
-                _amqpSasGroupedPool.TryGetValue(scope, out AmqpConnectionHolder[]  amqpConnectionHolders);
+                _amqpSasGroupedPool.TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
                 if (amqpConnectionHolders == null)
                 {
                     amqpConnectionHolders = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 return amqpConnectionHolders;
             }
         }
-        
+
         private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, DeviceIdentity deviceIdentity)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(ResolveConnectionByHashing)}");

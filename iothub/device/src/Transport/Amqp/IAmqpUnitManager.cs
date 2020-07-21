@@ -11,11 +11,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal interface IAmqpUnitManager
     {
         AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity, 
-            Func<MethodRequestInternal, Task> methodHandler, 
-            Action<Twin, string, TwinCollection> twinMessageListener, 
+            DeviceIdentity deviceIdentity,
+            Func<MethodRequestInternal, Task> methodHandler,
+            Action<Twin, string, TwinCollection> twinMessageListener,
             Func<string, Message, Task> eventListener,
             Action onUnitDisconnected);
+
         void RemoveAmqpUnit(AmqpUnit amqpUnit);
     }
 }
