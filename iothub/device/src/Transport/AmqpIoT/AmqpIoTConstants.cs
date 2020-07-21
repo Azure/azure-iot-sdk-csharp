@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
@@ -45,6 +46,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         internal const string DeviceStreamingFieldProxyUri = "IoThub-streaming-url";
         internal const string DeviceStreamingFieldAuthorizationToken = "IoThub-streaming-auth-token";
         internal const string DeviceStreamingFieldIsAccepted = "IoThub-streaming-is-accepted";
+
+        // The tracking Id identifier, for an Amqp Error returned by the service.
+        public static readonly AmqpSymbol TrackingId = Vendor + ":tracking-id";
+
+        // The client version identifier, added to Amqp link settings, while opening a sending link.
+        // The client version is the product info of the device, for which the connection is being established.
+        public static readonly AmqpSymbol ClientVersion = Vendor + ":client-version";
+
+        // The API version identifier, added to Amqp link settings, while opening a sending link.
+        // The API version identifies which version of the service API the connection is targeted towards.
+        public static readonly AmqpSymbol ApiVersion = Vendor + ":api-version";
+
+        // The correlation Id identifier, added to Amqp link settings, while opening a sending link.
+        // The correlation Id is a guid prefixed with either "methods" or "twin", identifying the target of the sending link.
+        public static readonly AmqpSymbol ChannelCorrelationId = Vendor + ":channel-correlation-id";
+
+        // The authentication chain identifier, added to Amqp link settings, while opening a sending link.
+        // The authentication chain is required for enabling nested Edge scenarios.
+        public static readonly AmqpSymbol AuthChain = Vendor + ":auth-chain";
+
+        // The digital twin model Id identifier, added to Amqp link settings, while opening a sending link.
+        // The digital twin model Id is required to be sent over the sending link, in order for the service to identify it as a PnP-enabled device.
+        public static readonly AmqpSymbol ModelId = Vendor + ":model-id";
 
         internal const string IotHubSasTokenType = CbsConstants.IotHubSasTokenType;
     }

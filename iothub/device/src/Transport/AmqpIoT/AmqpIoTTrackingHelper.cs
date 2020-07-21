@@ -68,10 +68,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             string trackingId;
-            if (!exception.Error.Info.Any() || !exception.Error.Info.TryGetValue(AmqpIoTErrorAdapter.TrackingId, out trackingId))
+            if (!exception.Error.Info.Any() || !exception.Error.Info.TryGetValue(AmqpIoTConstants.TrackingId, out trackingId))
             {
                 trackingId = GenerateTrackingId(gatewayId, backendId, partitionId);
-                exception.Error.Info.Add(AmqpIoTErrorAdapter.TrackingId, trackingId);
+                exception.Error.Info.Add(AmqpIoTConstants.TrackingId, trackingId);
             }
             return trackingId;
         }
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             string trackingId = null;
             if (errorObj.Info != null)
             {
-                errorObj.Info.TryGetValue(AmqpIoTErrorAdapter.TrackingId, out trackingId);
+                errorObj.Info.TryGetValue(AmqpIoTConstants.TrackingId, out trackingId);
             }
             return trackingId;
         }

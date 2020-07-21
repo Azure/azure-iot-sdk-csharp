@@ -10,8 +10,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// <summary>
     /// Device configurations
     /// Stores the common attributes
-    /// - connection string 
-    /// - transport settings 
+    /// - connection string
+    /// - transport settings
     /// </summary>
     internal class DeviceIdentity
     {
@@ -20,11 +20,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal ProductInfo ProductInfo { get; }
         internal AuthenticationModel AuthenticationModel { get; }
         internal string Audience { get; }
-        internal DeviceIdentity(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
+        internal ClientOptions Options { get; }
+
+        internal DeviceIdentity(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo, ClientOptions options)
         {
             IotHubConnectionString = iotHubConnectionString;
             AmqpTransportSettings = amqpTransportSettings;
             ProductInfo = productInfo;
+            Options = options;
+
             if (amqpTransportSettings.ClientCertificate == null)
             {
                 Audience = CreateAudience(IotHubConnectionString);
@@ -42,6 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 AuthenticationModel = AuthenticationModel.X509;
             }
         }
+
         private static string CreateAudience(IotHubConnectionString connectionString)
         {
             if (connectionString.SharedAccessKeyName.IsNullOrWhiteSpace())
@@ -98,7 +103,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return hashCode * -1521134295 + field.GetHashCode();
             }
-
         }
     }
 }

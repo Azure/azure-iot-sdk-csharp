@@ -99,6 +99,11 @@ Function CheckTools($commands)
     }
 }
 
+Function LocalPackagesAvailableForTesting()
+{
+    return (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
+}
+
 Function BuildProject($path, $message)
 {
     $label = "BUILD: --- $message $configuration ---"
@@ -218,7 +223,7 @@ try
 {
     if ($sign)
     {
-        if ([string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
+        if (!$LocalPackagesAvailableForTesting)
         {
             throw "Local NuGet package source path is not set, required when signing packages."
         }
@@ -316,7 +321,7 @@ try
         BuildPackage digitaltwin\service\src "Digital Twin Service Client SDK"
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
+    if ($LocalPackagesAvailableForTesting)
     {
         Write-Host
         Write-Host -ForegroundColor Cyan "Preparing local package source"
@@ -337,7 +342,7 @@ try
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
 
-        if ($env:AZURE_IOT_LOCALPACKAGES -ne "")
+        if ($LocalPackagesAvailableForTesting)
         {
             Write-Host -ForegroundColor Magenta "IMPORTANT: Using local packages."
         }
