@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 try
                 {
                     PartitionReceiver receiver = eventHubClient.CreateReceiver(PartitionReceiver.DefaultConsumerGroupName, partitionId, DateTime.Now.AddMinutes(-s_lookbackTimeInMinutes.TotalMinutes));
-                    s_log.WriteLine($"EventHub receiver created for partition {partitionId}, listening from {s_lookbackTimeInMinutes}");
+                    s_log.Trace($"EventHub receiver created for partition {partitionId}, listening from {s_lookbackTimeInMinutes}");
 
                     Task.Run(async () =>
                     {
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 catch (EventHubsException ex)
                 {
-                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: Cannot create receiver for partitionID {partitionId}: {ex}");
+                    s_log.Trace($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: Cannot create receiver for partitionID {partitionId}: {ex}");
                 }
             }
         }

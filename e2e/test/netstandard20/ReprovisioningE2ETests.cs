@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string _devicePrefix = $"E2E_{nameof(ProvisioningE2ETests)}_";
 
 #pragma warning disable CA1823
-        private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
-        private readonly TestLogging _log = TestLogging.GetInstance();
+        private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
+        private readonly TestLogger _log = TestLogger.GetInstance();
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 #pragma warning restore CA1823
 
@@ -314,20 +314,20 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol))
             {
-                _log.WriteLine("DeviceClient OpenAsync.");
+                _log.Trace("DeviceClient OpenAsync.");
                 await iotClient.OpenAsync().ConfigureAwait(false);
-                _log.WriteLine("DeviceClient SendEventAsync.");
+                _log.Trace("DeviceClient SendEventAsync.");
                 await iotClient.SendEventAsync(
                     new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
 
                 if (sendReportedPropertiesUpdate)
                 {
-                    _log.WriteLine("DeviceClient updating desired properties.");
+                    _log.Trace("DeviceClient updating desired properties.");
                     Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
                     await iotClient.UpdateReportedPropertiesAsync(new TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
                 }
 
-                _log.WriteLine("DeviceClient CloseAsync.");
+                _log.Trace("DeviceClient CloseAsync.");
                 await iotClient.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -362,12 +362,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
 
-                    _log.WriteLine($"Getting enrollment: RegistrationID = {registrationId}");
+                    _log.Trace($"Getting enrollment: RegistrationID = {registrationId}");
                     IndividualEnrollment individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
                     IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
                     var attestation = new TpmAttestation(base64Ek);
                     enrollment.Attestation = attestation;
-                    _log.WriteLine($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
+                    _log.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
                     await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
 
                     return tpmSim;
@@ -464,8 +464,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private void ValidateDeviceRegistrationResult(DeviceRegistrationResult result)
         {
             Assert.IsNotNull(result);
-            _log.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
-            _log.WriteLine($"ProvisioningDeviceClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
+            _log.Trace($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
+            _log.Trace($"ProvisioningDeviceClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
 
             Assert.AreEqual(ProvisioningRegistrationStatusType.Assigned, result.Status, $"Unexpected provisioning status, substatus: {result.Substatus}, error code: {result.ErrorCode}, error message: {result.ErrorMessage}");
             Assert.IsNotNull(result.AssignedHub);
@@ -517,9 +517,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol))
             {
-                _log.WriteLine("DeviceClient OpenAsync.");
+                _log.Trace("DeviceClient OpenAsync.");
                 await iotClient.OpenAsync().ConfigureAwait(false);
-                _log.WriteLine("DeviceClient SendEventAsync.");
+                _log.Trace("DeviceClient SendEventAsync.");
                 await iotClient.SendEventAsync(
                     new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
 
@@ -547,7 +547,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                 }
 
-                _log.WriteLine("DeviceClient CloseAsync.");
+                _log.Trace("DeviceClient CloseAsync.");
                 await iotClient.CloseAsync().ConfigureAwait(false);
             }
         }

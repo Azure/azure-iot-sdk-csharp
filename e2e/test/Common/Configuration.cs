@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return Environment.ExpandEnvironmentVariables(envValue);
         }
 
-        private static Uri GetUriValue(string envName, Uri defaultValue=null)
+        private static Uri GetUriValue(string envName, Uri defaultValue = null)
         {
             string envValue = GetValue(envName, null);
 
@@ -32,10 +32,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             return new Uri(envValue);
         }
 
-        // To generate environment variables value use 
+        // To generate environment variables value use
         // [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)).
 
-        private static X509Certificate2 GetBase64EncodedCertificate(string envName, string password=null, string defaultValue=null)
+        private static X509Certificate2 GetBase64EncodedCertificate(string envName, string password = null, string defaultValue = null)
         {
             string certBase64 = GetValue(envName, defaultValue);
 
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 certBase64 = defaultValue ?? throw new InvalidOperationException($"Configuration missing: {envName}");
             }
-                        
+
             Byte[] buff = Convert.FromBase64String(certBase64);
 
             if (password == null)
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private static X509Certificate2Collection GetBase64EncodedCertificateCollection(
-            string envName, 
+            string envName,
             string defaultValue = null)
         {
             string certBase64 = GetValue(envName, null);

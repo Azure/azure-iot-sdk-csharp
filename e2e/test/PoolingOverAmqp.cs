@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const int MaxTestRunCount = 5;
         public const int TestSuccessRate = 80; // 4 out of 5 (80%) test runs should pass (even after accounting for network instability issues).
 
-        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         public static async Task TestPoolAmqpAsync(
             string devicePrefix,
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Arrange
                 // Initialize the test device client instances
                 // Set the device client connection status change handler
-                s_log.WriteLine($">>> {nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test - Test run {totalRuns}");
+                s_log.Trace($">>> {nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test - Test run {totalRuns}");
                 for (int i = 0; i < devicesCount; i++)
                 {
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _connectionStatusChangesHandlerCount++;
                 LastConnectionStatus = status;
                 LastConnectionStatusChangeReason = reason;
-                s_log.WriteLine($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={reason} count={_connectionStatusChangesHandlerCount}");
+                s_log.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={reason} count={_connectionStatusChangesHandlerCount}");
             }
 
             public int ConnectionStatusChangesHandlerCount

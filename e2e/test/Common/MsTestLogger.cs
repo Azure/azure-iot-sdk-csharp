@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// <summary>
     /// Ms Test framework specific logging.
     /// </summary>
-    public class MsTestLogger : TestLogging
+    public class MsTestLogger : TestLogger
     {
         private MsTestLogger(TestContext testContext) : base()
         {

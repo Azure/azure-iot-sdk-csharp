@@ -738,7 +738,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
                 testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
 
-                _log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method callback handler for device {testDevice.Id}");
+                _log.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method callback handler for device {testDevice.Id}");
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson)
                     .ConfigureAwait(false);
@@ -749,7 +749,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestDeviceCallbackHandler testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
-                _log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
+                _log.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 Task serviceSendTask = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(
                     testDevice.Id,
                     MethodName,

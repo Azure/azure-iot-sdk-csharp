@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Stopwatch = Stopwatch.StartNew();
             Logger = MsTestLogger.GetInstance(TestContext);
-            Logger.WriteLine($"Starting test - {TestContext.TestName}", SeverityLevel.Information);
+            Logger.Trace($"Starting test - {TestContext.TestName}", SeverityLevel.Information);
             Logger.Event(TestStartedEventName);
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 { LoggingPropertyNames.TestStatus, TestContext.CurrentTestOutcome.ToString() },
             };
 
-            Logger.WriteLine($"Finished test - {TestContext.TestName}", SeverityLevel.Information, extraProperties);
+            Logger.Trace($"Finished test - {TestContext.TestName}", SeverityLevel.Information, extraProperties);
             Logger.Event(TestFinishedEventName, extraProperties);
             // As this is not an application that keeps running, explicitly flushing is required to ensure we do not lose any logs.
             Logger.SafeFlush();

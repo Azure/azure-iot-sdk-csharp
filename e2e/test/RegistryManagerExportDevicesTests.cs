@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class RegistryManagerExportDevicesTests
     {
-        private readonly TestLogging _log = TestLogging.GetInstance();
+        private readonly TestLogger _log = TestLogger.GetInstance();
 
         // A bug in either Azure.Storage.Blob or System.Diagnostics causes an exception during container creation
         // so for now, we need to use the older storage nuget.
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string deviceId = $"{nameof(RegistryManager_ExportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
             var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
-            _log.WriteLine($"Using deviceId {deviceId}");
+            _log.Trace($"Using deviceId {deviceId}");
 
             try
             {
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 storageContainer = await StorageContainer
                     .GetInstanceAsync(containerName)
                     .ConfigureAwait(false);
-                _log.WriteLine($"Using container {storageContainer.Uri}");
+                _log.Trace($"Using container {storageContainer.Uri}");
 
                 Uri containerUri = storageAuthenticationType == StorageAuthenticationType.KeyBased
                     ? storageContainer.SasUri
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
                     catch (JobQuotaExceededException) when (++tryCount < MaxIterationWait)
                     {
-                        _log.WriteLine($"JobQuotaExceededException... waiting.");
+                        _log.Trace($"JobQuotaExceededException... waiting.");
                         await Task.Delay(_waitDuration).ConfigureAwait(false);
                         continue;
                     }
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     await Task.Delay(_waitDuration).ConfigureAwait(false);
                     exportJobResponse = await registryManager.GetJobAsync(exportJobResponse.JobId).ConfigureAwait(false);
-                    _log.WriteLine($"Job {exportJobResponse.JobId} is {exportJobResponse.Status} with progress {exportJobResponse.Progress}%");
+                    _log.Trace($"Job {exportJobResponse.JobId} is {exportJobResponse.Status} with progress {exportJobResponse.Progress}%");
                     if (!s_incompleteJobs.Contains(exportJobResponse.Status))
                     {
                         break;
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     ExportImportDevice device = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDeivce);
                     if (StringComparer.Ordinal.Equals(device.Id, deviceId))
                     {
-                        _log.WriteLine($"Found device in export as [{serializedDeivce}]");
+                        _log.Trace($"Found device in export as [{serializedDeivce}]");
                         foundDeviceInExport = true;
                         break;
                     }

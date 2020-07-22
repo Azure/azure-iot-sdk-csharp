@@ -30,8 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly string s_devicePrefix = $"E2E_{nameof(ProvisioningServiceClientE2ETests)}_";
 
 #pragma warning disable CA1823
-        private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
-        private readonly TestLogging _log = TestLogging.GetInstance();
+        private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
+        private readonly TestLogger _log = TestLogger.GetInstance();
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 #pragma warning restore CA1823
 

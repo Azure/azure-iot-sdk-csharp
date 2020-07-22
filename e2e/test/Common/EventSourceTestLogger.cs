@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Diagnostics.Tracing;
@@ -7,12 +7,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     // f7ac322b-77f1-5a2d-0b56-ec79a41e82a2
     [EventSource(Name = "Microsoft-Azure-Devices-TestLogging")]
-    internal class EventSourceTestLogging : EventSource
+    internal class EventSourceTestLogger : EventSource
     {
-        private static EventSourceTestLogging s_log = new EventSourceTestLogging();
-        private EventSourceTestLogging() { }
+        private static EventSourceTestLogger s_log = new EventSourceTestLogger();
 
-        public static EventSourceTestLogging Log
+        private EventSourceTestLogger()
+        {
+        }
+
+        public static EventSourceTestLogger Log
         {
             get
             {

@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private SemaphoreSlim _twinCallbackSemaphore = new SemaphoreSlim(1, 1);
         private string _expectedTwinPropertyValue = null;
 
-        private static TestLogging s_log = TestLogging.GetInstance();
+        private static TestLogger s_log = TestLogger.GetInstance();
 
         public TestDeviceCallbackHandler(DeviceClient deviceClient)
         {
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     try
                     {
-                        s_log.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient callback method: {request.Name} {request.ResponseTimeout}.");
+                        s_log.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient callback method: {request.Name} {request.ResponseTimeout}.");
                         Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
                         Assert.AreEqual(expectedServiceRequestJson, request.DataAsJson, $"The expected method name should be {expectedServiceRequestJson} but was {request.DataAsJson}");
 
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                     catch (Exception ex)
                     {
-                        s_log.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
+                        s_log.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
 
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
                         return Task.FromResult(new MethodResponse(500));
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch, context) =>
                 {
-                    s_log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient callback twin: DesiredProperty: {patch}, {context}");
+                    s_log.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient callback twin: DesiredProperty: {patch}, {context}");
 
                     try
                     {

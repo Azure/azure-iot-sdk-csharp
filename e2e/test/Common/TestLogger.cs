@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// <summary>
     /// This class logs to multiple providers - Event source, Application insights
     /// </summary>
-    public class TestLogging
+    public class TestLogger
     {
         public const string SdkLanguage = ".NET";
         public const string Service = "IotHub";
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
-        protected TestLogging()
+        protected TestLogger()
         {
             // Thread-safe initialization of the telemetry client and run Id.
             lock (_initLock)
@@ -58,16 +58,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static int GetHashCode(object value) => value?.GetHashCode() ?? 0;
 
-        public static TestLogging GetInstance()
+        public static TestLogger GetInstance()
         {
-            return new TestLogging();
+            return new TestLogger();
         }
 
-        // TODO: Rename to Trace
-        public void WriteLine(string message, SeverityLevel severity = SeverityLevel.Information, IDictionary<string, string> extraProperties = null)
+        public void Trace(string message, SeverityLevel severity = SeverityLevel.Information, IDictionary<string, string> extraProperties = null)
         {
             // Log to event source
-            EventSourceTestLogging.Log.TestMessage(message);
+            EventSourceTestLogger.Log.TestMessage(message);
 
             // Log to Application insights
             if (_telemetryClient != null)

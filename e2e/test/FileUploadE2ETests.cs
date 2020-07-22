@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #pragma warning disable CA1823
         private readonly ConsoleEventListener _listener;
-        private static TestLogging s_log = TestLogging.GetInstance();
+        private static TestLogger s_log = TestLogger.GetInstance();
 #pragma warning restore CA1823
 
         public FileUploadE2ETests()

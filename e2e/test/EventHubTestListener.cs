@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly TimeSpan s_lookbackTimeInMinutes = TimeSpan.FromMinutes(5);
         private const int OperationTimeoutInSeconds = 10;
 
-        private static TestLogging s_log = TestLogging.GetInstance();
+        private static TestLogger s_log = TestLogger.GetInstance();
         private static ConcurrentDictionary<string, EventData> events = new ConcurrentDictionary<string, EventData>();
 
         static EventHubTestListener()
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 maxWaitTime = s_maximumWaitTime;
             }
 
-            s_log.WriteLine($"Expected payload: deviceId={deviceId}; messageId = {message.MessageId}, userId={message.UserId}, payload={payload}; property1={p1Value}");
+            s_log.Trace($"Expected payload: deviceId={deviceId}; messageId = {message.MessageId}, userId={message.UserId}, payload={payload}; property1={p1Value}");
 
             bool isReceived = false;
 
@@ -76,11 +76,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (eventDatas == null)
             {
-                s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(ProcessEventData)}: no events received.");
+                s_log.Trace($"{nameof(EventHubTestListener)}.{nameof(ProcessEventData)}: no events received.");
             }
             else
             {
-                s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(ProcessEventData)}: {eventDatas.Count()} events received.");
+                s_log.Trace($"{nameof(EventHubTestListener)}.{nameof(ProcessEventData)}: {eventDatas.Count()} events received.");
                 foreach (EventData eventData in eventDatas)
                 {
                     string body = GetEventDataBody(eventData);
