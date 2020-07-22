@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("LongRunning")]
     public partial class FaultInjectionPoolAmqpTests : IDisposable
     {
-        private static TestLogging _log = TestLogging.GetInstance();
+        private static TestLogger _log = TestLogger.GetInstance();
 
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 

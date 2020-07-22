@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
 #pragma warning disable CA1823
-        private static readonly TestLogging _log = TestLogging.GetInstance();
+        private static readonly TestLogger _log = TestLogger.GetInstance();
         private readonly ConsoleEventListener _listener;
 #pragma warning restore CA1823
 

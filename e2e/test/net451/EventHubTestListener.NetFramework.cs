@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 try
                 {
                     EventHubReceiver receiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partitionId, DateTime.Now.AddMinutes(-s_lookbackTimeInMinutes.TotalMinutes));
-                    s_log.WriteLine($"EventHub receiver created for partition {partitionId}, listening from past {s_lookbackTimeInMinutes}");
+                    s_log.Trace($"EventHub receiver created for partition {partitionId}, listening from past {s_lookbackTimeInMinutes}");
 
                     Task.Run(async () =>
                     {
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 catch (QuotaExceededException ex)
                 {
-                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: Cannot create receiver for partitionID {partitionId}: {ex}");
+                    s_log.Trace($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: Cannot create receiver for partitionID {partitionId}: {ex}");
                 }
             }
         }

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class TwinE2ETests : IDisposable
     {
         private readonly string _devicePrefix = $"E2E_{nameof(TwinE2ETests)}_";
-        private static TestLogging s_log = TestLogging.GetInstance();
+        private static TestLogger s_log = TestLogger.GetInstance();
 
         private readonly ConsoleEventListener _listener;
 
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();
 
-            s_log.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
+            s_log.Trace($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
             // act
             await RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue).ConfigureAwait(false);
@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             var propName = Guid.NewGuid().ToString();
 
-            s_log.WriteLine($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
+            s_log.Trace($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
             var props = new TwinCollection();
             props[propName] = propValue;
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .SetDesiredPropertyUpdateCallbackAsync(
                     (patch, context) =>
                     {
-                        s_log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
+                        s_log.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
 
                         try
                         {
@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .SetDesiredPropertyUpdateCallback(
                     (patch, context) =>
                     {
-                        s_log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
+                        s_log.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
 
                         try
                         {
@@ -391,7 +391,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             var propName = Guid.NewGuid().ToString();
 
-            s_log.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
+            s_log.Trace($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
@@ -442,7 +442,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
-            s_log.WriteLine("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
+            s_log.Trace("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
         }
 
         private async Task Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(Client.TransportType transport)

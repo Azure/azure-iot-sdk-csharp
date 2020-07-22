@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodName = "MethodE2EPoolAmqpTests";
         private readonly string _devicePrefix = $"E2E_{nameof(MethodE2EPoolAmqpTests)}_";
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
-        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -229,13 +229,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                s_log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
+                s_log.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
                 Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
+                s_log.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 await MethodE2ETests
                     .ServiceSendMethodAndVerifyResponseAsync(
                         testDevice.Id,

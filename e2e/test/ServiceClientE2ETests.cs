@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class ServiceClientE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(ServiceClientE2ETests)}_";
-        private static TestLogging _log = TestLogging.GetInstance();
+        private static TestLogger _log = TestLogger.GetInstance();
 
         private readonly ConsoleEventListener _listener;
 
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            _log.WriteLine($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
+            _log.Trace($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
             try
             {
                 await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             finally
             {
                 sw.Stop();
-                _log.WriteLine($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
+                _log.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
             }
         }
 

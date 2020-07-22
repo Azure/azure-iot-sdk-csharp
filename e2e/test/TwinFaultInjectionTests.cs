@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class TwinFaultInjectionTests : IDisposable
     {
         private static readonly string s_devicePrefix = $"E2E_{nameof(TwinFaultInjectionTests)}_";
-        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
@@ -290,7 +290,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var propValue = Guid.NewGuid().ToString();
                 testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
 
-                s_log.WriteLine($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryAsync)}: name={propName}, value={propValue}");
+                s_log.Trace($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryAsync)}: name={propName}, value={propValue}");
 
                 Task serviceSendTask = RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);

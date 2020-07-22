@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string _devicePrefix = $"E2E_{nameof(MessageSendE2EPoolAmqpTests)}_";
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
-        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -127,11 +127,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.WriteLine($"{nameof(MessageSendE2EPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
+                s_log.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage();
-                s_log.WriteLine($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
+                s_log.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, testMessage, payload, p1Value);

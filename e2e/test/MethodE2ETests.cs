@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private readonly string _devicePrefix = $"E2E_{nameof(MethodE2ETests)}_";
         private const string MethodName = "MethodE2ETest";
-        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);
 
@@ -156,13 +156,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
-            s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
+            s_log.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
             CloudToDeviceMethodResult response =
                 await serviceClient.InvokeDeviceMethodAsync(
                     deviceName,
                     new CloudToDeviceMethod(methodName, s_defaultMethodTimeoutMinutes).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
-            s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
+            s_log.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
             string payload = response.GetPayloadAsJson();
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
@@ -174,13 +174,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
 
-            s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
+            s_log.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
             CloudToDeviceMethodResult response =
                 await serviceClient.InvokeDeviceMethodAsync(
                     deviceName,
                     new CloudToDeviceMethod(methodName, responseTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
-            s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
+            s_log.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
             string payload = response.GetPayloadAsJson();
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.SetMethodHandlerAsync(methodName,
                 (request, context) =>
                 {
-                    s_log.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+                    s_log.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
 
                     try
                     {
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.SetMethodDefaultHandlerAsync(
                 (request, context) =>
                 {
-                    s_log.WriteLine($"{nameof(SetDeviceReceiveMethodDefaultHandlerAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+                    s_log.Trace($"{nameof(SetDeviceReceiveMethodDefaultHandlerAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
 
                     try
                     {
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 #pragma warning disable CS0618
             deviceClient.SetMethodHandler(methodName, (request, context) =>
             {
-                s_log.WriteLine($"{nameof(SetDeviceReceiveMethodObsoleteHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+                s_log.Trace($"{nameof(SetDeviceReceiveMethodObsoleteHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
 
                 try
                 {

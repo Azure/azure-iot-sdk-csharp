@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(5);
 
 #pragma warning disable CA1823
-        private static TestLogging _log = TestLogging.GetInstance();
+        private static TestLogger _log = TestLogger.GetInstance();
         private readonly ConsoleEventListener _listener;
 #pragma warning restore CA1823
 
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
                     catch (ThrottlingException) when (++tryCount < MaxIterationWait)
                     {
-                        _log.WriteLine($"ThrottlingException... waiting.");
+                        _log.Trace($"ThrottlingException... waiting.");
                         await Task.Delay(_waitDuration).ConfigureAwait(false);
                         continue;
                     }
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var payload = Guid.NewGuid().ToString();
             var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            _log.Trace($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -10,12 +10,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public class CustomWebProxy : IWebProxy
     {
-        private static TestLogging s_testLog = TestLogging.GetInstance();
+        private static TestLogger s_testLog = TestLogger.GetInstance();
         private long _counter = 0;
 
         public ICredentials Credentials { get; set; }
 
-        public long Counter {
+        public long Counter
+        {
             get
             {
                 return Interlocked.Read(ref _counter);
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public bool IsBypassed(Uri host)
         {
             Interlocked.Increment(ref _counter);
-            s_testLog.WriteLine($"{nameof(CustomWebProxy)}.{nameof(IsBypassed)} Uri = {host}");
+            s_testLog.Trace($"{nameof(CustomWebProxy)}.{nameof(IsBypassed)} Uri = {host}");
             return false;
         }
     }

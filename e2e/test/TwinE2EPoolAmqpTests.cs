@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string _devicePrefix = $"E2E_{nameof(TwinE2EPoolAmqpTests)}_";
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
-        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
+                s_log.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
                 await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString()).ConfigureAwait(false);
             };
 
@@ -268,14 +268,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string propValue = Guid.NewGuid().ToString();
                 twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
 
-                s_log.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
-                s_log.WriteLine($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
+                s_log.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
+                s_log.Trace($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
                 Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
+                s_log.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 string propName = twinProperties[0];
                 string propValue = twinProperties[1];

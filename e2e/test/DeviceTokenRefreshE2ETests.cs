@@ -23,14 +23,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string DevicePrefix = $"E2E_{nameof(DeviceTokenRefreshE2ETests)}_";
 
         private readonly ConsoleEventListener _listener;
-        private readonly TestLogging _log;
+        private readonly TestLogger _log;
 
         private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
         public DeviceTokenRefreshE2ETests()
         {
             _listener = TestConfig.StartEventListener();
-            _log = TestLogging.GetInstance();
+            _log = TestLogger.GetInstance();
         }
 
         [TestMethod]
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using (DeviceClient deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only))
             {
-                _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(deviceClient)}");
+                _log.Trace($"Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
                 Console.WriteLine("DeviceClient OpenAsync.");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -135,13 +135,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using (DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport))
             {
-                _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(deviceClient)}");
+                _log.Trace($"Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
                 if (transport == Client.TransportType.Mqtt)
                 {
                     deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
                     {
-                        _log.WriteLine($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
+                        _log.Trace($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
                         if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
                     });
                 }
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                     catch (OperationCanceledException ex)
                     {
-                        Assert.Fail($"{TestLogging.IdOf(deviceClient)} did not get the initial token. {ex}");
+                        Assert.Fail($"{TestLogger.IdOf(deviceClient)} did not get the initial token. {ex}");
                         throw;
                     }
 
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                     catch (OperationCanceledException ex)
                     {
-                        Assert.Fail($"{TestLogging.IdOf(deviceClient)} did not refresh token after {refresher.DetectedRefreshInterval}. {ex}");
+                        Assert.Fail($"{TestLogger.IdOf(deviceClient)} did not refresh token after {refresher.DetectedRefreshInterval}. {ex}");
                         throw;
                     }
 

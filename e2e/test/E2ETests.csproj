@@ -10,53 +10,6 @@
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <CommonTest>$(RootDir)\common\test</CommonTest>
-  </PropertyGroup>
-
-  <!-- Common test files -->
-  <ItemGroup>
-    <Compile Include="$(CommonTest)\CodeAnalysisOverrides.cs">
-      <Link>Common\CodeAnalysisOverrides.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\Configuration.cs">
-      <Link>Common\Configuration.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\Configuration.IoTHub.cs">
-      <Link>Common\Configuration.IoTHub.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\Configuration.Provisioning.cs" Condition=" '$(TargetFramework)' != 'net451' ">
-      <Link>Common\Configuration.Provisioning.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\Configuration.Storage.cs">
-      <Link>Common\Configuration.Storage.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\Configuration.AzureSecurityCenterForIoTLogAnalytics.cs">
-      <Link>Common\Configuration.AzureSecurityCenterForIoTLogAnalytics.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\EventSourceTestLogging.cs">
-      <Link>Common\EventSourceTestLogging.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\TestModule.cs">
-      <Link>Common\TestModule.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\TestLogging.cs">
-      <Link>Common\TestLogging.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\TestDevice.cs">
-      <Link>Common\TestDevice.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\VerboseTestLogging.cs">
-      <Link>Common\VerboseTestLogging.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\ConsoleEventListener.cs">
-      <Link>Common\ConsoleEventListener.cs</Link>
-    </Compile>
-    <Compile Include="$(CommonTest)\CustomWebProxy.cs">
-      <Link>Common\CustomWebProxy.cs</Link>
-    </Compile>
-  </ItemGroup>
-
   <!-- NetCore and .NET 4.7.2 -->
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <Compile Remove="net451\EventHubTestListener.NetFramework.cs" />

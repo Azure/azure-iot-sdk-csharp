@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private static readonly string s_devicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
 
-        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_oneSecond = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan s_fiveSeconds = TimeSpan.FromSeconds(5);
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var p1Value = Guid.NewGuid().ToString();
             var userId = Guid.NewGuid().ToString();
 
-            s_log.WriteLine($"{nameof(ComposeC2dTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
+            s_log.Trace($"{nameof(ComposeC2dTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 try
                 {
-                    s_log.WriteLine($"Receiving messages for device {deviceId}.");
+                    s_log.Trace($"Receiving messages for device {deviceId}.");
 
                     if (transport == Client.TransportType.Http1)
                     {
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Assert.AreEqual(receivedMessage.To, receivedMessageDestination, "Recieved message destination is not what was sent by service");
 
                     string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    s_log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
+                    s_log.Trace($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
                     if (Equals(payload, messageData))
                     {
                         Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             while (!received && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
-                s_log.WriteLine($"Receiving messages for device {deviceId}.");
+                s_log.Trace($"Receiving messages for device {deviceId}.");
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
                 using Client.Message receivedMessage = await dc.ReceiveAsync(cts.Token).ConfigureAwait(false);
@@ -337,7 +337,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                s_log.WriteLine($"{nameof(VerifyReceivedC2dMessageWithCancellationTokenAsync)}: Received message: for {deviceId}: {messageData}");
+                s_log.Trace($"{nameof(VerifyReceivedC2dMessageWithCancellationTokenAsync)}: Received message: for {deviceId}: {messageData}");
                 if (Equals(payload, messageData))
                 {
                     Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
@@ -357,7 +357,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
-            s_log.WriteLine($"{nameof(ReceiveMessageInOperationTimeoutAsync)} - calling OpenAsync() for transport={transport}");
+            s_log.Trace($"{nameof(ReceiveMessageInOperationTimeoutAsync)} - calling OpenAsync() for transport={transport}");
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             if (transport == Client.TransportType.Mqtt_Tcp_Only
@@ -370,7 +370,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(s_oneMinute.TotalMilliseconds);
-                s_log.WriteLine($"{nameof(ReceiveMessageInOperationTimeoutAsync)} - setting device client default operation timeout={deviceClient.OperationTimeoutInMilliseconds} ms");
+                s_log.Trace($"{nameof(ReceiveMessageInOperationTimeoutAsync)} - setting device client default operation timeout={deviceClient.OperationTimeoutInMilliseconds} ms");
 
                 if (transport == Client.TransportType.Amqp
                     || transport == Client.TransportType.Amqp_Tcp_Only
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             finally
             {
-                s_log.WriteLine($"{nameof(ReceiveMessageInOperationTimeoutAsync)} - calling CloseAsync() for transport={transport}");
+                s_log.Trace($"{nameof(ReceiveMessageInOperationTimeoutAsync)} - calling CloseAsync() for transport={transport}");
                 deviceClient.OperationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
@@ -477,13 +477,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 try
                 {
-                    s_log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheckAsync)} - Calling ReceiveAsync()");
+                    s_log.Trace($"{nameof(ReceiveMessageWithoutTimeoutCheckAsync)} - Calling ReceiveAsync()");
 
                     sw.Restart();
                     using Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
                     sw.Stop();
 
-                    s_log.WriteLine($"{nameof(ReceiveMessageWithoutTimeoutCheckAsync)} - Received message={message}; time taken={sw.ElapsedMilliseconds} ms");
+                    s_log.Trace($"{nameof(ReceiveMessageWithoutTimeoutCheckAsync)} - Received message={message}; time taken={sw.ElapsedMilliseconds} ms");
 
                     if (message == null)
                     {

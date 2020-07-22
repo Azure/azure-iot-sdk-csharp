@@ -1431,7 +1431,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                _log.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
+                _log.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
                 await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString()).ConfigureAwait(false);
             };
 
@@ -1483,8 +1483,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var propValue = Guid.NewGuid().ToString();
                 twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
 
-                _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
-                _log.WriteLine($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp)}: name={propName}, value={propValue}");
+                _log.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
+                _log.Trace($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp)}: name={propName}, value={propValue}");
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
             };
 
@@ -1498,7 +1498,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var propValue = twinProperties[1];
                 testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
 
-                _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
+                _log.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
 
                 Task serviceSendTask = TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);

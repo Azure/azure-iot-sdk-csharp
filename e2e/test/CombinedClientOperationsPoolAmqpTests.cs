@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodName = "MethodE2ECombinedOperationsTest";
         private readonly string _devicePrefix = $"E2E_{nameof(CombinedClientOperationsPoolAmqpTests)}_";
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
-        private static readonly TestLogging s_log = TestLogging.GetInstance();
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 IList<Task> initOperations = new List<Task>();
 
                 // Send C2D Message
-                s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
+                s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
                 using (msg)
                 {
@@ -142,12 +142,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     initOperations.Add(sendC2dMessage);
 
                     // Set method handler
-                    s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
+                    s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
                     Task<Task> methodReceivedTask = MethodE2ETests.SetDeviceReceiveMethodAsync(deviceClient, MethodName);
                     initOperations.Add(methodReceivedTask);
 
                     // Set the twin desired properties callback
-                    s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set desired property callback for device={testDevice.Id}");
+                    s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set desired property callback for device={testDevice.Id}");
                     string propName = Guid.NewGuid().ToString();
                     string propValue = Guid.NewGuid().ToString();
                     twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
@@ -164,12 +164,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 // D2C Operation
-                s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 1: Send D2C for device={testDevice.Id}");
+                s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 1: Send D2C for device={testDevice.Id}");
                 Task sendD2cMessage = MessageSendE2ETests.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id);
                 clientOperations.Add(sendD2cMessage);
 
                 // C2D Operation
-                s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 2: Receive C2D for device={testDevice.Id}");
+                s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 2: Receive C2D for device={testDevice.Id}");
                 Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
                 Message msg = msgSent.Item1;
                 string payload = msgSent.Item2;
@@ -178,17 +178,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 clientOperations.Add(verifyDeviceClientReceivesMessage);
 
                 // Invoke direct methods
-                s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 3: Direct methods test for device={testDevice.Id}");
+                s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 3: Direct methods test for device={testDevice.Id}");
                 Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson);
                 clientOperations.Add(serviceInvokeMethod);
 
                 // Set reported twin properties
-                s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 4: Set reported property for device={testDevice.Id}");
+                s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 4: Set reported property for device={testDevice.Id}");
                 Task setReportedProperties = TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString());
                 clientOperations.Add(setReportedProperties);
 
                 // Receive set desired twin properties
-                s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 5: Receive desired property for device={testDevice.Id}");
+                s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 5: Receive desired property for device={testDevice.Id}");
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 string propName = twinProperties[0];
                 string propValue = twinProperties[1];
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 clientOperations.Add(updateDesiredProperties);
 
                 await Task.WhenAll(clientOperations).ConfigureAwait(false);
-                s_log.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: All operations completed for device={testDevice.Id}");
+                s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: All operations completed for device={testDevice.Id}");
             };
 
             Func<Task> cleanupOperation = () =>

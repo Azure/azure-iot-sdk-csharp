@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class NoRetryE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(NoRetryE2ETests)}_";
-        private static TestLogging _log = TestLogging.GetInstance();
+        private static TestLogger _log = TestLogger.GetInstance();
         private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         [TestMethod]
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only);
 
-            _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: deviceId={testDevice.Id}");
+            _log.Trace($"{nameof(FaultInjection_NoRecovery)}: deviceId={testDevice.Id}");
             deviceClient.SetRetryPolicy(new NoRetry());
 
             ConnectionStatus? lastConnectionStatus = null;
@@ -39,10 +39,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 lastConnectionStatus = status;
             });
 
-            _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: calling OpenAsync...");
+            _log.Trace($"{nameof(FaultInjection_NoRecovery)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: injecting fault {FaultInjection.FaultType_Tcp}...");
+            _log.Trace($"{nameof(FaultInjection_NoRecovery)}: injecting fault {FaultInjection.FaultType_Tcp}...");
             await FaultInjection
                 .ActivateFaultInjectionAsync(
                     Client.TransportType.Amqp_Tcp_Only,
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await Task.Delay(FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
 
-            _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: waiting fault injection occurs...");
+            _log.Trace($"{nameof(FaultInjection_NoRecovery)}: waiting fault injection occurs...");
             for (int i = 0; i < FaultInjection.LatencyTimeBufferInSec; i++)
             {
                 if (connectionStatusChanges.ContainsKey(ConnectionStatus.Disconnected))
@@ -78,12 +78,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
 
-            _log.WriteLine($"{nameof(Duplicated_NoPingpong)}: 2 device client instances with the same deviceId={testDevice.Id}.");
+            _log.Trace($"{nameof(Duplicated_NoPingpong)}: 2 device client instances with the same deviceId={testDevice.Id}.");
 
             using DeviceClient deviceClient1 = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only);
             using DeviceClient deviceClient2 = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only);
 
-            _log.WriteLine($"{nameof(Duplicated_NoPingpong)}: set device client instance 1 to no retry.");
+            _log.Trace($"{nameof(Duplicated_NoPingpong)}: set device client instance 1 to no retry.");
             deviceClient1.SetRetryPolicy(new NoRetry());
 
             ConnectionStatus? lastConnectionStatus = null;
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 lastConnectionStatus = status;
             });
 
-            _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: device client instance 1 calling OpenAsync...");
+            _log.Trace($"{nameof(FaultInjection_NoRecovery)}: device client instance 1 calling OpenAsync...");
             await deviceClient1.OpenAsync().ConfigureAwait(false);
             await deviceClient1
                 .SetMethodHandlerAsync(
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient1)
                 .ConfigureAwait(false);
 
-            _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: device client instance 2 calling OpenAsync...");
+            _log.Trace($"{nameof(FaultInjection_NoRecovery)}: device client instance 2 calling OpenAsync...");
             await deviceClient2.OpenAsync().ConfigureAwait(false);
             await deviceClient2
                 .SetMethodHandlerAsync(
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient2)
                 .ConfigureAwait(false);
 
-            _log.WriteLine($"{nameof(Duplicated_NoPingpong)}: waiting device client instance 1 to be kicked off...");
+            _log.Trace($"{nameof(Duplicated_NoPingpong)}: waiting device client instance 1 to be kicked off...");
             for (int i = 0; i < FaultInjection.LatencyTimeBufferInSec; i++)
             {
                 if (connectionStatusChanges.ContainsKey(ConnectionStatus.Disconnected))

@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
-        private static TestLogging _log = TestLogging.GetInstance();
+        private static TestLogger _log = TestLogger.GetInstance();
 
         private readonly ConsoleEventListener _listener;
 
@@ -371,7 +371,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string p1Value = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
+            _log.Trace($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";
             string p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            _log.Trace($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,

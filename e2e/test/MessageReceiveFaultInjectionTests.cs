@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveFaultInjectionTests)}_";
 
 #pragma warning disable CA1823
-        private static TestLogging _log = TestLogging.GetInstance();
+        private static TestLogger _log = TestLogger.GetInstance();
         private readonly ConsoleEventListener _listener;
 #pragma warning restore CA1823
 

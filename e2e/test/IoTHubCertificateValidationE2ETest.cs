@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class IoTHubCertificateValidationE2ETest : IDisposable
     {
 #pragma warning disable CA1823
-        private readonly TestLogging _log = TestLogging.GetInstance();
+        private readonly TestLogger _log = TestLogger.GetInstance();
         private readonly ConsoleEventListener _listener;
 #pragma warning restore CA1823
 

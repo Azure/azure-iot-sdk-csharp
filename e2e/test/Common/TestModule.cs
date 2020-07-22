@@ -24,14 +24,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// <param name="type"></param>
         public static async Task<TestModule> GetTestModuleAsync(string deviceNamePrefix, string moduleNamePrefix)
         {
-            var log = TestLogging.GetInstance();
+            var log = TestLogger.GetInstance();
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false);
 
             string deviceName = testDevice.Id;
             string moduleName = moduleNamePrefix + Guid.NewGuid();
 
             using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            log.WriteLine($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
+            log.Trace($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
 
             var requestModule = new Module(deviceName, moduleName);
             Module module = await rm.AddModuleAsync(requestModule).ConfigureAwait(false);
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var ret = new TestModule(module);
 
-            log.WriteLine($"{nameof(GetTestModuleAsync)}: Using device {ret.DeviceId} with module {ret.Id}.");
+            log.Trace($"{nameof(GetTestModuleAsync)}: Using device {ret.DeviceId} with module {ret.Id}.");
             return ret;
         }
 
