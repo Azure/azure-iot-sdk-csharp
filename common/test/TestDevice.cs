@@ -120,25 +120,25 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public Client.IAuthenticationMethod AuthenticationMethod { get; private set; }
 
-        public DeviceClient CreateDeviceClient(Client.TransportType transport)
+        public DeviceClient CreateDeviceClient(Client.TransportType transport, ClientOptions options = default)
         {
             DeviceClient deviceClient = null;
 
             if (AuthenticationMethod == null)
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport);
+                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport, options);
                 s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from connection string: {transport} ID={TestLogging.IdOf(deviceClient)}");
             }
             else
             {
-                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport, options);
                 s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: {transport} ID={TestLogging.IdOf(deviceClient)}");
             }
 
             return deviceClient;
         }
 
-        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device, ClientOptions options = default)
         {
             DeviceClient deviceClient = null;
 
@@ -146,18 +146,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 if (authScope == ConnectionStringAuthScope.Device)
                 {
-                    deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings);
+                    deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings, options);
                     s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from device connection string: ID={TestLogging.IdOf(deviceClient)}");
                 }
                 else
                 {
-                    deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, Device.Id, transportSettings);
+                    deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, Device.Id, transportSettings, options);
                     s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IoTHub connection string: ID={TestLogging.IdOf(deviceClient)}");
                 }
             }
             else
             {
-                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transportSettings);
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transportSettings, options);
                 s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: ID={TestLogging.IdOf(deviceClient)}");
             }
 
