@@ -12,21 +12,21 @@
 
   <!-- NetCore and .NET 4.7.2 -->
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
-    <Compile Remove="net451\EventHubTestListener.NetFramework.cs" />
+    <Compile Remove="helpers\net451\EventHubTestListener.NetFramework.cs" />
   </ItemGroup>
 
   <!-- Legacy .NET 4.5.1 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Remove="$(CommonTest)\Configuration.Provisioning.cs" />
-    <Compile Remove="netstandard20\EventHubTestListener.NetCore.cs" />
-    <Compile Remove="netstandard20\ProvisioningE2ETests.cs" />
-    <Compile Remove="netstandard20\ProvisioningServiceClientE2ETests.cs" />
-    <Compile Remove="netstandard20\ProvisioningCertificateValidationE2ETest.cs" />
-    <Compile Remove="netstandard20\ReprovisioningE2ETests.cs" />
-    <Compile Remove="Helpers\StorageContainer.cs" />
-    <Compile Remove="Helpers\ImportExportDevicesHelpers.cs" />
-    <Compile Remove="RegistryManagerImportDevicesTests.cs" />
-    <Compile Remove="RegistryManagerExportDevicesTests.cs" />
+    <Compile Remove="config\Configuration.Provisioning.cs" />
+    <Compile Remove="helpers\netstandard20\EventHubTestListener.NetCore.cs" />
+    <Compile Remove="provisioning\ProvisioningE2ETests.cs" />
+    <Compile Remove="provisioning\ProvisioningServiceClientE2ETests.cs" />
+    <Compile Remove="provisioning\ProvisioningCertificateValidationE2ETest.cs" />
+    <Compile Remove="provisioning\ReprovisioningE2ETests.cs" />
+    <Compile Remove="helpers\StorageContainer.cs" />
+    <Compile Remove="helpers\ImportExportDevicesHelpers.cs" />
+    <Compile Remove="iothub\service\RegistryManagerImportDevicesTests.cs" />
+    <Compile Remove="iothub\service\RegistryManagerExportDevicesTests.cs" />
   </ItemGroup>
 
   <!-- All Platforms -->
@@ -65,7 +65,9 @@
     <ProjectReference Include="$(RootDir)\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
     <ProjectReference Include="$(RootDir)\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
-    <Compile Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs" />
+    <Compile Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs">
+      <LinkBase>provisioning</LinkBase>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
