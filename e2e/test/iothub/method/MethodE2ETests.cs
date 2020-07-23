@@ -11,12 +11,12 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class MethodE2ETests : IDisposable
+    public class MethodE2ETests : E2EMsTestBase
     {
         public const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         public const string ServiceRequestJson = "{\"a\":123}";
@@ -26,13 +26,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);
-
-        private readonly ConsoleEventListener _listener;
-
-        public MethodE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
@@ -298,11 +291,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            _listener.Dispose();
         }
     }
 }

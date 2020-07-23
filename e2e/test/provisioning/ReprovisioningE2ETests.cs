@@ -16,16 +16,16 @@ using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static Microsoft.Azure.Devices.E2ETests.ProvisioningE2ETests;
-using static Microsoft.Azure.Devices.E2ETests.ProvisioningServiceClientE2ETests;
+using static Microsoft.Azure.Devices.E2ETests.Provisioning.ProvisioningE2ETests;
+using static Microsoft.Azure.Devices.E2ETests.Provisioning.ProvisioningServiceClientE2ETests;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("DPS")]
     [TestCategory("LongRunning")]
-    public class ReprovisioningE2ETests : IDisposable
+    public class ReprovisioningE2ETests : E2EMsTestBase
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private static readonly string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
@@ -35,7 +35,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 #pragma warning disable CA1823
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
         private readonly TestLogger _log = TestLogger.GetInstance();
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 #pragma warning restore CA1823
 
         [TestMethod]
@@ -550,11 +549,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.Trace("DeviceClient CloseAsync.");
                 await iotClient.CloseAsync().ConfigureAwait(false);
             }
-        }
-
-        public void Dispose()
-        {
-            _listener.Dispose();
         }
     }
 }

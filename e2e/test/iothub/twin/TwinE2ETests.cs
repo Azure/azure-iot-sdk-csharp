@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -12,22 +11,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class TwinE2ETests : IDisposable
+    public class TwinE2ETests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(TwinE2ETests)}_";
         private static TestLogger s_log = TestLogger.GetInstance();
-
-        private readonly ConsoleEventListener _listener;
-
-        public TwinE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Mqtt()
@@ -528,11 +520,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
-        }
-
-        public void Dispose()
-        {
-            _listener.Dispose();
         }
     }
 }

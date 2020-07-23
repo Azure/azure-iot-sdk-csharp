@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,13 +11,13 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("Proxy")]
-    public class IoTHubServiceProxyE2ETests : IDisposable
+    public class IoTHubServiceProxyE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(IoTHubServiceProxyE2ETests)}_";
         private const string JobDeviceId = "JobsSample_Device";
@@ -30,13 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #pragma warning disable CA1823
         private static TestLogger _log = TestLogger.GetInstance();
-        private readonly ConsoleEventListener _listener;
 #pragma warning restore CA1823
-
-        public IoTHubServiceProxyE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
@@ -134,16 +127,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             return (message, messageId, payload, p1Value);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

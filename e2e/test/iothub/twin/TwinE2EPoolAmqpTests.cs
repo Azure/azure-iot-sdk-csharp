@@ -3,22 +3,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class TwinE2EPoolAmqpTests : IDisposable
+    public class TwinE2EPoolAmqpTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(TwinE2EPoolAmqpTests)}_";
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
         private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -301,11 +299,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cleanupOperation,
                 authScope,
                 true).ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            _listener.Dispose();
         }
     }
 }

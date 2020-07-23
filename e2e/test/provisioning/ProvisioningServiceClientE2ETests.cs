@@ -12,12 +12,12 @@ using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("DPS")]
-    public class ProvisioningServiceClientE2ETests : IDisposable
+    public class ProvisioningServiceClientE2ETests : E2EMsTestBase
     {
         public enum AttestationType
         {
@@ -32,7 +32,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 #pragma warning disable CA1823
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
         private readonly TestLogger _log = TestLogger.GetInstance();
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 #pragma warning restore CA1823
 
         [TestMethod]
@@ -276,7 +275,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// <returns>the provisioning service client instance</returns>
         public static ProvisioningServiceClient CreateProvisioningService(string proxyServerAddress)
         {
-            var transportSettings = new Provisioning.Service.HttpTransportSettings();
+            var transportSettings = new Devices.Provisioning.Service.HttpTransportSettings();
 
             if (!string.IsNullOrWhiteSpace(proxyServerAddress))
             {

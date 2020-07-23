@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -11,20 +10,14 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class RegistryManagerE2ETests
+    public class RegistryManagerE2ETests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
-        private readonly ConsoleEventListener _listener;
-
-        public RegistryManagerE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         [TestCategory("Proxy")]

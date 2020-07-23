@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -10,23 +9,21 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("LongRunning")]
-    public class AzureSecurityCenterForIoTSecurityMessageE2ETests : IDisposable
+    public class AzureSecurityCenterForIoTSecurityMessageE2ETests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
         private readonly string _modulePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
 
-        private readonly ConsoleEventListener _listener;
         private readonly AzureSecurityCenterForIoTLogAnalyticsClient _logAnalyticsClient;
 
         public AzureSecurityCenterForIoTSecurityMessageE2ETests()
         {
-            _listener = TestConfig.StartEventListener();
             _logAnalyticsClient = AzureSecurityCenterForIoTLogAnalyticsClient.CreateClient();
         }
 
@@ -198,10 +195,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsTrue(isReceivedOms, "Security message was not received in customer log analytics");
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _logAnalyticsClient.Dispose();
-            _listener.Dispose();
+            if (disposing)
+            {
+                _logAnalyticsClient.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

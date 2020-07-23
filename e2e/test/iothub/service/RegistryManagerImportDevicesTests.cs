@@ -12,19 +12,18 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class RegistryManagerImportDevicesTests
+    public class RegistryManagerImportDevicesTests : E2EMsTestBase
     {
         private readonly TestLogger _log = TestLogger.GetInstance();
 
         // A bug in either Storage or System.Diagnostics causes an exception during container creation
         // so for now, we need to use the older storage nuget.
         // https://github.com/Azure/azure-sdk-for-net/issues/10476
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         private const string ImportFileNameDefault = "devices.txt";
         private const int MaxIterationWait = 30;

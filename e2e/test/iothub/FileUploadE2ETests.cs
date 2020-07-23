@@ -2,39 +2,30 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
-using System.Globalization;
 using System.IO;
-using System.Net.Http;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Net;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class FileUploadE2ETests : IDisposable
+    public class FileUploadE2ETests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(FileUploadE2ETests)}_";
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 
 #pragma warning disable CA1823
-        private readonly ConsoleEventListener _listener;
         private static TestLogger s_log = TestLogger.GetInstance();
 #pragma warning restore CA1823
-
-        public FileUploadE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         [TestCategory("LongRunning")]
@@ -190,16 +181,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
 
             return filePath;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

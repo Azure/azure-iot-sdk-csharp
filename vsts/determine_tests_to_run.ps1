@@ -13,7 +13,7 @@ function IsPullRequestBuild
 
 function ShouldSkipIotHubTests 
 {	
-	return !(DoChangesAffectAnyOfFolders @("iothub", "common", "shared", "e2e", "vsts"))
+	return !(DoChangesAffectAnyOfFolders @("iothub", "common", "shared", "vsts"))
 }
 
 function ShouldSkipDPSTests 
@@ -44,20 +44,29 @@ function DoChangesAffectAnyOfFolders($folderNames)
 		{
 			# Sample changes don't necessitate running e2e tests
 		}
-		elseif ($line.toLower().Contains("e2e"))
+		elseif (($line.toLower().Contains("e2e")) -and (-not $line.toLower().Contains("stress")))
 		{
 			# For changes in the E2E test folder, different rules are applied, based on which files changed.
 			if ($line.toLower().Contains("prerequisites"))
 			{
 				# Changes in prerequisites don't necessitate running e2e tests
 			}
-			if ($line.toLower().Contains("helpers") -or $line.toLower().Contains("config"))
+			elseif ($line.toLower().Contains("helpers") -or $line.toLower().Contains("config") -or $line.toLower().Contains("E2ETests.csproj") -or $line.toLower().Contains("E2EMsTestBase"))
 			{
 				# Changes to E2E helper files and config files should rerun all E2E tests
 				return $true
 			}
-
-			# Changes to iothub e2e tests, or provisioning e2e tests should run tests based on the same logic as per change in sourcecode.
+			else
+			{
+				# Changes to iothub e2e tests, or provisioning e2e tests should run tests based on the same logic that we apply for change in sourcecode.
+				foreach ($folderName in $folderNames)
+				{
+					if ($line.toLower().Contains($folderName.toLower()))
+					{
+						return $true
+					}
+				}
+			}
 		}
 		else 
 		{

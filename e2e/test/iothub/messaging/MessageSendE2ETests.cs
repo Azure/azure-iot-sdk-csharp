@@ -13,26 +13,19 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public partial class MessageSendE2ETests : IDisposable
+    public partial class MessageSendE2ETests : E2EMsTestBase
     {
         private const int MessageBatchCount = 5;
         private const int LargeMessageSizeInBytes = 255 * 1024; // The maximum message size for device to cloud messages is 256 KB. We are allowing 1 KB of buffer for message header information etc.
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
-        private static TestLogger _log = TestLogger.GetInstance();
-
-        private readonly ConsoleEventListener _listener;
-
-        public MessageSendE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
+        private static TestLogger s_log = TestLogger.GetInstance();
 
         [TestMethod]
         public async Task Message_DeviceSendSingleMessage_Amqp()
@@ -372,7 +365,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string p1Value = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
 
-            _log.Trace($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
+            s_log.Trace($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
@@ -390,7 +383,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";
             string p1Value = Guid.NewGuid().ToString();
 
-            _log.Trace($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            s_log.Trace($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
@@ -399,16 +392,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             message.Properties.Add("property2", null);
 
             return (message, payload, p1Value);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

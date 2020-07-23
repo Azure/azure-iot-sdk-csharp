@@ -10,13 +10,13 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     // TODO MQTT OrderedTwoPhaseWorkQueue disallow message feedback to be called mix order, enable this test once it's fixed
-    public class MessageFeedbackE2ETests
+    public class MessageFeedbackE2ETests : E2EMsTestBase
     {
         private const int MESSAGE_COUNT = 5;
 
@@ -24,14 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
 #pragma warning disable CA1823
-        private static readonly TestLogger _log = TestLogger.GetInstance();
-        private readonly ConsoleEventListener _listener;
+        private static readonly TestLogger s_log = TestLogger.GetInstance();
 #pragma warning restore CA1823
-
-        public MessageFeedbackE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         public async Task Message_CompleteMixOrder_AMQP()

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -16,13 +15,11 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
-    public class FileUploadFaultInjectionTests : IDisposable
+    public class FileUploadFaultInjectionTests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(FileUploadFaultInjectionTests)}_";
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
-
-        private ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         [TestMethod]
         public async Task FileUploadSuccess_TcpLoss_Amqp()
@@ -134,15 +131,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
 
             return filePath;
-        }
-
-        public void Dispose()
-        {
-            if (_listener != null)
-            {
-                _listener.Dispose();
-                _listener = null;
-            }
         }
     }
 }

@@ -8,12 +8,12 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class BulkOperationsE2ETests : E2EMsTestBase, IDisposable
+    public class BulkOperationsE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(BulkOperationsE2ETests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(BulkOperationsE2ETests)}_";
@@ -139,16 +139,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             return errorString;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

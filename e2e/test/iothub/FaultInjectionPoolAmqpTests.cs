@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -13,15 +12,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("FaultInjection")]
     [TestCategory("PoolAmqp")]
     [TestCategory("LongRunning")]
-    public partial class FaultInjectionPoolAmqpTests : IDisposable
+    public partial class FaultInjectionPoolAmqpTests : E2EMsTestBase
     {
         private static TestLogger _log = TestLogger.GetInstance();
-
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
-
-        public void Dispose()
-        {
-            _listener.Dispose();
-        }
     }
 }
