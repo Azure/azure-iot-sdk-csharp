@@ -20,7 +20,7 @@ function ShouldSkipDPSTests
 {
 	if (ShouldSkipIotHubTests) 
 	{
-		return !(DoChangesAffectAnyOfFolders @("Provisioning", "Security"))
+		return !(DoChangesAffectAnyOfFolders @("provisioning", "security"))
 	}
 	
 	#Provisioning tests depend on iot hub packages, so if iot hub tests aren't being skipped, neither should provisioning tests
@@ -28,7 +28,7 @@ function ShouldSkipDPSTests
 }
 
 # $folderNames is an array of strings where each string is the name of a folder within the codebase to look for in the git diff between the source and target branches
-# For instance, $folderNames can be "iothub", "common", "shared" if you want to see if and changes happened within the iothub folder, the common folder, or in the shared folder
+# For instance, $folderNames can be "iothub", "common", "shared" if you want to see if any changes happened within the iothub folder, the common folder, or in the shared folder
 function DoChangesAffectAnyOfFolders($folderNames) 
 {
 	#TARGET_BRANCH is defined by the yaml file that calls this script. It is equal to the azure devops pre-defined variable "$(System.PullRequest.TargetBranch)" which contains either
@@ -43,6 +43,21 @@ function DoChangesAffectAnyOfFolders($folderNames)
 		elseif ($line.toLower().Contains("sample")) 
 		{
 			# Sample changes don't necessitate running e2e tests
+		}
+		elseif ($line.toLower().Contains("e2e"))
+		{
+			# For changes in the E2E test folder, different rules are applied, based on which files changed.
+			if ($line.toLower().Contains("prerequisites"))
+			{
+				# Changes in prerequisites don't necessitate running e2e tests
+			}
+			if ($line.toLower().Contains("helpers") -or $line.toLower().Contains("config"))
+			{
+				# Changes to E2E helper files and config files should rerun all E2E tests
+				return $true
+			}
+
+			# Changes to iothub e2e tests, or provisioning e2e tests should run tests based on the same logic as per change in sourcecode.
 		}
 		else 
 		{
