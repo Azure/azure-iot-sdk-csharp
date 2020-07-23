@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -17,14 +16,14 @@ using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static Microsoft.Azure.Devices.E2ETests.ProvisioningServiceClientE2ETests;
+using static Microsoft.Azure.Devices.E2ETests.Provisioning.ProvisioningServiceClientE2ETests;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("DPS")]
-    public class ProvisioningE2ETests : IDisposable
+    public class ProvisioningE2ETests : E2EMsTestBase
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private const int FailingTimeoutMiliseconds = 10 * 1000;
@@ -37,12 +36,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
         private readonly TestLogger _log = TestLogger.GetInstance();
-        private readonly ConsoleEventListener _listener;
-
-        public ProvisioningE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         public enum EnrollmentType
         {
@@ -1054,16 +1047,6 @@ transport);
             }
 
             throw new NotSupportedException($"Unknown transport: '{transportProtocol}'.");
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

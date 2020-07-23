@@ -9,25 +9,19 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
-    public partial class MessageReceiveFaultInjectionTests : IDisposable
+    public partial class MessageReceiveFaultInjectionTests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveFaultInjectionTests)}_";
 
 #pragma warning disable CA1823
-        private static TestLogger _log = TestLogger.GetInstance();
-        private readonly ConsoleEventListener _listener;
+        private static TestLogger s_log = TestLogger.GetInstance();
 #pragma warning restore CA1823
-
-        public MessageReceiveFaultInjectionTests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
 
         [TestMethod]
         public async Task Message_TcpConnectionLossReceiveRecovery_Amqp()
@@ -228,16 +222,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     testOperation,
                     cleanupOperation).ConfigureAwait(false);
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

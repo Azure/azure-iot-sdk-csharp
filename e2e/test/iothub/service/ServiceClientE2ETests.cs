@@ -9,22 +9,15 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class ServiceClientE2ETests : IDisposable
+    public class ServiceClientE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(ServiceClientE2ETests)}_";
-        private static TestLogger _log = TestLogger.GetInstance();
-
-        private readonly ConsoleEventListener _listener;
-
-        public ServiceClientE2ETests()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
+        private static TestLogger s_log = TestLogger.GetInstance();
 
         [TestMethod]
         [ExpectedException(typeof(TimeoutException))]
@@ -60,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            _log.Trace($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
+            s_log.Trace($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
             try
             {
                 await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
@@ -68,18 +61,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             finally
             {
                 sw.Stop();
-                _log.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
+                s_log.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

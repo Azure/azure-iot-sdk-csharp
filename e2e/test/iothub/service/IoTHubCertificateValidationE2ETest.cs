@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Threading.Tasks;
@@ -10,22 +9,12 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
-    public class IoTHubCertificateValidationE2ETest : IDisposable
+    public class IoTHubCertificateValidationE2ETest : E2EMsTestBase
     {
-#pragma warning disable CA1823
-        private readonly TestLogger _log = TestLogger.GetInstance();
-        private readonly ConsoleEventListener _listener;
-#pragma warning restore CA1823
-
-        public IoTHubCertificateValidationE2ETest()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
-
         [TestMethod]
         public async Task RegistryManager_QueryDevicesInvalidServiceCertificateHttp_Fails()
         {
@@ -146,16 +135,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.SendEventAsync(new Client.Message()).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

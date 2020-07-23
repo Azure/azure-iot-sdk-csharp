@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Net;
 using System.Text;
@@ -19,18 +18,16 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class DeviceTokenRefreshE2ETests : IDisposable
+    public class DeviceTokenRefreshE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(DeviceTokenRefreshE2ETests)}_";
 
-        private readonly ConsoleEventListener _listener;
         private readonly TestLogger _log;
 
         private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
         public DeviceTokenRefreshE2ETests()
         {
-            _listener = TestConfig.StartEventListener();
             _log = TestLogger.GetInstance();
         }
 

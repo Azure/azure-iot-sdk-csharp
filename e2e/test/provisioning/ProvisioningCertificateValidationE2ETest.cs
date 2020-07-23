@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client;
@@ -11,19 +10,12 @@ using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
-    public class ProvisioningCertificateValidationE2ETest : IDisposable
+    public class ProvisioningCertificateValidationE2ETest : E2EMsTestBase
     {
-        private readonly ConsoleEventListener _listener;
-
-        public ProvisioningCertificateValidationE2ETest()
-        {
-            _listener = TestConfig.StartEventListener();
-        }
-
         [TestMethod]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
@@ -129,16 +121,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await provisioningDeviceClient.RegisterAsync().ConfigureAwait(false);
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
         }
     }
 }

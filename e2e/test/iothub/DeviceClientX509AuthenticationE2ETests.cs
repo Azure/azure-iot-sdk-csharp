@@ -8,6 +8,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices.E2ETests.Messaging;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
@@ -17,16 +18,14 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class DeviceClientX509AuthenticationE2ETests : IDisposable
+    public class DeviceClientX509AuthenticationE2ETests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"E2E_{nameof(DeviceClientX509AuthenticationE2ETests)}_";
 
-        private readonly ConsoleEventListener _listener;
         private readonly string _hostName;
 
         public DeviceClientX509AuthenticationE2ETests()
         {
-            _listener = TestConfig.StartEventListener();
             _hostName = GetHostName(Configuration.IoTHub.ConnectionString);
         }
 
@@ -222,10 +221,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             var auth = new DeviceAuthenticationWithX509Certificate(deviceName, Configuration.IoTHub.GetCertificateWithPrivateKey());
             return DeviceClient.Create(_hostName, auth, transportType);
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

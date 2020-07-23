@@ -13,13 +13,13 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("LongRunning")]
-    public partial class MessageReceiveE2ETests : IDisposable
+    public partial class MessageReceiveE2ETests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
 
@@ -28,8 +28,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly TimeSpan s_oneSecond = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan s_fiveSeconds = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan s_twentySeconds = TimeSpan.FromSeconds(20);
-
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         [TestMethod]
         public async Task Message_DeviceReceiveSingleMessage_Amqp()
@@ -531,11 +529,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            _listener.Dispose();
         }
     }
 }

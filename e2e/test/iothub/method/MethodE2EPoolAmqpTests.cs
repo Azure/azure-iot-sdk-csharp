@@ -2,23 +2,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class MethodE2EPoolAmqpTests : IDisposable
+    public class MethodE2EPoolAmqpTests : E2EMsTestBase
     {
         private const string MethodName = "MethodE2EPoolAmqpTests";
         private readonly string _devicePrefix = $"E2E_{nameof(MethodE2EPoolAmqpTests)}_";
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
         private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -258,11 +256,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     authScope,
                     true)
                 .ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            _listener.Dispose();
         }
     }
 }

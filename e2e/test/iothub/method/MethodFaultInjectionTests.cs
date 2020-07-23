@@ -14,21 +14,19 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
-    public class MethodFaultInjectionTests : IDisposable
+    public class MethodFaultInjectionTests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MethodFaultInjectionTests)}_";
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";
         private static TestLogger s_log = TestLogger.GetInstance();
-
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
@@ -292,11 +290,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     testOperation,
                     () => { return Task.FromResult<bool>(false); })
                 .ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            _listener.Dispose();
         }
     }
 }

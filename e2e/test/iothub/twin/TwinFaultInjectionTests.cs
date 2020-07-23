@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -12,17 +11,15 @@ using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class TwinFaultInjectionTests : IDisposable
+    public class TwinFaultInjectionTests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"E2E_{nameof(TwinFaultInjectionTests)}_";
         private static readonly TestLogger s_log = TestLogger.GetInstance();
-
-        private readonly ConsoleEventListener _listener = TestConfig.StartEventListener();
 
         [TestMethod]
         [TestCategory("FaultInjection")]
@@ -319,11 +316,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     testOperation,
                     () => { return Task.FromResult(false); })
                 .ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            _listener.Dispose();
         }
     }
 }
