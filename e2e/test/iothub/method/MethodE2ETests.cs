@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout, ServiceClientTransportSettings serviceClientTransportSettings, TestDeviceType authenticationType)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, authenticationType).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using var deviceClient = testDevice.CreateDeviceClient(transport);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
 
