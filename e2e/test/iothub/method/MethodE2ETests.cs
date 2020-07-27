@@ -27,78 +27,50 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);
 
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
+        [DataTestMethod]
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only, TestDeviceType.X509)]
+        public async Task Method_DeviceReceivesMethodAndResponse(Client.TransportType transportType, TestDeviceType authenticationType)
         {
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(transportType, SetDeviceReceiveMethodAsync, authenticationType).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
+        [DataTestMethod]
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only, TestDeviceType.X509)]
+        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler(Client.TransportType transportType, TestDeviceType authenticationType)
         {
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(transportType, SetDeviceReceiveMethodObsoleteHandler, authenticationType).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Mqtt()
+        [DataTestMethod]
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only, TestDeviceType.Sasl)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only, TestDeviceType.X509)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only, TestDeviceType.X509)]
+        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler(Client.TransportType transportType, TestDeviceType authenticationType)
         {
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(transportType, SetDeviceReceiveMethodDefaultHandlerAsync, authenticationType).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_MqttWs()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Amqp()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_AmqpWs()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Amqp()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
-        }
-
+        // Note that this test is not parameterized on device side settings. This test is about testing if the service
+        // client can communicate through a proxy as expected
         [TestMethod]
         public async Task Method_ServiceSendsMethodThroughProxyWithDefaultTimeout()
         {
@@ -107,9 +79,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 HttpProxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
             };
 
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodAsync, serviceClientTransportSettings).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodAsync, serviceClientTransportSettings, TestDeviceType.Sasl).ConfigureAwait(false);
         }
 
+        // Note that this test is not parameterized on device side settings. This test is about testing if the service
+        // client can communicate through a proxy as expected
         [TestMethod]
         public async Task Method_ServiceSendsMethodThroughProxyWithCustomTimeout()
         {
@@ -118,9 +92,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 HttpProxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
             };
 
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodAsync, TimeSpan.FromMinutes(5), serviceClientTransportSettings).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodAsync, TimeSpan.FromMinutes(5), serviceClientTransportSettings, TestDeviceType.Sasl).ConfigureAwait(false);
         }
 
+        // Note that this test is not parameterized on device side settings. This test does not depend on having a registered device
         [TestMethod]
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
@@ -267,19 +242,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             return Task.FromResult<Task>(methodCallReceived.Task);
         }
 
-        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod)
+        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, TestDeviceType authenticationType)
         {
-            await SendMethodAndRespondAsync(transport, setDeviceReceiveMethod, new ServiceClientTransportSettings()).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(transport, setDeviceReceiveMethod, new ServiceClientTransportSettings(), authenticationType).ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, ServiceClientTransportSettings serviceClientTransportSettings)
+        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, ServiceClientTransportSettings serviceClientTransportSettings, TestDeviceType authenticationType)
         {
-            await SendMethodAndRespondAsync(transport, setDeviceReceiveMethod, s_defaultMethodTimeoutMinutes, serviceClientTransportSettings).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(transport, setDeviceReceiveMethod, s_defaultMethodTimeoutMinutes, serviceClientTransportSettings, authenticationType).ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout, ServiceClientTransportSettings serviceClientTransportSettings)
+        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout, ServiceClientTransportSettings serviceClientTransportSettings, TestDeviceType authenticationType)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, authenticationType).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
