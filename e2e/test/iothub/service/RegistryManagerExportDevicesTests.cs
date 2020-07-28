@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             JobStatus.Unknown,
         };
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         [Timeout(120000)]
         [DoNotParallelize]

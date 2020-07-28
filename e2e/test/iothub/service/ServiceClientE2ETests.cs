@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private readonly string DevicePrefix = $"E2E_{nameof(ServiceClientE2ETests)}_";
         private static TestLogger s_log = TestLogger.GetInstance();
 
-        [TestMethod]
+        [LoggedTestMethod]
         [ExpectedException(typeof(TimeoutException))]
         [TestCategory("Flaky")]
         public async Task Message_TimeOutReachedResponse()
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await FastTimeout().ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_NoTimeoutPassed()
         {
             await DefaultTimeout().ConfigureAwait(false);

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private static TestLogger _log = TestLogger.GetInstance();
 #pragma warning restore CA1823
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
         {
             ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings();
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await SendSingleMessageService(transportSettings).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task RegistryManager_AddAndRemoveDevice_WithProxy()
         {
             HttpTransportSettings httpTransportSettings = new HttpTransportSettings();
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await RegistryManager_AddDevice(httpTransportSettings).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
             HttpTransportSettings httpTransportSettings = new HttpTransportSettings();
