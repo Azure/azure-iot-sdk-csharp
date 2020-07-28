@@ -88,6 +88,7 @@ jobs:
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          E2E_IKEY: $(E2E-IKEY)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
@@ -181,6 +182,7 @@ jobs:
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          E2E_IKEY: $(E2E-IKEY)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
