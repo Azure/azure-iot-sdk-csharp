@@ -315,6 +315,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     usernameString += $"&{AuthChainParam}={Uri.EscapeDataString(this.mqttTransportSettings.AuthenticationChain)}";
                 }
 
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(usernameString)}={usernameString}", nameof(Connect));
+
                 var connectPacket = new ConnectPacket
                 {
                     ClientId = id,
@@ -415,6 +417,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // We've been idle for too long, send a ping!
                     await WriteMessageAsync(context, PingReqPacket.Instance, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
+
+                    if (Logging.IsEnabled) Logging.Info(context, $"Idle time was {idleTime}, so ping request was sent.", nameof(PingServer));
                 }
 
                 self.ScheduleKeepConnectionAlive(context);
