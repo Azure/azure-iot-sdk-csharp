@@ -412,10 +412,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage();
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = false;
-                isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, testMessage, payload, p1Value);
-                Assert.IsTrue(isReceived);
             };
 
             await FaultInjection

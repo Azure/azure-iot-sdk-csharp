@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // D2C Operation
                 s_log.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 1: Send D2C for device={testDevice.Id}");
-                Task sendD2cMessage = MessageSendE2ETests.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id);
+                Task sendD2cMessage = MessageSendE2ETests.SendSingleMessageAsync(deviceClient, testDevice.Id);
                 clientOperations.Add(sendD2cMessage);
 
                 // C2D Operation

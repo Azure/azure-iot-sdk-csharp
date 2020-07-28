@@ -132,9 +132,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage();
                 s_log.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, testMessage, payload, p1Value);
-                Assert.IsTrue(isReceived, "Message is not received.");
             };
 
             await PoolingOverAmqp
