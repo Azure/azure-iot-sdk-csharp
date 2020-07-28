@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             _log = TestLogger.GetInstance();
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task DeviceClient_Not_Exist_AMQP()
         {
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task DeviceClient_Bad_Credentials_AMQP()
         {
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("Flaky")]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Http()
@@ -66,14 +66,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Amqp).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt, IoTHubServerTimeAllowanceSeconds + 60).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task DeviceClient_TokenConnectionDoubleRelease_Ok()
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);

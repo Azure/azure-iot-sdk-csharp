@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string DevicePrefix = $"E2E_{nameof(NoRetryE2ETests)}_";
         private static TestLogger s_log = TestLogger.GetInstance();
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("FaultInjection")]
         public async Task FaultInjection_NoRecovery()
         {
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual(1, disconnected, $"Should get {ConnectionStatus.Disconnected} once but was {disconnected}.");
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Duplicated_NoPingpong()
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);

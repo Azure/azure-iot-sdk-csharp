@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static TestLogger s_log = TestLogger.GetInstance();
 #pragma warning restore CA1823
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_TcpConnectionLossReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_TcpConnectionLossReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_TcpConnectionLossReceiveRecovery_Mqtt()
         {
             await ReceiveMessageRecovery(
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 ).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_TcpConnectionLossReceiveRecovery_MqttWs()
         {
             await ReceiveMessageRecovery(
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_AmqpConnectionLossReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_AmqpConnectionLossReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_AmqpSessionLossReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_AmqpSessionLossReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_AmqpC2DLinkDropReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_AmqpC2DLinkDropReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_GracefulShutdownReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_GracefulShutdownReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_GracefulShutdownReceiveRecovery_Mqtt()
         {
             await ReceiveMessageRecovery(
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_GracefulShutdownReceiveRecovery_MqttWs()
         {
             await ReceiveMessageRecovery(

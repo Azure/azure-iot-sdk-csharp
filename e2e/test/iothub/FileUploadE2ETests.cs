@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static TestLogger s_log = TestLogger.GetInstance();
 #pragma warning restore CA1823
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http()
         {
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileAsync(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task FileUpload_BigFile_Http()
         {
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileAsync(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task FileUpload_X509_SmallFile_Http()
         {
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileAsync(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http_GranularSteps()
         {
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http_GranularSteps_x509()
         {
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, x509auth: true).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http_GranularSteps_Proxy()
         {

@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static readonly TestLogger s_log = TestLogger.GetInstance();
 #pragma warning restore CA1823
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task Message_CompleteMixOrder_AMQP()
         {
             await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);

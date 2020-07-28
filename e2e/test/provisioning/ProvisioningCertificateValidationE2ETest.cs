@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("InvalidServiceCertificate")]
     public class ProvisioningCertificateValidationE2ETest : E2EMsTestBase
     {
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
             using (var provisioningServiceClient =
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly))
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateHttp_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerHttp())
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly))
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly))

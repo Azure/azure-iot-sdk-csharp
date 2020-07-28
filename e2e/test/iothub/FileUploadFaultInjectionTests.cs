@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task FileUploadSuccess_TcpLoss_Amqp()
         {
             string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         public async Task FileUploadSuccess_Throttled_Amqp()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [LoggedTestMethod]
         [DoNotParallelize]
         public async Task FileUploadSuccess_QuotaExceed_Amqp()
         {
