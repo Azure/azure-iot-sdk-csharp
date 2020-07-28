@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -253,7 +252,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id, messageSize).ConfigureAwait(false);
+            await SendSingleMessageAsync(deviceClient, testDevice.Id, messageSize).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -263,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendSendBatchMessagesAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+            await SendBatchMessagesAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -273,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id, messageSize).ConfigureAwait(false);
+            await SendSingleMessageAsync(deviceClient, testDevice.Id, messageSize).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -283,35 +282,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageModuleAndVerifyAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);
+            await SendSingleMessageModuleAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
-        public static async Task SendSingleMessageAndVerifyAsync(DeviceClient deviceClient, string deviceId, int messageSize = 0)
+        public static async Task SendSingleMessageAsync(DeviceClient deviceClient, string deviceId, int messageSize = 0)
         {
             Client.Message testMessage;
-            string payload;
-            string p1Value;
 
             if (messageSize == 0)
             {
-                (testMessage, payload, p1Value) = ComposeD2cTestMessage();
+                (testMessage, _, _) = ComposeD2cTestMessage();
             }
             else
             {
-                (testMessage, payload, p1Value) = ComposeD2cTestMessageOfSpecifiedSize(messageSize);
+                (testMessage, _, _) = ComposeD2cTestMessageOfSpecifiedSize(messageSize);
             }
 
             using (testMessage)
             {
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, testMessage, payload, p1Value);
-                Assert.IsTrue(isReceived, "Message is not received.");
             }
         }
 
-        public static async Task SendSendBatchMessagesAndVerifyAsync(DeviceClient deviceClient, string deviceId)
+        public static async Task SendBatchMessagesAsync(DeviceClient deviceClient, string deviceId)
         {
             var messagesToBeSent = new Dictionary<Client.Message, Tuple<string, string>>();
 
@@ -325,15 +319,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 }
 
                 await deviceClient.SendEventBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
-
-                foreach (KeyValuePair<Client.Message, Tuple<string, string>> messageEntry in messagesToBeSent)
-                {
-                    Client.Message message = messageEntry.Key;
-                    Tuple<string, string> prop = messageEntry.Value;
-
-                    bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, message, prop.Item1, prop.Item2);
-                    Assert.IsTrue(isReceived, "Message is not received.");
-                }
             }
             finally
             {
@@ -345,16 +330,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        private async Task SendSingleMessageModuleAndVerifyAsync(ModuleClient moduleClient, string deviceId)
+        private async Task SendSingleMessageModuleAsync(ModuleClient moduleClient, string deviceId)
         {
             (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage();
 
             using (testMessage)
             {
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, testMessage, payload, p1Value);
-                Assert.IsTrue(isReceived, "Message is not received.");
             }
         }
 

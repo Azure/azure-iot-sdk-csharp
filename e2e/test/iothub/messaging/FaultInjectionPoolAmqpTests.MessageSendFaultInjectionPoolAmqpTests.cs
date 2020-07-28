@@ -873,9 +873,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 _log.Trace($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, testMessage, payload, p1Value);
-                Assert.IsTrue(isReceived, $"Message is not received for device {testDevice.Id}.");
             };
 
             Func<IList<DeviceClient>, Task> cleanupOperation = (deviceClients) =>
