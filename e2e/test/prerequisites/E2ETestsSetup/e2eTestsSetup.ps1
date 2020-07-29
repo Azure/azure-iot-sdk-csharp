@@ -371,9 +371,6 @@ $proxyServerAddress = "127.0.0.1:8888"
 
 Write-Host "`nGetting generated names and secrets from ARM template output"
 $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
-$eventHubCompatibleName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.eventHubCompatibleName.value' --output tsv
-$eventHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.eventHubConnectionString.value' --output tsv
-$consumerGroupName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.consumerGroupName.value' --output tsv
 $farHubHostName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubHostName.value' --output tsv
 $farHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubConnectionString.value' --output tsv
 $dpsName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.dpsName.value' --output tsv
@@ -500,20 +497,14 @@ Remove-Item -r $selfSignedCerts
 Write-Host("`nWriting secrets to KeyVault $keyVaultName")
 az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id $userObjectId --secret-permissions delete get list set --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONN-STRING-CSHARP" --value $iotHubConnectionString --output none
-# Iot Hub Connection string Environment variable for Java
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none # Iot Hub Connection string Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-CONN-STRING-CSHARP" --value $eventHubConnectionString --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-COMPATIBLE-NAME" --value $eventHubCompatibleName --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-EVENTHUB-CONSUMER-GROUP" --value $consumerGroupName --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PROXY-SERVER-ADDRESS" --value $proxyServerAddress --output none
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value $farHubHostName --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-IDSCOPE" --value $dpsIdScope --output none
-# DPS ID Scope Environment variable for Java
-az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-ID-SCOPE" --value $dpsIdScope --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-ID-SCOPE" --value $dpsIdScope --output none # DPS ID Scope Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "PROVISIONING-CONNECTION-STRING" --value $dpsConnectionString --output none
-# DPS Connection string Environment variable for Java
-az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $dpsConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $dpsConnectionString --output none # DPS Connection string Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "CUSTOM-ALLOCATION-POLICY-WEBHOOK" --value $customAllocationPolicyWebhook --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT" --value "global.azure-devices-provisioning.net" --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-X509-PFX-CERTIFICATE-PASSWORD" --value $dpsX509PfxCertificatePassword --output none
