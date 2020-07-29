@@ -13,12 +13,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             public static string ConnectionString => GetValue("IOTHUB_CONN_STRING_CSHARP");
 
-            public static string EventHubString => GetValue("IOTHUB_EVENTHUB_CONN_STRING_CSHARP", string.Empty);
-
-            public static string EventHubCompatibleName => GetValue("IOTHUB_EVENTHUB_COMPATIBLE_NAME", string.Empty);
-
-            public static string EventHubConsumerGroup => GetValue("IOTHUB_EVENTHUB_CONSUMER_GROUP", "$Default");
-
             public static X509Certificate2 GetCertificateWithPrivateKey()
             {
                 const string hubPfxCert = "IOTHUB_X509_PFX_CERTIFICATE";
