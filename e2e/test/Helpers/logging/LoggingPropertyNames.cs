@@ -22,5 +22,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string Caller = "Caller";
         public const string BuildId = "BuildId";
         public const string TestFailureReason = "TestResult";
+        public const string OsInfo = "OsInfo";
     }
 }
