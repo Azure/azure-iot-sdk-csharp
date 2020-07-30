@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"Finished test - {TestContext.TestName}", SeverityLevel.Information, extraProperties);
             Logger.Event(TestFinishedEventName, extraProperties);
             // As this is not an application that keeps running, explicitly flushing is required to ensure we do not lose any logs.
-            Logger.SafeFlush();
+            //Logger.SafeFlush();
 
             // Dispose the managed resources, so that each test run starts with a fresh slate.
             Dispose();
