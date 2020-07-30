@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.InvokeDeviceMethodAsync("MyDummyDevice", methodInvocation).ConfigureAwait(false);
+                await serviceClient.InvokeDeviceMethodAsync("SomeNonExistantDevice", methodInvocation);
             }
             catch (DeviceNotFoundException ex)
             {
