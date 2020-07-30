@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -32,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public void TestInitialize()
         {
             Stopwatch = Stopwatch.StartNew();
-            Logger = MsTestLogger.GetInstance(TestContext);
+            Logger = new MsTestLogger(TestContext);
             Logger.Trace($"Starting test - {TestContext.TestName}", SeverityLevel.Information);
             Logger.Event(TestStartedEventName);
 
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestCleanup]
-        public void TestCleanup()
+        public async Task TestCleanupAsync()
         {
             Stopwatch.Stop();
 
@@ -53,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"Finished test - {TestContext.TestName}", SeverityLevel.Information, extraProperties);
             Logger.Event(TestFinishedEventName, extraProperties);
             // As this is not an application that keeps running, explicitly flushing is required to ensure we do not lose any logs.
-            Logger.SafeFlush();
+            await Logger.SafeFlushAsync().ConfigureAwait(false);
 
             // Dispose the managed resources, so that each test run starts with a fresh slate.
             Dispose();

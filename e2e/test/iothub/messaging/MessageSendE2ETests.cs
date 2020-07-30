@@ -24,7 +24,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
-        private static TestLogger s_log = TestLogger.GetInstance();
 
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_Amqp()
@@ -92,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSendSingleMessage_Http_WithCustomProxy()
         {
             Http1TransportSettings httpTransportSettings = new Http1TransportSettings();
-            CustomWebProxy proxy = new CustomWebProxy();
+            CustomWebProxy proxy = new CustomWebProxy(Logger);
             httpTransportSettings.Proxy = proxy;
             ITransportSettings[] transportSettings = new ITransportSettings[] { httpTransportSettings };
 
@@ -213,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_ClientThrowsForMqttTopicNameTooLong()
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -248,37 +247,37 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport, int messageSize = 0)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageAsync(deviceClient, testDevice.Id, messageSize).ConfigureAwait(false);
+            await SendSingleMessageAsync(deviceClient, testDevice.Id, Logger, messageSize).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendBatchMessages(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendBatchMessagesAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+            await SendBatchMessagesAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendSingleMessage(TestDeviceType type, ITransportSettings[] transportSettings, int messageSize = 0)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageAsync(deviceClient, testDevice.Id, messageSize).ConfigureAwait(false);
+            await SendSingleMessageAsync(deviceClient, testDevice.Id, Logger, messageSize).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendSingleMessageModule(ITransportSettings[] transportSettings)
         {
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
             using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
@@ -286,17 +285,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
-        public static async Task SendSingleMessageAsync(DeviceClient deviceClient, string deviceId, int messageSize = 0)
+        public static async Task SendSingleMessageAsync(DeviceClient deviceClient, string deviceId, TestLogger logger, int messageSize = 0)
         {
             Client.Message testMessage;
 
             if (messageSize == 0)
             {
-                (testMessage, _, _) = ComposeD2cTestMessage();
+                (testMessage, _, _) = ComposeD2cTestMessage(logger);
             }
             else
             {
-                (testMessage, _, _) = ComposeD2cTestMessageOfSpecifiedSize(messageSize);
+                (testMessage, _, _) = ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger);
             }
 
             using (testMessage)
@@ -305,7 +304,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        public static async Task SendBatchMessagesAsync(DeviceClient deviceClient, string deviceId)
+        public static async Task SendBatchMessagesAsync(DeviceClient deviceClient, string deviceId, TestLogger logger)
         {
             var messagesToBeSent = new Dictionary<Client.Message, Tuple<string, string>>();
 
@@ -314,7 +313,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 var props = new List<Tuple<string, string>>();
                 for (int i = 0; i < MessageBatchCount; i++)
                 {
-                    (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage();
+                    (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage(logger);
                     messagesToBeSent.Add(testMessage, Tuple.Create(payload, p1Value));
                 }
 
@@ -332,7 +331,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task SendSingleMessageModuleAsync(ModuleClient moduleClient, string deviceId)
         {
-            (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage();
+            (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage(Logger);
 
             using (testMessage)
             {
@@ -340,14 +339,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessage()
+        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessage(TestLogger logger)
         {
             string messageId = Guid.NewGuid().ToString();
             string payload = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
 
-            s_log.Trace($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
+            logger.Trace($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
@@ -359,13 +358,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return (message, payload, p1Value);
         }
 
-        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessageOfSpecifiedSize(int messageSize)
+        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessageOfSpecifiedSize(int messageSize, TestLogger logger)
         {
             string messageId = Guid.NewGuid().ToString();
             string payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";
             string p1Value = Guid.NewGuid().ToString();
 
-            s_log.Trace($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            logger.Trace($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,

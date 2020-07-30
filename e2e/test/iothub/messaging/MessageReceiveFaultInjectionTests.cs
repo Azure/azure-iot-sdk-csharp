@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -18,10 +17,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     public partial class MessageReceiveFaultInjectionTests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveFaultInjectionTests)}_";
-
-#pragma warning disable CA1823
-        private static TestLogger s_log = TestLogger.GetInstance();
-#pragma warning restore CA1823
 
         [LoggedTestMethod]
         public async Task Message_TcpConnectionLossReceiveRecovery_Amqp()
@@ -200,9 +195,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
                 Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
                 {
-                    (Message message, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
+                    (Message message, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                     await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
-                    await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, message, payload).ConfigureAwait(false);
+                    await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, message, payload, Logger).ConfigureAwait(false);
                 };
 
                 Func<Task> cleanupOperation = () =>
@@ -220,7 +215,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.DefaultDurationInSec,
                     init,
                     testOperation,
-                    cleanupOperation).ConfigureAwait(false);
+                    cleanupOperation,
+                    Logger).ConfigureAwait(false);
             }
         }
     }

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class LoggedTestMethod : TestMethodAttribute
     {
-        private static TestLogger _logger = TestLogger.GetInstance();
+        private static TestLogger _logger = new TestLogger();
 
         public override TestResult[] Execute(ITestMethod testMethod)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     { LoggingPropertyNames.TestFailureReason, testFailureReason }
                 };
                 _logger.Trace($"Test {testMethod.TestMethodName} failed with error {testFailureReason}.", SeverityLevel.Error, extraProperties);
-                _logger.SafeFlush();
+                _logger.SafeFlushAsync();
             }
             return results;
         }

@@ -3,8 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -18,7 +17,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         public const string SdkLanguage = ".NET";
         public const string Service = "IotHub";
-        private static object _initLock = new object();
 
         // Client to log to application insights.
         private static TelemetryClient _telemetryClient;
@@ -27,28 +25,22 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
-        protected TestLogger()
+        // Static constructor is called at most one time, before any instance constructor is invoked or member is accessed.
+        static TestLogger()
         {
-            // Thread-safe initialization of the telemetry client and run Id.
-            lock (_initLock)
+            // Instrumentation key is used to connect to Application Insights instance.
+            // The value is copied from the portal and stored in KeyVault.
+            // The E2E tests script will load it as an environment variable and the pipelines have a task to do the same.
+            string intrumentationKey = Environment.GetEnvironmentVariable("E2E_IKEY");
+            if (!string.IsNullOrWhiteSpace(intrumentationKey))
             {
-                if (_telemetryClient == null)
+                var config = new TelemetryConfiguration
                 {
-                    // Instrumentation key is used to connect to Application Insights instance.
-                    // The value is copied from the portal and stored in KeyVault.
-                    // The E2E tests script will load it as an environment variable and the pipelines have a task to do the same.
-                    string intrumentationKey = Environment.GetEnvironmentVariable("E2E_IKEY");
-                    if (!string.IsNullOrWhiteSpace(intrumentationKey))
-                    {
-                        var config = new TelemetryConfiguration
-                        {
-                            InstrumentationKey = intrumentationKey,
-                        };
-                        _telemetryClient = new TelemetryClient(config);
+                    InstrumentationKey = intrumentationKey,
+                };
+                _telemetryClient = new TelemetryClient(config);
 
-                        InitializeCommonProperties();
-                    }
-                }
+                InitializeCommonProperties();
             }
         }
 
@@ -57,11 +49,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static string IdOf(object value) => value != null ? value.GetType().Name + "#" + GetHashCode(value) : NullInstance;
 
         public static int GetHashCode(object value) => value?.GetHashCode() ?? 0;
-
-        public static TestLogger GetInstance()
-        {
-            return new TestLogger();
-        }
 
         public void Trace(string message, SeverityLevel severity = SeverityLevel.Information, IDictionary<string, string> extraProperties = null)
         {
@@ -89,14 +76,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// <summary>
         /// Flush to ensure logs are not lost before quiting an application.
         /// </summary>
-        public void SafeFlush()
+        public async Task SafeFlushAsync()
         {
             if (_telemetryClient != null)
             {
                 _telemetryClient.Flush();
 
                 // Hold on to the thread context to allow flushing to complete.
-                Thread.Sleep(5000);
+                await Task.Delay(5000).ConfigureAwait(false);
             }
         }
 
@@ -120,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return result;
         }
 
-        private void InitializeCommonProperties()
+        private static void InitializeCommonProperties()
         {
             _commonProperties = new Dictionary<string, string>
             {

@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     public class ServiceClientE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(ServiceClientE2ETests)}_";
-        private static TestLogger s_log = TestLogger.GetInstance();
 
         [LoggedTestMethod]
         [ExpectedException(typeof(TimeoutException))]
@@ -47,13 +46,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private async Task TestTimeout(TimeSpan? timeout)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            s_log.Trace($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
+            Logger.Trace($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
             try
             {
                 await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
@@ -61,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             finally
             {
                 sw.Stop();
-                s_log.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
+                Logger.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
             }
         }
     }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -18,7 +17,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     public class MessageReceiveE2EPoolAmqpTests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2EPoolAmqpTests)}_";
-        private static TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -117,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
+                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
@@ -125,11 +123,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
+                Logger.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
-                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2).ConfigureAwait(false);
+                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2, Logger).ConfigureAwait(false);
             };
 
             Func<Task> cleanupOperation = async () =>
@@ -149,7 +147,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     testOperation,
                     cleanupOperation,
                     authScope,
-                    true)
+                    true,
+                    Logger)
                 .ConfigureAwait(false);
         }
     }

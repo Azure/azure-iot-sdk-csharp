@@ -18,8 +18,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public const int MaxTestRunCount = 5;
         public const int TestSuccessRate = 80; // 4 out of 5 (80%) test runs should pass (even after accounting for network instability issues).
 
-        private static readonly TestLogger s_log = TestLogger.GetInstance();
-
         public static async Task TestPoolAmqpAsync(
             string devicePrefix,
             Client.TransportType transport,
@@ -29,7 +27,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
-            bool ignoreConnectionStatus)
+            bool ignoreConnectionStatus,
+            TestLogger logger)
         {
             var transportSettings = new ITransportSettings[]
             {
@@ -60,13 +59,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // Arrange
                 // Initialize the test device client instances
                 // Set the device client connection status change handler
-                s_log.Trace($">>> {nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test - Test run {totalRuns}");
+                logger.Trace($">>> {nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test - Test run {totalRuns}");
                 for (int i = 0; i < devicesCount; i++)
                 {
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
 
-                    var amqpConnectionStatusChange = new AmqpConnectionStatusChange();
+                    var amqpConnectionStatusChange = new AmqpConnectionStatusChange(logger);
                     deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
 
                     testDevices.Add(testDevice);
@@ -149,28 +148,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         private class AmqpConnectionStatusChange
         {
-            private int _connectionStatusChangesHandlerCount;
+            private readonly TestLogger _logger;
 
-            public AmqpConnectionStatusChange()
+            public AmqpConnectionStatusChange(TestLogger logger)
             {
                 LastConnectionStatus = null;
                 LastConnectionStatusChangeReason = null;
-                _connectionStatusChangesHandlerCount = 0;
+                ConnectionStatusChangesHandlerCount = 0;
+                _logger = logger;
             }
 
             public void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
             {
-                _connectionStatusChangesHandlerCount++;
+                ConnectionStatusChangesHandlerCount++;
                 LastConnectionStatus = status;
                 LastConnectionStatusChangeReason = reason;
-                s_log.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={reason} count={_connectionStatusChangesHandlerCount}");
+                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={reason} count={ConnectionStatusChangesHandlerCount}");
             }
 
-            public int ConnectionStatusChangesHandlerCount
-            {
-                get => _connectionStatusChangesHandlerCount;
-                set => _connectionStatusChangesHandlerCount = value;
-            }
+            public int ConnectionStatusChangesHandlerCount { get; set; }
 
             public ConnectionStatus? LastConnectionStatus { get; set; }
 

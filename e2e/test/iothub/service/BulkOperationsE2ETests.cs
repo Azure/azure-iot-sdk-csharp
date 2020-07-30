@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var tagName = Guid.NewGuid().ToString();
             var tagValue = Guid.NewGuid().ToString();
 
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Twin twin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var tagName = Guid.NewGuid().ToString();
             var tagValue = Guid.NewGuid().ToString();
 
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Twin twin = new Twin();
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var tagName = Guid.NewGuid().ToString();
             var tagValue = Guid.NewGuid().ToString();
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Twin twin = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var tagName = Guid.NewGuid().ToString();
             var tagValue = Guid.NewGuid().ToString();
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
 
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             var twin = new Twin();
