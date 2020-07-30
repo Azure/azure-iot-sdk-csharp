@@ -226,9 +226,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 string managedByValue = "SomeChangedValue";
                 retrievedModule.ManagedBy = managedByValue;
 
-                Module updateResponse = await client.UpdateModuleAsync(retrievedModule).ConfigureAwait(false);
+                Module updatedModule = await client.UpdateModuleAsync(retrievedModule).ConfigureAwait(false);
 
-                updateResponse.ManagedBy.Should().Be(managedByValue, "Module should have changed its managedBy value");
+                updatedModule.ManagedBy.Should().Be(managedByValue, "Module should have changed its managedBy value");
 
                 // Delete the device
                 // Deleting the device happens in the finally block as cleanup.
@@ -260,10 +260,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 string propValue = "userA";
                 moduleTwin.Properties.Desired[propName] = propValue;
 
-                Twin updateResponse = await client.UpdateTwinAsync(module.DeviceId, module.Id, moduleTwin, moduleTwin.ETag).ConfigureAwait(false);
+                Twin updatedModuleTwin = await client.UpdateTwinAsync(module.DeviceId, module.Id, moduleTwin, moduleTwin.ETag).ConfigureAwait(false);
 
-                Assert.IsNotNull(updateResponse.Properties.Desired[propName]);
-                Assert.AreEqual(propValue, (string)updateResponse.Properties.Desired[propName]);
+                Assert.IsNotNull(updatedModuleTwin.Properties.Desired[propName]);
+                Assert.AreEqual(propValue, (string)updatedModuleTwin.Properties.Desired[propName]);
 
                 // Delete the module
                 // Deleting the module happens in the finally block as cleanup.
