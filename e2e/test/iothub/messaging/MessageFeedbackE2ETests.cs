@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, Logger).ConfigureAwait(false);
         }
 
-        private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport, TestLogger logger)
+        private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport, MsTestLogger logger)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))

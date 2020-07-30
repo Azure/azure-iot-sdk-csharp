@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, string, TestLogger, Task<Task>> setDeviceReceiveMethod,
+            Func<DeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>

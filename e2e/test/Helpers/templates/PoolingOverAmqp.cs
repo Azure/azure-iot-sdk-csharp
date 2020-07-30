@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             bool ignoreConnectionStatus,
-            TestLogger logger)
+            MsTestLogger logger)
         {
             var transportSettings = new ITransportSettings[]
             {
@@ -148,9 +148,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         private class AmqpConnectionStatusChange
         {
-            private readonly TestLogger _logger;
+            private readonly MsTestLogger _logger;
 
-            public AmqpConnectionStatusChange(TestLogger logger)
+            public AmqpConnectionStatusChange(MsTestLogger logger)
             {
                 LastConnectionStatus = null;
                 LastConnectionStatusChangeReason = null;
