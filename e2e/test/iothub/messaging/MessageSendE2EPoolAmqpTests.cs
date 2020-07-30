@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     public class MessageSendE2EPoolAmqpTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(MessageSendE2EPoolAmqpTests)}_";
-        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -126,11 +125,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
+                Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage();
-                s_log.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
+                (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
+                Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             };
 
@@ -144,7 +143,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     testOperation,
                     null,
                     authScope,
-                    true)
+                    true,
+                    Logger)
                 .ConfigureAwait(false);
         }
     }

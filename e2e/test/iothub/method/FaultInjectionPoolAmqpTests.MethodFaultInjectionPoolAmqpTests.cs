@@ -727,7 +727,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod,
+            Func<DeviceClient, string, TestLogger, Task<Task>> setDeviceReceiveMethod,
             string faultType,
             string reason,
             int delayInSec = FaultInjection.DefaultDelayInSec,
@@ -738,10 +738,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
+                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
                 testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
 
-                _log.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method callback handler for device {testDevice.Id}");
+                Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method callback handler for device {testDevice.Id}");
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson)
                     .ConfigureAwait(false);
@@ -752,12 +752,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestDeviceCallbackHandler testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
-                _log.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
+                Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 Task serviceSendTask = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(
                     testDevice.Id,
                     MethodName,
                     MethodE2ETests.DeviceResponseJson,
-                    MethodE2ETests.ServiceRequestJson);
+                    MethodE2ETests.ServiceRequestJson,
+                    Logger);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
 
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
@@ -787,7 +788,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     initOperation,
                     testOperation,
                     cleanupOperation,
-                    authScope)
+                    authScope,
+                    Logger)
                 .ConfigureAwait(false);
         }
     }

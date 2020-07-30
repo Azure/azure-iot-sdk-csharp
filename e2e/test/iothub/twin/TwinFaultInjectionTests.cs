@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     public class TwinFaultInjectionTests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"E2E_{nameof(TwinFaultInjectionTests)}_";
-        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         [LoggedTestMethod]
         [TestCategory("FaultInjection")]
@@ -248,7 +247,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     FaultInjection.DefaultDurationInSec,
                     (d, t) => { return Task.FromResult<bool>(false); },
                     testOperation,
-                    () => { return Task.FromResult<bool>(false); })
+                    () => { return Task.FromResult<bool>(false); },
+                    Logger)
                 .ConfigureAwait(false);
         }
 
@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // Configure the callback and start accepting twin changes.
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
             };
 
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 var propValue = Guid.NewGuid().ToString();
                 testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
 
-                s_log.Trace($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryAsync)}: name={propName}, value={propValue}");
+                Logger.Trace($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryAsync)}: name={propName}, value={propValue}");
 
                 Task serviceSendTask = RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);
@@ -314,7 +314,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     FaultInjection.DefaultDurationInSec,
                     initOperation,
                     testOperation,
-                    () => { return Task.FromResult(false); })
+                    () => { return Task.FromResult(false); },
+                    Logger)
                 .ConfigureAwait(false);
         }
     }

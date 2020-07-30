@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     public class TwinE2EPoolAmqpTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(TwinE2EPoolAmqpTests)}_";
-        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -236,8 +235,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString()).ConfigureAwait(false);
+                Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
+                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
             };
 
             await PoolingOverAmqp.TestPoolAmqpAsync(
@@ -249,7 +248,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 testOperation,
                 null,
                 authScope,
-                true).ConfigureAwait(false);
+                true,
+                Logger).ConfigureAwait(false);
         }
 
         private async Task ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, string, string, Task<Task>> setTwinPropertyUpdateCallbackAsync,
+            Func<DeviceClient, string, string, TestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();
@@ -268,14 +268,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 string propValue = Guid.NewGuid().ToString();
                 twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
 
-                s_log.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
-                s_log.Trace($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
-                Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
+                Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
+                Logger.Trace($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
+                Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue, Logger).ConfigureAwait(false);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
+                Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 string propName = twinProperties[0];
                 string propValue = twinProperties[1];
@@ -298,7 +298,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 testOperation,
                 cleanupOperation,
                 authScope,
-                true).ConfigureAwait(false);
+                true,
+                Logger).ConfigureAwait(false);
         }
     }
 }

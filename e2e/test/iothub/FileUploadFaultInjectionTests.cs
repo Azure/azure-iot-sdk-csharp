@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = 0,
             int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 

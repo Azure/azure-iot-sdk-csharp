@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -19,10 +18,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     public partial class MessageSendFaultInjectionTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
-
-#pragma warning disable CA1823
-        private static TestLogger s_log = TestLogger.GetInstance();
-#pragma warning restore CA1823
 
         [LoggedTestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
@@ -410,7 +405,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage();
+                (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             };
 
@@ -425,7 +420,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     durationInSec,
                     init,
                     testOperation,
-                    () => { return Task.FromResult(false); })
+                    () => { return Task.FromResult(false); },
+                    Logger)
                 .ConfigureAwait(false);
         }
     }

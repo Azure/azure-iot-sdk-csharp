@@ -621,15 +621,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
-                _log.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Sending message to device {testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
+                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Sending message to device {testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
                 await serviceClient.SendAsync(testDevice.Id, msg)
                 .ConfigureAwait(false);
 
-                _log.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
+                Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync()
                 .ConfigureAwait(false);
-                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msg, payload)
+                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msg, payload, Logger)
                 .ConfigureAwait(false);
             };
 
@@ -658,7 +658,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     (d, t) => { return Task.FromResult(false); },
                     testOperation,
                     cleanupOperation,
-                    authScope)
+                    authScope,
+                    Logger)
                 .ConfigureAwait(false);
         }
     }

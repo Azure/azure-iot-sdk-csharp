@@ -23,10 +23,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 
-#pragma warning disable CA1823
-        private static TestLogger s_log = TestLogger.GetInstance();
-#pragma warning restore CA1823
-
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http()
@@ -90,6 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task UploadFileGranularAsync(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool x509auth = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
+                Logger,
                 _devicePrefix,
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
@@ -138,6 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task UploadFileAsync(Client.TransportType transport, string filename, bool x509auth = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
+                Logger,
                 _devicePrefix,
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 

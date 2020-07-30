@@ -9,8 +9,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
     public class CustomWebProxy : IWebProxy
     {
-        private static readonly TestLogger s_testLog = TestLogger.GetInstance();
+        private readonly TestLogger s_testLog;
         private long _counter = 0;
+
+        public CustomWebProxy(TestLogger logger)
+        {
+            s_testLog = logger;
+        }
 
         public ICredentials Credentials { get; set; }
 

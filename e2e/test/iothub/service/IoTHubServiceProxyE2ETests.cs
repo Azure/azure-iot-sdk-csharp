@@ -27,10 +27,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private const int MaxIterationWait = 30;
         private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(5);
 
-#pragma warning disable CA1823
-        private static TestLogger _log = TestLogger.GetInstance();
-#pragma warning restore CA1823
-
         [LoggedTestMethod]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
         {
@@ -61,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, TransportType.Amqp, transportSettings))
             {
@@ -105,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
                     catch (ThrottlingException) when (++tryCount < MaxIterationWait)
                     {
-                        _log.Trace($"ThrottlingException... waiting.");
+                        Logger.Trace($"ThrottlingException... waiting.");
                         await Task.Delay(_waitDuration).ConfigureAwait(false);
                         continue;
                     }
@@ -119,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var payload = Guid.NewGuid().ToString();
             var p1Value = Guid.NewGuid().ToString();
 
-            _log.Trace($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            Logger.Trace($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,

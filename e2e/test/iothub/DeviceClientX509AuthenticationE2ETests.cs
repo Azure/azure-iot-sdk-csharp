@@ -143,12 +143,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMessageTest(ITransportSettings transportSetting)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting }))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }

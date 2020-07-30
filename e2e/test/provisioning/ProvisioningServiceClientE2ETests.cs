@@ -31,7 +31,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
 #pragma warning disable CA1823
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
-        private readonly TestLogger _log = TestLogger.GetInstance();
 #pragma warning restore CA1823
 
         [LoggedTestMethod]

@@ -1434,8 +1434,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                _log.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString()).ConfigureAwait(false);
+                Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
+                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
             };
 
             Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
@@ -1459,7 +1459,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 (d, t) => { return Task.FromResult(false); },
                 testOperation,
                 cleanupOperation,
-                authScope).ConfigureAwait(false);
+                authScope,
+                Logger).ConfigureAwait(false);
         }
 
         private async Task Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -1469,7 +1470,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             string faultType,
             string reason,
-            Func<DeviceClient, string, string, Task<Task>> setTwinPropertyUpdateCallbackAsync,
+            Func<DeviceClient, string, string, TestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             int delayInSec = FaultInjection.DefaultDelayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
@@ -1479,15 +1480,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
+                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
                 testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
 
                 var propName = Guid.NewGuid().ToString();
                 var propValue = Guid.NewGuid().ToString();
                 twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
 
-                _log.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
-                _log.Trace($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp)}: name={propName}, value={propValue}");
+                Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
+                Logger.Trace($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp)}: name={propName}, value={propValue}");
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
             };
 
@@ -1501,7 +1502,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var propValue = twinProperties[1];
                 testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
 
-                _log.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
+                Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
 
                 Task serviceSendTask = TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);
@@ -1533,7 +1534,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 initOperation,
                 testOperation,
                 cleanupOperation,
-                authScope).ConfigureAwait(false);
+                authScope,
+                Logger).ConfigureAwait(false);
         }
     }
 }

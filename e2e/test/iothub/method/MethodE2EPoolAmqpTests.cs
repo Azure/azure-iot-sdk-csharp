@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     {
         private const string MethodName = "MethodE2EPoolAmqpTests";
         private readonly string _devicePrefix = $"E2E_{nameof(MethodE2EPoolAmqpTests)}_";
-        private static readonly TestLogger s_log = TestLogger.GetInstance();
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -223,24 +222,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod,
+            Func<DeviceClient, string, TestLogger, Task<Task>> setDeviceReceiveMethod,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                s_log.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
-                Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
+                Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
+                Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                s_log.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
+                Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 await MethodE2ETests
                     .ServiceSendMethodAndVerifyResponseAsync(
                         testDevice.Id,
                         MethodName,
                         MethodE2ETests.DeviceResponseJson,
-                        MethodE2ETests.ServiceRequestJson)
+                        MethodE2ETests.ServiceRequestJson,
+                        Logger)
                     .ConfigureAwait(false);
             };
 
@@ -254,7 +254,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     testOperation,
                     null,
                     authScope,
-                    true)
+                    true,
+                    Logger)
                 .ConfigureAwait(false);
         }
     }

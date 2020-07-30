@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -23,19 +22,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static readonly string s_devicePrefix = $"E2E_{nameof(MessageFeedbackE2ETests)}_";
         private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
-#pragma warning disable CA1823
-        private static readonly TestLogger s_log = TestLogger.GetInstance();
-#pragma warning restore CA1823
 
         [LoggedTestMethod]
         public async Task Message_CompleteMixOrder_AMQP()
         {
-            await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, Logger).ConfigureAwait(false);
         }
 
-        private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport)
+        private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport, TestLogger logger)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
@@ -53,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 var messages = new List<Client.Message>();
                 for (int i = 0; i < MESSAGE_COUNT; i++)
                 {
-                    (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
+                    (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(logger);
                     await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                     Client.Message message = await deviceClient.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                     if (message == null)
