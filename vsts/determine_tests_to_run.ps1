@@ -8,7 +8,7 @@
 
 function IsPullRequestBuild
 {
-	return ($env:TARGET_BRANCH -and $env:TARGET_BRANCH.toLower().Contains("system.pullrequest.targetbranch"))
+	return !($env:TARGET_BRANCH -and $env:TARGET_BRANCH.toLower().Contains("system.pullrequest.targetbranch"))
 }
 
 function ShouldSkipIotHubTests 
