@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // Create the modules on the device
                 for (int i = 0; i < moduleCount; i++)
                 {
-                    Module createResponse = await client.AddModuleAsync(
+                    Module createdModule = await client.AddModuleAsync(
                         new Module(testDeviceId, testModuleIds[i])).ConfigureAwait(false);
                 }
 
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         /// <summary>
-        /// Test basic lifecycle of a Device Identity.
+        /// Test basic lifecycle of a module.
         /// This test includes CRUD operations only.
         /// </summary>
         [LoggedTestMethod]
@@ -202,7 +202,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
             string testModuleId = $"IdentityLifecycleModule{Guid.NewGuid()}";
 
-            Module module = null;
             RegistryManager client = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             try
@@ -211,23 +210,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 Device device = await client.AddDeviceAsync(new Device(testDeviceId)).ConfigureAwait(false);
 
                 // Create a module on the device
-                Module createResponse = await client.AddModuleAsync(
+                Module createdModule = await client.AddModuleAsync(
                     new Module(testDeviceId, testModuleId)).ConfigureAwait(false);
 
-                createResponse.DeviceId.Should().Be(testDeviceId);
-                createResponse.Id.Should().Be(testModuleId);
+                createdModule.DeviceId.Should().Be(testDeviceId);
+                createdModule.Id.Should().Be(testModuleId);
 
                 // Get device
                 // Get the device and compare ETag values (should remain unchanged);
-                Module getResponse = await client.GetModuleAsync(testDeviceId, testModuleId).ConfigureAwait(false);
+                Module retrievedModule = await client.GetModuleAsync(testDeviceId, testModuleId).ConfigureAwait(false);
 
-                getResponse.ETag.Should().BeEquivalentTo(createResponse.ETag, "ETag value should not have changed between create and get.");
+                retrievedModule.ETag.Should().BeEquivalentTo(createdModule.ETag, "ETag value should not have changed between create and get.");
 
                 // Update a module
                 string managedByValue = "SomeChangedValue";
-                getResponse.ManagedBy = managedByValue;
+                retrievedModule.ManagedBy = managedByValue;
 
-                Module updateResponse = await client.UpdateModuleAsync(getResponse).ConfigureAwait(false);
+                Module updateResponse = await client.UpdateModuleAsync(retrievedModule).ConfigureAwait(false);
 
                 updateResponse.ManagedBy.Should().Be(managedByValue, "Module should have changed its managedBy value");
 
