@@ -727,7 +727,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, string, TestLogger, Task<Task>> setDeviceReceiveMethod,
+            Func<DeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
             string faultType,
             string reason,
             int delayInSec = FaultInjection.DefaultDelayInSec,

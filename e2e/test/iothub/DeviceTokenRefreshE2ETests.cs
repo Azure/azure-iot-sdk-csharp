@@ -213,9 +213,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             private SemaphoreSlim _tokenRefreshSemaphore = new SemaphoreSlim(0);
             private int _counter;
 
-            private TestLogger _logger;
+            private MsTestLogger _logger;
 
-            public TestTokenRefresher(string deviceId, string key, TestLogger logger) : base(deviceId)
+            public TestTokenRefresher(string deviceId, string key, MsTestLogger logger) : base(deviceId)
             {
                 _key = key;
                 _logger = logger;
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 int suggestedTimeToLive,
                 int timeBufferPercentage,
                 Client.TransportType transport,
-                TestLogger logger)
+                MsTestLogger logger)
                 : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
             {
                 _key = key;

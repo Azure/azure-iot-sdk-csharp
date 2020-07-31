@@ -11,22 +11,23 @@ using Microsoft.ApplicationInsights.Extensibility;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     /// <summary>
-    /// This class logs to multiple providers - Event source, Application insights
+    /// NOTE: DO NOT USE THIS IN TESTS
+    /// This class logs to multiple providers - Event source, Application insights.
+    /// This is the global singleton logger Instance.
     /// </summary>
     public class TestLogger
     {
+        public static readonly TestLogger Instance = new TestLogger();
+
         public const string SdkLanguage = ".NET";
         public const string Service = "IotHub";
 
         // Client to log to application insights.
-        private static TelemetryClient _telemetryClient;
+        private TelemetryClient _telemetryClient;
 
-        private static IDictionary<string, string> _commonProperties;
+        private IDictionary<string, string> _commonProperties;
 
-        public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
-
-        // Static constructor is called at most one time, before any instance constructor is invoked or member is accessed.
-        static TestLogger()
+        private TestLogger()
         {
             // Instrumentation key is used to connect to Application Insights instance.
             // The value is copied from the portal and stored in KeyVault.
@@ -40,7 +41,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 };
                 _telemetryClient = new TelemetryClient(config);
 
-                InitializeCommonProperties();
+                _commonProperties = new Dictionary<string, string>
+                {
+                    // The SDK language.
+                    { LoggingPropertyNames.SdkLanguage, SdkLanguage },
+                    // The Service for which we are logging.
+                    { LoggingPropertyNames.Service, Service },
+                    // Unique ID for all tests of a run.
+                    { LoggingPropertyNames.TestRunId, Guid.NewGuid().ToString() },
+                    // Build Id in the pipeline.
+                    { LoggingPropertyNames.BuildId, Environment.GetEnvironmentVariable("BUILD_BUILDID") },
+                };
             }
         }
 
@@ -58,18 +69,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Log to Application insights
             if (_telemetryClient != null)
             {
-                IDictionary<string, string>[] bagsToMerge = new[] { _commonProperties, Properties, extraProperties };
+                IDictionary<string, string>[] bagsToMerge = new[] { _commonProperties, extraProperties };
                 _telemetryClient.TrackTrace(message, severity, MergePropertyBags(bagsToMerge));
-            }
-        }
-
-        public void Event(string eventName, IDictionary<string, string> extraProperties = null)
-        {
-            // Log event to Application insights
-            if (_telemetryClient != null)
-            {
-                IDictionary<string, string>[] bagsToMerge = new[] { _commonProperties, Properties, extraProperties };
-                _telemetryClient.TrackEvent(eventName, MergePropertyBags(bagsToMerge));
             }
         }
 
@@ -87,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private IDictionary<string, string> MergePropertyBags(IDictionary<string, string>[] propertyBags)
+        public static IDictionary<string, string> MergePropertyBags(IDictionary<string, string>[] propertyBags)
         {
             var result = new Dictionary<string, string>();
 
@@ -105,21 +106,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             return result;
-        }
-
-        private static void InitializeCommonProperties()
-        {
-            _commonProperties = new Dictionary<string, string>
-            {
-                // The SDK language.
-                { LoggingPropertyNames.SdkLanguage, SdkLanguage },
-                // The Service for which we are logging.
-                { LoggingPropertyNames.Service, Service },
-                // Unique ID for all tests of a run.
-                { LoggingPropertyNames.TestRunId, Guid.NewGuid().ToString() },
-                // Build Id in the pipeline.
-                { LoggingPropertyNames.BuildId, Environment.GetEnvironmentVariable("BUILD_BUILDID") },
-            };
         }
     }
 }

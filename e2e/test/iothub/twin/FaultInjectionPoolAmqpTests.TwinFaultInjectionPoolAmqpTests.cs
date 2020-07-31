@@ -1470,7 +1470,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             string faultType,
             string reason,
-            Func<DeviceClient, string, string, TestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
+            Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             int delayInSec = FaultInjection.DefaultDelayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)

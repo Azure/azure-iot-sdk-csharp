@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await ReceiveMessageInOperationTimeoutAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(TestLogger logger)
+        public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(MsTestLogger logger)
         {
             var payload = Guid.NewGuid().ToString();
             var messageId = Guid.NewGuid().ToString();
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return (message, payload, p1Value);
         }
 
-        public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, Message message, string payload, TestLogger logger)
+        public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, Message message, string payload, MsTestLogger logger)
         {
             string receivedMessageDestination = $"/devices/{deviceId}/messages/deviceBound";
 
@@ -305,7 +305,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTimeMilliseconds}.");
         }
 
-        public static async Task VerifyReceivedC2dMessageWithCancellationTokenAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value, TestLogger logger)
+        public static async Task VerifyReceivedC2dMessageWithCancellationTokenAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value, MsTestLogger logger)
         {
             var sw = new Stopwatch();
             bool received = false;
@@ -468,7 +468,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private static async Task ReceiveMessageWithoutTimeoutCheckAsync(DeviceClient dc, TimeSpan bufferTime, TestLogger logger)
+        private static async Task ReceiveMessageWithoutTimeoutCheckAsync(DeviceClient dc, TimeSpan bufferTime, MsTestLogger logger)
         {
             var sw = new Stopwatch();
             while (true)

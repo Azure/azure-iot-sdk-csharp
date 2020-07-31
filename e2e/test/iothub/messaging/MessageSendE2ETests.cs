@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
-        public static async Task SendSingleMessageAsync(DeviceClient deviceClient, string deviceId, TestLogger logger, int messageSize = 0)
+        public static async Task SendSingleMessageAsync(DeviceClient deviceClient, string deviceId, MsTestLogger logger, int messageSize = 0)
         {
             Client.Message testMessage;
 
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        public static async Task SendBatchMessagesAsync(DeviceClient deviceClient, string deviceId, TestLogger logger)
+        public static async Task SendBatchMessagesAsync(DeviceClient deviceClient, string deviceId, MsTestLogger logger)
         {
             var messagesToBeSent = new Dictionary<Client.Message, Tuple<string, string>>();
 
@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessage(TestLogger logger)
+        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessage(MsTestLogger logger)
         {
             string messageId = Guid.NewGuid().ToString();
             string payload = Guid.NewGuid().ToString();
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return (message, payload, p1Value);
         }
 
-        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessageOfSpecifiedSize(int messageSize, TestLogger logger)
+        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessageOfSpecifiedSize(int messageSize, MsTestLogger logger)
         {
             string messageId = Guid.NewGuid().ToString();
             string payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";

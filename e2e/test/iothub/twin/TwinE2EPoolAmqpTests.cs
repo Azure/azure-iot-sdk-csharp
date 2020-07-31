@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, string, string, TestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
+            Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();

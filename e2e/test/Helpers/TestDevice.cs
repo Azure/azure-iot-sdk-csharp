@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private const int DelayAfterDeviceCreationSeconds = 0;
         private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
-        private static TestLogger s_logger;
+        private static MsTestLogger _logger;
 
         private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
         {
@@ -39,9 +39,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         /// <param name="namePrefix">The prefix to apply to your device name</param>
         /// <param name="type">The way the device will authenticate</param>
-        public static async Task<TestDevice> GetTestDeviceAsync(TestLogger logger, string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
+        public static async Task<TestDevice> GetTestDeviceAsync(MsTestLogger logger, string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
         {
-            s_logger = logger;
+            _logger = logger;
             string prefix = namePrefix + type + "_";
 
             try
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 await s_semaphore.WaitAsync().ConfigureAwait(false);
                 TestDevice ret = await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
 
-                s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
+                _logger.Trace($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
                 return ret;
             }
             finally
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             // Delete existing devices named this way and create a new one.
             using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
+            _logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             Client.IAuthenticationMethod auth = null;
 
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             Device device = await rm.AddDeviceAsync(requestDevice).ConfigureAwait(false);
 
-            s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Pausing for {DelayAfterDeviceCreationSeconds}s after device was created.");
+            _logger.Trace($"{nameof(GetTestDeviceAsync)}: Pausing for {DelayAfterDeviceCreationSeconds}s after device was created.");
             await Task.Delay(DelayAfterDeviceCreationSeconds * 1000).ConfigureAwait(false);
 
             await rm.CloseAsync().ConfigureAwait(false);
@@ -128,12 +128,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             if (AuthenticationMethod == null)
             {
                 deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport);
-                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from connection string: {transport} ID={TestLogger.IdOf(deviceClient)}");
+                _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from connection string: {transport} ID={TestLogger.IdOf(deviceClient)}");
             }
             else
             {
                 deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
-                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: {transport} ID={TestLogger.IdOf(deviceClient)}");
+                _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: {transport} ID={TestLogger.IdOf(deviceClient)}");
             }
 
             return deviceClient;
@@ -148,18 +148,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 if (authScope == ConnectionStringAuthScope.Device)
                 {
                     deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings);
-                    s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from device connection string: ID={TestLogger.IdOf(deviceClient)}");
+                    _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from device connection string: ID={TestLogger.IdOf(deviceClient)}");
                 }
                 else
                 {
                     deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, Device.Id, transportSettings);
-                    s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IoTHub connection string: ID={TestLogger.IdOf(deviceClient)}");
+                    _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IoTHub connection string: ID={TestLogger.IdOf(deviceClient)}");
                 }
             }
             else
             {
                 deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transportSettings);
-                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: ID={TestLogger.IdOf(deviceClient)}");
+                _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: ID={TestLogger.IdOf(deviceClient)}");
             }
 
             return deviceClient;
