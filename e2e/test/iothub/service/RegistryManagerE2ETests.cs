@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,6 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     public class RegistryManagerE2ETests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
+        private readonly string _modulePrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
@@ -142,6 +144,149 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             finally
             {
                 await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+            }
+        }
+
+        [LoggedTestMethod]
+        public async Task ModulesClient_GetModulesOnDevice()
+        {
+            int moduleCount = 5;
+            string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
+            string[] testModuleIds = new string[moduleCount];
+            for (int i = 0; i < moduleCount; i++)
+            {
+                testModuleIds[i] = $"IdentityLifecycleModule{i}-{Guid.NewGuid()}";
+            }
+
+            Device device = null;
+            RegistryManager client = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+            try
+            {
+                // Create a device to house the modules
+                device = await client.AddDeviceAsync(new Device(testDeviceId)).ConfigureAwait(false);
+
+                // Create the modules on the device
+                for (int i = 0; i < moduleCount; i++)
+                {
+                    Module createdModule = await client.AddModuleAsync(
+                        new Module(testDeviceId, testModuleIds[i])).ConfigureAwait(false);
+                }
+
+                // List the modules on the test device
+                IEnumerable<Module> modulesOnDevice = await client.GetModulesOnDeviceAsync(testDeviceId).ConfigureAwait(false);
+
+                IList<string> moduleIdsOnDevice = modulesOnDevice
+                    .Select(module => module.Id)
+                    .ToList();
+
+                Assert.AreEqual(moduleCount, moduleIdsOnDevice.Count);
+                for (int i = 0; i < moduleCount; i++)
+                {
+                    Assert.IsTrue(moduleIdsOnDevice.Contains(testModuleIds[i]));
+                }
+            }
+            finally
+            {
+                await Cleanup(client, testDeviceId).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Test basic lifecycle of a module.
+        /// This test includes CRUD operations only.
+        /// </summary>
+        [LoggedTestMethod]
+        public async Task ModulesClient_IdentityLifecycle()
+        {
+            string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
+            string testModuleId = $"IdentityLifecycleModule{Guid.NewGuid()}";
+
+            RegistryManager client = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+            try
+            {
+                // Create a device to house the module
+                Device device = await client.AddDeviceAsync(new Device(testDeviceId)).ConfigureAwait(false);
+
+                // Create a module on the device
+                Module createdModule = await client.AddModuleAsync(
+                    new Module(testDeviceId, testModuleId)).ConfigureAwait(false);
+
+                createdModule.DeviceId.Should().Be(testDeviceId);
+                createdModule.Id.Should().Be(testModuleId);
+
+                // Get device
+                // Get the device and compare ETag values (should remain unchanged);
+                Module retrievedModule = await client.GetModuleAsync(testDeviceId, testModuleId).ConfigureAwait(false);
+
+                retrievedModule.ETag.Should().BeEquivalentTo(createdModule.ETag, "ETag value should not have changed between create and get.");
+
+                // Update a module
+                string managedByValue = "SomeChangedValue";
+                retrievedModule.ManagedBy = managedByValue;
+
+                Module updatedModule = await client.UpdateModuleAsync(retrievedModule).ConfigureAwait(false);
+
+                updatedModule.ManagedBy.Should().Be(managedByValue, "Module should have changed its managedBy value");
+
+                // Delete the device
+                // Deleting the device happens in the finally block as cleanup.
+            }
+            finally
+            {
+                await Cleanup(client, testDeviceId).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Test basic operations of a module's twin.
+        /// </summary>
+        [LoggedTestMethod]
+        public async Task ModulesClient_DeviceTwinLifecycle()
+        {
+            RegistryManager client = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            var module = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
+
+            try
+            {
+                // Get the module twin
+                Twin moduleTwin = await client.GetTwinAsync(module.DeviceId, module.Id).ConfigureAwait(false);
+
+                moduleTwin.ModuleId.Should().BeEquivalentTo(module.Id, "ModuleId on the Twin should match that of the module identity.");
+
+                // Update device twin
+                string propName = "username";
+                string propValue = "userA";
+                moduleTwin.Properties.Desired[propName] = propValue;
+
+                Twin updatedModuleTwin = await client.UpdateTwinAsync(module.DeviceId, module.Id, moduleTwin, moduleTwin.ETag).ConfigureAwait(false);
+
+                Assert.IsNotNull(updatedModuleTwin.Properties.Desired[propName]);
+                Assert.AreEqual(propValue, (string)updatedModuleTwin.Properties.Desired[propName]);
+
+                // Delete the module
+                // Deleting the module happens in the finally block as cleanup.
+            }
+            finally
+            {
+                await Cleanup(client, module.DeviceId).ConfigureAwait(false);
+            }
+        }
+
+        private async Task Cleanup(RegistryManager client, string deviceId)
+        {
+            // cleanup
+            try
+            {
+                if (deviceId != null)
+                {
+                    await client.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Test clean up failed: {ex.Message}");
             }
         }
     }
