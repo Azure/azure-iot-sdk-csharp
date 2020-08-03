@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             else if (Equals(AmqpErrorCode.DecodeError, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException);
+                return new IotHubException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.ResourceLimitExceeded, amqpSymbol))
             {
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             else if (Equals(AmqpErrorCode.FrameSizeTooSmall, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException);
+                return new IotHubException(message, amqpException);
             }
             // AMQP Connection Error
             else if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol))
