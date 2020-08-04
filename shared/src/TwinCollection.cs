@@ -154,7 +154,29 @@ namespace Microsoft.Azure.Devices.Shared
                     throw new ArgumentOutOfRangeException(nameof(propertyName));
                 }
             }
-            set => TrySetMemberInternal(propertyName, value);
+            set
+            {
+                if (propertyName == null)
+                {
+                    throw new ArgumentNullException(nameof(propertyName),"Property name cannot be null");
+                }
+#pragma warning disable CA1307 // Specify StringComparison
+                else if (propertyName.Contains("."))
+                {
+                    throw new ArgumentException(
+                        "Property name cannot contain '.' in its name. Learn more on https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-device-twins");
+                }
+                else if (propertyName.Contains("$"))
+                {
+                    throw new ArgumentException(
+                        "Property name cannot contain '$' in its name. Learn more on https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-device-twins");
+                }
+#pragma warning restore CA1307 // Specify StringComparison
+                else
+                {
+                    TrySetMemberInternal(propertyName, value);
+                }
+            }
         }
 
         /// <inheritdoc />
