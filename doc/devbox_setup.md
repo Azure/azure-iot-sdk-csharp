@@ -3,7 +3,7 @@
 This document describes how to prepare your development environment to build and use the **Microsoft Azure IoT device client SDK for .NET**
 
 1.  [Prerequisites required to build the SDK](#min_setup)
-2.  [Optional prerequisites required to test Xamarin and Windows IoT(#advanced)
+2.  [Optional prerequisites required to test Xamarin and Windows IoT](#advanced)
 3.  [Test prerequisites](#testprereq)
 
 <a name="min_setup"/>
