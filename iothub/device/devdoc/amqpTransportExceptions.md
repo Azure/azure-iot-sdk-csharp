@@ -36,7 +36,7 @@ Below is the behavior of the SDK on receiving an exception over Amqp transport p
 | amqp:frame-size-too-small | IotHubException | InnerException: AmqpException.Error.Condition = AmqpSymbol.FrameSizeTooSmall | The AMQP message is not being formed correctly by the SDK, collect logs and contact SDK team |
 | amqp:illegal-state | IotHubException | InnerException: AmqpException.Error.Condition = AmqpSymbol.IllegalState | Inspect the exception details, collect logs and contact service |
 | amqp:not-allowed | InvalidOperationException	| InnerException: AmqpException.Error.Condition = AmqpSymbol.NotAllowed | Inspect the exception details, collect logs and contact service |
-| amqp:not-found | DeviceNotFoundException | This is the exception thrown when the error is received as an AmqpException | Verify that your device exits on your IoT hub instance |
+| amqp:not-found | DeviceNotFoundException | This is the exception thrown when the error is received as an AmqpException | Verify that your device exists, and is enabled (on your IoT hub instance) |
 | amqp:not-found | DeviceMessageLockLostException | This is the exception thrown when the error is received as a Rejected outcome for an Amqp `DisposeMessageAsync()` operation | The device client attempted to complete/reject/abandon a received cloud-to-device message, but the lock token was expired (possible cause is that device reconnected after receiving the c2d message). <br/> Call `ReceiveAsync()` again to retrieve an updated lock token, and then complete/reject/abandon the message. De-duplication logic wil need to be implemented at the application level |
 | amqp:not-implemented | NotSupportedException | InnerException: AmqpException.Error.Condition = AmqpSymbol.NotImplemented | Inspect the exception details, collect logs and contact service |
 | amqp:precondition-failed | IotHubException | InnerException: AmqpException.Error.Condition = AmqpSymbol.PreconditionFailed | Inspect the exception details, collect logs and contact service |
@@ -47,7 +47,6 @@ Below is the behavior of the SDK on receiving an exception over Amqp transport p
 | amqp:transaction :unknown-id | IotHubException | InnerException: AmqpException.Error.Condition = AmqpSymbol.TransactionUnknownId | Inspect the exception details, collect logs and contact service |
 | com.microsoft:argument-error | ArgumentException | | Inspect the exception details, collect logs and contact service |
 | com.microsoft:argument-out-of-range | ArgumentOutOfRangeException | | Inspect the exception details, collect logs and contact service |
-| com.microsoft:device-already-exists | DeviceAlreadyExistsException | | Inspect the exception details, collect logs and contact service |
 | com.microsoft:iot-hub-suspended | IotHubSuspendedException | | Inspect the exception details, collect logs and contact service |
 | | IotHubException | An exception not mapped to a different type will default to IotHubException and will be non-retryable | Inspect the exception details, collect logs and contact service |
 

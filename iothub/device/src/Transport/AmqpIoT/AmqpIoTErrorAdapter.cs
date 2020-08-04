@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public static readonly AmqpSymbol IotHubNotFoundError = AmqpIoTConstants.Vendor + ":iot-hub-not-found-error";
         public static readonly AmqpSymbol ArgumentError = AmqpIoTConstants.Vendor + ":argument-error";
         public static readonly AmqpSymbol ArgumentOutOfRangeError = AmqpIoTConstants.Vendor + ":argument-out-of-range";
-        public static readonly AmqpSymbol DeviceAlreadyExists = AmqpIoTConstants.Vendor + ":device-already-exists";
         public static readonly AmqpSymbol DeviceContainerThrottled = AmqpIoTConstants.Vendor + ":device-container-throttled";
         public static readonly AmqpSymbol PartitionNotFound = AmqpIoTConstants.Vendor + ":partition-not-found";
         public static readonly AmqpSymbol IotHubSuspended = AmqpIoTConstants.Vendor + ":iot-hub-suspended";
@@ -241,10 +240,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {
                 retException = new DeviceMaximumQueueDepthExceededException(message);
-            }
-            else if (error.Condition.Equals(DeviceAlreadyExists))
-            {
-                retException = new DeviceAlreadyExistsException(message, null);
             }
             else if (error.Condition.Equals(DeviceContainerThrottled))
             {
