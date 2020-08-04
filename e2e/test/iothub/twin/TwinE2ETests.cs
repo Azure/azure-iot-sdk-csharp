@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, JArray.Parse("[1, 2, 3]"), Logger).ConfigureAwait(false);
         }
 
-        public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(DeviceClient deviceClient, object propValue, TestLogger logger)
+        public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(DeviceClient deviceClient, object propValue, MsTestLogger logger)
         {
             var propName = Guid.NewGuid().ToString();
 
@@ -299,7 +299,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
         }
 
-        public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(DeviceClient deviceClient, string expectedPropName, object expectedPropValue, TestLogger logger)
+        public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(DeviceClient deviceClient, string expectedPropName, object expectedPropValue, MsTestLogger logger)
         {
             var propertyUpdateReceived = new TaskCompletionSource<bool>();
             string userContext = "myContext";
@@ -332,7 +332,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             return propertyUpdateReceived.Task;
         }
 
-        private static async Task<Task> SetTwinPropertyUpdateCallbackObsoleteHandlerAsync(DeviceClient deviceClient, string expectedPropName, object expectedPropValue, TestLogger logger)
+        private static async Task<Task> SetTwinPropertyUpdateCallbackObsoleteHandlerAsync(DeviceClient deviceClient, string expectedPropName, object expectedPropValue, MsTestLogger logger)
         {
 #pragma warning disable CS0618
 
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType transport, Func<DeviceClient, string, object, TestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType transport, Func<DeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
         {
             var propName = Guid.NewGuid().ToString();
 

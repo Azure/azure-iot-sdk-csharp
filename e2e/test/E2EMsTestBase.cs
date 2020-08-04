@@ -5,6 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,13 +23,12 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class E2EMsTestBase : IDisposable
     {
-        private const string TestStartedEventName = "TestStarted";
-        private const string TestFinishedEventName = "TestFinished";
-
         private static readonly string[] s_eventProviders = new string[] { "DotNetty-Default", "Microsoft-Azure-", };
         private ConsoleEventListener _listener;
 
+        // Test specific logger instance
         protected MsTestLogger Logger { get; set; }
+
         private Stopwatch Stopwatch { get; set; }
         public TestContext TestContext { get; set; }
 
@@ -34,14 +37,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Stopwatch = Stopwatch.StartNew();
             Logger = new MsTestLogger(TestContext);
+
+            // Note: Events take long and increase run time of the test suite, so only using trace.
             Logger.Trace($"Starting test - {TestContext.TestName}", SeverityLevel.Information);
-            Logger.Event(TestStartedEventName);
 
             _listener = new ConsoleEventListener(s_eventProviders);
         }
 
         [TestCleanup]
-        public async Task TestCleanupAsync()
+        public void TestCleanup()
         {
             Stopwatch.Stop();
 
@@ -51,13 +55,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                 { LoggingPropertyNames.TestStatus, TestContext.CurrentTestOutcome.ToString() },
             };
 
+            // Note: Events take long and increase run time of the test suite, so only using trace.
             Logger.Trace($"Finished test - {TestContext.TestName}", SeverityLevel.Information, extraProperties);
-            Logger.Event(TestFinishedEventName, extraProperties);
-            // As this is not an application that keeps running, explicitly flushing is required to ensure we do not lose any logs.
-            await Logger.SafeFlushAsync().ConfigureAwait(false);
 
             // Dispose the managed resources, so that each test run starts with a fresh slate.
             Dispose();
+        }
+
+        [AssemblyCleanup]
+        public async Task AssemblyCleanup()
+        {
+            // Flush before the test suite ends to ensure we do not lose any logs.
+            await TestLogger.Instance.SafeFlushAsync().ConfigureAwait(false);
         }
 
         public void Dispose()

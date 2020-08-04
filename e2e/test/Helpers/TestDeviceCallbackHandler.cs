@@ -22,12 +22,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private SemaphoreSlim _twinCallbackSemaphore = new SemaphoreSlim(1, 1);
         private string _expectedTwinPropertyValue = null;
 
-        private readonly TestLogger _log;
+        private readonly MsTestLogger _logger;
 
-        public TestDeviceCallbackHandler(DeviceClient deviceClient, TestLogger logger)
+        public TestDeviceCallbackHandler(DeviceClient deviceClient, MsTestLogger logger)
         {
             _deviceClient = deviceClient;
-            _log = logger;
+            _logger = logger;
         }
 
         public string ExpectedTwinPropertyValue
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 {
                     try
                     {
-                        _log.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient callback method: {request.Name} {request.ResponseTimeout}.");
+                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient callback method: {request.Name} {request.ResponseTimeout}.");
                         Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
                         Assert.AreEqual(expectedServiceRequestJson, request.DataAsJson, $"The expected method name should be {expectedServiceRequestJson} but was {request.DataAsJson}");
 
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     }
                     catch (Exception ex)
                     {
-                        _log.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
+                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
 
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
                         return Task.FromResult(new MethodResponse(500));
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch, context) =>
                 {
-                    _log.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient callback twin: DesiredProperty: {patch}, {context}");
+                    _logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient callback twin: DesiredProperty: {patch}, {context}");
 
                     try
                     {

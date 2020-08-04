@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponseAsync(string deviceId, string methodName, string respJson, string reqJson, TestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        public static async Task ServiceSendMethodAndVerifyResponseAsync(string deviceId, string methodName, string respJson, string reqJson, MsTestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             ServiceClient serviceClient = null;
             if (serviceClientTransportSettings == default)
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             serviceClient.Dispose();
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponseAsync(string deviceId, string moduleId, string methodName, string respJson, string reqJson, TestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        public static async Task ServiceSendMethodAndVerifyResponseAsync(string deviceId, string moduleId, string methodName, string respJson, string reqJson, MsTestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             ServiceClient serviceClient = null;
             if (serviceClientTransportSettings == default)
@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             serviceClient.Dispose();
         }
 
-        public static async Task<Task> SetDeviceReceiveMethodAsync(DeviceClient deviceClient, string methodName, TestLogger logger)
+        public static async Task<Task> SetDeviceReceiveMethodAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
@@ -308,7 +308,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             return methodCallReceived.Task;
         }
 
-        public static async Task<Task> SetDeviceReceiveMethodDefaultHandlerAsync(DeviceClient deviceClient, string methodName, TestLogger logger)
+        public static async Task<Task> SetDeviceReceiveMethodDefaultHandlerAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             return methodCallReceived.Task;
         }
 
-        private static Task<Task> SetDeviceReceiveMethodObsoleteHandler(DeviceClient deviceClient, string methodName, TestLogger logger)
+        private static Task<Task> SetDeviceReceiveMethodObsoleteHandler(DeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             return Task.FromResult<Task>(methodCallReceived.Task);
         }
 
-        public static async Task<Task> SetModuleReceiveMethodAsync(ModuleClient moduleClient, string methodName, TestLogger logger)
+        public static async Task<Task> SetModuleReceiveMethodAsync(ModuleClient moduleClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
@@ -393,7 +393,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             return methodCallReceived.Task;
         }
 
-        public static async Task<Task> SetModuleReceiveMethodDefaultHandlerAsync(ModuleClient moduleClient, string methodName, TestLogger logger)
+        public static async Task<Task> SetModuleReceiveMethodDefaultHandlerAsync(ModuleClient moduleClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
@@ -421,7 +421,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             return methodCallReceived.Task;
         }
 
-        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, TestLogger, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
@@ -437,7 +437,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<ModuleClient, string, TestLogger, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<ModuleClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
             using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport);
