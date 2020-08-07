@@ -839,6 +839,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 if (Logging.IsEnabled) Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
+                cancellationToken.ThrowIfCancellationRequested();
                 await _methodsDictionarySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (methodHandler != null)
@@ -928,7 +929,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 if (Logging.IsEnabled) Logging.Enter(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
-
+                cancellationToken.ThrowIfCancellationRequested();
                 await _methodsDictionarySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 if (methodHandler != null)
                 {
@@ -1495,6 +1496,7 @@ namespace Microsoft.Azure.Devices.Client
             ValidateModuleTransportHandler("SetInputMessageHandlerAsync for a named output");
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 await _receiveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (messageHandler != null)
@@ -1580,6 +1582,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 await _receiveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 if (messageHandler != null)
                 {
