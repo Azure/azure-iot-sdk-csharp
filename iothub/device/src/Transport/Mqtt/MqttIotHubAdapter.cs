@@ -433,9 +433,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (packet.ReturnCode != ConnectReturnCode.Accepted)
             {
                 string reason = "CONNECT failed: " + packet.ReturnCode;
-                var iotHubException = new UnauthorizedException(reason);
-                ShutdownOnError(context, iotHubException);
-                return;
+                IotHubException iotHubException;
+
+                switch (packet.ReturnCode)
+                {
+                    // A Connect return code of RefusedServerUnavailable should be retried, so it is mapped to IotHubCommunicationException.
+                    case ConnectReturnCode.RefusedServerUnavailable:
+                        iotHubException = new IotHubCommunicationException(reason);
+                        ShutdownOnError(context, iotHubException);
+                        return;
+
+                    // These return codes indicate incorrect credentials being supplied, they are mapped to UnauthorizedException.
+                    case ConnectReturnCode.RefusedNotAuthorized:
+                    case ConnectReturnCode.RefusedBadUsernameOrPassword:
+                        iotHubException = new UnauthorizedException(reason);
+                        ShutdownOnError(context, iotHubException);
+                        return;
+
+                    // These return codes are non-retryable, they are mapped to IotHubException.
+                    case ConnectReturnCode.RefusedIdentifierRejected:
+                    case ConnectReturnCode.RefusedUnacceptableProtocolVersion:
+                        iotHubException = new IotHubException(reason);
+                        ShutdownOnError(context, iotHubException);
+                        return;
+                }
+
             }
 
             if (!IsInState(StateFlags.Connecting))
@@ -464,32 +486,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, packet, nameof(ProcessPingResponse));
 
-            /*if (packet.ReturnCode != ConnectReturnCode.Accepted)
-            {
-                string reason = "CONNECT failed: " + packet.ReturnCode;
-                var iotHubException = new UnauthorizedException(reason);
-                ShutdownOnError(context, iotHubException);
-                return;
-            }
-
-            if (!this.IsInState(StateFlags.Connecting))
-            {
-                string reason = "CONNECT has been received, however a session has already been established. Only one CONNECT/CONNACK pair is expected per session.";
-                var iotHubException = new IotHubException(reason);
-                ShutdownOnError(context, iotHubException);
-                return;
-            }
-
-            this.stateFlags = StateFlags.Connected;
-
-            this.mqttIotHubEventHandler.OnConnected();
-
-            this.ResumeReadingIfNecessary(context);
-
-            if (packet.SessionPresent)
-            {
-                await this.SubscribeAsync(context, null).ConfigureAwait(true);
-            }*/
 
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, packet, nameof(ProcessPingResponse));
         }
