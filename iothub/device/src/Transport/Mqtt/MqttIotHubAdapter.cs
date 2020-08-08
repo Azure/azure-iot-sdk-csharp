@@ -40,9 +40,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Closed = 16
         }
 
-        private const string DeviceCommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
+        // Topic names for sending cloud-to-device messages
         private const string DeviceTelemetryTopicFormat = "devices/{0}/messages/events/";
         private const string ModuleTelemetryTopicFormat = "devices/{0}/modules/{1}/messages/events/";
+
+        // Topic names for receiving cloud-to-device messages
+        private const string DeviceCommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
+
         private const string DeviceClientTypeParam = "DeviceClientType";
         private const string AuthChainParam = "auth-chain";
         private const string ModelIdParam = "model-id";
@@ -429,7 +433,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, packet, nameof(ProcessConnectAckAsync));
 
-            if (Logging.IsEnabled) Logging.Info(this, $"ConnAckPacket.ReturnCode={packet.ReturnCode}, nameof(ProcessConnectAckAsync));
+            if (Logging.IsEnabled) Logging.Info(this, $"ConnAckPacket.ReturnCode={packet.ReturnCode}", nameof(ProcessConnectAckAsync));
             if (packet.ReturnCode != ConnectReturnCode.Accepted)
             {
                 string reason = "CONNECT failed: " + packet.ReturnCode;

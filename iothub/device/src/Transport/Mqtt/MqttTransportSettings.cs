@@ -109,6 +109,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public TimeSpan ConnectArrivalTimeout { get; set; }
 
+        /// <summary>
+        /// Flag to specify if a subscription should persist across different sessions. The default value is false.
+        /// If set to false: the device will receive messages that were sent to it while it was disconnected.
+        /// If set to true: the device will receive only those messages that were sent to it after it successfully subscribed to the device bound message topic.
+        /// </summary>
         public bool CleanSession { get; set; }
 
         public int KeepAliveInSeconds { get; set; }
