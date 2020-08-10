@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private const string InvalidGlobalAddress = "httpbin.org";
         private static string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
+        private const int MaxTryCount = 10;
 
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
 
@@ -481,8 +482,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
-                Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
-                DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                DeviceRegistrationResult result = null;
+
+                Logger.Trace($"ProvisioningDeviceClient RegisterAsync for group {groupId} . . . ");
+
+                // Trying to register simultaneously can cause conflicts (409). Retry in those scenarios to succeed.
+                int tryCount = 0;
+                while (true)
+                {
+                    try
+                    {
+                        result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                        break;
+                    }
+                    // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
+                    // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
+                    catch (ProvisioningTransportException ex) when (++tryCount < MaxTryCount)
+                    {
+                        Logger.Trace($"ProvisioningDeviceClient RegisterAsync failed because: {ex.Message}");
+                        await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+                    }
+                }
 
                 ValidateDeviceRegistrationResult(false, result);
 
