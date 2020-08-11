@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -21,11 +24,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Log only if there is an exception in the test run.
             if (!string.IsNullOrWhiteSpace(testFailureReason))
             {
+                // Framework against which the test is running.
+                var targetFramework = (TargetFrameworkAttribute)Assembly
+                        .GetExecutingAssembly()
+                        .GetCustomAttributes(typeof(TargetFrameworkAttribute), false)
+                        .SingleOrDefault();
+
+                string operatingSystem = RuntimeInformation.OSDescription.Trim();
+
+                // Add test related properties.
                 var extraProperties = new Dictionary<string, string>
                 {
                     { LoggingPropertyNames.TestName, testMethod.TestMethodName },
                     { LoggingPropertyNames.TestClassName, testMethod.TestClassName },
-                    { LoggingPropertyNames.TestFailureReason, testFailureReason }
+                    { LoggingPropertyNames.TestFailureReason, testFailureReason },
+                    { LoggingPropertyNames.TargetFramework, targetFramework.FrameworkName },
+                    { LoggingPropertyNames.OsInfo, operatingSystem },
                 };
 
                 // Note: Events take long and increase run time of the test suite, so only using trace.
