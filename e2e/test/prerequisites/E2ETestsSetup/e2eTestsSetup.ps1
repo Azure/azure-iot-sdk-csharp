@@ -379,6 +379,7 @@ $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n 
 $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
 $customAllocationPolicyWebhook = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.customAllocationPolicyWebhook.value' --output tsv
 $keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
+$instrumentationKey = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.instrumentationKey.value' --output tsv
 
 ##################################################################################################################################
 # Uploading certificate to DPS, verifying and creating enrollment groups
@@ -528,6 +529,8 @@ az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-DEVICE-CONN-STR
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONN-STRING-INVALIDCERT" --value "HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U=" --output none
 <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
 az keyvault secret set --vault-name $keyVaultName --name "PROVISIONING-CONNECTION-STRING-INVALIDCERT" --value "HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY=" --output none
+
+az keyvault secret set --vault-name $keyVaultName --name "E2E-IKEY" --value $instrumentationKey --output none
 
 ###################################################################################################################################
 # Run docker containers for TPM simulators and Proxy
