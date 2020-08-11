@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         else
                         {
                             // 2 is the minimum notification count: connect, disable.
-                            Assert.IsTrue(amqpConnectionStatuses[i].ConnectionStatusChangeCount == 2, $"The expected connection status change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
+                            Assert.IsTrue(amqpConnectionStatuses[i].ConnectionStatusChangeCount >= 2, $"The expected connection status change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
                         }
                     }
                     Assert.AreEqual(ConnectionStatus.Disabled, amqpConnectionStatuses[i].LastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Disabled} but was {amqpConnectionStatuses[i].LastConnectionStatus}");
