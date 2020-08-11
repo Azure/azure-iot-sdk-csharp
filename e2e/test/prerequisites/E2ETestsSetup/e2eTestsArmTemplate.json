@@ -2,6 +2,13 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "ApplicationInsightsName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-ai')]",
+      "metadata": {
+        "description": "The name of application insights."
+      }
+    },
     "StorageAccountName": {
       "type": "string",
       "minLength": 3,
@@ -133,6 +140,15 @@
     "consumerGroupFullName": "[concat(parameters('HubName'), '/events/', parameters('ConsumerGroupName'))]"
   },
   "resources": [
+    {
+      "name": "[parameters('ApplicationInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-05-01",
+      "properties": {
+          "Application_Type": "web"
+      }
+    },
     {
       "type": "Microsoft.KeyVault/vaults",
       "apiVersion": "2018-02-14",
@@ -499,6 +515,10 @@
     "keyVaultName": {
       "type": "string",
       "value": "[parameters('KeyVaultName')]"
+    },
+    "instrumentationKey": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName')), '2015-05-01').InstrumentationKey]"
     }
   }
 }
