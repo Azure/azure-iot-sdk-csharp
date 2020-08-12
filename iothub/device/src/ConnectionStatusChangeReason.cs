@@ -9,42 +9,42 @@ namespace Microsoft.Azure.Devices.Client
     public enum ConnectionStatusChangeReason
     {
         /// <summary>
-        /// This signifies that the client is connected, and ready to be used.
-        /// <para>This connection status change reason is returned with a connection status of <see cref="ConnectionStatus.Connected"/>.</para>
+        /// The client is connected, and ready to be used.
+        /// <para>This is returned with a connection status of <see cref="ConnectionStatus.Connected"/>.</para>
         /// </summary>
         Connection_Ok,
 
         /// <summary>
-        /// This signifies that the SAS token associated with the client has expired, and cannot be renewed.
+        /// The SAS token associated with the client has expired, and cannot be renewed.
         /// The supplied credentials need to be fixed before a connection can be established.
-        /// <para>NOTE: This status change reason is currently not used in the client library.</para>
+        /// <para>NOTE: This is currently not used in the client library.</para>
         /// </summary>
         Expired_SAS_Token,
 
         /// <summary>
-        /// This signifies that the device/ module has been deleted or marked as disabled (on your hub instance).
+        /// The device/ module has been deleted or marked as disabled (on your IoT Hub instance).
         /// Fix the device/ module status in Azure before attempting to create the associated client instance.
-        /// <para>This connection status change reason is returned with a connection status of <see cref="ConnectionStatus.Disconnected"/></para>
+        /// <para>This is returned with a connection status of <see cref="ConnectionStatus.Disconnected"/></para>
         /// </summary>
         Device_Disabled,
 
         /// <summary>
-        /// This signifies that incorrect credentials were supplied to the client instance.
+        /// Incorrect credentials were supplied to the client instance.
         /// The supplied credentials need to be fixed before a connection can be established.
-        /// <para>This connection status change reason is returned with a connection status of <see cref="ConnectionStatus.Disconnected"/></para>
+        /// <para>This is returned with a connection status of <see cref="ConnectionStatus.Disconnected"/></para>
         /// </summary>
         Bad_Credential,
 
         /// <summary>
-        /// This signifies that the client was disconnected due to a transient exception, but the retry policy expired before a connection could be re-established.
+        /// The client was disconnected due to a transient exception, but the retry policy expired before a connection could be re-established.
         /// If you want to perform more operations on the device client, you should <see cref="DeviceClient.Dispose()"/> and then re-initialize the client.
-        /// <para>This connection status change reason is returned with a connection status of <see cref="ConnectionStatus.Disconnected"/></para>
+        /// <para>This is returned with a connection status of <see cref="ConnectionStatus.Disconnected"/></para>
         /// </summary>
         Retry_Expired,
 
         /// <summary>
-        /// This signifies that the client was disconnected due to loss of network.
-        /// <para>NOTE: This status change reason is currently not used in the client library.</para>
+        /// The client was disconnected due to loss of network.
+        /// <para>NOTE: This is currently not used in the client library.</para>
         /// </summary>
         No_Network,
 
@@ -57,9 +57,9 @@ namespace Microsoft.Azure.Devices.Client
         Communication_Error,
 
         /// <summary>
-        /// This signifies that the client has been closed gracefully.
+        /// The client has been closed gracefully.
         /// If you want to perform more operations on the device client, you should <see cref="DeviceClient.Dispose()"/> and then re-initialize the client.
-        /// <para>This connection status change reason is returned with a connection status of <see cref="ConnectionStatus.Disabled"/> </para>
+        /// <para>This is returned with a connection status of <see cref="ConnectionStatus.Disabled"/> </para>
         /// </summary>
         Client_Close,
     }
