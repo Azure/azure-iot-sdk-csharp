@@ -49,8 +49,9 @@ namespace Microsoft.Azure.Devices.Client
         No_Network,
 
         /// <summary>
-        /// When returned with a connection status of <see cref="ConnectionStatus.Disconnected_Retrying"/>, this signifies that the client is trying to recover from a disconnect due to a transient exception.
-        /// Do NOT close or open the client instance. Once the client successfully reports <see cref="ConnectionStatus.Connected"/>, you can resume operations on the client.
+        /// This can be returned with either a connection status of <see cref="ConnectionStatus.Disconnected_Retrying"/> or <see cref="ConnectionStatus.Disconnected"/>.
+        /// <para>When returned with a connection status of <see cref="ConnectionStatus.Disconnected_Retrying"/>, this signifies that the client is trying to recover from a disconnect due to a transient exception.
+        /// Do NOT close or open the client instance. Once the client successfully reports <see cref="ConnectionStatus.Connected"/>, you can resume operations on the client.</para>
         /// <para>When returned with a connection status of <see cref="ConnectionStatus.Disconnected"/> signifies that client is disconnected due to a non-retryable exception.
         /// If you want to perform more operations on the device client, you should <see cref="DeviceClient.Dispose()"/> and then re-initialize the client.</para>
         /// </summary>
