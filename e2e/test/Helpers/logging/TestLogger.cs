@@ -51,6 +51,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     { LoggingPropertyNames.TestRunId, Guid.NewGuid().ToString() },
                     // Build Id in the pipeline.
                     { LoggingPropertyNames.BuildId, Environment.GetEnvironmentVariable("BUILD_BUILDID") },
+                    { LoggingPropertyNames.Attempt, Environment.GetEnvironmentVariable("SYSTEM_JOBATTEMPT") },
+                    { LoggingPropertyNames.TargetBranch, Environment.GetEnvironmentVariable("TARGET_BRANCH") },
                 };
             }
         }
