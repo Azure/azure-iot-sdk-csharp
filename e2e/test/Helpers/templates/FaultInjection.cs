@@ -269,7 +269,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             switch (transportType)
             {
                 case Client.TransportType.Http1:
-                    return new Http1TransportSettings();
+                    return new Http1TransportSettings
+                    {
+                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
+                    };
 
                 case Client.TransportType.Amqp:
                 case Client.TransportType.Amqp_Tcp_Only:
