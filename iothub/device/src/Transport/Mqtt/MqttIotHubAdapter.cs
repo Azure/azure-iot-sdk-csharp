@@ -62,6 +62,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly Action<object> s_pingServerCallback = PingServer;
         private static readonly Action<object> s_checkConnAckTimeoutCallback = ShutdownIfNotReady;
         private static readonly Func<IChannelHandlerContext, Exception, bool> s_shutdownOnWriteErrorHandler = (ctx, ex) => { ShutdownOnError(ctx, ex); return false; };
+        private static readonly TimeSpan s_pingResponseTimeout = TimeSpan.FromSeconds(30); // The ping response duration is set to 30 secs.
+        private static readonly SemaphoreSlim s_pingResponseSemaphore = new SemaphoreSlim(0, 1);
 
         private readonly IMqttIotHubEventHandler _mqttIotHubEventHandler;
 
@@ -419,6 +421,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     await WriteMessageAsync(context, PingReqPacket.Instance, s_shutdownOnWriteErrorHandler).ConfigureAwait(true);
 
                     if (Logging.IsEnabled) Logging.Info(context, $"Idle time was {idleTime}, so ping request was sent.", nameof(PingServer));
+
+                    // Wait to capture the ping response semaphore, which is released when a PINGRESP packet is received.
+                    bool receivedPingResponse = await s_pingResponseSemaphore.WaitAsync(s_pingResponseTimeout).ConfigureAwait(false);
+                    if (!receivedPingResponse)
+                    {
+                        if (Logging.IsEnabled) Logging.Info(context, $"The ping response wasn't received in {s_pingResponseTimeout}", nameof(PingServer));
+
+                        ShutdownOnError(context, new TimeoutException($"The ping response wasn't received in {s_pingResponseTimeout}"));
+                    }
+
+                    if (Logging.IsEnabled) Logging.Info(context, $"Ping response was received successfully.", nameof(PingServer));
                 }
 
                 self.ScheduleKeepConnectionAlive(context);
@@ -484,6 +497,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, packet, nameof(ProcessConnectAckAsync));
+        }
+
+        private void ProcessPingResp(IChannelHandlerContext context, PingRespPacket packet)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, context.Name, packet, nameof(ProcessPingResp));
+
+            s_pingResponseSemaphore.Release();
+
+            if (Logging.IsEnabled) Logging.Exit(this, context.Name, packet, nameof(ProcessPingResp));
         }
 
         #endregion Connect
@@ -609,6 +631,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         break;
 
                     case PacketType.PINGRESP:
+                        ProcessPingResp(context, (PingRespPacket)packet);
                         break;
 
                     case PacketType.UNSUBACK:
