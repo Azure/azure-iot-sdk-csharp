@@ -839,6 +839,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 if (Logging.IsEnabled) Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
+                cancellationToken.ThrowIfCancellationRequested();
                 await _methodsDictionarySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (methodHandler != null)
@@ -879,7 +880,18 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                _methodsDictionarySemaphore.Release();
+                try
+                {
+                    _methodsDictionarySemaphore.Release();
+                }
+                catch (SemaphoreFullException e)
+                {
+                    // this semaphore is typically grabbed at the start of the method, but if
+                    // this method is cancelled while waiting to grab the semaphore, then this semaphore.release
+                    // will throw this SemaphoreFullException since it was never grabbed in the first place
+                    if (Logging.IsEnabled) Logging.Info(this, "SemaphoreFullException thrown while releasing methods dictionary semaphore, but will be ignored since that means the semaphore is available for other threads to grab again anyways");
+                }
+
                 if (Logging.IsEnabled) Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
             }
         }
@@ -917,7 +929,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 if (Logging.IsEnabled) Logging.Enter(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
-
+                cancellationToken.ThrowIfCancellationRequested();
                 await _methodsDictionarySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 if (methodHandler != null)
                 {
@@ -942,7 +954,18 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                _methodsDictionarySemaphore.Release();
+                try
+                {
+                    _methodsDictionarySemaphore.Release();
+                }
+                catch (SemaphoreFullException e)
+                {
+                    // this semaphore is typically grabbed at the start of the method, but if
+                    // this method is cancelled while waiting to grab the semaphore, then this semaphore.release
+                    // will throw this SemaphoreFullException since it was never grabbed in the first place
+                    if (Logging.IsEnabled) Logging.Info(this, "SemaphoreFullException thrown while releasing methods dictionary semaphore, but will be ignored since that means the semaphore is available for other threads to grab again anyways");
+                }
+
                 if (Logging.IsEnabled) Logging.Exit(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
             }
         }
@@ -1047,7 +1070,17 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                _methodsDictionarySemaphore.Release();
+                try
+                {
+                    _methodsDictionarySemaphore.Release();
+                }
+                catch (SemaphoreFullException e)
+                {
+                    // this semaphore is typically grabbed at the start of the method, but if
+                    // this method is cancelled while waiting to grab the semaphore, then this semaphore.release
+                    // will throw this SemaphoreFullException since it was never grabbed in the first place
+                    if (Logging.IsEnabled) Logging.Info(this, "SemaphoreFullException thrown while releasing methods dictionary semaphore, but will be ignored since that means the semaphore is available for other threads to grab again anyways");
+                }
             }
 
             if (m == null)
@@ -1463,6 +1496,7 @@ namespace Microsoft.Azure.Devices.Client
             ValidateModuleTransportHandler("SetInputMessageHandlerAsync for a named output");
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 await _receiveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (messageHandler != null)
@@ -1494,7 +1528,18 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                _receiveSemaphore.Release();
+                try
+                {
+                    _receiveSemaphore.Release();
+                }
+                catch (SemaphoreFullException e)
+                {
+                    // this semaphore is typically grabbed at the start of the method, but if
+                    // this method is cancelled while waiting to grab the semaphore, then this semaphore.release
+                    // will throw this SemaphoreFullException since it was never grabbed in the first place
+                    if (Logging.IsEnabled) Logging.Info(this, "SemaphoreFullException thrown while releasing receive semaphore, but will be ignored since that means the semaphore is available for other threads to grab again anyways");
+                }
+
                 if (Logging.IsEnabled) Logging.Exit(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
             }
         }
@@ -1537,6 +1582,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 await _receiveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 if (messageHandler != null)
                 {
@@ -1553,7 +1599,18 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                _receiveSemaphore.Release();
+                try
+                {
+                    _receiveSemaphore.Release();
+                }
+                catch (SemaphoreFullException e)
+                {
+                    // this semaphore is typically grabbed at the start of the method, but if
+                    // this method is cancelled while waiting to grab the semaphore, then this semaphore.release
+                    // will throw this SemaphoreFullException since it was never grabbed in the first place
+                    if (Logging.IsEnabled) Logging.Info(this, "SemaphoreFullException thrown while releasing receive semaphore, but will be ignored since that means the semaphore is available for other threads to grab again anyways");
+                }
+
                 if (Logging.IsEnabled) Logging.Exit(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
             }
         }

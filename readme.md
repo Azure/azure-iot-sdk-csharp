@@ -1,5 +1,9 @@
 # Microsoft Azure IoT SDK for .NET
 
+### Help us help you with our IoT SDKs!
+We are running a survey through August 2020 to learn more about your IoT projects and support needs. Our team will use this information to help shape the future of our IoT SDKs, and, if you choose to provide your contact information, we'll include you in our circle of advisors for early feedback. Consider spending ~5 minutes completing **[this survey](https://aka.ms/iotsdksurvey)**-- we'd love to hear from you!
+
+### Contents
 This repository contains the following:
 
 - **Microsoft Azure IoT Hub device SDK for C#** to connect client devices to Azure IoT Hub with .NET
