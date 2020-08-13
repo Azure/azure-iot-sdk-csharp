@@ -25,7 +25,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     {
         private const string ServiceName = "enrollments";
         private const string EnrollmentIdUriFormat = "{0}/{1}?{2}";
+        private const string EnrollmentAttestationName = "attestationmechanism";
         private const string EnrollmentUriFormat = "{0}?{1}";
+        private const string EnrollmentAttestationUriFormat = "{0}/{1}/{2}?{3}";
 
         internal static async Task<IndividualEnrollment> CreateOrUpdateAsync(
             IContractApiHttp contractApiHttp, 
@@ -178,6 +180,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static Uri GetEnrollmentUri()
         {
             return new Uri(EnrollmentUriFormat.FormatInvariant(ServiceName, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+        }
+
+        internal static async Task<Attestation> GetEnrollmentAttestationAsync(
+             IContractApiHttp contractApiHttp,
+             string registrationId,
+             CancellationToken cancellationToken)
+        {
+            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
+                HttpMethod.Post,
+                GetEnrollmentAttestationUri(registrationId),
+                null,
+                null,
+                null,
+                cancellationToken).ConfigureAwait(false);
+
+            if (contractApiResponse.Body == null)
+            {
+                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
+            }
+
+            var attestation = JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
+            return attestation.GetAttestation();
+        }
+
+        private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)
+        {
+            enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
+            return new Uri(EnrollmentAttestationUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, EnrollmentAttestationName, SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }

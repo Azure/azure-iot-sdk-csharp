@@ -1341,5 +1341,73 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 enrollmentGroupId,
                 pageSize);
         }
+
+        /// <summary>
+        /// Retrieve the individualEnrollment attestation information.
+        /// </summary>
+        /// <remarks>
+        /// This method will return the enrollment attestation information for the provided registrationId. It will retrieve
+        ///     the correspondent attestation from the Device Provisioning Service, and return it in the
+        ///     <see cref="Attestation"/> object.
+        ///
+        /// If the registrationId do not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="registrationId">the <code>string} that identifies the individualEnrollment. It cannot be {@code null</code> or empty.</param>
+        /// <returns>The <see cref="Attestation"/> of the individualEnrollment in Provisioning Device Service.</returns>
+        /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
+        /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the bulk operation.</exception>
+        public Task<Attestation> GetIndividualEnrollmentAttestationAsync(string registrationId)
+        {
+            return IndividualEnrollmentManager.GetEnrollmentAttestationAsync(_contractApiHttp, registrationId, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Retrieve the individualEnrollment attestation information.
+        /// </summary>
+        /// <param name="registrationId">The registration ID.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="Attestation"/> of the individualEnrollment in Provisioning Device Service.</returns>
+        public Task<Attestation> GetIndividualEnrollmentAttestationAsync(string registrationId, CancellationToken cancellationToken)
+        {
+            return IndividualEnrollmentManager.GetEnrollmentAttestationAsync(_contractApiHttp, registrationId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieve the enrollmentGroup attestation information.
+        /// </summary>
+        /// <remarks>
+        /// This method will return the enrollmentGroup attestation information for the provided enrollmentGroupId. It will retrieve
+        ///     the correspondent attestation from the Device Provisioning Service, and return it in the
+        ///     <see cref="Attestation"/> object.
+        ///
+        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <returns>The <see cref="Attestation"/> with the content of the attestation of the enrollmentGroup in the Provisioning Device Service.</returns>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to retrieve the enrollmentGroup information for the provided enrollmentGroupId.</exception>
+        public Task<Attestation> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId)
+        {
+            return EnrollmentGroupManager.GetEnrollmentAttestationAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Retrieve the enrollmentGroup attestation information.
+        /// </summary>
+        /// <remarks>
+        /// This method will return the enrollmentGroup attestation information for the provided enrollmentGroupId. It will retrieve
+        ///     the correspondent attestation from the Device Provisioning Service, and return it in the
+        ///     <see cref="Attestation"/> object.
+        ///
+        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="Attestation"/> with the content of the attestation of the enrollmentGroup in the Provisioning Device Service.</returns>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to retrieve the enrollmentGroup information for the provided enrollmentGroupId.</exception>
+        public Task<Attestation> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId, CancellationToken cancellationToken)
+        {
+            return EnrollmentGroupManager.GetEnrollmentAttestationAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);
+        }
     }
 }
