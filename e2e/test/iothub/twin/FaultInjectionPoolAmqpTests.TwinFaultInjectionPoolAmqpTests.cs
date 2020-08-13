@@ -1430,7 +1430,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec = FaultInjection.DefaultDelayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
+            string proxyAddress = null)
         {
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
@@ -1450,6 +1451,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await FaultInjectionPoolingOverAmqp.TestFaultInjectionPoolAmqpAsync(
                 Twin_DevicePrefix,
                 transport,
+                proxyAddress,
                 poolSize,
                 devicesCount,
                 faultType,
@@ -1473,7 +1475,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             int delayInSec = FaultInjection.DefaultDelayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
+            string proxyAddress = null)
         {
             Dictionary<string, List<string>> twinPropertyMap = new Dictionary<string, List<string>>();
             Dictionary<string, TestDeviceCallbackHandler> testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
@@ -1525,6 +1528,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await FaultInjectionPoolingOverAmqp.TestFaultInjectionPoolAmqpAsync(
                 Twin_DevicePrefix,
                 transport,
+                proxyAddress,
                 poolSize,
                 devicesCount,
                 faultType,

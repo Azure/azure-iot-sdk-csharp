@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,6 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public static async Task TestFaultInjectionPoolAmqpAsync(
             string devicePrefix,
             Client.TransportType transport,
+            string proxyAddress,
             int poolSize,
             int devicesCount,
             string faultType,
@@ -35,8 +37,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
                     {
                         MaxPoolSize = unchecked((uint)poolSize),
-                        Pooling = true
-                    }
+                        Pooling = true,
+                    },
+                    Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
                 }
             };
 

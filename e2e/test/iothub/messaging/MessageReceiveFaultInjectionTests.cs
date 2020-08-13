@@ -177,7 +177,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Client.TransportType transport,
             string faultType,
             string reason,
-            int delayInSec)
+            int delayInSec,
+            string proxyAddress = null)
         {
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
@@ -209,6 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     DevicePrefix,
                     type,
                     transport,
+                    proxyAddress,
                     faultType,
                     reason,
                     delayInSec,
