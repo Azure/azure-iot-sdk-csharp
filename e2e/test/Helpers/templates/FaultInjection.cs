@@ -140,19 +140,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
 
-            DeviceClient deviceClient;
-            if (proxyAddress == null)
-            {
-                // If there are no transport settings to be configured, use default settings to set up the transport layer.
-                deviceClient = testDevice.CreateDeviceClient(transport);
-            }
-            else
-            {
-                // If transport settings are supplied, use them to initialize the transport layer.
-                ITransportSettings transportSettings = CreateTransportSettingsFromName(transport);
-                //transportSettings.Proxy = new WebProxy(proxyAddress);
-                deviceClient = testDevice.CreateDeviceClient(new ITransportSettings[] { transportSettings });
-            }
+            ITransportSettings transportSettings = CreateTransportSettingsFromName(transport, proxyAddress);
+            DeviceClient deviceClient = testDevice.CreateDeviceClient(new ITransportSettings[] { transportSettings });
 
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
@@ -275,7 +264,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             }
         }
 
-        private static ITransportSettings CreateTransportSettingsFromName(Client.TransportType transportType)
+        private static ITransportSettings CreateTransportSettingsFromName(Client.TransportType transportType, string proxyAddress)
         {
             switch (transportType)
             {
@@ -284,13 +273,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 case Client.TransportType.Amqp:
                 case Client.TransportType.Amqp_Tcp_Only:
-                case Client.TransportType.Amqp_WebSocket_Only:
                     return new AmqpTransportSettings(transportType);
+
+                case Client.TransportType.Amqp_WebSocket_Only:
+                    return new AmqpTransportSettings(transportType)
+                    {
+                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
+                    };
 
                 case Client.TransportType.Mqtt:
                 case Client.TransportType.Mqtt_Tcp_Only:
-                case Client.TransportType.Mqtt_WebSocket_Only:
                     return new MqttTransportSettings(transportType);
+
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                    return new MqttTransportSettings(transportType)
+                    {
+                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
+                    };
             }
 
             throw new NotSupportedException($"Unknown transport: '{transportType}'.");
