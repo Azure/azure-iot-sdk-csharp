@@ -853,6 +853,22 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        // Test device client recovery when proxy settings are enabled
+        [TestCategory("Proxy")]
+        [LoggedTestMethod]
+        public async Task Message_DeviceSak_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs_WithProxy()
+        {
+            await SendMessageRecoveryPoolOverAmqpAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    proxyAddress: s_proxyServerAddress)
+                .ConfigureAwait(false);
+        }
+
         private async Task SendMessageRecoveryPoolOverAmqpAsync(
             TestDeviceType type,
             Client.TransportType transport,
@@ -862,7 +878,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec = FaultInjection.DefaultDelayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
+            string proxyAddress = null)
         {
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
@@ -889,6 +906,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .TestFaultInjectionPoolAmqpAsync(
                     MessageSend_DevicePrefix,
                     transport,
+                    proxyAddress,
                     poolSize,
                     devicesCount,
                     faultType,

@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     public partial class MessageSendFaultInjectionTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
+        private static readonly string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
 
         [LoggedTestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
@@ -43,6 +44,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
+        // Test device client recovery when proxy settings are enabled
+        [TestCategory("Proxy")]
+        [LoggedTestMethod]
+        public async Task Message_TcpConnectionLossSendRecovery_AmqpWs_WithProxy()
+        {
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    proxyAddress: s_proxyServerAddress)
+                .ConfigureAwait(false);
+        }
+
         [LoggedTestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
         {
@@ -64,6 +80,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        // Test device client recovery when proxy settings are enabled
+        [TestCategory("Proxy")]
+        [LoggedTestMethod]
+        public async Task Message_TcpConnectionLossSendRecovery_MqttWs_WithProxy()
+        {
+            await SendMessageRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    proxyAddress: s_proxyServerAddress)
                 .ConfigureAwait(false);
         }
 
@@ -395,7 +426,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             string reason,
             int delayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
-            int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
+            int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds,
+            string proxyAddress = null)
         {
             Func<DeviceClient, TestDevice, Task> init = (deviceClient, testDevice) =>
             {
@@ -414,6 +446,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     _devicePrefix,
                     type,
                     transport,
+                    proxyAddress,
                     faultType,
                     reason,
                     delayInSec,

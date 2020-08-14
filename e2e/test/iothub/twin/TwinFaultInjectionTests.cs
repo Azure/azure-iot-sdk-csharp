@@ -216,7 +216,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Client.TransportType transport,
             string faultType,
             string reason,
-            int delayInSec)
+            int delayInSec,
+            string proxyAddress = null)
         {
             var propName = Guid.NewGuid().ToString();
             var props = new TwinCollection();
@@ -241,6 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     s_devicePrefix,
                     TestDeviceType.Sasl,
                     transport,
+                    proxyAddress,
                     faultType,
                     reason,
                     delayInSec,
@@ -267,7 +269,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Client.TransportType transport,
             string faultType,
             string reason,
-            int delayInSec)
+            int delayInSec,
+            string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
             var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
@@ -308,6 +311,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     s_devicePrefix,
                     TestDeviceType.Sasl,
                     transport,
+                    proxyAddress,
                     faultType,
                     reason,
                     delayInSec,

@@ -614,7 +614,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec = FaultInjection.DefaultDelayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
+            string proxyAddress = null)
         {
             // Initialize the service client
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
@@ -649,6 +650,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .TestFaultInjectionPoolAmqpAsync(
                     MessageReceive_DevicePrefix,
                     transport,
+                    proxyAddress,
                     poolSize,
                     devicesCount,
                     faultType,

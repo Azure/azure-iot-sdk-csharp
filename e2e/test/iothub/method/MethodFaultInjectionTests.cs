@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
         }
 
-        private async Task SendMethodAndRespondRecoveryAsync(Client.TransportType transport, string faultType, string reason, int delayInSec)
+        private async Task SendMethodAndRespondRecoveryAsync(Client.TransportType transport, string faultType, string reason, int delayInSec, string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
@@ -281,6 +281,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     DevicePrefix,
                     TestDeviceType.Sasl,
                     transport,
+                    proxyAddress,
                     faultType,
                     reason,
                     delayInSec,

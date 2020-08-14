@@ -13,5 +13,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("LongRunning")]
     public partial class FaultInjectionPoolAmqpTests : E2EMsTestBase
     {
+        private static readonly string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
     }
 }

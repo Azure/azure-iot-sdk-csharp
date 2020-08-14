@@ -4,10 +4,12 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // If you see intermittent failures on devices that are created by this file, check to see if you have multiple suites
@@ -126,6 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string devicePrefix,
             TestDeviceType type,
             Client.TransportType transport,
+            string proxyAddress,
             string faultType,
             string reason,
             int delayInSec,
@@ -136,7 +139,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             MsTestLogger logger)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
-            DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
+
+            ITransportSettings transportSettings = CreateTransportSettingsFromName(transport, proxyAddress);
+            DeviceClient deviceClient = testDevice.CreateDeviceClient(new ITransportSettings[] { transportSettings });
 
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
@@ -257,6 +262,40 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
                 }
             }
+        }
+
+        private static ITransportSettings CreateTransportSettingsFromName(Client.TransportType transportType, string proxyAddress)
+        {
+            switch (transportType)
+            {
+                case Client.TransportType.Http1:
+                    return new Http1TransportSettings
+                    {
+                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
+                    };
+
+                case Client.TransportType.Amqp:
+                case Client.TransportType.Amqp_Tcp_Only:
+                    return new AmqpTransportSettings(transportType);
+
+                case Client.TransportType.Amqp_WebSocket_Only:
+                    return new AmqpTransportSettings(transportType)
+                    {
+                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
+                    };
+
+                case Client.TransportType.Mqtt:
+                case Client.TransportType.Mqtt_Tcp_Only:
+                    return new MqttTransportSettings(transportType);
+
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                    return new MqttTransportSettings(transportType)
+                    {
+                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
+                    };
+            }
+
+            throw new NotSupportedException($"Unknown transport: '{transportType}'.");
         }
     }
 }
