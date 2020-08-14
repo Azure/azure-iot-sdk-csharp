@@ -17,11 +17,9 @@ namespace arm_read_write
 {
     class Program
     {
-        //
-        //This is the arm-read-write application that simulates a virtual device
-        //  and sends messages to an IoT Hub.
-        //The messages are routed automatically to a destination depending on the value of a string inthe message.
-        //Messages with the string set to "storage" are written to a storage account, where you can view them.
+        //This is the arm-read-write application that simulates a virtual device.
+        //It writes messages to the IoT Hub, which routes the messages automatically to a storage account, 
+        //where you can view them.
 
         //  This was derived by the (more complicated) tutorial for routing 
         //  https://docs.microsoft.com/en-us/azure/iot-hub/tutorial-routing
