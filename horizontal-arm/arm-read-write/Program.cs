@@ -18,28 +18,18 @@ namespace arm_read_write
     class Program
     {
         //
-        //    1. Use the ARM template to load the resources for this quickstart.
-        //    2. Using CLI, create a device on the IoT Hub. Retrieve the keys and save them.
-        //    3. Set the routing query on the device to be "true" so all messages will be passed through 
-        //        and written to Azure Storage.:
-        //    4. run the simulated device application (arm-read-write). It will submit messages to the hub, 
-        //        which will write them all to storage.
-        //    5. open the storage account and look at the resulting messages
-        //    6. Stop running the console app
-        //    7. When finished, delete the resource group
-        //
-        // ARM template is called arm-read-write-sample.
-        // put this in the repository so you can just call it to load it 
-        // keep the suffixes so you don't have to worry about duplicates
+        //This is the arm-read-write application that simulates a virtual device
+        //  and sends messages to an IoT Hub.
+        //The messages are routed automatically to a destination depending on the value of a string inthe message.
+        //Messages with the string set to "storage" are written to a storage account, where you can view them.
 
-        //This is the code that sends messages to the IoT Hub for routing messages to storage. 
-        //  In this case, all the messages will be routed directly to storage and written.
         //  This was derived by the (more complicated) tutorial for routing 
         //  https://docs.microsoft.com/en-us/azure/iot-hub/tutorial-routing
 
         private static DeviceClient s_deviceClient;
         private readonly static string s_myDeviceId = "Contoso-Test-Device";
         private readonly static string s_iotHubUri = "<hub-name-goes-here>.azure-devices.net";
+
         // This is the primary key for the device. This is in the portal. 
         // Find your IoT hub in the portal > IoT devic1es > select your device > copy the key. 
         private readonly static string s_deviceKey = "<device-key-goes-here>";
@@ -47,11 +37,14 @@ namespace arm_read_write
         private static async Task Main()
         {
             Console.WriteLine("write messages to a hub and use routing to write them to storage");
-            s_deviceClient = DeviceClient.Create(s_iotHubUri, new DeviceAuthenticationWithRegistrySymmetricKey(s_myDeviceId, s_deviceKey), TransportType.Mqtt);
+
+            s_deviceClient = DeviceClient.Create(s_iotHubUri, 
+              new DeviceAuthenticationWithRegistrySymmetricKey(s_myDeviceId, s_deviceKey), TransportType.Mqtt);
 
             var cts = new CancellationTokenSource();
 
             var messages = SendDeviceToCloudMessagesAsync(cts.Token);
+
             Console.WriteLine("Press the Enter key to stop.");
             Console.ReadLine();
             cts.Cancel();
