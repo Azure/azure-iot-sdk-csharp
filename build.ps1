@@ -99,7 +99,7 @@ Function CheckTools($commands)
 
 Function CheckLocalPackagesAvailableForTesting()
 {
-    $localPackagesAvailableForTesting = (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
+    return (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
 }
 
 Function BuildProject($path, $message)
@@ -216,13 +216,14 @@ $localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
 $buildFailed = $true
 $errorMessage = ""
-$localPackagesAvailableForTesting = $false
+$localPackagesAvailableForTesting = CheckLocalPackagesAvailableForTesting
+
+Write-Host -ForegroundColor Magenta "Local packages being used for testing: $localPackagesAvailableForTesting"
 
 try
 {
     if ($sign)
     {
-        CheckLocalPackagesAvailableForTesting
         if ($localPackagesAvailableForTesting)
         {
             throw "Local NuGet package source path is not set, required when signing packages."
