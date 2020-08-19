@@ -156,7 +156,11 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 
 The project offers a Long Term Support (LTS) version to allow users that do not need the latest features to be shielded from unwanted changes.
 
-A new LTS version will be created every 6 months. The lifetime of an LTS branch is currently planned for one year. LTS branches receive all bug fixes that fall in one of these categories:
+As of August 2020, the .NET SDK is shifting to a revised Long-Term Support strategy. The primary motivations for this change are to extend the support period and decrease the churn on LTS releases, while still maintaining a strategy that offers customers choice between new features and stability. 
+
+We now will be releasing a new LTS branch yearly, and each LTS release will be supported for 3 years - 1 year of active maintenance with bugfixes, and 2 years of extended support for security fixes.
+
+LTS branches receive all bug fixes that fall in one of these categories:
 
 - security bugfixes
 - critical bugfixes (crashes, memory leaks, etc.)
@@ -171,7 +175,7 @@ Below is a table showing the mapping of the LTS branches to the packages release
 
 | Release | Github Branch | LTS Status | LTS Start Date | Maintenance End Date | Removed Date |
 | :-----------: | :-----------: | :--------: | :------------: | :------------------: | :----------: |
-| [2020-8-19](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020-8-19) | lts_2020-8-19   | Active     | 2020-08-19     | 2021-8-19           | 2023-8-19   |
+| [2020-8-19](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020-8-19) | lts_2020_08   | Active     | 2020-08-19     | 2021-8-19           | 2023-8-19   |
 | [2020-1-31](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020-1-31_patch1) | lts_2020_01   | Deprecated     | 2020-01-31     | 2020-06-30           | 2020-12-31   |
 
 - <sup>1</sup> All scheduled dates are subject to change by the Azure IoT SDK team.
