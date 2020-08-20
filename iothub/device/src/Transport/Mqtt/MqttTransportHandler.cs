@@ -75,30 +75,40 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private int _state = (int)TransportState.NotInitialized;
         public TransportState State => (TransportState)Volatile.Read(ref _state);
 
-        // incoming topic names
-        private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
-
-        private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
-        private const string TwinResponseTopicFilter = "$iothub/twin/res/#";
-        private const string TwinResponseTopicPrefix = "$iothub/twin/res/";
-        private const string TwinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
-        private const string TwinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
-        private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
-        private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
+        // Topic names for receiving cloud-to-device messages.
         private const string DeviceBoundMessagesTopicFilter = "devices/{0}/messages/devicebound/#";
         private const string DeviceBoundMessagesTopicPrefix = "devices/{0}/messages/devicebound/";
-        private const string DeviceStreamingPostTopicFilter = "$iothub/streams/POST/#";
-        private const string DeviceStreamingPostTopicPrefix = "$iothub/streams/POST/";
-        private const string DeviceStreamingResponseTopicFilter = "$iothub/streams/res/#";
 
-        // outgoing topic names
-        private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
-
+        // Topic names for retrieving a device's twin properties.
+        // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
+        // It then sends an empty message to the topic "$iothub/twin/GET/?$rid={request id}, with a populated value for request ID.
+        // The service then sends a response message containing the device twin data on topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request ID as the request.
+        private const string TwinResponseTopicFilter = "$iothub/twin/res/#";
+        private const string TwinResponseTopicPrefix = "$iothub/twin/res/";
         private const string TwinGetTopic = "$iothub/twin/GET/?$rid={0}";
+        private const string TwinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
+
+        // Topic name for updating device twin's reported properties.
+        // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
+        // The client then sends a message containing the twin update to "$iothub/twin/PATCH/properties/reported/?$rid={request id}", with a populated value for request ID.
+        // The service then sends a response message containing the new ETag value for the reported propeties collection on the topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request ID as the request.
         private const string TwinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";
 
-        // incoming topic regexp
-        private const string TwinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
+        // Topic names for receiving twin desired property update notifications.
+        private const string TwinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
+        private const string TwinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
+
+        // Topic name for responding to direct methods.
+        // The client first subscribes to "$iothub/methods/POST/#".
+        // The service sends method requests to the topic "$iothub/methods/POST/{method name}/?$rid={request id}".
+        // The client responds to the direct method invocation by sending a message to the topic "$iothub/methods/res/{status}/?$rid={request id}", using the same request ID as the request.
+        private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
+        private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
+        private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
+
+        // Topic names for enabling events on Modules.
+        private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
+        private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
@@ -1035,7 +1045,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_015:  `SendTwinGetAsync` shall generate a GUID to use as the $rid property on the request
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_016:  `SendTwinGetAsync` shall set the `Message` topic to '$iothub/twin/GET/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated
             string rid = Guid.NewGuid().ToString();
-            request.MqttTopicName = "$iothub/twin/GET/?$rid=" + rid;
+            request.MqttTopicName = TwinGetTopic.FormatInvariant(rid);
 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_017:  `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_019:  If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
