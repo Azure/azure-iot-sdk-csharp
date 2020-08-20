@@ -64,9 +64,6 @@ jobs:
           IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
           IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
           IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
-          IOTHUB_EVENTHUB_CONN_STRING_CSHARP: $(IOTHUB-EVENTHUB-CONN-STRING-CSHARP)
-          IOTHUB_EVENTHUB_COMPATIBLE_NAME: $(IOTHUB-EVENTHUB-COMPATIBLE-NAME)
-          IOTHUB_EVENTHUB_CONSUMER_GROUP: $(IOTHUB-EVENTHUB-CONSUMER-GROUP)
           DPS_IDSCOPE: $(DPS-IDSCOPE)
           DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
           DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
@@ -88,6 +85,7 @@ jobs:
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          E2E_IKEY: $(E2E-IKEY)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
@@ -111,7 +109,7 @@ jobs:
         displayName: "Publish Test Results **/*.trx"
         inputs:
           testRunner: VSTest
-          testRunTitle: "Linux Tests ($(FRAMEWORK))"
+          testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
 
         condition: always()
@@ -157,9 +155,6 @@ jobs:
           IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
           IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
           IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
-          IOTHUB_EVENTHUB_CONN_STRING_CSHARP: $(IOTHUB-EVENTHUB-CONN-STRING-CSHARP)
-          IOTHUB_EVENTHUB_COMPATIBLE_NAME: $(IOTHUB-EVENTHUB-COMPATIBLE-NAME)
-          IOTHUB_EVENTHUB_CONSUMER_GROUP: $(IOTHUB-EVENTHUB-CONSUMER-GROUP)
           DPS_IDSCOPE: $(DPS-IDSCOPE)
           DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
           DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
@@ -181,6 +176,7 @@ jobs:
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          E2E_IKEY: $(E2E-IKEY)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
@@ -214,7 +210,7 @@ jobs:
         inputs:
           testRunner: VSTest
           testResultsFiles: "**/*.trx"
-          testRunTitle: "Windows Tests ($(FRAMEWORK))"
+          testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
 

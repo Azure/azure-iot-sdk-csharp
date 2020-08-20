@@ -11,24 +11,26 @@ namespace Microsoft.Azure.Devices.Client
 #pragma warning restore CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.
     {
         /// <summary>
-        /// The device or module is disconnected..
+        /// The device or module is disconnected.
+        /// <para>Inspect the associated <see cref="ConnectionStatusChangeReason"/> returned (and exception thrown, if any), and take appropriate action.</para>
         /// </summary>
         Disconnected,
 
         /// <summary>
         /// The device or module is connected.
+        /// <para>The client is connected, and ready to be used.</para>
         /// </summary>
         Connected,
 
-#pragma warning disable CA1707 // Identifiers should not contain underscores - Reason: public API cannot be changed.
         /// <summary>
-        /// The device is attempting to reconnect.
+        /// The device or module is attempting to reconnect.
+        /// <para>The client is attempting to recover the connection. Do NOT close or open the client instance when it is retrying.</para>
         /// </summary>
         Disconnected_Retrying,
-#pragma warning restore CA1707 // Identifiers should not contain underscores - Reason: public API cannot be changed.
 
         /// <summary>
         /// The device connection was closed.
+        /// <para>If you want to perform more operations on the device client, you should <see cref="DeviceClient.Dispose()"/> and then re-initialize the client.</para>
         /// </summary>
         Disabled,
     }
