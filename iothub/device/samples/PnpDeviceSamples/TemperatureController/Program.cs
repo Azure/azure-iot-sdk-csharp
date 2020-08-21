@@ -18,7 +18,8 @@ namespace TemperatureController
     {
         Completed = 200,
         InProgress = 202,
-        NotFound = 404
+        NotFound = 404,
+        BadRequest = 400
     }
 
     public class Program
@@ -203,15 +204,23 @@ namespace TemperatureController
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
         private static async Task<MethodResponse> HandleRebootCommandAsync(MethodRequest request, object userContext)
         {
-            int delay = JsonConvert.DeserializeObject<int>(request.DataAsJson);
+            try
+            {
+                int delay = JsonConvert.DeserializeObject<int>(request.DataAsJson);
 
-            s_logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
-            await Task.Delay(delay * 1000);
+                s_logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
+                await Task.Delay(delay * 1000);
 
-            s_temperature[Thermostat1] = s_maxTemp[Thermostat1] = 0;
-            s_temperature[Thermostat2] = s_maxTemp[Thermostat2] = 0;
+                s_temperature[Thermostat1] = s_maxTemp[Thermostat1] = 0;
+                s_temperature[Thermostat2] = s_maxTemp[Thermostat2] = 0;
 
-            s_temperatureReadings.Clear();
+                s_temperatureReadings.Clear();
+            }
+            catch (JsonReaderException ex)
+            {
+                s_logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                return await Task.FromResult(new MethodResponse((int)StatusCode.BadRequest));
+            }
 
             return new MethodResponse((int)StatusCode.Completed);
         }
@@ -219,40 +228,48 @@ namespace TemperatureController
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the specified time to the current time.
         private static async Task<MethodResponse> HandleMaxMinReportCommandAsync(MethodRequest request, object userContext)
         {
-            string componentName = (string)userContext;
-            DateTime since = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
-            var sinceInDateTimeOffset = new DateTimeOffset(since);
-
-            if (s_temperatureReadings.ContainsKey(componentName))
+            try
             {
-                s_logger.LogDebug($"Command: Received - component=\"{componentName}\", generating max, min and avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
+                string componentName = (string)userContext;
+                DateTime since = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
+                var sinceInDateTimeOffset = new DateTimeOffset(since);
 
-                Dictionary<DateTimeOffset, double> allReadings = s_temperatureReadings[componentName];
-                var filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset).ToDictionary(i => i.Key, i => i.Value);
-
-                if (filteredReadings != null && filteredReadings.Any())
+                if (s_temperatureReadings.ContainsKey(componentName))
                 {
-                    var report = new
+                    s_logger.LogDebug($"Command: Received - component=\"{componentName}\", generating max, min and avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
+
+                    Dictionary<DateTimeOffset, double> allReadings = s_temperatureReadings[componentName];
+                    var filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset).ToDictionary(i => i.Key, i => i.Value);
+
+                    if (filteredReadings != null && filteredReadings.Any())
                     {
-                        maxTemp = filteredReadings.Values.Max<double>(),
-                        minTemp = filteredReadings.Values.Min<double>(),
-                        avgTemp = filteredReadings.Values.Average(),
-                        startTime = filteredReadings.Keys.Min().DateTime,
-                        endTime = filteredReadings.Keys.Max().DateTime,
-                    };
+                        var report = new
+                        {
+                            maxTemp = filteredReadings.Values.Max<double>(),
+                            minTemp = filteredReadings.Values.Min<double>(),
+                            avgTemp = filteredReadings.Values.Average(),
+                            startTime = filteredReadings.Keys.Min().DateTime,
+                            endTime = filteredReadings.Keys.Max().DateTime,
+                        };
 
-                    s_logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
-                        $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
+                        s_logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
+                            $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
 
-                    byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-                    return await Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+                        byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
+                        return await Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+                    }
+
+                    s_logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, cannot generate any report.");
+                    return await Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
                 }
 
-                s_logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, cannot generate any report.");
-                return await Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
+                s_logger.LogDebug($"Command: component=\"{componentName}\", no temperature readings sent yet, cannot generate any report.");
             }
-
-            s_logger.LogDebug($"Command: component=\"{componentName}\", no temperature readings sent yet, cannot generate any report.");
+            catch (JsonReaderException ex)
+            {
+                s_logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                return await Task.FromResult(new MethodResponse((int)StatusCode.BadRequest));
+            }
             return await Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
         }
 
