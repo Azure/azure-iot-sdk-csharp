@@ -19,13 +19,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningServiceClientE2ETests : E2EMsTestBase
     {
-        public enum AttestationType
-        {
-            Tpm,
-            x509,
-            SymmetricKey,
-        }
-
         private static readonly string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"E2E_{nameof(ProvisioningServiceClientE2ETests)}_";
 
@@ -44,39 +37,39 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_Tpm_IndividualEnrollments_Create_HttpWithProxy_Ok()
         {
-            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(s_proxyServerAddress, AttestationType.Tpm).ConfigureAwait(false);
+            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(s_proxyServerAddress, AttestationMechanismType.Tpm).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_SymmetricKey_IndividualEnrollments_Create_HttpWithProxy_Ok()
         {
-            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(s_proxyServerAddress, AttestationType.SymmetricKey).ConfigureAwait(false);
+            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(s_proxyServerAddress, AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task ProvisioningServiceClient_Tpm_IndividualEnrollments_Create_HttpWithoutProxy_Ok()
         {
-            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationType.Tpm).ConfigureAwait(false);
+            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationMechanismType.Tpm).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task ProvisioningServiceClient_SymmetricKey_IndividualEnrollments_Create_HttpWithoutProxy_Ok()
         {
-            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationType.SymmetricKey).ConfigureAwait(false);
+            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_SymmetricKey_GroupEnrollments_Create_HttpWithProxy_Ok()
         {
-            await ProvisioningServiceClient_GroupEnrollments_Create_Ok(s_proxyServerAddress, AttestationType.SymmetricKey).ConfigureAwait(false);
+            await ProvisioningServiceClient_GroupEnrollments_Create_Ok(s_proxyServerAddress, AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task ProvisioningServiceClient_SymmetricKey_GroupEnrollments_Create_Http_Ok()
         {
-            await ProvisioningServiceClient_GroupEnrollments_Create_Ok("", AttestationType.SymmetricKey).ConfigureAwait(false);
+            await ProvisioningServiceClient_GroupEnrollments_Create_Ok("", AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -87,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var reprovisionPolicy = new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true };
             var allocationPolicy = AllocationPolicy.GeoLatency;
 
-            await ProvisioningServiceClient_GroupEnrollments_Create_Ok("", AttestationType.SymmetricKey, reprovisionPolicy, allocationPolicy, customAllocationDefinition, null).ConfigureAwait(false);
+            await ProvisioningServiceClient_GroupEnrollments_Create_Ok("", AttestationMechanismType.SymmetricKey, reprovisionPolicy, allocationPolicy, customAllocationDefinition, null).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -98,7 +91,80 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var reprovisionPolicy = new ReprovisionPolicy() { MigrateDeviceData = false, UpdateHubAssignment = true };
             AllocationPolicy allocationPolicy = AllocationPolicy.GeoLatency;
 
-            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationType.SymmetricKey, reprovisionPolicy, allocationPolicy, customAllocationDefinition, null).ConfigureAwait(false);
+            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationMechanismType.SymmetricKey, reprovisionPolicy, allocationPolicy, customAllocationDefinition, null).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation_SymmetricKey()
+        {
+            await ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType.SymmetricKey);
+        }
+
+        [LoggedTestMethod]
+        public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation_Tpm()
+        {
+            await ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType.Tpm);
+        }
+
+        [LoggedTestMethod]
+        public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation_SymmetricKey()
+        {
+            await ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType.SymmetricKey);
+        }
+
+        public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
+        {
+            ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType, null, AllocationPolicy.Static, null, null, null);
+
+            AttestationMechanism attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
+
+            if (attestationType == AttestationMechanismType.SymmetricKey)
+            {
+                Assert.AreEqual(AttestationMechanismType.SymmetricKey, attestationMechanism.Type);
+                SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
+                Assert.AreEqual(((SymmetricKeyAttestation)individualEnrollment.Attestation).PrimaryKey, symmetricKeyAttestation.PrimaryKey);
+                Assert.AreEqual(((SymmetricKeyAttestation)individualEnrollment.Attestation).SecondaryKey, symmetricKeyAttestation.SecondaryKey);
+            }
+            else if (attestationType == AttestationMechanismType.X509)
+            {
+                Assert.AreEqual(AttestationMechanismType.X509, attestationMechanism.Type);
+                X509Attestation x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
+                Assert.AreEqual(((X509Attestation)individualEnrollment.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint, x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint);
+                Assert.AreEqual(((X509Attestation)individualEnrollment.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint, x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint);
+            }
+            else
+            {
+                Assert.AreEqual(AttestationMechanismType.Tpm, attestationMechanism.Type);
+                TpmAttestation tpmAttestation = (TpmAttestation)attestationMechanism.GetAttestation();
+                Assert.AreEqual(((TpmAttestation)individualEnrollment.Attestation).EndorsementKey, tpmAttestation.EndorsementKey);
+                Assert.AreEqual(((TpmAttestation)individualEnrollment.Attestation).StorageRootKey, tpmAttestation.StorageRootKey);
+            }
+        }
+
+        public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
+        {
+            ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+            string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null);
+
+            AttestationMechanism attestationMechanism = await provisioningServiceClient.GetEnrollmentGroupAttestationAsync(enrollmentGroup.EnrollmentGroupId);
+
+            // Note that tpm is not a supported attestation type for group enrollments
+            if (attestationType == AttestationMechanismType.SymmetricKey)
+            {
+                Assert.AreEqual(AttestationMechanismType.SymmetricKey, attestationMechanism.Type);
+                SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
+                Assert.AreEqual(((SymmetricKeyAttestation)enrollmentGroup.Attestation).PrimaryKey, symmetricKeyAttestation.PrimaryKey);
+                Assert.AreEqual(((SymmetricKeyAttestation)enrollmentGroup.Attestation).SecondaryKey, symmetricKeyAttestation.SecondaryKey);
+            }
+            else if (attestationType == AttestationMechanismType.X509)
+            {
+                Assert.AreEqual(AttestationMechanismType.X509, attestationMechanism.Type);
+                X509Attestation x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
+                Assert.AreEqual(((X509Attestation)enrollmentGroup.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint, x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint);
+                Assert.AreEqual(((X509Attestation)enrollmentGroup.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint, x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint);
+            }
         }
 
         /// <summary>
@@ -120,12 +186,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationType attestationType)
+        public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(proxyServerAddress, attestationType, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
         }
 
-        public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo)
+        public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo)
         {
             using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
             {
@@ -152,12 +218,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationType attestationType)
+        public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
         {
             await ProvisioningServiceClient_GroupEnrollments_Create_Ok(proxyServerAddress, attestationType, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
         }
 
-        public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs)
+        public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs)
         {
             string groupId = s_devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
@@ -191,14 +257,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task<IndividualEnrollment> CreateIndividualEnrollment(ProvisioningServiceClient provisioningServiceClient, AttestationType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo, DeviceCapabilities capabilities)
+        public static async Task<IndividualEnrollment> CreateIndividualEnrollment(ProvisioningServiceClient provisioningServiceClient, AttestationMechanismType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo, DeviceCapabilities capabilities)
         {
             string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
             switch (attestationType)
             {
-                case AttestationType.Tpm:
+                case AttestationMechanismType.Tpm:
                     using (var tpmSim = new SecurityProviderTpmSimulator(registrationId))
                     {
                         string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
@@ -217,13 +283,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         enrollment.Attestation = attestation;
                         return await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
                     }
-                case AttestationType.SymmetricKey:
+                case AttestationMechanismType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
                     attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
                     break;
 
-                case AttestationType.x509:
+                case AttestationMechanismType.X509:
                 default:
                     throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
             }
@@ -237,20 +303,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             return await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
         }
 
-        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(ProvisioningServiceClient provisioningServiceClient, AttestationType attestationType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities)
+        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(ProvisioningServiceClient provisioningServiceClient, AttestationMechanismType attestationType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities)
         {
             Attestation attestation;
             switch (attestationType)
             {
-                case AttestationType.Tpm:
+                case AttestationMechanismType.Tpm:
                     throw new NotSupportedException("Group enrollments do not support tpm attestation");
-                case AttestationType.SymmetricKey:
+                case AttestationMechanismType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
                     attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
                     break;
 
-                case AttestationType.x509:
+                case AttestationMechanismType.X509:
                 default:
                     throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
             }
@@ -297,17 +363,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <summary>
         /// Returns the registrationId compliant name for the provided attestation type
         /// </summary>
-        public static string AttestationTypeToString(AttestationType attestationType)
+        public static string AttestationTypeToString(AttestationMechanismType attestationType)
         {
             switch (attestationType)
             {
-                case AttestationType.Tpm:
+                case AttestationMechanismType.Tpm:
                     return "tpm";
 
-                case AttestationType.SymmetricKey:
+                case AttestationMechanismType.SymmetricKey:
                     return "symmetrickey";
 
-                case AttestationType.x509:
+                case AttestationMechanismType.X509:
                     return "x509";
 
                 default:

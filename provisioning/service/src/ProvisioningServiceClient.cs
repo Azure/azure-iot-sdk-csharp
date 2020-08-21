@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///                 REGISTRATION_ID,
         ///                 attestation);
         ///         individualEnrollment.ProvisioningStatus = ProvisioningStatus.Disabled;
-        ///         IndividualEnrollment individualEnrollmentResult = 
+        ///         IndividualEnrollment individualEnrollmentResult =
         ///             await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
         ///         Console.WriteLine("\nIndividualEnrollment created with success...");
         ///     }
@@ -225,10 +225,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///         // ************************* Get the content of the previous individualEnrollment ******************************
         ///         Console.WriteLine("\nGet the content of the previous individualEnrollment...");
         ///         Attestation attestation = new TpmAttestation(TPM_ENDORSEMENT_KEY);
-        ///         IndividualEnrollment individualEnrollment = 
+        ///         IndividualEnrollment individualEnrollment =
         ///             await deviceProvisioningServiceClient.GetIndividualEnrollmentAsync(REGISTRATION_ID).ConfigureAwait(false);
         ///         individualEnrollment.ProvisioningStatus = ProvisioningStatus.Enabled;
-        ///         IndividualEnrollment individualEnrollmentResult = 
+        ///         IndividualEnrollment individualEnrollmentResult =
         ///             await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
         ///         Console.WriteLine("\nIndividualEnrollment updated with success...");
         ///     }
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to create or update the individualEnrollment.</exception>
-        public Task<IndividualEnrollment>CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment individualEnrollment)
+        public Task<IndividualEnrollment> CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment individualEnrollment)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_008: [The CreateOrUpdateIndividualEnrollmentAsync shall create a new Provisioning individualEnrollment by calling the CreateOrUpdateAsync in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateOrUpdateAsync(_contractApiHttp, individualEnrollment, CancellationToken.None);
@@ -502,7 +502,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 CancellationToken.None);
         }
 
-
         /// <summary>
         /// Factory to create a individualEnrollment query.
         /// </summary>
@@ -522,7 +521,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
-                querySpecification, 
+                querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken);
         }
@@ -803,7 +802,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// Note that delete the enrollmentGroup will not remove the Device itself from the IotHub.
         ///
-        /// If the enrollmentGroupId does not exists or eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>. 
+        /// If the enrollmentGroupId does not exists or eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <param name="eTag">the <code>string</code> with the enrollmentGroup eTag. It can be <code>null</code> or empty.
@@ -826,7 +825,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// Note that delete the enrollmentGroup will not remove the Device itself from the IotHub.
         ///
-        /// If the enrollmentGroupId does not exists or eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>. 
+        /// If the enrollmentGroupId does not exists or eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <param name="eTag">the <code>string</code> with the enrollmentGroup eTag. It can be <code>null</code> or empty.
@@ -1226,7 +1225,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
-            QuerySpecification querySpecification, 
+            QuerySpecification querySpecification,
             string enrollmentGroupId,
             CancellationToken cancellationToken)
         {
@@ -1265,8 +1264,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningConnectionString,
                 querySpecification,
                 new HttpTransportSettings(),
-                CancellationToken.None, 
-                enrollmentGroupId, 
+                CancellationToken.None,
+                enrollmentGroupId,
                 pageSize);
         }
 
@@ -1291,8 +1290,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
-            QuerySpecification querySpecification, 
-            string enrollmentGroupId, 
+            QuerySpecification querySpecification,
+            string enrollmentGroupId,
             int pageSize,
             HttpTransportSettings httpTransportSettings)
         {
@@ -1343,32 +1342,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Retrieve the individualEnrollment attestation information.
+        /// Retrieve the attestation information for an individual enrollment.
         /// </summary>
         /// <remarks>
-        /// This method will return the enrollment attestation information for the provided registrationId. It will retrieve
-        ///     the correspondent attestation from the Device Provisioning Service, and return it in the
-        ///     <see cref="Attestation"/> object.
-        ///
-        /// If the registrationId do not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// If the registrationId does not match any individual enrollment, this method will throw a <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
-        /// <param name="registrationId">the <code>string} that identifies the individualEnrollment. It cannot be {@code null</code> or empty.</param>
-        /// <returns>The <see cref="Attestation"/> of the individualEnrollment in Provisioning Device Service.</returns>
-        /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
-        /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
-        /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the bulk operation.</exception>
-        public Task<Attestation> GetIndividualEnrollmentAttestationAsync(string registrationId)
-        {
-            return IndividualEnrollmentManager.GetEnrollmentAttestationAsync(_contractApiHttp, registrationId, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Retrieve the individualEnrollment attestation information.
-        /// </summary>
-        /// <param name="registrationId">The registration ID.</param>
+        /// <param name="registrationId">The registration Id of the individual enrollment to retrieve the attestation information of. This may not be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="Attestation"/> of the individualEnrollment in Provisioning Device Service.</returns>
-        public Task<Attestation> GetIndividualEnrollmentAttestationAsync(string registrationId, CancellationToken cancellationToken)
+        /// <returns>The <see cref="AttestationMechanism"/> of the individual enrollment associated with the provided registrationId.</returns>
+        public Task<AttestationMechanism> GetIndividualEnrollmentAttestationAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.GetEnrollmentAttestationAsync(_contractApiHttp, registrationId, cancellationToken);
         }
@@ -1377,35 +1359,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Retrieve the enrollmentGroup attestation information.
         /// </summary>
         /// <remarks>
-        /// This method will return the enrollmentGroup attestation information for the provided enrollmentGroupId. It will retrieve
-        ///     the correspondent attestation from the Device Provisioning Service, and return it in the
-        ///     <see cref="Attestation"/> object.
-        ///
-        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
-        /// </remarks>
-        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
-        /// <returns>The <see cref="Attestation"/> with the content of the attestation of the enrollmentGroup in the Provisioning Device Service.</returns>
-        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to retrieve the enrollmentGroup information for the provided enrollmentGroupId.</exception>
-        public Task<Attestation> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId)
-        {
-            return EnrollmentGroupManager.GetEnrollmentAttestationAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Retrieve the enrollmentGroup attestation information.
-        /// </summary>
-        /// <remarks>
-        /// This method will return the enrollmentGroup attestation information for the provided enrollmentGroupId. It will retrieve
-        ///     the correspondent attestation from the Device Provisioning Service, and return it in the
-        ///     <see cref="Attestation"/> object.
-        ///
-        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// If the provided group id does not match up with any enrollment group, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="Attestation"/> with the content of the attestation of the enrollmentGroup in the Provisioning Device Service.</returns>
-        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to retrieve the enrollmentGroup information for the provided enrollmentGroupId.</exception>
-        public Task<Attestation> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId, CancellationToken cancellationToken)
+        /// <returns>The <see cref="AttestationMechanism"/> associated with the provided group Id.</returns>
+        public Task<AttestationMechanism> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.GetEnrollmentAttestationAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);
         }

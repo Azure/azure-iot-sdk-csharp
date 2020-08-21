@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 enrollmentGroup.ETag,
                 cancellationToken).ConfigureAwait(false);
 
-            if(contractApiResponse.Body == null)
+            if (contractApiResponse.Body == null)
             {
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
 
-        internal static async Task<Attestation> GetEnrollmentAttestationAsync(
+        internal static async Task<AttestationMechanism> GetEnrollmentAttestationAsync(
                     IContractApiHttp contractApiHttp,
                     string enrollmentGroupId,
                     CancellationToken cancellationToken)
@@ -155,8 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            var attestation = JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
-            return attestation.GetAttestation();
+            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
         }
 
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)
