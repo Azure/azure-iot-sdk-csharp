@@ -1,4 +1,5 @@
 AssemblyPath, Version
+<<<<<<< HEAD
 iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 1.29.1-preview-002
 iothub\service\src\Microsoft.Azure.Devices.csproj, 1.27.1-preview-002
 shared\src\Microsoft.Azure.Devices.Shared.csproj, 1.25.1-preview-001
@@ -10,3 +11,14 @@ security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj, 1.12.
 provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 1.16.0-preview-001
 digitaltwin\device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj, 1.0.0-preview-001
 digitaltwin\service\src\Microsoft.Azure.Devices.DigitalTwin.Service.csproj, 1.0.0-preview-001
+=======
+iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 1.28.0
+iothub\service\src\Microsoft.Azure.Devices.csproj, 1.22.0
+shared\src\Microsoft.Azure.Devices.Shared.csproj, 1.20.1
+provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 1.6.0
+provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj, 1.3.1
+provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj, 1.2.4
+provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj, 1.3.0
+security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj, 1.2.3
+provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 1.6.3
+>>>>>>> origin/master
