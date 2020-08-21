@@ -201,11 +201,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using (deviceClient)
             {
-                using (var fileStreamSource = new FileStream(blobName, FileMode.Open, FileAccess.Read))
-                {
-                    FileUploadSasUriResponse sasUriResponse = await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest { BlobName = blobName });
-                }
-
+                FileUploadSasUriResponse sasUriResponse = await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest { BlobName = blobName });
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
