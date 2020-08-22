@@ -20,6 +20,6 @@ namespace Microsoft.Azure.Devices.Client
         /// If FileUploadTransportSettings is not provided, then file upload operations will use the client certificates configured
         /// in the transport settings set for the non-file upload operations.
         /// </summary>
-        public Http1TransportSettings FileUploadTransportSettings { get; set; }
+        public Http1TransportSettings FileUploadTransportSettings { get; set; } = new Http1TransportSettings();
     }
 }
