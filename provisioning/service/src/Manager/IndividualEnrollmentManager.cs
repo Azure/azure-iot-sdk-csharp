@@ -25,10 +25,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     {
         private const string ServiceName = "enrollments";
         private const string EnrollmentIdUriFormat = "{0}/{1}?{2}";
+        private const string EnrollmentAttestationName = "attestationmechanism";
         private const string EnrollmentUriFormat = "{0}?{1}";
+        private const string EnrollmentAttestationUriFormat = "{0}/{1}/{2}?{3}";
 
         internal static async Task<IndividualEnrollment> CreateOrUpdateAsync(
-            IContractApiHttp contractApiHttp, 
+            IContractApiHttp contractApiHttp,
             IndividualEnrollment individualEnrollment,
             CancellationToken cancellationToken)
         {
@@ -58,11 +60,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         internal static async Task<BulkEnrollmentOperationResult> BulkOperationAsync(
             IContractApiHttp contractApiHttp,
-            BulkOperationMode bulkOperationMode, 
+            BulkOperationMode bulkOperationMode,
             IEnumerable<IndividualEnrollment> individualEnrollments,
             CancellationToken cancellationToken)
         {
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_004: [The BulkOperationAsync shall throw ArgumentException if the provided 
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_004: [The BulkOperationAsync shall throw ArgumentException if the provided
                                                     individualEnrollments is null or empty.] */
             if (!(individualEnrollments ?? throw new ArgumentNullException(nameof(individualEnrollments))).Any())
             {
@@ -155,12 +157,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             int pageSize = 0)
         {
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_014: [The CreateQuery shall throw ArgumentException if the provided querySpecification is null.] */
-            if(querySpecification == null)
+            if (querySpecification == null)
             {
                 throw new ArgumentNullException(nameof(querySpecification));
             }
 
-            if(pageSize < 0)
+            if (pageSize < 0)
             {
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
             }
@@ -178,6 +180,33 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static Uri GetEnrollmentUri()
         {
             return new Uri(EnrollmentUriFormat.FormatInvariant(ServiceName, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+        }
+
+        internal static async Task<AttestationMechanism> GetEnrollmentAttestationAsync(
+             IContractApiHttp contractApiHttp,
+             string registrationId,
+             CancellationToken cancellationToken)
+        {
+            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
+                HttpMethod.Post,
+                GetEnrollmentAttestationUri(registrationId),
+                null,
+                null,
+                null,
+                cancellationToken).ConfigureAwait(false);
+
+            if (contractApiResponse.Body == null)
+            {
+                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
+            }
+
+            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
+        }
+
+        private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)
+        {
+            enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
+            return new Uri(EnrollmentAttestationUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, EnrollmentAttestationName, SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }
