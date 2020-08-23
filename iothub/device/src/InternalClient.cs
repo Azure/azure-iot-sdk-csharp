@@ -150,8 +150,15 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Logging.IsEnabled) Logging.Associate(this, transportSettings, nameof(InternalClient));
             _transportSettings = transportSettings;
-            
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, options.FileUploadTransportSettings);
+
+            if (options?.FileUploadTransportSettings != null) 
+            {
+                _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, options.FileUploadTransportSettings);
+            }
+            else
+            {
+                _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, new Http1TransportSettings());
+            }
 
             if (Logging.IsEnabled) Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
