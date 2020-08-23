@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled) Logging.Associate(this, transportSettings, nameof(InternalClient));
             _transportSettings = transportSettings;
 
-            if (options != null && options.FileUploadTransportSettings != null)
+            if (options?.FileUploadTransportSettings != null) 
             {
                 _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, options.FileUploadTransportSettings);
             }
