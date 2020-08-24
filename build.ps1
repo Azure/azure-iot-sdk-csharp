@@ -187,6 +187,13 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     Set-Location $rootDir
 
     Write-Host "Invoking expression: $runTestCmd ----------"
+
+    # Ensure the E2E tests can log to Application Insights
+    if ([string]::IsNullOrWhiteSpace($env:E2E_IKEY))
+    {
+        throw "Application Insights is not configured for logging in E2E tests."
+    }
+
     Invoke-Expression $runTestCmd
 
     if ($LASTEXITCODE -ne 0)
