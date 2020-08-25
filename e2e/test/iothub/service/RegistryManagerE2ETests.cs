@@ -92,12 +92,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task RegistryManager_BulkLifecycle()
         {
             int bulkCount = 50;
-            string[] deviceIds = new string[bulkCount];
             List<Device> devices = new List<Device>();
             for (int i = 0; i < bulkCount; i++)
             {
-                deviceIds[i] = _devicePrefix + Guid.NewGuid();
-                devices.Add(new Device(deviceIds[i]));
+                devices.Add(new Device(_devicePrefix + Guid.NewGuid()));
             }
 
             var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
@@ -115,9 +113,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             List<Twin> twins = new List<Twin>();
             string expectedProperty = "someNewProperty";
             string expectedPropertyValue = "someNewPropertyValue";
-            foreach (string deviceId in deviceIds)
+            foreach (Device device in devices)
             {
-                Twin twin = await registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
+                Twin twin = await registryManager.GetTwinAsync(device.Id).ConfigureAwait(false);
                 twin.Properties.Desired[expectedProperty] = expectedPropertyValue;
                 twins.Add(twin);
             }
@@ -125,9 +123,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Test that you can update twins in bulk
             await registryManager.UpdateTwins2Async(twins).ConfigureAwait(false);
 
-            foreach (string deviceId in deviceIds)
+            foreach (Device device in devices)
             {
-                Twin twin = await registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
+                Twin twin = await registryManager.GetTwinAsync(device.Id).ConfigureAwait(false);
                 Assert.IsNotNull(twin.Properties.Desired[expectedProperty]);
                 Assert.AreEqual(expectedPropertyValue, (string)twin.Properties.Desired[expectedProperty]);
             }
