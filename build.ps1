@@ -99,7 +99,7 @@ Function CheckTools($commands)
     }
 }
 
-Function LocalPackagesAvailableForTesting()
+Function CheckLocalPackagesAvailableForTesting()
 {
     return (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
 }
@@ -218,12 +218,15 @@ $localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
 $buildFailed = $true
 $errorMessage = ""
+$localPackagesAvailableForTesting = CheckLocalPackagesAvailableForTesting
+
+Write-Host -ForegroundColor Magenta "Local packages being used for testing: $localPackagesAvailableForTesting"
 
 try
 {
     if ($sign)
     {
-        if (!$LocalPackagesAvailableForTesting)
+        if ($localPackagesAvailableForTesting)
         {
             throw "Local NuGet package source path is not set, required when signing packages."
         }
@@ -321,7 +324,7 @@ try
         BuildPackage digitaltwin\service\src "Digital Twin Service Client SDK"
     }
 
-    if ($LocalPackagesAvailableForTesting)
+    if ($localPackagesAvailableForTesting)
     {
         Write-Host
         Write-Host -ForegroundColor Cyan "Preparing local package source"
@@ -342,7 +345,7 @@ try
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
 
-        if ($LocalPackagesAvailableForTesting)
+        if ($localPackagesAvailableForTesting)
         {
             Write-Host -ForegroundColor Magenta "IMPORTANT: Using local packages."
         }

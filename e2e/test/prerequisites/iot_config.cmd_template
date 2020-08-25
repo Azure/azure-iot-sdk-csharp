@@ -18,15 +18,6 @@ set IOTHUB_PFX_X509_THUMBPRINT=
 @REM X509 PFX Base64 encoded Certificate 1 (empty password):
 set IOTHUB_X509_PFX_CERTIFICATE=
 
-@REM EventHub connection string for the messages/events endpoint:
-set IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
-
-@REM EventHub compatible name:
-set IOTHUB_EVENTHUB_COMPATIBLE_NAME=
-
-@REM EventHub consumer group:
-set IOTHUB_EVENTHUB_CONSUMER_GROUP=
-
 @REM ---------- Azure Security Center For IoT - Log Analytics Configuration ----------
 @REM the iot hub above must be registered to Azure Security Center for IoT security solution
 @REM with the feature export raw events set to on

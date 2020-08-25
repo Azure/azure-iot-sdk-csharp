@@ -19,15 +19,6 @@ export IOTHUB_PFX_X509_THUMBPRINT=
 # X509 PFX Base64 encoded Certificate 1 (empty password):
 export IOTHUB_X509_PFX_CERTIFICATE=
 
-# EventHub connection string for the messages/events endpoint:
-export IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
-
-# EventHub compatible name:
-export IOTHUB_EVENTHUB_COMPATIBLE_NAME=
-
-# EventHub consumer group:
-export IOTHUB_EVENTHUB_CONSUMER_GROUP=
-
 # ---------- Azure Security Center for IoT - Log Analytics Configuration ----------
 # the iot hub above must be registered to Azure Security Center for IoT security solution
 # with the feature export raw events set to on
