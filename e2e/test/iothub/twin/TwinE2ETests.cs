@@ -44,24 +44,36 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
+        // The device client API version used on preview branch (2019-07-01-preview) is lower than that used on master branch (2019-10-01).
+        // Array support for twin properties is available on API version >= 2019-10-01.
+        [Ignore]
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_Mqtt()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
+        // The device client API version used on preview branch (2019-07-01-preview) is lower than that used on master branch (2019-10-01).
+        // Array support for twin properties is available on API version >= 2019-10-01.
+        [Ignore]
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_MqttWs()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
+        // The device client API version used on preview branch (2019-07-01-preview) is lower than that used on master branch (2019-10-01).
+        // Array support for twin properties is available on API version >= 2019-10-01.
+        [Ignore]
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
+        // The device client API version used on preview branch (2019-07-01-preview) is lower than that used on master branch (2019-10-01).
+        // Array support for twin properties is available on API version >= 2019-10-01.
+        [Ignore]
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_AmqpWs()
         {
