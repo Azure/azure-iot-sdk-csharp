@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Samples
                 }
                 if (!string.IsNullOrEmpty(_envNumToAdd))
                 {
-                    bool isNumber = int.TryParse(_envNumToAdd, out _numToAdd);
+                    _ = int.TryParse(_envNumToAdd, out _numToAdd);
                 }
             }
 
@@ -180,11 +180,14 @@ namespace Microsoft.Azure.Devices.Samples
             Console.WriteLine($"  IoTHubDestString = '{_envDestIotHubConnectionString}'.");
             Console.WriteLine($"  storage connection string  = '{_envStorageAccountConnectionString}'.");
 
-            // Instantiate the class and run the sample.
-            var importExportDevicesSample = new ImportExportDevicesSample(_envIotHubConnectionString, _envDestIotHubConnectionString, _envStorageAccountConnectionString);
-
             try
             {
+                // Instantiate the class and run the sample.
+                var importExportDevicesSample = new ImportExportDevicesSample(
+                    _envIotHubConnectionString,
+                    _envDestIotHubConnectionString,
+                    _envStorageAccountConnectionString);
+
                 await importExportDevicesSample
                     .RunSampleAsync(_addDevices, _numToAdd, _copyDevices, _deleteSourceDevices, _deleteDestDevices)
                     .ConfigureAwait(false);
@@ -195,10 +198,8 @@ namespace Microsoft.Azure.Devices.Samples
                 Console.WriteLine($"Error. Description = {ex.Message}\n{ex.StackTrace}");
             }
 
-            Console.WriteLine("Finished.");
-            Console.WriteLine();
-            Console.Write("Press any key to continue.");
-            Console.ReadLine();
+            Console.WriteLine("Finished. Press any key to continue.");
+            Console.ReadKey(true);
         }
     }
 }
