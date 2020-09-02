@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The transport settings to use for all file upload operations, regardless of what protocol the device
-        /// client is configured with. All file upload operations take place over https. If no client certificates
-        /// are configured to this object, then file upload operations will use the client certificates configured
+        /// client is configured with. All file upload operations take place over https. 
+        /// If FileUploadTransportSettings is not provided, then file upload operations will use the client certificates configured
         /// in the transport settings set for the non-file upload operations.
         /// </summary>
         public Http1TransportSettings FileUploadTransportSettings { get; set; } = new Http1TransportSettings();

@@ -18,7 +18,8 @@ namespace Thermostat
     {
         Completed = 200,
         InProgress = 202,
-        NotFound = 404
+        NotFound = 404,
+        BadRequest = 400
     }
 
     public class Program
@@ -185,31 +186,39 @@ namespace Thermostat
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the specified time to the current time.
         private static async Task<MethodResponse> HandleMaxMinReportCommandAsync(MethodRequest request, object userContext)
         {
-            DateTime since = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
-            var sinceInDateTimeOffset = new DateTimeOffset(since);
-            s_logger.LogDebug($"Command: Received - Generating max, min and avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
-
-            var filteredReadings = s_temperatureReadings.Where(i => i.Key > sinceInDateTimeOffset).ToDictionary(i => i.Key, i => i.Value);
-
-            if (filteredReadings != null && filteredReadings.Any())
+            try
             {
-                var report = new
+                DateTime since = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
+                var sinceInDateTimeOffset = new DateTimeOffset(since);
+                s_logger.LogDebug($"Command: Received - Generating max, min and avg temperature report since {sinceInDateTimeOffset.LocalDateTime}.");
+
+                var filteredReadings = s_temperatureReadings.Where(i => i.Key > sinceInDateTimeOffset).ToDictionary(i => i.Key, i => i.Value);
+
+                if (filteredReadings != null && filteredReadings.Any())
                 {
-                    maxTemp = filteredReadings.Values.Max<double>(),
-                    minTemp = filteredReadings.Values.Min<double>(),
-                    avgTemp = filteredReadings.Values.Average(),
-                    startTime = filteredReadings.Keys.Min().DateTime,
-                    endTime = filteredReadings.Keys.Max().DateTime,
-                };
+                    var report = new
+                    {
+                        maxTemp = filteredReadings.Values.Max<double>(),
+                        minTemp = filteredReadings.Values.Min<double>(),
+                        avgTemp = filteredReadings.Values.Average(),
+                        startTime = filteredReadings.Keys.Min().DateTime,
+                        endTime = filteredReadings.Keys.Max().DateTime,
+                    };
 
-                s_logger.LogDebug($"Command: MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
-                    $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
+                    s_logger.LogDebug($"Command: MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
+                        $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime}, endTime={report.endTime}");
 
-                byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-                return await Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+                    byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
+                    return await Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+                }
+
+                s_logger.LogDebug($"Command: No relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, cannot generate any report.");
             }
-
-            s_logger.LogDebug($"Command: No relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, cannot generate any report.");
+            catch (JsonReaderException ex)
+            {
+                s_logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                return await Task.FromResult(new MethodResponse((int)StatusCode.BadRequest));
+            }
             return await Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
         }
 

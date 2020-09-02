@@ -9,14 +9,9 @@ using System;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Representation of a single Device Provisioning Service Attestation mechanism in the IndividualEnrollment and
-    ///     EnrollmentGroup.
+    /// Representation of a single Device Provisioning Service Attestation mechanism of an IndividualEnrollment or an EnrollmentGroup.
     /// </summary>
-    /// <remarks>
-    /// It is an internal class that converts one of the attestations into JSON format. To configure
-    ///     the attestation mechanism, see the external API <see cref="Attestation"/>.
-    /// </remarks>
-    internal sealed class AttestationMechanism
+    public sealed class AttestationMechanism
     {
         /// <summary>
         /// CONSTRUCTOR
@@ -125,7 +120,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        internal Attestation GetAttestation()
+        /// <summary>
+        /// Get the attestation of this object. The returned attestation may be of type
+        /// <see cref="SymmetricKeyAttestation"/>, <see cref="X509Attestation"/>, or <see cref="TpmAttestation"/>.
+        /// By casting the returned Attestation to the appropriate attestation type, you can access the x509/symmetric key/tpm
+        /// specific attestation fields. Use <see cref="Type"/> to cast this field to the appropriate attestation type.
+        /// </summary>
+        /// <returns>The attestation of this object.</returns>
+        public Attestation GetAttestation()
         {
             switch (Type)
             {
