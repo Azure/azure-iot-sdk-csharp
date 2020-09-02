@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Type of Device Provisioning Service attestation mechanism.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    internal enum AttestationMechanismType
+    public enum AttestationMechanismType
     {
         /// <summary>
         /// None attestation mechanism.
