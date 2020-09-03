@@ -50,5 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string InterfaceId = "iothub-interface-id";
 
         public const string ComponentName = "dt-subject";
+
+        public const string DistributedTrace = "tracestate";
     }
 }
