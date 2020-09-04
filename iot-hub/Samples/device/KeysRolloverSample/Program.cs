@@ -19,32 +19,57 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static string s_deviceConnectionString1 = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
         private static string s_deviceConnectionString2 = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING2");
 
-        // Select one of the following transports used by DeviceClient to connect to IoT Hub.
-        private static TransportType s_transportType = TransportType.Amqp;
-        //private static TransportType s_transportType = TransportType.Mqtt;
-        //private static TransportType s_transportType = TransportType.Http1;
-        //private static TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
-        //private static TransportType s_transportType = TransportType.Mqtt_WebSocket_Only;
+        // Specify one of the following transports used by DeviceClient to connect to IoT Hub.
+        //   Mqtt
+        //   Mqtt_WebSocket_Only
+        //   Mqtt_Tcp_Only
+        //   Amqp
+        //   Amqp_WebSocket_Only
+        //   Amqp_Tcp_only
+        //   Http1
+        private static readonly string s_transportType = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_TRANSPORT_TYPE");
 
         public static async Task<int> Main(string[] args)
         {
-            if ((string.IsNullOrEmpty(s_deviceConnectionString1) || string.IsNullOrEmpty(s_deviceConnectionString1)) && args.Length > 1)
+            if ((string.IsNullOrEmpty(s_deviceConnectionString1)
+                    || string.IsNullOrEmpty(s_deviceConnectionString1))
+                && args.Length > 1)
             {
                 s_deviceConnectionString1 = args[0];
                 s_deviceConnectionString2 = args[1];
             }
 
-            if ((string.IsNullOrEmpty(s_deviceConnectionString1) || string.IsNullOrEmpty(s_deviceConnectionString1)))
+            if (string.IsNullOrEmpty(s_deviceConnectionString1)
+                || string.IsNullOrEmpty(s_deviceConnectionString1))
             {
                 Console.WriteLine("Both PRIMARY and SECONDARY connection strings of a device are required for this sample.");
                 return 1;
             }
 
-            var sample = new KeyRolloverSample(s_deviceConnectionString1, s_deviceConnectionString2, s_transportType);
-            await sample.RunSampleAsync().ConfigureAwait(false);
+            var sample = new KeyRolloverSample(s_deviceConnectionString1, s_deviceConnectionString2, GetTransportType(args));
+            await sample.RunSampleAsync();
 
-            Console.WriteLine("Done.\n");
+            Console.WriteLine("Done.");
             return 0;
+        }
+
+        private static TransportType GetTransportType(string[] args)
+        {
+            // Check environment variable for transport type
+            if (Enum.TryParse(s_transportType, true, out TransportType transportType))
+            {
+                return transportType;
+            }
+
+            // then check argument for transport type
+            if (args.Length > 2
+                && Enum.TryParse(args[2], true, out transportType))
+            {
+                return transportType;
+            }
+
+            // otherwise default to MQTT
+            return TransportType.Mqtt;
         }
     }
 }
