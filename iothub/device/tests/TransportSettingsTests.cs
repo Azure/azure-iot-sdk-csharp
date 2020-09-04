@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Client.ApiTest;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -146,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AmqpTransportSettings_TimeoutDefaultsAndOverrides()
+        public void AmqpTransportSettings_SetsDefaultTimeout()
         {
             // act
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200);
@@ -154,6 +152,32 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             Assert.AreEqual(AmqpTransportSettings.DefaultOpenTimeout, transportSetting.OpenTimeout, "Default OpenTimeout not set correctly");
             Assert.AreEqual(AmqpTransportSettings.DefaultOperationTimeout, transportSetting.OperationTimeout, "Default OperationTimeout not set correctly");
+            Assert.AreEqual(AmqpTransportSettings.DefaultIdleTimeout, transportSetting.IdleTimeout, "Default IdleTimeout not set correctly");
+            Assert.AreEqual(AmqpTransportSettings.DefaultOperationTimeout, transportSetting.DefaultReceiveTimeout, "Default DefaultReceiveTimeout not set correctly");
+        }
+
+        [TestMethod]
+        public void AmqpTransportSettings_OverridesDefaultTimeout()
+        {
+            // We want to test that the timeouts that we set on AmqpTransportSettings override the default timeouts.
+            // In order to test that, we need to ensure the test timeout values are different from the default timeout values.
+            // Adding a TimeSpan to the default timeout value is an easy way to achieve that.
+            var openTimeout = AmqpTransportSettings.DefaultOpenTimeout.Add(TimeSpan.FromMinutes(5));
+            var operationTimeout = AmqpTransportSettings.DefaultOperationTimeout.Add(TimeSpan.FromMinutes(5));
+            var idleTimeout = AmqpTransportSettings.DefaultIdleTimeout.Add(TimeSpan.FromMinutes(5));
+
+            // act
+            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200)
+            {
+                OpenTimeout = openTimeout,
+                OperationTimeout = operationTimeout,
+                IdleTimeout = idleTimeout,
+            };
+
+            // assert
+            Assert.AreEqual(openTimeout, transportSetting.OpenTimeout, "OpenTimeout not set correctly");
+            Assert.AreEqual(operationTimeout, transportSetting.OperationTimeout, "OperationTimeout not set correctly");
+            Assert.AreEqual(idleTimeout, transportSetting.IdleTimeout, "IdleTimeout not set correctly");
         }
 
         [TestMethod]
