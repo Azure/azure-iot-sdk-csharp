@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Closed = 16
         }
 
-        // Topic names for sending cloud-to-device messages
+        // Topic names for sending device-to-cloud messages
         private const string DeviceTelemetryTopicFormat = "devices/{0}/messages/events/";
         private const string ModuleTelemetryTopicFormat = "devices/{0}/modules/{1}/messages/events/";
 
@@ -397,6 +397,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private static async void PingServer(object ctx)
         {
+            if (Logging.IsEnabled) Logging.Enter(ctx, $"Scheduled check to see if a ping request should be sent.", nameof(PingServer));
+
             var context = (IChannelHandlerContext)ctx;
             try
             {
@@ -408,6 +410,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 TimeSpan idleTime = DateTime.UtcNow - self._lastChannelActivityTime;
+                if (Logging.IsEnabled) Logging.Info(context, $"Idle time currently is {idleTime}.", nameof(PingServer));
 
                 if (idleTime > self._pingRequestInterval)
                 {
@@ -434,6 +437,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 ShutdownOnError(context, ex);
             }
+
+            if (Logging.IsEnabled) Logging.Exit(ctx, $"Scheduled check to see if a ping request should be sent.", nameof(PingServer));
         }
 
         private async Task ProcessConnectAckAsync(IChannelHandlerContext context, ConnAckPacket packet)
