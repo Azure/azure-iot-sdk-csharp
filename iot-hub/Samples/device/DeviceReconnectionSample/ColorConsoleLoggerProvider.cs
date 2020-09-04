@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// <returns>The created <see cref="ILogger"/> instance.</returns>
         public ILogger CreateLogger(string categoryName)
         {
-            return _loggers.GetOrAdd(categoryName, name => new ColorConsoleLogger(name, _config));
+            return _loggers.GetOrAdd(categoryName, name => new ColorConsoleLogger(_config));
         }
 
         /// <summary>

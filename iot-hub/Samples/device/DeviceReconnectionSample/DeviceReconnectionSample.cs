@@ -35,6 +35,52 @@ namespace Microsoft.Azure.Devices.Client.Samples
             InitializeClient();
         }
 
+        public async Task RunSampleAsync()
+        {
+            using var cts = new CancellationTokenSource();
+
+            Console.CancelKeyPress += (sender, eventArgs) =>
+            {
+                eventArgs.Cancel = true;
+                cts.Cancel();
+                _logger.LogInformation("Sample execution cancellation requested; will exit.");
+            };
+
+            try
+            {
+                await Task.WhenAll(SendMessagesAsync(cts.Token), ReceiveMessagesAsync(cts.Token));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unrecoverable exception caught, user action is required, so exiting...: \n{ex}");
+            }
+        }
+
+        private void InitializeClient()
+        {
+            // If the client reports Connected status, it is already in operational state.
+            if (s_connectionStatus != ConnectionStatus.Connected)
+            {
+                lock (_lock)
+                {
+                    _logger.LogDebug($"Attempting to initialize the client instance, current status={s_connectionStatus}");
+
+                    // If the device client instance has been previously initialized, then dispose it.
+                    // The s_wasEverConnected variable is required to store if the client ever reported Connected status.
+                    if (s_wasEverConnected && s_connectionStatus == ConnectionStatus.Disconnected)
+                    {
+                        s_deviceClient?.Dispose();
+                        s_wasEverConnected = false;
+                    }
+
+                    s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionString, _transportType);
+                    s_deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
+                    s_deviceClient.OperationTimeoutInMilliseconds = (uint)s_operationTimeout.TotalMilliseconds;
+                    _logger.LogDebug($"Initialized the client instance.");
+                }
+            }
+        }
+
         private void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
         {
             _logger.LogDebug($"Connection status changed: status={status}, reason={reason}");
@@ -98,59 +144,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        public async Task RunSampleAsync()
-        {
-            using var cts = new CancellationTokenSource();
-
-            Console.CancelKeyPress += (sender, eventArgs) =>
-            {
-                eventArgs.Cancel = true;
-                cts.Cancel();
-                _logger.LogInformation("Sample execution cancellation requested, will exit.");
-            };
-
-            try
-            {
-                await Task.WhenAll(SendMessagesAsync(cts.Token), ReceiveMessagesAsync(cts.Token));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Unrecoverable exception caught, user action is required, so exiting...: \n{ex}");
-            }
-        }
-
-        private void InitializeClient()
-        {
-            // If the client reports Connected status, it is already in operational state.
-            if (s_connectionStatus != ConnectionStatus.Connected)
-            {
-                lock (_lock)
-                {
-                    _logger.LogDebug($"Attempting to initialize the client instance, current status={s_connectionStatus}");
-
-                    // If the device client instance has been previously initialized, then dispose it.
-                    // The s_wasEverConnected variable is required to store if the client ever reported Connected status.
-                    if (s_wasEverConnected && s_connectionStatus == ConnectionStatus.Disconnected)
-                    {
-                        s_deviceClient?.Dispose();
-                        s_wasEverConnected = false;
-                    }
-
-                    s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionString, _transportType);
-                    s_deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
-                    s_deviceClient.OperationTimeoutInMilliseconds = (uint)s_operationTimeout.TotalMilliseconds;
-                    _logger.LogDebug($"Initialized the client instance.");
-                }
-            }
-        }
-
         private async Task SendMessagesAsync(CancellationToken cancellationToken)
         {
             int count = 0;
+
             while (!cancellationToken.IsCancellationRequested)
             {
-                count++;
-                _logger.LogInformation($"Device sending message {count} to IoTHub...");
+                _logger.LogInformation($"Device sending message {count++} to IoTHub...");
 
                 try
                 {
@@ -218,24 +218,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task ReceiveMessageAndCompleteAsync()
         {
             using Message receivedMessage = await s_deviceClient.ReceiveAsync(s_sleepDuration);
-            if (receivedMessage != null)
+            if (receivedMessage == null)
             {
-                string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                _logger.LogInformation($"Received message: {messageData}");
-
-                int propCount = 0;
-                foreach (var prop in receivedMessage.Properties)
-                {
-                    _logger.LogInformation($"Property[{propCount++}> Key={prop.Key} : Value={prop.Value}");
-                }
-
-                await s_deviceClient.CompleteAsync(receivedMessage);
-                _logger.LogInformation($"Marked message [{messageData}] as \"Complete\".");
+                _logger.LogInformation("No message received, timed out");
+                return;
             }
-            else
+
+            string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+            var formattedMessage = new StringBuilder($"Received message: {messageData}\n");
+
+            foreach (var prop in receivedMessage.Properties)
             {
-                _logger.LogWarning("No message received, timed out");
+                formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
             }
+            _logger.LogInformation(formattedMessage.ToString());
+
+            await s_deviceClient.CompleteAsync(receivedMessage);
+            _logger.LogInformation($"Completed message [{messageData}].");
         }
     }
 }

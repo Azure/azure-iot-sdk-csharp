@@ -10,8 +10,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class Program
     {
-        private const string SdkEventProviderPrefix = "Microsoft-Azure-";
-
         // String containing Hostname, Device Id & Device Key in one of the following formats:
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
@@ -22,11 +20,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
         private static string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
 
-        // Select one of the following transports used by DeviceClient to connect to IoT Hub.
-        private static TransportType s_transportType = TransportType.Amqp;
-        //private static TransportType s_transportType = TransportType.Mqtt;
-        //private static TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
-        //private static TransportType s_transportType = TransportType.Mqtt_WebSocket_Only;
+        // Specify one of the following transports used by DeviceClient to connect to IoT Hub.
+        //   Mqtt
+        //   Mqtt_WebSocket_Only
+        //   Mqtt_Tcp_Only
+        //   Amqp
+        //   Amqp_WebSocket_Only
+        //   Amqp_Tcp_only
+        //   Http1
+        private static readonly string s_transportType = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_TRANSPORT_TYPE");
 
         public static async Task<int> Main(string[] args)
         {
@@ -40,18 +42,40 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     MinLogLevel = LogLevel.Debug,
                 });
             var logger = loggerFactory.CreateLogger<Program>();
-            var sdkEventListener = new ConsoleEventListener(SdkEventProviderPrefix, logger);
+
+            const string SdkEventProviderPrefix = "Microsoft-Azure-";
+            // Instantiating this seems to do all we need for outputing SDK events to our console log
+            _ = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
             if (string.IsNullOrEmpty(s_deviceConnectionString) && args.Length > 0)
             {
                 s_deviceConnectionString = args[0];
             }
 
-            var sample = new DeviceReconnectionSample(s_deviceConnectionString, s_transportType, logger);
+            var sample = new DeviceReconnectionSample(s_deviceConnectionString, GetTransportType(args), logger);
             await sample.RunSampleAsync();
 
-            logger.LogInformation("Done, exiting...");
+            logger.LogInformation("Done.");
             return 0;
+        }
+
+        private static TransportType GetTransportType(string[] args)
+        {
+            // Check environment variable for transport type
+            if (Enum.TryParse(s_transportType, true, out TransportType transportType))
+            {
+                return transportType;
+            }
+
+                // then check argument for transport type
+            if (args.Length > 1
+                && Enum.TryParse(args[1], true, out transportType))
+            {
+                return transportType;
+            }
+
+                    // otherwise default to MQTT
+            return TransportType.Mqtt;
         }
     }
 }
