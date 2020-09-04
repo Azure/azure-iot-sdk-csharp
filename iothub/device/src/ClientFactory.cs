@@ -87,6 +87,20 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
                 }
 
+                // If the file upload transport settings hasn't been specified, we will create one using the client certificate on the connection string
+                if (options?.FileUploadTransportSettings == null)
+                {
+                    var fileUploadTransportSettings = new Http1TransportSettings { ClientCertificate = connectionStringBuilder.Certificate };
+                    if (options == null)
+                    {
+                        options = new ClientOptions { FileUploadTransportSettings = fileUploadTransportSettings };
+                    }
+                    else
+                    {
+                        options.FileUploadTransportSettings = fileUploadTransportSettings;
+                    }
+                }
+
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType), options);
                 dc.Certificate = connectionStringBuilder.Certificate;
                 return dc;
