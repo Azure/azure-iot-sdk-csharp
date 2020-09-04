@@ -396,7 +396,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public void SetAsDistributedTracingMessage()
         {
-            Int32 unixTimestamp = (Int32)(DateTime.UtcNow.Subtract(DateTime.UnixEpoch)).TotalSeconds;
+            Int32 unixTimestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
             SystemProperties[MessageSystemPropertyNames.DistributedTrace] = unixTimestamp;
         }
