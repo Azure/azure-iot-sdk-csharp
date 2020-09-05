@@ -27,7 +27,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             typeof(MessageTooLargeException),
             typeof(DeviceMessageLockLostException),
             typeof(UnauthorizedException),
-            typeof(IotHubNotFoundException),
             typeof(DeviceNotFoundException),
             typeof(QuotaExceededException),
             typeof(IotHubException),
@@ -38,7 +37,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         private static readonly Dictionary<Type, Func<Exception>> ExceptionFactory = new Dictionary<Type, Func<Exception>>
         {
             { typeof(UnauthorizedException), () => new UnauthorizedException(ErrorMessage) },
-            { typeof(IotHubNotFoundException), () => new IotHubNotFoundException(ErrorMessage) },
             { typeof(DeviceNotFoundException), () => new DeviceNotFoundException(ErrorMessage) },
             { typeof(QuotaExceededException), () => new QuotaExceededException(ErrorMessage) },
             { typeof(IotHubCommunicationException), () => new IotHubCommunicationException(ErrorMessage) },
