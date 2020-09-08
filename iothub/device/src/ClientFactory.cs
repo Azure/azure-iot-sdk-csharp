@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -80,25 +81,14 @@ namespace Microsoft.Azure.Devices.Client
 
             IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 
+            // Make sure client options is initialized with the correct transport setting.
+            EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
+
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
                 if (connectionStringBuilder.Certificate == null)
                 {
-                    throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
-                }
-
-                // If the file upload transport settings hasn't been specified, we will create one using the client certificate on the connection string
-                if (options?.FileUploadTransportSettings == null)
-                {
-                    var fileUploadTransportSettings = new Http1TransportSettings { ClientCertificate = connectionStringBuilder.Certificate };
-                    if (options == null)
-                    {
-                        options = new ClientOptions { FileUploadTransportSettings = fileUploadTransportSettings };
-                    }
-                    else
-                    {
-                        options.FileUploadTransportSettings = fileUploadTransportSettings;
-                    }
+                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType), options);
@@ -146,11 +136,15 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
+
+            // Make sure client options is initialized with the correct transport setting.
+            EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
+
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
                 if (connectionStringBuilder.Certificate == null)
                 {
-                    throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
+                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings), options);
@@ -385,6 +379,17 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
+            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
+            {
+                if (builder.Certificate == null)
+                {
+                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
+                }
+            }
+
+            // Make sure client options is initialized with the correct transport setting.
+            EnsureOptionsIsSetup(builder.Certificate, ref options);
+
             pipelineBuilder = pipelineBuilder ?? BuildPipeline();
 
             // Defer concrete InternalClient creation to OpenAsync
@@ -392,6 +397,26 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Logging.IsEnabled) Logging.CreateFromConnectionString(client, $"HostName={iotHubConnectionString.HostName};DeviceId={iotHubConnectionString.DeviceId};ModuleId={iotHubConnectionString.ModuleId}", transportSettings, options);
             return client;
+        }
+
+        /// <summary>
+        /// Ensures that the ClientOptions is configured and initialized.
+        /// If a certificate is provided, the fileUploadTransportSettings will use it during initialization.
+        /// </summary>
+        private static void EnsureOptionsIsSetup(X509Certificate2 cert, ref ClientOptions options)
+        {
+            if (options?.FileUploadTransportSettings == null)
+            {
+                var fileUploadTransportSettings = new Http1TransportSettings { ClientCertificate = cert };
+                if (options == null)
+                {
+                    options = new ClientOptions { FileUploadTransportSettings = fileUploadTransportSettings };
+                }
+                else
+                {
+                    options.FileUploadTransportSettings = fileUploadTransportSettings;
+                }
+            }
         }
 
         private static IDeviceClientPipelineBuilder BuildPipeline()
