@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 
@@ -18,7 +19,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // - pass this value as a command-prompt argument
         // - set the IOTHUB_DEVICE_CONN_STRING environment variable 
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
-        private static string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
+        private static string s_deviceConnectionStringPrimary = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
+        private static string s_deviceConnectionStringSecondary = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING_SECONDARY");
 
         // Specify one of the following transports used by DeviceClient to connect to IoT Hub.
         //   Mqtt
@@ -47,12 +49,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Instantiating this seems to do all we need for outputing SDK events to our console log
             _ = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
-            if (string.IsNullOrEmpty(s_deviceConnectionString) && args.Length > 0)
+            var connectionStrings = new List<string>(2);
+            if (string.IsNullOrEmpty(s_deviceConnectionStringPrimary) && args.Length > 0)
             {
-                s_deviceConnectionString = args[0];
+                s_deviceConnectionStringPrimary = args[0];
+            }
+            connectionStrings.Add(s_deviceConnectionStringPrimary);
+
+            if (string.IsNullOrEmpty(s_deviceConnectionStringSecondary) && args.Length > 1)
+            {
+                s_deviceConnectionStringSecondary = args[1];
+            }
+            if (!string.IsNullOrWhiteSpace(s_deviceConnectionStringSecondary))
+            {
+                connectionStrings.Add(s_deviceConnectionStringSecondary);
             }
 
-            var sample = new DeviceReconnectionSample(s_deviceConnectionString, GetTransportType(args), logger);
+            var sample = new DeviceReconnectionSample(connectionStrings, GetTransportType(args), logger);
             await sample.RunSampleAsync();
 
             logger.LogInformation("Done.");
@@ -68,8 +81,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
                 // then check argument for transport type
-            if (args.Length > 1
-                && Enum.TryParse(args[1], true, out transportType))
+            if (args.Length > 2
+                && Enum.TryParse(args[2], true, out transportType))
             {
                 return transportType;
             }
