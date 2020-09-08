@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -27,36 +28,51 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             try
             {
-                await RunSampleWithConnectionStringAsync(_connectionString1).ConfigureAwait(false);
+                await RunSampleWithConnectionStringAsync(_connectionString1);
             }
             catch (UnauthorizedException ex)
             {
                 Console.WriteLine($"UnauthorizedExpception:\n{ex.Message}");
-                Console.WriteLine("Assuming key roll-over. ConnectionString1 should be reconfigured on this device.");
+                Console.WriteLine("Assuming key rollover. The primary key should be reconfigured on this device.");
 
-                await RunSampleWithConnectionStringAsync(_connectionString2).ConfigureAwait(false);
+                await RunSampleWithConnectionStringAsync(_connectionString2);
             }
         }
 
         private async Task RunSampleWithConnectionStringAsync(string connectionString)
         {
-            string usedConnectionString = connectionString == _connectionString1 ? "PRIMARY" : "SECONDARY";
-            int delaySeconds = 5;
-            int loopSeconds = 30;
-            Console.WriteLine($"Sending one message every {delaySeconds} seconds");
+            bool usedPrimary = connectionString == _connectionString1;
+            string usedConnectionString = usedPrimary ? "PRIMARY" : "SECONDARY";
 
-            using (var deviceClient = DeviceClient.CreateFromConnectionString(connectionString, _transportType))
+            TimeSpan loopDelay = TimeSpan.FromSeconds(5);
+
+            // Run longer while using the primary, and just a few times after swapped over to use the secondary
+            TimeSpan runTime = usedPrimary
+                ? TimeSpan.FromMinutes(5)
+                : TimeSpan.FromSeconds(15);
+            Console.WriteLine($"Sending one message every {loopDelay}");
+
+            Console.WriteLine($"Connecting with {_transportType}");
+            using var deviceClient = DeviceClient.CreateFromConnectionString(connectionString, _transportType);
+
+            var timer = Stopwatch.StartNew();
+            int messageCount = 1;
+
+            while (timer.Elapsed < runTime)
             {
-                using (var testMessage = new Message(Encoding.UTF8.GetBytes("message from key rollover sample")))
+                Console.WriteLine($"\t {DateTime.Now} Attempting to sending message {messageCount++} using [{usedConnectionString} connection string].");
+
+                using var testMessage = new Message(Encoding.UTF8.GetBytes("message from key rollover sample"))
                 {
-                    for (int i = 0; i * delaySeconds < loopSeconds; i++)
-                    {
-                        Console.WriteLine($"\t {DateTime.Now.ToLocalTime()} Sending message [{usedConnectionString} connection string].");
-                        await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-                        await Task.Delay(delaySeconds * 1000);
-                    }
-                }
+                    ContentType = "text/plain",
+                    ContentEncoding = Encoding.UTF8.ToString(),
+                };
+                await deviceClient.SendEventAsync(testMessage);
+
+                await Task.Delay(loopDelay);
             }
+
+            timer.Stop();
         }
     }
 }

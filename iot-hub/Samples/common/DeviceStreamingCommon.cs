@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Samples.Common
             var wsClient = new ClientWebSocket();
             wsClient.Options.SetRequestHeader("Authorization", "Bearer " + authorizationToken);
 
-            await wsClient.ConnectAsync(url, cancellationToken).ConfigureAwait(false);
+            await wsClient.ConnectAsync(url, cancellationToken);
 
             return wsClient;
         }

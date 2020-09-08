@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
     /// </summary>
     public class ColorConsoleLogger : ILogger
     {
-        private readonly string _name;
         private readonly ColorConsoleLoggerConfiguration _config;
 
         /// <summary>
@@ -21,9 +20,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// </summary>
         /// <param name="name">The category name for each <see cref="ILogger"/> instance. This is usually the class name where the logger is initialized.</param>
         /// <param name="config">The <see cref="ColorConsoleLoggerConfiguration"/> settings to be used for logging.</param>
-        public ColorConsoleLogger(string name, ColorConsoleLoggerConfiguration config)
+        public ColorConsoleLogger(ColorConsoleLoggerConfiguration config)
         {
-            _name = name;
             _config = config;
         }
 
@@ -32,7 +30,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// </summary>
         /// <typeparam name="TState">The type of the state to begin scope for.</typeparam>
         /// <param name="state">The identifier for the scope.</param>
-        /// <returns></returns>
         public IDisposable BeginScope<TState>(TState state)
         {
             throw new NotImplementedException();
@@ -42,7 +39,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// Checks if the given log level is enabled.
         /// </summary>
         /// <param name="logLevel">The log level to be checked.</param>
-        /// <returns></returns>
         public bool IsEnabled(LogLevel logLevel)
         {
             return logLevel >= _config.MinLogLevel;

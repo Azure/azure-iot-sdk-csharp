@@ -18,12 +18,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
         private static string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
 
-        // Select one of the following transports used by DeviceClient to connect to IoT Hub.
-        private static TransportType s_transportType = TransportType.Amqp;
-        //private static TransportType s_transportType = TransportType.Mqtt;
-        //private static TransportType s_transportType = TransportType.Http1;
-        //private static TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
-        //private static TransportType s_transportType = TransportType.Mqtt_WebSocket_Only;
+        // Specify one of the following transports used by DeviceClient to connect to IoT Hub.
+        //   Mqtt
+        //   Mqtt_WebSocket_Only
+        //   Mqtt_Tcp_Only
+        //   Amqp
+        //   Amqp_WebSocket_Only
+        //   Amqp_Tcp_only
+        //   Http1
+        private static readonly string s_transportType = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_TRANSPORT_TYPE");
 
         public static async Task<int> Main(string[] args)
         {
@@ -32,14 +35,31 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 s_deviceConnectionString = args[0];
             }
 
-            using (var deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, s_transportType))
+            var deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, GetTransportType(args));
+            var sample = new MethodSample(deviceClient);
+            await sample.RunSampleAsync();
+
+            Console.WriteLine("Done.");
+            return 0;
+        }
+
+        private static TransportType GetTransportType(string[] args)
+        {
+            // Check environment variable for transport type
+            if (Enum.TryParse(s_transportType, true, out TransportType transportType))
             {
-                var sample = new MethodSample(deviceClient);
-                await sample.RunSampleAsync().ConfigureAwait(false);
+                return transportType;
             }
 
-            Console.WriteLine("Done.\n");
-            return 0;
+            // then check argument for transport type
+            if (args.Length > 1
+                && Enum.TryParse(args[1], true, out transportType))
+            {
+                return transportType;
+            }
+
+            // otherwise default to MQTT
+            return TransportType.Mqtt;
         }
     }
 }
