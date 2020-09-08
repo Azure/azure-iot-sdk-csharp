@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (connectionStringBuilder.Certificate == null)
                 {
-                    throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
+                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType), options);
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (connectionStringBuilder.Certificate == null)
                 {
-                    throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
+                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings), options);
@@ -383,7 +383,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (builder.Certificate == null)
                 {
-                    throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
+                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
             }
 
