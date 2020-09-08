@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
 
             IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 
-            // If the file upload transport settings hasn't been specified, we will create one using the client certificate on the connection string
+            // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client
 
             var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 
-            // If the file upload transport settings hasn't been specified, we will create one using the client certificate on the connection string if applicable.
+            // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
@@ -387,6 +387,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
+            // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(builder.Certificate, ref options);
 
             pipelineBuilder = pipelineBuilder ?? BuildPipeline();
@@ -398,6 +399,10 @@ namespace Microsoft.Azure.Devices.Client
             return client;
         }
 
+        /// <summary>
+        /// Ensures that the ClientOptions is configured and initialized.
+        /// If a certificate is provided, the fileUploadTransportSettings will use it during initialization.
+        /// </summary>
         private static void EnsureOptionsIsSetup(X509Certificate2 cert, ref ClientOptions options)
         {
             if (options?.FileUploadTransportSettings == null)
