@@ -40,6 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 GetDeviceNameAsync,
                 new DeviceData { Name = "DeviceClientMethodSample" });
 
+            Console.WriteLine("Press Control+C to quit the sample.");
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
             {

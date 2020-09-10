@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
+            Console.WriteLine("Press Control+C to quit the sample.");
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
@@ -42,13 +43,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
-            var waitTime = TimeSpan.FromMinutes(5);
-            var timer = Stopwatch.StartNew();
-
-            Console.WriteLine($"Use the IoT Hub Azure Portal to change the Twin desired properties within this time.");
-            Console.WriteLine($"Waiting up to {waitTime} for IoT Hub Twin updates...");
-            while (!cts.IsCancellationRequested
-                && timer.Elapsed < waitTime)
+            Console.WriteLine($"Use the IoT Hub Azure Portal or IoT Explorer utility to change the twin desired properties.");
+            while (!cts.IsCancellationRequested)
             {
                 await Task.Delay(1000);
             }

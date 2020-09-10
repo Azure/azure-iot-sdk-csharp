@@ -37,23 +37,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     await _deviceClient.AcceptDeviceStreamRequestAsync(streamRequest, cts.Token);
 
-                    using ClientWebSocket webSocket = await DeviceStreamingCommon
-                        .GetStreamingClientAsync(streamRequest.Url, streamRequest.AuthorizationToken, cts.Token);
+                    using ClientWebSocket webSocket = await DeviceStreamingCommon.GetStreamingClientAsync(
+                        streamRequest.Url,
+                        streamRequest.AuthorizationToken,
+                        cts.Token);
 
                     WebSocketReceiveResult receiveResult = await webSocket
                         .ReceiveAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), cts.Token);
                     Console.WriteLine("Received stream data: {0}", Encoding.UTF8.GetString(buffer, 0, receiveResult.Count));
 
-                    await webSocket
-                        .SendAsync(
-                            new ArraySegment<byte>(buffer, 0, receiveResult.Count),
-                            WebSocketMessageType.Binary,
-                            true,
-                            cts.Token);
+                    await webSocket.SendAsync(
+                        new ArraySegment<byte>(buffer, 0, receiveResult.Count),
+                        WebSocketMessageType.Binary,
+                        true,
+                        cts.Token);
                     Console.WriteLine("Sent stream data: {0}", Encoding.UTF8.GetString(buffer, 0, receiveResult.Count));
 
-                    await webSocket
-                        .CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cts.Token);
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cts.Token);
                 }
             }
         }
