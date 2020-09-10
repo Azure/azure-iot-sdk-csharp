@@ -55,8 +55,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync()
         {
+            Console.WriteLine("Press Control+C to quit the sample.");
             using var cts = new CancellationTokenSource();
-
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
