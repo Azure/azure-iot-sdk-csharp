@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             fileUploadTime.Stop();
 
-            Console.WriteLine($"Time to upload file: {fileUploadTime}");
+            Console.WriteLine($"Time to upload file: {fileUploadTime.Elapsed}.");
         }
     }
 }

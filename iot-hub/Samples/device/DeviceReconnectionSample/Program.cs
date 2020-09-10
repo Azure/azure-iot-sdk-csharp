@@ -11,6 +11,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class Program
     {
+        /// <summary>
+        /// A sample for illustrating how a device should handle connection status updates.
+        /// </summary>
+        /// <param name="args">
+        /// Run with `--help` to see a list of required and optional parameters.
+        /// </param>
         public static async Task<int> Main(string[] args)
         {
             // Parse application parameters
