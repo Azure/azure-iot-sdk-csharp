@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -14,15 +13,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
             while (exception != null)
             {
                 yield return exception;
+
                 if (!unwindAggregate)
                 {
                     exception = exception.InnerException;
                     continue;
                 }
-                ReadOnlyCollection<Exception> excepetions = (exception as AggregateException)?.InnerExceptions;
-                if (excepetions != null)
+
+                if (exception is AggregateException aggEx
+                    && aggEx.InnerExceptions != null)
                 {
-                    foreach (Exception ex in excepetions)
+                    foreach (Exception ex in aggEx.InnerExceptions)
                     {
                         foreach (Exception innerEx in ex.Unwind(true))
                         {
@@ -30,6 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         }
                     }
                 }
+
                 exception = exception.InnerException;
             }
         }
