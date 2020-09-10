@@ -45,7 +45,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 throw new ArgumentException("At least one connection string must be provided.", nameof(deviceConnectionStrings));
             }
             _deviceConnectionStrings = deviceConnectionStrings;
+            _logger.LogInformation($"Supplied with {_deviceConnectionStrings.Count} connection string(s).");
+
             _transportType = transportType;
+            _logger.LogInformation($"Using {_transportType} transport.");
 
             InitializeClient();
         }
