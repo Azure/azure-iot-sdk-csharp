@@ -224,7 +224,7 @@ try
 {
     if ($sign)
     {
-        if ($localPackagesAvailableForTesting)
+        if (-not $localPackagesAvailableForTesting)
         {
             throw "Local NuGet package source path is not set, required when signing packages."
         }
