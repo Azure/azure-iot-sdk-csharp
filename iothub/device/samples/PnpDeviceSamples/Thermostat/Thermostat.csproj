@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.28.0" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.6.0" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.3.0" />
