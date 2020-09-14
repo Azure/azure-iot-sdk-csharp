@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -17,32 +18,29 @@ namespace Thermostat
         // DTDL interface used: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/samples/Thermostat.json
         private const string ModelId = "dtmi:com:example:Thermostat;1";
 
-        // This environment variable indicates if DPS or IoT Hub connection string will be used to provision the device.
-        // Expected values: (case-insensitive)
-        // "DPS" - The sample will use DPS to provision the device.
-        // "connectionString" - The sample will use IoT Hub connection string to provision the device.
-        private static readonly string s_deviceSecurityType = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_SECURITY_TYPE");
-
-        // Required if IOTHUB_DEVICE_SECURITY_TYPE is set to "connectionString".
-        private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONNECTION_STRING");
-
-        // Required if IOTHUB_DEVICE_SECURITY_TYPE is set to "DPS".
-        private static readonly string s_dpsEndpoint = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_DPS_ENDPOINT");
-        private static readonly string s_dpsIdScope = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_DPS_ID_SCOPE");
-        private static readonly string s_deviceRegistrationId = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_DPS_DEVICE_ID");
-        private static readonly string s_deviceSymmetricKey = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_DPS_DEVICE_KEY");
-
         private static ILogger s_logger;
 
-        public static async Task Main(string[] _)
+        public static async Task Main(string[] args)
         {
-            s_logger = InitializeConsoleDebugLogger();
+            // Parse application parameters
+            Parameters parameters = null;
+            ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
+                .WithParsed(parsedParams =>
+                {
+                    parameters = parsedParams;
+                })
+                .WithNotParsed(errors =>
+                {
+                    Environment.Exit(1);
+                });
 
-            if (string.IsNullOrWhiteSpace(s_deviceSecurityType))
+            if (!parameters.Validate())
             {
-                throw new ArgumentNullException("Device security type needs to be specified, please set the environment variable \"IOTHUB_DEVICE_SECURITY_TYPE\".");
+                s_logger.LogError("Required parameters are not set, please recheck required variables by running \"dotnet run -- --help\"");
+                Environment.Exit(1);
             }
 
+            s_logger = InitializeConsoleDebugLogger();
             s_logger.LogInformation("Press Control+C to quit the sample.");
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
@@ -53,7 +51,7 @@ namespace Thermostat
             };
 
             s_logger.LogDebug($"Set up the device client.");
-            using DeviceClient deviceClient = await SetupDeviceClientAsync(s_deviceSecurityType, cts.Token);
+            using DeviceClient deviceClient = await SetupDeviceClientAsync(parameters, cts.Token);
             var sample = new ThermostatSample(deviceClient, s_logger);
             await sample.PerformOperationsAsync(cts.Token);
         }
@@ -73,44 +71,36 @@ namespace Thermostat
             return loggerFactory.CreateLogger<ThermostatSample>();
         }
 
-        private static async Task<DeviceClient> SetupDeviceClientAsync(string deviceSecurityType, CancellationToken cancellationToken)
+        private static async Task<DeviceClient> SetupDeviceClientAsync(Parameters parameters, CancellationToken cancellationToken)
         {
             DeviceClient deviceClient;
-            switch (deviceSecurityType.ToLowerInvariant())
+            switch (parameters.DeviceProvisioningType.ToLowerInvariant())
             {
                 case "dps":
                     s_logger.LogDebug($"Initializing via DPS");
-                    if (ValidateArgsForDpsFlow())
-                    {
-                        DeviceRegistrationResult dpsRegistrationResult = await ProvisionDeviceAsync(cancellationToken);
-                        var authMethod = new DeviceAuthenticationWithRegistrySymmetricKey(dpsRegistrationResult.DeviceId, s_deviceSymmetricKey);
-                        deviceClient = InitializeDeviceClient(dpsRegistrationResult.AssignedHub, authMethod);
-                        break;
-                    }
-                    throw new ArgumentException("Required environment variables are not set for DPS flow, please recheck your environment.");
+                    DeviceRegistrationResult dpsRegistrationResult = await ProvisionDeviceAsync(parameters, cancellationToken);
+                    var authMethod = new DeviceAuthenticationWithRegistrySymmetricKey(dpsRegistrationResult.DeviceId, parameters.DeviceSymmetricKey);
+                    deviceClient = InitializeDeviceClient(dpsRegistrationResult.AssignedHub, authMethod);
+                    break;
 
-                case "connectionstring":
+                case "hubconnectionstring":
                     s_logger.LogDebug($"Initializing via IoT Hub connection string");
-                    if (ValidateArgsForIotHubFlow())
-                    {
-                        deviceClient = InitializeDeviceClient(s_deviceConnectionString);
-                        break;
-                    }
-                    throw new ArgumentException("Required environment variables are not set for IoT Hub flow, please recheck your environment.");
+                    deviceClient = InitializeDeviceClient(parameters.PrimaryConnectionString);
+                    break;
 
                 default:
-                    throw new ArgumentException($"Unrecognized value for IOTHUB_DEVICE_SECURITY_TYPE received: {s_deviceSecurityType}." +
-                        $" It should be either \"DPS\" or \"connectionString\" (case-insensitive).");
+                    throw new ArgumentException($"Unrecognized value for device provisioning received: {parameters.DeviceProvisioningType}." +
+                        $" It should be either \"dps\" or \"hubConnectionString\" (case-insensitive).");
             }
             return deviceClient;
         }
 
         // Provision a device via DPS, by sending the PnP model Id as DPS payload.
-        private static async Task<DeviceRegistrationResult> ProvisionDeviceAsync(CancellationToken cancellationToken)
+        private static async Task<DeviceRegistrationResult> ProvisionDeviceAsync(Parameters parameters, CancellationToken cancellationToken)
         {
-            SecurityProvider symmetricKeyProvider = new SecurityProviderSymmetricKey(s_deviceRegistrationId, s_deviceSymmetricKey, null);
+            SecurityProvider symmetricKeyProvider = new SecurityProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
             ProvisioningTransportHandler mqttTransportHandler = new ProvisioningTransportHandlerMqtt();
-            var pdc = ProvisioningDeviceClient.Create(s_dpsEndpoint, s_dpsIdScope, symmetricKeyProvider, mqttTransportHandler);
+            var pdc = ProvisioningDeviceClient.Create(parameters.DpsEndpoint, parameters.DpsIdScope, symmetricKeyProvider, mqttTransportHandler);
 
             var pnpPayload = new ProvisioningRegistrationAdditionalData
             {
@@ -145,7 +135,7 @@ namespace Thermostat
             {
                 ModelId = ModelId,
             };
-            
+
             var deviceClient = DeviceClient.Create(hostname, authenticationMethod, TransportType.Mqtt, options);
             deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
             {
@@ -153,19 +143,6 @@ namespace Thermostat
             });
 
             return deviceClient;
-        }
-
-        private static bool ValidateArgsForDpsFlow()
-        {
-            return !string.IsNullOrWhiteSpace(s_dpsEndpoint)
-                && !string.IsNullOrWhiteSpace(s_dpsIdScope)
-                && !string.IsNullOrWhiteSpace(s_deviceRegistrationId)
-                && !string.IsNullOrWhiteSpace(s_deviceSymmetricKey);
-        }
-
-        private static bool ValidateArgsForIotHubFlow()
-        {
-            return !string.IsNullOrWhiteSpace(s_deviceConnectionString);
         }
     }
 }
