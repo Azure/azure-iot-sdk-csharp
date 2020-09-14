@@ -36,7 +36,7 @@ namespace Thermostat
 
             if (!parameters.Validate())
             {
-                s_logger.LogError("Required parameters are not set, please recheck required variables by running \"dotnet run -- --help\"");
+                s_logger.LogError("Required parameters are not set. Please recheck required variables by using \"--help\"");
                 Environment.Exit(1);
             }
 
@@ -74,7 +74,7 @@ namespace Thermostat
         private static async Task<DeviceClient> SetupDeviceClientAsync(Parameters parameters, CancellationToken cancellationToken)
         {
             DeviceClient deviceClient;
-            switch (parameters.DeviceProvisioningType.ToLowerInvariant())
+            switch (parameters.DeviceSecurityType.ToLowerInvariant())
             {
                 case "dps":
                     s_logger.LogDebug($"Initializing via DPS");
@@ -83,14 +83,14 @@ namespace Thermostat
                     deviceClient = InitializeDeviceClient(dpsRegistrationResult.AssignedHub, authMethod);
                     break;
 
-                case "hubconnectionstring":
+                case "connectionstring":
                     s_logger.LogDebug($"Initializing via IoT Hub connection string");
                     deviceClient = InitializeDeviceClient(parameters.PrimaryConnectionString);
                     break;
 
                 default:
-                    throw new ArgumentException($"Unrecognized value for device provisioning received: {parameters.DeviceProvisioningType}." +
-                        $" It should be either \"dps\" or \"hubConnectionString\" (case-insensitive).");
+                    throw new ArgumentException($"Unrecognized value for device provisioning received: {parameters.DeviceSecurityType}." +
+                        $" It should be either \"dps\" or \"connectionString\" (case-insensitive).");
             }
             return deviceClient;
         }

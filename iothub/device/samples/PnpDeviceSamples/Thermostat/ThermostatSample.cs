@@ -173,7 +173,7 @@ namespace Thermostat
             string telemetryName = "temperature";
 
             string telemetryPayload = $"{{ \"{telemetryName}\": {_temperature} }}";
-            var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
+            using var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
             {
                 ContentEncoding = "utf-8",
                 ContentType = "application/json",
