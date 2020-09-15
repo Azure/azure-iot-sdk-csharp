@@ -151,6 +151,16 @@ namespace PnpHelpers
         }
 
         /// <summary>
+        /// Create the DPS payload to provision a device as plug and play.
+        /// </summary>
+        /// <param name="modelId">The model Id corresponding to the device.</param>
+        /// <returns>The DPS payload to provision a device as plug and play.</returns>
+        public static string CreateDpsPayload(string modelId)
+        {
+            return $"{{ \"modelId\": \"{modelId}\" }}";
+        }
+
+        /// <summary>
         /// Helper to remove extra whitespace from the supplied string.
         /// </summary>
         /// <param name="input">The string to be formatted.</param>

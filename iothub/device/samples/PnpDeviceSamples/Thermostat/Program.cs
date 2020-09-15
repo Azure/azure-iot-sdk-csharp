@@ -34,13 +34,12 @@ namespace Thermostat
                     Environment.Exit(1);
                 });
 
+            s_logger = InitializeConsoleDebugLogger();
             if (!parameters.Validate())
             {
-                s_logger.LogError("Required parameters are not set. Please recheck required variables by using \"--help\"");
-                Environment.Exit(1);
+                throw new ArgumentException("Required parameters are not set. Please recheck required variables by using \"--help\"");
             }
 
-            s_logger = InitializeConsoleDebugLogger();
             s_logger.LogInformation("Press Control+C to quit the sample.");
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>

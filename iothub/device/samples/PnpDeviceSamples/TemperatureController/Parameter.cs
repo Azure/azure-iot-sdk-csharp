@@ -4,7 +4,7 @@
 using System;
 using CommandLine;
 
-namespace Thermostat
+namespace TemperatureController
 {
     /// <summary>
     /// Parameters for the application supplied via command line arguments.

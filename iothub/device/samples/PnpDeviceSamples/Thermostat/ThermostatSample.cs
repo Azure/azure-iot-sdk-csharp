@@ -145,13 +145,13 @@ namespace Thermostat
                 }
 
                 _logger.LogDebug($"Command: No relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, cannot generate any report.");
+                return await Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
                 return await Task.FromResult(new MethodResponse((int)StatusCode.BadRequest));
             }
-            return await Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
         }
 
         // Send temperature updates over telemetry. The sample also sends the value of max temperature since last reboot over reported property update.
