@@ -142,6 +142,7 @@
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
     <PackageReference Include="Microsoft.Owin" Version="4.0.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.6" />
   </ItemGroup>
 
   <!-- net472 -->
@@ -158,6 +159,7 @@
   <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
   </ItemGroup>
 
   <ItemGroup>
