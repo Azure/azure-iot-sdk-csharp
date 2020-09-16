@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Rest;
 
-namespace Microsoft.Azure.Devices.PlugAndPlay.Authentication
+namespace Microsoft.Azure.Devices.Authentication
 {
     public abstract class IotServiceClientCredentials : ServiceClientCredentials
     {

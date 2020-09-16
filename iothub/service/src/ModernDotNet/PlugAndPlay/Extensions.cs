@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.Azure.Devices.PlugAndPlay
+namespace Microsoft.Azure.Devices
 {
     internal static class Extensions
     {
