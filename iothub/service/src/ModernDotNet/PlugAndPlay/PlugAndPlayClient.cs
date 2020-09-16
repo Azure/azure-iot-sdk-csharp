@@ -6,11 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Generated;
 using Microsoft.Azure.Devices.Generated.Models;
-using Microsoft.Azure.Devices.PlugAndPlay.Authentication;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Rest;
-using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.PlugAndPlay
+namespace Microsoft.Azure.Devices
 {
     public class PlugAndPlayClient : IDisposable
     {

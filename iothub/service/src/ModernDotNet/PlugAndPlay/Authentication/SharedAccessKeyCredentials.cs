@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Azure.Devices.Common.Security;
 
-namespace Microsoft.Azure.Devices.PlugAndPlay.Authentication
+namespace Microsoft.Azure.Devices.Authentication
 {
     public class SharedAccessKeyCredentials : IotServiceClientCredentials
     {
