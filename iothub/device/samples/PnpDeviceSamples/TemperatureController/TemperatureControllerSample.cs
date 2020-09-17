@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -252,7 +253,7 @@ namespace TemperatureController
         private async Task SendDeviceMemoryAsync(CancellationToken cancellationToken)
         {
             string telemetryName = "workingSet";
-            long workingSet = Environment.WorkingSet / 1024;
+            long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
 
             using Message msg = PnpHelper.CreateIothubMessageUtf8(telemetryName, JsonConvert.SerializeObject(workingSet));
 

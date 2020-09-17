@@ -15,7 +15,7 @@ namespace TemperatureController
         [Option(
             's',
             "DeviceSecurityType",
-            HelpText = "(Required) The provisioning type that will be used for provisioning the device for the sample. Possible values include dps, connectionString (case-insensitive)." +
+            HelpText = "(Required) The provisioning type that will be used for provisioning the device for the sample. Possible case-insensitive values include: dps, connectionString." +
             "\nDefaults to environment variable \"IOTHUB_DEVICE_SECURITY_TYPE\".")]
         public string DeviceSecurityType { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_SECURITY_TYPE");
 
