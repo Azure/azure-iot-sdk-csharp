@@ -10,7 +10,7 @@ To be discussed:
 
 If we want to have the ttl customizable, we can take it is as an optional param:
 ```csharp
-public static DigitalTwinClient CreateFromConnectionString(string connectionString, TimeSpan timeToLive = default) {}
+public static DigitalTwinClient CreateFromConnectionString(string connectionString, TimeSpan sasTokenTimeToLive = default) {}
 ```
 Internally we provide an implementation of `Microsoft.Rest.ServiceClientCredentials`, which is the credential provider class for the protocol layer. This implementation class will handle injection of SAS token per Http request. (this http client doesn't have any retry logic built in, nor is it configurable via the client library).
 
