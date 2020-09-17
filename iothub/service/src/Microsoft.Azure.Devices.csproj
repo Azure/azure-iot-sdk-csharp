@@ -45,9 +45,10 @@
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
     <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
-    <None Include="ModernDotNet\PlugAndPlay\Generated\code-model-v1" />
-    <None Include="ModernDotNet\PlugAndPlay\plugAndPlay.md" />
-    <None Include="ModernDotNet\PlugAndPlay\plugAndPlayOnly.json" />
+    <None Include="ModernDotNet\DigitalTwin\API design.md" />
+    <None Include="ModernDotNet\DigitalTwin\Generated\code-model-v1" />
+    <None Include="ModernDotNet\DigitalTwin\readme.md" />
+    <None Include="ModernDotNet\DigitalTwin\DigitalTwin.json" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -158,7 +159,7 @@
   <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="ModernDotNet\Common\IOThreadTimerSlim.cs" />
-    <Compile Include="ModernDotNet\PlugAndPlay\**\*.cs" />
+    <Compile Include="ModernDotNet\DigitalTwin\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
