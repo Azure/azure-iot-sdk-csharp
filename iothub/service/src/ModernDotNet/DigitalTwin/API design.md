@@ -1,0 +1,122 @@
+﻿# Digital Twin API Design Doc
+
+## Client initialization
+```csharp
+public static DigitalTwinClient CreateFromConnectionString(string connectionString) {}
+
+public static DigitalTwinClient CreateFromServiceCredentials(Uri endpoint, IotServiceClientCredentials credentials) {}
+```
+where `IotServiceClientCredentials` extends `Microsoft.Rest.ServiceClientCredentials`, implementing the `ProcessHttpRequestAsync()` method to inject the generated SAS token.
+
+We also provide an implementation of `IotServiceClientCredentials` - `SharedAccessKeyCredentials`, which can be initialized using a connection string.
+
+*NOTE: `public static DigitalTwinClient CreateFromServiceCredentials(Uri endpoint, IotServiceClientCredentials credentials) {};` is provided only because `ServiceClientCredentials` is something that we get from AutoRest.
+The other track 1 clients (`ServiceClient`, `RegistryManager`, `JobClient`) only have the `CreateFromConnectionString` factory method.
+
+
+## APIs
+```csharp
+/// <summary>
+/// Gets a digital twin asynchronously.
+/// </summary>
+/// <param name="digitalTwinId">The Id of the digital twin.</param>
+/// <param name="cancellationToken">The cancellation token.</param>
+/// <returns>The application/json digital twin and the http response.</returns>
+public async Task<HttpOperationResponse<string, DigitalTwinGetDigitalTwinHeaders>> GetAsync(string digitalTwinId, CancellationToken cancellationToken = default) {}
+
+/// <summary>
+/// Gets a strongly-typed digital twin asynchronously.
+/// </summary>
+/// <param name="digitalTwinId">The Id of the digital twin.</param>
+/// <param name="cancellationToken">The cancellation token.</param>
+/// <returns>The application/json digital twin and the http response.</returns>
+public async Task<HttpOperationResponse<T, DigitalTwinGetDigitalTwinHeaders>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
+
+/// <summary>
+/// Updates a digital twin asynchronously.
+/// </summary>
+/// <param name="digitalTwinId">The Id of the digital twin to update.</param>
+/// <param name="digitalTwinUpdateOperations">The application/json-patch+json operations to be performed on the specified digital twin.</param>
+/// <param name="requestOptions">The optional settings for this request.</param>
+/// <param name="cancellationToken">The cancellationToken.</param>
+/// <returns>The http response.</returns>
+public Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>> UpdateAsync(string digitalTwinId, string digitalTwinUpdateOperations, RequestOptions requestOptions = default, CancellationToken cancellationToken = default) {}
+
+/// <summary>
+/// Invoke a command on a digital twin asynchronously.
+/// </summary>
+/// <param name="digitalTwinId">The Id of the digital twin.</param>
+/// <param name="commandName">The command to be invoked.</param>
+/// <param name="payload">The command payload.</param>
+/// <param name="connectTimeoutInSeconds">The time (in seconds) that the service waits for the device to come online. The default is 0 seconds (which means the device must already be online) and the maximum is 300 seconds.</param>
+/// <param name="responseTimeoutInSeconds">The time (in seconds) that the service waits for the method invocation to return a response. The default is 30 seconds, minimum is 5 seconds, and maximum is 300 seconds.</param>
+/// <param name="cancellationToken">The cancellationToken.</param>
+/// <returns>The application/json command invocation response and the http response. </returns>
+public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload, int? connectTimeoutInSeconds = default, int? responseTimeoutInSeconds = default, CancellationToken cancellationToken = default) {}
+
+/// <summary>
+/// Invoke a command on a digital twin asynchronously.
+/// </summary>
+/// <param name="digitalTwinId">The Id of the digital twin.</param>
+/// <param name="componentName">The component name under which the command is defined.</param>
+/// <param name="commandName">The command to be invoked.</param>
+/// <param name="payload">The command payload.</param>
+/// <param name="connectTimeoutInSeconds">The time (in seconds) that the service waits for the device to come online. The default is 0 seconds (which means the device must already be online) and the maximum is 300 seconds.</param>
+/// <param name="responseTimeoutInSeconds">The time (in seconds) that the service waits for the method invocation to return a response. The default is 30 seconds, minimum is 5 seconds, and maximum is 300 seconds.</param>
+/// <param name="cancellationToken">The cancellationToken.</param>
+/// <returns>The application/json command invocation response and the http response. </returns>
+public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload, int? connectTimeoutInSeconds = default, int? responseTimeoutInSeconds = default, CancellationToken cancellationToken = default) {}
+
+```
+
+*NOTE:
+- Should we also have sync APIs? Other track 1 clients don't have sync APIs.
+- The response header class names will need to be updated - `DigitalTwinGetDigitalTwinHeaders` -> `DigitalTwinGetHeaders`, `DigitalTwinUpdateDigitalTwinHeaders` -> `DigitalTwinUpdateHeaders` (they have different json properties).
+- We will provide a utility to create the json-patch for update operation - similar to what we have on ADT.
+- We cannot provide a basic digital twin type for the `GetAsync<T>` because the returned twin is almost completely defined by the model Id (the metadata field is embedded inside each property).
+```json
+{
+  "$dtId": "tc",
+  "serialNumber": "SR-123456",
+  "thermostat1": {
+    "maxTempSinceLastReboot": 19.9,
+    "targetTemperature": "10.0",
+    "$metadata": {
+      "targetTemperature": {
+        "desiredValue": 10,
+        "desiredVersion": 2,
+        "ackVersion": 2,
+        "ackCode": 200,
+        "ackDescription": "\"Successfully updated target temperature\"",
+        "lastUpdateTime": "2020-09-17T06:05:51.4582256Z"
+      },
+      "maxTempSinceLastReboot": {
+        "lastUpdateTime": "2020-09-17T07:36:47.4529523Z"
+      }
+    }
+  },
+  "thermostat2": {
+    "maxTempSinceLastReboot": 16.0,
+    "targetTemperature": 50.0,
+    "$metadata": {
+      "targetTemperature": {
+        "desiredValue": 50,
+        "desiredVersion": 4,
+        "ackVersion": 4,
+        "ackCode": 200,
+        "ackDescription": "Successfully updated target temperature",
+        "lastUpdateTime": "2020-09-17T06:19:15.7068524Z"
+      },
+      "maxTempSinceLastReboot": {
+        "lastUpdateTime": "2020-09-17T07:36:47.9645314Z"
+      }
+    }
+  },
+  "$metadata": {
+    "$model": "dtmi:com:example:TemperatureController;1",
+    "serialNumber": {
+      "lastUpdateTime": "2020-09-17T07:36:47.0104998Z"
+    }
+  }
+}
+```
