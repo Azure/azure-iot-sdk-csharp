@@ -17,27 +17,19 @@ Internally we provide an implementation of `Microsoft.Rest.ServiceClientCredenti
 ## APIs
 
 Items to discuss:
-- Should we also have sync APIs? Other track 1 clients don't have sync APIs.
-- Shoud we return both `string` and `Response<string>` in the response? 
-- Shoud we merge `InvokeCommandAsync()` and `InvokeComponentCommandAsync()` into a single API (with `componentName` optional)?
-- Should we put the optional params `connectTimeoutInSeconds` and `responseTimeoutInSeconds` in invoke command APIs into an `Options` type?
+- Should we also have sync APIs? Other track 1 clients don't have sync APIs - only async APIs.
+- Shoud we return both `string` and `Response<string>` in the response? - only `Response<string>`.
+- Shoud we merge `InvokeCommandAsync()` and `InvokeComponentCommandAsync()` into a single API (with `componentName` optional) - they call different PL APIs -> keep them separate.
+- Should we put the optional params `connectTimeoutInSeconds` and `responseTimeoutInSeconds` in invoke command APIs into an `Options` type - yes
 
 ```csharp
-/// <summary>
-/// Gets a digital twin asynchronously.
-/// </summary>
-/// <param name="digitalTwinId">The Id of the digital twin.</param>
-/// <param name="cancellationToken">The cancellation token.</param>
-/// <returns>The application/json digital twin and the http response.</returns>
-public async Task<HttpOperationResponse<string, DigitalTwinGetDigitalTwinHeaders>> GetAsync(string digitalTwinId, CancellationToken cancellationToken = default) {}
-
 /// <summary>
 /// Gets a strongly-typed digital twin asynchronously.
 /// </summary>
 /// <param name="digitalTwinId">The Id of the digital twin.</param>
 /// <param name="cancellationToken">The cancellation token.</param>
 /// <returns>The application/json digital twin and the http response.</returns>
-public async Task<HttpOperationResponse<T, DigitalTwinGetDigitalTwinHeaders>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default) {}
+public async Task<HttpOperationResponse<T, DigitalTwinGetHeaders>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default) {}
 
 /// <summary>
 /// Updates a digital twin asynchronously.
@@ -47,7 +39,7 @@ public async Task<HttpOperationResponse<T, DigitalTwinGetDigitalTwinHeaders>> Ge
 /// <param name="requestOptions">The optional settings for this request.</param>
 /// <param name="cancellationToken">The cancellationToken.</param>
 /// <returns>The http response.</returns>
-public Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>> UpdateAsync(string digitalTwinId, string digitalTwinUpdateOperations, RequestOptions requestOptions = default, CancellationToken cancellationToken = default) {}
+public Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>> UpdateAsync(string digitalTwinId, string digitalTwinUpdateOperations, DigitalTwinUpdateRequestOptions requestOptions = default, CancellationToken cancellationToken = default) {}
 
 /// <summary>
 /// Invoke a command on a digital twin asynchronously.
@@ -55,11 +47,10 @@ public Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>> Up
 /// <param name="digitalTwinId">The Id of the digital twin.</param>
 /// <param name="commandName">The command to be invoked.</param>
 /// <param name="payload">The command payload.</param>
-/// <param name="connectTimeoutInSeconds">The time (in seconds) that the service waits for the device to come online. The default is 0 seconds (which means the device must already be online) and the maximum is 300 seconds.</param>
-/// <param name="responseTimeoutInSeconds">The time (in seconds) that the service waits for the method invocation to return a response. The default is 30 seconds, minimum is 5 seconds, and maximum is 300 seconds.</param>
+/// <param name="requestOptions">The optional settings for this request.</param>
 /// <param name="cancellationToken">The cancellationToken.</param>
 /// <returns>The application/json command invocation response and the http response. </returns>
-public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload, int? connectTimeoutInSeconds = default, int? responseTimeoutInSeconds = default, CancellationToken cancellationToken = default) {}
+public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions, CancellationToken cancellationToken = default) {}
 
 /// <summary>
 /// Invoke a command on a digital twin asynchronously.
@@ -68,12 +59,10 @@ public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>
 /// <param name="componentName">The component name under which the command is defined.</param>
 /// <param name="commandName">The command to be invoked.</param>
 /// <param name="payload">The command payload.</param>
-/// <param name="connectTimeoutInSeconds">The time (in seconds) that the service waits for the device to come online. The default is 0 seconds (which means the device must already be online) and the maximum is 300 seconds.</param>
-/// <param name="responseTimeoutInSeconds">The time (in seconds) that the service waits for the method invocation to return a response. The default is 30 seconds, minimum is 5 seconds, and maximum is 300 seconds.</param>
+/// <param name="requestOptions">The optional settings for this request.</param>
 /// <param name="cancellationToken">The cancellationToken.</param>
 /// <returns>The application/json command invocation response and the http response. </returns>
-public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload, int? connectTimeoutInSeconds = default, int? responseTimeoutInSeconds = default, CancellationToken cancellationToken = default) {}
-
+public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions, CancellationToken cancellationToken = default) {}
 ```
 
 *NOTE:
