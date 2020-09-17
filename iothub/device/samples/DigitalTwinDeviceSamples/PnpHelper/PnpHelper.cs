@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Linq;
+using System;
+using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json.Linq;
@@ -26,8 +28,10 @@ namespace PnpHelpers
         /// <returns>A plug and play compatible telemetry message, which can be sent to IoT Hub.</returns>
         public static Message CreateIothubMessageUtf8(string telemetryName, string serializedTelemetryValue, string componentName = default)
         {
-            string payload = $"{{ \"{telemetryName}\": {serializedTelemetryValue} }}";
+            telemetryName.ThrowIfNullOrWhiteSpace(nameof(telemetryName));
+            serializedTelemetryValue.ThrowIfNullOrWhiteSpace(nameof(serializedTelemetryValue));
 
+            string payload = $"{{ \"{telemetryName}\": {serializedTelemetryValue} }}".TrimWhiteSpace();
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 ContentEncoding = EncodingUtf8,
@@ -51,7 +55,10 @@ namespace PnpHelpers
         /// <returns>The property patch for read-only and read-write property updates.</returns>
         public static string CreatePropertyPatch(string propertyName, string serializedPropertyValue, string componentName = default)
         {
-            return string.IsNullOrWhiteSpace(componentName)
+            propertyName.ThrowIfNullOrWhiteSpace(nameof(propertyName));
+            serializedPropertyValue.ThrowIfNullOrWhiteSpace(nameof(serializedPropertyValue));
+
+            string propertyPatch = string.IsNullOrWhiteSpace(componentName)
                 ?
                     $"{{" +
                     $"  \"{propertyName}\": {serializedPropertyValue}" +
@@ -64,6 +71,8 @@ namespace PnpHelpers
                     $"          \"{propertyName}\": {serializedPropertyValue}" +
                     $"      }} " +
                     $"}}";
+
+            return propertyPatch.TrimWhiteSpace();
         }
 
         /// <summary>
@@ -85,7 +94,10 @@ namespace PnpHelpers
             string serializedAckDescription = default,
             string componentName = default)
         {
-            return string.IsNullOrWhiteSpace(componentName)
+            propertyName.ThrowIfNullOrWhiteSpace(nameof(propertyName));
+            serializedPropertyValue.ThrowIfNullOrWhiteSpace(nameof(serializedPropertyValue));
+
+            string propertyPatch = string.IsNullOrWhiteSpace(componentName)
                 ?
                     $"{{" +
                     $"  \"{propertyName}\": " +
@@ -110,6 +122,8 @@ namespace PnpHelpers
                     $"              }} " +
                     $"      }} " +
                     $"}}";
+
+            return propertyPatch.TrimWhiteSpace();
         }
 
         /// <summary>
@@ -147,19 +161,46 @@ namespace PnpHelpers
         /// <returns>A plug and play compatible command name.</returns>
         public static string CreatePnpCommandName(string commandName, string componentName = default)
         {
+            commandName.ThrowIfNullOrWhiteSpace(nameof(commandName));
             return string.IsNullOrWhiteSpace(componentName) ? commandName : $"{componentName}*{commandName}";
         }
 
         /// <summary>
+        /// Create the DPS payload to provision a device as plug and play.
+        /// For more information, see https://docs.microsoft.com/en-us/azure/iot-pnp/howto-certify-device.
+        /// </summary>
+        /// <param name="modelId">The Id of the model the device adheres to for properties, telemetry, and commands.</param>
+        /// <returns>The DPS payload to provision a device as plug and play.</returns>
+        public static string CreateDpsPayload(string modelId)
+        {
+            modelId.ThrowIfNullOrWhiteSpace(nameof(modelId));
+            return $"{{ \"modelId\": \"{modelId}\" }}".TrimWhiteSpace();
+        }
+
+        /// <summary>
         /// Helper to remove extra whitespace from the supplied string.
+        /// It makes sure that strings that contain space characters are preserved, and all other space characters are discarded.
         /// </summary>
         /// <param name="input">The string to be formatted.</param>
-        /// <returns>The input string, with all whitespace removed.</returns>
-        public static string RemoveWhitespace(this string input)
+        /// <returns>The input string, with extra whitespace removed. </returns>
+        public static string TrimWhiteSpace(this string input)
         {
-            return new string(input.ToCharArray()
-                .Where(c => !char.IsWhiteSpace(c))
-                .ToArray());
+            return Regex.Replace(input, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
         }
+
+        /// <summary>
+        /// Throw ArgumentNullException if the value is null reference, empty string or white space.
+        /// </summary>
+        /// <param name="argumentValue">The argument value.</param>
+        /// <param name="argumentName">The argument name.</param>
+        internal static void ThrowIfNullOrWhiteSpace(this string argumentValue, string argumentName)
+        {
+            if (string.IsNullOrWhiteSpace(argumentValue))
+            {
+                string errorMessage = $"The parameter named {argumentName} can't be null, empty string or white space.";
+                throw new ArgumentNullException(argumentName, errorMessage);
+            }
+        }
+
     }
 }

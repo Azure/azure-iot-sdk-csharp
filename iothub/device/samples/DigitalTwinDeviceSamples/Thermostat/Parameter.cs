@@ -7,14 +7,15 @@ using CommandLine;
 namespace Thermostat
 {
     /// <summary>
-    /// Parameters for the application supplied via command line arguments. It default to environment variables..
+    /// Parameters for the application supplied via command line arguments.
+    /// If the parameter is not supplied via command line args, it will look for it in environment variables.
     /// </summary>
     internal class Parameters
     {
         [Option(
             's',
             "DeviceSecurityType",
-            HelpText = "(Required) The provisioning type that will be used for provisioning the device for the sample. Possible values include dps, connectionString (case-insensitive)." +
+            HelpText = "(Required) The flow that will be used for connecting the device for the sample. Possible case-insensitive values include: dps, connectionString." +
             "\nDefaults to environment variable \"IOTHUB_DEVICE_SECURITY_TYPE\".")]
         public string DeviceSecurityType { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_SECURITY_TYPE");
 
