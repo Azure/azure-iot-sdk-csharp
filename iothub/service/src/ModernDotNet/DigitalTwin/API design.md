@@ -6,7 +6,7 @@ public static DigitalTwinClient CreateFromConnectionString(string connectionStri
 ```
 
 To be discussed:
-- Existing track 1 clients (`ServiceClient`, `RegistryManager`, `JobClient`) only have the `CreateFromConnectionString` factory method. These client create sas tokens with a time to live of 1 hour [non-customizable](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/common/src/service/IotHubConnectionString.cs#L16). 
+- Existing track 1 clients (`ServiceClient`, `RegistryManager`, `JobClient`) only have the `CreateFromConnectionString` factory method. These client create sas tokens with a time to live of 1 hour [(non-customizable)](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/common/src/service/IotHubConnectionString.cs#L16).
 
 If we want to have the ttl customizable, we can provide another factory method for client initialization:
 ```csharp
