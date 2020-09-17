@@ -3,18 +3,27 @@
 ## Client initialization
 ```csharp
 public static DigitalTwinClient CreateFromConnectionString(string connectionString) {}
+```
 
+To be discussed:
+- Existing track 1 clients (`ServiceClient`, `RegistryManager`, `JobClient`) only have the `CreateFromConnectionString` factory method. These client create sas tokens with a time to live of 1 hour [non-customizable](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/common/src/service/IotHubConnectionString.cs#L16). 
+
+If we want to have the ttl customizable, we can provide another factory method for client initialization:
+```csharp
 public static DigitalTwinClient CreateFromServiceCredentials(Uri endpoint, IotServiceClientCredentials credentials) {}
 ```
-where `IotServiceClientCredentials` extends `Microsoft.Rest.ServiceClientCredentials`, implementing the `ProcessHttpRequestAsync()` method to inject the generated SAS token.
+We can provide an implementation of `IotServiceClientCredentials` - `SharedAccessKeyCredentials`, which can be initialized using a connection string, but with the sas token ttl customizable.
 
-We also provide an implementation of `IotServiceClientCredentials` - `SharedAccessKeyCredentials`, which can be initialized using a connection string.
-
-*NOTE: `public static DigitalTwinClient CreateFromServiceCredentials(Uri endpoint, IotServiceClientCredentials credentials) {};` is provided only because `ServiceClientCredentials` is something that we get from AutoRest.
-The other track 1 clients (`ServiceClient`, `RegistryManager`, `JobClient`) only have the `CreateFromConnectionString` factory method.
-
+*NOTE: `IotServiceClientCredentials` extends `Microsoft.Rest.ServiceClientCredentials`, which is the credential provider class for the protocol layer.
 
 ## APIs
+
+Items to discuss:
+- Should we also have sync APIs? Other track 1 clients don't have sync APIs.
+- Shoud we return both `string` and `Response<string>` in the response? 
+- Shoud we merge `InvokeCommandAsync()` and `InvokeComponentCommandAsync()` into a single API (with `componentName` optional)?
+- Should we put the optional params `connectTimeoutInSeconds` and `responseTimeoutInSeconds` in invoke command APIs into an `Options` type?
+
 ```csharp
 /// <summary>
 /// Gets a digital twin asynchronously.
@@ -70,7 +79,6 @@ public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>
 ```
 
 *NOTE:
-- Should we also have sync APIs? Other track 1 clients don't have sync APIs.
 - The response header class names will need to be updated - `DigitalTwinGetDigitalTwinHeaders` -> `DigitalTwinGetHeaders`, `DigitalTwinUpdateDigitalTwinHeaders` -> `DigitalTwinUpdateHeaders` (they have different json properties).
 - We will provide a utility to create the json-patch for update operation - similar to what we have on ADT.
 - We cannot provide a basic digital twin type for the `GetAsync<T>` because the returned twin is almost completely defined by the model Id (the metadata field is embedded inside each property).
