@@ -30,7 +30,7 @@ public async Task<HttpOperationResponse<string, DigitalTwinGetDigitalTwinHeaders
 /// <param name="digitalTwinId">The Id of the digital twin.</param>
 /// <param name="cancellationToken">The cancellation token.</param>
 /// <returns>The application/json digital twin and the http response.</returns>
-public async Task<HttpOperationResponse<T, DigitalTwinGetDigitalTwinHeaders>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
+public async Task<HttpOperationResponse<T, DigitalTwinGetDigitalTwinHeaders>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default) {}
 
 /// <summary>
 /// Updates a digital twin asynchronously.
