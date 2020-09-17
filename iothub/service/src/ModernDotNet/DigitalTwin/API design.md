@@ -8,13 +8,11 @@ public static DigitalTwinClient CreateFromConnectionString(string connectionStri
 To be discussed:
 - Existing track 1 clients (`ServiceClient`, `RegistryManager`, `JobClient`) only have the `CreateFromConnectionString` factory method. These client create sas tokens with a time to live of 1 hour [(non-customizable)](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/common/src/service/IotHubConnectionString.cs#L16).
 
-If we want to have the ttl customizable, we can provide another factory method for client initialization:
+If we want to have the ttl customizable, we can take it is as an optional param:
 ```csharp
-public static DigitalTwinClient CreateFromServiceCredentials(Uri endpoint, IotServiceClientCredentials credentials) {}
+public static DigitalTwinClient CreateFromConnectionString(string connectionString, TimeSpan timeToLive = default) {}
 ```
-We can provide an implementation of `IotServiceClientCredentials` - `SharedAccessKeyCredentials`, which can be initialized using a connection string, but with the sas token ttl customizable.
-
-*NOTE: `IotServiceClientCredentials` extends `Microsoft.Rest.ServiceClientCredentials`, which is the credential provider class for the protocol layer.
+Internally we provide an implementation of `Microsoft.Rest.ServiceClientCredentials`, which is the credential provider class for the protocol layer. This implementation class will handle injection of SAS token per Http request. (this http client doesn't have any retry logic built in, nor is it configurable via the client library).
 
 ## APIs
 
