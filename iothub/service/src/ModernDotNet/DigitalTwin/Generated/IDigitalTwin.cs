@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Generated
     /// <summary>
     /// DigitalTwin operations.
     /// </summary>
-    public partial interface IDigitalTwin
+    internal partial interface IDigitalTwin
     {
         /// <summary>
         /// Gets a digital twin.

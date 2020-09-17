@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Generated
     /// <summary>
     /// Extension methods for DigitalTwin.
     /// </summary>
-    public static partial class DigitalTwinExtensions
+    internal static partial class DigitalTwinExtensions
     {
             /// <summary>
             /// Gets a digital twin.

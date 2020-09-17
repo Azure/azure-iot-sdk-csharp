@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Generated
     /// <summary>
     /// DigitalTwin operations.
     /// </summary>
-    public partial class DigitalTwin : IServiceOperations<IotHubGatewayServiceAPIs>, IDigitalTwin
+    internal partial class DigitalTwin : IServiceOperations<IotHubGatewayServiceAPIs>, IDigitalTwin
     {
         /// <summary>
         /// Initializes a new instance of the DigitalTwin class.

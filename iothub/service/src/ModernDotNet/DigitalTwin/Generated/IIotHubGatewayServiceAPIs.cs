@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Generated
 
     /// <summary>
     /// </summary>
-    public partial interface IIotHubGatewayServiceAPIs : System.IDisposable
+    internal partial interface IIotHubGatewayServiceAPIs : System.IDisposable
     {
         /// <summary>
         /// The base URI of the service.
