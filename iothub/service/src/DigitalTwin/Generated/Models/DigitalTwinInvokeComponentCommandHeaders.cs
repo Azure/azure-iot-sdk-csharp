@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Generated.Models
     /// <summary>
     /// Defines headers for InvokeComponentCommand operation.
     /// </summary>
-    public partial class DigitalTwinInvokeComponentCommandHeaders
+    internal partial class DigitalTwinInvokeComponentCommandHeaders
     {
         /// <summary>
         /// Initializes a new instance of the
