@@ -2,9 +2,11 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 try {
-	# Remove the manually renamed files
-	Remove-Item ./Generated/Models/DigitalTwinGetHeaders.cs
-	Remove-Item ./Generated/Models/DigitalTwinUpdateHeaders.cs
+	# Remove the manually renamed (model) files, since `autorest` command will only delete and regenerate the autorest created files.
+	Get-ChildItem ./Generated/Models *.cs |
+		Foreach-Object {
+			Remove-Item $_.FullName
+		}
 
 	#Generate the base code from the swagger file that is defined in this folder's README
 	autorest
