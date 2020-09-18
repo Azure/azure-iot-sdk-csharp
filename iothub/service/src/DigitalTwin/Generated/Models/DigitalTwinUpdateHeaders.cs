@@ -4,13 +4,13 @@
 // regenerated.
 // </auto-generated>
 
-namespace Microsoft.Azure.Devices.Generated.Models
+namespace Microsoft.Azure.Devices
 {
     using Newtonsoft.Json;
     using System.Linq;
 
     /// <summary>
-    /// Defines headers for UpdateDigitalTwin operation.
+    /// Defines headers for UpdateAsync operation.
     /// </summary>
     public partial class DigitalTwinUpdateHeaders
     {

@@ -7,7 +7,6 @@
 namespace Microsoft.Azure.Devices.Generated
 {
     using Microsoft.Rest;
-    using Models;
     using Newtonsoft.Json;
 
     /// <summary>

@@ -6,7 +6,6 @@
 
 namespace Microsoft.Azure.Devices.Generated
 {
-    using Models;
     using System.Collections;
     using System.Collections.Generic;
     using System.Threading;

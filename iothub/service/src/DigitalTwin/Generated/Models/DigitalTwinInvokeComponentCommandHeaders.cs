@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Microsoft.Azure.Devices.Generated.Models
+namespace Microsoft.Azure.Devices
 {
     using Newtonsoft.Json;
     using System.Linq;
