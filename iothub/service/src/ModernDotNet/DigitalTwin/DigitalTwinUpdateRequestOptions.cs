@@ -4,9 +4,9 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// General request options that are applicable, but optional, for many APIs.
+    /// General request options that are applicable, but optional, for update APIs.
     /// </summary>
-    public class RequestOptions
+    public class DigitalTwinUpdateRequestOptions
     {
         /// <summary>
         /// A string representing a weak ETag for the entity that this request performs an operation against, as per RFC7232.

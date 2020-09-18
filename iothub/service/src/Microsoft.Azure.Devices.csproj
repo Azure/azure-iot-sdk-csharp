@@ -46,6 +46,7 @@
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
     <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
     <None Include="ModernDotNet\DigitalTwin\API design.md" />
+    <None Include="ModernDotNet\DigitalTwin\generateCode.ps1" />
     <None Include="ModernDotNet\DigitalTwin\Generated\code-model-v1" />
     <None Include="ModernDotNet\DigitalTwin\readme.md" />
     <None Include="ModernDotNet\DigitalTwin\DigitalTwin.json" />

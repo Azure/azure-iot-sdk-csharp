@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>> UpdateDigitalTwinWithHttpMessagesAsync(string id, IList<object> digitalTwinPatch, string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>> UpdateDigitalTwinWithHttpMessagesAsync(string id, string digitalTwinPatch, string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (id == null)
             {
@@ -310,7 +310,7 @@ namespace Microsoft.Azure.Devices.Generated
             string _requestContent = null;
             if(digitalTwinPatch != null)
             {
-                _requestContent = Rest.Serialization.SafeJsonConvert.SerializeObject(digitalTwinPatch, Client.SerializationSettings);
+                _requestContent = digitalTwinPatch;
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
                 _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }

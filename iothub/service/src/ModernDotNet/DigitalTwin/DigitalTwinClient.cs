@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
             };
         }
 
-        /*/// <summary>
+        /// <summary>
         /// Updates a digital twin asynchronously.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
@@ -69,13 +69,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The http response.</returns>
-        public Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>> UpdateAsync(string digitalTwinId, string digitalTwinUpdateOperations, RequestOptions requestOptions = default, CancellationToken cancellationToken = default)
+        public Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>> UpdateAsync(string digitalTwinId, string digitalTwinUpdateOperations, DigitalTwinUpdateRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
-            List<object> jsonPatch = JsonConvert.DeserializeObject<List<object>>(digitalTwinUpdateOperations);
-            return _protocolLayer.UpdateDigitalTwinWithHttpMessagesAsync(digitalTwinId, jsonPatch, requestOptions?.IfMatch, null, cancellationToken);
+            return _protocolLayer.UpdateDigitalTwinWithHttpMessagesAsync(digitalTwinId, digitalTwinUpdateOperations, requestOptions?.IfMatch, null, cancellationToken);
         }
 
-        /// <summary>
+        /*/// <summary>
         /// Invoke a command on a digital twin asynchronously.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>

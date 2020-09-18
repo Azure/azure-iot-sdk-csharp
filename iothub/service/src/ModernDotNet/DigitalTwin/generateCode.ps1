@@ -37,7 +37,8 @@ try {
 	#Edit the protocol layer interface to return the correct response types
 	Get-ChildItem . Generated/IDigitalTwin.cs |
 		Foreach-Object {
-			$IDigitalTwinInterfaceClassCode = ($_ | Get-Content) 
+			$IDigitalTwinInterfaceClassCode = ($_ | Get-Content)
+			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'IList<object> digitalTwinPatch', 'string digitalTwinPatch'
 			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'Task<HttpOperationResponse<object,DigitalTwinGetDigitalTwinHeaders>>', 'Task<HttpOperationResponse<string,DigitalTwinGetHeaders>>'
 			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>>', 'Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>>'
 			[IO.File]::WriteAllText($_.FullName, ($IDigitalTwinInterfaceClassCode -join "`r`n"))
@@ -52,7 +53,8 @@ try {
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'Task<HttpOperationResponse<object,DigitalTwinGetDigitalTwinHeaders>>', 'Task<HttpOperationResponse<string,DigitalTwinGetHeaders>>'
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'new HttpOperationResponse<object,DigitalTwinGetDigitalTwinHeaders>', 'new HttpOperationResponse<string,DigitalTwinGetHeaders>'
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace '_httpResponse.GetHeadersAsJson\(\).ToObject<DigitalTwinGetDigitalTwinHeaders>', '_httpResponse.GetHeadersAsJson().ToObject<DigitalTwinGetHeaders>'
-			$DigitalTwinClassCode = $DigitalTwinClassCode -replace '_requestContent = Rest.Serialization.SafeJsonConvert.SerializeObject(digitalTwinPatch, Client.SerializationSettings);', '_requestContent = digitalTwinPatch;'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'IList<object> digitalTwinPatch', 'string digitalTwinPatch'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace '_requestContent = Rest.Serialization.SafeJsonConvert.SerializeObject\(digitalTwinPatch, Client.SerializationSettings\);', '_requestContent = digitalTwinPatch;'
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>>' , 'Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>>'
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'new HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>', 'new HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>'
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace '_httpResponse.GetHeadersAsJson\(\).ToObject<DigitalTwinUpdateDigitalTwinHeaders>', '_httpResponse.GetHeadersAsJson().ToObject<DigitalTwinUpdateHeaders>'
@@ -62,7 +64,8 @@ try {
 	#Edit the protocol layer extensions class to return the correct response types
 	Get-ChildItem . Generated/DigitalTwinExtensions.cs |
 		Foreach-Object {
-			$DigitalTwinExtensionsClassCode = ($_ | Get-Content) 
+			$DigitalTwinExtensionsClassCode = ($_ | Get-Content)
+			$DigitalTwinExtensionsClassCode = $DigitalTwinExtensionsClassCode -replace 'IList<object> digitalTwinPatch', 'string digitalTwinPatch'
 			$DigitalTwinExtensionsClassCode = $DigitalTwinExtensionsClassCode -replace 'Task<DigitalTwinUpdateDigitalTwinHeaders>' , 'Task<DigitalTwinUpdateHeaders> '
 			[IO.File]::WriteAllText($_.FullName, ($DigitalTwinExtensionsClassCode -join "`r`n"))
 		}

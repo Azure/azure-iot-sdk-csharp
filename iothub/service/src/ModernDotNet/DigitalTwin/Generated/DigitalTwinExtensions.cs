@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Generated
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<DigitalTwinUpdateHeaders>  UpdateDigitalTwinAsync(this IDigitalTwin operations, string id, IList<object> digitalTwinPatch, string ifMatch = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<DigitalTwinUpdateHeaders>  UpdateDigitalTwinAsync(this IDigitalTwin operations, string id, string digitalTwinPatch, string ifMatch = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.UpdateDigitalTwinWithHttpMessagesAsync(id, digitalTwinPatch, ifMatch, null, cancellationToken).ConfigureAwait(false))
                 {
