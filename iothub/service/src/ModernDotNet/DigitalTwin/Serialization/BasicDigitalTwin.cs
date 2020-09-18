@@ -12,9 +12,9 @@ namespace Microsoft.Azure.Devices.Serialization
     public class BasicDigitalTwin
     {
         /// <summary>
-        /// The unique Id of the digital twin. This field is present on every digital twin.
+        /// The unique Id of the digital twin. This is present at the root of every digital twin.
         /// </summary>
-        [JsonProperty("$dtId")]
+        [JsonProperty("$dtId", NullValueHandling = NullValueHandling.Ignore)]
         public string Id { get; set; }
 
         /// <summary>

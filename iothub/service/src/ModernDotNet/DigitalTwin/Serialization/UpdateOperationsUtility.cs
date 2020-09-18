@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.ModernDotNet.DigitalTwin.Serialization
+namespace Microsoft.Azure.Devices.Serialization
 {
     /// <summary>
     /// A utility to create the application/json-patch+json operations payload required for update operations.

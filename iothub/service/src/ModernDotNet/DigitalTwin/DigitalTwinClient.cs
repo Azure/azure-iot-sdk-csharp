@@ -4,15 +4,17 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Generated;
 using Microsoft.Azure.Devices.Generated.Models;
-using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Rest;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices
 {
+    /// <summary>
+    /// /// The Digital Twins Service Client contains methods to retrieve and update digital twin information, and invoke commands on a digital twin device.
+    /// </summary>
     public class DigitalTwinClient : IDisposable
     {
         private readonly IotHubGatewayServiceAPIs _client;
@@ -74,29 +76,18 @@ namespace Microsoft.Azure.Devices
             return _protocolLayer.UpdateDigitalTwinWithHttpMessagesAsync(digitalTwinId, digitalTwinUpdateOperations, requestOptions?.IfMatch, null, cancellationToken);
         }
 
-        /*/// <summary>
+        /// <summary>
         /// Invoke a command on a digital twin asynchronously.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="commandName">The command to be invoked.</param>
         /// <param name="payload">The command payload.</param>
-        /// <param name="connectTimeoutInSeconds">The time (in seconds) that the service waits for the device to come online. The default is 0 seconds (which means the device must already be online) and the maximum is 300 seconds.</param>
-        /// <param name="responseTimeoutInSeconds">The time (in seconds) that the service waits for the method invocation to return a response. The default is 30 seconds, minimum is 5 seconds, and maximum is 300 seconds.</param>
+        /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The application/json command invocation response and the http response. </returns>
-        public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload, int? connectTimeoutInSeconds = default, int? responseTimeoutInSeconds = default, CancellationToken cancellationToken = default)
+        public Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
-            object commandPayload = JsonConvert.DeserializeObject<object>(payload);
-            using HttpOperationResponse<object, DigitalTwinInvokeRootLevelCommandHeaders> response = await _protocolLayer.InvokeRootLevelCommandWithHttpMessagesAsync(digitalTwinId, commandName, commandPayload, connectTimeoutInSeconds, responseTimeoutInSeconds, null, cancellationToken)
-                .ConfigureAwait(false);
-            
-            return new HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>
-            {
-                Body = JsonConvert.SerializeObject(response.Body),
-                Headers = JsonConvert.DeserializeObject<DigitalTwinInvokeCommandHeaders>(JsonConvert.SerializeObject(response.Headers)),
-                Request = response.Request,
-                Response = response.Response
-            };
+            return _protocolLayer.InvokeRootLevelCommandWithHttpMessagesAsync(digitalTwinId, commandName, payload, requestOptions?.ConnectTimeoutInSeconds, requestOptions?.ResponseTimeoutInSeconds, null, cancellationToken);
         }
 
         /// <summary>
@@ -106,24 +97,13 @@ namespace Microsoft.Azure.Devices
         /// <param name="componentName">The component name under which the command is defined.</param>
         /// <param name="commandName">The command to be invoked.</param>
         /// <param name="payload">The command payload.</param>
-        /// <param name="connectTimeoutInSeconds">The time (in seconds) that the service waits for the device to come online. The default is 0 seconds (which means the device must already be online) and the maximum is 300 seconds.</param>
-        /// <param name="responseTimeoutInSeconds">The time (in seconds) that the service waits for the method invocation to return a response. The default is 30 seconds, minimum is 5 seconds, and maximum is 300 seconds.</param>
+        /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The application/json command invocation response and the http response. </returns>
-        public async Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload, int? connectTimeoutInSeconds = default, int? responseTimeoutInSeconds = default, CancellationToken cancellationToken = default)
+        public Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
-            object commandPayload = JsonConvert.DeserializeObject<object>(payload);
-            using HttpOperationResponse<object, DigitalTwinInvokeComponentCommandHeaders> response = await _protocolLayer.InvokeComponentCommandWithHttpMessagesAsync(digitalTwinId, componentName, commandName, commandPayload, connectTimeoutInSeconds, responseTimeoutInSeconds, null, cancellationToken)
-                .ConfigureAwait(false);
-
-            return new HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>
-            {
-                Body = JsonConvert.SerializeObject(response.Body),
-                Headers = JsonConvert.DeserializeObject<DigitalTwinInvokeCommandHeaders>(JsonConvert.SerializeObject(response.Headers)),
-                Request = response.Request,
-                Response = response.Response
-            };
-        }*/
+            return _protocolLayer.InvokeComponentCommandWithHttpMessagesAsync(digitalTwinId, componentName, commandName, payload, requestOptions?.ConnectTimeoutInSeconds, requestOptions?.ResponseTimeoutInSeconds, null, cancellationToken);
+        }
 
         /// <inheritdoc />
         public void Dispose()

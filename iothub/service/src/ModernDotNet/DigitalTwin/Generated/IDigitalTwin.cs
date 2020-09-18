@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<object,DigitalTwinInvokeRootLevelCommandHeaders>> InvokeRootLevelCommandWithHttpMessagesAsync(string id, string commandName, object payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>> InvokeRootLevelCommandWithHttpMessagesAsync(string id, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
         /// Invoke a digital twin command.
         /// </summary>
@@ -137,6 +137,6 @@ namespace Microsoft.Azure.Devices.Generated
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<object,DigitalTwinInvokeComponentCommandHeaders>> InvokeComponentCommandWithHttpMessagesAsync(string id, string componentPath, string commandName, object payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandWithHttpMessagesAsync(string id, string componentPath, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

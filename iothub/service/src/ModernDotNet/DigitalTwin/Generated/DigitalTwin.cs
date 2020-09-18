@@ -421,7 +421,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<object,DigitalTwinInvokeRootLevelCommandHeaders>> InvokeRootLevelCommandWithHttpMessagesAsync(string id, string commandName, object payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>> InvokeRootLevelCommandWithHttpMessagesAsync(string id, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (id == null)
             {
@@ -498,7 +498,7 @@ namespace Microsoft.Azure.Devices.Generated
             string _requestContent = null;
             if(payload != null)
             {
-                _requestContent = Rest.Serialization.SafeJsonConvert.SerializeObject(payload, Client.SerializationSettings);
+                _requestContent = payload;
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
                 _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
@@ -545,7 +545,7 @@ namespace Microsoft.Azure.Devices.Generated
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<object,DigitalTwinInvokeRootLevelCommandHeaders>();
+            var _result = new HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.Generated
             }
             try
             {
-                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeRootLevelCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
+                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
             }
             catch (JsonException ex)
             {
@@ -629,7 +629,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<object,DigitalTwinInvokeComponentCommandHeaders>> InvokeComponentCommandWithHttpMessagesAsync(string id, string componentPath, string commandName, object payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandWithHttpMessagesAsync(string id, string componentPath, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (id == null)
             {
@@ -712,7 +712,7 @@ namespace Microsoft.Azure.Devices.Generated
             string _requestContent = null;
             if(payload != null)
             {
-                _requestContent = Rest.Serialization.SafeJsonConvert.SerializeObject(payload, Client.SerializationSettings);
+                _requestContent = payload;
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
                 _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
@@ -759,7 +759,7 @@ namespace Microsoft.Azure.Devices.Generated
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<object,DigitalTwinInvokeComponentCommandHeaders>();
+            var _result = new HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
@@ -782,7 +782,7 @@ namespace Microsoft.Azure.Devices.Generated
             }
             try
             {
-                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeComponentCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
+                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
             }
             catch (JsonException ex)
             {

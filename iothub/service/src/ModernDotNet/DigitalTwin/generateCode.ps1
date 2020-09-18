@@ -21,18 +21,21 @@ try {
 			[IO.File]::WriteAllText($_.FullName, ($protocolLayerClassCode -join "`r`n"))
 		}
 
-	#Update the response header class names
+	#Update the response header class names, edit the duplicate invoke component command header class to be internal
 	Get-ChildItem ./Generated/Models *.cs |
 		Foreach-Object {
 			$protocolLayerModelsClassCode = ($_ | Get-Content)
 			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'DigitalTwinGetDigitalTwinHeaders', 'DigitalTwinGetHeaders'
 			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'DigitalTwinUpdateDigitalTwinHeaders', 'DigitalTwinUpdateHeaders'
+			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'DigitalTwinInvokeRootLevelCommandHeaders', 'DigitalTwinInvokeCommandHeaders'
+			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'public partial class DigitalTwinInvokeComponentCommandHeaders', 'internal partial class DigitalTwinInvokeComponentCommandHeaders'
 			[IO.File]::WriteAllText($_.FullName, ($protocolLayerModelsClassCode -join "`r`n"))
 		}
 
 	# Rename the class file names as well
 	Rename-Item ./Generated/Models/DigitalTwinGetDigitalTwinHeaders.cs DigitalTwinGetHeaders.cs
 	Rename-Item ./Generated/Models/DigitalTwinUpdateDigitalTwinHeaders.cs DigitalTwinUpdateHeaders.cs
+	Rename-Item ./Generated/Models/DigitalTwinInvokeRootLevelCommandHeaders.cs DigitalTwinInvokeCommandHeaders.cs
 
 	#Edit the protocol layer interface to return the correct response types
 	Get-ChildItem . Generated/IDigitalTwin.cs |
@@ -41,6 +44,9 @@ try {
 			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'IList<object> digitalTwinPatch', 'string digitalTwinPatch'
 			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'Task<HttpOperationResponse<object,DigitalTwinGetDigitalTwinHeaders>>', 'Task<HttpOperationResponse<string,DigitalTwinGetHeaders>>'
 			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>>', 'Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>>'
+			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'object payload', 'string payload'
+			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'Task<HttpOperationResponse<object,DigitalTwinInvokeRootLevelCommandHeaders>>', 'Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>>'
+			$IDigitalTwinInterfaceClassCode = $IDigitalTwinInterfaceClassCode -replace 'Task<HttpOperationResponse<object,DigitalTwinInvokeComponentCommandHeaders>>', 'Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>>'
 			[IO.File]::WriteAllText($_.FullName, ($IDigitalTwinInterfaceClassCode -join "`r`n"))
 		}
 
@@ -58,6 +64,14 @@ try {
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>>' , 'Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>>'
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'new HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>', 'new HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>'
 			$DigitalTwinClassCode = $DigitalTwinClassCode -replace '_httpResponse.GetHeadersAsJson\(\).ToObject<DigitalTwinUpdateDigitalTwinHeaders>', '_httpResponse.GetHeadersAsJson().ToObject<DigitalTwinUpdateHeaders>'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'object payload', 'string payload'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace '_requestContent = Rest.Serialization.SafeJsonConvert.SerializeObject\(payload, Client.SerializationSettings\);', '_requestContent = payload;'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'Task<HttpOperationResponse<object,DigitalTwinInvokeRootLevelCommandHeaders>>' , 'Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>>'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'new HttpOperationResponse<object,DigitalTwinInvokeRootLevelCommandHeaders>', 'new HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace '_httpResponse.GetHeadersAsJson\(\).ToObject<DigitalTwinInvokeRootLevelCommandHeaders>', '_httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeCommandHeaders>'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'Task<HttpOperationResponse<object,DigitalTwinInvokeComponentCommandHeaders>>' , 'Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>>'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace 'new HttpOperationResponse<object,DigitalTwinInvokeComponentCommandHeaders>', 'new HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>'
+			$DigitalTwinClassCode = $DigitalTwinClassCode -replace '_httpResponse.GetHeadersAsJson\(\).ToObject<DigitalTwinInvokeComponentCommandHeaders>', '_httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeCommandHeaders>'
 			[IO.File]::WriteAllText($_.FullName, ($DigitalTwinClassCode -join "`r`n"))
 		}
 
@@ -66,7 +80,8 @@ try {
 		Foreach-Object {
 			$DigitalTwinExtensionsClassCode = ($_ | Get-Content)
 			$DigitalTwinExtensionsClassCode = $DigitalTwinExtensionsClassCode -replace 'IList<object> digitalTwinPatch', 'string digitalTwinPatch'
-			$DigitalTwinExtensionsClassCode = $DigitalTwinExtensionsClassCode -replace 'Task<DigitalTwinUpdateDigitalTwinHeaders>' , 'Task<DigitalTwinUpdateHeaders> '
+			$DigitalTwinExtensionsClassCode = $DigitalTwinExtensionsClassCode -replace 'Task<DigitalTwinUpdateDigitalTwinHeaders>' , 'Task<DigitalTwinUpdateHeaders>'
+			$DigitalTwinExtensionsClassCode = $DigitalTwinExtensionsClassCode -replace 'object payload', 'string payload'
 			[IO.File]::WriteAllText($_.FullName, ($DigitalTwinExtensionsClassCode -join "`r`n"))
 		}
 
