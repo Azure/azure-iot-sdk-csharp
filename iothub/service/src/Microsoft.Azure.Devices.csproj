@@ -45,7 +45,6 @@
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
     <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
-    <None Include="DigitalTwin\API design.md" />
     <None Include="DigitalTwin\generateCode.ps1" />
     <None Include="DigitalTwin\readme.md" />
     <None Include="DigitalTwin\DigitalTwin.json" />
