@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Generated;
-using Microsoft.Azure.Devices.Generated.Models;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 
@@ -79,9 +78,17 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The application/json command invocation response and the http response. </returns>
-        public Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
-            return _protocolLayer.InvokeRootLevelCommandWithHttpMessagesAsync(digitalTwinId, commandName, payload, requestOptions?.ConnectTimeoutInSeconds, requestOptions?.ResponseTimeoutInSeconds, null, cancellationToken);
+            using HttpOperationResponse<string, DigitalTwinInvokeRootLevelCommandHeaders> response = await _protocolLayer.InvokeRootLevelCommandWithHttpMessagesAsync(digitalTwinId, commandName, payload, requestOptions?.ConnectTimeoutInSeconds, requestOptions?.ResponseTimeoutInSeconds, null, cancellationToken)
+                .ConfigureAwait(false);
+            return new HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>
+            {
+                Body = new DigitalTwinCommandResponse { Status = response.Headers.XMsCommandStatuscode, Payload = response.Body },
+                Headers = new DigitalTwinInvokeCommandHeaders { RequestId = response.Headers.XMsRequestId },
+                Request = response.Request,
+                Response = response.Response,
+            };
         }
 
         /// <summary>
@@ -94,9 +101,17 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The application/json command invocation response and the http response. </returns>
-        public Task<HttpOperationResponse<string, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
-            return _protocolLayer.InvokeComponentCommandWithHttpMessagesAsync(digitalTwinId, componentName, commandName, payload, requestOptions?.ConnectTimeoutInSeconds, requestOptions?.ResponseTimeoutInSeconds, null, cancellationToken);
+            using HttpOperationResponse<string, DigitalTwinInvokeComponentCommandHeaders> response = await _protocolLayer.InvokeComponentCommandWithHttpMessagesAsync(digitalTwinId, componentName, commandName, payload, requestOptions?.ConnectTimeoutInSeconds, requestOptions?.ResponseTimeoutInSeconds, null, cancellationToken)
+                .ConfigureAwait(false);
+            return new HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>
+            {
+                Body = new DigitalTwinCommandResponse { Status = response.Headers.XMsCommandStatuscode, Payload = response.Body },
+                Headers = new DigitalTwinInvokeCommandHeaders { RequestId = response.Headers.XMsRequestId },
+                Request = response.Request,
+                Response = response.Response,
+            };
         }
 
         /// <inheritdoc />

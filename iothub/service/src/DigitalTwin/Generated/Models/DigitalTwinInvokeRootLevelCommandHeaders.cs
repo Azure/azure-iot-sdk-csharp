@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Microsoft.Azure.Devices.Generated.Models
+namespace Microsoft.Azure.Devices
 {
     using Newtonsoft.Json;
     using System.Linq;
@@ -12,26 +12,26 @@ namespace Microsoft.Azure.Devices.Generated.Models
     /// <summary>
     /// Defines headers for InvokeRootLevelCommand operation.
     /// </summary>
-    public partial class DigitalTwinInvokeCommandHeaders
+    internal partial class DigitalTwinInvokeRootLevelCommandHeaders
     {
         /// <summary>
         /// Initializes a new instance of the
-        /// DigitalTwinInvokeCommandHeaders class.
+        /// DigitalTwinInvokeRootLevelCommandHeaders class.
         /// </summary>
-        public DigitalTwinInvokeCommandHeaders()
+        public DigitalTwinInvokeRootLevelCommandHeaders()
         {
             CustomInit();
         }
 
         /// <summary>
         /// Initializes a new instance of the
-        /// DigitalTwinInvokeCommandHeaders class.
+        /// DigitalTwinInvokeRootLevelCommandHeaders class.
         /// </summary>
         /// <param name="xMsCommandStatuscode">Device Generated Status Code for
         /// this Operation</param>
         /// <param name="xMsRequestId">Server Generated Request Id (GUID), to
         /// uniquely identify this request in the service</param>
-        public DigitalTwinInvokeCommandHeaders(int? xMsCommandStatuscode = default(int?), string xMsRequestId = default(string))
+        public DigitalTwinInvokeRootLevelCommandHeaders(int? xMsCommandStatuscode = default(int?), string xMsRequestId = default(string))
         {
             XMsCommandStatuscode = xMsCommandStatuscode;
             XMsRequestId = xMsRequestId;
