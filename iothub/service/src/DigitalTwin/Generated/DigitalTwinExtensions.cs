@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Generated
     /// <summary>
     /// Extension methods for DigitalTwin.
     /// </summary>
-    public static partial class DigitalTwinExtensions
+    internal static partial class DigitalTwinExtensions
     {
             /// <summary>
             /// Gets a digital twin.
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Generated
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<DigitalTwinUpdateDigitalTwinHeaders> UpdateDigitalTwinAsync(this IDigitalTwin operations, string id, IList<object> digitalTwinPatch, string ifMatch = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<DigitalTwinUpdateHeaders> UpdateDigitalTwinAsync(this IDigitalTwin operations, string id, string digitalTwinPatch, string ifMatch = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.UpdateDigitalTwinWithHttpMessagesAsync(id, digitalTwinPatch, ifMatch, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Generated
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> InvokeRootLevelCommandAsync(this IDigitalTwin operations, string id, string commandName, object payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> InvokeRootLevelCommandAsync(this IDigitalTwin operations, string id, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.InvokeRootLevelCommandWithHttpMessagesAsync(id, commandName, payload, connectTimeoutInSeconds, responseTimeoutInSeconds, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Generated
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> InvokeComponentCommandAsync(this IDigitalTwin operations, string id, string componentPath, string commandName, object payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> InvokeComponentCommandAsync(this IDigitalTwin operations, string id, string componentPath, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.InvokeComponentCommandWithHttpMessagesAsync(id, componentPath, commandName, payload, connectTimeoutInSeconds, responseTimeoutInSeconds, null, cancellationToken).ConfigureAwait(false))
                 {

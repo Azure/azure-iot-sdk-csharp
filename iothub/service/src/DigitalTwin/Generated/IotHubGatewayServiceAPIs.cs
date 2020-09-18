@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Generated
     using System.Net;
     using System.Net.Http;
 
-    public partial class IotHubGatewayServiceAPIs : ServiceClient<IotHubGatewayServiceAPIs>, IIotHubGatewayServiceAPIs
+    internal partial class IotHubGatewayServiceAPIs : ServiceClient<IotHubGatewayServiceAPIs>, IIotHubGatewayServiceAPIs
     {
         /// <summary>
         /// The base URI of the service.

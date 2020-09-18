@@ -12,23 +12,23 @@ namespace Microsoft.Azure.Devices.Generated.Models
     /// <summary>
     /// Defines headers for GetDigitalTwin operation.
     /// </summary>
-    public partial class DigitalTwinGetDigitalTwinHeaders
+    public partial class DigitalTwinGetHeaders
     {
         /// <summary>
-        /// Initializes a new instance of the DigitalTwinGetDigitalTwinHeaders
+        /// Initializes a new instance of the DigitalTwinGetHeaders
         /// class.
         /// </summary>
-        public DigitalTwinGetDigitalTwinHeaders()
+        public DigitalTwinGetHeaders()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the DigitalTwinGetDigitalTwinHeaders
+        /// Initializes a new instance of the DigitalTwinGetHeaders
         /// class.
         /// </summary>
         /// <param name="eTag">Weak Etag</param>
-        public DigitalTwinGetDigitalTwinHeaders(string eTag = default(string))
+        public DigitalTwinGetHeaders(string eTag = default(string))
         {
             ETag = eTag;
             CustomInit();

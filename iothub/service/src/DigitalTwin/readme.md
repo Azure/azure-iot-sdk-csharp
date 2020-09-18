@@ -1,7 +1,7 @@
 #### Autorest config file for generating Digital Twin Service Client models and protocol layer
 
 #### Protocol layer generation:
-- For generating the protocol layer from the swagger file, from command prompt simply run "autorest" from this folder and it will pick up this config file and output the results into this folder.
+- Run the powershell script `generateCode.ps`. It will pick up the config below and output the results into this folder. It will also make a few automated changes to the generated protocol layer, that are required for this client library.
 
 *NOTE: The `DigitalTwinClient` is available only on .NET framework 4.7.2 and .NET Standard 2.0+.
 
