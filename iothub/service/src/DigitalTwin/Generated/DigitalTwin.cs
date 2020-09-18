@@ -7,7 +7,6 @@
 namespace Microsoft.Azure.Devices.Generated
 {
     using Microsoft.Rest;
-    using Models;
     using Newtonsoft.Json;
     using System.Collections;
     using System.Collections.Generic;
@@ -421,7 +420,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>> InvokeRootLevelCommandWithHttpMessagesAsync(string id, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<string,DigitalTwinInvokeRootLevelCommandHeaders>> InvokeRootLevelCommandWithHttpMessagesAsync(string id, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (id == null)
             {
@@ -545,7 +544,7 @@ namespace Microsoft.Azure.Devices.Generated
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>();
+            var _result = new HttpOperationResponse<string,DigitalTwinInvokeRootLevelCommandHeaders>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
@@ -568,7 +567,7 @@ namespace Microsoft.Azure.Devices.Generated
             }
             try
             {
-                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
+                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeRootLevelCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
             }
             catch (JsonException ex)
             {
@@ -629,7 +628,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandWithHttpMessagesAsync(string id, string componentPath, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<string,DigitalTwinInvokeComponentCommandHeaders>> InvokeComponentCommandWithHttpMessagesAsync(string id, string componentPath, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (id == null)
             {
@@ -759,7 +758,7 @@ namespace Microsoft.Azure.Devices.Generated
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<string,DigitalTwinInvokeCommandHeaders>();
+            var _result = new HttpOperationResponse<string,DigitalTwinInvokeComponentCommandHeaders>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
@@ -782,7 +781,7 @@ namespace Microsoft.Azure.Devices.Generated
             }
             try
             {
-                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
+                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeComponentCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
             }
             catch (JsonException ex)
             {
