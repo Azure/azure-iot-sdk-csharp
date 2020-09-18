@@ -12,24 +12,24 @@ namespace Microsoft.Azure.Devices.Generated.Models
     /// <summary>
     /// Defines headers for UpdateDigitalTwin operation.
     /// </summary>
-    public partial class DigitalTwinUpdateDigitalTwinHeaders
+    public partial class DigitalTwinUpdateHeaders
     {
         /// <summary>
         /// Initializes a new instance of the
-        /// DigitalTwinUpdateDigitalTwinHeaders class.
+        /// DigitalTwinUpdateHeaders class.
         /// </summary>
-        public DigitalTwinUpdateDigitalTwinHeaders()
+        public DigitalTwinUpdateHeaders()
         {
             CustomInit();
         }
 
         /// <summary>
         /// Initializes a new instance of the
-        /// DigitalTwinUpdateDigitalTwinHeaders class.
+        /// DigitalTwinUpdateHeaders class.
         /// </summary>
         /// <param name="eTag">Weak Etag of the modified resource</param>
         /// <param name="location">URI of the digital twin</param>
-        public DigitalTwinUpdateDigitalTwinHeaders(string eTag = default(string), string location = default(string))
+        public DigitalTwinUpdateHeaders(string eTag = default(string), string location = default(string))
         {
             ETag = eTag;
             Location = location;
