@@ -10,7 +10,7 @@ using Microsoft.Rest;
 
 namespace Microsoft.Azure.Devices.Authentication
 {
-    public abstract class IotServiceClientCredentials : ServiceClientCredentials
+    internal abstract class IotServiceClientCredentials : ServiceClientCredentials
     {
         /// <summary>
         /// Add a sas token to the outgoing http request, then send it to the next pipeline segment

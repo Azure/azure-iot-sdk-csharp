@@ -6,7 +6,7 @@ using Microsoft.Azure.Devices.Common.Security;
 
 namespace Microsoft.Azure.Devices.Authentication
 {
-    public class SharedAccessKeyCredentials : IotServiceClientCredentials
+    internal class SharedAccessKeyCredentials : IotServiceClientCredentials
     {
         // Time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         // The token will be renewed when it has 15% or less of the sas token's lifespan left.
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Authentication
         /// Initializes a new instance of <see cref="SharedAccessKeyCredentials"/> class.
         /// </summary>
         /// <param name="connectionString">The IoT Hub connection string.</param>
-        public SharedAccessKeyCredentials(string connectionString)
+        internal SharedAccessKeyCredentials(string connectionString)
         {
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
 

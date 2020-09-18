@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<object,DigitalTwinGetDigitalTwinHeaders>> GetDigitalTwinWithHttpMessagesAsync(string id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string,DigitalTwinGetHeaders>> GetDigitalTwinWithHttpMessagesAsync(string id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
         /// Updates a digital twin.
         /// </summary>
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationHeaderResponse<DigitalTwinUpdateDigitalTwinHeaders>> UpdateDigitalTwinWithHttpMessagesAsync(string id, IList<object> digitalTwinPatch, string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>> UpdateDigitalTwinWithHttpMessagesAsync(string id, IList<object> digitalTwinPatch, string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
         /// Invoke a digital twin root level command.
         /// </summary>

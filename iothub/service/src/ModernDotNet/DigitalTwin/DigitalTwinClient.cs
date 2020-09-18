@@ -30,20 +30,6 @@ namespace Microsoft.Azure.Devices
             return new DigitalTwinClient(iotHubConnectionString.HttpsEndpoint, sharedAccessKeyCredential);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinClient"/> class.
-        /// The client will use the provided endpoint and will generate credentials for each request using the provided <paramref name="credentials"/>.
-        /// </summary>
-        /// <param name="endpoint">The endpoint to connect to.</param>
-        /// <param name="credentials">The SAS token provider to use for authorization.</param>
-        public static DigitalTwinClient CreateFromServiceCredentials(Uri endpoint, IotServiceClientCredentials credentials)
-        {
-            endpoint.ThrowIfNull(nameof(endpoint));
-            credentials.ThrowIfNull(nameof(credentials));
-
-            return new DigitalTwinClient(endpoint, credentials);
-        }
-
         /// <summary> Initializes a new instance of the <see cref="DigitalTwinClient"/> class.</summary>
         protected DigitalTwinClient()
         {
@@ -57,44 +43,25 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets a digital twin asynchronously.
-        /// </summary>
-        /// <param name="digitalTwinId">The Id of the digital twin.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The application/json digital twin and the http response.</returns>
-        public async Task<HttpOperationResponse<string, DigitalTwinGetDigitalTwinHeaders>> GetAsync(string digitalTwinId, CancellationToken cancellationToken = default)
-        {
-            using HttpOperationResponse<object, DigitalTwinGetDigitalTwinHeaders> response = await _protocolLayer.GetDigitalTwinWithHttpMessagesAsync(digitalTwinId, null, cancellationToken)
-                .ConfigureAwait(false);
-            return new HttpOperationResponse<string, DigitalTwinGetDigitalTwinHeaders>
-            {
-                Body = JsonConvert.SerializeObject(response.Body),
-                Headers = response.Headers,
-                Request = response.Request,
-                Response = response.Response
-            };
-        }
-
-        /// <summary>
         /// Gets a strongly-typed digital twin asynchronously.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The application/json digital twin and the http response.</returns>
-        public async Task<HttpOperationResponse<T, DigitalTwinGetDigitalTwinHeaders>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<T, DigitalTwinGetHeaders>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
         {
-            using HttpOperationResponse<object, DigitalTwinGetDigitalTwinHeaders> response = await _protocolLayer.GetDigitalTwinWithHttpMessagesAsync(digitalTwinId, null, cancellationToken)
+            using HttpOperationResponse<string, DigitalTwinGetHeaders> response = await _protocolLayer.GetDigitalTwinWithHttpMessagesAsync(digitalTwinId, null, cancellationToken)
                 .ConfigureAwait(false);
-            return new HttpOperationResponse<T, DigitalTwinGetDigitalTwinHeaders>
+            return new HttpOperationResponse<T, DigitalTwinGetHeaders>
             {
-                Body = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(response.Body)),
+                Body = JsonConvert.DeserializeObject<T>(response.Body),
                 Headers = response.Headers,
                 Request = response.Request,
                 Response = response.Response
             };
         }
 
-        /// <summary>
+        /*/// <summary>
         /// Updates a digital twin asynchronously.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
@@ -157,7 +124,7 @@ namespace Microsoft.Azure.Devices
                 Request = response.Request,
                 Response = response.Response
             };
-        }
+        }*/
 
         /// <inheritdoc />
         public void Dispose()
