@@ -1,0 +1,2357 @@
+{
+ "$id": "1",
+ "headerTypes": [
+  {
+   "$id": "2",
+   "$type": "CompositeType",
+   "properties": [
+    {
+     "$id": "3",
+     "isReadOnly": false,
+     "realPath": [
+      "ETag"
+     ],
+     "collectionFormat": "none",
+     "defaultValue": {
+      "$id": "4",
+      "fixed": false
+     },
+     "deprecated": false,
+     "documentation": {
+      "$id": "5",
+      "fixed": false,
+      "raw": "Weak Etag"
+     },
+     "extensions": {
+      "x-ms-metadata": {
+       "apiVersions": [
+        "2020-09-30"
+       ],
+       "filename": [
+        "mem:///107?oai3.shaken.json"
+       ],
+       "name": "paths·1xm88z2·digitaltwins-id·get·responses·200·headers·etag",
+       "originalLocations": [
+        "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/headers/paths·1xm88z2·digitaltwins-id·get·responses·200·headers·etag"
+       ]
+      }
+     },
+     "isRequired": false,
+     "isConstant": false,
+     "name": {
+      "$id": "6",
+      "fixed": false,
+      "raw": "ETag"
+     },
+     "serializedName": "ETag",
+     "modelType": {
+      "$id": "7",
+      "$type": "PrimaryType",
+      "knownPrimaryType": "string",
+      "deprecated": false,
+      "name": {
+       "$id": "8",
+       "fixed": false,
+       "raw": "String"
+      }
+     }
+    }
+   ],
+   "serializedName": "DigitalTwin-GetDigitalTwin-Headers",
+   "documentation": "Defines headers for GetDigitalTwin operation.",
+   "containsConstantProperties": false,
+   "name": {
+    "$id": "9",
+    "fixed": false,
+    "raw": "DigitalTwin-GetDigitalTwin-Headers"
+   },
+   "deprecated": false
+  },
+  {
+   "$id": "10",
+   "$type": "CompositeType",
+   "properties": [
+    {
+     "$id": "11",
+     "isReadOnly": false,
+     "realPath": [
+      "ETag"
+     ],
+     "collectionFormat": "none",
+     "defaultValue": {
+      "$id": "12",
+      "fixed": false
+     },
+     "deprecated": false,
+     "documentation": {
+      "$id": "13",
+      "fixed": false,
+      "raw": "Weak Etag of the modified resource"
+     },
+     "extensions": {
+      "x-ms-metadata": {
+       "apiVersions": [
+        "2020-09-30"
+       ],
+       "filename": [
+        "mem:///107?oai3.shaken.json"
+       ],
+       "name": "paths·pkf6q4·digitaltwins-id·patch·responses·202·headers·etag",
+       "originalLocations": [
+        "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/headers/paths·pkf6q4·digitaltwins-id·patch·responses·202·headers·etag"
+       ]
+      }
+     },
+     "isRequired": false,
+     "isConstant": false,
+     "name": {
+      "$id": "14",
+      "fixed": false,
+      "raw": "ETag"
+     },
+     "serializedName": "ETag",
+     "modelType": {
+      "$id": "15",
+      "$type": "PrimaryType",
+      "knownPrimaryType": "string",
+      "deprecated": false,
+      "name": {
+       "$id": "16",
+       "fixed": false,
+       "raw": "String"
+      }
+     }
+    },
+    {
+     "$id": "17",
+     "isReadOnly": false,
+     "realPath": [
+      "Location"
+     ],
+     "collectionFormat": "none",
+     "defaultValue": {
+      "$id": "18",
+      "fixed": false
+     },
+     "deprecated": false,
+     "documentation": {
+      "$id": "19",
+      "fixed": false,
+      "raw": "URI of the digital twin"
+     },
+     "extensions": {
+      "x-ms-metadata": {
+       "apiVersions": [
+        "2020-09-30"
+       ],
+       "filename": [
+        "mem:///107?oai3.shaken.json"
+       ],
+       "name": "paths·m9lek·digitaltwins-id·patch·responses·202·headers·location",
+       "originalLocations": [
+        "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/headers/paths·m9lek·digitaltwins-id·patch·responses·202·headers·location"
+       ]
+      }
+     },
+     "isRequired": false,
+     "isConstant": false,
+     "name": {
+      "$id": "20",
+      "fixed": false,
+      "raw": "Location"
+     },
+     "serializedName": "Location",
+     "modelType": {
+      "$id": "21",
+      "$type": "PrimaryType",
+      "knownPrimaryType": "string",
+      "deprecated": false,
+      "name": {
+       "$id": "22",
+       "fixed": false,
+       "raw": "String"
+      }
+     }
+    }
+   ],
+   "serializedName": "DigitalTwin-UpdateDigitalTwin-Headers",
+   "documentation": "Defines headers for UpdateDigitalTwin operation.",
+   "containsConstantProperties": false,
+   "name": {
+    "$id": "23",
+    "fixed": false,
+    "raw": "DigitalTwin-UpdateDigitalTwin-Headers"
+   },
+   "deprecated": false
+  },
+  {
+   "$id": "24",
+   "$type": "CompositeType",
+   "properties": [
+    {
+     "$id": "25",
+     "isReadOnly": false,
+     "realPath": [
+      "x-ms-command-statuscode"
+     ],
+     "collectionFormat": "none",
+     "defaultValue": {
+      "$id": "26",
+      "fixed": false
+     },
+     "deprecated": false,
+     "documentation": {
+      "$id": "27",
+      "fixed": false,
+      "raw": "Device Generated Status Code for this Operation"
+     },
+     "extensions": {
+      "x-ms-metadata": {
+       "apiVersions": [
+        "2020-09-30"
+       ],
+       "filename": [
+        "mem:///107?oai3.shaken.json"
+       ],
+       "name": "paths·1cl9x8t·digitaltwins-id-commands-commandname·post·responses·200·headers·x_ms_command_statuscode",
+       "originalLocations": [
+        "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/headers/paths·1cl9x8t·digitaltwins-id-commands-commandname·post·responses·200·headers·x_ms_command_statuscode"
+       ]
+      }
+     },
+     "isRequired": false,
+     "isConstant": false,
+     "name": {
+      "$id": "28",
+      "fixed": false,
+      "raw": "x-ms-command-statuscode"
+     },
+     "serializedName": "x-ms-command-statuscode",
+     "modelType": {
+      "$id": "29",
+      "$type": "PrimaryType",
+      "format": "int32",
+      "knownPrimaryType": "int",
+      "deprecated": false,
+      "name": {
+       "$id": "30",
+       "fixed": false,
+       "raw": "Int"
+      }
+     }
+    },
+    {
+     "$id": "31",
+     "isReadOnly": false,
+     "realPath": [
+      "x-ms-request-id"
+     ],
+     "collectionFormat": "none",
+     "defaultValue": {
+      "$id": "32",
+      "fixed": false
+     },
+     "deprecated": false,
+     "documentation": {
+      "$id": "33",
+      "fixed": false,
+      "raw": "Server Generated Request Id (GUID), to uniquely identify this request in the service"
+     },
+     "extensions": {
+      "x-ms-metadata": {
+       "apiVersions": [
+        "2020-09-30"
+       ],
+       "filename": [
+        "mem:///107?oai3.shaken.json"
+       ],
+       "name": "paths·1d8rdg·digitaltwins-id-commands-commandname·post·responses·200·headers·x_ms_request_id",
+       "originalLocations": [
+        "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/headers/paths·1d8rdg·digitaltwins-id-commands-commandname·post·responses·200·headers·x_ms_request_id"
+       ]
+      }
+     },
+     "isRequired": false,
+     "isConstant": false,
+     "name": {
+      "$id": "34",
+      "fixed": false,
+      "raw": "x-ms-request-id"
+     },
+     "serializedName": "x-ms-request-id",
+     "modelType": {
+      "$id": "35",
+      "$type": "PrimaryType",
+      "knownPrimaryType": "string",
+      "deprecated": false,
+      "name": {
+       "$id": "36",
+       "fixed": false,
+       "raw": "String"
+      }
+     }
+    }
+   ],
+   "serializedName": "DigitalTwin-InvokeRootLevelCommand-Headers",
+   "documentation": "Defines headers for InvokeRootLevelCommand operation.",
+   "containsConstantProperties": false,
+   "name": {
+    "$id": "37",
+    "fixed": false,
+    "raw": "DigitalTwin-InvokeRootLevelCommand-Headers"
+   },
+   "deprecated": false
+  },
+  {
+   "$id": "38",
+   "$type": "CompositeType",
+   "properties": [
+    {
+     "$id": "39",
+     "isReadOnly": false,
+     "realPath": [
+      "x-ms-command-statuscode"
+     ],
+     "collectionFormat": "none",
+     "defaultValue": {
+      "$id": "40",
+      "fixed": false
+     },
+     "deprecated": false,
+     "documentation": {
+      "$id": "41",
+      "fixed": false,
+      "raw": "Device Generated Status Code for this Operation"
+     },
+     "extensions": {
+      "x-ms-metadata": {
+       "apiVersions": [
+        "2020-09-30"
+       ],
+       "filename": [
+        "mem:///107?oai3.shaken.json"
+       ],
+       "name": "paths·1r51bn8·digitaltwins-id-components-componentpath-commands-commandname·post·responses·200·headers·x_ms_command_statuscode",
+       "originalLocations": [
+        "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/headers/paths·1r51bn8·digitaltwins-id-components-componentpath-commands-commandname·post·responses·200·headers·x_ms_command_statuscode"
+       ]
+      }
+     },
+     "isRequired": false,
+     "isConstant": false,
+     "name": {
+      "$id": "42",
+      "fixed": false,
+      "raw": "x-ms-command-statuscode"
+     },
+     "serializedName": "x-ms-command-statuscode",
+     "modelType": {
+      "$id": "43",
+      "$type": "PrimaryType",
+      "format": "int32",
+      "knownPrimaryType": "int",
+      "deprecated": false,
+      "name": {
+       "$id": "44",
+       "fixed": false,
+       "raw": "Int"
+      }
+     }
+    },
+    {
+     "$id": "45",
+     "isReadOnly": false,
+     "realPath": [
+      "x-ms-request-id"
+     ],
+     "collectionFormat": "none",
+     "defaultValue": {
+      "$id": "46",
+      "fixed": false
+     },
+     "deprecated": false,
+     "documentation": {
+      "$id": "47",
+      "fixed": false,
+      "raw": "Server Generated Request Id (GUID), to uniquely identify this request in the service"
+     },
+     "extensions": {
+      "x-ms-metadata": {
+       "apiVersions": [
+        "2020-09-30"
+       ],
+       "filename": [
+        "mem:///107?oai3.shaken.json"
+       ],
+       "name": "paths·1sdcdpi·digitaltwins-id-components-componentpath-commands-commandname·post·responses·200·headers·x_ms_request_id",
+       "originalLocations": [
+        "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/headers/paths·1sdcdpi·digitaltwins-id-components-componentpath-commands-commandname·post·responses·200·headers·x_ms_request_id"
+       ]
+      }
+     },
+     "isRequired": false,
+     "isConstant": false,
+     "name": {
+      "$id": "48",
+      "fixed": false,
+      "raw": "x-ms-request-id"
+     },
+     "serializedName": "x-ms-request-id",
+     "modelType": {
+      "$id": "49",
+      "$type": "PrimaryType",
+      "knownPrimaryType": "string",
+      "deprecated": false,
+      "name": {
+       "$id": "50",
+       "fixed": false,
+       "raw": "String"
+      }
+     }
+    }
+   ],
+   "serializedName": "DigitalTwin-InvokeComponentCommand-Headers",
+   "documentation": "Defines headers for InvokeComponentCommand operation.",
+   "containsConstantProperties": false,
+   "name": {
+    "$id": "51",
+    "fixed": false,
+    "raw": "DigitalTwin-InvokeComponentCommand-Headers"
+   },
+   "deprecated": false
+  }
+ ],
+ "name": "IotHubGatewayServiceAPIs",
+ "namespace": "Microsoft.Azure.Devices.Generated",
+ "modelsName": "Models",
+ "apiVersion": "2020-09-30",
+ "baseUrl": "https://fully-qualified-iothubname.azure-devices.net",
+ "properties": [
+  {
+   "$id": "52",
+   "isReadOnly": false,
+   "realPath": [
+    "id"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "53",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "54",
+    "fixed": false,
+    "raw": "Digital Twin ID."
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·1tkjuz5·digitaltwins-id·get·parameters·0",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1tkjuz5·digitaltwins-id·get·parameters·0"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": true,
+   "isConstant": false,
+   "name": {
+    "$id": "55",
+    "fixed": false,
+    "raw": "id"
+   },
+   "serializedName": "id",
+   "modelType": {
+    "$id": "56",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "57",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  },
+  {
+   "$id": "58",
+   "isReadOnly": false,
+   "realPath": [
+    "id"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "59",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "60",
+    "fixed": false,
+    "raw": "Digital Twin ID."
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·f78rs6·digitaltwins-id·patch·parameters·0",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·f78rs6·digitaltwins-id·patch·parameters·0"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": true,
+   "isConstant": false,
+   "name": {
+    "$id": "61",
+    "fixed": false,
+    "raw": "Id1"
+   },
+   "serializedName": "id",
+   "modelType": {
+    "$id": "62",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "63",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  },
+  {
+   "$id": "64",
+   "isReadOnly": false,
+   "realPath": [
+    "If-Match"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "65",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "66",
+    "fixed": false
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·1miyl44·digitaltwins-id·patch·parameters·1",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1miyl44·digitaltwins-id·patch·parameters·1"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": false,
+   "isConstant": false,
+   "name": {
+    "$id": "67",
+    "fixed": false,
+    "raw": "If-Match"
+   },
+   "serializedName": "If-Match",
+   "modelType": {
+    "$id": "68",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "69",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  },
+  {
+   "$id": "70",
+   "isReadOnly": false,
+   "realPath": [
+    "id"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "71",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "72",
+    "fixed": false
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·1gucrlh·digitaltwins-id-commands-commandname·post·parameters·0",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1gucrlh·digitaltwins-id-commands-commandname·post·parameters·0"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": true,
+   "isConstant": false,
+   "name": {
+    "$id": "73",
+    "fixed": false,
+    "raw": "Id2"
+   },
+   "serializedName": "id",
+   "modelType": {
+    "$id": "74",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "75",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  },
+  {
+   "$id": "76",
+   "isReadOnly": false,
+   "realPath": [
+    "commandName"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "77",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "78",
+    "fixed": false
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·cuyncu·digitaltwins-id-commands-commandname·post·parameters·1",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·cuyncu·digitaltwins-id-commands-commandname·post·parameters·1"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": true,
+   "isConstant": false,
+   "name": {
+    "$id": "79",
+    "fixed": false,
+    "raw": "commandName"
+   },
+   "serializedName": "commandName",
+   "modelType": {
+    "$id": "80",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "81",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  },
+  {
+   "$id": "82",
+   "isReadOnly": false,
+   "realPath": [
+    "connectTimeoutInSeconds"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "83",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "84",
+    "fixed": false,
+    "raw": "Maximum interval of time, in seconds, that the digital twin command will wait for the answer."
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·e18es3·digitaltwins-id-commands-commandname·post·parameters·3",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·e18es3·digitaltwins-id-commands-commandname·post·parameters·3"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": false,
+   "isConstant": false,
+   "name": {
+    "$id": "85",
+    "fixed": false,
+    "raw": "connectTimeoutInSeconds"
+   },
+   "serializedName": "connectTimeoutInSeconds",
+   "modelType": {
+    "$id": "86",
+    "$type": "PrimaryType",
+    "format": "int32",
+    "knownPrimaryType": "int",
+    "deprecated": false,
+    "name": {
+     "$id": "87",
+     "fixed": false,
+     "raw": "Int"
+    }
+   }
+  },
+  {
+   "$id": "88",
+   "isReadOnly": false,
+   "realPath": [
+    "responseTimeoutInSeconds"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "89",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "90",
+    "fixed": false,
+    "raw": "Maximum interval of time, in seconds, that the digital twin command will wait for the answer."
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·1o105wg·digitaltwins-id-commands-commandname·post·parameters·4",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1o105wg·digitaltwins-id-commands-commandname·post·parameters·4"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": false,
+   "isConstant": false,
+   "name": {
+    "$id": "91",
+    "fixed": false,
+    "raw": "responseTimeoutInSeconds"
+   },
+   "serializedName": "responseTimeoutInSeconds",
+   "modelType": {
+    "$id": "92",
+    "$type": "PrimaryType",
+    "format": "int32",
+    "knownPrimaryType": "int",
+    "deprecated": false,
+    "name": {
+     "$id": "93",
+     "fixed": false,
+     "raw": "Int"
+    }
+   }
+  },
+  {
+   "$id": "94",
+   "isReadOnly": false,
+   "realPath": [
+    "id"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "95",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "96",
+    "fixed": false
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·1vj9ah2·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·0",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1vj9ah2·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·0"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": true,
+   "isConstant": false,
+   "name": {
+    "$id": "97",
+    "fixed": false,
+    "raw": "Id3"
+   },
+   "serializedName": "id",
+   "modelType": {
+    "$id": "98",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "99",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  },
+  {
+   "$id": "100",
+   "isReadOnly": false,
+   "realPath": [
+    "componentPath"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "101",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "102",
+    "fixed": false
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·sv78xn·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·1",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·sv78xn·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·1"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": true,
+   "isConstant": false,
+   "name": {
+    "$id": "103",
+    "fixed": false,
+    "raw": "componentPath"
+   },
+   "serializedName": "componentPath",
+   "modelType": {
+    "$id": "104",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "105",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  },
+  {
+   "$id": "106",
+   "isReadOnly": false,
+   "realPath": [
+    "commandName"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "107",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "108",
+    "fixed": false
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·3haext·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·2",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·3haext·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·2"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": true,
+   "isConstant": false,
+   "name": {
+    "$id": "109",
+    "fixed": false,
+    "raw": "CommandName1"
+   },
+   "serializedName": "commandName",
+   "modelType": {
+    "$id": "110",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "111",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  },
+  {
+   "$id": "112",
+   "isReadOnly": false,
+   "realPath": [
+    "connectTimeoutInSeconds"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "113",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "114",
+    "fixed": false,
+    "raw": "Maximum interval of time, in seconds, that the digital twin command will wait for the answer."
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·ncf3ff·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·4",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·ncf3ff·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·4"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": false,
+   "isConstant": false,
+   "name": {
+    "$id": "115",
+    "fixed": false,
+    "raw": "ConnectTimeoutInSeconds1"
+   },
+   "serializedName": "connectTimeoutInSeconds",
+   "modelType": {
+    "$id": "116",
+    "$type": "PrimaryType",
+    "format": "int32",
+    "knownPrimaryType": "int",
+    "deprecated": false,
+    "name": {
+     "$id": "117",
+     "fixed": false,
+     "raw": "Int"
+    }
+   }
+  },
+  {
+   "$id": "118",
+   "isReadOnly": false,
+   "realPath": [
+    "responseTimeoutInSeconds"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "119",
+    "fixed": false
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "120",
+    "fixed": false,
+    "raw": "Maximum interval of time, in seconds, that the digital twin command will wait for the answer."
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "paths·1lu4jxs·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·5",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1lu4jxs·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·5"
+     ]
+    },
+    "x-ms-parameter-location": "method"
+   },
+   "isRequired": false,
+   "isConstant": false,
+   "name": {
+    "$id": "121",
+    "fixed": false,
+    "raw": "ResponseTimeoutInSeconds1"
+   },
+   "serializedName": "responseTimeoutInSeconds",
+   "modelType": {
+    "$id": "122",
+    "$type": "PrimaryType",
+    "format": "int32",
+    "knownPrimaryType": "int",
+    "deprecated": false,
+    "name": {
+     "$id": "123",
+     "fixed": false,
+     "raw": "Int"
+    }
+   }
+  },
+  {
+   "$id": "124",
+   "isReadOnly": false,
+   "realPath": [
+    "api-version"
+   ],
+   "collectionFormat": "none",
+   "defaultValue": {
+    "$id": "125",
+    "fixed": false,
+    "raw": "2020-09-30"
+   },
+   "deprecated": false,
+   "documentation": {
+    "$id": "126",
+    "fixed": false,
+    "raw": "Version of the Api."
+   },
+   "extensions": {
+    "x-ms-metadata": {
+     "apiVersions": [
+      "2020-09-30"
+     ],
+     "filename": [
+      "mem:///107?oai3.shaken.json"
+     ],
+     "name": "api-version",
+     "originalLocations": [
+      "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/api-version"
+     ]
+    }
+   },
+   "isRequired": true,
+   "isConstant": false,
+   "name": {
+    "$id": "127",
+    "fixed": false,
+    "raw": "api-version"
+   },
+   "serializedName": "api-version",
+   "modelType": {
+    "$id": "128",
+    "$type": "PrimaryType",
+    "knownPrimaryType": "string",
+    "deprecated": false,
+    "name": {
+     "$id": "129",
+     "fixed": false,
+     "raw": "String"
+    }
+   }
+  }
+ ],
+ "operations": [
+  {
+   "$id": "130",
+   "methods": [
+    {
+     "$id": "131",
+     "parameters": [
+      {
+       "$id": "132",
+       "clientProperty": {
+        "$ref": "52"
+       },
+       "location": "path",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "133",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "134",
+        "fixed": false,
+        "raw": "Digital Twin ID."
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·1tkjuz5·digitaltwins-id·get·parameters·0",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1tkjuz5·digitaltwins-id·get·parameters·0"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "135",
+        "fixed": false,
+        "raw": "id"
+       },
+       "serializedName": "id",
+       "modelType": {
+        "$id": "136",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "137",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "138",
+       "location": "query",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "139",
+        "fixed": false,
+        "raw": "2020-09-30"
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "140",
+        "fixed": false,
+        "raw": "The API version to use for the request."
+       },
+       "isRequired": true,
+       "isConstant": true,
+       "name": {
+        "$id": "141",
+        "fixed": false,
+        "raw": "api-version"
+       },
+       "serializedName": "api-version",
+       "modelType": {
+        "$id": "142",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "143",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      }
+     ],
+     "name": {
+      "$id": "144",
+      "fixed": false,
+      "raw": "GetDigitalTwin"
+     },
+     "group": {
+      "$id": "145",
+      "fixed": false,
+      "raw": "DigitalTwin"
+     },
+     "serializedName": "DigitalTwin_GetDigitalTwin",
+     "url": "/digitaltwins/{id}",
+     "isAbsoluteUrl": false,
+     "httpMethod": "get",
+     "responses": {
+      "OK": {
+       "$id": "146",
+       "body": {
+        "$id": "147",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "object",
+        "deprecated": false,
+        "name": {
+         "$id": "148",
+         "fixed": false,
+         "raw": "Object"
+        }
+       },
+       "headers": {
+        "$ref": "2"
+       },
+       "extensions": {
+        "$id": "149",
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·d0hqrw·digitaltwins-id·get·responses·200",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/responses/paths·d0hqrw·digitaltwins-id·get·responses·200"
+         ]
+        }
+       },
+       "isNullable": true
+      }
+     },
+     "defaultResponse": {
+      "$id": "150",
+      "isNullable": true
+     },
+     "returnType": {
+      "$id": "151",
+      "body": {
+       "$ref": "147"
+      },
+      "headers": {
+       "$ref": "2"
+      },
+      "isNullable": true
+     },
+     "summary": "Gets a digital twin.",
+     "requestContentType": "application/json; charset=utf-8",
+     "responseContentTypes": [
+      "application/json"
+     ],
+     "extensions": {
+      "servers": [
+       {
+        "url": "https://fully-qualified-iothubname.azure-devices.net/"
+       }
+      ]
+     },
+     "deprecated": false,
+     "hidden": false
+    },
+    {
+     "$id": "152",
+     "parameters": [
+      {
+       "$id": "153",
+       "clientProperty": {
+        "$ref": "52"
+       },
+       "location": "path",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "154",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "155",
+        "fixed": false,
+        "raw": "Digital Twin ID."
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·f78rs6·digitaltwins-id·patch·parameters·0",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·f78rs6·digitaltwins-id·patch·parameters·0"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "156",
+        "fixed": false,
+        "raw": "id"
+       },
+       "serializedName": "id",
+       "modelType": {
+        "$id": "157",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "158",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "159",
+       "location": "body",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "160",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "161",
+        "fixed": false,
+        "raw": "json-patch contents to update."
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·11buglb·digitaltwins-id·patch·requestbody",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/requestBodies/paths·11buglb·digitaltwins-id·patch·requestbody"
+         ]
+        },
+        "x-ms-requestBody-name": "digitalTwinPatch"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "162",
+        "fixed": false,
+        "raw": "digitalTwinPatch"
+       },
+       "serializedName": "digitalTwinPatch",
+       "modelType": {
+        "$id": "163",
+        "$type": "SequenceType",
+        "elementType": {
+         "$id": "164",
+         "$type": "PrimaryType",
+         "knownPrimaryType": "object",
+         "deprecated": false,
+         "name": {
+          "$id": "165",
+          "fixed": false,
+          "raw": "Object"
+         }
+        },
+        "deprecated": false,
+        "name": {
+         "$id": "166",
+         "fixed": false
+        }
+       }
+      },
+      {
+       "$id": "167",
+       "clientProperty": {
+        "$ref": "64"
+       },
+       "location": "header",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "168",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "169",
+        "fixed": false
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·1miyl44·digitaltwins-id·patch·parameters·1",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1miyl44·digitaltwins-id·patch·parameters·1"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": false,
+       "isConstant": false,
+       "name": {
+        "$id": "170",
+        "fixed": false,
+        "raw": "If-Match"
+       },
+       "serializedName": "If-Match",
+       "modelType": {
+        "$id": "171",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "172",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "173",
+       "location": "query",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "174",
+        "fixed": false,
+        "raw": "2020-09-30"
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "175",
+        "fixed": false,
+        "raw": "The API version to use for the request."
+       },
+       "isRequired": true,
+       "isConstant": true,
+       "name": {
+        "$id": "176",
+        "fixed": false,
+        "raw": "api-version"
+       },
+       "serializedName": "api-version",
+       "modelType": {
+        "$id": "177",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "178",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      }
+     ],
+     "name": {
+      "$id": "179",
+      "fixed": false,
+      "raw": "UpdateDigitalTwin"
+     },
+     "group": {
+      "$id": "180",
+      "fixed": false,
+      "raw": "DigitalTwin"
+     },
+     "serializedName": "DigitalTwin_UpdateDigitalTwin",
+     "url": "/digitaltwins/{id}",
+     "isAbsoluteUrl": false,
+     "httpMethod": "patch",
+     "responses": {
+      "Accepted": {
+       "$id": "181",
+       "headers": {
+        "$ref": "10"
+       },
+       "extensions": {
+        "$id": "182",
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·121lnpx·digitaltwins-id·patch·responses·202",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/responses/paths·121lnpx·digitaltwins-id·patch·responses·202"
+         ]
+        }
+       },
+       "isNullable": true
+      }
+     },
+     "defaultResponse": {
+      "$id": "183",
+      "isNullable": true
+     },
+     "returnType": {
+      "$id": "184",
+      "headers": {
+       "$ref": "10"
+      },
+      "isNullable": true
+     },
+     "summary": "Updates a digital twin.",
+     "requestContentType": "application/json; charset=utf-8",
+     "responseContentTypes": [
+      "application/json"
+     ],
+     "extensions": {
+      "servers": [
+       {
+        "url": "https://fully-qualified-iothubname.azure-devices.net/"
+       }
+      ],
+      "x-ms-requestBody-index": "1"
+     },
+     "deprecated": false,
+     "hidden": false
+    },
+    {
+     "$id": "185",
+     "parameters": [
+      {
+       "$id": "186",
+       "clientProperty": {
+        "$ref": "52"
+       },
+       "location": "path",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "187",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "188",
+        "fixed": false
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·1gucrlh·digitaltwins-id-commands-commandname·post·parameters·0",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1gucrlh·digitaltwins-id-commands-commandname·post·parameters·0"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "189",
+        "fixed": false,
+        "raw": "id"
+       },
+       "serializedName": "id",
+       "modelType": {
+        "$id": "190",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "191",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "192",
+       "clientProperty": {
+        "$ref": "76"
+       },
+       "location": "path",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "193",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "194",
+        "fixed": false
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·cuyncu·digitaltwins-id-commands-commandname·post·parameters·1",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·cuyncu·digitaltwins-id-commands-commandname·post·parameters·1"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "195",
+        "fixed": false,
+        "raw": "commandName"
+       },
+       "serializedName": "commandName",
+       "modelType": {
+        "$id": "196",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "197",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "198",
+       "location": "body",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "199",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "200",
+        "fixed": false
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·tkf3p1·digitaltwins-id-commands-commandname·post·requestbody",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/requestBodies/paths·tkf3p1·digitaltwins-id-commands-commandname·post·requestbody"
+         ]
+        },
+        "x-ms-requestBody-name": "payload"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "201",
+        "fixed": false,
+        "raw": "payload"
+       },
+       "serializedName": "payload",
+       "modelType": {
+        "$id": "202",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "object",
+        "deprecated": false,
+        "name": {
+         "$id": "203",
+         "fixed": false,
+         "raw": "Object"
+        }
+       }
+      },
+      {
+       "$id": "204",
+       "location": "query",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "205",
+        "fixed": false,
+        "raw": "2020-09-30"
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "206",
+        "fixed": false,
+        "raw": "The API version to use for the request."
+       },
+       "isRequired": true,
+       "isConstant": true,
+       "name": {
+        "$id": "207",
+        "fixed": false,
+        "raw": "api-version"
+       },
+       "serializedName": "api-version",
+       "modelType": {
+        "$id": "208",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "209",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "210",
+       "clientProperty": {
+        "$ref": "82"
+       },
+       "location": "query",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "211",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "212",
+        "fixed": false,
+        "raw": "Maximum interval of time, in seconds, that the digital twin command will wait for the answer."
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·e18es3·digitaltwins-id-commands-commandname·post·parameters·3",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·e18es3·digitaltwins-id-commands-commandname·post·parameters·3"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": false,
+       "isConstant": false,
+       "name": {
+        "$id": "213",
+        "fixed": false,
+        "raw": "connectTimeoutInSeconds"
+       },
+       "serializedName": "connectTimeoutInSeconds",
+       "modelType": {
+        "$id": "214",
+        "$type": "PrimaryType",
+        "format": "int32",
+        "knownPrimaryType": "int",
+        "deprecated": false,
+        "name": {
+         "$id": "215",
+         "fixed": false,
+         "raw": "Int"
+        }
+       }
+      },
+      {
+       "$id": "216",
+       "clientProperty": {
+        "$ref": "88"
+       },
+       "location": "query",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "217",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "218",
+        "fixed": false,
+        "raw": "Maximum interval of time, in seconds, that the digital twin command will wait for the answer."
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·1o105wg·digitaltwins-id-commands-commandname·post·parameters·4",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1o105wg·digitaltwins-id-commands-commandname·post·parameters·4"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": false,
+       "isConstant": false,
+       "name": {
+        "$id": "219",
+        "fixed": false,
+        "raw": "responseTimeoutInSeconds"
+       },
+       "serializedName": "responseTimeoutInSeconds",
+       "modelType": {
+        "$id": "220",
+        "$type": "PrimaryType",
+        "format": "int32",
+        "knownPrimaryType": "int",
+        "deprecated": false,
+        "name": {
+         "$id": "221",
+         "fixed": false,
+         "raw": "Int"
+        }
+       }
+      }
+     ],
+     "name": {
+      "$id": "222",
+      "fixed": false,
+      "raw": "InvokeRootLevelCommand"
+     },
+     "group": {
+      "$id": "223",
+      "fixed": false,
+      "raw": "DigitalTwin"
+     },
+     "serializedName": "DigitalTwin_InvokeRootLevelCommand",
+     "url": "/digitaltwins/{id}/commands/{commandName}",
+     "isAbsoluteUrl": false,
+     "httpMethod": "post",
+     "responses": {
+      "OK": {
+       "$id": "224",
+       "body": {
+        "$id": "225",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "object",
+        "deprecated": false,
+        "name": {
+         "$id": "226",
+         "fixed": false,
+         "raw": "Object"
+        }
+       },
+       "headers": {
+        "$ref": "24"
+       },
+       "extensions": {
+        "$id": "227",
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·3c3d3f·digitaltwins-id-commands-commandname·post·responses·200",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/responses/paths·3c3d3f·digitaltwins-id-commands-commandname·post·responses·200"
+         ]
+        }
+       },
+       "isNullable": true
+      }
+     },
+     "defaultResponse": {
+      "$id": "228",
+      "isNullable": true
+     },
+     "returnType": {
+      "$id": "229",
+      "body": {
+       "$ref": "225"
+      },
+      "headers": {
+       "$ref": "24"
+      },
+      "isNullable": true
+     },
+     "description": "Invoke a digital twin root level command.",
+     "summary": "Invoke a digital twin root level command.",
+     "requestContentType": "application/json; charset=utf-8",
+     "responseContentTypes": [
+      "application/json"
+     ],
+     "extensions": {
+      "servers": [
+       {
+        "url": "https://fully-qualified-iothubname.azure-devices.net/"
+       }
+      ],
+      "x-ms-requestBody-index": "2"
+     },
+     "deprecated": false,
+     "hidden": false
+    },
+    {
+     "$id": "230",
+     "parameters": [
+      {
+       "$id": "231",
+       "clientProperty": {
+        "$ref": "52"
+       },
+       "location": "path",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "232",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "233",
+        "fixed": false
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·1vj9ah2·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·0",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1vj9ah2·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·0"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "234",
+        "fixed": false,
+        "raw": "id"
+       },
+       "serializedName": "id",
+       "modelType": {
+        "$id": "235",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "236",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "237",
+       "clientProperty": {
+        "$ref": "100"
+       },
+       "location": "path",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "238",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "239",
+        "fixed": false
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·sv78xn·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·1",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·sv78xn·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·1"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "240",
+        "fixed": false,
+        "raw": "componentPath"
+       },
+       "serializedName": "componentPath",
+       "modelType": {
+        "$id": "241",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "242",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "243",
+       "clientProperty": {
+        "$ref": "76"
+       },
+       "location": "path",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "244",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "245",
+        "fixed": false
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·3haext·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·2",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·3haext·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·2"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "246",
+        "fixed": false,
+        "raw": "commandName"
+       },
+       "serializedName": "commandName",
+       "modelType": {
+        "$id": "247",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "248",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "249",
+       "location": "body",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "250",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "251",
+        "fixed": false
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·vpkxzw·digitaltwins-id-components-componentpath-commands-commandname·post·requestbody",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/requestBodies/paths·vpkxzw·digitaltwins-id-components-componentpath-commands-commandname·post·requestbody"
+         ]
+        },
+        "x-ms-requestBody-name": "payload"
+       },
+       "isRequired": true,
+       "isConstant": false,
+       "name": {
+        "$id": "252",
+        "fixed": false,
+        "raw": "payload"
+       },
+       "serializedName": "payload",
+       "modelType": {
+        "$id": "253",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "object",
+        "deprecated": false,
+        "name": {
+         "$id": "254",
+         "fixed": false,
+         "raw": "Object"
+        }
+       }
+      },
+      {
+       "$id": "255",
+       "location": "query",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "256",
+        "fixed": false,
+        "raw": "2020-09-30"
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "257",
+        "fixed": false,
+        "raw": "The API version to use for the request."
+       },
+       "isRequired": true,
+       "isConstant": true,
+       "name": {
+        "$id": "258",
+        "fixed": false,
+        "raw": "api-version"
+       },
+       "serializedName": "api-version",
+       "modelType": {
+        "$id": "259",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "string",
+        "deprecated": false,
+        "name": {
+         "$id": "260",
+         "fixed": false,
+         "raw": "String"
+        }
+       }
+      },
+      {
+       "$id": "261",
+       "clientProperty": {
+        "$ref": "82"
+       },
+       "location": "query",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "262",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "263",
+        "fixed": false,
+        "raw": "Maximum interval of time, in seconds, that the digital twin command will wait for the answer."
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·ncf3ff·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·4",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·ncf3ff·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·4"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": false,
+       "isConstant": false,
+       "name": {
+        "$id": "264",
+        "fixed": false,
+        "raw": "connectTimeoutInSeconds"
+       },
+       "serializedName": "connectTimeoutInSeconds",
+       "modelType": {
+        "$id": "265",
+        "$type": "PrimaryType",
+        "format": "int32",
+        "knownPrimaryType": "int",
+        "deprecated": false,
+        "name": {
+         "$id": "266",
+         "fixed": false,
+         "raw": "Int"
+        }
+       }
+      },
+      {
+       "$id": "267",
+       "clientProperty": {
+        "$ref": "88"
+       },
+       "location": "query",
+       "collectionFormat": "none",
+       "defaultValue": {
+        "$id": "268",
+        "fixed": false
+       },
+       "deprecated": false,
+       "documentation": {
+        "$id": "269",
+        "fixed": false,
+        "raw": "Maximum interval of time, in seconds, that the digital twin command will wait for the answer."
+       },
+       "extensions": {
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·1lu4jxs·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·5",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/parameters/paths·1lu4jxs·digitaltwins-id-components-componentpath-commands-commandname·post·parameters·5"
+         ]
+        },
+        "x-ms-parameter-location": "method"
+       },
+       "isRequired": false,
+       "isConstant": false,
+       "name": {
+        "$id": "270",
+        "fixed": false,
+        "raw": "responseTimeoutInSeconds"
+       },
+       "serializedName": "responseTimeoutInSeconds",
+       "modelType": {
+        "$id": "271",
+        "$type": "PrimaryType",
+        "format": "int32",
+        "knownPrimaryType": "int",
+        "deprecated": false,
+        "name": {
+         "$id": "272",
+         "fixed": false,
+         "raw": "Int"
+        }
+       }
+      }
+     ],
+     "name": {
+      "$id": "273",
+      "fixed": false,
+      "raw": "InvokeComponentCommand"
+     },
+     "group": {
+      "$id": "274",
+      "fixed": false,
+      "raw": "DigitalTwin"
+     },
+     "serializedName": "DigitalTwin_InvokeComponentCommand",
+     "url": "/digitaltwins/{id}/components/{componentPath}/commands/{commandName}",
+     "isAbsoluteUrl": false,
+     "httpMethod": "post",
+     "responses": {
+      "OK": {
+       "$id": "275",
+       "body": {
+        "$id": "276",
+        "$type": "PrimaryType",
+        "knownPrimaryType": "object",
+        "deprecated": false,
+        "name": {
+         "$id": "277",
+         "fixed": false,
+         "raw": "Object"
+        }
+       },
+       "headers": {
+        "$ref": "38"
+       },
+       "extensions": {
+        "$id": "278",
+        "x-ms-metadata": {
+         "apiVersions": [
+          "2020-09-30"
+         ],
+         "filename": [
+          "mem:///107?oai3.shaken.json"
+         ],
+         "name": "paths·n9llrq·digitaltwins-id-components-componentpath-commands-commandname·post·responses·200",
+         "originalLocations": [
+          "file:///C:/MyData/SourceCode/csharp/azure/iothub/service/src/DigitalTwin/DigitalTwin.json#/components/responses/paths·n9llrq·digitaltwins-id-components-componentpath-commands-commandname·post·responses·200"
+         ]
+        }
+       },
+       "isNullable": true
+      }
+     },
+     "defaultResponse": {
+      "$id": "279",
+      "isNullable": true
+     },
+     "returnType": {
+      "$id": "280",
+      "body": {
+       "$ref": "276"
+      },
+      "headers": {
+       "$ref": "38"
+      },
+      "isNullable": true
+     },
+     "description": "Invoke a digital twin command.",
+     "summary": "Invoke a digital twin command.",
+     "requestContentType": "application/json; charset=utf-8",
+     "responseContentTypes": [
+      "application/json"
+     ],
+     "extensions": {
+      "servers": [
+       {
+        "url": "https://fully-qualified-iothubname.azure-devices.net/"
+       }
+      ],
+      "x-ms-requestBody-index": "3"
+     },
+     "deprecated": false,
+     "hidden": false
+    }
+   ],
+   "name": {
+    "$id": "281",
+    "fixed": false,
+    "raw": "DigitalTwin"
+   },
+   "typeName": {
+    "$id": "282",
+    "fixed": false
+   },
+   "nameForProperty": "DigitalTwin"
+  }
+ ]
+}
