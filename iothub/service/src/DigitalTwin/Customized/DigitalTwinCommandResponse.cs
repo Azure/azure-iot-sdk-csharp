@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents the device method invocation results.
+    /// Represents the device command invocation results.
     /// </summary>
     public class DigitalTwinCommandResponse
     {
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
         public int? Status { get; set; }
 
         /// <summary>
-        /// Method invocation result payload, as supplied by the device.
+        /// Command invocation result payload, as supplied by the device.
         /// </summary>
         public string Payload { get; set; }
     }
