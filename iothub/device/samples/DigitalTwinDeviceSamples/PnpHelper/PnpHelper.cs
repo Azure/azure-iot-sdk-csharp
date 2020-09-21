@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -151,6 +152,19 @@ namespace PnpHelpers
             }
 
             return (false, default);
+        }
+
+        /// <summary>
+        /// Create a property patch for component-level property updates.
+        /// </summary>
+        /// <param name="propertyKeyValuePairs">The dictionary of property key values pairs that are to be updated.</param>
+        /// <returns>The dictionary containing the property key value pairs for a component-level property update.</returns>
+        public static Dictionary<string, object> CreatePatchForComponentUpdate(Dictionary<string, object> propertyKeyValuePairs)
+        {
+            string metadataKey = "$metadata";
+            propertyKeyValuePairs.Add(metadataKey, new object());
+
+            return propertyKeyValuePairs;
         }
 
         /// <summary>

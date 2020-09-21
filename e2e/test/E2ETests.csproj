@@ -45,6 +45,9 @@
   <!-- NetCore and .NET 4.7.2 -->
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.3" />
+    <Compile Include="$(RootDir)\iothub\device\samples\DigitalTwinDeviceSamples\PnpHelper\PnpHelper.cs">
+      <Link>helpers\digitaltwins\PnpHelper.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
