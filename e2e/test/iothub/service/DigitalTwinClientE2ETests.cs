@@ -2,12 +2,17 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using PnpHelpers;
 
 namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
@@ -38,16 +43,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 };
                 using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt, options);
 
-                // Set callback to handle root command invocation request.
-                int commandStatus = 200;
-                string commandName = "getMaxMinReport";
-                await deviceClient.SetMethodHandlerAsync(commandName,
-                    (request, context) =>
-                    {
-                        Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command {request.Name} received.");
-                        return Task.FromResult(new MethodResponse(commandStatus));
-                    },
-                    null);
+                // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
+                await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 // Perform operations on the digital twin.
                 using var digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(s_connectionString);
@@ -58,12 +55,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 ThermostatTwin twin = response.Body;
                 twin.Metadata.ModelId.Should().Be(ThermostatModelId);
 
-                // Invoke the root level command "getMaxMinReport" on the digital twin.
+                // Set callback handler for receiving root-level twin property updates.
+                await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
+                {
+                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
+                    return Task.FromResult(true);
+                }, deviceClient);
+
+                // Update the root-level property "targetTemperature".
+                string propertyName = "targetTemperature";
+                double propertyValue = new Random().Next(0, 100);
+                var ops = new UpdateOperationsUtility();
+                ops.AppendAddOp($"/{propertyName}", propertyValue);
+                string patch = ops.Serialize();
+                Rest.HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> updateResponse =
+                    await digitalTwinClient.UpdateAsync(deviceId, patch);
+                updateResponse.Response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+
+                // Set callback to handle root-level command invocation request.
+                int expectedCommandStatus = 200;
+                string commandName = "getMaxMinReport";
+                await deviceClient.SetMethodHandlerAsync(commandName,
+                    (request, context) =>
+                    {
+                        Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.Name}.");
+                        string payload = JsonConvert.SerializeObject(request.Name);
+                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
+                    },
+                    null);
+
+                // Invoke the root-level command "getMaxMinReport" on the digital twin.
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
                 string payload = JsonConvert.SerializeObject(since);
                 Rest.HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> commandResponse =
                     await digitalTwinClient.InvokeCommandAsync(deviceId, commandName, payload).ConfigureAwait(false);
-                commandResponse.Body.Status.Should().Be(commandStatus);
+                commandResponse.Body.Status.Should().Be(expectedCommandStatus);
+                commandResponse.Body.Payload.Should().Be(JsonConvert.SerializeObject(commandName));
             }
             finally
             {
@@ -88,38 +115,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 };
                 using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt, options);
 
-                // Set callback handler for receiving twin property updates.
-                await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
-                {
-                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
-                    return Task.FromResult(true);
-                }, deviceClient);
+                // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
+                await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                // Set callbacks to handle command requests.
-                int commandStatus = 200;
-
-                // Set callback to handle root command invocation request.
-                string rootCommandName = "reboot";
-                await deviceClient.SetMethodHandlerAsync(rootCommandName,
-                    (request, context) =>
-                    {
-                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
-                        return Task.FromResult(new MethodResponse(commandStatus));
-                    },
-                    null);
-
-                // Set callback to handle component command invocation request.
-                string componentName = "thermostat1";
-                string componentCommandName = "getMaxMinReport";
-                await deviceClient.SetMethodHandlerAsync($"{componentName}*{componentCommandName}",
-                    (request, context) =>
-                    {
-                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
-                        return Task.FromResult(new MethodResponse(commandStatus));
-                    },
-                    null);
-
-                // Perform operations on the digital twin
+                // Perform operations on the digital twin.
                 using var digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(s_connectionString);
 
                 // Retrieve the digital twin.
@@ -128,19 +127,71 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 TemperatureControllerTwin twin = response.Body;
                 twin.Metadata.ModelId.Should().Be(TemperatureControllerModelId);
 
-                // Invoke the root level command "reboot" on the digital twin.
+                string componentName = "thermostat1";
+
+                // Set callback handler for receiving twin property updates.
+                await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
+                {
+                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
+                    return Task.FromResult(true);
+                }, deviceClient);
+
+                // Update the property "targetTemperature" under component "thermostat1" on the digital twin.
+                // NOTE: since this is the first operation on the digital twin, the component "thermostat1" doesn't exist on it yet.
+                // So we will create a property patch that "adds" a component, and updates the property in it.
+                string propertyName = "targetTemperature";
+                double propertyValue = new Random().Next(0, 100);
+                Dictionary<string, object> componentPatch =
+                    PnpHelper.CreatePatchForComponentUpdate(new Dictionary<string, object>() { { propertyName, propertyValue } });
+
+                var ops = new UpdateOperationsUtility();
+                ops.AppendAddOp($"/{componentName}", componentPatch);
+                string patch = ops.Serialize();
+                Rest.HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> updateResponse =
+                    await digitalTwinClient.UpdateAsync(deviceId, patch);
+                updateResponse.Response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+
+                // Set callbacks to handle command requests.
+                int expectedCommandStatus = 200;
+
+                // Set callback to handle root-level command invocation request.
+                string rootCommandName = "reboot";
+                await deviceClient.SetMethodHandlerAsync(rootCommandName,
+                    (request, context) =>
+                    {
+                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
+                        string payload = JsonConvert.SerializeObject(request.Name);
+                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
+                    },
+                    null);
+
+                // Invoke the root-level command "reboot" on the digital twin.
                 int delay = 1;
                 string rootCommandPayload = JsonConvert.SerializeObject(delay);
                 Rest.HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> rootCommandResponse =
                     await digitalTwinClient.InvokeCommandAsync(deviceId, rootCommandName, rootCommandPayload).ConfigureAwait(false);
-                rootCommandResponse.Body.Status.Should().Be(commandStatus);
+                rootCommandResponse.Body.Status.Should().Be(expectedCommandStatus);
+                rootCommandResponse.Body.Payload.Should().Be(JsonConvert.SerializeObject(rootCommandName));
 
-                // Invoke the root level command "getMaxMinReport" under component "thermostat1" on the digital twin.
+                // Set callback to handle component-level command invocation request.
+                string componentCommandName = "getMaxMinReport";
+                string componentCommandNamePnp = PnpHelper.CreatePnpCommandName(componentCommandName, componentName);
+                await deviceClient.SetMethodHandlerAsync(componentCommandNamePnp,
+                    (request, context) =>
+                    {
+                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
+                        string payload = JsonConvert.SerializeObject(request.Name);
+                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
+                    },
+                    null);
+
+                // Invoke the command "getMaxMinReport" under component "thermostat1" on the digital twin.
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
                 string componentCommandPayload = JsonConvert.SerializeObject(since);
                 Rest.HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> componentCommandResponse =
                     await digitalTwinClient.InvokeComponentCommandAsync(deviceId, componentName, componentCommandName, componentCommandPayload).ConfigureAwait(false);
-                componentCommandResponse.Body.Status.Should().Be(commandStatus);
+                componentCommandResponse.Body.Status.Should().Be(expectedCommandStatus);
+                componentCommandResponse.Body.Payload.Should().Be(JsonConvert.SerializeObject(componentCommandNamePnp));
             }
             finally
             {
