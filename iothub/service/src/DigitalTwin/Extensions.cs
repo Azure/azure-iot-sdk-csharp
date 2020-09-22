@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices
     internal static class Extensions
     {
         public const string ParameterNullErrorMessageFormat = "The parameter named {0} can't be null.";
-        public const string ParameterNullWhiteSpaceErrorMessageFormat = "The parameter named {0} can't be null, empty string or white space.";
+        public const string ParameterNullWhiteSpaceErrorMessageFormat = "The parameter named {0} can't be null, empty or white space.";
 
         /// <summary>
         /// Throw ArgumentNullException if the value is null reference.

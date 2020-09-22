@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Authentication
     internal abstract class IotServiceClientCredentials : ServiceClientCredentials
     {
         /// <summary>
-        /// Add a sas token to the outgoing http request, then send it to the next pipeline segment
+        /// Add a SAS token to the outgoing http request, then send it to the next pipeline segment
         /// </summary>
         /// <param name="request">The request that is being sent</param>
         /// <param name="cancellationToken">The cancellation token</param>
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Authentication
         /// <summary>
         /// Return a SAS token
         /// </summary>
-        /// <returns>A sas token</returns>
+        /// <returns>A SAS token</returns>
         protected abstract string GetSasToken();
     }
 }
