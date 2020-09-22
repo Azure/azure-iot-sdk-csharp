@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json.Linq;
 
-namespace PnpHelpers
+namespace Microsoft.Azure.Devices.Client.PlugAndPlayConvention
 {
-    public static class PnpHelper
+    /// <summary>
+    /// A helper class for formatting messages and properties as per plug and play convention.
+    /// </summary>
+    public static class PnpConventionHelper
     {
         private const string TelemetryComponentPropertyName = "$.sub";
         private const string EncodingUtf8 = "utf-8";
@@ -50,6 +49,20 @@ namespace PnpHelpers
         /// <summary>
         /// Create a key-value property patch for both read-only and read-write properties.
         /// </summary>
+        /// <remarks>
+        /// For a root-level property update, the patch is in the format:
+        ///     {
+        ///         "samplePropertyName": 20
+        ///     }
+        ///
+        /// For a component-level property update, the patch is in the format:
+        ///     {
+        ///         "sampleComponentName": {
+        ///             "__t": "c",
+        ///             "samplePropertyName"": 20
+        ///         }
+        ///     }
+        /// </remarks>
         /// <param name="propertyName">The property name, as defined in the DTDL interface.</param>
         /// <param name="serializedPropertyValue">The serialized property value, in the format defined in the DTDL interface.</param>
         /// <param name="componentName">(optional) The name of the component in which the property is defined. Can be null for property defined under the root interface.</param>
@@ -80,6 +93,30 @@ namespace PnpHelpers
         /// Create a key-embedded value property patch for read-write properties.
         /// Embedded value property updates are sent from a device in response to a service-initiated read-write property update.
         /// </summary>
+        /// <remarks>
+        /// For a root-level property update, the patch is in the format:
+        ///     {
+        ///         "samplePropertyName": {
+        ///             "value": 20,
+        ///             "ac": 200,
+        ///             "av": 5,
+        ///             "ad": "The update was successful."
+        ///         }
+        ///     }
+        ///
+        /// For a component-level property update, the patch is in the format:
+        ///     {
+        ///         "sampleComponentName": {
+        ///             "__t": "c",
+        ///             "samplePropertyName": {
+        ///                 "value": 20,
+        ///                 "ac": 200,
+        ///                 "av": 5,
+        ///                 "ad": "The update was successful."
+        ///             }
+        ///         }
+        ///     }
+        /// </remarks>
         /// <param name="propertyName">The property name, as defined in the DTDL interface.</param>
         /// <param name="serializedPropertyValue">The serialized property value, in the format defined in the DTDL interface.</param>
         /// <param name="ackCode">The acknowledgment code from the device, for the embedded value property update.</param>
@@ -137,6 +174,8 @@ namespace PnpHelpers
         /// <returns>A tuple indicating if the <see cref="TwinCollection"/> property update patch contains the required property update, and the corresponding property value.</returns>
         public static (bool, T) GetPropertyFromTwin<T>(TwinCollection collection, string propertyName, string componentName = null)
         {
+            collection.ThrowIfNull(nameof(collection));
+
             // If the desired property update is for a root component or nested component, verify that property patch received contains the desired property update.
             if (string.IsNullOrWhiteSpace(componentName))
             {
@@ -153,68 +192,5 @@ namespace PnpHelpers
 
             return (false, default);
         }
-
-        /// <summary>
-        /// Create a property patch for component-level property updates.
-        /// </summary>
-        /// <param name="propertyKeyValuePairs">The dictionary of property key values pairs that are to be updated.</param>
-        /// <returns>The dictionary containing the property key value pairs for a component-level property update.</returns>
-        public static Dictionary<string, object> CreatePatchForComponentUpdate(Dictionary<string, object> propertyKeyValuePairs)
-        {
-            string metadataKey = "$metadata";
-            propertyKeyValuePairs.Add(metadataKey, new object());
-
-            return propertyKeyValuePairs;
-        }
-
-        /// <summary>
-        /// Create a plug and play compatible command name.
-        /// </summary>
-        /// <param name="commandName">The name of the command to be invoked.</param>
-        /// <param name="componentName">(optional) The name of the component from which the command is to be invoked. Can be null for command defined under the root interface.</param>
-        /// <returns>A plug and play compatible command name.</returns>
-        public static string CreatePnpCommandName(string commandName, string componentName = default)
-        {
-            commandName.ThrowIfNullOrWhiteSpace(nameof(commandName));
-            return string.IsNullOrWhiteSpace(componentName) ? commandName : $"{componentName}*{commandName}";
-        }
-
-        /// <summary>
-        /// Create the DPS payload to provision a device as plug and play.
-        /// For more information, see https://docs.microsoft.com/en-us/azure/iot-pnp/howto-certify-device.
-        /// </summary>
-        /// <param name="modelId">The Id of the model the device adheres to for properties, telemetry, and commands.</param>
-        /// <returns>The DPS payload to provision a device as plug and play.</returns>
-        public static string CreateDpsPayload(string modelId)
-        {
-            modelId.ThrowIfNullOrWhiteSpace(nameof(modelId));
-            return $"{{ \"modelId\": \"{modelId}\" }}".TrimWhiteSpace();
-        }
-
-        /// <summary>
-        /// Helper to remove extra whitespace from the supplied string.
-        /// It makes sure that strings that contain space characters are preserved, and all other space characters are discarded.
-        /// </summary>
-        /// <param name="input">The string to be formatted.</param>
-        /// <returns>The input string, with extra whitespace removed. </returns>
-        public static string TrimWhiteSpace(this string input)
-        {
-            return Regex.Replace(input, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
-        }
-
-        /// <summary>
-        /// Throw ArgumentNullException if the value is null reference, empty string or white space.
-        /// </summary>
-        /// <param name="argumentValue">The argument value.</param>
-        /// <param name="argumentName">The argument name.</param>
-        internal static void ThrowIfNullOrWhiteSpace(this string argumentValue, string argumentName)
-        {
-            if (string.IsNullOrWhiteSpace(argumentValue))
-            {
-                string errorMessage = $"The parameter named {argumentName} can't be null, empty string or white space.";
-                throw new ArgumentNullException(argumentName, errorMessage);
-            }
-        }
-
     }
 }

@@ -137,5 +137,33 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 
             return true;
         }
+
+        /// <summary>
+        /// Throw ArgumentNullException if the value is null reference.
+        /// </summary>
+        /// <param name="argumentValue">The argument value.</param>
+        /// <param name="argumentName">The argument name.</param>
+        public static void ThrowIfNull(this object argumentValue, string argumentName)
+        {
+            if (argumentValue == null)
+            {
+                string errorMessage = $"The parameter named {argumentName} can't be null.";
+                throw new ArgumentNullException(argumentName, errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// Throw ArgumentNullException if the value is null reference, empty or white space.
+        /// </summary>
+        /// <param name="argumentValue">The argument value.</param>
+        /// <param name="argumentName">The argument name.</param>
+        public static void ThrowIfNullOrWhiteSpace(this string argumentValue, string argumentName)
+        {
+            if (string.IsNullOrWhiteSpace(argumentValue))
+            {
+                string errorMessage = $"The parameter named {argumentName} can't be null, empty or white space.";
+                throw new ArgumentNullException(argumentName, errorMessage);
+            }
+        }
     }
 }
