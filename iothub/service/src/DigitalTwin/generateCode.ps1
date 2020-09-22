@@ -8,6 +8,18 @@ try {
 			Remove-Item $_.FullName
 		}
 
+	# TEMPORARY: Until https://msazure.visualstudio.com/One/_workitems/edit/8354260 is resolved.
+    # Update the swagger json file to accept payload as "optional" for invoke command APIs.
+    $swaggerJson = Get-Content .\DigitalTwin.json -raw | ConvertFrom-Json
+    $commandRestPath = '/digitaltwins/{id}/commands/{commandName}'
+    $commandParameters = $swaggerJson.paths.$commandRestPath.post.parameters
+    Foreach ($parameter in $commandParameters) {
+        #if ($parameter.name -eq 'payload') {
+        #    $parameter.required = $false
+        #}
+    }
+    $swaggerJson | ConvertTo-Json -Depth 10 | Set-Content .\DigitalTwin.json
+
 	#Generate the base code from the swagger file that is defined in this folder's README
 	autorest
 
