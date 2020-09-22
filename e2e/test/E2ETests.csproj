@@ -22,8 +22,8 @@
     <Compile Remove="iothub\service\RegistryManagerImportDevicesTests.cs" />
     <Compile Remove="iothub\service\RegistryManagerExportDevicesTests.cs" />
     <Compile Remove="iothub\service\DigitalTwinClientE2ETests.cs" />
-    <Compile Remove="helpers\digitaltwins\ThermostatTwin.cs" />
-    <Compile Remove="helpers\digitaltwins\TemperatureControllerTwin.cs" />
+    <Compile Remove="helpers\digitaltwins\models\ThermostatTwin.cs" />
+    <Compile Remove="helpers\digitaltwins\models\TemperatureControllerTwin.cs" />
   </ItemGroup>
 
   <!-- All Platforms -->
