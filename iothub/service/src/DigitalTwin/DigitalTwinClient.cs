@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Authentication;
+using Microsoft.Azure.Devices.Extensions;
 using Microsoft.Azure.Devices.Generated;
 using Microsoft.Rest;
 using Newtonsoft.Json;

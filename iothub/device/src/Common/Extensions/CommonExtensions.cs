@@ -202,5 +202,16 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 
             return entryIndex;
         }
+
+        /// <summary>
+        /// Helper to remove extra whitespace from the supplied string.
+        /// It makes sure that strings that contain space characters are preserved, and all other space characters are discarded.
+        /// </summary>
+        /// <param name="input">The string to be formatted.</param>
+        /// <returns>The input string, with extra whitespace removed. </returns>
+        public static string TrimWhiteSpace(this string input)
+        {
+            return Regex.Replace(input, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+        }
     }
 }

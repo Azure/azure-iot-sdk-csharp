@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Extensions
 {
     internal static class Extensions
     {
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Throw ArgumentNullException if the value is null reference, empty string or white space.
+        /// Throw ArgumentNullException if the value is null reference, empty or white space.
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
         /// <param name="argumentName">The argument name.</param>

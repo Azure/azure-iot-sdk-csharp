@@ -79,11 +79,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Sha
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{ABE041E0-27AF-4AE7-B9CB-7DD2BC7D3850}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DigitalTwinDeviceSamples", "DigitalTwinDeviceSamples", "{DC9D3907-BA41-4138-AAC8-A3AB270D5473}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PnpDeviceSamples", "PnpDeviceSamples", "{DC9D3907-BA41-4138-AAC8-A3AB270D5473}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thermostat", "iothub\device\samples\DigitalTwinDeviceSamples\Thermostat\Thermostat.csproj", "{83AB7A56-509B-44C3-9CA3-AB0581098B18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thermostat", "iothub\device\samples\PnpDeviceSamples\Thermostat\Thermostat.csproj", "{83AB7A56-509B-44C3-9CA3-AB0581098B18}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemperatureController", "iothub\device\samples\DigitalTwinDeviceSamples\TemperatureController\TemperatureController.csproj", "{F172E392-E692-4862-9DB6-8CBBAF368535}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemperatureController", "iothub\device\samples\PnpDeviceSamples\TemperatureController\TemperatureController.csproj", "{F172E392-E692-4862-9DB6-8CBBAF368535}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

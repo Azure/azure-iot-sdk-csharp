@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Extensions;
 using Microsoft.Rest;
 
 namespace Microsoft.Azure.Devices.Authentication
