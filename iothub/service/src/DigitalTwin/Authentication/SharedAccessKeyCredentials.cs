@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Authentication
         // The token will be renewed when it has 15% or less of the sas token's lifespan left.
         private const int RenewalTimeBufferPercentage = 15;
 
-        private readonly object _lock = new object();
+        private readonly object _sasLock = new object();
         private readonly TimeSpan _sasTokenTimeToLive = TimeSpan.FromMinutes(20);
 
         private readonly string _sharedAccessKey;
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Authentication
         /// <inheritdoc />
         protected override string GetSasToken()
         {
-            lock (_lock)
+            lock (_sasLock)
             {
                 if (TokenShouldBeGenerated())
                 {

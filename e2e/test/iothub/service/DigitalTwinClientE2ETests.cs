@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
                 // Retrieve the digital twin.
                 Rest.HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response =
-                    await digitalTwinClient.GetAsync<ThermostatTwin>(deviceId).ConfigureAwait(false);
+                    await digitalTwinClient.GetDigitalTwinAsync<ThermostatTwin>(deviceId).ConfigureAwait(false);
                 ThermostatTwin twin = response.Body;
                 twin.Metadata.ModelId.Should().Be(ThermostatModelId);
 
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 ops.AppendAddOp($"/{propertyName}", propertyValue);
                 string patch = ops.Serialize();
                 Rest.HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> updateResponse =
-                    await digitalTwinClient.UpdateAsync(deviceId, patch);
+                    await digitalTwinClient.UpdateDigitalTwinAsync(deviceId, patch);
                 updateResponse.Response.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
                 // Set callback to handle root-level command invocation request.
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
                 // Retrieve the digital twin.
                 Rest.HttpOperationResponse<TemperatureControllerTwin, DigitalTwinGetHeaders> response =
-                    await digitalTwinClient.GetAsync<TemperatureControllerTwin>(deviceId).ConfigureAwait(false);
+                    await digitalTwinClient.GetDigitalTwinAsync<TemperatureControllerTwin>(deviceId).ConfigureAwait(false);
                 TemperatureControllerTwin twin = response.Body;
                 twin.Metadata.ModelId.Should().Be(TemperatureControllerModelId);
 
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 ops.AppendAddOp($"/{componentName}", componentPatch);
                 string patch = ops.Serialize();
                 Rest.HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> updateResponse =
-                    await digitalTwinClient.UpdateAsync(deviceId, patch);
+                    await digitalTwinClient.UpdateDigitalTwinAsync(deviceId, patch);
                 updateResponse.Response.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
                 // Set callbacks to handle command requests.
