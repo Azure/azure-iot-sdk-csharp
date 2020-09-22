@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Authentication;
@@ -22,18 +23,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinClient"/> class.</summary>
         /// <param name="connectionString">Your IoT hub's connection string.</param>
-        public static DigitalTwinClient CreateFromConnectionString(string connectionString)
+        /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
+        public static DigitalTwinClient CreateFromConnectionString(string connectionString, params DelegatingHandler[] handlers)
         {
             connectionString.ThrowIfNullOrWhiteSpace(nameof(connectionString));
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             var sharedAccessKeyCredential = new SharedAccessKeyCredentials(connectionString);
-            return new DigitalTwinClient(iotHubConnectionString.HttpsEndpoint, sharedAccessKeyCredential);
+            return new DigitalTwinClient(iotHubConnectionString.HttpsEndpoint, sharedAccessKeyCredential, handlers);
         }
 
-        private DigitalTwinClient(Uri uri, IotServiceClientCredentials credentials)
+        private DigitalTwinClient(Uri uri, IotServiceClientCredentials credentials, params DelegatingHandler[] handlers)
         {
-            _client = new IotHubGatewayServiceAPIs(uri, credentials);
+            _client = new IotHubGatewayServiceAPIs(uri, credentials, handlers);
             _protocolLayer = new DigitalTwin(_client);
         }
 
