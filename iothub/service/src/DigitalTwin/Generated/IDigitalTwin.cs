@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Generated
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<string,DigitalTwinInvokeRootLevelCommandHeaders>> InvokeRootLevelCommandWithHttpMessagesAsync(string id, string commandName, string payload = default(object), int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string,DigitalTwinInvokeRootLevelCommandHeaders>> InvokeRootLevelCommandWithHttpMessagesAsync(string id, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
         /// Invoke a digital twin command.
         /// </summary>
@@ -136,6 +136,6 @@ namespace Microsoft.Azure.Devices.Generated
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<string,DigitalTwinInvokeComponentCommandHeaders>> InvokeComponentCommandWithHttpMessagesAsync(string id, string componentPath, string commandName, string payload = default(object), int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string,DigitalTwinInvokeComponentCommandHeaders>> InvokeComponentCommandWithHttpMessagesAsync(string id, string componentPath, string commandName, string payload, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
