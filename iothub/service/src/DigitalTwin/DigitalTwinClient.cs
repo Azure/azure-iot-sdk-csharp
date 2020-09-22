@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The application/json command invocation response and the http response. </returns>
-        public async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(string digitalTwinId, string commandName, string payload = default, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
             using HttpOperationResponse<string, DigitalTwinInvokeRootLevelCommandHeaders> response = await _protocolLayer.InvokeRootLevelCommandWithHttpMessagesAsync(digitalTwinId, commandName, payload, requestOptions?.ConnectTimeoutInSeconds, requestOptions?.ResponseTimeoutInSeconds, null, cancellationToken)
                 .ConfigureAwait(false);
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The application/json command invocation response and the http response. </returns>
-        public async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(string digitalTwinId, string componentName, string commandName, string payload = default, DigitalTwinInvokeCommandRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
             using HttpOperationResponse<string, DigitalTwinInvokeComponentCommandHeaders> response = await _protocolLayer.InvokeComponentCommandWithHttpMessagesAsync(digitalTwinId, componentName, commandName, payload, requestOptions?.ConnectTimeoutInSeconds, requestOptions?.ResponseTimeoutInSeconds, null, cancellationToken)
                 .ConfigureAwait(false);
