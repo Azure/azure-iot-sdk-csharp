@@ -127,7 +127,7 @@
           {
             "name": "payload",
             "in": "body",
-            "required": true,
+            "required": false,
             "schema": {
               "description": "The Request Payload",
               "type": "object"
@@ -208,7 +208,7 @@
           {
             "name": "payload",
             "in": "body",
-            "required": true,
+            "required": false,
             "schema": {
               "description": "The Request Payload",
               "type": "object"
