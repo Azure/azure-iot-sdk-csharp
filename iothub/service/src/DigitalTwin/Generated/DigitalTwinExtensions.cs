@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Generated
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> InvokeRootLevelCommandAsync(this IDigitalTwin operations, string id, string commandName, string payload = default(object), int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> InvokeRootLevelCommandAsync(this IDigitalTwin operations, string id, string commandName, string payload = default, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.InvokeRootLevelCommandWithHttpMessagesAsync(id, commandName, payload, connectTimeoutInSeconds, responseTimeoutInSeconds, null, cancellationToken).ConfigureAwait(false))
                 {
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.Generated
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> InvokeComponentCommandAsync(this IDigitalTwin operations, string id, string componentPath, string commandName, string payload = default(object), int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> InvokeComponentCommandAsync(this IDigitalTwin operations, string id, string componentPath, string commandName, string payload = default, int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.InvokeComponentCommandWithHttpMessagesAsync(id, componentPath, commandName, payload, connectTimeoutInSeconds, responseTimeoutInSeconds, null, cancellationToken).ConfigureAwait(false))
                 {
