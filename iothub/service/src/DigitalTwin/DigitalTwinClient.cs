@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The application/json digital twin and the http response.</returns>
-        public async Task<HttpOperationResponse<T, DigitalTwinGetHeaders>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
+        public async Task<HttpOperationResponse<T, DigitalTwinGetHeaders>> GetDigitalTwinAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
         {
             using HttpOperationResponse<string, DigitalTwinGetHeaders> response = await _protocolLayer.GetDigitalTwinWithHttpMessagesAsync(digitalTwinId, null, cancellationToken)
                 .ConfigureAwait(false);
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The http response.</returns>
-        public Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>> UpdateAsync(string digitalTwinId, string digitalTwinUpdateOperations, DigitalTwinUpdateRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
+        public Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>> UpdateDigitalTwinAsync(string digitalTwinId, string digitalTwinUpdateOperations, DigitalTwinUpdateRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
             return _protocolLayer.UpdateDigitalTwinWithHttpMessagesAsync(digitalTwinId, digitalTwinUpdateOperations, requestOptions?.IfMatch, null, cancellationToken);
         }
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Invoke a command on a digital twin asynchronously.
+        /// Invoke a command on a component of a digital twin asynchronously.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="componentName">The component name under which the command is defined.</param>
