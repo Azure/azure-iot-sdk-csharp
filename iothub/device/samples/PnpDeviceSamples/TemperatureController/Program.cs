@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using CommandLine;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
+using Microsoft.Azure.Devices.Provisioning.Client.PlugAndPlayConvention;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
-using PnpHelpers;
 
 namespace TemperatureController
 {
@@ -104,7 +104,7 @@ namespace TemperatureController
 
             var pnpPayload = new ProvisioningRegistrationAdditionalData
             {
-                JsonData = PnpHelper.CreateDpsPayload(ModelId),
+                JsonData = PnpConventionHelper.CreateDpsPayload(ModelId),
             };
             return await pdc.RegisterAsync(pnpPayload, cancellationToken);
         }

@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public async Task OpenAsync(TimeSpan timeout)
         {
-            if (Extensions.IsReceiver(AmqpLinkSettings))
+            if (Amqp.Extensions.IsReceiver(AmqpLinkSettings))
             {
                 AmqpLink = new ReceivingAmqpLink(_amqpSession.AmqpSession, AmqpLinkSettings);
             }
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         void AddProperty(AmqpSymbol symbol, object value)
         {
-            Extensions.AddProperty((Attach)AmqpLinkSettings, symbol, value);
+            Amqp.Extensions.AddProperty((Attach)AmqpLinkSettings, symbol, value);
         }
 
         public void AddApiVersion(string apiVersion)
