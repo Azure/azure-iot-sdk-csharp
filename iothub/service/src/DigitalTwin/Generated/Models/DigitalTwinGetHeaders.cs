@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices
         /// Gets or sets weak Etag
         /// </summary>
         [JsonProperty(PropertyName = "ETag")]
-        public string ETag { get; set; }
+        public string ETag { get; internal set; }
 
     }
 }

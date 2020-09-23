@@ -23,6 +23,14 @@ namespace Microsoft.Azure.Devices.Client.Extensions
         private const char ValuePairDelimiter = ';';
         private const char ValuePairSeparator = '=';
 
+        // The following regex expression minifies a json string.
+        // It makes sure that space characters within sentences are preserved, and all other space characters are discarded.
+        // The first option @"(""(?:[^""\\]|\\.)*"")" matches a double quoted string.
+        // The "(?:[^""\\])" indicates that the output (within quotes) is captured, and available as replacement in the Regex.Replace call below.
+        // The "[^""\\]" matches any character except a double quote or escape character \.
+        // The second option "\s+" matches all other space characters.
+        private static readonly Regex s_trimWhiteSpace = new Regex(@"(""(?:[^""\\]|\\.)*"")|\s+", RegexOptions.Compiled);
+
         public static string EnsureStartsWith(this string value, char prefix)
         {
             if (value == null)
@@ -204,14 +212,14 @@ namespace Microsoft.Azure.Devices.Client.Extensions
         }
 
         /// <summary>
-        /// Helper to remove extra whitespace from the supplied string.
-        /// It makes sure that strings that contain space characters are preserved, and all other space characters are discarded.
+        /// Helper to remove extra white space from the supplied string.
+        /// It makes sure that space characters within sentences are preserved, and all other space characters are discarded.
         /// </summary>
         /// <param name="input">The string to be formatted.</param>
-        /// <returns>The input string, with extra whitespace removed. </returns>
+        /// <returns>The input string, with extra white space removed. </returns>
         public static string TrimWhiteSpace(this string input)
         {
-            return Regex.Replace(input, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+            return s_trimWhiteSpace.Replace(input, "$1");
         }
     }
 }

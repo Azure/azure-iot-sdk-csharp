@@ -11,11 +11,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Command invocation result status, as supplied by the device.
         /// </summary>
-        public int? Status { get; set; }
+        public int? Status { get; internal set; }
 
         /// <summary>
         /// Command invocation result payload, as supplied by the device.
         /// </summary>
-        public string Payload { get; set; }
+        public string Payload { get; internal set; }
     }
 }

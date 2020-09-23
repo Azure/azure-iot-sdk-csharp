@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices.PlugAndPlayConvention;
+using Microsoft.Azure.Devices.PlugAndPlay;
 using Microsoft.Azure.Devices.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 string propertyName = "targetTemperature";
                 double propertyValue = new Random().Next(0, 100);
                 Dictionary<string, object> componentPatch =
-                    PnpConventionHelper.CreatePatchForComponentUpdate(new Dictionary<string, object>() { { propertyName, propertyValue } });
+                    PnpHelper.CreatePatchValueForComponentUpdate(new Dictionary<string, object> { { propertyName, propertyValue } });
 
                 var ops = new UpdateOperationsUtility();
                 ops.AppendAddOp($"/{componentName}", componentPatch);
@@ -174,6 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 rootCommandResponse.Body.Payload.Should().Be(JsonConvert.SerializeObject(rootCommandName));
 
                 // Set callback to handle component-level command invocation request.
+                // For a component-level command, the command name is in the format "<component-name>*<command-name>".
                 string componentCommandName = "getMaxMinReport";
                 string componentCommandNamePnp = $"{componentName}*{componentCommandName}";
                 await deviceClient.SetMethodHandlerAsync(componentCommandNamePnp,
