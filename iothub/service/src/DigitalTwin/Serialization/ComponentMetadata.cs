@@ -8,16 +8,10 @@ namespace Microsoft.Azure.Devices.Serialization
 {
     /// <summary>
     /// An optional, helper class for deserializing a digital twin.
-    /// The $metadata class on a <see cref="BasicDigitalTwin"/>.
+    /// The $metadata class on a component of a <see cref="BasicDigitalTwin"/>.
     /// </summary>
-    public class DigitalTwinMetadata
+    public class ComponentMetadata
     {
-        /// <summary>
-        /// The Id of the model that the digital twin or component is modeled by. This is present on a digital twin's root level metadata.
-        /// </summary>
-        [JsonProperty("$model")]
-        public string ModelId { get; set; }
-
         /// <summary>
         /// Model-defined writable properties' request state.
         /// </summary>
