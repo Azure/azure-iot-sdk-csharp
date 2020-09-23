@@ -45,13 +45,13 @@ namespace Microsoft.Azure.Devices
         /// Gets or sets weak Etag of the modified resource
         /// </summary>
         [JsonProperty(PropertyName = "ETag")]
-        public string ETag { get; set; }
+        public string ETag { get; internal set; }
 
         /// <summary>
         /// Gets or sets URI of the digital twin
         /// </summary>
         [JsonProperty(PropertyName = "Location")]
-        public string Location { get; set; }
+        public string Location { get; internal set; }
 
     }
 }

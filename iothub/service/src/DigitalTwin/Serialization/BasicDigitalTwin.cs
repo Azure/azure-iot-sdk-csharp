@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Serialization
         /// <summary>
         /// The unique Id of the digital twin. This is present at the root of every digital twin.
         /// </summary>
-        [JsonProperty("$dtId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("$dtId")]
         public string Id { get; set; }
 
         /// <summary>

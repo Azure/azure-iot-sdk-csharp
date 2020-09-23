@@ -27,10 +27,10 @@ try {
     }
     $swaggerJson | ConvertTo-Json -Depth 10 | Set-Content .\DigitalTwin.json
 
-	#Generate the base code from the swagger file that is defined in this folder's README
+	# Generate the base code from the swagger file that is defined in this folder's README
 	autorest
 
-	#Update the response header class names, comments, edit the duplicate invoke component command header class to be internal,
+	# Update the response header class names, comments, internal setters, edit the duplicate invoke component command header class to be internal,
 	# update the namespace to be outside Generated (they are referenced publicly)
 	Get-ChildItem ./Generated/Models *.cs |
 		Foreach-Object {
@@ -40,6 +40,8 @@ try {
 			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'namespace Microsoft.Azure.Devices.Generated.Models', 'namespace Microsoft.Azure.Devices'
 			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'DigitalTwinGetDigitalTwinHeaders', 'DigitalTwinGetHeaders'
 			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'DigitalTwinUpdateDigitalTwinHeaders', 'DigitalTwinUpdateHeaders'
+			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'public string ETag { get; set; }', 'public string ETag { get; internal set; }'
+			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'public string Location { get; set; }', 'public string Location { get; internal set; }'
 			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'public partial class DigitalTwinInvokeRootLevelCommandHeaders', 'internal partial class DigitalTwinInvokeRootLevelCommandHeaders'
 			$protocolLayerModelsClassCode = $protocolLayerModelsClassCode -replace 'public partial class DigitalTwinInvokeComponentCommandHeaders', 'internal partial class DigitalTwinInvokeComponentCommandHeaders'
 			[IO.File]::WriteAllText($_.FullName, ($protocolLayerModelsClassCode -join "`r`n"))
@@ -49,7 +51,7 @@ try {
 	Rename-Item ./Generated/Models/DigitalTwinGetDigitalTwinHeaders.cs DigitalTwinGetHeaders.cs
 	Rename-Item ./Generated/Models/DigitalTwinUpdateDigitalTwinHeaders.cs DigitalTwinUpdateHeaders.cs
 
-	#Edit the protocol layer to make all classes and interfaces internal, remove references to Generated.Models namespace
+	# Edit the protocol layer to make all classes and interfaces internal, remove references to Generated.Models namespace
 	Get-ChildItem ./Generated *.cs |
 		Foreach-Object {
 			$protocolLayerClassCode = ($_ | Get-Content)
@@ -60,7 +62,7 @@ try {
 			[IO.File]::WriteAllText($_.FullName, ($protocolLayerClassCode -join "`r`n"))
 		}
 
-	#Edit the protocol layer interface to return the correct response types
+	# Edit the protocol layer interface to return the correct response types
 	Get-ChildItem . Generated/IDigitalTwin.cs |
 		Foreach-Object {
 			$IDigitalTwinInterfaceClassCode = ($_ | Get-Content)
@@ -73,7 +75,7 @@ try {
 			[IO.File]::WriteAllText($_.FullName, ($IDigitalTwinInterfaceClassCode -join "`r`n"))
 		}
 
-	#Edit the protocol layer http requests to take string without json escaping anything, and return the correct response types
+	# Edit the protocol layer http requests to take string without json escaping anything, and return the correct response types
 	Get-ChildItem . Generated/DigitalTwin.cs |
 		Foreach-Object {
 			$DigitalTwinClassCode = ($_ | Get-Content)
@@ -96,7 +98,7 @@ try {
 			[IO.File]::WriteAllText($_.FullName, ($DigitalTwinClassCode -join "`r`n"))
 		}
 
-	#Edit the protocol layer extensions class to return the correct response types
+	# Edit the protocol layer extensions class to return the correct response types
 	Get-ChildItem . Generated/DigitalTwinExtensions.cs |
 		Foreach-Object {
 			$DigitalTwinExtensionsClassCode = ($_ | Get-Content)
