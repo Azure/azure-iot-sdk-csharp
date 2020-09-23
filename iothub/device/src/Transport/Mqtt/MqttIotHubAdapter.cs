@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(_mqttTransportSettings.ClientCertificate != null);
                 }
 
-                string usernameString = $"{this._iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(this._productInfo.ToString())}";
+                string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(_productInfo.ToString())}";
 
                 if (!_mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
                 {
