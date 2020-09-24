@@ -3,6 +3,7 @@
 
 using System;
 using CommandLine;
+using Microsoft.Extensions.Logging;
 
 namespace TemperatureController
 {
@@ -54,12 +55,14 @@ namespace TemperatureController
             "\nDefaults to environment variable \"IOTHUB_DEVICE_DPS_DEVICE_KEY\".")]
         public string DeviceSymmetricKey { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_DPS_DEVICE_KEY");
 
-        public bool Validate()
+        public bool Validate(ILogger logger)
         {
             if (string.IsNullOrWhiteSpace(DeviceSecurityType))
             {
-                throw new ArgumentNullException(nameof(DeviceSecurityType), "Device provisioning type needs to be specified, please set the environment variable \"IOTHUB_DEVICE_SECURITY_TYPE\"" +
-                    "or pass in \"-s | --DeviceSecurityType\" through command line.");
+                logger.LogWarning("Device provisioning type not set, please set the environment variable \"IOTHUB_DEVICE_SECURITY_TYPE\"" +
+                    "or pass in \"-s | --DeviceSecurityType\" through command line. \nWill default to using \"dps\" flow.");
+
+                DeviceSecurityType = "dps";
             }
 
             return (DeviceSecurityType.ToLowerInvariant()) switch
