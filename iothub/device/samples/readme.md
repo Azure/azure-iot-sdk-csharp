@@ -8,7 +8,6 @@ This folder contains simple samples showing how to use the various features of M
 * [File Upload Sample][d-file-upload-sample]
 * [Keys Rollover Sample][d-keys-rollover-sample]
 * [Import Export Devices Sample][d-import-export-devices-sample]
-* [Digital Twin Device Sample][d-pnp-sample]
 * [Xamarin Sample][d-xamarin-sample]
 
 ### [Module samples][module-samples]
@@ -60,7 +59,6 @@ You need to clone the repository or download the sample (the one you want to try
 [d-file-upload-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/FileUploadSample
 [d-keys-rollover-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/KeysRolloverSample
 [d-import-export-devices-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/ImportExportDevicesSample
-[d-pnp-sample]: /iothub/device/samples/DigitalTwinDeviceSamples
 [d-xamarin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/XamarinSample
 
 [module-samples]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/module
