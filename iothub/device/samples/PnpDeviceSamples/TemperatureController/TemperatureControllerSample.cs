@@ -62,6 +62,7 @@ namespace TemperatureController
             // -> Set handler to receive "reboot" command - root interface.
             // -> Set handler to receive "getMaxMinReport" command - on "Thermostat" components.
             // -> Set handler to receive "targetTemperature" property updates from service - on "Thermostat" components.
+            // -> Update device information on "deviceInformation" component.
             // -> Send initial device info - "workingSet" over telemetry, "serialNumber" over reported property update - root interface.
             // -> Periodically send "temperature" over telemetry - on "Thermostat" components.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set - on "Thermostat" components.
@@ -79,6 +80,7 @@ namespace TemperatureController
             _desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
             _desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
 
+            await UpdateDeviceInformationAsync(cancellationToken);
             await SendDeviceMemoryAsync(cancellationToken);
             await SendDeviceSerialNumberAsync(cancellationToken);
 
@@ -248,6 +250,68 @@ namespace TemperatureController
             {
                 _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.");
             }
+        }
+
+        // Report the property updates on "deviceInformation" component.
+        private async Task UpdateDeviceInformationAsync(CancellationToken cancellationToken)
+        {
+            string componentName = "deviceInformation";
+
+            string manufacturer = "manufacturer";
+            string manufacturerValue = "element15";
+            string manufacturerPatch = PnpHelper.CreatePropertyPatch(manufacturer, JsonConvert.SerializeObject(manufacturerValue), componentName);
+            var manufacturerProperty = new TwinCollection(manufacturerPatch);
+            await _deviceClient.UpdateReportedPropertiesAsync(manufacturerProperty, cancellationToken);
+            _logger.LogDebug($"Property: Update - component = \"{componentName}\", property {{ \"{manufacturer}\": \"{manufacturerValue}\" }} is {StatusCode.Completed}.");
+
+            string model = "model";
+            string modelValue = "ModelIDxcdvmk";
+            string modelPatch = PnpHelper.CreatePropertyPatch(model, JsonConvert.SerializeObject(modelValue), componentName);
+            var modelProperty = new TwinCollection(modelPatch);
+            await _deviceClient.UpdateReportedPropertiesAsync(modelProperty, cancellationToken);
+            _logger.LogDebug($"Property: Update - component = \"{componentName}\", property {{ \"{model}\": \"{modelValue}\" }} is {StatusCode.Completed}.");
+
+            string swVersion = "swVersion";
+            string swVersionValue = "1.0.0";
+            string swVersionPatch = PnpHelper.CreatePropertyPatch(swVersion, JsonConvert.SerializeObject(swVersionValue), componentName);
+            var swVersionProperty = new TwinCollection(swVersionPatch);
+            await _deviceClient.UpdateReportedPropertiesAsync(swVersionProperty, cancellationToken);
+            _logger.LogDebug($"Property: Update - component = \"{componentName}\", property {{ \"{swVersion}\": \"{swVersionValue}\" }} is {StatusCode.Completed}.");
+
+            string osName = "osName";
+            string osNameValue = "Windows 10";
+            string osNamePatch = PnpHelper.CreatePropertyPatch(osName, JsonConvert.SerializeObject(osNameValue), componentName);
+            var osNameProperty = new TwinCollection(osNamePatch);
+            await _deviceClient.UpdateReportedPropertiesAsync(osNameProperty, cancellationToken);
+            _logger.LogDebug($"Property: Update - component = \"{componentName}\", property {{ \"{osName}\": \"{osNameValue}\" }} is {StatusCode.Completed}.");
+
+            string processorArchitecture = "processorArchitecture";
+            string processorArchitectureValue = "64-bit";
+            string processorArchitecturePatch = PnpHelper.CreatePropertyPatch(processorArchitecture, JsonConvert.SerializeObject(processorArchitectureValue), componentName);
+            var processorArchitectureProperty = new TwinCollection(processorArchitecturePatch);
+            await _deviceClient.UpdateReportedPropertiesAsync(processorArchitectureProperty, cancellationToken);
+            _logger.LogDebug($"Property: Update - component = \"{componentName}\", property {{ \"{processorArchitecture}\": \"{processorArchitectureValue}\" }} is {StatusCode.Completed}.");
+
+            string processorManufacturer = "processorManufacturer";
+            string processorManufacturerValue = "Intel";
+            string processorManufacturerPatch = PnpHelper.CreatePropertyPatch(processorManufacturer, JsonConvert.SerializeObject(processorManufacturerValue), componentName);
+            var processorManufacturerProperty = new TwinCollection(processorManufacturerPatch);
+            await _deviceClient.UpdateReportedPropertiesAsync(processorManufacturerProperty, cancellationToken);
+            _logger.LogDebug($"Property: Update - component = \"{componentName}\", property {{ \"{processorManufacturer}\": \"{processorManufacturerValue}\" }} is {StatusCode.Completed}.");
+
+            string totalStorage = "totalStorage";
+            double totalStorageValue = 256;
+            string totalStoragePatch = PnpHelper.CreatePropertyPatch(totalStorage, JsonConvert.SerializeObject(totalStorageValue), componentName);
+            var totalStorageProperty = new TwinCollection(totalStoragePatch);
+            await _deviceClient.UpdateReportedPropertiesAsync(totalStorageProperty, cancellationToken);
+            _logger.LogDebug($"Property: Update - component = \"{componentName}\", property {{ \"{totalStorage}\": {totalStorageValue}MB }} is {StatusCode.Completed}.");
+
+            string totalMemory = "totalMemory";
+            double totalMemoryValue = 1024;
+            string totalMemoryPatch = PnpHelper.CreatePropertyPatch(totalMemory, JsonConvert.SerializeObject(totalMemoryValue), componentName);
+            var totalMemoryProperty = new TwinCollection(totalMemoryPatch);
+            await _deviceClient.UpdateReportedPropertiesAsync(totalMemoryProperty, cancellationToken);
+            _logger.LogDebug($"Property: Update - component = \"{componentName}\", property {{ \"{totalMemory}\": {totalMemoryValue}MB }} is {StatusCode.Completed}.");
         }
 
         // Send working set of device memory over telemetry.
