@@ -194,15 +194,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     _logger.LogInformation($"Device sending message {++messageCount} to IoT Hub...");
 
-                    Message message = PrepareMessage(messageCount);
+                    (Message message, string payload) = PrepareMessage(messageCount);
                     while (true)
                     {
                         try
                         {
                             await s_deviceClient.SendEventAsync(message);
-                            _logger.LogInformation($"Sent message {messageCount} with data [{message.GetBytes()}]");
+                            _logger.LogInformation($"Sent message {messageCount} of {payload}");
                             message.Dispose();
-                            continue;
+                            break;
                         }
                         catch (IotHubException ex) when (ex.IsTransient)
                         {
@@ -212,6 +212,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         catch (Exception ex) when (ExceptionHelper.IsNetworkExceptionChain(ex))
                         {
                             _logger.LogError($"A network related exception was caught, but will try to recover and retry: {ex}");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"Unexpected error {ex}");
                         }
 
                         // wait and retry
@@ -256,7 +260,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private Message PrepareMessage(int messageId)
+        private (Message, string) PrepareMessage(int messageId)
         {
             var temperature = s_randomGenerator.Next(20, 35);
             var humidity = s_randomGenerator.Next(60, 80);
@@ -270,7 +274,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
             eventMessage.Properties.Add("temperatureAlert", (temperature > TemperatureThreshold) ? "true" : "false");
 
-            return eventMessage;
+            return (eventMessage, messagePayload);
         }
 
         private async Task ReceiveMessageAndCompleteAsync()
