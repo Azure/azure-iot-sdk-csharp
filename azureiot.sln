@@ -77,14 +77,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.Tests", "shared\tests\Microsoft.Azure.Devices.Shared.Tests.csproj", "{CEEE435F-32FC-4DE5-8735-90F6AC950A01}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{ABE041E0-27AF-4AE7-B9CB-7DD2BC7D3850}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PnpDeviceSamples", "PnpDeviceSamples", "{DC9D3907-BA41-4138-AAC8-A3AB270D5473}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thermostat", "iothub\device\samples\PnpDeviceSamples\Thermostat\Thermostat.csproj", "{83AB7A56-509B-44C3-9CA3-AB0581098B18}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemperatureController", "iothub\device\samples\PnpDeviceSamples\TemperatureController\TemperatureController.csproj", "{F172E392-E692-4862-9DB6-8CBBAF368535}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -158,14 +150,6 @@ Global
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{83AB7A56-509B-44C3-9CA3-AB0581098B18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{83AB7A56-509B-44C3-9CA3-AB0581098B18}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{83AB7A56-509B-44C3-9CA3-AB0581098B18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{83AB7A56-509B-44C3-9CA3-AB0581098B18}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F172E392-E692-4862-9DB6-8CBBAF368535}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F172E392-E692-4862-9DB6-8CBBAF368535}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F172E392-E692-4862-9DB6-8CBBAF368535}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F172E392-E692-4862-9DB6-8CBBAF368535}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,10 +184,6 @@ Global
 		{275DEE86-1EEA-47C4-A9C5-797DF20EC8A7} = {3AA089A9-A035-439E-BAF6-C3975A334379}
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01} = {3AA089A9-A035-439E-BAF6-C3975A334379}
-		{ABE041E0-27AF-4AE7-B9CB-7DD2BC7D3850} = {A48437BA-3C5B-431E-9B2F-96C850E9E1A5}
-		{DC9D3907-BA41-4138-AAC8-A3AB270D5473} = {ABE041E0-27AF-4AE7-B9CB-7DD2BC7D3850}
-		{83AB7A56-509B-44C3-9CA3-AB0581098B18} = {DC9D3907-BA41-4138-AAC8-A3AB270D5473}
-		{F172E392-E692-4862-9DB6-8CBBAF368535} = {DC9D3907-BA41-4138-AAC8-A3AB270D5473}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
