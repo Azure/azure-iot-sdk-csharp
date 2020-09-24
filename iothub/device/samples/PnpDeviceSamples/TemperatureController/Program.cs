@@ -36,7 +36,7 @@ namespace TemperatureController
                 });
 
             s_logger = InitializeConsoleDebugLogger();
-            if (!parameters.Validate())
+            if (!parameters.Validate(s_logger))
             {
                 throw new ArgumentException("Required parameters are not set. Please recheck required variables by using \"--help\"");
             }
