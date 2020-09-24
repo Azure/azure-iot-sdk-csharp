@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     /// <summary>
     /// Test class containing all tests to be run for plug and play.
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("PlugAndPlay")]
-    public class PnpServiceTests
+    public class PnpServiceTests : E2EMsTestBase
     {
         private const string DevicePrefix = "plugAndPlayDevice";
         private const string ModulePrefix = "plugAndPlayModule";
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Setup
 
             // Create a device.
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
             var options = new ClientOptions
             {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Setup
 
             // Create a device.
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
             var options = new ClientOptions
             {
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Setup
 
             // Create a module.
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the module plug and play.
             var options = new ClientOptions
             {
