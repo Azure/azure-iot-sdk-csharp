@@ -194,18 +194,28 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     _logger.LogInformation($"Device sending message {++messageCount} to IoT Hub...");
 
-                    try
+                    Message message = PrepareMessage(messageCount);
+                    while (true)
                     {
-                        await SendMessageAsync(messageCount);
-                    }
-                    catch (IotHubException ex) when (ex.IsTransient)
-                    {
-                        // Inspect the exception to figure out if operation should be retried, or if user-input is required.
-                        _logger.LogError($"An IotHubException was caught, but will try to recover and retry explicitly: {ex}");
-                    }
-                    catch (Exception ex) when (ExceptionHelper.IsNetworkExceptionChain(ex))
-                    {
-                        _logger.LogError($"A network related exception was caught, but will try to recover and retry explicitly: {ex}");
+                        try
+                        {
+                            await s_deviceClient.SendEventAsync(message);
+                            _logger.LogInformation($"Sent message {messageCount} with data [{message.GetBytes()}]");
+                            message.Dispose();
+                            continue;
+                        }
+                        catch (IotHubException ex) when (ex.IsTransient)
+                        {
+                            // Inspect the exception to figure out if operation should be retried, or if user-input is required.
+                            _logger.LogError($"An IotHubException was caught, but will try to recover and retry: {ex}");
+                        }
+                        catch (Exception ex) when (ExceptionHelper.IsNetworkExceptionChain(ex))
+                        {
+                            _logger.LogError($"A network related exception was caught, but will try to recover and retry: {ex}");
+                        }
+
+                        // wait and retry
+                        await Task.Delay(s_sleepDuration);
                     }
                 }
 
@@ -246,13 +256,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task SendMessageAsync(int messageId)
+        private Message PrepareMessage(int messageId)
         {
             var temperature = s_randomGenerator.Next(20, 35);
             var humidity = s_randomGenerator.Next(60, 80);
             string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
 
-            using var eventMessage = new Message(Encoding.UTF8.GetBytes(messagePayload))
+            var eventMessage = new Message(Encoding.UTF8.GetBytes(messagePayload))
             {
                 MessageId = messageId.ToString(),
                 ContentEncoding = Encoding.UTF8.ToString(),
@@ -260,8 +270,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
             eventMessage.Properties.Add("temperatureAlert", (temperature > TemperatureThreshold) ? "true" : "false");
 
-            await s_deviceClient.SendEventAsync(eventMessage);
-            _logger.LogInformation($"Sent message {messageId} with data [{messagePayload}]");
+            return eventMessage;
         }
 
         private async Task ReceiveMessageAndCompleteAsync()
