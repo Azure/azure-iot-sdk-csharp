@@ -17,14 +17,10 @@
 
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
-using System;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SimulatedDevice
@@ -33,16 +29,16 @@ namespace SimulatedDevice
     {
         private static DeviceClient s_deviceClient;
         private readonly static string s_myDeviceId = "Contoso-Test-Device";
-        private readonly static string s_iotHubUri = "ContosoTestHubdlxlud5h.azure-devices.net";
+        private readonly static string s_iotHubUri = "<iot-hub-name-goes-here>.azure-devices.net";
         // This is the primary key for the device. This is in the portal. 
         // Find your IoT hub in the portal > IoT devices > select your device > copy the key. 
-        private readonly static string s_deviceKey = "RClD0LGxZCYavagk8tS2M7L1MI5bcKcyR+tJHzj+gDk=";
+        private readonly static string s_deviceKey = "device-id-goes-here";
 
         // If this is false, it will submit messages to the iot hub. 
         // If this is true, it will read one of the output files and convert it to ASCII.
         private static bool readTheFile = false;
 
-        private static void Main(string[] args)
+        private static async Task Main()
         {
             if (readTheFile)
             {
@@ -60,23 +56,29 @@ namespace SimulatedDevice
                 //  http://docs.microsoft.com/azure/iot-hub/tutorial-routing
 
                 Console.WriteLine("Routing Tutorial: Simulated device\n");
-                s_deviceClient = DeviceClient.Create(s_iotHubUri, new DeviceAuthenticationWithRegistrySymmetricKey(s_myDeviceId, s_deviceKey), TransportType.Mqtt);
-                SendDeviceToCloudMessagesAsync();
+                s_deviceClient = DeviceClient.Create(s_iotHubUri,
+                  new DeviceAuthenticationWithRegistrySymmetricKey(s_myDeviceId, s_deviceKey), TransportType.Mqtt);
+
+                using var cts = new CancellationTokenSource();
+                var messages = SendDeviceToCloudMessagesAsync(cts.Token);
                 Console.WriteLine("Press the Enter key to stop.");
                 Console.ReadLine();
+                cts.Cancel();
+                await messages;
+
             }
         }
 
-        /// <summary>
+        /// <summary> 
         /// Send message to the Iot hub. This generates the object to be sent to the hub in the message.
         /// </summary>
-        private static async void SendDeviceToCloudMessagesAsync()
+        private static async Task SendDeviceToCloudMessagesAsync(CancellationToken token)
         {
             double minTemperature = 20;
             double minHumidity = 60;
             Random rand = new Random();
 
-            while (true)
+            while (!token.IsCancellationRequested)
             {
                 double currentTemperature = minTemperature + rand.NextDouble() * 15;
                 double currentHumidity = minHumidity + rand.NextDouble() * 20;
@@ -122,8 +124,7 @@ namespace SimulatedDevice
 
                 // Take the string (telemetryDataString) and turn it into a byte array 
                 //   that is encoded as UTF-32.
-                var message = new Message(Encoding.UTF32.GetBytes(telemetryDataString));
-
+                using var message = new Message(Encoding.UTF32.GetBytes(telemetryDataString));
                 //Add one property to the message.
                 message.Properties.Add("level", levelValue);
 
@@ -170,5 +171,5 @@ namespace SimulatedDevice
 
             System.IO.File.WriteAllText(outputFilePathAndName, outputResult);
         }
-    } 
+    }
 }
