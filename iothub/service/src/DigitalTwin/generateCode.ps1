@@ -28,7 +28,7 @@ try {
     $swaggerJson | ConvertTo-Json -Depth 10 | Set-Content .\DigitalTwin.json
 
 	# Generate the base code from the swagger file that is defined in this folder's README
-	autorest
+	autorest ./autorest.md
 
 	# Update the response header class names, comments, internal setters, edit the duplicate invoke component command header class to be internal,
 	# update the namespace to be outside Generated (they are referenced publicly)

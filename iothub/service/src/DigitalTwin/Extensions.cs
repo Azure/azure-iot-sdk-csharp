@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Extensions
@@ -37,6 +38,18 @@ namespace Microsoft.Azure.Devices.Extensions
                 string errorMessage = string.Format(CultureInfo.InvariantCulture, ParameterNullWhiteSpaceErrorMessageFormat, argumentName);
                 throw new ArgumentNullException(argumentName, errorMessage);
             }
+        }
+
+        /// <summary>
+        /// Append the "$metadata" identifier to the property values, which helps the service identify the patch as a component update.
+        /// </summary>
+        /// <param name="propertyKeyValuePairs">The dictionary of property key values pairs to update to.</param>
+        internal static void AddComponentUpdateIdentifier(this Dictionary<string, object> propertyKeyValuePairs)
+        {
+            propertyKeyValuePairs.ThrowIfNull(nameof(propertyKeyValuePairs));
+
+            const string metadataKey = "$metadata";
+            propertyKeyValuePairs.Add(metadataKey, new object());
         }
     }
 }
