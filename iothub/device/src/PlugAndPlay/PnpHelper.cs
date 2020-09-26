@@ -4,6 +4,7 @@
 using System.Text;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.PlugAndPlay
@@ -77,13 +78,15 @@ namespace Microsoft.Azure.Devices.Client.PlugAndPlay
         ///     }
         /// </remarks>
         /// <param name="propertyName">The property name, as defined in the DTDL interface.</param>
-        /// <param name="serializedPropertyValue">The serialized property value, in the format defined in the DTDL interface.</param>
+        /// <param name="propertyValue">The property value, in the format defined in the DTDL interface.</param>
         /// <param name="componentName">The name of the component in which the property is defined. Can be null for property defined under the root interface.</param>
         /// <returns>The property patch for read-only and read-write property updates.</returns>
-        public static string CreatePropertyPatch(string propertyName, string serializedPropertyValue, string componentName = default)
+        public static string CreatePropertyPatch(string propertyName, object propertyValue, string componentName = default)
         {
             propertyName.ThrowIfNullOrWhiteSpace(nameof(propertyName));
-            serializedPropertyValue.ThrowIfNullOrWhiteSpace(nameof(serializedPropertyValue));
+            propertyValue.ThrowIfNull(nameof(propertyValue));
+
+            string serializedPropertyValue = JsonConvert.SerializeObject(propertyValue);
 
             string propertyPatch;
             if (string.IsNullOrWhiteSpace(componentName))
@@ -138,22 +141,24 @@ namespace Microsoft.Azure.Devices.Client.PlugAndPlay
         ///     }
         /// </remarks>
         /// <param name="propertyName">The property name, as defined in the DTDL interface.</param>
-        /// <param name="serializedPropertyValue">The serialized property value, in the format defined in the DTDL interface.</param>
+        /// <param name="propertyValue">The property value, in the format defined in the DTDL interface.</param>
         /// <param name="ackCode">The acknowledgment code from the device, for the embedded value property update.</param>
         /// <param name="ackVersion">The version no. of the service-initiated read-write property update.</param>
-        /// <param name="serializedAckDescription">The serialized description from the device, accompanying the embedded value property update.</param>
+        /// <param name="ackDescription">The acknowledgment description from the device, accompanying the embedded value property update.</param>
         /// <param name="componentName">The name of the component in which the property is defined. Can be null for property defined under the root interface.</param>
         /// <returns>The property patch for embedded value property updates for read-write properties.</returns>
         public static string CreatePropertyEmbeddedValuePatch(
             string propertyName,
-            string serializedPropertyValue,
+            object propertyValue,
             int ackCode,
             long ackVersion,
-            string serializedAckDescription = default,
+            string ackDescription = default,
             string componentName = default)
         {
             propertyName.ThrowIfNullOrWhiteSpace(nameof(propertyName));
-            serializedPropertyValue.ThrowIfNullOrWhiteSpace(nameof(serializedPropertyValue));
+            propertyValue.ThrowIfNull(nameof(propertyValue));
+
+            string serializedPropertyValue = JsonConvert.SerializeObject(propertyValue);
 
             string propertyPatch;
             if (string.IsNullOrWhiteSpace(componentName))
@@ -165,7 +170,7 @@ namespace Microsoft.Azure.Devices.Client.PlugAndPlay
                     $"          \"value\" : {serializedPropertyValue}," +
                     $"          \"ac\" : {ackCode}, " +
                     $"          \"av\" : {ackVersion}, " +
-                    $"          {(!string.IsNullOrWhiteSpace(serializedAckDescription) ? $"\"ad\": {serializedAckDescription}" : "")}" +
+                    $"          {(!string.IsNullOrWhiteSpace(ackDescription) ? $"\"ad\": \"{ackDescription}\"" : "")}" +
                     $"      }} " +
                     $"}}";
             }
@@ -181,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.PlugAndPlay
                     $"                  \"value\" : {serializedPropertyValue}," +
                     $"                  \"ac\" : {ackCode}, " +
                     $"                  \"av\" : {ackVersion}, " +
-                    $"                  {(!string.IsNullOrWhiteSpace(serializedAckDescription) ? $"\"ad\": {serializedAckDescription}" : "")}" +
+                    $"                  {(!string.IsNullOrWhiteSpace(ackDescription) ? $"\"ad\": \"{ackDescription}\"" : "")}" +
                     $"              }} " +
                     $"      }} " +
                     $"}}"; ;

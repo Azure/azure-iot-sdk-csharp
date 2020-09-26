@@ -121,6 +121,7 @@ namespace Microsoft.Azure.Devices.Serialization
         ///         "path": "/sampleComponentName/samplePropertyName"
         ///     }
         /// ]
+        /// </para>
         /// <para>
         /// The patch for removing a component should be in the following format:
         /// [
@@ -129,7 +130,6 @@ namespace Microsoft.Azure.Devices.Serialization
         ///         "path": "/sampleComponentName"
         ///     }
         /// ]
-        /// </para>
         /// </para>
         /// </remarks>
         /// <param name="path">The path to the property to be removed.</param>
