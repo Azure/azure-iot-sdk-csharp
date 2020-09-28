@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.3.0-pnp-preview</Version>
+    <Version>1.12.0-pnp-preview</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client HTTP Transport</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
