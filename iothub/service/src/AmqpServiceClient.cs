@@ -71,18 +71,9 @@ namespace Microsoft.Azure.Devices
 
         public IotHubConnection Connection { get; private set; }
 
-        public SendingAmqpLink SendingLink
-        {
-            get
-            {
-                _faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink);
-                return sendingLink;
-            }
-        }
-
         public override async Task OpenAsync()
         {
-            await GetSendingLinkAsync().ConfigureAwait(false);
+            await _faultTolerantSendingLink.OpenAsync(s_defaultOperationTimeout).ConfigureAwait(false);
             await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
         }
 
@@ -113,18 +104,12 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-                    if (timeout != null)
-                    {
-                        outcome = await sendingLink
-                            .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout)
-                            .ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        outcome = await sendingLink
-                            .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, OperationTimeout)
-                            .ConfigureAwait(false);
-                    }
+
+                    TimeSpan calculatedTimeout = timeout != null ? (TimeSpan)timeout : OperationTimeout;
+
+                    outcome = await sendingLink
+                        .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, calculatedTimeout)
+                        .ConfigureAwait(false);
                 }
                 catch (TimeoutException)
                 {
@@ -270,6 +255,11 @@ namespace Microsoft.Azure.Devices
             if (!_faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink))
             {
                 sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(OpenTimeout).ConfigureAwait(false);
+            }
+
+            if (sendingLink == null)
+            {
+                throw new ArgumentNullException(nameof(sendingLink), "Failed to get or create a sending link");
             }
 
             return sendingLink;
