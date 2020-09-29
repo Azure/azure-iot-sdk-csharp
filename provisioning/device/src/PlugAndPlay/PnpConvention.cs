@@ -6,20 +6,22 @@ using Microsoft.Azure.Devices.Provisioning.Client.Extensions;
 namespace Microsoft.Azure.Devices.Provisioning.Client.PlugAndPlay
 {
     /// <summary>
-    /// A helper class for formatting the data as per plug and play convention.
+    /// A helper class for formatting the DPS device registration payload, per plug and play convention.
     /// </summary>
-    public static class PnpHelper
+    public static class PnpConvention
     {
         /// <summary>
         /// Create the DPS payload to provision a device as plug and play.
-        /// For more information on device provisioning service and plug and play compatibility,
-        /// and PnP device certification, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-certify-device"/>.
         /// </summary>
         /// <remarks>
+        /// For more information on device provisioning service and plug and play compatibility,
+        /// and PnP device certification, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-certify-device"/>.
         /// The DPS payload should be in the format:
-        ///     {
-        ///         "modelId": "dtmi:com:example:modelName;1"
-        ///     }
+        /// <code>
+        /// {
+        ///   "modelId": "dtmi:com:example:modelName;1"
+        /// }
+        /// </code>
         /// For information on DTDL, see <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"/>
         /// </remarks>
         /// <param name="modelId">The Id of the model the device adheres to for properties, telemetry, and commands.</param>
@@ -27,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.PlugAndPlay
         public static string CreateDpsPayload(string modelId)
         {
             modelId.ThrowIfNullOrWhiteSpace(nameof(modelId));
-            return $"{{ \"modelId\": \"{modelId}\" }}".TrimWhiteSpace();
+            return $"{{\"modelId\":\"{modelId}\"}}";
         }
     }
 }
