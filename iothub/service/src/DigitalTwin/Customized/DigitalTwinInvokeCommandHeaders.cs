@@ -8,7 +8,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DigitalTwinInvokeCommandHeaders
     {
-
         /// <summary>
         /// Initializes a new instance of the
         /// DigitalTwinInvokeCommandHeaders class.

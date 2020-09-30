@@ -1,6 +1,7 @@
   > The `DigitalTwinClient` is available only on .NET framework 4.7.2 and .NET Standard 2.0+.
 
 ### Protocol layer generation:
+
 - Run the powershell script [generateCode.ps](./generateCode.ps1). It will pick up the [autorest config](./autorest.md) and output the results into this folder. It will also make a few automated changes to the generated protocol layer, that are required for this client library.
 
 ### Examples
@@ -57,6 +58,7 @@ catch (HttpOperationException ex) when (ex.Response.StatusCode == HttpStatusCode
 The `DigitalTwinClient.CreateFromConnectionString()` factory method takes in an optional list of `System.Net.Http.DelegatingHandler`, which are added to the Http client pipeline. You can use these delegating handler to specify your custom policies for tracing, retry, routing through a proxy, etc.
 
 Sample usage for logging each Http request and response:
+
 ```csharp
 internal class LoggingHandler : DelegatingHandler
 {
@@ -87,5 +89,4 @@ internal class LoggingHandler : DelegatingHandler
 
 DelegatingHandler[] handlers = { new LoggingHandler(Logger) };
 using var digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(connectionString, handlers);
-
 ```
