@@ -23,5 +23,5 @@ Service samples were moved to [Azure-Samples/azure-iot-samples-csharp][samples-r
 [jobs-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/JobsSample
 [reg-man-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/RegistryManagerSample
 [service-client-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/ServiceClientSample
-[pnp-service-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/PnpServiceSamples
+[pnp-service-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/feature/digitaltwin/iot-hub/Samples/service/PnpServiceSamples
 [digital-twin-client-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/DigitalTwinClientSamples
