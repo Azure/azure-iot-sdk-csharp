@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinClient"/> class.</summary>
-        /// <param name="connectionString">Your IoT hub's connection string.</param>
+        /// <param name="connectionString">The IoT hub's connection string.</param>
         /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
         public static DigitalTwinClient CreateFromConnectionString(string connectionString, params DelegatingHandler[] handlers)
         {
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets a strongly-typed digital twin asynchronously.
+        /// Gets a strongly-typed digital twin.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Updates a digital twin asynchronously.
+        /// Updates a digital twin.
         /// <para>For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin."/></para>
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Invoke a command on a digital twin asynchronously.
+        /// Invoke a command on a digital twin.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="commandName">The command to be invoked.</param>
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Invoke a command on a component of a digital twin asynchronously.
+        /// Invoke a command on a component of a digital twin.
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="componentName">The component name under which the command is defined.</param>
