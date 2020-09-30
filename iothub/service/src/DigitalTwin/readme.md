@@ -42,9 +42,9 @@ All service operations will throw HttpOperationException on failure reported by 
 try
 {
     HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> invokeCommandResponse = await digitalTwinClient.InvokeCommandAsync(
-                digitalTwinId,
-                commandName,
-                serializedPayload);
+        digitalTwinId,
+        commandName,
+        serializedPayload);
 }
 catch (HttpOperationException ex) when (ex.Response.StatusCode == HttpStatusCode.NotFound)
 {

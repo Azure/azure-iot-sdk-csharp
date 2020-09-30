@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Serialization
         /// <summary>
         /// Model-defined writable properties' request state.
         /// </summary>
-        /// <remarks>For your convenience, the value of each dictionary object can be turned into an instance of <see cref="WritableProperty"/>.</remarks>
+        /// <remarks>For convenience, the value of each dictionary object can be turned into an instance of <see cref="WritableProperty"/>.</remarks>
         [JsonExtensionData]
         public IDictionary<string, object> WriteableProperties { get; } = new Dictionary<string, object>();
     }
