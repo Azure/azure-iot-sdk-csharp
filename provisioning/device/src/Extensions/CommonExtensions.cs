@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
         /// </summary>
         /// <param name="input">The string to be formatted.</param>
         /// <returns>The input string, with extra white space removed. </returns>
-        public static string TrimWhiteSpace(this string input)
+        internal static string TrimWhiteSpace(this string input)
         {
             return s_trimWhiteSpace.Replace(input, "$1");
         }
