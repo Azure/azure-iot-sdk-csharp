@@ -86,7 +86,7 @@ This sample uses the following model which has components - [TemperatureControll
 [jobs-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/JobsSample
 [reg-man-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/RegistryManagerSample
 [service-client-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/ServiceClientSample
-[pnp-service-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/preview/iothub/service/samples/PnpServiceSamples
+[pnp-service-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/PnpServiceSamples
 [lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
 [lnl-credentials]: https://github.com/Azure/azure-iot-device-ecosystem/blob/master/setup_iothub.md#retrieving-user-credentials-to-interact-with-the-service-not-as-a-device
 [lnk-prereq]: https://github.com/Azure-Samples/azure-iot-samples-csharp#prerequisites
