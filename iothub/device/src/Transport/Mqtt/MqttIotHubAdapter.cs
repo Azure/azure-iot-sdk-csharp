@@ -297,24 +297,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(_mqttTransportSettings.ClientCertificate != null);
                 }
 
-                // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
-                // the SDK will enable plug and play features by using the PnP-enabled service API version, and appending the model Id to the MQTT CONNECT packet (in the username).
-                // For devices or modules that do not have the model Id set, the SDK will use the GA service API version.
-                string serviceParams = null;
-                if (string.IsNullOrWhiteSpace(_options?.ModelId))
-                {
-                    serviceParams = ClientApiVersionHelper.ApiVersionQueryStringLatest;
-                }
-                else
-                {
-                    serviceParams = $"{ClientApiVersionHelper.ApiVersionQueryStringPreview}&{ModelIdParam}={_options.ModelId}";
-                }
-
-                string usernameString = $"{this._iotHubHostName}/{id}/?{serviceParams}&{DeviceClientTypeParam}={Uri.EscapeDataString(this._productInfo.ToString())}";
+                string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(_productInfo.ToString())}";
 
                 if (!_mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
                 {
                     usernameString += $"&{AuthChainParam}={Uri.EscapeDataString(_mqttTransportSettings.AuthenticationChain)}";
+                }
+
+                // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
+                // the SDK will enable plug and play features by appending the model Id to the MQTT CONNECT packet (in the username).
+                if (!(_options?.ModelId).IsNullOrWhiteSpace())
+                {
+                    usernameString += $"&{ModelIdParam}={_options.ModelId}";
                 }
 
                 if (Logging.IsEnabled) Logging.Info(this, $"{nameof(usernameString)}={usernameString}", nameof(ConnectAsync));

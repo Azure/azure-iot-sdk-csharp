@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
         {
-            string deviceName = prefix + Guid.NewGuid();
+            string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
             // Delete existing devices named this way and create a new one.
             using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
@@ -121,25 +121,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public Client.IAuthenticationMethod AuthenticationMethod { get; private set; }
 
-        public DeviceClient CreateDeviceClient(Client.TransportType transport)
+        public DeviceClient CreateDeviceClient(Client.TransportType transport, ClientOptions options = default)
         {
             DeviceClient deviceClient = null;
 
             if (AuthenticationMethod == null)
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport);
+                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport, options);
                 _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from connection string: {transport} ID={TestLogger.IdOf(deviceClient)}");
             }
             else
             {
-                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport, options);
                 _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: {transport} ID={TestLogger.IdOf(deviceClient)}");
             }
 
             return deviceClient;
         }
 
-        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device, ClientOptions options = default)
         {
             DeviceClient deviceClient = null;
 
@@ -147,22 +147,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             {
                 if (authScope == ConnectionStringAuthScope.Device)
                 {
-                    deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings);
+                    deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings, options);
                     _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from device connection string: ID={TestLogger.IdOf(deviceClient)}");
                 }
                 else
                 {
-                    deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, Device.Id, transportSettings);
+                    deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, Device.Id, transportSettings, options);
                     _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IoTHub connection string: ID={TestLogger.IdOf(deviceClient)}");
                 }
             }
             else
             {
-                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transportSettings);
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transportSettings, options);
                 _logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: ID={TestLogger.IdOf(deviceClient)}");
             }
 
             return deviceClient;
+        }
+
+        public async Task RemoveDeviceAsync()
+        {
+            using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            await rm.RemoveDeviceAsync(Id).ConfigureAwait(false);
         }
     }
 }

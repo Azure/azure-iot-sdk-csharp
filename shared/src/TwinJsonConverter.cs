@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.Shared
         private const string CloudToDeviceMessageCountTag = "cloudToDeviceMessageCount";
         private const string AuthenticationTypeTag = "authenticationType";
         private const string X509ThumbprintTag = "x509Thumbprint";
+        private const string ModelId = "modelId";
 
         /// <summary>
         /// Converts <see cref="Twin"/> to its equivalent Json representation.
@@ -72,10 +73,16 @@ namespace Microsoft.Azure.Devices.Shared
 
             writer.WriteStartObject();
 
+            if (!string.IsNullOrWhiteSpace(twin.ModelId))
+            {
+                writer.WritePropertyName(ModelId);
+                writer.WriteValue(twin.ModelId);
+            }
+
             writer.WritePropertyName(DeviceIdJsonTag);
             writer.WriteValue(twin.DeviceId);
 
-            if (!string.IsNullOrEmpty(twin.ModuleId))
+            if (!string.IsNullOrWhiteSpace(twin.ModuleId))
             {
                 writer.WritePropertyName(ModuleIdJsonTag);
                 writer.WriteValue(twin.ModuleId);
@@ -93,7 +100,7 @@ namespace Microsoft.Azure.Devices.Shared
                 writer.WriteRawValue(JsonConvert.SerializeObject(twin.Status));
             }
 
-            if (!string.IsNullOrEmpty(twin.StatusReason))
+            if (!string.IsNullOrWhiteSpace(twin.StatusReason))
             {
                 writer.WritePropertyName(StatusReasonTag);
                 writer.WriteValue(twin.StatusReason);
@@ -215,6 +222,10 @@ namespace Microsoft.Azure.Devices.Shared
                 {
                     case DeviceIdJsonTag:
                         twin.DeviceId = reader.Value as string;
+                        break;
+
+                    case ModelId:
+                        twin.ModelId = reader.Value as string;
                         break;
 
                     case ModuleIdJsonTag:

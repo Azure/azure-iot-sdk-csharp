@@ -49,6 +49,15 @@ namespace Microsoft.Azure.Devices.Shared
         public string DeviceId { get; set; }
 
         /// <summary>
+        /// The DTDL model Id of the device.
+        /// </summary>
+        /// <remarks>
+        /// The value will be null for a non-pnp device.
+        /// The value will be null for a pnp device until the device connects and registers with the model Id.
+        /// </remarks>
+        public string ModelId { get; set; }
+
+        /// <summary>
         /// Gets and sets the <see cref="Twin" /> Module Id.
         /// </summary>
         public string ModuleId { get; set; }

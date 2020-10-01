@@ -17,8 +17,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("LongRunning")]
     public class AzureSecurityCenterForIoTSecurityMessageE2ETests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
-        private readonly string _modulePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
+        private readonly string _devicePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
+        private readonly string _modulePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
 
         private readonly AzureSecurityCenterForIoTLogAnalyticsClient _logAnalyticsClient;
 
