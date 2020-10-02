@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var dict1 = new Dictionary<string, string> { { "1", "2" }, { "2", "4" }, { "3", "5" } };
 
-            Action action = (() => Utils.MergeDictionaries(new Dictionary<string, string>[] { dict1, null }));
+            Utils.MergeDictionaries(new Dictionary<string, string>[] { dict1, null });
         }
 
         [TestMethod]
