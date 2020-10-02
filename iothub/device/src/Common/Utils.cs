@@ -2,7 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Newtonsoft.Json;
@@ -105,6 +108,21 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
             }
+        }
+
+        public static IReadOnlyDictionary<TKey, TValue> MergeDictionaries<TKey, TValue>(IDictionary<TKey, TValue>[] dictionaries)
+        {
+            // No item in the array should be null.
+            if (dictionaries == null || dictionaries.Any(item => item == null))
+            {
+                throw new ArgumentNullException(nameof(dictionaries), "Provided dictionaries should not be null");
+            }
+
+            Dictionary<TKey, TValue> result = dictionaries.SelectMany(dict => dict)
+                .ToLookup(pair => pair.Key, pair => pair.Value)
+                .ToDictionary(group => group.Key, group => group.First());
+
+            return new ReadOnlyDictionary<TKey, TValue>(result);
         }
     }
 }
