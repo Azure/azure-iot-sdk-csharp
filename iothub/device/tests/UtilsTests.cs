@@ -41,18 +41,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public void MergeDictionaries_OneItemInListIsNull()
         {
-            var dict1 = new Dictionary<string, string> { { "1", "2" }, { "2", "4" }, { "3", "5" } };
+            var dict1 = new Dictionary<int, string> { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
 
-            Utils.MergeDictionaries(new Dictionary<string, string>[] { dict1, null });
+            Utils.MergeDictionaries(new Dictionary<int, string>[] { dict1, null });
         }
 
         [TestMethod]
         public void MergeDictionaries_TwoDictionaries_NoOverlap()
         {
-            var dict1 = new Dictionary<string, string> { { "1", "2" }, { "2", "4" }, { "3", "5" } };
-            var dict2 = new Dictionary<string, string> { { "4", "2" }, { "5", "4" }, { "6", "5" } };
+            var dict1 = new Dictionary<int, string> { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
+            var dict2 = new Dictionary<int, string> { { 4, "Four" }, { 5, "Five" }, { 6, "Six" } };
 
-            var result = Utils.MergeDictionaries(new Dictionary<string, string>[] { dict1, dict2 });
+            var result = Utils.MergeDictionaries(new Dictionary<int, string>[] { dict1, dict2 });
 
             Assert.AreEqual(6, result.Count, $"Number of items in the merged dictionary should be equal to {dict1.Count + dict2.Count}");
         }
@@ -60,11 +60,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void MergeDictionaries_ThreeDictionaries_NoOverlap()
         {
-            var dict1 = new Dictionary<string, string> { { "1", "2" }, { "2", "4" }, { "3", "5" } };
-            var dict2 = new Dictionary<string, string> { { "4", "2" }, { "5", "4" }, { "6", "5" } };
-            var dict3 = new Dictionary<string, string> { { "7", "2" }, { "8", "4" }, { "9", "5" } };
+            var dict1 = new Dictionary<int, string> { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
+            var dict2 = new Dictionary<int, string> { { 4, "Four" }, { 5, "Five" }, { 6, "Six" } };
+            var dict3 = new Dictionary<int, string> { { 7, "Seven" }, { 8, "Eight" }, { 9, "Nine" } };
 
-            var result = Utils.MergeDictionaries(new Dictionary<string, string>[] { dict1, dict2, dict3 });
+            var result = Utils.MergeDictionaries(new Dictionary<int, string>[] { dict1, dict2, dict3 });
 
             Assert.AreEqual(9, result.Count, $"Number of items in the merged dictionary should be equal to {dict1.Count + dict2.Count + dict3.Count}");
         }
@@ -72,28 +72,28 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void MergeDictionaries_TwoDictionaries_OneOverLap_PicksFirst()
         {
-            var dict1 = new Dictionary<string, string> { { "1", "2" }, { "2", "4" }, { "3", "5" } };
-            var dict2 = new Dictionary<string, string> { { "1", "5" }, { "4", "4" }, { "5", "5" } };
+            var dict1 = new Dictionary<int, string> { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
+            var dict2 = new Dictionary<int, string> { { 1, "One1" }, { 4, "Four" }, { 5, "Five" } };
 
-            var result = Utils.MergeDictionaries(new Dictionary<string, string>[] { dict1, dict2 });
+            var result = Utils.MergeDictionaries(new Dictionary<int, string>[] { dict1, dict2 });
 
             // There is one overlapping pair, we should pick the first one.
             Assert.AreEqual(5, result.Count, $"Number of items in the merged dictionary should be equal to {dict1.Count + dict2.Count - 1}");
-            Assert.AreEqual(dict1["1"], result["1"], $"The first item in the list takes priority");
+            Assert.AreEqual(dict1[1], result[1], $"The first item in the list takes priority");
         }
 
         [TestMethod]
         public void MergeDictionaries_ThreeDictionaries_OneOverLap_PicksFirst()
         {
-            var dict1 = new Dictionary<string, string> { { "1", "2" }, { "2", "4" }, { "3", "5" } };
-            var dict2 = new Dictionary<string, string> { { "1", "5" }, { "4", "4" }, { "5", "5" } };
-            var dict3 = new Dictionary<string, string> { { "1", "8" }, { "6", "4" }, { "7", "5" } };
+            var dict1 = new Dictionary<int, string> { { 1, "One" }, { 2, "Two" }, { 3, "Three" } };
+            var dict2 = new Dictionary<int, string> { { 1, "One1" }, { 4, "Four" }, { 5, "Five" } };
+            var dict3 = new Dictionary<int, string> { { 1, "One2" }, { 6, "Six" }, { 7, "Seven" } };
 
-            var result = Utils.MergeDictionaries(new Dictionary<string, string>[] { dict1, dict2, dict3 });
+            var result = Utils.MergeDictionaries(new Dictionary<int, string>[] { dict1, dict2, dict3 });
 
             // There is one overlapping pair, we should pick the first one.
             Assert.AreEqual(7, result.Count, $"Number of items in the merged dictionary should be equal to {dict1.Count + dict2.Count + dict3.Count - 2}");
-            Assert.AreEqual(dict1["1"], result["1"], $"The first item in the list takes priority");
+            Assert.AreEqual(dict1[1], result[1], $"The first item in the list takes priority");
         }
     }
 }
