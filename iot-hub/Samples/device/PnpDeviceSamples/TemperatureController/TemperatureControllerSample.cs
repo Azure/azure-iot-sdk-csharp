@@ -83,7 +83,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
 
             await UpdateDeviceInformationAsync(cancellationToken);
-            await SendDeviceMemoryAsync(cancellationToken);
             await SendDeviceSerialNumberAsync(cancellationToken);
 
             bool temperatureReset = true;
@@ -101,6 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 await SendTemperatureAsync(Thermostat1, cancellationToken);
                 await SendTemperatureAsync(Thermostat2, cancellationToken);
+                await SendDeviceMemoryAsync(cancellationToken);
 
                 temperatureReset = _temperature[Thermostat1] == 0 && _temperature[Thermostat2] == 0;
                 await Task.Delay(5 * 1000);
