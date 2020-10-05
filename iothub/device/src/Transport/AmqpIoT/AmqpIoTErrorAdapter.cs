@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {
-                retException = new DeviceMaximumQueueDepthExceededException(message);
+                retException = new QuotaExceededException(message);
             }
             else if (error.Condition.Equals(DeviceContainerThrottled))
             {
