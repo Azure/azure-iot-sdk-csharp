@@ -6,6 +6,9 @@ using Microsoft.Azure.Devices.Common.Security;
 
 namespace Microsoft.Azure.Devices.Authentication
 {
+    /// <summary>
+    /// Allows authentication to the API using a Shared Access Key
+    /// </summary>
     internal class SharedAccessKeyCredentials : IotServiceClientCredentials
     {
         // Time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
