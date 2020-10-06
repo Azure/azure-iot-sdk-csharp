@@ -257,11 +257,6 @@ namespace Microsoft.Azure.Devices
                 sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(OpenTimeout).ConfigureAwait(false);
             }
 
-            if (sendingLink == null)
-            {
-                throw new ArgumentNullException(nameof(sendingLink), "Failed to get or create a sending link");
-            }
-
             return sendingLink;
         }
 
