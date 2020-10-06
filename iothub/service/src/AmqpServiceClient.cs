@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices
                 {
                     SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
 
-                    TimeSpan calculatedTimeout = timeout != null ? (TimeSpan)timeout : OperationTimeout;
+                    TimeSpan calculatedTimeout = timeout ?? OperationTimeout;
 
                     outcome = await sendingLink
                         .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, calculatedTimeout)
