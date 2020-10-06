@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     internal class ClientApiVersionHelper
     {
         private const string ApiVersionQueryPrefix = "api-version=";
-        private const string ApiVersionDefault = "2020-05-31-preview";
+        private const string ApiVersionDefault = "2020-09-30";
 
         /// <summary>
         /// The default API version to use for all data-plane service calls

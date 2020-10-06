@@ -249,8 +249,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
 
-            string serviceApiVersion = ClientApiVersionHelper.ApiVersionString;
-
             AmqpLinkSettings amqpLinkSettings = new AmqpLinkSettings
             {
                 LinkName = linkSuffix,
@@ -275,15 +273,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
-            // the SDK will enable plug and play features by using the PnP-enabled service API version, and setting the modelId to Amqp link settings.
-            // For devices or modules that do not have the model Id set, the SDK will use the GA service API version.
+            // the SDK will enable plug and play features by setting the modelId to Amqp link settings.
             if (!string.IsNullOrWhiteSpace(deviceIdentity.Options?.ModelId))
             {
                 amqpLinkSettings.AddProperty(AmqpIoTConstants.ModelId, deviceIdentity.Options.ModelId);
-                serviceApiVersion = ClientApiVersionHelper.ApiVersionPreview;
             }
 
-            amqpLinkSettings.AddProperty(AmqpIoTConstants.ApiVersion, serviceApiVersion);
+            amqpLinkSettings.AddProperty(AmqpIoTConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
 
             try
             {

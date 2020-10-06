@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         Device
     }
 
-    public class TestDevice : IDisposable
+    public class TestDevice
     {
         private const int DelayAfterDeviceCreationSeconds = 0;
         private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
@@ -166,23 +166,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             return deviceClient;
         }
 
-        private async Task DisposeDeviceAsync()
+        public async Task RemoveDeviceAsync()
         {
-            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
-            {
-                await rm.RemoveDeviceAsync(this.Id).ConfigureAwait(false);
-            }
-        }
-
-        public static string GetHostName(string iotHubConnectionString)
-        {
-            Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
-            return regex.Match(iotHubConnectionString).Groups[1].Value;
-        }
-
-        public void Dispose()
-        {
-            DisposeDeviceAsync().GetAwaiter().GetResult();
+            using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            await rm.RemoveDeviceAsync(Id).ConfigureAwait(false);
         }
     }
 }
