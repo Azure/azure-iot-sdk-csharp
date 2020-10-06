@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thermostat", "PnpDeviceSamp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PnpHelpers", "PnpDeviceSamples\PnpConvention\PnpHelpers.csproj", "{DCFC3AF8-5E7D-4ADD-A08E-D50B3768564F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorConsoleLogger", "..\..\..\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj", "{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,10 @@ Global
 		{DCFC3AF8-5E7D-4ADD-A08E-D50B3768564F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCFC3AF8-5E7D-4ADD-A08E-D50B3768564F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCFC3AF8-5E7D-4ADD-A08E-D50B3768564F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

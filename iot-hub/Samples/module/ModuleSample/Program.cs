@@ -5,7 +5,6 @@ using CommandLine;
 using Microsoft.Azure.Devices.Logging;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -13,12 +12,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class Program
     {
         /// <summary>
-        /// A sample for illustrating how a device should handle connection status updates.
+        /// A sample for illustrating how a module client handles its connection status updates,
+        /// while sending telemetry to IoT Hub, and sending and receiving twin property updates.
         /// </summary>
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
         /// </param>
-        public static async Task<int> Main(string[] args)
+        public static async Task Main(string[] args)
         {
             // Parse application parameters
             Parameters parameters = null;
@@ -46,11 +46,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _ = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
             // Run the sample
-            var sample = new DeviceReconnectionSample(parameters.GetConnectionStrings(), parameters.TransportType, logger);
+            var sample = new ModuleSample(parameters.GetConnectionStrings(), parameters.TransportType, logger);
             await sample.RunSampleAsync();
 
             logger.LogInformation("Done.");
-            return 0;
         }
     }
 }
