@@ -6,7 +6,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 
-namespace Microsoft.Azure.Devices.Client.Samples
+namespace Microsoft.Azure.Devices.Logging
 {
     /// <summary>
     /// The ILogger implementation for writing color log entries to console.
@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// <summary>
         /// Initializes an instance of <see cref="ColorConsoleLogger"/>.
         /// </summary>
-        /// <param name="name">The category name for each <see cref="ILogger"/> instance. This is usually the class name where the logger is initialized.</param>
         /// <param name="config">The <see cref="ColorConsoleLoggerConfiguration"/> settings to be used for logging.</param>
         public ColorConsoleLogger(ColorConsoleLoggerConfiguration config)
         {
@@ -64,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var color = _config.LogLevelToColorMapping[logLevel];
             if (_config.EventIds.Contains(ColorConsoleLoggerConfiguration.DefaultEventId) || _config.EventIds.Contains(eventId.Id))
             {
-                var initialColor = Console.ForegroundColor;
+                ConsoleColor initialColor = Console.ForegroundColor;
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture)}>> ");

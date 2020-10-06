@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
-namespace Microsoft.Azure.Devices.Client.Samples
+namespace Microsoft.Azure.Devices.Logging
 {
     /// <summary>
     /// The <see cref="ILoggerProvider"/> implementation that creates the <see cref="ColorConsoleLogger"/> instance.

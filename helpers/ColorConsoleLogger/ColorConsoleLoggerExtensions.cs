@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Azure.Devices.Client.Samples
+namespace Microsoft.Azure.Devices.Logging
 {
     /// <summary>
     /// Extension methods to help simplify creation of a new <see cref="ColorConsoleLoggerProvider"/> instance.

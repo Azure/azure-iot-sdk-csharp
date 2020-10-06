@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Extensions.Logging;
+using System;
+using System.Diagnostics.Tracing;
 using System.Linq;
 
-namespace System.Diagnostics.Tracing
+namespace Microsoft.Azure.Devices.Logging
 {
     /// <summary>
     /// Prints SDK events to Console output - the log level is set to TRACE

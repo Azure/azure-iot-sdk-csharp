@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Azure.Devices.Client.Samples
+namespace Microsoft.Azure.Devices.Logging
 {
     /// <summary>
     /// A color console logger configuration that creates different color console entries per log level, sets the default log level to Information and logs all events.
