@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
@@ -73,7 +74,7 @@ namespace Microsoft.Azure.Devices
 
         public override async Task OpenAsync()
         {
-            await _faultTolerantSendingLink.OpenAsync(s_defaultOperationTimeout).ConfigureAwait(false);
+            await _faultTolerantSendingLink.OpenAsync(OpenTimeout).ConfigureAwait(false);
             await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
         }
 
@@ -96,33 +97,27 @@ namespace Microsoft.Azure.Devices
             {
                 throw new ArgumentNullException(nameof(message));
             }
-            Outcome outcome;
+            timeout ??= OperationTimeout;
 
-            using (AmqpMessage amqpMessage = message.ToAmqpMessage())
+            using AmqpMessage amqpMessage = message.ToAmqpMessage();
+            amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
+
+            try
             {
-                amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
-                try
-                {
-                    SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
+                SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
 
-                    TimeSpan calculatedTimeout = timeout ?? OperationTimeout;
+                Outcome outcome = await sendingLink
+                    .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
+                    .ConfigureAwait(false);
 
-                    outcome = await sendingLink
-                        .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, calculatedTimeout)
-                        .ConfigureAwait(false);
-                }
-                catch (TimeoutException)
+                if (outcome.DescriptorCode != Accepted.Code)
                 {
-                    throw;
-                }
-                catch (Exception ex) when (!ex.IsFatal())
-                {
-                    throw AmqpClientHelper.ToIotHubClientContract(ex);
+                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }
-            if (outcome.DescriptorCode != Accepted.Code)
+            catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
             {
-                throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
         }
 
@@ -231,7 +226,13 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, OperationTimeout).ConfigureAwait(false);
+                    outcome = await sendingLink
+                        .SendMessageAsync(
+                            amqpMessage,
+                            IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag),
+                            AmqpConstants.NullBinary,
+                            OperationTimeout)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
