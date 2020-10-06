@@ -1237,7 +1237,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        internal string PopulateMessagePropertiesFromMessage(string topicName, Message message)
+        internal static string PopulateMessagePropertiesFromMessage(string topicName, Message message)
         {
             var systemProperties = new Dictionary<string, string>();
             foreach (KeyValuePair<string, object> property in message.SystemProperties)
@@ -1247,7 +1247,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     systemProperties[propertyName] = ConvertFromSystemProperties(property.Value);
                 }
             }
-            string properties = UrlEncodedDictionarySerializer.Serialize(new ReadOnlyMergeDictionary<string, string>(systemProperties, message.Properties));
+            string properties = UrlEncodedDictionarySerializer.Serialize(Utils.MergeDictionaries(new IDictionary<string, string>[] { systemProperties, message.Properties }));
 
             string msg = properties.Length != 0
                 ? topicName.EndsWith(SegmentSeparator, StringComparison.Ordinal) ? topicName + properties + SegmentSeparator : topicName + SegmentSeparator + properties
