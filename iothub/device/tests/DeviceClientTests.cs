@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            await deviceClient.InternalClient.OnMethodCalled(null).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(null).ConfigureAwait(false);
             await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(isMethodHandlerCalled);
         }
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(new byte[0]), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{key")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 400), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(isMethodHandlerCalled);
         }
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 500), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }, "custom data");
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            await deviceClient.InternalClient.OnMethodCalled(null).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(null).ConfigureAwait(false);
             await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(isMethodHandlerCalled);
         }
@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(new byte[0]), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -325,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodDefaultHandlerCalled);
         }
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(isMethodHandlerCalled);
             Assert.IsTrue(isMethodDefaultHandlerCalled);
@@ -404,7 +404,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
             Assert.IsFalse(isMethodDefaultHandlerCalled);
@@ -429,7 +429,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 500), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
@@ -467,7 +467,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
-            await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
 
             await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 501), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
@@ -500,7 +500,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -511,7 +511,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -548,7 +548,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -559,7 +559,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -595,7 +595,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -619,7 +619,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -655,7 +655,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -679,7 +679,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -716,7 +716,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -726,7 +726,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             // TODO #890
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -761,7 +761,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -772,7 +772,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -782,13 +782,13 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             // TODO #890
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -823,7 +823,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -834,7 +834,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -844,13 +844,13 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             // TODO #890
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -900,7 +900,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
 #pragma warning restore CS0618 // Type or member is obsolete
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -938,7 +938,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
 #pragma warning restore CS0618 // Type or member is obsolete
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -962,7 +962,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -1001,7 +1001,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning disable CS0618 // Type or member is obsolete
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
 #pragma warning restore CS0618 // Type or member is obsolete
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -1011,7 +1011,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             //TODO #890
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);

@@ -314,6 +314,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new NotSupportedException("HTTP protocol does not support setting callbacks for receiving messages." +
+                " You can either call DeviceClient.ReceiveAsync() to wait and receive messages," +
+                " or set the callback over MQTT or AMQP.");
+        }
+
+        public override Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new NotSupportedException("HTTP protocol does not support setting callbacks for receiving messages." +
+                " You can either call DeviceClient.ReceiveAsync() to wait and receive messages," +
+                " or set the callback over MQTT or AMQP.");
+        }
+
+        public override Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new NotSupportedException("HTTP protocol does not support direct methods." +
+                " Consider using MQTT or AMQP instead.");
+        }
+
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(

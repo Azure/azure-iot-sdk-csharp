@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
 
         Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
 
-        // Telemetry downlink.
+        // Telemetry downlink for devices.
         Task<Message> ReceiveAsync(CancellationToken cancellationToken);
 
         Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper);
@@ -37,6 +37,10 @@ namespace Microsoft.Azure.Devices.Client
         Task AbandonAsync(string lockToken, CancellationToken cancellationToken);
 
         Task CompleteAsync(string lockToken, CancellationToken cancellationToken);
+
+        Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
+
+        Task DisableReceiveMessageAsync(CancellationToken cancellationToken);
 
         // Telemetry downlink for modules.
         Task EnableEventReceiveAsync(CancellationToken cancellationToken);

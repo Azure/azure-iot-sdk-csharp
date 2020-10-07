@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Diagnostic sampling percentage value, [0-100];
-        /// 0 means no message will carry on diag info
+        /// 0 means no message will carry on diagnostic info
         /// </summary>
         public int DiagnosticSamplingPercentage
         {
@@ -213,8 +213,8 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Stores the timeout used in the operation retries. Note that this value is ignored for operations
-        /// where a cancellation token is provided. For example, SendEventAsync(Message) will use this timeout, but
-        /// SendEventAsync(Message, CancellationToken) will not. The latter operation will only be canceled by the
+        /// where a cancellation token is provided. For example, <see cref="SendEventAsync(Message)"/> will use this timeout, but
+        /// <see cref="SendEventAsync(Message, CancellationToken)"/> will not. The latter operation will only be canceled by the
         /// provided cancellation token.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
@@ -249,7 +249,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets the retry policy used in the operation retries.
         /// The change will take effect after any in-progress operations.
         /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
+        /// <param name="retryPolicy">The retry policy. The default is
+        /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c></param>
         // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff
         // parameters for calculating delay in between retries.]
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
@@ -283,13 +284,17 @@ namespace Microsoft.Azure.Devices.Client
         public Task CloseAsync(CancellationToken cancellationToken) => InternalClient.CloseAsync(cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue using the default timeout. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
+        /// Receive a message from the device queue using the default timeout.
+        /// After handling a received message, a client should call <see cref="CompleteAsync(Message)"/>,
+        /// <see cref="AbandonAsync(Message)"/>, or <see cref="RejectAsync(Message)"/>, and then dispose the message.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
         public Task<Message> ReceiveAsync() => InternalClient.ReceiveAsync();
 
         /// <summary>
-        /// Receive a message from the device queue using the cancellation token. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
+        /// Receive a message from the device queue using the cancellation token.
+        /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
+        /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -297,10 +302,24 @@ namespace Microsoft.Azure.Devices.Client
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => InternalClient.ReceiveAsync(cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue with the specified timeout. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
+        /// Receive a message from the device queue with the specified timeout.
+        /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
+        /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public Task<Message> ReceiveAsync(TimeSpan timeout) => InternalClient.ReceiveAsync(timeout);
+
+        /// <summary>
+        /// Registers a new delegate for receiving a message from the device queue using the default timeout.
+        /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
+        /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
+        /// TODO: ab - If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
+        /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// </summary>
+        public Task SetReceiveMessageHandlerAsync(ReceiveMessageCallback messageHandler, object userContext, CancellationToken cancellationToken = default) =>
+            InternalClient.SetReceiveMessageHandlerAsync(messageHandler, userContext, cancellationToken);
 
         /// <summary>
         /// Deletes a received message from the device queue

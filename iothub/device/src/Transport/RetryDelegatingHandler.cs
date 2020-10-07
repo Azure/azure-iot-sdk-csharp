@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _methodsEnabled;
         private bool _twinEnabled;
         private bool _eventsEnabled;
+        private bool _receiveMessageEnabled;
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
@@ -187,6 +188,78 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, nameof(ReceiveAsync));
+            }
+        }
+
+        public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+
+                await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            // Ensure that the connection has been opened, before enabling the callback for receiving messages.
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+                            // Wait to acquire the _handlerLock. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            try
+                            {
+                                // The telemetry downlink needs to be enabled only for the first time that the callback is set.
+                                Debug.Assert(!_receiveMessageEnabled);
+                                await base.EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                                _receiveMessageEnabled = true;
+                            }
+                            finally
+                            {
+                                _handlerLock.Release();
+                            }
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+            }
+        }
+
+        public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+
+                await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            // Ensure that the connection has been opened, before disabling the callback for receiving messages.
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+                            // Wait to acquire the _handlerLock. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            try
+                            {
+                                // Ensure that a callback for receiving messages has been previously set.
+                                Debug.Assert(_receiveMessageEnabled);
+                                await base.DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                                _receiveMessageEnabled = false;
+                            }
+                            finally
+                            {
+                                _handlerLock.Release();
+                            }
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
             }
         }
 
@@ -679,6 +752,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
                     }
 
+                    if (_receiveMessageEnabled)
+                    {
+                        tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
+                    }
+
                     if (tasks.Count > 0)
                     {
                         await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -736,6 +814,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 _handleDisconnectCts?.Cancel();
                 _handleDisconnectCts?.Dispose();
+                _handlerLock?.Dispose();
             }
         }
     }
