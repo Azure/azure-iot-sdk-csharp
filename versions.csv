@@ -8,3 +8,5 @@ provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.H
 provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj, 1.14.0-preview-001
 security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj, 1.13.0-preview-001
 provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 1.17.0-preview-001
+digitaltwin\device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj, 1.0.0-preview-001
+digitaltwin\service\src\Microsoft.Azure.Devices.DigitalTwin.Service.csproj, 1.0.0-preview-001
