@@ -72,7 +72,8 @@ Param(
     [switch] $skipIotHubTests,
     [switch] $skipDPSTests,
     [switch] $skipPnPTests,
-    [switch] $noBuildBeforeTesting
+    [switch] $noBuildBeforeTesting,
+    [switch] $skipDeviceStreamTests
 )
 
 Function CheckSignTools()
@@ -274,7 +275,14 @@ try
             Write-Host -ForegroundColor Cyan "Unit Test execution"
             Write-Host
 
-            RunTests "Unit tests" -filterTestCategory "TestCategory=Unit" -framework $framework
+            $testCategory = "TestCategory=Unit";
+
+            if ($skipDeviceStreamTests)
+            {
+                $testCategory += "&TestCategory!=DeviceStreaming";
+            }            
+
+            RunTests "Unit tests" -filterTestCategory $testCategory -framework $framework
         }
     }
 
@@ -311,6 +319,11 @@ try
         if ($skipPnPTests)
         {
             $testCategory += "&TestCategory!=PnP"
+        }
+
+        if ($skipDeviceStreamTests) 
+        {
+            $testCategory += "&TestCategory!=DeviceStreaming"
         }
 
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
