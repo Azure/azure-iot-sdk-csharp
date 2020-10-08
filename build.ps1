@@ -275,14 +275,7 @@ try
             Write-Host -ForegroundColor Cyan "Unit Test execution"
             Write-Host
 
-            $testCategory = "TestCategory=Unit";
-
-            if ($skipDeviceStreamTests)
-            {
-                $testCategory += "&TestCategory!=DeviceStreaming";
-            }            
-
-            RunTests "Unit tests" -filterTestCategory $testCategory -framework $framework
+            RunTests "Unit tests" -filterTestCategory "TestCategory=Unit" -framework $framework
         }
     }
 
@@ -373,8 +366,14 @@ try
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
         $verbosity = "normal"
+        $testCategory = "TestCategory=E2E"
+        
+        if ($skipDeviceStreamTests) 
+        {
+            $testCategory += "&TestCategory!=DeviceStreaming"
+        }
 
-        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        RunTests "E2E tests" -framework $framework -filterTestCategory $testCategory
 
         $verbosity = $oldVerbosity
 
