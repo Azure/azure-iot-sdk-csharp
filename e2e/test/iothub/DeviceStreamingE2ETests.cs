@@ -17,7 +17,8 @@ using ServiceDeviceStreamingRequest = Microsoft.Azure.Devices.DeviceStreamReques
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
     [TestCategory("DeviceStreaming")]
     public partial class DeviceStreamingTests : E2EMsTestBase, IDisposable
     {
