@@ -368,6 +368,7 @@ try
         $verbosity = "normal"
         $testCategory = "TestCategory=E2E"
         
+        # Skip the Device Streaming tests when running on the production pipeline. Device Streaming features are not yet available in all regions.
         if ($skipDeviceStreamTests) 
         {
             $testCategory += "&TestCategory!=DeviceStreaming"
