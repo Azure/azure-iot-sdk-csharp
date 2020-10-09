@@ -757,8 +757,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         // Note: This test takes 3 minutes.
-        // TODO: azabbasi - Investigate the failure reason and re-enable test.
-        [Ignore("Skipping test due to failures in .net core/ Linux")]
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Amqp_Fail()
@@ -795,10 +793,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
 
             ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
-InvalidGlobalAddress,
-Configuration.Provisioning.IdScope,
-security,
-transport);
+                InvalidGlobalAddress,
+                Configuration.Provisioning.IdScope,
+                security,
+                transport);
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
