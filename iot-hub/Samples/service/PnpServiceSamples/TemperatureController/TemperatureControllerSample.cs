@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.Azure.Devices.Serialization;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -114,20 +115,16 @@ namespace Microsoft.Azure.Devices.Samples
 
         private async Task UpdateDigitalTwinComponentPropertyAsync()
         {
+            
+            const string targetTemperaturePropertyName = "targetTemperature";
+
             // Choose a random value to assign to the targetTemperature property in thermostat1 component
             int desiredTargetTemperature = Random.Next(0, 100);
 
-            const string targetTemperaturePropertyName = "targetTemperature";
-            string propertyUpdate = CreatePropertyPatch(targetTemperaturePropertyName,
-                JsonConvert.SerializeObject(desiredTargetTemperature),
-                Thermostat1Component);
-            var twinPatch = new Twin();
-            twinPatch.Properties.Desired[targetTemperaturePropertyName] = desiredTargetTemperature;
+            var twinPatch = CreatePropertyPatch(targetTemperaturePropertyName, desiredTargetTemperature, Thermostat1Component);
+            _logger.LogDebug($"Update the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_digitalTwinId} digital twin to { desiredTargetTemperature}.");
 
             Twin twin = await _registryManager.GetTwinAsync(_digitalTwinId);
-
-            _logger.LogDebug($"Update the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_digitalTwinId} " +
-                $"digital twin to {desiredTargetTemperature}.");
             await _registryManager.UpdateTwinAsync(_digitalTwinId, twinPatch, twin.ETag);
 
             // Print the TemperatureController digital twin
@@ -143,15 +140,15 @@ namespace Microsoft.Azure.Devices.Samples
          *      }
          *  }
          */
-        private static string CreatePropertyPatch(string propertyName, string serializedPropertyValue, string componentName)
+        private static Twin CreatePropertyPatch(string propertyName, object propertyValue, string componentName)
         {
-            return $"{{" +
-                    $"  \"{componentName}\": " +
-                    $"      {{" +
-                    $"          \"__t\": \"c\"," +
-                    $"          \"{propertyName}\": {serializedPropertyValue}" +
-                    $"      }} " +
-                    $"}}";
+            var twinPatch = new Twin();
+            twinPatch.Properties.Desired[componentName] = new
+            {
+                __t = "c"
+            };
+            twinPatch.Properties.Desired[componentName][propertyName] = JsonConvert.SerializeObject(propertyValue);
+            return twinPatch;
         }
     }
 }
