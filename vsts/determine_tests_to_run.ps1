@@ -41,8 +41,10 @@ function ShouldSkipPnPTests
 
 function ShouldSkipDeviceStreamTests
 {
+	Write-Host "TARGET_BRANCH: " $env:TARGET_BRANCH
 	Write-Host "SOURCE_BRANCH_NAME:" $env:SOURCE_BRANCH_NAME
 	Write-Host "PIPELINE_ENVIRONMENT:" $env:PIPELINE_ENVIRONMENT
+	Write-Host "PIPELINE_ENVIRONMENT (NO-ENV):" $(PIPELINE-ENVIRONMENT)
 
 	return ($env:SOURCE_BRANCH_NAME -and `
 		$env:SOURCE_BRANCH_NAME.toLower() -eq 'donotrunstreamingtestsinprod' -and `
