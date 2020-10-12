@@ -41,10 +41,46 @@ function ShouldSkipPnPTests
 
 function ShouldSkipDeviceStreamTests
 {
-	Write-Host "TARGET_BRANCH: " $env:TARGET_BRANCH
-	Write-Host "SOURCE_BRANCH_NAME:" $env:SOURCE_BRANCH_NAME
-	Write-Host "PIPELINE_ENVIRONMENT:" $env:PIPELINE_ENVIRONMENT
-	Write-Host "PIPELINE_ENVIRONMENT (NO-ENV):" $(PIPELINE-ENVIRONMENT)
+	if ($env:SOURCE_BRANCH_NAME)
+	{
+		Write-Host "SOURCE_BRANCH_NAME is defined"
+		Write-Host "SOURCE_BRANCH_NAME:" $env:SOURCE_BRANCH_NAME
+	}
+
+	if ($env:TARGET_BRANCH)
+	{
+		Write-Host "TARGET_BRANCH is defined"
+		Write-Host "TARGET_BRANCH:" $env:TARGET_BRANCH
+	}
+
+	if ($env:PIPELINE_ENVIRONMENT)
+	{
+		Write-Host "PIPELINE_ENVIRONMENT is defined"
+		Write-Host "PIPELINE_ENVIRONMENT:" $env:PIPELINE_ENVIRONMENT
+	}
+
+	if ($env:SOURCE_BRANCH_NAME -and `
+		$env:SOURCE_BRANCH_NAME.toLower() -eq 'donotrunstreamingtestsinprod' -and `
+		$env:PIPELINE_ENVIRONMENT -and `
+		$env:PIPELINE_ENVIRONMENT.toLower() -eq 'prod')
+	{
+		Write-Host "-------TRUE with source_branch_name---------"
+	}
+	else 
+	{
+		Write-Host "-------FALSE---------"
+	}
+
+	if ($env:SOURCE_BRANCH_NAME -and $env:SOURCE_BRANCH_NAME.toLower() -eq 'donotrunstreamingtestsinprod' -and $env:PIPELINE_ENVIRONMENT -and $env:PIPELINE_ENVIRONMENT.toLower() -eq 'prod')
+	{
+		Write-Host "-------TRUE AGAIN WITH SOURCE_BRANCH_NAME---------"
+	}
+
+	if ($env:Build.SourceBranchName)
+	{
+		Write-Host "Build.SourceBranchName is defined"
+		Write-Host "Build.SourceBranchName:" $env:Build.SourceBranchName
+	}
 
 	return ($env:SOURCE_BRANCH_NAME -and `
 		$env:SOURCE_BRANCH_NAME.toLower() -eq 'donotrunstreamingtestsinprod' -and `
