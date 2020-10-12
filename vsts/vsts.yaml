@@ -181,7 +181,7 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
-          SOURCE_BRANCH_NAME: $(SourceBranchName)
+          SOURCE_BRANCH_NAME: $(Build.SourceBranchName)
           PIPELINE_ENVIRONMENT: $(PIPELINE-ENVIRONMENT)
 
       - task: CopyFiles@2
