@@ -42,7 +42,7 @@ function ShouldSkipPnPTests
 function ShouldSkipDeviceStreamTests
 {
 	return ($env:SOURCE_BRANCH_NAME -and `
-		$env:SOURCE_BRANCH_NAME.toLower() -eq 'donotrunstreamingtestsinprod' -and `
+		$env:SOURCE_BRANCH_NAME.toLower() -eq 'preview' -and `
 		$env:PIPELINE_ENVIRONMENT -and `
 		$env:PIPELINE_ENVIRONMENT.toLower() -eq 'prod')
 }
