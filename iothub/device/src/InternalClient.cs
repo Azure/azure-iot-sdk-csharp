@@ -124,6 +124,8 @@ namespace Microsoft.Azure.Devices.Client
 
         private int _currentMessageCount = 0;
 
+        internal delegate Task OnMessageReceivedDelegate(Message message);
+
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
         internal delegate Task OnReceiveEventMessageCalledDelegate(string input, Message message);
@@ -144,6 +146,7 @@ namespace Microsoft.Azure.Devices.Client
             var pipelineContext = new PipelineContext();
             pipelineContext.Set(transportSettings);
             pipelineContext.Set(iotHubConnectionString);
+            pipelineContext.Set<OnMessageReceivedDelegate>(OnMessageReceivedAsync);
             pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalledAsync);
             pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
             pipelineContext.Set<ConnectionStatusChangesHandler>(OnConnectionStatusChanged);
@@ -344,6 +347,19 @@ namespace Microsoft.Azure.Devices.Client
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated,
+        /// it will be replaced with the new delegate.
+        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
+        /// </summary>
+        public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
+        {
+            // codes_SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**
+            // codes_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
+            if (Logging.IsEnabled) Logging.Info(this, statusChangesHandler, nameof(SetConnectionStatusChangesHandler));
+            _connectionStatusChangesHandler = statusChangesHandler;
         }
 
         /// <summary>
@@ -784,88 +800,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="source"></param>
-        /// <returns>AsncTask</returns>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(String blobName, Stream source)
-        {
-            return UploadToBlobAsync(blobName, source, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="source"></param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>AsncTask</returns>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled) Logging.Enter(this, blobName, source, nameof(UploadToBlobAsync));
-
-                if (string.IsNullOrEmpty(blobName))
-                {
-                    throw Fx.Exception.ArgumentNull(nameof(blobName));
-                }
-                if (source == null)
-                {
-                    throw Fx.Exception.ArgumentNull(nameof(source));
-                }
-                if (blobName.Length > 1024)
-                {
-                    throw Fx.Exception.Argument(nameof(blobName), "Length cannot exceed 1024 characters");
-                }
-                if (blobName.Split('/').Length > 254)
-                {
-                    throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
-                }
-
-                HttpTransportHandler httpTransport = null;
-                var context = new PipelineContext();
-                context.Set(_productInfo);
-
-                var transportSettings = new Http1TransportSettings();
-
-                //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
-                if (Certificate != null)
-                {
-                    transportSettings.ClientCertificate = Certificate;
-                }
-
-                httpTransport = new HttpTransportHandler(context, IotHubConnectionString, transportSettings);
-
-                return httpTransport.UploadToBlobAsync(blobName, source, cancellationToken);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled) Logging.Exit(this, blobName, nameof(UploadToBlobAsync));
-            }
-        }
-
-        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken = default)
-        {
-            return await _fileUploadHttpTransportHandler.GetFileUploadSasUri(request, cancellationToken).ConfigureAwait(false);
-        }
-
-        internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
-        {
-            await _fileUploadHttpTransportHandler.CompleteFileUpload(notification, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
@@ -1055,22 +989,265 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated,
-        /// it will be replaced with the new delegate.
-        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
+        /// Retrieve the device twin properties for the current device.
+        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
-        public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
+        /// <returns>The device twin object for the current device</returns>
+        public async Task<Twin> GetTwinAsync()
         {
-            // codes_SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**
-            // codes_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
-            if (Logging.IsEnabled) Logging.Info(this, statusChangesHandler, nameof(SetConnectionStatusChangesHandler));
-            _connectionStatusChangesHandler = statusChangesHandler;
+            try
+            {
+                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                return await GetTwinAsync(cts.Token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            {
+                // Exception adaptation for non-CancellationToken public API.
+                throw new TimeoutException("The operation timed out.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the device twin properties for the current device.
+        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
+        /// </summary>
+        /// <returns>The device twin object for the current device</returns>
+        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
+        {
+            // Codes_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
+            try
+            {
+                return InnerHandler.SendTwinGetAsync(cancellationToken);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
+        {
+            try
+            {
+                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await UpdateReportedPropertiesAsync(reportedProperties, cts.Token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            {
+                // Exception adaptation for non-CancellationToken public API.
+                throw new TimeoutException("The operation timed out.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            // Codes_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
+            if (reportedProperties == null)
+            {
+                throw new ArgumentNullException(nameof(reportedProperties));
+            }
+
+            // Codes_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
+            try
+            {
+                return InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
+        {
+            try
+            {
+                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                await SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cts.Token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            {
+                // Exception adaptation for non-CancellationToken public API.
+                throw new TimeoutException("The operation timed out.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken)
+        {
+            if (callback == null) throw new ArgumentNullException(nameof(callback));
+
+            // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
+            // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
+            if (!_patchSubscribedWithService)
+            {
+                try
+                {
+                    await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                    _patchSubscribedWithService = true;
+                }
+                catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    throw;
+                }
+            }
+
+            _desiredPropertyUpdateCallback = callback;
+            _twinPatchCallbackContext = userContext;
+        }
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
+        public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
+        {
+            // Obsoleted due to incorrect naming:
+            return SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
+        }
+
+        /// <summary>
+        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
+        /// If the blob already exists, it will be overwritten.
+        /// </summary>
+        /// <param name="blobName"></param>
+        /// <param name="source"></param>
+        /// <returns>AsncTask</returns>
+        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
+        public Task UploadToBlobAsync(String blobName, Stream source)
+        {
+            return UploadToBlobAsync(blobName, source, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
+        /// If the blob already exists, it will be overwritten.
+        /// </summary>
+        /// <param name="blobName"></param>
+        /// <param name="source"></param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>AsncTask</returns>
+        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
+        public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, blobName, source, nameof(UploadToBlobAsync));
+
+                if (string.IsNullOrEmpty(blobName))
+                {
+                    throw Fx.Exception.ArgumentNull(nameof(blobName));
+                }
+                if (source == null)
+                {
+                    throw Fx.Exception.ArgumentNull(nameof(source));
+                }
+                if (blobName.Length > 1024)
+                {
+                    throw Fx.Exception.Argument(nameof(blobName), "Length cannot exceed 1024 characters");
+                }
+                if (blobName.Split('/').Length > 254)
+                {
+                    throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
+                }
+
+                HttpTransportHandler httpTransport = null;
+                var context = new PipelineContext();
+                context.Set(_productInfo);
+
+                var transportSettings = new Http1TransportSettings();
+
+                //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
+                if (Certificate != null)
+                {
+                    transportSettings.ClientCertificate = Certificate;
+                }
+
+                httpTransport = new HttpTransportHandler(context, IotHubConnectionString, transportSettings);
+
+                return httpTransport.UploadToBlobAsync(blobName, source, cancellationToken);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, blobName, nameof(UploadToBlobAsync));
+            }
+        }
+
+        public void Dispose()
+        {
+            InnerHandler?.Dispose();
+            _methodsDictionarySemaphore?.Dispose();
+            _receiveSemaphore?.Dispose();
+            _fileUploadHttpTransportHandler?.Dispose();
+            _receiveMessageSemaphore?.Dispose();
+        }
+
+        internal bool IsE2EDiagnosticSupportedProtocol()
+        {
+            foreach (ITransportSettings transportSetting in _transportSettings)
+            {
+                var transportType = transportSetting.GetTransportType();
+                if (!(transportType == TransportType.Amqp_WebSocket_Only || transportType == TransportType.Amqp_Tcp_Only
+                    || transportType == TransportType.Mqtt_WebSocket_Only || transportType == TransportType.Mqtt_Tcp_Only))
+                {
+                    throw new NotSupportedException($"{transportType} protocol doesn't support E2E diagnostic.");
+                }
+            }
+            return true;
+        }
+
+        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken = default)
+        {
+            return await _fileUploadHttpTransportHandler.GetFileUploadSasUri(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
+        {
+            await _fileUploadHttpTransportHandler.CompleteFileUpload(notification, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal void OnConnectionStatusChanged(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        private void OnConnectionStatusChanged(ConnectionStatus status, ConnectionStatusChangeReason reason)
         {
             try
             {
@@ -1090,10 +1267,59 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        // Enable telemetry downlink for devices
+        private Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
+            if (_receiveMessageCallback == null)
+            {
+                return InnerHandler.EnableReceiveMessageAsync(cancellationToken);
+            }
+
+            return TaskHelpers.CompletedTask;
+        }
+
+        // Disable telemetry downlink for devices
+        private Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
+            if (_receiveMessageCallback == null)
+            {
+                return InnerHandler.DisableReceiveMessageAsync(cancellationToken);
+            }
+
+            return TaskHelpers.CompletedTask;
+        }
+
+        private async Task OnMessageReceivedAsync(Message message)
+        {
+
+        }
+
+        private Task EnableMethodAsync(CancellationToken cancellationToken)
+        {
+            if (_deviceMethods == null && _deviceDefaultMethodCallback == null)
+            {
+                return InnerHandler.EnableMethodsAsync(cancellationToken);
+            }
+
+            return TaskHelpers.CompletedTask;
+        }
+
+#pragma warning disable IDE0060 // Remove unused parameter
+
+        private static Task DisableMethodAsync(CancellationToken cancellationToken)
+        {
+            // TODO # 890.
+            return TaskHelpers.CompletedTask;
+        }
+
+#pragma warning restore IDE0060 // Remove unused parameter
+
         /// <summary>
         /// The delegate for handling direct methods received from service.
         /// </summary>
-        internal async Task OnMethodCalledAsync(MethodRequestInternal methodRequestInternal)
+        private async Task OnMethodCalledAsync(MethodRequestInternal methodRequestInternal)
         {
             Tuple<MethodCallback, object> m = null;
 
@@ -1182,167 +1408,8 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled) Logging.Exit(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalledAsync));
         }
 
-        public void Dispose()
-        {
-            InnerHandler?.Dispose();
-            _methodsDictionarySemaphore?.Dispose();
-            _receiveSemaphore?.Dispose();
-            _fileUploadHttpTransportHandler?.Dispose();
-        }
-
-        /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
-        /// </summary>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
-        [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
-        public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
-        {
-            // Obsoleted due to incorrect naming:
-            return SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
-        }
-
-        /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
-        /// </summary>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
-        public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
-        {
-            try
-            {
-                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using CancellationTokenSource cts = CancellationTokenSourceFactory();
-                await SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cts.Token).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
-            {
-                // Exception adaptation for non-CancellationToken public API.
-                throw new TimeoutException("The operation timed out.", ex);
-            }
-        }
-
-        /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
-        /// </summary>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken)
-        {
-            if (callback == null) throw new ArgumentNullException(nameof(callback));
-
-            // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
-            // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
-            if (!_patchSubscribedWithService)
-            {
-                try
-                {
-                    await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                    _patchSubscribedWithService = true;
-                }
-                catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    throw;
-                }
-            }
-
-            _desiredPropertyUpdateCallback = callback;
-            _twinPatchCallbackContext = userContext;
-        }
-
-        /// <summary>
-        /// Retrieve the device twin properties for the current device.
-        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
-        /// </summary>
-        /// <returns>The device twin object for the current device</returns>
-        public async Task<Twin> GetTwinAsync()
-        {
-            try
-            {
-                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using CancellationTokenSource cts = CancellationTokenSourceFactory();
-                return await GetTwinAsync(cts.Token).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
-            {
-                // Exception adaptation for non-CancellationToken public API.
-                throw new TimeoutException("The operation timed out.", ex);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve the device twin properties for the current device.
-        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
-        /// </summary>
-        /// <returns>The device twin object for the current device</returns>
-        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
-        {
-            // Codes_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
-            try
-            {
-                return InnerHandler.SendTwinGetAsync(cancellationToken);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Push reported property changes up to the service.
-        /// </summary>
-        /// <param name="reportedProperties">Reported properties to push</param>
-        public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
-        {
-            try
-            {
-                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-                using CancellationTokenSource cts = CancellationTokenSourceFactory();
-                await UpdateReportedPropertiesAsync(reportedProperties, cts.Token).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
-            {
-                // Exception adaptation for non-CancellationToken public API.
-                throw new TimeoutException("The operation timed out.", ex);
-            }
-        }
-
-        /// <summary>
-        /// Push reported property changes up to the service.
-        /// </summary>
-        /// <param name="reportedProperties">Reported properties to push</param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
-        {
-            // Codes_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
-            if (reportedProperties == null)
-            {
-                throw new ArgumentNullException(nameof(reportedProperties));
-            }
-
-            // Codes_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
-            try
-            {
-                return InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-        }
-
         //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
-        internal void OnReportedStatePatchReceived(TwinCollection patch)
+        private void OnReportedStatePatchReceived(TwinCollection patch)
         {
             if (_desiredPropertyUpdateCallback == null)
             {
@@ -1351,48 +1418,6 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Logging.IsEnabled) Logging.Info(this, patch.ToJson(), nameof(OnReportedStatePatchReceived));
             _desiredPropertyUpdateCallback(patch, _twinPatchCallbackContext);
-        }
-
-        private Task EnableMethodAsync(CancellationToken cancellationToken)
-        {
-            if (_deviceMethods == null && _deviceDefaultMethodCallback == null)
-            {
-                return InnerHandler.EnableMethodsAsync(cancellationToken);
-            }
-
-            return TaskHelpers.CompletedTask;
-        }
-
-#pragma warning disable IDE0060 // Remove unused parameter
-
-        private static Task DisableMethodAsync(CancellationToken cancellationToken)
-        {
-            // TODO # 890.
-            return TaskHelpers.CompletedTask;
-        }
-
-#pragma warning restore IDE0060 // Remove unused parameter
-
-        internal bool IsE2EDiagnosticSupportedProtocol()
-        {
-            foreach (ITransportSettings transportSetting in _transportSettings)
-            {
-                var transportType = transportSetting.GetTransportType();
-                if (!(transportType == TransportType.Amqp_WebSocket_Only || transportType == TransportType.Amqp_Tcp_Only
-                    || transportType == TransportType.Mqtt_WebSocket_Only || transportType == TransportType.Mqtt_Tcp_Only))
-                {
-                    throw new NotSupportedException($"{transportType} protocol doesn't support E2E diagnostic.");
-                }
-            }
-            return true;
-        }
-
-        private CancellationTokenSource CancellationTokenSourceFactory()
-        {
-            CancellationTokenSource cts = OperationTimeoutInMilliseconds == 0
-                ? new CancellationTokenSource()
-                : new CancellationTokenSource(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds));
-            return cts;
         }
 
         #region Module Specific API
@@ -1676,30 +1701,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        // Enable telemetry downlink for devices
-        private Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
-            if (_receiveMessageCallback == null)
-            {
-                return InnerHandler.EnableReceiveMessageAsync(cancellationToken);
-            }
-
-            return TaskHelpers.CompletedTask;
-        }
-
-        // Disable telemetry downlink for devices
-        private Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
-            if (_receiveMessageCallback == null)
-            {
-                return InnerHandler.DisableReceiveMessageAsync(cancellationToken);
-            }
-
-            return TaskHelpers.CompletedTask;
-        }
-
         // Enable telemetry downlink for modules
         private Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
@@ -1788,6 +1789,14 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         #endregion Module Specific API
+
+        private CancellationTokenSource CancellationTokenSourceFactory()
+        {
+            CancellationTokenSource cts = OperationTimeoutInMilliseconds == 0
+                ? new CancellationTokenSource()
+                : new CancellationTokenSource(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds));
+            return cts;
+        }
 
         private static bool IsCausedByTimeoutOrCanncellation(Exception ex)
         {

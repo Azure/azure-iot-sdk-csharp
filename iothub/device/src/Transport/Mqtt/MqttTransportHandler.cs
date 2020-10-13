@@ -112,9 +112,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
         private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
-        private readonly Func<MethodRequestInternal, Task> _messageListener;
+        private readonly Func<Message, Task> _deviceMessageReceivedListener;
+        private readonly Func<MethodRequestInternal, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<string, Message, Task> _messageReceivedListener;
+        private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private Action<Message> _twinResponseEvent;
 
         private readonly string _receiveEventMessageFilter;
@@ -127,13 +128,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IPipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
+            Func<Message, Task> onDeviceMessageReceivedCallback = null,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
-            Func<string, Message, Task> onReceiveCallback = null)
+            Func<string, Message, Task> onModuleMessageReceivedCallback = null)
             : this(context, iotHubConnectionString, settings, null)
         {
-            _messageListener = onMethodCallback;
-            _messageReceivedListener = onReceiveCallback;
+            _methodListener = onMethodCallback;
+            _deviceMessageReceivedListener = onDeviceMessageReceivedCallback;
+            _moduleMessageReceivedListener = onModuleMessageReceivedCallback;
             _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
         }
 
@@ -450,12 +453,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
                 using var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.GetBodyStream(), CancellationToken.None);
-                await Task.Run(() => _messageListener(mr)).ConfigureAwait(true);
+                await Task.Run(() => _methodListener(mr)).ConfigureAwait(true);
             }
             finally
             {
                 message.Dispose();
             }
+        }
+
+        private async Task HandleIncomingMessages(Message message)
+        {
+            using Message receivedMessage = ProcessMessage(message, true);
         }
 
         public async void OnMessageReceived(Message message)
@@ -490,7 +498,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                     else
                     {
-                        if (Logging.IsEnabled) Logging.Error(this, "Recevied mqtt message on an unrecognized topic, ignoring message. Topic: " + topic);
+                        if (Logging.IsEnabled) Logging.Error(this, "Received mqtt message on an unrecognized topic, ignoring message. Topic: " + topic);
                     }
                 }
             }
@@ -520,7 +528,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                 }
                 message.LockToken = _generationId + message.LockToken;
-                await (_messageReceivedListener?.Invoke(inputName, message) ?? TaskHelpers.CompletedTask).ConfigureAwait(true);
+                await (_moduleMessageReceivedListener?.Invoke(inputName, message) ?? TaskHelpers.CompletedTask).ConfigureAwait(true);
             }
             finally
             {
@@ -695,6 +703,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private async Task SubscribeTwinResponsesAsync()
         {
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinResponseTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+        }
+
+        public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            if (State != TransportState.Receiving)
+            {
+                await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(true);
+            }
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
