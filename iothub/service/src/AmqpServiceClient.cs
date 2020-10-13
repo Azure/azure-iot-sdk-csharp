@@ -76,18 +76,9 @@ namespace Microsoft.Azure.Devices
 
         public IotHubConnection Connection { get; private set; }
 
-        public SendingAmqpLink SendingLink
-        {
-            get
-            {
-                _faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink);
-                return sendingLink;
-            }
-        }
-
         public override async Task OpenAsync()
         {
-            await GetSendingLinkAsync().ConfigureAwait(false);
+            await _faultTolerantSendingLink.OpenAsync(OpenTimeout).ConfigureAwait(false);
             await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
         }
 
@@ -110,39 +101,27 @@ namespace Microsoft.Azure.Devices
             {
                 throw new ArgumentNullException(nameof(message));
             }
-            Outcome outcome;
+            timeout ??= OperationTimeout;
 
-            using (AmqpMessage amqpMessage = message.ToAmqpMessage())
+            using AmqpMessage amqpMessage = message.ToAmqpMessage();
+            amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
+
+            try
             {
-                amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
-                try
+                SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
+
+                Outcome outcome = await sendingLink
+                    .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
+                    .ConfigureAwait(false);
+
+                if (outcome.DescriptorCode != Accepted.Code)
                 {
-                    SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-                    if (timeout != null)
-                    {
-                        outcome = await sendingLink
-                            .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout)
-                            .ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        outcome = await sendingLink
-                            .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, OperationTimeout)
-                            .ConfigureAwait(false);
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    throw;
-                }
-                catch (Exception ex) when (!ex.IsFatal())
-                {
-                    throw AmqpClientHelper.ToIotHubClientContract(ex);
+                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }
-            if (outcome.DescriptorCode != Accepted.Code)
+            catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
             {
-                throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
         }
 
@@ -251,7 +230,13 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, OperationTimeout).ConfigureAwait(false);
+                    outcome = await sendingLink
+                        .SendMessageAsync(
+                            amqpMessage,
+                            IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag),
+                            AmqpConstants.NullBinary,
+                            OperationTimeout)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {

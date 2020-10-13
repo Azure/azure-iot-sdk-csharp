@@ -188,10 +188,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         }
 
         [TestMethod]
-        public void SettingPnpModelIdShouldSetPreviewApiVersionAndModelIdOnConnectPacket()
+        public void SettingPnpModelIdShouldSetModelIdOnConnectPacket()
         {
             // arrange
-            string ApiVersionParam = "api-version";
             string ModelIdParam = "model-id";
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
@@ -212,15 +211,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             // Assert: the username should use the preview API version and have the model ID appended
             ConnectPacket connectPacket = messages.First().As<ConnectPacket>();
             NameValueCollection queryParams = ExtractQueryParamsFromConnectUsername(connectPacket.Username);
-            Assert.AreEqual(ClientApiVersionHelper.ApiVersionPreview, queryParams.Get(ApiVersionParam));
             Assert.AreEqual(options.ModelId, queryParams.Get(ModelIdParam));
         }
 
         [TestMethod]
-        public void NotSettingPnpModelIdShouldSetLatestApiVersionAndNoModelIdOnConnectPacket()
+        public void NotSettingPnpModelIdShouldNotSetModelIdOnConnectPacket()
         {
             // arrange
-            string ApiVersionParam = "api-version";
             string ModelIdParam = "model-id";
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
@@ -241,7 +238,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             // Assert: the username should use the GA API version and not have the model ID appended
             ConnectPacket connectPacket = messages.First().As<ConnectPacket>();
             NameValueCollection queryParams = ExtractQueryParamsFromConnectUsername(connectPacket.Username);
-            Assert.AreEqual(ClientApiVersionHelper.ApiVersionLatest, queryParams.Get(ApiVersionParam));
             Assert.IsFalse(queryParams.AllKeys.Contains(ModelIdParam));
         }
 

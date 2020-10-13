@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.1;netstandard2.0;net472;net451</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.1;netstandard2.0</TargetFrameworks>
@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.29.1-preview-003</Version>
+    <Version>1.32.0-preview-001</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -49,14 +49,10 @@
     <common>$(RootDir)\common\src</common>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SupportsNetStandard20AndAbove Condition="'$(TargetFramework)' == 'netstandard2.1' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net472'">true</SupportsNetStandard20AndAbove>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
     <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.4" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.7" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
   </ItemGroup>
@@ -95,7 +91,7 @@
   </ItemGroup>
 
   <!-- NetStandard 2.1, NetStandard 2.0 and net472 -->
-  <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="ModernDotNet\Common\IOThreadTimerSlim.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
@@ -103,7 +99,7 @@
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(SupportsNetStandard20AndAbove)' == 'true'">
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>

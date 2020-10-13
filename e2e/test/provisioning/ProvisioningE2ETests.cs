@@ -793,10 +793,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
 
             ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
-InvalidGlobalAddress,
-Configuration.Provisioning.IdScope,
-security,
-transport);
+                InvalidGlobalAddress,
+                Configuration.Provisioning.IdScope,
+                security,
+                transport);
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
