@@ -72,7 +72,8 @@ Param(
     [switch] $skipIotHubTests,
     [switch] $skipDPSTests,
     [switch] $skipPnPTests,
-    [switch] $noBuildBeforeTesting
+    [switch] $noBuildBeforeTesting,
+    [switch] $skipDeviceStreamTests
 )
 
 Function CheckSignTools()
@@ -313,6 +314,11 @@ try
             $testCategory += "&TestCategory!=PnP"
         }
 
+        if ($skipDeviceStreamTests) 
+        {
+            $testCategory += "&TestCategory!=DeviceStreaming"
+        }
+
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
     }
 
@@ -360,8 +366,15 @@ try
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
         $verbosity = "normal"
+        $testCategory = "TestCategory=E2E"
+        
+        # Skip the Device Streaming tests when running on the production pipeline. Device Streaming features are not yet available in all regions.
+        if ($skipDeviceStreamTests) 
+        {
+            $testCategory += "&TestCategory!=DeviceStreaming"
+        }
 
-        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        RunTests "E2E tests" -framework $framework -filterTestCategory $testCategory
 
         $verbosity = $oldVerbosity
 

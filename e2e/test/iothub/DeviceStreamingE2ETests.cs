@@ -1,32 +1,32 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Linq;
-using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ClientDeviceStreamingRequest = Microsoft.Azure.Devices.Client.DeviceStreamRequest;
 using ServiceDeviceStreamingRequest = Microsoft.Azure.Devices.DeviceStreamRequest;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub-E2E")]
+    [TestCategory("E2E")]
+    [TestCategory("IoTHub")]
+    [TestCategory("DeviceStreaming")]
     public partial class DeviceStreamingTests : E2EMsTestBase, IDisposable
     {
         private readonly string DevicePrefix = $"{nameof(DeviceStreamingTests)}_";
         private readonly string ModulePrefix = $"{nameof(DeviceStreamingTests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+
+        #region Device Streaming
 
         #region Device Client Tests
 
@@ -265,6 +265,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         #endregion Module Client Tests
+
+        #endregion Device Streaming
 
         #region Private Methods
 
