@@ -18,38 +18,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     {
         private readonly TransportType _transportType;
 
-        /// <summary>
-        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
-        /// </summary>
-        internal string AuthenticationChain { get; set; }
-
         private const bool DefaultCleanSession = false;
         private const bool DefaultDeviceReceiveAckCanTimeout = false;
         private const bool DefaultHasWill = false;
         private const bool DefaultMaxOutboundRetransmissionEnforced = false;
         private const int DefaultKeepAliveInSeconds = 300;
-        private const int DefaultReceiveTimeoutInSeconds = 60;
         private const int DefaultMaxPendingInboundMessages = 50;
         private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
         private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
-        private static readonly TimeSpan DefaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan DefaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
-
-        /// <summary>
-        /// To enable certificate revocation check. Default to be false.
-        /// </summary>
-#pragma warning disable IDE1006 // Naming Styles
-        public bool CertificateRevocationCheck
-        {
-            get => TlsVersions.Instance.CertificateRevocationCheck;
-            set => TlsVersions.Instance.CertificateRevocationCheck = value;
-        }
-#pragma warning restore IDE1006 // Naming Styles
+        private static readonly TimeSpan s_defaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan s_defaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
+        private static readonly TimeSpan s_defaultReceiveTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// Creates an instance based on the specified type options
         /// </summary>
-        /// <param name="transportType">The transport type, of MQTT websocket only, or MQTT TCP only</param>
+        /// <param name="transportType">The transport type, of Mqtt_WebSocket_Only, or Mqtt_Tcp_Only</param>
         public MqttTransportSettings(TransportType transportType)
         {
             _transportType = transportType;
@@ -73,9 +57,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             CleanSession = DefaultCleanSession;
-            ConnectArrivalTimeout = DefaultConnectArrivalTimeout;
+            ConnectArrivalTimeout = s_defaultConnectArrivalTimeout;
             DeviceReceiveAckCanTimeout = DefaultDeviceReceiveAckCanTimeout;
-            DeviceReceiveAckTimeout = DefaultDeviceReceiveAckTimeout;
+            DeviceReceiveAckTimeout = s_defaultDeviceReceiveAckTimeout;
             DupPropertyName = "mqtt-dup";
             HasWill = DefaultHasWill;
             KeepAliveInSeconds = DefaultKeepAliveInSeconds;
@@ -86,48 +70,141 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             QoSPropertyName = "mqtt-qos";
             RetainPropertyName = "mqtt-retain";
             WillMessage = null;
-            DefaultReceiveTimeout = TimeSpan.FromSeconds(DefaultReceiveTimeoutInSeconds);
+            DefaultReceiveTimeout = s_defaultReceiveTimeout;
         }
 
+        /// <summary>
+        /// Indicates if certificate revocation check is enabled. The default value is <c>false</c>.
+        /// </summary>
+#pragma warning disable IDE1006 // Naming Styles
+        public bool CertificateRevocationCheck
+        {
+            get => TlsVersions.Instance.CertificateRevocationCheck;
+            set => TlsVersions.Instance.CertificateRevocationCheck = value;
+        }
+#pragma warning restore IDE1006 // Naming Styles
+
+        /// <summary>
+        /// Indicates if a device can timeout while waiting for a acknowledgment from service.
+        /// The default value is <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public bool DeviceReceiveAckCanTimeout { get; set; }
 
+        /// <summary>
+        /// The time a device will wait, for an acknowledgment from service.
+        /// The default is 5 minutes.
+        /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public TimeSpan DeviceReceiveAckTimeout { get; set; }
 
+        /// <summary>
+        /// The QoS to be used when sending packets to service.
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </summary>
         public QualityOfService PublishToServerQoS { get; set; }
 
+        /// <summary>
+        /// The QoS to be used when subscribing to receive packets from the service.
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </summary>
         public QualityOfService ReceivingQoS { get; set; }
 
+        /// <summary>
+        /// The property on a message that indicates the publish packet has requested to be retained.
+        /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public string RetainPropertyName { get; set; }
 
+        /// <summary>
+        /// The property on a message that indicates the publish packet is marked as a duplicate.
+        /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public string DupPropertyName { get; set; }
 
+        /// <summary>
+        /// The property name setting the QoS for a packet.
+        /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public string QoSPropertyName { get; set; }
 
+        /// <summary>
+        /// Indicates if max outbound retransmission is enforced.
+        /// The default value is <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public bool MaxOutboundRetransmissionEnforced { get; set; }
 
+        /// <summary>
+        /// The maximum no. of inbound messages that are read from the channel.
+        /// The default value is 50.
+        /// </summary>
         public int MaxPendingInboundMessages { get; set; }
 
+        /// <summary>
+        /// The time to wait for receiving an acknowledgment for a CONNECT packet.
+        /// The default is 10 seconds.
+        /// </summary>
         public TimeSpan ConnectArrivalTimeout { get; set; }
 
         /// <summary>
         /// Flag to specify if a subscription should persist across different sessions. The default value is false.
-        /// If set to false: the device will receive messages that were sent to it while it was disconnected.
-        /// If set to true: the device will receive only those messages that were sent to it after it successfully subscribed to the device bound message topic.
         /// </summary>
+        /// <remarks>
+        /// <para>If set to false: the device will receive messages that were sent to it while it was disconnected.</para>
+        /// <para>If set to true: the device will receive only those messages that were sent to it
+        /// after it successfully subscribed to the device bound message topic.</para>
+        /// </remarks>
         public bool CleanSession { get; set; }
 
+        /// <summary>
+        /// The interval, in seconds, that the client establishes with the service, for sending keep alive pings.
+        /// The default is 300 seconds.
+        /// </summary>
+        /// <remarks>
+        /// The client will send a ping request 4 times per keep-alive duration set.
+        /// It will wait for 30 seconds for the ping response, else mark the connection as disconnected.
+        /// </remarks>
         public int KeepAliveInSeconds { get; set; }
 
         /// <summary>
-        /// Whether the transport has a will message
+        /// Indicates whether the transport has a will message.
         /// </summary>
+        /// <remarks>
+        /// Setting a will message is a way for clients to notify other subscribed clients about ungraceful disconnects in an appropriate way.
+        /// In response to the ungraceful disconnect, the service will send the last-will message to the configured telemetry channel.
+        /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT Hub routing.
+        /// For more details, refer to https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
+        /// </remarks>
         public bool HasWill { get; set; }
 
         /// <summary>
-        /// The configured will message
+        /// The configured will message that is sent to the telemetry channel on an ungraceful disconnect.
         /// </summary>
+        /// <remarks>
+        /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT Hub routing.
+        /// For more details, refer to https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
+        /// </remarks>
         public IWillMessage WillMessage { get; set; }
 
+        /// <summary>
+        /// The time to wait for a receive operation. The default value is 1 minute.
+        /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public TimeSpan DefaultReceiveTimeout { get; set; }
 
         /// <summary>
@@ -137,22 +214,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>
-        /// The client certificate
+        /// The client certificate to be used for authenticating the TLS connection.
         /// </summary>
         public X509Certificate ClientCertificate { get; set; }
 
         /// <summary>
-        /// A proxy to use - optional
+        /// The proxy settings to be used when communicating with IoT Hub.
         /// </summary>
         public IWebProxy Proxy { get; set; }
 
         /// <summary>
-        /// The conftransport type
+        /// The connection transport type.
         /// </summary>
         /// <returns></returns>
         public TransportType GetTransportType()
         {
             return _transportType;
         }
+
+        /// <summary>
+        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
+        /// </summary>
+        internal string AuthenticationChain { get; set; }
     }
 }
