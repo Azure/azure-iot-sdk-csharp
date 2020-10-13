@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Edge;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 
@@ -577,47 +578,57 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMessageHandlerAsync(messageHandler, userContext, cancellationToken);
 
         /// <summary>
-        /// Interactively invokes a method on a device
+        /// Interactively invokes a method from an edge module to an edge device.
+        /// Both the edge module and the edge device need to be connected to the same edge hub.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="methodRequest">Device method parameters (pass-through to device)</param>
-        /// <returns>Method result</returns>
+        /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
+        /// <param name="methodRequest">The details of the method to invoke.</param>
+        /// <returns>The result of the method invocation.</returns>
         public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest) =>
             InvokeMethodAsync(deviceId, methodRequest, CancellationToken.None);
 
         /// <summary>
-        /// Interactively invokes a method on device
+        /// Interactively invokes a method from an edge module to an edge device.
+        /// Both the edge module and the edge device need to be connected to the same edge hub.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="methodRequest">Device method parameters (pass-through to device)</param>
-        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
+        /// <param name="methodRequest">The details of the method to invoke.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken) =>
-            InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
+        /// <returns>The result of the method invocation.</returns>
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken)
+        {
+            methodRequest.ThrowIfNull(nameof(methodRequest));
+            return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
+        }
 
         /// <summary>
-        /// Interactively invokes a method on a module
+        /// Interactively invokes a method from an edge module to a different edge module.
+        /// Both of the edge modules need to be connected to the same edge hub.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="moduleId">Module Id</param>
-        /// <param name="methodRequest">Module method parameters</param>
+        /// <param name="deviceId">The unique identifier of the device.</param>
+        /// <param name="moduleId">The unique identifier of the edge module to invoke the method on.</param>
+        /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>Method result</returns>
+        /// <returns>The result of the method invocation.</returns>
         public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest) =>
             InvokeMethodAsync(deviceId, moduleId, methodRequest, CancellationToken.None);
 
         /// <summary>
-        /// Interactively invokes a method on module
+        /// Interactively invokes a method from an edge module to a different edge module.
+        /// Both of the edge modules need to be connected to the same edge hub.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="moduleId">Module Id</param>
-        /// <param name="methodRequest">Module method parameters.</param>
-        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <param name="deviceId">The unique identifier of the device.</param>
+        /// <param name="moduleId">The unique identifier of the edge module to invoke the method on.</param>
+        /// <param name="methodRequest">The details of the method to invoke.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken) =>
-            InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
+        /// <returns>The result of the method invocation.</returns>
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken)
+        {
+            methodRequest.ThrowIfNull(nameof(methodRequest));
+            return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
+        }
 
         private async Task<MethodResponse> InvokeMethodAsync(Uri uri, MethodRequest methodRequest, CancellationToken cancellationToken)
         {
