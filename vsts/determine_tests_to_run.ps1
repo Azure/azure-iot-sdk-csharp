@@ -39,6 +39,14 @@ function ShouldSkipPnPTests
 	return $false
 }
 
+function ShouldSkipDeviceStreamTests
+{
+	return ($env:SOURCE_BRANCH_NAME -and `
+		$env:SOURCE_BRANCH_NAME.toLower() -eq 'preview' -and `
+		$env:PIPELINE_ENVIRONMENT -and `
+		$env:PIPELINE_ENVIRONMENT.toLower() -eq 'prod')
+}
+
 # $folderNames is an array of strings where each string is the name of a folder within the codebase to look for in the git diff between the source and target branches
 # For instance, $folderNames can be "iothub", "common", "shared" if you want to see if any changes happened within the iothub folder, the common folder, or in the shared folder
 function DoChangesAffectAnyOfFolders($folderNames) 
