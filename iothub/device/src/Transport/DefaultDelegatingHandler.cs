@@ -18,7 +18,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             Context = context;
             _innerHandler = innerHandler;
-            if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, _innerHandler, nameof(InnerHandler));
+            }
         }
 
         public IPipelineContext Context { get; protected set; }
@@ -34,7 +37,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             protected set
             {
                 _innerHandler = value;
-                if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
+                if (Logging.IsEnabled)
+                {
+                    Logging.Associate(this, _innerHandler, nameof(InnerHandler));
+                }
             }
         }
 
@@ -72,7 +78,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
 
-            if (InnerHandler == null) throw new InvalidOperationException();
+            if (InnerHandler == null)
+            {
+                throw new InvalidOperationException();
+            }
+
             return InnerHandler.WaitForTransportClosedAsync();
         }
 
@@ -170,12 +180,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected void ThrowIfDisposed()
         {
-            if (_disposed) throw new ObjectDisposedException("IoT Client");
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("IoT Client");
+            }
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
 
             if (disposing)
             {

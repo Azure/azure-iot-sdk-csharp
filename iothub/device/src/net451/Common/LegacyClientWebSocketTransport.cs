@@ -67,7 +67,10 @@ namespace Microsoft.Azure.Devices.Client
 
         public override bool WriteAsync(TransportAsyncCallbackArgs args)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsync)}");
+            }
 
             this.ThrowIfNotOpen();
 
@@ -83,13 +86,20 @@ namespace Microsoft.Azure.Devices.Client
 
             taskResult.ToAsyncResult(onWriteComplete, args);
 
-            if (Logging.IsEnabled) Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsync)}");
+            }
+
             return true;
         }
 
         async Task WriteAsyncCore(TransportAsyncCallbackArgs args)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsyncCore)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsyncCore)}");
+            }
 
             bool succeeded = false;
             try
@@ -128,13 +138,19 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.Abort();
                 }
-                if (Logging.IsEnabled) Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsyncCore)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsyncCore)}");
+                }
             }
         }
 
         async Task<int> ReadAsyncCore()
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsyncCore)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsyncCore)}");
+            }
 
             bool succeeded = false;
             try
@@ -164,13 +180,19 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.Abort();
                 }
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsyncCore)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsyncCore)}");
+                }
             }
         }
 
         public override bool ReadAsync(TransportAsyncCallbackArgs args)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsync)}");
+            }
 
             this.ThrowIfNotOpen();
 
@@ -203,7 +225,11 @@ namespace Microsoft.Azure.Devices.Client
 
             taskResult.ToAsyncResult(this.OnReadComplete, args);
 
-            if (Logging.IsEnabled) Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsync)}");
+            }
+
             return true;
         }
 
@@ -218,7 +244,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternal)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternal)}");
+                }
 
                 var webSocketState = this.webSocket.State;
                 if (webSocketState != IotHubClientWebSocket.WebSocketState.Closed && webSocketState != IotHubClientWebSocket.WebSocketState.Aborted)
@@ -229,7 +258,10 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternal)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternal)}");
+                }
             }            
         }
 
@@ -237,7 +269,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternalAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternalAsync)}");
+                }
 
                 await this.webSocket.CloseAsync().ConfigureAwait(false);
             }
@@ -250,7 +285,10 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternalAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternalAsync)}");
+                }
             }
         }
 
@@ -258,7 +296,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(AbortInternal)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(AbortInternal)}");
+                }
 
                 if (!this.disposed && this.webSocket.State != IotHubClientWebSocket.WebSocketState.Aborted)
                 {
@@ -268,7 +309,10 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(AbortInternal)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(AbortInternal)}");
+                }
             }
         }
 
@@ -369,7 +413,10 @@ namespace Microsoft.Azure.Devices.Client
         {
            try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ThrowIfNotOpen)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ThrowIfNotOpen)}");
+                }
 
                 var webSocketState = this.webSocket.State;
                 if (webSocketState == IotHubClientWebSocket.WebSocketState.Open)
@@ -388,7 +435,10 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ThrowIfNotOpen)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ThrowIfNotOpen)}");
+                }
             }
         }
     }

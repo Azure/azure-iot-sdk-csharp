@@ -32,9 +32,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private void ReceivingAmqpLinkClosed(object sender, EventArgs e)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ReceivingAmqpLinkClosed)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(ReceivingAmqpLinkClosed)}");
+            }
+
             Closed?.Invoke(this, e);
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ReceivingAmqpLinkClosed)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, $"{nameof(ReceivingAmqpLinkClosed)}");
+            }
         }
 
         internal Task CloseAsync(TimeSpan timeout)
@@ -56,7 +63,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         internal async Task<Message> ReceiveAmqpMessageAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ReceiveAmqpMessageAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(ReceiveAmqpMessageAsync)}");
+            }
+
             try
             {
                 var amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
@@ -87,13 +98,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ReceiveAmqpMessageAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(ReceiveAmqpMessageAsync)}");
+                }
             }
         }
 
         internal async Task<AmqpIoTOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, outcome, $"{nameof(DisposeMessageAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, outcome, $"{nameof(DisposeMessageAsync)}");
+            }
 
             ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
             Outcome disposeOutcome =
@@ -103,7 +120,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     batchable: true,
                     timeout: timeout).ConfigureAwait(false);
 
-            if (Logging.IsEnabled) Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
+            }
 
             return new AmqpIoTOutcome(disposeOutcome);
         }
@@ -135,7 +155,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private void OnEventsReceived(AmqpMessage amqpMessage)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, $"{nameof(OnEventsReceived)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, amqpMessage, $"{nameof(OnEventsReceived)}");
+            }
+
             try
             {
                 Message message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
@@ -144,7 +168,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+                }
             }
         }
 
@@ -160,7 +187,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private void OnMethodReceived(AmqpMessage amqpMessage)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+            }
+
             try
             {
                 MethodRequestInternal methodRequestInternal = AmqpIoTMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, new CancellationToken(false));
@@ -169,7 +200,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+                }
             }
         }
 
@@ -190,7 +224,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private void OnDesiredPropertyReceived(AmqpMessage amqpMessage)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
+            }
+
             try
             {
                 _receivingAmqpLink.DisposeDelivery(amqpMessage, true, AmqpIoTConstants.AcceptedOutcome);
@@ -236,7 +274,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
+                }
             }
         }
 

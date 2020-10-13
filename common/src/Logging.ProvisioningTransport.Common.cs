@@ -24,7 +24,9 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(attestationType);
             DebugValidateArg(retryAfter);
-            if (IsEnabled) Log.RegisterDevice(
+            if (IsEnabled)
+            {
+                Log.RegisterDevice(
                 IdOf(thisOrContextObject),
                 registrationId,
                 idScope,
@@ -32,6 +34,7 @@ namespace Microsoft.Azure.Devices.Shared
                 operationId,
                 (int)(retryAfter == null ? 0 : retryAfter?.TotalSeconds),
                 status);
+            }
         }
 
         [Event(RegisterDeviceId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
@@ -65,13 +68,16 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(retryAfter);
 
-            if (IsEnabled) Log.OperationStatusLookup(
+            if (IsEnabled)
+            {
+                Log.OperationStatusLookup(
                 IdOf(thisOrContextObject),
                 registrationId,
                 operationId,
                 (int)(retryAfter == null ? 0 : retryAfter?.TotalSeconds),
                 status,
                 attempts);
+            }
         }
 
         [Event(OperationStatusLookupId, Keywords = Keywords.Default, Level = EventLevel.Informational)]

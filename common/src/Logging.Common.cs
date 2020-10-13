@@ -64,7 +64,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(formattableString);
-            if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            if (IsEnabled)
+            {
+                Log.Enter(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            }
         }
 
 #endif
@@ -78,7 +81,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(arg0);
-            if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)})");
+            if (IsEnabled)
+            {
+                Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)})");
+            }
         }
 
         /// <summary>Logs entrance to a method.</summary>
@@ -92,7 +98,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(arg0);
             DebugValidateArg(arg1);
-            if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)})");
+            if (IsEnabled)
+            {
+                Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)})");
+            }
         }
 
         /// <summary>Logs entrance to a method.</summary>
@@ -108,7 +117,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(arg0);
             DebugValidateArg(arg1);
             DebugValidateArg(arg2);
-            if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+            if (IsEnabled)
+            {
+                Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+            }
         }
 
         [Event(EnterEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
@@ -130,7 +142,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(formattableString);
-            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            if (IsEnabled)
+            {
+                Log.Exit(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            }
         }
 
 #endif
@@ -144,7 +159,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(arg0);
-            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, Format(arg0).ToString());
+            if (IsEnabled)
+            {
+                Log.Exit(IdOf(thisOrContextObject), memberName, Format(arg0).ToString());
+            }
         }
 
         /// <summary>Logs exit from a method.</summary>
@@ -158,7 +176,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(arg0);
             DebugValidateArg(arg1);
-            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, $"{Format(arg0)}, {Format(arg1)}");
+            if (IsEnabled)
+            {
+                Log.Exit(IdOf(thisOrContextObject), memberName, $"{Format(arg0)}, {Format(arg1)}");
+            }
         }
 
         /// <summary>Logs exit to a method.</summary>
@@ -174,7 +195,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(arg0);
             DebugValidateArg(arg1);
             DebugValidateArg(arg2);
-            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+            if (IsEnabled)
+            {
+                Log.Exit(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+            }
         }
 
         [Event(ExitEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
@@ -196,7 +220,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(formattableString);
-            if (IsEnabled) Log.Info(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            if (IsEnabled)
+            {
+                Log.Info(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            }
         }
 
 #endif
@@ -210,7 +237,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(message);
-            if (IsEnabled) Log.Info(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            if (IsEnabled)
+            {
+                Log.Info(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            }
         }
 
         [Event(InfoEventId, Level = EventLevel.Informational, Keywords = Keywords.Default)]
@@ -232,7 +262,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(formattableString);
-            if (IsEnabled) Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(formattableString));
+            if (IsEnabled)
+            {
+                Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(formattableString));
+            }
         }
 
 #endif
@@ -246,7 +279,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(message);
-            if (IsEnabled) Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            if (IsEnabled)
+            {
+                Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            }
         }
 
         [Event(ErrorEventId, Level = EventLevel.Warning, Keywords = Keywords.Default)]
@@ -269,7 +305,11 @@ namespace Microsoft.Azure.Devices.Shared
             // Don't call DebugValidateArg on args, as we expect Fail to be used in assert/failure situations
             // that should never happen in production, and thus we don't care about extra costs.
 
-            if (IsEnabled) Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(formattableString));
+            if (IsEnabled)
+            {
+                Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(formattableString));
+            }
+
             Debug.Fail(Format(formattableString), $"{IdOf(thisOrContextObject)}.{memberName}");
         }
 
@@ -285,7 +325,11 @@ namespace Microsoft.Azure.Devices.Shared
             // Don't call DebugValidateArg on args, as we expect Fail to be used in assert/failure situations
             // that should never happen in production, and thus we don't care about extra costs.
 
-            if (IsEnabled) Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            if (IsEnabled)
+            {
+                Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            }
+
             Debug.Fail(Format(message).ToString(), $"{IdOf(thisOrContextObject)}.{memberName}");
         }
 
@@ -378,7 +422,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(first);
             DebugValidateArg(second);
-            if (IsEnabled) Log.Associate(IdOf(first), memberName, IdOf(first), IdOf(second));
+            if (IsEnabled)
+            {
+                Log.Associate(IdOf(first), memberName, IdOf(first), IdOf(second));
+            }
         }
 
         /// <summary>Logs a relationship between two objects.</summary>
@@ -392,7 +439,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(first);
             DebugValidateArg(second);
-            if (IsEnabled) Log.Associate(IdOf(thisOrContextObject), memberName, IdOf(first), IdOf(second));
+            if (IsEnabled)
+            {
+                Log.Associate(IdOf(thisOrContextObject), memberName, IdOf(first), IdOf(second));
+            }
         }
 
         [Event(AssociateEventId, Level = EventLevel.Informational, Keywords = Keywords.Default, Message = "[{2}]<-->[{3}]")]
@@ -524,10 +574,25 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg2 == null) arg2 = "";
-                if (arg3 == null) arg3 = "";
-                if (arg4 == null) arg4 = "";
+                if (arg1 == null)
+                {
+                    arg1 = "";
+                }
+
+                if (arg2 == null)
+                {
+                    arg2 = "";
+                }
+
+                if (arg3 == null)
+                {
+                    arg3 = "";
+                }
+
+                if (arg4 == null)
+                {
+                    arg4 = "";
+                }
 
                 fixed (char* string1Bytes = arg1)
                 fixed (char* string2Bytes = arg2)
@@ -559,12 +624,25 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg2 == null) arg2 = "";
+                if (arg1 == null)
+                {
+                    arg1 = "";
+                }
+
+                if (arg2 == null)
+                {
+                    arg2 = "";
+                }
 #if !NET451
-                if (arg3 == null) arg3 = Array.Empty<byte>();
+                if (arg3 == null)
+                {
+                    arg3 = Array.Empty<byte>();
+                }
 #else
-                if (arg3 == null) arg3 = new byte[0];
+                if (arg3 == null)
+                {
+                    arg3 = new byte[0];
+                }
 #endif
 
                 fixed (char* arg1Ptr = arg1)
@@ -597,7 +675,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
+                if (arg1 == null)
+                {
+                    arg1 = "";
+                }
 
                 fixed (char* arg1Ptr = arg1)
                 {
@@ -626,8 +707,15 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg3 == null) arg3 = "";
+                if (arg1 == null)
+                {
+                    arg1 = "";
+                }
+
+                if (arg3 == null)
+                {
+                    arg3 = "";
+                }
 
                 fixed (char* arg1Ptr = arg1)
                 fixed (char* arg3Ptr = arg3)
@@ -654,8 +742,15 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg2 == null) arg2 = "";
+                if (arg1 == null)
+                {
+                    arg1 = "";
+                }
+
+                if (arg2 == null)
+                {
+                    arg2 = "";
+                }
 
                 fixed (char* arg1Ptr = arg1)
                 fixed (char* arg2Ptr = arg2)
@@ -682,9 +777,20 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg2 == null) arg2 = "";
-                if (arg3 == null) arg3 = "";
+                if (arg1 == null)
+                {
+                    arg1 = "";
+                }
+
+                if (arg2 == null)
+                {
+                    arg2 = "";
+                }
+
+                if (arg3 == null)
+                {
+                    arg3 = "";
+                }
 
                 fixed (char* arg1Ptr = arg1)
                 fixed (char* arg2Ptr = arg2)

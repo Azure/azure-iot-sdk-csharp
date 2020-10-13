@@ -53,9 +53,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
             return Equals((SaslTpmHandler)obj);
         }
 
@@ -138,8 +150,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             var sequenceNumber = GetSequenceNumber(saslChallenge);
             if (_nextSequenceNumber != sequenceNumber)
+            {
                 throw new AmqpException(AmqpErrorCode.InvalidField,
                     $"Invalid sequence number, expected: {_nextSequenceNumber}, actual: {sequenceNumber}.");
+            }
 
             byte[] tempNonce = new byte[_nonceBuffer.Length];
             Buffer.BlockCopy(_nonceBuffer, 0, tempNonce, 0, _nonceBuffer.Length);
@@ -179,15 +193,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var challengeBytes = saslChallenge.Challenge.Array;
 
             if (challengeBytes == null || challengeBytes.Length == 0)
+            {
                 throw new AmqpException(AmqpErrorCode.InvalidField, "Sasl challenge message is missing or empty.");
+            }
 
             if (challengeBytes[0] == 0x0)
+            {
                 return SaslChallengeAction.First;
+            }
 
             if ((challengeBytes[0] & SaslControlByteMask.InterimSegment) != 0x0)
             {
                 if ((challengeBytes[0] & SaslControlByteMask.FinalSegment) != 0x0)
+                {
                     return SaslChallengeAction.Final;
+                }
 
                 return SaslChallengeAction.Interim;
             }

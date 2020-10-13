@@ -26,12 +26,19 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, retryCount, lastException, $"{nameof(RetryStrategyAdapter)}.{nameof(ShouldRetry)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, retryCount, lastException, $"{nameof(RetryStrategyAdapter)}.{nameof(ShouldRetry)}");
+                }
+
                 return _retryStrategy.ShouldRetry(retryCount, lastException, out retryInterval);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(RetryStrategyAdapter)}.{nameof(ShouldRetry)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(RetryStrategyAdapter)}.{nameof(ShouldRetry)}");
+                }
             }
         }
     }

@@ -83,7 +83,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
                     $"started and listening to TCP connections on {SimulatorAddress}:{SimulatorPort}.");
             }
 
-            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)).Length > 0) return;
+            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)).Length > 0)
+            {
+                return;
+            }
 
             string[] files = Directory.GetFiles(
                 Directory.GetCurrentDirectory(),
