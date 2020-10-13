@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a disposable, AMQP DeviceClient from the specified parameters
+        /// Creates a disposable DeviceClient from the specified parameters, that uses AMQP transport protocol.
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportType">The transportType used (Http1, AMQP or MQTT), <see cref="TransportType"/></param>
+        /// <param name="transportType">The transportType used (HTTP1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)

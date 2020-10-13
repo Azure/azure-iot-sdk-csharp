@@ -18,7 +18,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Contains methods that a module can use to send messages to and receive from the service.
+    /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
     public sealed class ModuleClient : IDisposable
     {
@@ -48,7 +48,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        /// <summary>
         /// Creates an AMQP ModuleClient from individual parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
@@ -482,7 +481,8 @@ namespace Microsoft.Azure.Devices.Client
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
-        #region Module Specific API
+        #region Module Specific API 
+        // APIs that are available only in module client
 
         /// <summary>
         /// Sends an event to IoT hub.
