@@ -11,6 +11,9 @@ namespace Microsoft.Azure.Devices
     internal class ClientApiVersionHelper
     {
         private const string ApiVersionQueryPrefix = "api-version=";
+
+        // The preview branch uses a GA api version because the preview features this SDK support are already in public preview and is available on certain Azure regions.
+        // For more information on regional availability, check out this page: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-device-streams-overview#regional-availability
         private const string ApiVersionDefault = "2020-09-30";
 
         /// <summary>
