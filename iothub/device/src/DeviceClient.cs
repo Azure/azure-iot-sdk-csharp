@@ -30,13 +30,16 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException("A module ID was specified in the connection string - please use ModuleClient for modules.");
             }
 
-            if (Logging.IsEnabled) Logging.Associate(this, this, internalClient, nameof(DeviceClient));
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, this, internalClient, nameof(DeviceClient));
+            }
         }
 
         /// <summary>
-        /// Creates a disposable, Amqp DeviceClient from the specified parameters
+        /// Creates a disposable, AMQP DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
@@ -46,10 +49,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Create a disposable, Amqp DeviceClient from the specified parameters
+        /// Create a disposable, AMQP DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
@@ -61,9 +64,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="transportType">The transportType used (Http1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)
@@ -74,10 +77,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create a disposable DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="transportType">The transportType used (Http1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)
@@ -88,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -102,8 +105,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -115,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a disposable DeviceClient using Amqp transport from the specified connection string
+        /// Creates a disposable DeviceClient using AMQP transport from the specified connection string
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -126,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a disposable DeviceClient using Amqp transport from the specified connection string
+        /// Creates a disposable DeviceClient using AMQP transport from the specified connection string
         /// </summary>
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the Device</param>
@@ -141,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a disposable DeviceClient from the specified connection string using the specified transport type
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
-        /// <param name="transportType">Specifies whether Http1, Amqp or Mqtt transport is used, <see cref="TransportType"/></param>
+        /// <param name="transportType">Specifies whether Http1, AMQP or MQTT transport is used, <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType, ClientOptions options = default)
@@ -154,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
-        /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
+        /// <param name="transportType">The transportType used (Http1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, TransportType transportType, ClientOptions options = default)
@@ -181,6 +184,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
             ITransportSettings[] transportSettings, ClientOptions options = default)
@@ -203,7 +207,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Diagnostic sampling percentage value, [0-100];
-        /// 0 means no message will carry on diag info
+        /// 0 means no message will carry on diagnostics info
         /// </summary>
         public int DiagnosticSamplingPercentage
         {
@@ -236,7 +240,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Stores the retry strategy used in the operation retries.
         /// </summary>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with back-off
         // parameters for calculating delay in between retries.]
         [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
         public RetryPolicyType RetryPolicy
@@ -250,7 +254,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The change will take effect after any in-progress operations.
         /// </summary>
         /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with back-off
         // parameters for calculating delay in between retries.]
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
