@@ -25,23 +25,21 @@ namespace Microsoft.Azure.Devices
             {
                 CreateTimer();
             }
+
             _timer.Change(timeFromNow, TimeSpan.FromMilliseconds(-1));
         }
 
         public bool Cancel()
         {
-            if (_timer != null)
-            {
-                _timer.Dispose();
-                _timer = null;
-            }
+            _timer?.Dispose();
+            _timer = null;
 
             return true;
         }
 
         public void Dispose()
         {
-            _timer.Dispose();
+            _timer?.Dispose();
         }
 
         private void CreateTimer()
