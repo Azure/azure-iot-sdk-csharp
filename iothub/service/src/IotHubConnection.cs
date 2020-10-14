@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan s_refreshTokenRetryInterval = TimeSpan.FromSeconds(30);
-        private static readonly Lazy<bool> s_disableServerCertificateValidation = new Lazy<bool>(InitializeDisableServerCertificateValidation);
+        private static readonly Lazy<bool> s_shouldDisableServerCertificateValidation = new Lazy<bool>(InitializeDisableServerCertificateValidation);
 
         private readonly AccessRights _accessRights;
         private readonly FaultTolerantAmqpObject<AmqpSession> _faultTolerantSession;
@@ -423,7 +423,7 @@ namespace Microsoft.Azure.Devices
             SslPolicyErrors sslPolicyErrors)
         {
             return sslPolicyErrors == SslPolicyErrors.None 
-                || (s_disableServerCertificateValidation.Value 
+                || (s_shouldDisableServerCertificateValidation.Value 
                     && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch);
         }
 

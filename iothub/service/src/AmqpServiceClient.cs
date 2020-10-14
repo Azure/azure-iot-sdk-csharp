@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices
             }
             timeout ??= OperationTimeout;
 
-            using AmqpMessage amqpMessage = message.ToAmqpMessage();
+            using var amqpMessage = message.ToAmqpMessage();
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
 
             try
@@ -128,8 +128,11 @@ namespace Microsoft.Azure.Devices
 
         public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken)
         {
-            var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>();
-            errorMappingOverrides.Add(HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new DeviceNotFoundException(deviceId)));
+            var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
+            {
+                { HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new DeviceNotFoundException(deviceId)) }
+            };
+
             return _httpClientHelper.DeleteAsync<PurgeMessageQueueResult>(GetPurgeMessageQueueAsyncUri(deviceId), errorMappingOverrides, null, cancellationToken);
         }
 
@@ -150,8 +153,11 @@ namespace Microsoft.Azure.Devices
 
         public override Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken)
         {
-            var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>();
-            errorMappingOverrides.Add(HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new IotHubNotFoundException(_iotHubName)));
+            var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
+            {
+                { HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new IotHubNotFoundException(_iotHubName)) }
+            };
+
             return _httpClientHelper.GetAsync<ServiceStatistics>(GetStatisticsUri(), errorMappingOverrides, null, cancellationToken);
         }
 
@@ -219,35 +225,32 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(message));
             }
 
-            Outcome outcome;
-            using (AmqpMessage amqpMessage = message.ToAmqpMessage())
+            using var amqpMessage = message.ToAmqpMessage();
+            amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
+            try
             {
-                amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
-                try
-                {
-                    SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-                    outcome = await sendingLink
-                        .SendMessageAsync(
-                            amqpMessage,
-                            IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag),
-                            AmqpConstants.NullBinary,
-                            OperationTimeout)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception exception)
-                {
-                    if (exception.IsFatal())
-                    {
-                        throw;
-                    }
+                SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
+                Outcome outcome = await sendingLink
+                    .SendMessageAsync(
+                        amqpMessage,
+                        IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag),
+                        AmqpConstants.NullBinary,
+                        OperationTimeout)
+                    .ConfigureAwait(false);
 
-                    throw AmqpClientHelper.ToIotHubClientContract(exception);
+                if (outcome.DescriptorCode != Accepted.Code)
+                {
+                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }
-
-            if (outcome.DescriptorCode != Accepted.Code)
+            catch (Exception exception)
             {
-                throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                if (exception.IsFatal())
+                {
+                    throw;
+                }
+
+                throw AmqpClientHelper.ToIotHubClientContract(exception);
             }
         }
 
