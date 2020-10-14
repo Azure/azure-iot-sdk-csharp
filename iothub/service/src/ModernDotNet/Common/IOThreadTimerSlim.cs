@@ -1,43 +1,63 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Threading;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Threading;
-
-    class IOThreadTimerSlim
+    internal class IOThreadTimerSlim : IDisposable
     {
-        Timer timer;
-        Action<object> callback;
-        object callbackState;
+        private Timer _timer;
+        private readonly Action<object> _callback;
+        private readonly object _callbackState;
+        private SemaphoreSlim _timerSemaphore;
 
-        private void CreateTimer()
+        public IOThreadTimerSlim(Action<object> callback, object callbackState)
         {
-            this.timer = new Timer((obj) => callback(obj), callbackState, TimeSpan.FromMilliseconds(-1), TimeSpan.FromMilliseconds(-1));
-        }
-
-        public IOThreadTimerSlim(Action<object> callback, object callbackState, bool isTypicallyCanceledShortlyAfterBeingSet)
-        {
-            this.callback = callback;
-            this.callbackState = callbackState;
+            _timerSemaphore = new SemaphoreSlim(1);
+            _callback = callback;
+            _callbackState = callbackState;
             CreateTimer();
         }
 
         public void Set(TimeSpan timeFromNow)
         {
-            if (timer == null)
+            if (_timer == null)
             {
                 CreateTimer();
             }
-            timer.Change(timeFromNow, TimeSpan.FromMilliseconds(-1));
+
+            _timerSemaphore.Wait();
+
+            _timer.Change(timeFromNow, Timeout.InfiniteTimeSpan);
+
+            _timerSemaphore.Release();
         }
 
         public bool Cancel()
         {
-            timer.Dispose();
-            timer = null;
+            _timerSemaphore.Wait();
+
+            _timer?.Dispose();
+            _timer = null;
+
+            _timerSemaphore.Release();
+
             return true;
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
+            _timerSemaphore?.Dispose();
+        }
+
+        private void CreateTimer()
+        {
+            _timerSemaphore.Wait();
+            _timer = new Timer((obj) => _callback(obj), _callbackState, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+            _timerSemaphore.Release();
         }
     }
 }

@@ -10,9 +10,9 @@ using Microsoft.Azure.Devices.Common.Interop;
 
 namespace Microsoft.Azure.Devices.Common
 {
-    // IOThreadTimer has several characterstics that are important for performance:
+    // IOThreadTimer has several characteristics that are important for performance:
     // - Timers that expire benefit from being scheduled to run on IO threads using IOThreadScheduler.Schedule.
-    // - The timer "waiter" thread thread is only allocated if there are set timers.
+    // - The timer "waiter" thread is only allocated if there are set timers.
     // - The timer waiter thread itself is an IO thread, which allows it to go away if there is no need for it,
     //   and allows it to be reused for other purposes.
     // - After the timer count goes to zero, the timer waiter thread remains active for a bounded amount
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Common
     //   waitable timer handle.
     // - Setting or canceling a timer does not typically involve any allocations.
 
-    internal class IOThreadTimer
+    internal class IOThreadTimer : IDisposable
     {
         private const int MaxSkewInMillisecondsDefault = 100;
         private static long s_systemTimeResolutionTicks = -1;
@@ -120,6 +120,11 @@ namespace Microsoft.Azure.Devices.Common
             }
 
             TimerManager.Value.Set(this, newDueTimeInTicks);
+        }
+
+        public void Dispose()
+        {
+            _timerGroup.Dispose();
         }
 
         [Fx.Tag.SynchronizationObject(Blocking = false, Scope = Fx.Tag.Strings.AppDomain)]
