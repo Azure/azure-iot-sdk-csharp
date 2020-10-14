@@ -50,6 +50,7 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _timer?.Dispose();
+            _sem?.Dispose();
         }
 
         private void CreateTimer()
