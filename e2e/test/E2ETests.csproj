@@ -65,17 +65,17 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.27.1-preview-*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.25.1-preview-*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.29.1-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.28.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.26.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.32.0-preview-*" />
   </ItemGroup>
   <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES.ToUpper())' != '') And ( '$(TargetFramework)' != 'net451' ) ">
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.16.0-preview-*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.13.0-preview-*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.12.0-preview-*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.13.0-preview-*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.12.0-preview-*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.16.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.17.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.14.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.13.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.14.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.13.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.17.0-preview-*" />
     <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
 </Project>
