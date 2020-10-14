@@ -243,14 +243,9 @@ namespace Microsoft.Azure.Devices
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }
-            catch (Exception exception)
+            catch (Exception ex) when (!ex.IsFatal())
             {
-                if (exception.IsFatal())
-                {
-                    throw;
-                }
-
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
         }
 
