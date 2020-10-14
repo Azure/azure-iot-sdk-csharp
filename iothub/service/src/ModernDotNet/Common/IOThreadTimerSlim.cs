@@ -11,11 +11,11 @@ namespace Microsoft.Azure.Devices
         private Timer _timer;
         private readonly Action<object> _callback;
         private readonly object _callbackState;
-        private SemaphoreSlim _sem;
+        private SemaphoreSlim _timerSemaphore;
 
         public IOThreadTimerSlim(Action<object> callback, object callbackState)
         {
-            _sem = new SemaphoreSlim(1);
+            _timerSemaphore = new SemaphoreSlim(1);
             _callback = callback;
             _callbackState = callbackState;
             CreateTimer();
@@ -28,21 +28,21 @@ namespace Microsoft.Azure.Devices
                 CreateTimer();
             }
 
-            _sem.Wait();
+            _timerSemaphore.Wait();
 
             _timer.Change(timeFromNow, Timeout.InfiniteTimeSpan);
 
-            _sem.Release();
+            _timerSemaphore.Release();
         }
 
         public bool Cancel()
         {
-            _sem.Wait();
+            _timerSemaphore.Wait();
 
             _timer?.Dispose();
             _timer = null;
 
-            _sem.Release();
+            _timerSemaphore.Release();
 
             return true;
         }
@@ -50,14 +50,14 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _timer?.Dispose();
-            _sem?.Dispose();
+            _timerSemaphore?.Dispose();
         }
 
         private void CreateTimer()
         {
-            _sem.Wait();
+            _timerSemaphore.Wait();
             _timer = new Timer((obj) => _callback(obj), _callbackState, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-            _sem.Release();
+            _timerSemaphore.Release();
         }
     }
 }
