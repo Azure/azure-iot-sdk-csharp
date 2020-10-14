@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices
 
         Task<ReceivingAmqpLink> CreateReceivingLinkAsync(TimeSpan timeout)
         {
-            return this.iotHubConnection.CreateReceivingLink(this.receivingPath, timeout, 0);
+            return this.iotHubConnection.CreateReceivingLinkAsync(this.receivingPath, timeout, 0);
         }
 
         public override Task CompleteAsync(FeedbackBatch feedback)
