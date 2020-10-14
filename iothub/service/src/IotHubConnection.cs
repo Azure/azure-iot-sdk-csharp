@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc/>
         public void Dispose()
         {
-            _faultTolerantSession.Dispose();
+            _faultTolerantSession?.Dispose();
             _refreshTokenTimer?.Dispose();
         }
 
