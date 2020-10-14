@@ -453,7 +453,7 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _faultTolerantSession.Dispose();
-            _refreshTokenTimer.Dispose();
+            _refreshTokenTimer?.Dispose();
         }
 
         private void ScheduleTokenRefresh(DateTime expiresAtUtc)
