@@ -35,10 +35,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                }
 
                 bool gain = await _handlerLock.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
-                if (!gain) throw new TimeoutException("Timed out to acquire handler lock.");
+                if (!gain)
+                {
+                    throw new TimeoutException("Timed out to acquire handler lock.");
+                }
+
                 SelectTransport();
 
                 try
@@ -61,7 +68,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                }
             }
         }
 
@@ -75,15 +85,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Debug.Assert(transportSettingsArray != null);
 
                 // Keep cycling through all transports until we find one that works.
-                if (_nextTransportIndex >= transportSettingsArray.Length) _nextTransportIndex = 0;
+                if (_nextTransportIndex >= transportSettingsArray.Length)
+                {
+                    _nextTransportIndex = 0;
+                }
 
                 ITransportSettings transportSettings = transportSettingsArray[_nextTransportIndex];
                 Debug.Assert(transportSettings != null);
 
-                if (Logging.IsEnabled) Logging.Info(
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(
                     this,
                     $"Trying {transportSettings?.GetTransportType()}",
                     $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                }
 
                 // Configure the transportSettings for this context (Important! Within Context, 'ITransportSettings' != 'ITransportSettings[]').
                 Context.Set<ITransportSettings>(transportSettings);
@@ -97,7 +113,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                }
+
                 cancellationToken.ThrowIfCancellationRequested();
                 await _handlerLock.WaitAsync().ConfigureAwait(false);
                 SelectTransport();
@@ -122,7 +142,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                }
             }
         }
 
@@ -149,7 +172,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // Will throw OperationCancelledException if CloseAsync() or Dispose() has been called by the application.
             await base.WaitForTransportClosedAsync().ConfigureAwait(false);
 
-            if (Logging.IsEnabled) Logging.Info(this, "Client disconnected.", nameof(WaitForTransportClosedAsync));
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, "Client disconnected.", nameof(WaitForTransportClosedAsync));
+            }
 
             await _handlerLock.WaitAsync().ConfigureAwait(false);
             Debug.Assert(InnerHandler != null);

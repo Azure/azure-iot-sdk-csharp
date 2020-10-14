@@ -90,7 +90,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
+            if (Logging.IsEnabled)
+            {
+                Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
+            }
 
             var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security)
             {
@@ -107,7 +110,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(ProvisioningRegistrationAdditionalData data, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
+            if (Logging.IsEnabled)
+            {
+                Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
+            }
 
             var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData)
             {

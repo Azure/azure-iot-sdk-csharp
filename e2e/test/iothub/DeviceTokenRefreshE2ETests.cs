@@ -134,7 +134,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
                     {
                         Logger.Trace($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
-                        if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
+                        if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected)
+                        {
+                            deviceDisconnected.Release();
+                        }
                     });
                 }
 
@@ -268,8 +271,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _tokenRefreshSemaphore.Release();
                 _counter++;
 
-                if (_counter == 1) _stopwatch.Start();
-                else _stopwatch.Stop();
+                if (_counter == 1)
+                {
+                    _stopwatch.Start();
+                }
+                else
+                {
+                    _stopwatch.Stop();
+                }
 
                 return Task.FromResult(token);
             }

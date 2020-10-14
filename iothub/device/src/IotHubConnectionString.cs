@@ -38,8 +38,16 @@ namespace Microsoft.Azure.Devices.Client
             if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh)
             {
                 TokenRefresher = (AuthenticationWithTokenRefresh)builder.AuthenticationMethod;
-                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(TokenRefresher)}");
-                if (Logging.IsEnabled) Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                }
+
+                if (Logging.IsEnabled)
+                {
+                    Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                }
+
                 Debug.Assert(TokenRefresher != null);
             }
             else if (!string.IsNullOrEmpty(SharedAccessKey))
@@ -47,15 +55,25 @@ namespace Microsoft.Azure.Devices.Client
                 if (ModuleId.IsNullOrWhiteSpace())
                 {
                     TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this) as AuthenticationWithTokenRefresh;
-                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                    }
                 }
                 else
                 {
                     TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this) as AuthenticationWithTokenRefresh;
-                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                    }
                 }
 
-                if (Logging.IsEnabled) Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                if (Logging.IsEnabled)
+                {
+                    Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                }
+
                 Debug.Assert(TokenRefresher != null);
             }
         }

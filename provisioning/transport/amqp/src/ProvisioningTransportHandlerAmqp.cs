@@ -53,7 +53,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
+            }
 
             if (message == null)
             {
@@ -87,7 +90,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         $"{nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
                 }
 
-                if (Logging.IsEnabled) Logging.Associate(authStrategy, this);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Associate(authStrategy, this);
+                }
 
                 bool useWebSocket = (FallbackType == TransportFallbackType.WebSocketOnly);
 
@@ -158,16 +164,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
-                if (Logging.IsEnabled) Logging.Error(
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(
                     this,
                     $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}",
                     nameof(RegisterAsync));
+                }
 
                 throw new ProvisioningTransportException($"AMQP transport exception", ex, true);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
+                }
             }
         }
 
@@ -316,11 +328,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
                 catch (JsonException ex)
                 {
-                    if (Logging.IsEnabled) Logging.Error(
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(
                         this,
                         $"{nameof(ProvisioningTransportHandlerAmqp)} server returned malformed error response." +
                         $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
                         nameof(RegisterAsync));
+                    }
 
                     throw new ProvisioningTransportException(
                         $"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'",

@@ -52,7 +52,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert, IWebProxy proxy, RemoteCertificateValidationCallback remoteCerificateValidationCallback)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}");
+            }
+
             var hostName = _uri.Host;
 
             var tcpSettings = new TcpTransportSettings { Host = hostName, Port = _uri.Port != -1 ? _uri.Port : AmqpConstants.DefaultSecurePort };
@@ -71,7 +75,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
                 if (provider != null)
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Using SaslTransport");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Using SaslTransport");
+                    }
+
                     _sentHeader = new ProtocolHeader(provider.ProtocolId, provider.DefaultVersion);
                     ByteBuffer buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
                     _sentHeader.Encode(buffer);
@@ -84,7 +92,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     args.Transport = transport;
                     bool operationPending = transport.WriteAsync(args);
 
-                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
+                    }
 
                     if (!operationPending)
                     {
@@ -209,7 +220,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void OnWriteHeaderComplete(TransportAsyncCallbackArgs args)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnWriteHeaderComplete)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnWriteHeaderComplete)}");
+            }
 
             if (args.Exception != null)
             {
@@ -230,7 +244,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void OnReadHeaderComplete(TransportAsyncCallbackArgs args)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}");
+            }
 
             if (args.Exception != null)
             {
@@ -243,7 +260,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ProtocolHeader receivedHeader = new ProtocolHeader();
                 receivedHeader.Decode(new ByteBuffer(args.Buffer, args.Offset, args.Count));
 
-                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Received Protocol Header: {receivedHeader.ToString()}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Received Protocol Header: {receivedHeader.ToString()}");
+                }
 
                 if (!receivedHeader.Equals(_sentHeader))
                 {
@@ -252,7 +272,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
                 var transport = provider.CreateTransport(args.Transport, true);
-                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Created SaslTransportHandler ");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Created SaslTransportHandler ");
+                }
+
                 _tcs.TrySetResult(transport);
             }
             catch (Exception ex)
@@ -264,11 +288,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void CompleteOnException(TransportAsyncCallbackArgs args)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(CompleteOnException)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(CompleteOnException)}");
+            }
 
             if (args.Exception != null && args.Transport != null)
             {
-                if (Logging.IsEnabled) Logging.Error(this, $"{nameof(AmqpClientConnection)}.{nameof(CompleteOnException)}: Exception thrown {args.Exception.Message}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, $"{nameof(AmqpClientConnection)}.{nameof(CompleteOnException)}: Exception thrown {args.Exception.Message}");
+                }
 
                 args.Transport.SafeClose(args.Exception);
                 args.Transport = null;

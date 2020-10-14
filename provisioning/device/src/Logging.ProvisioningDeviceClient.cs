@@ -24,12 +24,15 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(security);
             DebugValidateArg(transport);
 
-            if (IsEnabled) Log.RegisterAsync(
+            if (IsEnabled)
+            {
+                Log.RegisterAsync(
                 IdOf(thisOrContextObject), 
                 globalDeviceEndpoint, 
                 idScope,
                 IdOf(transport),
                 IdOf(security));
+            }
         }
 
         [Event(RegisterAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]

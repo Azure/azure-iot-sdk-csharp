@@ -105,7 +105,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             if ((Type != QueryResultType.Unknown) && string.IsNullOrWhiteSpace(bodyString))
             {
                 if(bodyString == null)
+                {
                     throw new ArgumentNullException(nameof(bodyString));
+                }
 
                 throw new ArgumentException("Invalid query body.", nameof(bodyString));
             }

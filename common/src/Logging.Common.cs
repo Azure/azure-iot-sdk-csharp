@@ -64,7 +64,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(formattableString);
-            if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            if (IsEnabled)
+            {
+                Log.Enter(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            }
         }
 
 #endif
@@ -78,7 +81,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(arg0);
-            if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)})");
+            if (IsEnabled)
+            {
+                Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)})");
+            }
         }
 
         /// <summary>Logs entrance to a method.</summary>
@@ -92,7 +98,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(arg0);
             DebugValidateArg(arg1);
-            if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)})");
+            if (IsEnabled)
+            {
+                Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)})");
+            }
         }
 
         /// <summary>Logs entrance to a method.</summary>
@@ -108,7 +117,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(arg0);
             DebugValidateArg(arg1);
             DebugValidateArg(arg2);
-            if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+            if (IsEnabled)
+            {
+                Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+            }
         }
 
         [Event(EnterEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
@@ -130,7 +142,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(formattableString);
-            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            if (IsEnabled)
+            {
+                Log.Exit(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            }
         }
 
 #endif
@@ -144,7 +159,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(arg0);
-            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, Format(arg0).ToString());
+            if (IsEnabled)
+            {
+                Log.Exit(IdOf(thisOrContextObject), memberName, Format(arg0).ToString());
+            }
         }
 
         /// <summary>Logs exit from a method.</summary>
@@ -158,7 +176,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(arg0);
             DebugValidateArg(arg1);
-            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, $"{Format(arg0)}, {Format(arg1)}");
+            if (IsEnabled)
+            {
+                Log.Exit(IdOf(thisOrContextObject), memberName, $"{Format(arg0)}, {Format(arg1)}");
+            }
         }
 
         /// <summary>Logs exit to a method.</summary>
@@ -174,7 +195,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(arg0);
             DebugValidateArg(arg1);
             DebugValidateArg(arg2);
-            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+            if (IsEnabled)
+            {
+                Log.Exit(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+            }
         }
 
         [Event(ExitEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
@@ -196,7 +220,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(formattableString);
-            if (IsEnabled) Log.Info(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            if (IsEnabled)
+            {
+                Log.Info(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
+            }
         }
 
 #endif
@@ -210,7 +237,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(message);
-            if (IsEnabled) Log.Info(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            if (IsEnabled)
+            {
+                Log.Info(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            }
         }
 
         [Event(InfoEventId, Level = EventLevel.Informational, Keywords = Keywords.Default)]
@@ -232,7 +262,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(formattableString);
-            if (IsEnabled) Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(formattableString));
+            if (IsEnabled)
+            {
+                Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(formattableString));
+            }
         }
 
 #endif
@@ -246,7 +279,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(message);
-            if (IsEnabled) Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            if (IsEnabled)
+            {
+                Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            }
         }
 
         [Event(ErrorEventId, Level = EventLevel.Warning, Keywords = Keywords.Default)]
@@ -269,7 +305,11 @@ namespace Microsoft.Azure.Devices.Shared
             // Don't call DebugValidateArg on args, as we expect Fail to be used in assert/failure situations
             // that should never happen in production, and thus we don't care about extra costs.
 
-            if (IsEnabled) Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(formattableString));
+            if (IsEnabled)
+            {
+                Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(formattableString));
+            }
+
             Debug.Fail(Format(formattableString), $"{IdOf(thisOrContextObject)}.{memberName}");
         }
 
@@ -285,7 +325,11 @@ namespace Microsoft.Azure.Devices.Shared
             // Don't call DebugValidateArg on args, as we expect Fail to be used in assert/failure situations
             // that should never happen in production, and thus we don't care about extra costs.
 
-            if (IsEnabled) Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            if (IsEnabled)
+            {
+                Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(message).ToString());
+            }
+
             Debug.Fail(Format(message).ToString(), $"{IdOf(thisOrContextObject)}.{memberName}");
         }
 
@@ -378,7 +422,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             DebugValidateArg(first);
             DebugValidateArg(second);
-            if (IsEnabled) Log.Associate(IdOf(first), memberName, IdOf(first), IdOf(second));
+            if (IsEnabled)
+            {
+                Log.Associate(IdOf(first), memberName, IdOf(first), IdOf(second));
+            }
         }
 
         /// <summary>Logs a relationship between two objects.</summary>
@@ -392,7 +439,10 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(first);
             DebugValidateArg(second);
-            if (IsEnabled) Log.Associate(IdOf(thisOrContextObject), memberName, IdOf(first), IdOf(second));
+            if (IsEnabled)
+            {
+                Log.Associate(IdOf(thisOrContextObject), memberName, IdOf(first), IdOf(second));
+            }
         }
 
         [Event(AssociateEventId, Level = EventLevel.Informational, Keywords = Keywords.Default, Message = "[{2}]<-->[{3}]")]
@@ -451,22 +501,19 @@ namespace Microsoft.Azure.Devices.Shared
             }
 
             // Format arrays with their element type name and length
-            Array arr = value as Array;
-            if (arr != null)
+            if (value is Array arr)
             {
                 return $"{arr.GetType().GetElementType()}[{((Array)value).Length}]";
             }
 
             // Format ICollections as the name and count
-            ICollection c = value as ICollection;
-            if (c != null)
+            if (value is ICollection c)
             {
                 return $"{c.GetType().Name}({c.Count})";
             }
 
             // Format SafeHandles as their type, hash code, and pointer value
-            SafeHandle handle = value as SafeHandle;
-            if (handle != null)
+            if (value is SafeHandle handle)
             {
                 return $"{handle.GetType().Name}:{handle.GetHashCode()}(0x{handle.DangerousGetHandle():X})";
             }
@@ -524,32 +571,32 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg2 == null) arg2 = "";
-                if (arg3 == null) arg3 = "";
-                if (arg4 == null) arg4 = "";
+                arg1 ??= "";
+                arg2 ??= "";
+                arg3 ??= "";
+                arg4 ??= "";
 
                 fixed (char* string1Bytes = arg1)
                 fixed (char* string2Bytes = arg2)
                 fixed (char* string3Bytes = arg3)
                 fixed (char* string4Bytes = arg4)
                 {
-                    const int NumEventDatas = 4;
-                    var descrs = stackalloc EventData[NumEventDatas];
+                    const int numEventDatas = 4;
+                    EventData* descrs = stackalloc EventData[numEventDatas];
 
                     descrs[0].DataPointer = (IntPtr)string1Bytes;
-                    descrs[0].Size = ((arg1.Length + 1) * 2);
+                    descrs[0].Size = (arg1.Length + 1) * 2;
 
                     descrs[1].DataPointer = (IntPtr)string2Bytes;
-                    descrs[1].Size = ((arg2.Length + 1) * 2);
+                    descrs[1].Size = (arg2.Length + 1) * 2;
 
                     descrs[2].DataPointer = (IntPtr)string3Bytes;
-                    descrs[2].Size = ((arg3.Length + 1) * 2);
+                    descrs[2].Size = (arg3.Length + 1) * 2;
 
                     descrs[3].DataPointer = (IntPtr)string4Bytes;
-                    descrs[3].Size = ((arg4.Length + 1) * 2);
+                    descrs[3].Size = (arg4.Length + 1) * 2;
 
-                    WriteEventCore(eventId, NumEventDatas, descrs);
+                    WriteEventCore(eventId, numEventDatas, descrs);
                 }
             }
         }
@@ -559,12 +606,13 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg2 == null) arg2 = "";
+                arg1 ??= "";
+                arg2 ??= "";
+
 #if !NET451
-                if (arg3 == null) arg3 = Array.Empty<byte>();
+                arg3 ??= Array.Empty<byte>();
 #else
-                if (arg3 == null) arg3 = new byte[0];
+                arg3 ??= new byte[0];
 #endif
 
                 fixed (char* arg1Ptr = arg1)
@@ -572,8 +620,8 @@ namespace Microsoft.Azure.Devices.Shared
                 fixed (byte* arg3Ptr = arg3)
                 {
                     int bufferLength = arg3.Length;
-                    const int NumEventDatas = 4;
-                    var descrs = stackalloc EventData[NumEventDatas];
+                    const int numEventDatas = 4;
+                    EventData* descrs = stackalloc EventData[numEventDatas];
 
                     descrs[0].DataPointer = (IntPtr)arg1Ptr;
                     descrs[0].Size = (arg1.Length + 1) * sizeof(char);
@@ -587,7 +635,7 @@ namespace Microsoft.Azure.Devices.Shared
                     descrs[3].DataPointer = (IntPtr)arg3Ptr;
                     descrs[3].Size = bufferLength;
 
-                    WriteEventCore(eventId, NumEventDatas, descrs);
+                    WriteEventCore(eventId, numEventDatas, descrs);
                 }
             }
         }
@@ -597,14 +645,14 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
+                arg1 ??= "";
 
                 fixed (char* arg1Ptr = arg1)
                 {
-                    const int NumEventDatas = 4;
-                    var descrs = stackalloc EventData[NumEventDatas];
+                    const int numEventDatas = 4;
+                    EventData* descrs = stackalloc EventData[numEventDatas];
 
-                    descrs[0].DataPointer = (IntPtr)(arg1Ptr);
+                    descrs[0].DataPointer = (IntPtr)arg1Ptr;
                     descrs[0].Size = (arg1.Length + 1) * sizeof(char);
 
                     descrs[1].DataPointer = (IntPtr)(&arg2);
@@ -616,7 +664,7 @@ namespace Microsoft.Azure.Devices.Shared
                     descrs[3].DataPointer = (IntPtr)(&arg4);
                     descrs[3].Size = sizeof(int);
 
-                    WriteEventCore(eventId, NumEventDatas, descrs);
+                    WriteEventCore(eventId, numEventDatas, descrs);
                 }
             }
         }
@@ -626,25 +674,25 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg3 == null) arg3 = "";
+                arg1 ??= "";
+                arg3 ??= "";
 
                 fixed (char* arg1Ptr = arg1)
                 fixed (char* arg3Ptr = arg3)
                 {
-                    const int NumEventDatas = 3;
-                    var descrs = stackalloc EventData[NumEventDatas];
+                    const int numEventDatas = 3;
+                    EventData* descrs = stackalloc EventData[numEventDatas];
 
-                    descrs[0].DataPointer = (IntPtr)(arg1Ptr);
+                    descrs[0].DataPointer = (IntPtr)arg1Ptr;
                     descrs[0].Size = (arg1.Length + 1) * sizeof(char);
 
                     descrs[1].DataPointer = (IntPtr)(&arg2);
                     descrs[1].Size = sizeof(int);
 
-                    descrs[2].DataPointer = (IntPtr)(arg3Ptr);
+                    descrs[2].DataPointer = (IntPtr)arg3Ptr;
                     descrs[2].Size = (arg3.Length + 1) * sizeof(char);
 
-                    WriteEventCore(eventId, NumEventDatas, descrs);
+                    WriteEventCore(eventId, numEventDatas, descrs);
                 }
             }
         }
@@ -654,25 +702,25 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg2 == null) arg2 = "";
+                arg1 ??= "";
+                arg2 ??= "";
 
                 fixed (char* arg1Ptr = arg1)
                 fixed (char* arg2Ptr = arg2)
                 {
-                    const int NumEventDatas = 3;
-                    var descrs = stackalloc EventData[NumEventDatas];
+                    const int numEventDatas = 3;
+                    EventData* descrs = stackalloc EventData[numEventDatas];
 
-                    descrs[0].DataPointer = (IntPtr)(arg1Ptr);
+                    descrs[0].DataPointer = (IntPtr)arg1Ptr;
                     descrs[0].Size = (arg1.Length + 1) * sizeof(char);
 
-                    descrs[1].DataPointer = (IntPtr)(arg2Ptr);
+                    descrs[1].DataPointer = (IntPtr)arg2Ptr;
                     descrs[1].Size = (arg2.Length + 1) * sizeof(char);
 
                     descrs[2].DataPointer = (IntPtr)(&arg3);
                     descrs[2].Size = sizeof(int);
 
-                    WriteEventCore(eventId, NumEventDatas, descrs);
+                    WriteEventCore(eventId, numEventDatas, descrs);
                 }
             }
         }
@@ -682,30 +730,30 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (IsEnabled())
             {
-                if (arg1 == null) arg1 = "";
-                if (arg2 == null) arg2 = "";
-                if (arg3 == null) arg3 = "";
+                arg1 ??= "";
+                arg2 ??= "";
+                arg3 ??= "";
 
                 fixed (char* arg1Ptr = arg1)
                 fixed (char* arg2Ptr = arg2)
                 fixed (char* arg3Ptr = arg3)
                 {
-                    const int NumEventDatas = 4;
-                    var descrs = stackalloc EventData[NumEventDatas];
+                    const int numEventDatas = 4;
+                    EventData* descrs = stackalloc EventData[numEventDatas];
 
-                    descrs[0].DataPointer = (IntPtr)(arg1Ptr);
+                    descrs[0].DataPointer = (IntPtr)arg1Ptr;
                     descrs[0].Size = (arg1.Length + 1) * sizeof(char);
 
-                    descrs[1].DataPointer = (IntPtr)(arg2Ptr);
+                    descrs[1].DataPointer = (IntPtr)arg2Ptr;
                     descrs[1].Size = (arg2.Length + 1) * sizeof(char);
 
-                    descrs[2].DataPointer = (IntPtr)(arg3Ptr);
+                    descrs[2].DataPointer = (IntPtr)arg3Ptr;
                     descrs[2].Size = (arg3.Length + 1) * sizeof(char);
 
                     descrs[3].DataPointer = (IntPtr)(&arg4);
                     descrs[3].Size = sizeof(int);
 
-                    WriteEventCore(eventId, NumEventDatas, descrs);
+                    WriteEventCore(eventId, numEventDatas, descrs);
                 }
             }
         }

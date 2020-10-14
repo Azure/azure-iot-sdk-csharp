@@ -107,14 +107,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http1) throw;
+                if (transport == Client.TransportType.Http1)
+                {
+                    throw;
+                }
             }
             catch (TimeoutException ex)
             {
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http1) throw;
+                if (transport == Client.TransportType.Http1)
+                {
+                    throw;
+                }
             }
             finally
             {

@@ -60,7 +60,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     _amqpConnectionPools.Add(host, amqpConnectionPool);
                 }
 
-                if (Logging.IsEnabled) Logging.Associate(this, amqpConnectionPool, $"{nameof(ResolveConnectionPool)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Associate(this, amqpConnectionPool, $"{nameof(ResolveConnectionPool)}");
+                }
+
                 return amqpConnectionPool;
             }
         }

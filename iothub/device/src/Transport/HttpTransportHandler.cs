@@ -139,7 +139,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected override void Dispose(bool disposing)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
 
             base.Dispose(disposing);
             if (disposing)

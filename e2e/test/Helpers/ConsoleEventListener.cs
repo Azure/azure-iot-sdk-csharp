@@ -22,7 +22,10 @@ namespace System.Diagnostics.Tracing
         public ConsoleEventListener(string[] filters)
         {
             _eventFilters = filters ?? throw new ArgumentNullException(nameof(filters));
-            if (_eventFilters.Length == 0) throw new ArgumentException("Filters cannot be empty", nameof(filters));
+            if (_eventFilters.Length == 0)
+            {
+                throw new ArgumentException("Filters cannot be empty", nameof(filters));
+            }
 
             foreach (string filter in _eventFilters)
             {
@@ -57,7 +60,10 @@ namespace System.Diagnostics.Tracing
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
-            if (_eventFilters == null) return;
+            if (_eventFilters == null)
+            {
+                return;
+            }
 
             lock (_lock)
             {
