@@ -632,7 +632,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (IsProxyConfigured())
             {
                 //No need to do a DNS lookup since we have the proxy address already
+
+#if NET451
                 _serverAddresses = new IPAddress[0];
+#else
+                _serverAddresses = Array.Empty<IPAddress>();
+#endif
             }
             else
             {

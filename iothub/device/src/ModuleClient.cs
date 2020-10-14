@@ -49,6 +49,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        /// <summary>
         /// Creates an AMQP ModuleClient from individual parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
@@ -635,9 +636,11 @@ namespace Microsoft.Azure.Devices.Client
             HttpClientHandler httpClientHandler = null;
             Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();
 
-            if (customCertificateValidation != null)
+            try
             {
-                TlsVersions.Instance.SetLegacyAcceptableVersions();
+                if (customCertificateValidation != null)
+                {
+                    TlsVersions.Instance.SetLegacyAcceptableVersions();
 
 #if !NET451
                 httpClientHandler = new HttpClientHandler
@@ -646,29 +649,34 @@ namespace Microsoft.Azure.Devices.Client
                     SslProtocols = TlsVersions.Instance.Preferred,
                 };
 #else
-                httpClientHandler = new WebRequestHandler();
-                ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-                {
-                    return customCertificateValidation(sender, certificate, chain, errors);
-                };
+                    httpClientHandler = new WebRequestHandler();
+                    ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+                    {
+                        return customCertificateValidation(sender, certificate, chain, errors);
+                    };
 #endif
+                }
+
+                var context = new PipelineContext();
+                context.Set(new ProductInfo { Extra = InternalClient.ProductInfo });
+
+                var transportSettings = new Http1TransportSettings();
+                //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
+                if (InternalClient.Certificate != null)
+                {
+                    transportSettings.ClientCertificate = InternalClient.Certificate;
+                }
+
+                using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings, httpClientHandler);
+                var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
+                MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
+
+                return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
             }
-
-            var context = new PipelineContext();
-            context.Set(new ProductInfo { Extra = InternalClient.ProductInfo });
-
-            var transportSettings = new Http1TransportSettings();
-            //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
-            if (InternalClient.Certificate != null)
+            finally
             {
-                transportSettings.ClientCertificate = InternalClient.Certificate;
+                httpClientHandler?.Dispose();
             }
-
-            using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings, httpClientHandler);
-            var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
-            MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
-
-            return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)
