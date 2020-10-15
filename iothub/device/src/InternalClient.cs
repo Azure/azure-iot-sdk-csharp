@@ -1225,19 +1225,22 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken)
         {
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
-            }
-
             // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
             // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
-            if (!_patchSubscribedWithService)
+            //if (!_patchSubscribedWithService)
             {
                 try
                 {
-                    await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                    _patchSubscribedWithService = true;
+                    if (callback != null)
+                    {
+                        await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                        _patchSubscribedWithService = true;
+                    }
+                    else
+                    {
+                        // codes_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
+                        await InnerHandler.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
                 {
@@ -1358,10 +1361,11 @@ namespace Microsoft.Azure.Devices.Client
 
 #pragma warning disable IDE0060 // Remove unused parameter
 
-        private static Task DisableMethodAsync(CancellationToken cancellationToken)
+        private Task DisableMethodAsync(CancellationToken cancellationToken)
         {
-            // TODO # 890.
-            return TaskHelpers.CompletedTask;
+            return _deviceMethods == null && _deviceDefaultMethodCallback == null
+                ? InnerHandler.DisableMethodsAsync(cancellationToken)
+                : TaskHelpers.CompletedTask;
         }
 
 #pragma warning restore IDE0060 // Remove unused parameter

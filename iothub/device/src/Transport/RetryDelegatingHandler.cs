@@ -417,6 +417,44 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
+                }
+
+                await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            try
+                            {
+                                Debug.Assert(_eventsEnabled);
+                                await base.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                                _eventsEnabled = false;
+                            }
+                            finally
+                            {
+                                _handlerLock.Release();
+                            }
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
+                }
+            }
+        }
+
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             try

@@ -528,6 +528,45 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
+        public async Task DisableTwinPatchAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, timeout, $"{nameof(DisableTwinPatchAsync)}");
+            }
+
+            Debug.Assert(_twinSendingLink != null);
+            Debug.Assert(_twinReceivingLink != null);
+
+            try
+            {
+                ICollection<Task> tasks = new List<Task>();
+                if (_twinReceivingLink != null)
+                {
+                    tasks.Add(_twinReceivingLink.CloseAsync(timeout));
+                }
+
+                if (_twinSendingLink != null)
+                {
+                    tasks.Add(_twinSendingLink.CloseAsync(timeout));
+                }
+
+                if (tasks.Count > 0)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    _twinReceivingLink = null;
+                    _twinSendingLink = null;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, timeout, $"{nameof(DisableTwinPatchAsync)}");
+                }
+            }
+        }
+
         public async Task DisableMethodsAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled)
