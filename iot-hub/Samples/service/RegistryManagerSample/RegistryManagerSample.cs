@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.Samples
             _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
         }
 
-
         public async Task RunSampleAsync()
         {
             await EnumerateTwinsAsync().ConfigureAwait(false);
