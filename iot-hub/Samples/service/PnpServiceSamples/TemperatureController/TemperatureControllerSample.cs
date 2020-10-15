@@ -115,14 +115,13 @@ namespace Microsoft.Azure.Devices.Samples
 
         private async Task UpdateDigitalTwinComponentPropertyAsync()
         {
-            
             const string targetTemperaturePropertyName = "targetTemperature";
 
             // Choose a random value to assign to the targetTemperature property in thermostat1 component
             int desiredTargetTemperature = Random.Next(0, 100);
 
             var twinPatch = CreatePropertyPatch(targetTemperaturePropertyName, desiredTargetTemperature, Thermostat1Component);
-            _logger.LogDebug($"Update the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_digitalTwinId} digital twin to { desiredTargetTemperature}.");
+            _logger.LogDebug($"Updating the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_digitalTwinId} digital twin to { desiredTargetTemperature}.");
 
             Twin twin = await _registryManager.GetTwinAsync(_digitalTwinId);
             await _registryManager.UpdateTwinAsync(_digitalTwinId, twinPatch, twin.ETag);
