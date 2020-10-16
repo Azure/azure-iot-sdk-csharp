@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System;
     using System.IO;
     using System.Text;
-
+    using FluentAssertions;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -222,6 +222,26 @@ namespace Microsoft.Azure.Devices.Client.Test
                     Assert.IsFalse(clone.SystemProperties.Keys.Contains(MessageSystemPropertyNames.UserId));
                 }
             }
+        }
+
+        [TestMethod]
+        public void MessageShouldAlwaysSetMessageIdByDefault()
+        {
+            using var message = new Message(Encoding.UTF8.GetBytes("test message"));
+            message.MessageId.Should().NotBeNullOrEmpty();
+        }
+
+        [TestMethod]
+        public void MessageShouldAllowMessageIdToBeUserSettable()
+        {
+            string messageId = Guid.NewGuid().ToString();
+            using var message = new Message(Encoding.UTF8.GetBytes("test message"))
+            {
+                MessageId = messageId,
+            };
+
+            message.MessageId.Should().NotBeNullOrEmpty();
+            message.MessageId.Should().Be(messageId, "MessageId should have the value set by user.");
         }
     }
 }

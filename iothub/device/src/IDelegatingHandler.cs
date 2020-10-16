@@ -32,6 +32,10 @@ namespace Microsoft.Azure.Devices.Client
 
         Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper);
 
+        Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
+
+        Task DisableReceiveMessageAsync(CancellationToken cancellationToken);
+
         Task RejectAsync(string lockToken, CancellationToken cancellationToken);
 
         Task AbandonAsync(string lockToken, CancellationToken cancellationToken);

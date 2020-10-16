@@ -98,6 +98,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler.ReceiveAsync(timeoutHelper);
         }
 
+        public virtual Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler.EnableReceiveMessageAsync(cancellationToken);
+        }
+
+        public virtual Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler.DisableReceiveMessageAsync(cancellationToken);
+        }
+
         public virtual Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();

@@ -6,7 +6,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-
+using FluentAssertions;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -147,6 +147,55 @@ namespace Microsoft.Azure.Devices.Api.Test
             message.Headers.Add(CommonConstants.IotHubErrorCode, ErrorCode.BulkRegistryOperationFailure.ToString());
             bool isMappedToException = HttpClientHelper.IsMappedToException(message);
             Assert.IsFalse(isMappedToException, "BulkRegistryOperationFailures should not be mapped to exceptions");
+        }
+
+        [TestMethod]
+        public void MessageShouldAlwaysSetMessageIdByDefault()
+        {
+            using var message = new Message(Encoding.UTF8.GetBytes("test message"));
+            message.MessageId.Should().NotBeNullOrEmpty();
+        }
+
+        [TestMethod]
+        public void MessageShouldAllowMessageIdToBeUserSettable()
+        {
+            string messageId = Guid.NewGuid().ToString();
+            using var message = new Message(Encoding.UTF8.GetBytes("test message"))
+            {
+                MessageId = messageId,
+            };
+
+            message.MessageId.Should().NotBeNullOrEmpty();
+            message.MessageId.Should().Be(messageId, "MessageId should have the value set by user.");
+        }
+
+        [TestMethod]
+        public void MessageShouldSetMessageIdToCorrelationIdByDefault()
+        {
+            string messageId = Guid.NewGuid().ToString();
+            using var message = new Message(Encoding.UTF8.GetBytes("test message"))
+            {
+                MessageId = messageId,
+            };
+
+            message.CorrelationId.Should().NotBeNullOrEmpty();
+            message.CorrelationId.Should().Be(messageId, "Default value of correlation Id should be the MessageId.");
+        }
+
+        [TestMethod]
+        public void MessageShouldAllowCorrelationIdToBeUserSettable()
+        {
+            string messageId = Guid.NewGuid().ToString();
+            string correlationId = Guid.NewGuid().ToString();
+            using var message = new Message(Encoding.UTF8.GetBytes("test message"))
+            {
+                MessageId = messageId,
+                CorrelationId = correlationId,
+            };
+
+            message.CorrelationId.Should().NotBeNullOrEmpty();
+            message.CorrelationId.Should().NotBe(messageId, "CorrelationId should have the value set by user.");
+            message.CorrelationId.Should().Be(correlationId, "CorrelationId should have the value set by user.");
         }
     }
 }
