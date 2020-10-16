@@ -1227,26 +1227,23 @@ namespace Microsoft.Azure.Devices.Client
         {
             // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
             // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
-            //if (!_patchSubscribedWithService)
+            try
             {
-                try
+                if (callback != null && !_patchSubscribedWithService)
                 {
-                    if (callback != null)
-                    {
-                        await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                        _patchSubscribedWithService = true;
-                    }
-                    else
-                    {
-                        // codes_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
-                        await InnerHandler.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                    }
+                    await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                    _patchSubscribedWithService = true;
                 }
-                catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+                else if(callback == null && _patchSubscribedWithService)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    throw;
+                    // codes_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
+                    await InnerHandler.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
                 }
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
 
             _desiredPropertyUpdateCallback = callback;
