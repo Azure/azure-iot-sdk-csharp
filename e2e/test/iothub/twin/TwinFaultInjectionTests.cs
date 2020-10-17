@@ -306,6 +306,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 }
             };
 
+            // Cleanup references.
+            Func<Task> cleanupOperation = () =>
+            {
+                testDeviceCallbackHandler?.Dispose();
+                return Task.FromResult(false);
+            };
+
             await FaultInjection
                 .TestErrorInjectionAsync(
                     s_devicePrefix,
@@ -318,7 +325,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     FaultInjection.DefaultDurationInSec,
                     initOperation,
                     testOperation,
-                    () => { return Task.FromResult(false); },
+                    cleanupOperation,
                     Logger)
                 .ConfigureAwait(false);
         }

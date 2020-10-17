@@ -1478,8 +1478,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
-            Dictionary<string, List<string>> twinPropertyMap = new Dictionary<string, List<string>>();
-            Dictionary<string, TestDeviceCallbackHandler> testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
+            var twinPropertyMap = new Dictionary<string, List<string>>();
+            var testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
@@ -1518,6 +1518,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     deviceClient.Dispose();
+                }
+
+                foreach (KeyValuePair<string, TestDeviceCallbackHandler> entry in testDevicesWithCallbackHandler)
+                {
+                    TestDeviceCallbackHandler testDeviceCallbackHandler = entry.Value;
+                    testDeviceCallbackHandler?.Dispose();
                 }
 
                 twinPropertyMap.Clear();
