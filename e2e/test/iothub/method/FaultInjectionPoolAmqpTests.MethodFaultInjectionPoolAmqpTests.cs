@@ -772,6 +772,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.Dispose();
                 }
 
+                foreach (KeyValuePair<string, TestDeviceCallbackHandler> entry in testDevicesWithCallbackHandler)
+                {
+                    TestDeviceCallbackHandler testDeviceCallbackHandler = entry.Value;
+                    testDeviceCallbackHandler?.Dispose();
+                }
+
                 testDevicesWithCallbackHandler.Clear();
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
             };
