@@ -11,18 +11,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    public class TestDeviceCallbackHandler
+    public class TestDeviceCallbackHandler : IDisposable
     {
-        private DeviceClient _deviceClient;
-
-        private ExceptionDispatchInfo _methodExceptionDispatch;
-        private SemaphoreSlim _methodCallbackSemaphore = new SemaphoreSlim(1, 1);
-
-        private ExceptionDispatchInfo _twinExceptionDispatch;
-        private SemaphoreSlim _twinCallbackSemaphore = new SemaphoreSlim(1, 1);
-        private string _expectedTwinPropertyValue = null;
-
+        private readonly DeviceClient _deviceClient;
         private readonly MsTestLogger _logger;
+
+        private readonly SemaphoreSlim _methodCallbackSemaphore = new SemaphoreSlim(0, 1);
+        private ExceptionDispatchInfo _methodExceptionDispatch;
+
+        private readonly SemaphoreSlim _twinCallbackSemaphore = new SemaphoreSlim(0, 1);
+        private ExceptionDispatchInfo _twinExceptionDispatch;
+        private string _expectedTwinPropertyValue = null;
 
         public TestDeviceCallbackHandler(DeviceClient deviceClient, MsTestLogger logger)
         {
@@ -32,15 +31,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public string ExpectedTwinPropertyValue
         {
-            get
-            {
-                return Volatile.Read(ref _expectedTwinPropertyValue);
-            }
-
-            set
-            {
-                Volatile.Write(ref _expectedTwinPropertyValue, value);
-            }
+            get => Volatile.Read(ref _expectedTwinPropertyValue);
+            set => Volatile.Write(ref _expectedTwinPropertyValue, value);
         }
 
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
@@ -110,6 +102,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             await _twinCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
             _twinExceptionDispatch?.Throw();
+        }
+
+        public void Dispose()
+        {
+            _methodCallbackSemaphore?.Dispose();
+            _twinCallbackSemaphore?.Dispose();
         }
     }
 }

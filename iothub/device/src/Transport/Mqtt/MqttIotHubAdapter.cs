@@ -621,7 +621,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                throw new ArgumentException("unexpected request count.  expected 1, got " + packetPassed.Requests.Count.ToString());
+                throw new ArgumentException("unexpected request count.  expected 1, got " + packetPassed.Requests.Count.ToString(CultureInfo.InvariantCulture));
             }
 
             if (!string.IsNullOrEmpty(topicFilter))

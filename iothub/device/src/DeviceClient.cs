@@ -217,8 +217,8 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Stores the timeout used in the operation retries. Note that this value is ignored for operations
-        /// where a cancellation token is provided. For example, SendEventAsync(Message) will use this timeout, but
-        /// SendEventAsync(Message, CancellationToken) will not. The latter operation will only be canceled by the
+        /// where a cancellation token is provided. For example, <see cref="SendEventAsync(Message)"/> will use this timeout, but
+        /// <see cref="SendEventAsync(Message, CancellationToken)"/> will not. The latter operation will only be canceled by the
         /// provided cancellation token.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
@@ -253,7 +253,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets the retry policy used in the operation retries.
         /// The change will take effect after any in-progress operations.
         /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
+        /// <param name="retryPolicy">The retry policy. The default is
+        /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c></param>
         // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with back-off
         // parameters for calculating delay in between retries.]
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
@@ -287,22 +288,40 @@ namespace Microsoft.Azure.Devices.Client
         public Task CloseAsync(CancellationToken cancellationToken) => InternalClient.CloseAsync(cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue using the default timeout. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
+        /// Receive a message from the device queue using the default timeout.
+        /// After handling a received message, a client should call <see cref="CompleteAsync(Message)"/>,
+        /// <see cref="AbandonAsync(Message)"/>, or <see cref="RejectAsync(Message)"/>, and then dispose the message.
         /// </summary>
+        /// <remarks>
+        /// You cannot Reject or Abandon messages over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
         public Task<Message> ReceiveAsync() => InternalClient.ReceiveAsync();
 
         /// <summary>
-        /// Receive a message from the device queue using the cancellation token. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
+        /// Receive a message from the device queue using the cancellation token.
+        /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
+        /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
         /// </summary>
+        /// <remarks>
+        /// You cannot Reject or Abandon messages over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The receive message or null if there was no message until CancellationToken Expired</returns>
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => InternalClient.ReceiveAsync(cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue with the specified timeout. After handling a received message, a client should call Complete, Abandon, or Reject, and then dispose the message.
+        /// Receive a message from the device queue using the cancellation token.
+        /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
+        /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
         /// </summary>
+        /// <remarks>
+        /// You cannot Reject or Abandon messages over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public Task<Message> ReceiveAsync(TimeSpan timeout) => InternalClient.ReceiveAsync(timeout);
 
@@ -341,6 +360,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
+        /// <remarks>
+        /// You cannot Abandon a message over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The previously received message</returns>
         public Task AbandonAsync(string lockToken) => InternalClient.AbandonAsync(lockToken);
@@ -348,6 +371,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
+        /// <remarks>
+        /// You cannot Abandon a message over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -357,6 +384,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
+        /// <remarks>
+        /// You cannot Abandon a message over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="message">The message.</param>
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message) => InternalClient.AbandonAsync(message);
@@ -364,6 +395,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
+        /// <remarks>
+        /// You cannot Abandon a message over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -373,6 +408,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
+        /// <remarks>
+        /// You cannot Reject a message over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The previously received message</returns>
         public Task RejectAsync(string lockToken) => InternalClient.RejectAsync(lockToken);
@@ -380,6 +419,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
+        /// <remarks>
+        /// You cannot Reject a message over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <param name="lockToken">The message lockToken.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -389,6 +432,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
+        /// <remarks>
+        /// You cannot Reject a message over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="message">The message.</param>
         /// <returns>The lock identifier for the previously received message</returns>
         public Task RejectAsync(Message message) => InternalClient.RejectAsync(message);
@@ -396,6 +443,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
+        /// <remarks>
+        /// You cannot Reject a message over MQTT protocol.
+        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// </remarks>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -531,7 +582,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated,
-        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
+        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP, as that protocol is stateless.
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>

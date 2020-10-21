@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Edge;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 
@@ -48,6 +49,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        /// <summary>
         /// Creates an AMQP ModuleClient from individual parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
@@ -577,56 +579,68 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMessageHandlerAsync(messageHandler, userContext, cancellationToken);
 
         /// <summary>
-        /// Interactively invokes a method on a device
+        /// Interactively invokes a method from an edge module to an edge device.
+        /// Both the edge module and the edge device need to be connected to the same edge hub.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="methodRequest">Device method parameters (pass-through to device)</param>
-        /// <returns>Method result</returns>
+        /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
+        /// <param name="methodRequest">The details of the method to invoke.</param>
+        /// <returns>The result of the method invocation.</returns>
         public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest) =>
             InvokeMethodAsync(deviceId, methodRequest, CancellationToken.None);
 
         /// <summary>
-        /// Interactively invokes a method on device
+        /// Interactively invokes a method from an edge module to an edge device.
+        /// Both the edge module and the edge device need to be connected to the same edge hub.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="methodRequest">Device method parameters (pass-through to device)</param>
-        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
+        /// <param name="methodRequest">The details of the method to invoke.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken) =>
-            InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
+        /// <returns>The result of the method invocation.</returns>
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken)
+        {
+            methodRequest.ThrowIfNull(nameof(methodRequest));
+            return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
+        }
 
         /// <summary>
-        /// Interactively invokes a method on a module
+        /// Interactively invokes a method from an edge module to a different edge module.
+        /// Both of the edge modules need to be connected to the same edge hub.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="moduleId">Module Id</param>
-        /// <param name="methodRequest">Module method parameters</param>
+        /// <param name="deviceId">The unique identifier of the device.</param>
+        /// <param name="moduleId">The unique identifier of the edge module to invoke the method on.</param>
+        /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>Method result</returns>
+        /// <returns>The result of the method invocation.</returns>
         public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest) =>
             InvokeMethodAsync(deviceId, moduleId, methodRequest, CancellationToken.None);
 
         /// <summary>
-        /// Interactively invokes a method on module
+        /// Interactively invokes a method from an edge module to a different edge module.
+        /// Both of the edge modules need to be connected to the same edge hub.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        /// <param name="moduleId">Module Id</param>
-        /// <param name="methodRequest">Module method parameters.</param>
-        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <param name="deviceId">The unique identifier of the device.</param>
+        /// <param name="moduleId">The unique identifier of the edge module to invoke the method on.</param>
+        /// <param name="methodRequest">The details of the method to invoke.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken) =>
-            InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
+        /// <returns>The result of the method invocation.</returns>
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken)
+        {
+            methodRequest.ThrowIfNull(nameof(methodRequest));
+            return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
+        }
 
         private async Task<MethodResponse> InvokeMethodAsync(Uri uri, MethodRequest methodRequest, CancellationToken cancellationToken)
         {
             HttpClientHandler httpClientHandler = null;
             Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();
 
-            if (customCertificateValidation != null)
+            try
             {
-                TlsVersions.Instance.SetLegacyAcceptableVersions();
+                if (customCertificateValidation != null)
+                {
+                    TlsVersions.Instance.SetLegacyAcceptableVersions();
 
 #if !NET451
                 httpClientHandler = new HttpClientHandler
@@ -635,29 +649,34 @@ namespace Microsoft.Azure.Devices.Client
                     SslProtocols = TlsVersions.Instance.Preferred,
                 };
 #else
-                httpClientHandler = new WebRequestHandler();
-                ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-                {
-                    return customCertificateValidation(sender, certificate, chain, errors);
-                };
+                    httpClientHandler = new WebRequestHandler();
+                    ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+                    {
+                        return customCertificateValidation(sender, certificate, chain, errors);
+                    };
 #endif
+                }
+
+                var context = new PipelineContext();
+                context.Set(new ProductInfo { Extra = InternalClient.ProductInfo });
+
+                var transportSettings = new Http1TransportSettings();
+                //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
+                if (InternalClient.Certificate != null)
+                {
+                    transportSettings.ClientCertificate = InternalClient.Certificate;
+                }
+
+                using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings, httpClientHandler);
+                var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
+                MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
+
+                return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
             }
-
-            var context = new PipelineContext();
-            context.Set(new ProductInfo { Extra = InternalClient.ProductInfo });
-
-            var transportSettings = new Http1TransportSettings();
-            //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
-            if (InternalClient.Certificate != null)
+            finally
             {
-                transportSettings.ClientCertificate = InternalClient.Certificate;
+                httpClientHandler?.Dispose();
             }
-
-            using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings, httpClientHandler);
-            var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
-            MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
-
-            return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)
