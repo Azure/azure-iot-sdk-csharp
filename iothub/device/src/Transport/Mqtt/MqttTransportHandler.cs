@@ -289,8 +289,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(true);
                     }
 
-                    // -1 millisecond represents for SemaphoreSlim to wait indefinitely
-                    bool hasMessage = await ReceiveMessageArrivalAsync(TimeSpan.FromMilliseconds(-1), cancellationToken).ConfigureAwait(true);
+                    bool hasMessage = await ReceiveMessageArrivalAsync(cancellationToken).ConfigureAwait(true);
                     message = ProcessMessage(message, hasMessage);
 
                     return message;
@@ -336,7 +335,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     TimeSpan timeout = timeoutHelper.GetRemainingTime();
                     using var cts = new CancellationTokenSource(timeout);
-                    bool hasMessage = await ReceiveMessageArrivalAsync(timeout, cts.Token).ConfigureAwait(true);
+                    bool hasMessage = await ReceiveMessageArrivalAsync(cts.Token).ConfigureAwait(true);
                     message = ProcessMessage(message, hasMessage);
 
                     return message;
@@ -386,14 +385,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private async Task<bool> ReceiveMessageArrivalAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        private async Task<bool> ReceiveMessageArrivalAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             CancellationToken disconnectToken = _disconnectAwaitersCancellationSource.Token;
             EnsureValidState();
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken);
-            return await _receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
+
+            // -1 millisecond represents for SemaphoreSlim to wait indefinitely until either of the linked cancellation tokens have been cancelled.
+            return await _receivingSemaphore.WaitAsync(TimeSpan.FromMilliseconds(-1), linkedCts.Token).ConfigureAwait(true);
         }
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
