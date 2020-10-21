@@ -644,15 +644,22 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await mockTransport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             // act
-            Func<Task> act = async () =>
+            // The receivingSemaphore.WaitAsync(TimeSpan, CancellationToken) have the same timespan for both the timeout and the cancellation token.
+            // Based on some internal thread management, this call could either throw an OperationCancelledException, or cleanly fail to acquire the semaphore.
+            // Both of these scenarios should complete within the timeout specified.
+            try
             {
                 sw.Start();
-                await mockTransport.ReceiveAsync(timeout).ConfigureAwait(false);
-            };
+                Message receivedMessage = await mockTransport.ReceiveAsync(timeout).ConfigureAwait(false);
+                sw.Stop();
 
-            // assert
-            act.Should().Throw<OperationCanceledException>();
-            sw.Stop();
+                // assert
+                receivedMessage.Should().BeNull();
+            }
+            catch(OperationCanceledException)
+            {
+                sw.Stop();
+            }
 
             sw.Elapsed.Should().BeLessOrEqualTo(timeSpan + ReceiveTimeoutBuffer, "ReceiveAsync should throw within the timeout specified.");
         }
