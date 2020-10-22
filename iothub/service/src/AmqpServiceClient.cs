@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices
 
                 if (Logging.IsEnabled)
                 {
-                    Logging.Info(this, $"Outcome was: {outcome.DescriptorName}", nameof(SendAsync));
+                    Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
                 }
 
                 if (outcome.DescriptorCode != Accepted.Code)
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"Sending message {message.MessageId} for device {deviceId}", nameof(SendAsync));
+                    Logging.Exit(this, $"Sending message {message?.MessageId} for device {deviceId}", nameof(SendAsync));
                 }
             }
         }
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices
 
                 if (Logging.IsEnabled)
                 {
-                    Logging.Info(this, $"Outcome was: {outcome.DescriptorName}", nameof(SendAsync));
+                    Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
                 }
 
                 if (outcome.DescriptorCode != Accepted.Code)
