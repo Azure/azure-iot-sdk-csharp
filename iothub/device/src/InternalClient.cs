@@ -1063,7 +1063,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Set and clear a callback that will be called whenever the client receives a state update
+        /// Sets or clears a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.
         /// Set callback value to null to clear.
         /// </summary>
