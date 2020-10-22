@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task<Message> ReceiveAsync(TimeSpan timeout) => InternalClient.ReceiveAsync(timeout);
 
         /// <summary>
-        /// Registers a new delegate for receiving a message from the device queue using the default timeout.
+        /// Sets a new delegate for receiving a message from the device queue using the default timeout.
         /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
         /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
         /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
@@ -541,7 +541,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
-        /// A method handler can be unset by passing null.
+        /// A method handler can be unset by passing a null MethodCallback.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -552,7 +552,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
-        /// A method handler can be unset by passing null.
+        /// A method handler can be unset by passing a null MethodCallback.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -565,7 +565,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
-        /// A method handler can be unset by passing null.
+        /// A method handler can be unset by passing a null MethodCallback.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -575,7 +575,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
-        /// A method handler can be unset by passing null.
+        /// A method handler can be unset by passing a null MethodCallback.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>

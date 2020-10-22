@@ -519,9 +519,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
-                                Debug.Assert(_eventsEnabled);
+                                Debug.Assert(_twinEnabled);
                                 await base.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                                _eventsEnabled = false;
+                                _twinEnabled = false;
                             }
                             finally
                             {

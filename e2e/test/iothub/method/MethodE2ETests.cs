@@ -41,7 +41,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
 
         [LoggedTestMethod]
-        [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task Method_DeviceUnsubscribes_Mqtt()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Mqtt_Tcp_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
@@ -49,7 +48,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
 
         [LoggedTestMethod]
-        [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task Method_DeviceUnsubscribes_MqttWs()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Mqtt_WebSocket_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
@@ -92,14 +90,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task Method_DeviceUnsubscribes_Amqp()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Amqp_Tcp_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task Method_DeviceUnsubscribes_AmqpWs()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Amqp_WebSocket_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
@@ -271,6 +267,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     await serviceClient.InvokeDeviceMethodAsync(
                         deviceId,
                         new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(null)).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (!(ex is DeviceNotFoundException))
+                    throw ex;
             }
             finally
             {
