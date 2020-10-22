@@ -702,6 +702,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
+        /// A method hanler can be unset by passing null.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -724,6 +725,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
+        /// A method hanler can be unset by passing null.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -804,6 +806,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
+        /// A method hanler can be unset by passing null.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -825,6 +828,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
+        /// A method hanler can be unset by passing null.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -1042,10 +1046,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
+        /// Set and clear a callback that will be called whenever the client receives a state update
+        /// (desired or reported) from the service.
         /// </summary>
+        /// <remarks>
+        /// This has the side-effect of subscribing to the PATCH topic on the service. Set callback value to null to clear.
+        /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
@@ -1065,9 +1071,12 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
+        /// (desired or reported) from the service.
         /// </summary>
+        /// <remarks>
+        /// This has the side-effect of subscribing to the PATCH topic on the service.
+        /// Set callback value to null to clear.
+        /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -1082,20 +1091,19 @@ namespace Microsoft.Azure.Devices.Client
                     await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
                     _twinPatchSubscribedWithService = true;
                 }
-                else if(callback == null && _twinPatchSubscribedWithService)
+                else if (callback == null && _twinPatchSubscribedWithService)
                 {
-                    // codes_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
                     await InnerHandler.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
                 }
+
+                _desiredPropertyUpdateCallback = callback;
+                _twinPatchCallbackContext = userContext;
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
             }
-
-            _desiredPropertyUpdateCallback = callback;
-            _twinPatchCallbackContext = userContext;
         }
 
         /// <summary>

@@ -529,6 +529,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
+        /// A method hanler can be unset by passing null.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -539,6 +540,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
+        /// A method hanler can be unset by passing null.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -551,6 +553,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
+        /// A method hanler can be unset by passing null.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -560,6 +563,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
+        /// A method hanler can be unset by passing null.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -606,9 +610,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
+        /// (desired or reported) from the service.
         /// </summary>
+        /// <remarks>
+        /// This has the side-effect of subscribing to the PATCH topic on the service. Set callback value to null to clear.
+        /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext) =>
@@ -616,9 +622,12 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
+        /// (desired or reported) from the service.
         /// </summary>
+        /// <remarks>
+        /// This has the side-effect of subscribing to the PATCH topic on the service.
+        /// Set callback value to null to clear.
+        /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>

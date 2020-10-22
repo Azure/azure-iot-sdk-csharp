@@ -166,10 +166,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
-            {
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
-            }, "custom data").ConfigureAwait(false);
+            await deviceClient
+                .SetMethodHandlerAsync(
+                "TestMethodName", 
+                (payload, context) => Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200)), "custom data")
+                .ConfigureAwait(false);
 
             await deviceClient.SetMethodHandlerAsync("TestMethodName", null, null).ConfigureAwait(false);
 

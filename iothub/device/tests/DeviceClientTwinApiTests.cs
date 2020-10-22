@@ -74,9 +74,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                DisableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler
+                .Received(1)
+                .DisableTwinPatchAsync(Arg.Any<CancellationToken>())
+                .ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
