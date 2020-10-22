@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Ensure that the connection has been opened, before enabling the callback for receiving messages.
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerLock. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Ensure that the connection has been opened, before disabling the callback for receiving messages.
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerLock. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -516,7 +516,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_eventsEnabled);
@@ -525,7 +525,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerLock.Release();
+                                _handlerSemaphore.Release();
                             }
                         },
                         cancellationToken)
