@@ -17,6 +17,7 @@ using AmqpTrace = Microsoft.Azure.Amqp.AmqpTrace;
 
 namespace Microsoft.Azure.Devices
 {
+    // This class uses a combination of AMQP and HTTP clients to perform operations.
     internal sealed class AmqpServiceClient : ServiceClient
     {
         private const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
@@ -77,12 +78,14 @@ namespace Microsoft.Azure.Devices
 
         public IotHubConnection Connection { get; private set; }
 
+        // This call is executed over AMQP.
         public override async Task OpenAsync()
         {
             await _faultTolerantSendingLink.OpenAsync(OpenTimeout).ConfigureAwait(false);
             await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
         }
 
+        // This call is executed over AMQP.
         public async override Task CloseAsync()
         {
             await _faultTolerantSendingLink.CloseAsync().ConfigureAwait(false);
@@ -91,11 +94,12 @@ namespace Microsoft.Azure.Devices
             await Connection.CloseAsync().ConfigureAwait(false);
         }
 
+        // This call is executed over AMQP.
         public async override Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"Sending message with Id [{message.MessageId}] for device [{deviceId}]", nameof(SendAsync));
+                Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device [{deviceId}]", nameof(SendAsync));
             }
 
             if (string.IsNullOrWhiteSpace(deviceId))
@@ -115,15 +119,14 @@ namespace Microsoft.Azure.Devices
             try
             {
                 SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-
-                if (Logging.IsEnabled)
-                {
-                    Logging.Info(this, $"Retrieved SendingAmqpLink [{sendingLink.Name}]", nameof(SendAsync));
-                }
-
                 Outcome outcome = await sendingLink
                     .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
                     .ConfigureAwait(false);
+
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"Outcome was: {outcome.DescriptorName}", nameof(SendAsync));
+                }
 
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -147,11 +150,13 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        // This call is executed over HTTP.
         public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId)
         {
             return PurgeMessageQueueAsync(deviceId, CancellationToken.None);
         }
 
+        // This call is executed over HTTP.
         public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken)
         {
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
@@ -162,21 +167,25 @@ namespace Microsoft.Azure.Devices
             return _httpClientHelper.DeleteAsync<PurgeMessageQueueResult>(GetPurgeMessageQueueAsyncUri(deviceId), errorMappingOverrides, null, cancellationToken);
         }
 
+        // This call is executed over AMQP.
         public override FeedbackReceiver<FeedbackBatch> GetFeedbackReceiver()
         {
             return _feedbackReceiver;
         }
 
+        // This call is executed over AMQP.
         public override FileNotificationReceiver<FileNotification> GetFileNotificationReceiver()
         {
             return _fileNotificationReceiver;
         }
 
+        // This call is executed over HTTP.
         public override Task<ServiceStatistics> GetServiceStatisticsAsync()
         {
             return GetServiceStatisticsAsync(CancellationToken.None);
         }
 
+        // This call is executed over HTTP.
         public override Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken)
         {
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
@@ -187,11 +196,13 @@ namespace Microsoft.Azure.Devices
             return _httpClientHelper.GetAsync<ServiceStatistics>(GetStatisticsUri(), errorMappingOverrides, null, cancellationToken);
         }
 
+        // This call is executed over HTTP.
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod)
         {
             return InvokeDeviceMethodAsync(deviceId, cloudToDeviceMethod, CancellationToken.None);
         }
 
+        // This call is executed over HTTP.
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId,
             CloudToDeviceMethod cloudToDeviceMethod,
             CancellationToken cancellationToken)
@@ -199,6 +210,7 @@ namespace Microsoft.Azure.Devices
             return InvokeDeviceMethodAsync(GetDeviceMethodUri(deviceId), cloudToDeviceMethod, cancellationToken);
         }
 
+        // This call is executed over HTTP.
         private Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(Uri uri,
             CloudToDeviceMethod cloudToDeviceMethod,
             CancellationToken cancellationToken)
@@ -214,11 +226,13 @@ namespace Microsoft.Azure.Devices
                 cancellationToken);
         }
 
+        // This call is executed over HTTP.
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod)
         {
             return InvokeDeviceMethodAsync(deviceId, moduleId, cloudToDeviceMethod, CancellationToken.None);
         }
 
+        // This call is executed over HTTP.
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(deviceId))
@@ -234,8 +248,14 @@ namespace Microsoft.Azure.Devices
             return InvokeDeviceMethodAsync(GetModuleMethodUri(deviceId, moduleId), cloudToDeviceMethod, cancellationToken);
         }
 
+        // This call is executed over AMQP.
         public override async Task SendAsync(string deviceId, string moduleId, Message message)
         {
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device [{deviceId}], module [{moduleId}]", nameof(SendAsync));
+            }
+
             if (string.IsNullOrWhiteSpace(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));
@@ -264,6 +284,11 @@ namespace Microsoft.Azure.Devices
                         OperationTimeout)
                     .ConfigureAwait(false);
 
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"Outcome was: {outcome.DescriptorName}", nameof(SendAsync));
+                }
+
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
@@ -271,18 +296,49 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, $"SendAsync threw an exception: {ex.Message}", nameof(SendAsync));
+                }
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Sending message with Id [{message?.MessageId}] for device [{deviceId}], module [{moduleId}]", nameof(SendAsync));
+                }
             }
         }
 
         private async Task<SendingAmqpLink> GetSendingLinkAsync()
         {
-            if (!_faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink))
+            if (Logging.IsEnabled)
             {
-                sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(OpenTimeout).ConfigureAwait(false);
+                Logging.Enter(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
             }
 
-            return sendingLink;
+            try
+            {
+                if (!_faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink))
+                {
+                    sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(OpenTimeout).ConfigureAwait(false);
+                }
+
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"Retrieved SendingAmqpLink [{sendingLink?.Name}]", nameof(GetSendingLinkAsync));
+                }
+
+                return sendingLink;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
+                }
+            }
         }
 
         private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)
