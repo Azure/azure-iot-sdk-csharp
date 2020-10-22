@@ -341,13 +341,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
-            await deviceClient.SetMethodHandlerAsync(methodName,
+            await deviceClient
+                .SetMethodHandlerAsync(
+                methodName,
                 (request, context) =>
                 {
                     logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
-                null).ConfigureAwait(false);
+                null)
+                .ConfigureAwait(false);
 
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
 

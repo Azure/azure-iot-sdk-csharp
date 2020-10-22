@@ -438,9 +438,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.
+        /// Set callback value to null to clear.
         /// </summary>
         /// <remarks>
-        /// This has the side-effect of subscribing to the PATCH topic on the service. Set callback value to null to clear.
+        /// This has the side-effect of subscribing to the PATCH topic on the service.
         /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
@@ -450,10 +451,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.
+        /// Set callback value to null to clear.
         /// </summary>
         /// <remarks>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
-        /// Set callback value to to null to clear.
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>

@@ -428,13 +428,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
 
             // Unsubscribe
-            await deviceClient.
-                    SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
+            await deviceClient
+                .SetDesiredPropertyUpdateCallbackAsync(null, null)
+                .ConfigureAwait(false);
 
             await RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue)
                 .ConfigureAwait(false);
 
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
+            await deviceClient
+                .SetDesiredPropertyUpdateCallbackAsync(null, null)
+                .ConfigureAwait(false);
+
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 

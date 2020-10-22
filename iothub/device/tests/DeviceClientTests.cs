@@ -168,16 +168,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act
             await deviceClient
                 .SetMethodHandlerAsync(
-                "TestMethodName", 
-                (payload, context) => Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200)), "custom data")
+                    "TestMethodName", 
+                    (payload, context) => Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200)), "custom data")
                 .ConfigureAwait(false);
 
-            await deviceClient.SetMethodHandlerAsync("TestMethodName", null, null).ConfigureAwait(false);
+            await deviceClient
+                .SetMethodHandlerAsync("TestMethodName", null, null)
+                .ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received().
-                DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler
+                .Received()
+                .DisableMethodsAsync(Arg.Any<CancellationToken>())
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
