@@ -1,40 +1,40 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Threading;
+
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.Azure.Amqp;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Threading;
-
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.Azure.Amqp;
-
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
     public sealed class Message : IDisposable, IReadOnlyIndicator
     {
-        private readonly object messageLock = new object();
-        private volatile Stream bodyStream;
-        private AmqpMessage serializedAmqpMessage;
-        private bool disposed;
-        private bool ownsBodyStream;
-        private int getBodyCalled;
-        private long sizeInBytesCalled;
+        private readonly SemaphoreSlim _amqpMessageSemaphore = new SemaphoreSlim(1, 1);
+        private volatile Stream _bodyStream;
+        private AmqpMessage _serializedAmqpMessage;
+        private bool _disposed;
+        private bool _ownsBodyStream;
+        private int _getBodyCalled;
+        private long _sizeInBytesCalled;
 
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
         public Message()
         {
-            this.Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
-            this.SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
-            this.InitializeWithStream(Stream.Null, true);
-            this.serializedAmqpMessage = null;
+            Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
+            SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
+            InitializeWithStream(Stream.Null, true);
+            _serializedAmqpMessage = null;
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         {
             if (stream != null)
             {
-                this.InitializeWithStream(stream, false);
+                InitializeWithStream(stream, false);
             }
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
             : this(new MemoryStream(byteArray))
         {
             // reset the owning of the steams
-            this.ownsBodyStream = true;
+            _ownsBodyStream = true;
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices
 
             MessageConverter.UpdateMessageHeaderAndProperties(amqpMessage, this);
             Stream stream = amqpMessage.BodyStream;
-            this.InitializeWithStream(stream, true);
+            InitializeWithStream(stream, true);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices
         internal Message(Stream stream, bool ownStream)
             : this(stream)
         {
-            this.ownsBodyStream = ownStream;
+            _ownsBodyStream = ownStream;
         }
 
         /// <summary>
@@ -101,17 +101,13 @@ namespace Microsoft.Azure.Devices
         /// + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
         /// Non-alphanumeric characters are from URN RFC.
         /// </summary>
+        /// <remarks>
+        /// If this value is not supplied by the user, the service client will set this to a new GUID.
+        /// </remarks>
         public string MessageId
         {
-            get
-            {
-                return this.GetSystemProperty<string>(MessageSystemPropertyNames.MessageId);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.MessageId] = value;
-            }
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId) ?? Guid.NewGuid().ToString();
+            set => SystemProperties[MessageSystemPropertyNames.MessageId] = value;
         }
 
         /// <summary>
@@ -119,15 +115,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string To
         {
-            get
-            {
-                return this.GetSystemProperty<string>(MessageSystemPropertyNames.To);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.To] = value;
-            }
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.To);
+            set => SystemProperties[MessageSystemPropertyNames.To] = value;
         }
 
         /// <summary>
@@ -135,93 +124,64 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public DateTime ExpiryTimeUtc
         {
-            get
-            {
-                return this.GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
-            }
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
+            set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
         }
 
         /// <summary>
-        /// Used in message responses and feedback
+        /// A string property in a response message that typically contains the MessageId of the request, in request-reply patterns.
         /// </summary>
+        /// <remarks>
+        /// If this value is not supplied by the user, the service client will set this to <see cref="MessageId"/>.
+        /// </remarks>
         public string CorrelationId
         {
-            get
-            {
-                return this.GetSystemProperty<string>(MessageSystemPropertyNames.CorrelationId);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.CorrelationId] = value;
-            }
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.CorrelationId) ?? MessageId;
+            set => SystemProperties[MessageSystemPropertyNames.CorrelationId] = value;
         }
 
         /// <summary>
-        /// Indicates whether consumption or expiration of the message should post data to the feedback queue
+        /// Used in cloud-to-device messages to request IoT Hub to generate feedback messages as a result of the consumption of the message by the device.
         /// </summary>
+        /// <remarks>
+        /// Possible values:
+        /// <para>none (default): no feedback message is generated.</para>
+        /// <para>positive: receive a feedback message if the message was completed.</para>
+        /// <para>negative: receive a feedback message if the message expired (or maximum delivery count was reached) without being completed by the device.</para>
+        /// <para>full: both positive and negative.</para>
+        /// </remarks>
         [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations", Justification = "This should never happen. If it does, the client should crash.")]
         public DeliveryAcknowledgement Ack
         {
             get
             {
-                string deliveryAckAsString = this.GetSystemProperty<string>(MessageSystemPropertyNames.Ack);
+                string deliveryAckAsString = GetSystemProperty<string>(MessageSystemPropertyNames.Ack);
 
                 if (!string.IsNullOrWhiteSpace(deliveryAckAsString))
                 {
-                    switch (deliveryAckAsString)
+                    return deliveryAckAsString switch
                     {
-                        case "none":
-                            return DeliveryAcknowledgement.None;
-
-                        case "positive":
-                            return DeliveryAcknowledgement.PositiveOnly;
-
-                        case "negative":
-                            return DeliveryAcknowledgement.NegativeOnly;
-
-                        case "full":
-                            return DeliveryAcknowledgement.Full;
-
-                        default:
-                            throw new IotHubException("Invalid Delivery Ack mode");
-                    }
+                        "none" => DeliveryAcknowledgement.None,
+                        "positive" => DeliveryAcknowledgement.PositiveOnly,
+                        "negative" => DeliveryAcknowledgement.NegativeOnly,
+                        "full" => DeliveryAcknowledgement.Full,
+                        _ => throw new IotHubException("Invalid Delivery Ack mode"),
+                    };
                 }
 
                 return DeliveryAcknowledgement.None;
             }
             set
             {
-                string valueToSet;
-
-                switch (value)
+                string valueToSet = value switch
                 {
-                    case DeliveryAcknowledgement.None:
-                        valueToSet = "none";
-                        break;
-
-                    case DeliveryAcknowledgement.PositiveOnly:
-                        valueToSet = "positive";
-                        break;
-
-                    case DeliveryAcknowledgement.NegativeOnly:
-                        valueToSet = "negative";
-                        break;
-
-                    case DeliveryAcknowledgement.Full:
-                        valueToSet = "full";
-                        break;
-
-                    default:
-                        throw new IotHubException("Invalid Delivery Ack mode");
-                }
-
-                this.SystemProperties[MessageSystemPropertyNames.Ack] = valueToSet;
+                    DeliveryAcknowledgement.None => "none",
+                    DeliveryAcknowledgement.PositiveOnly => "positive",
+                    DeliveryAcknowledgement.NegativeOnly => "negative",
+                    DeliveryAcknowledgement.Full => "full",
+                    _ => throw new IotHubException("Invalid Delivery Ack mode"),
+                };
+                SystemProperties[MessageSystemPropertyNames.Ack] = valueToSet;
             }
         }
 
@@ -230,15 +190,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ulong SequenceNumber
         {
-            get
-            {
-                return this.GetSystemProperty<ulong>(MessageSystemPropertyNames.SequenceNumber);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.SequenceNumber] = value;
-            }
+            get => GetSystemProperty<ulong>(MessageSystemPropertyNames.SequenceNumber);
+            set => SystemProperties[MessageSystemPropertyNames.SequenceNumber] = value;
         }
 
         /// <summary>
@@ -246,15 +199,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string LockToken
         {
-            get
-            {
-                return this.GetSystemProperty<string>(MessageSystemPropertyNames.LockToken);
-            }
-
-            internal set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.LockToken] = value;
-            }
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.LockToken);
+            set => SystemProperties[MessageSystemPropertyNames.LockToken] = value;
         }
 
         /// <summary>
@@ -262,15 +208,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal DateTime EnqueuedTimeUtc
         {
-            get
-            {
-                return this.GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
-            }
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
+            set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
         }
 
         /// <summary>
@@ -278,15 +217,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal uint DeliveryCount
         {
-            get
-            {
-                return this.GetSystemProperty<byte>(MessageSystemPropertyNames.DeliveryCount);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.DeliveryCount] = (byte)value;
-            }
+            get => GetSystemProperty<byte>(MessageSystemPropertyNames.DeliveryCount);
+            set => SystemProperties[MessageSystemPropertyNames.DeliveryCount] = (byte)value;
         }
 
         /// <summary>
@@ -295,15 +227,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string UserId
         {
-            get
-            {
-                return this.GetSystemProperty<string>(MessageSystemPropertyNames.UserId);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.UserId] = value;
-            }
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.UserId);
+            set => SystemProperties[MessageSystemPropertyNames.UserId] = value;
         }
 
         /// <summary>
@@ -311,15 +236,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string MessageSchema
         {
-            get
-            {
-                return this.GetSystemProperty<string>(MessageSystemPropertyNames.MessageSchema);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.MessageSchema] = value;
-            }
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageSchema);
+            set => SystemProperties[MessageSystemPropertyNames.MessageSchema] = value;
         }
 
         /// <summary>
@@ -327,15 +245,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public DateTime CreationTimeUtc
         {
-            get
-            {
-                return this.GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
-            }
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
+            set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
         }
 
         /// <summary>
@@ -343,15 +254,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string ContentType
         {
-            get
-            {
-                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.ContentType] = value;
-            }
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
+            set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
         }
 
         /// <summary>
@@ -359,15 +263,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string ContentEncoding
         {
-            get
-            {
-                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
-            }
-
-            set
-            {
-                this.SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
-            }
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
+            set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
         }
 
         /// <summary>
@@ -380,29 +277,22 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal IDictionary<string, object> SystemProperties { get; private set; }
 
-        bool IReadOnlyIndicator.IsReadOnly
-        {
-            get
-            {
-                return Interlocked.Read(ref this.sizeInBytesCalled) == 1;
-            }
-        }
+        bool IReadOnlyIndicator.IsReadOnly => Interlocked.Read(ref _sizeInBytesCalled) == 1;
 
-        internal Stream BodyStream
-        {
-            get
-            {
-                return this.bodyStream;
-            }
-        }
+        internal Stream BodyStream => _bodyStream;
 
         internal AmqpMessage SerializedAmqpMessage
         {
             get
             {
-                lock (this.messageLock)
+                try
                 {
-                    return this.serializedAmqpMessage;
+                    _amqpMessageSemaphore.Wait();
+                    return _serializedAmqpMessage;
+                }
+                finally
+                {
+                    _amqpMessageSemaphore.Release();
                 }
             }
         }
@@ -419,23 +309,23 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ObjectDisposedException">throws if the event data has already been disposed.</exception>
         public Message Clone()
         {
-            this.ThrowIfDisposed();
-            if (this.serializedAmqpMessage != null)
+            ThrowIfDisposed();
+            if (_serializedAmqpMessage != null)
             {
-                return new Message(this.serializedAmqpMessage);
+                return new Message(_serializedAmqpMessage);
             }
 
             var message = new Message();
-            if (this.bodyStream != null)
+            if (_bodyStream != null)
             {
                 // The new Message always owns the cloned stream.
-                message = new Message(CloneStream(this.bodyStream))
+                message = new Message(CloneStream(_bodyStream))
                 {
-                    ownsBodyStream = true
+                    _ownsBodyStream = true
                 };
             }
 
-            foreach (KeyValuePair<string, object> systemProperty in this.SystemProperties)
+            foreach (KeyValuePair<string, object> systemProperty in SystemProperties)
             {
                 // MessageId would already be there.
                 if (message.SystemProperties.ContainsKey(systemProperty.Key))
@@ -448,7 +338,7 @@ namespace Microsoft.Azure.Devices
                 }
             }
 
-            foreach (KeyValuePair<string, string> property in this.Properties)
+            foreach (KeyValuePair<string, string> property in Properties)
             {
                 message.Properties.Add(property);
             }
@@ -461,7 +351,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
         }
 
         /// <summary>
@@ -473,14 +363,9 @@ namespace Microsoft.Azure.Devices
         /// <remarks>This method can only be called once and afterwards method will throw <see cref="InvalidOperationException"/>.</remarks>
         public Stream GetBodyStream()
         {
-            this.ThrowIfDisposed();
-            this.SetGetBodyCalled();
-            if (this.bodyStream != null)
-            {
-                return this.bodyStream;
-            }
-
-            return Stream.Null;
+            ThrowIfDisposed();
+            SetGetBodyCalled();
+            return _bodyStream ?? Stream.Null;
         }
 
         /// <summary>
@@ -491,15 +376,18 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ObjectDisposedException">throws if the event data has already been disposed.</exception>
         public byte[] GetBytes()
         {
-            this.ThrowIfDisposed();
-            this.SetGetBodyCalled();
-            if (this.bodyStream == null)
+            ThrowIfDisposed();
+            SetGetBodyCalled();
+            if (_bodyStream == null)
             {
+#if NET451
                 return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
             }
 
-            BufferListStream listStream;
-            if ((listStream = this.bodyStream as BufferListStream) != null)
+            if (_bodyStream is BufferListStream listStream)
             {
                 // We can trust Amqp bufferListStream.Length;
                 var bytes = new byte[listStream.Length];
@@ -508,17 +396,18 @@ namespace Microsoft.Azure.Devices
             }
 
             // This is just fail safe code in case we are not using the Amqp protocol.
-            return ReadFullStream(this.bodyStream);
+            return ReadFullStream(_bodyStream);
         }
 
         internal AmqpMessage ToAmqpMessage(bool setBodyCalled = true)
         {
-            this.ThrowIfDisposed();
-            if (this.serializedAmqpMessage == null)
+            ThrowIfDisposed();
+            if (_serializedAmqpMessage == null)
             {
-                lock (this.messageLock)
+                try
                 {
-                    if (this.serializedAmqpMessage == null)
+                    _amqpMessageSemaphore.Wait();
+                    if (_serializedAmqpMessage == null)
                     {
                         // Interlocked exchange two variable does allow for a small period
                         // where one is set while the other is not. Not sure if it is worth
@@ -527,34 +416,38 @@ namespace Microsoft.Azure.Devices
                         // readonly because the amqpMessage has been serialized.
                         if (setBodyCalled)
                         {
-                            this.SetGetBodyCalled();
+                            SetGetBodyCalled();
                         }
 
-                        this.SetSizeInBytesCalled();
-                        this.serializedAmqpMessage = this.bodyStream == null
+                        SetSizeInBytesCalled();
+                        _serializedAmqpMessage = _bodyStream == null
                             ? AmqpMessage.Create()
-                            : AmqpMessage.Create(this.bodyStream, false);
-                        this.serializedAmqpMessage = this.PopulateAmqpMessageForSend(this.serializedAmqpMessage);
+                            : AmqpMessage.Create(_bodyStream, false);
+                        _serializedAmqpMessage = PopulateAmqpMessageForSend(_serializedAmqpMessage);
                     }
+                }
+                finally
+                {
+                    _amqpMessageSemaphore.Release();
                 }
             }
 
-            return this.serializedAmqpMessage;
+            return _serializedAmqpMessage;
         }
 
         // Test hook only
         internal void ResetGetBodyCalled()
         {
-            Interlocked.Exchange(ref this.getBodyCalled, 0);
-            if (this.bodyStream != null && this.bodyStream.CanSeek)
+            Interlocked.Exchange(ref _getBodyCalled, 0);
+            if (_bodyStream != null && _bodyStream.CanSeek)
             {
-                this.bodyStream.Seek(0, SeekOrigin.Begin);
+                _bodyStream.Seek(0, SeekOrigin.Begin);
             }
         }
 
         private void SetGetBodyCalled()
         {
-            if (1 == Interlocked.Exchange(ref this.getBodyCalled, 1))
+            if (1 == Interlocked.Exchange(ref _getBodyCalled, 1))
             {
                 throw Fx.Exception.AsError(new InvalidOperationException(ApiResources.MessageBodyConsumed));
             }
@@ -562,41 +455,35 @@ namespace Microsoft.Azure.Devices
 
         private void SetSizeInBytesCalled()
         {
-            Interlocked.Exchange(ref this.sizeInBytesCalled, 1);
+            Interlocked.Exchange(ref _sizeInBytesCalled, 1);
         }
 
         private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
-            this.bodyStream = stream;
-            this.ownsBodyStream = ownsStream;
+            _bodyStream = stream;
+            _ownsBodyStream = ownsStream;
         }
 
         private static byte[] ReadFullStream(Stream inputStream)
         {
-            using (var ms = new MemoryStream())
-            {
-                inputStream.CopyTo(ms);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            inputStream.CopyTo(ms);
+            return ms.ToArray();
         }
 
         private static Stream CloneStream(Stream originalStream)
         {
             if (originalStream != null)
             {
-                MemoryStream memoryStream;
-
-                ICloneable cloneable;
-
-                if ((memoryStream = originalStream as MemoryStream) != null)
+                if (originalStream is MemoryStream memoryStream)
                 {
                     // Note: memoryStream.GetBuffer() doesn't work
                     return new MemoryStream(memoryStream.ToArray(), 0, (int)memoryStream.Length, false, true);
                 }
 
-                if ((cloneable = originalStream as ICloneable) != null)
+                if (originalStream is ICloneable cloneable)
                 {
                     return (Stream)cloneable.Clone();
                 }
@@ -620,17 +507,14 @@ namespace Microsoft.Azure.Devices
 
         private T GetSystemProperty<T>(string key)
         {
-            if (this.SystemProperties.ContainsKey(key))
-            {
-                return (T)this.SystemProperties[key];
-            }
-
-            return default(T);
+            return SystemProperties.ContainsKey(key)
+                ? (T)SystemProperties[key]
+                : default;
         }
 
         private void ThrowIfDisposed()
         {
-            if (this.disposed)
+            if (_disposed)
             {
                 throw Fx.Exception.ObjectDisposed(ApiResources.MessageDisposed);
             }
@@ -638,27 +522,27 @@ namespace Microsoft.Azure.Devices
 
         private void Dispose(bool disposing)
         {
-            if (!this.disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    if (this.serializedAmqpMessage != null)
+                    if (_serializedAmqpMessage != null)
                     {
                         // in the receive scenario, this.bodyStream is a reference
                         // to serializedAmqpMessage.BodyStream, and we assume disposing
                         // the amqpMessage will dispose the body stream so we don't
                         // need to dispose bodyStream twice.
-                        this.serializedAmqpMessage.Dispose();
-                        this.bodyStream = null;
+                        _serializedAmqpMessage.Dispose();
+                        _bodyStream = null;
                     }
-                    else if (this.bodyStream != null && this.ownsBodyStream)
+                    else if (_bodyStream != null && _ownsBodyStream)
                     {
-                        this.bodyStream.Dispose();
-                        this.bodyStream = null;
+                        _bodyStream.Dispose();
+                        _bodyStream = null;
                     }
                 }
 
-                this.disposed = true;
+                _disposed = true;
             }
         }
     }

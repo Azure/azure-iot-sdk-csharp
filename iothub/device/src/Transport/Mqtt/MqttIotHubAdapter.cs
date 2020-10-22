@@ -603,7 +603,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, context.Name, packetPassed, nameof(SubscribeAsync));
+                Logging.Enter(this, context.Name, packetPassed, packetPassed?.Requests?[0].TopicFilter, nameof(SubscribeAsync));
             }
 
             string topicFilter;
@@ -638,7 +638,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, context.Name, packetPassed, nameof(SubscribeAsync));
+                Logging.Exit(this, context.Name, packetPassed, packetPassed?.Requests?[0].TopicFilter, nameof(SubscribeAsync));
             }
         }
 

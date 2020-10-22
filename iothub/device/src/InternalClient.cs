@@ -58,14 +58,24 @@ namespace Microsoft.Azure.Devices.Client
     public delegate Task DesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext);
 
     /// <summary>
+    /// Delegate that gets called when a message is received on a <see cref="DeviceClient"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is set using <see cref="DeviceClient.SetReceiveMessageHandlerAsync(ReceiveMessageCallback, object, CancellationToken)"/>.
+    /// </remarks>
+    /// <param name="message">The received message.</param>
+    /// <param name="userContext">Context object passed in when the callback was registered.</param>
+    public delegate Task ReceiveMessageCallback(Message message, object userContext);
+
+    /// <summary>
     /// Delegate that gets called when a message is received on a <see cref="ModuleClient"/>.
     /// </summary>
     /// <remarks>
-    /// This is set on <see cref="ModuleClient.SetInputMessageHandlerAsync(string, MessageHandler, object, CancellationToken)"/>
+    /// This is set using <see cref="ModuleClient.SetInputMessageHandlerAsync(string, MessageHandler, object, CancellationToken)"/>
     /// and <see cref="ModuleClient.SetMessageHandlerAsync(MessageHandler, object, CancellationToken)"/>.
     /// </remarks>
-    /// <param name="message">The message received</param>
-    /// <param name="userContext">The context object passed in</param>
+    /// <param name="message">The received message.</param>
+    /// <param name="userContext">Context object passed in when the callback was registered.</param>
     /// <returns>MessageResponse</returns>
     public delegate Task<MessageResponse> MessageHandler(Message message, object userContext);
 
@@ -97,7 +107,8 @@ namespace Microsoft.Azure.Devices.Client
     internal class InternalClient : IDisposable
     {
         private readonly SemaphoreSlim _methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
-        private readonly SemaphoreSlim _receiveSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
         private readonly ProductInfo _productInfo = new ProductInfo();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly ITransportSettings[] _transportSettings;
@@ -119,6 +130,8 @@ namespace Microsoft.Azure.Devices.Client
         private ConnectionStatus _lastConnectionStatus = ConnectionStatus.Disconnected;
         private ConnectionStatusChangeReason _lastConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close;
 
+        private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
+
         private bool _twinPatchSubscribedWithService = false;
         private object _twinPatchCallbackContext = null;
 
@@ -127,7 +140,9 @@ namespace Microsoft.Azure.Devices.Client
 
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
-        internal delegate Task OnReceiveEventMessageCalledDelegate(string input, Message message);
+        internal delegate Task OnDeviceMessageReceivedDelegate(Message message);
+
+        internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
         public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder, ClientOptions options)
         {
@@ -146,7 +161,8 @@ namespace Microsoft.Azure.Devices.Client
             pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalledAsync);
             pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
             pipelineContext.Set<ConnectionStatusChangesHandler>(OnConnectionStatusChanged);
-            pipelineContext.Set<OnReceiveEventMessageCalledDelegate>(OnReceiveEventMessageCalledAsync);
+            pipelineContext.Set<OnModuleEventMessageReceivedDelegate>(OnModuleEventMessageReceivedAsync);
+            pipelineContext.Set<OnDeviceMessageReceivedDelegate>(OnDeviceMessageReceivedAsync);
             pipelineContext.Set(_productInfo);
             pipelineContext.Set(options);
 
@@ -981,7 +997,8 @@ namespace Microsoft.Azure.Devices.Client
                     // will throw this SemaphoreFullException since it was never grabbed in the first place
                     if (Logging.IsEnabled)
                     {
-                        Logging.Info(this, "SemaphoreFullException thrown while releasing methods dictionary semaphore, but will be ignored since that means the semaphore is available for other threads to grab again anyways");
+                        Logging.Info(this, "SemaphoreFullException thrown while releasing methods dictionary semaphore," +
+                            " but will be ignored since that means the semaphore is available for other threads to grab again anyways");
                     }
                 }
             }
@@ -1283,6 +1300,130 @@ namespace Microsoft.Azure.Devices.Client
                 : TaskHelpers.CompletedTask;
         }
 
+        /// <summary>
+        /// Registers a new delegate for receiving a message from the device queue using the default timeout.
+        /// If a delegate is already registered it will be replaced with the new delegate.
+        /// If a null delegate is passed, it will disable triggering any callback on receiving messages from the service.
+        /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// </summary>
+        /// <returns>The task containing the event</returns>
+        public async Task SetReceiveMessageHandlerAsync(ReceiveMessageCallback messageHandler, object userContext, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, messageHandler, userContext, nameof(SetReceiveMessageHandlerAsync));
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // Wait to acquire the _deviceReceiveMessageSemaphore. This ensures that concurrently invoked SetReceiveMessageHandlerAsync calls
+                // are invoked in a thread-safe manner.
+                await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                // If a ReceiveMessageCallback is already set on the DeviceClient, calling SetReceiveMessageHandlerAsync
+                // again will cause the delegate to be overwritten.
+                if (messageHandler != null)
+                {
+                    // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
+                    await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                    _deviceReceiveMessageCallback = new Tuple<ReceiveMessageCallback, object>(messageHandler, userContext);
+                }
+                else
+                {
+                    // If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
+                    _deviceReceiveMessageCallback = null;
+                    await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+            finally
+            {
+                try
+                {
+                    _deviceReceiveMessageSemaphore.Release();
+                }
+                catch (SemaphoreFullException)
+                {
+                    // this semaphore is typically grabbed at the start of the method, but if
+                    // this method is canceled while waiting to grab the semaphore, then this semaphore.release
+                    // will throw this SemaphoreFullException since it was never grabbed in the first place
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, "SemaphoreFullException thrown while releasing" +
+                        " message receiving semaphore, but will be ignored since that means the semaphore" +
+                        " is available for other threads to grab again anyways");
+                    }
+                }
+
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, messageHandler, userContext, nameof(SetReceiveMessageHandlerAsync));
+                }
+            }
+        }
+
+        // Enable telemetry downlink for devices
+        private Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
+            return _deviceReceiveMessageCallback == null
+                ? InnerHandler.EnableReceiveMessageAsync(cancellationToken)
+                : TaskHelpers.CompletedTask;
+        }
+
+        // Disable telemetry downlink for devices
+        private Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
+            return _deviceReceiveMessageCallback == null
+                ? InnerHandler.DisableReceiveMessageAsync(cancellationToken)
+                : TaskHelpers.CompletedTask;
+        }
+
+        /// <summary>
+        /// The delegate for handling c2d messages received
+        /// <param name="message">The message received</param>
+        /// </summary>
+        private async Task OnDeviceMessageReceivedAsync(Message message)
+        {
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, message, nameof(OnDeviceMessageReceivedAsync));
+            }
+
+            if (message == null)
+            {
+                return;
+            }
+
+            Tuple<ReceiveMessageCallback, object> callbackContextTuple = null;
+
+            try
+            {
+                // Wait to acquire the _deviceReceiveMessageSemaphore. This ensures that we get a reference to the latest callback set on the device client.
+                await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
+                callbackContextTuple = _deviceReceiveMessageCallback;
+                _deviceReceiveMessageSemaphore.Release();
+
+                await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, message, nameof(OnDeviceMessageReceivedAsync));
+                }
+            }
+        }
+
         internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken = default)
         {
             return await _fileUploadHttpTransportHandler.GetFileUploadSasUri(request, cancellationToken).ConfigureAwait(false);
@@ -1551,7 +1692,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _receiveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (messageHandler != null)
                 {
@@ -1584,7 +1725,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    _receiveSemaphore.Release();
+                    _moduleReceiveMessageSemaphore.Release();
                 }
                 catch (SemaphoreFullException)
                 {
@@ -1646,7 +1787,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _receiveSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 if (messageHandler != null)
                 {
                     // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
@@ -1664,7 +1805,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    _receiveSemaphore.Release();
+                    _moduleReceiveMessageSemaphore.Release();
                 }
                 catch (SemaphoreFullException)
                 {
@@ -1689,11 +1830,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="input">The input on which a message is received</param>
         /// <param name="message">The message received</param>
         /// </summary>
-        internal async Task OnReceiveEventMessageCalledAsync(string input, Message message)
+        internal async Task OnModuleEventMessageReceivedAsync(string input, Message message)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, input, message, nameof(OnReceiveEventMessageCalledAsync));
+                Logging.Enter(this, input, message, nameof(OnModuleEventMessageReceivedAsync));
             }
 
             // codes_SRS_DEVICECLIENT_33_001: [ If the given eventMessageInternal argument is null, fail silently ]
@@ -1705,7 +1846,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 Tuple<MessageHandler, object> callback = null;
-                await _receiveSemaphore.WaitAsync().ConfigureAwait(false);
+                await _moduleReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
                 try
                 {
                     // codes_SRS_DEVICECLIENT_33_006: [ The OnReceiveEventMessageCalled shall get the default delegate if a delegate has not been assigned. ]
@@ -1718,14 +1859,14 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 finally
                 {
-                    _receiveSemaphore.Release();
+                    _moduleReceiveMessageSemaphore.Release();
                 }
 
                 // codes_SRS_DEVICECLIENT_33_002: [ The OnReceiveEventMessageCalled shall invoke the specified delegate. ]
                 MessageResponse response = await (callback?.Item1?.Invoke(message, callback.Item2) ?? Task.FromResult(MessageResponse.Completed)).ConfigureAwait(false);
                 if (Logging.IsEnabled)
                 {
-                    Logging.Info(this, $"{nameof(MessageResponse)} = {response}", nameof(OnReceiveEventMessageCalledAsync));
+                    Logging.Info(this, $"{nameof(MessageResponse)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
                 }
 
                 switch (response)
@@ -1746,20 +1887,24 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, input, message, nameof(OnReceiveEventMessageCalledAsync));
+                    Logging.Exit(this, input, message, nameof(OnModuleEventMessageReceivedAsync));
                 }
             }
         }
 
+        // Enable telemetry downlink for modules
         private Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
+            // The telemetry downlink needs to be enabled only for the first time that the _defaultEventCallback delegate is set.
             return _receiveEventEndpoints == null && _defaultEventCallback == null
                 ? InnerHandler.EnableEventReceiveAsync(cancellationToken)
                 : TaskHelpers.CompletedTask;
         }
 
+        // Disable telemetry downlink for modules
         private Task DisableEventReceiveAsync(CancellationToken cancellationToken)
         {
+            // The telemetry downlink should be disabled only after _defaultEventCallback delegate has been removed.
             return _receiveEventEndpoints == null && _defaultEventCallback == null
                 ? InnerHandler.DisableEventReceiveAsync(cancellationToken)
                 : TaskHelpers.CompletedTask;
@@ -1779,8 +1924,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             InnerHandler?.Dispose();
             _methodsDictionarySemaphore?.Dispose();
-            _receiveSemaphore?.Dispose();
+            _moduleReceiveMessageSemaphore?.Dispose();
             _fileUploadHttpTransportHandler?.Dispose();
+            _deviceReceiveMessageSemaphore?.Dispose();
         }
 
         internal bool IsE2EDiagnosticSupportedProtocol()

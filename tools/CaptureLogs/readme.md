@@ -20,6 +20,7 @@ Logging can be added to console. Note that this method will substantially slow d
 ## Azure IoT SDK providers
 
 * `*Microsoft-Azure-Devices-Device-Client {ddbee999-a79e-5050-ea3c-6d1a8a7bafdd}`: DeviceClient related traces.
+* `*Microsoft-Azure-Devices-Service-Client {1a3d8d74-0a87-550c-89d7-b5d40ccb459b}`: ServiceClient related traces.
 * `*Microsoft-Azure-Devices-Provisioning-Client {e927240b-7198-5cc8-72f1-7ddcf31bb8cb}`: ProvisioningClient related traces.
 * `*Microsoft-Azure-Devices-Provisioning-Transport-Amqp {cc5b923d-ab24-57ee-bec8-d2f5cf1bb6e4}`: ProvisioningTransportHandlerAmqp related traces.
 * `*Microsoft-Azure-Devices-Provisioning-Transport-Http {d209b8a1-2e02-5724-f341-677227d0ed22}`: ProvisioningTransportHandlerHttp related traces.

@@ -12,6 +12,8 @@ using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Data;
 using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.Azure.Devices.Shared;
+using AmqpTrace = Microsoft.Azure.Amqp.AmqpTrace;
 
 namespace Microsoft.Azure.Devices
 {
@@ -50,6 +52,9 @@ namespace Microsoft.Azure.Devices
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 transportSettings.HttpProxy);
+
+            // Set the trace provider for the AMQP library.
+            AmqpTrace.Provider = new AmqpTransportLog();
         }
 
         internal AmqpServiceClient(IHttpClientHelper httpClientHelper) : base()
@@ -88,6 +93,11 @@ namespace Microsoft.Azure.Devices
 
         public async override Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
         {
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"Sending message with Id [{message.MessageId}] for device [{deviceId}]", nameof(SendAsync));
+            }
+
             if (string.IsNullOrWhiteSpace(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));
@@ -106,6 +116,11 @@ namespace Microsoft.Azure.Devices
             {
                 SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
 
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, $"Retrieved SendingAmqpLink [{sendingLink.Name}]", nameof(SendAsync));
+                }
+
                 Outcome outcome = await sendingLink
                     .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
                     .ConfigureAwait(false);
@@ -117,7 +132,18 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
             {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, $"SendAsync threw an exception: {ex.Message}", nameof(SendAsync));
+                }
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Sending message {message.MessageId} for device {deviceId}", nameof(SendAsync));
+                }
             }
         }
 

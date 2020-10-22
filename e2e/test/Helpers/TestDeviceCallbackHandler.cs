@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -23,6 +24,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private ExceptionDispatchInfo _twinExceptionDispatch;
         private string _expectedTwinPropertyValue = null;
 
+        private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new SemaphoreSlim(0, 1);
+        private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
+        private Message _expectedMessageSentByService = null;
+
         public TestDeviceCallbackHandler(DeviceClient deviceClient, MsTestLogger logger)
         {
             _deviceClient = deviceClient;
@@ -35,6 +40,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             set => Volatile.Write(ref _expectedTwinPropertyValue, value);
         }
 
+        public Message ExpectedMessageSentByService
+        {
+            get => Volatile.Read(ref _expectedMessageSentByService);
+            set => Volatile.Write(ref _expectedMessageSentByService, value);
+        }
+
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
         {
             await _deviceClient.SetMethodHandlerAsync(methodName,
@@ -43,8 +54,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     try
                     {
                         _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient callback method: {request.Name} {request.ResponseTimeout}.");
-                        Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
-                        Assert.AreEqual(expectedServiceRequestJson, request.DataAsJson, $"The expected method name should be {expectedServiceRequestJson} but was {request.DataAsJson}");
+                        request.Name.Should().Be(methodName, "The expected method name should match what was sent from service");
+                        request.DataAsJson.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 
                         return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
                     }
@@ -81,8 +92,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                     try
                     {
-                        Assert.AreEqual(ExpectedTwinPropertyValue, patch[expectedPropName].ToString());
-                        Assert.AreEqual(userContext, context, "Context");
+                        string propertyValue = patch[expectedPropName];
+                        propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
+                        context.Should().Be(userContext, "The context should match what was set by service");
                     }
                     catch (Exception ex)
                     {
@@ -104,10 +116,45 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _twinExceptionDispatch?.Throw();
         }
 
+        public async Task SetMessageReceiveCallbackHandlerAsync()
+        {
+            await _deviceClient.SetReceiveMessageHandlerAsync(
+                (receivedMessage, context) =>
+                {
+                    _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient received message with Id: {receivedMessage.MessageId}.");
+
+                    try
+                    {
+                        receivedMessage.MessageId.Should().Be(ExpectedMessageSentByService.MessageId, "Received message Id should match what was sent by service");
+                        receivedMessage.UserId.Should().Be(ExpectedMessageSentByService.UserId, "Received user Id should match what was sent by service");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
+                        _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                    }
+                    finally
+                    {
+                        // Always notify that we got the callback.
+                        _receivedMessageCallbackSemaphore.Release();
+                    }
+
+                    return Task.FromResult(true);
+                },
+                null).ConfigureAwait(false);
+        }
+
+        public async Task WaitForReceiveMessageCallbackAsync(CancellationToken ct)
+        {
+            await _receivedMessageCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
+            _receiveMessageExceptionDispatch?.Throw();
+        }
+
         public void Dispose()
         {
             _methodCallbackSemaphore?.Dispose();
             _twinCallbackSemaphore?.Dispose();
+            _receivedMessageCallbackSemaphore?.Dispose();
         }
     }
 }
