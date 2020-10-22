@@ -30,18 +30,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private AmqpIoTSendingLink _messageSendingLink;
         private AmqpIoTReceivingLink _messageReceivingLink;
-        private readonly SemaphoreSlim _messageReceivingLinkLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _messageReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
 
         private AmqpIoTReceivingLink _eventReceivingLink;
-        private readonly SemaphoreSlim _eventReceivingLinkLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _eventReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
 
         private AmqpIoTSendingLink _methodSendingLink;
         private AmqpIoTReceivingLink _methodReceivingLink;
-        private readonly SemaphoreSlim _methodLinkLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _methodLinkSemaphore = new SemaphoreSlim(1, 1);
 
         private AmqpIoTSendingLink _twinSendingLink;
         private AmqpIoTReceivingLink _twinReceivingLink;
-        private readonly SemaphoreSlim _twinLinksLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _twinLinksSemaphore = new SemaphoreSlim(1, 1);
 
         private AmqpIoTSession _amqpIoTSession;
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
-            bool gain = await _messageReceivingLinkLock.WaitAsync(timeout).ConfigureAwait(false);
+            bool gain = await _messageReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
                 throw new TimeoutException();
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                _messageReceivingLinkLock.Release();
+                _messageReceivingLinkSemaphore.Release();
                 if (Logging.IsEnabled)
                 {
                     Logging.Exit(this, timeout, $"{nameof(EnsureMessageReceivingLinkAsync)}");
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
-            bool gain = await _eventReceivingLinkLock.WaitAsync(timeout).ConfigureAwait(false);
+            bool gain = await _eventReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
                 throw new TimeoutException();
@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                _eventReceivingLinkLock.Release();
+                _eventReceivingLinkSemaphore.Release();
                 if (Logging.IsEnabled)
                 {
                     Logging.Exit(this, timeout, $"{nameof(EnableEventReceiveAsync)}");
@@ -485,7 +485,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
-            bool gain = await _methodLinkLock.WaitAsync(timeout).ConfigureAwait(false);
+            bool gain = await _methodLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
                 throw new TimeoutException();
@@ -501,7 +501,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                _methodLinkLock.Release();
+                _methodLinkSemaphore.Release();
                 if (Logging.IsEnabled)
                 {
                     Logging.Exit(this, timeout, $"{nameof(EnableMethodsAsync)}");
@@ -525,6 +525,52 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     Logging.Associate(this, _methodReceivingLink, $"{nameof(_methodReceivingLink)}");
                 }
+            }
+        }
+
+        public async Task DisableTwinLinksAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, timeout, $"{nameof(DisableTwinLinksAsync)}");
+            }
+
+            Debug.Assert(_twinSendingLink != null);
+            Debug.Assert(_twinReceivingLink != null);
+
+            bool gain = await _twinLinksSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
+
+            try
+            {
+                ICollection<Task> tasks = new List<Task>();
+                if (_twinReceivingLink != null)
+                {
+                    tasks.Add(_twinReceivingLink.CloseAsync(timeout));
+                }
+
+                if (_twinSendingLink != null)
+                {
+                    tasks.Add(_twinSendingLink.CloseAsync(timeout));
+                }
+
+                if (tasks.Count > 0)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    _twinReceivingLink = null;
+                    _twinSendingLink = null;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, timeout, $"{nameof(DisableTwinLinksAsync)}");
+                }
+                _twinLinksSemaphore.Release();
             }
         }
 
@@ -645,7 +691,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
-            bool gain = await _twinLinksLock.WaitAsync(timeout).ConfigureAwait(false);
+            bool gain = await _twinLinksSemaphore.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
                 throw new TimeoutException();
@@ -662,7 +708,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                _twinLinksLock.Release();
+                _twinLinksSemaphore.Release();
                 if (Logging.IsEnabled)
                 {
                     Logging.Exit(this, timeout, $"{nameof(EnableTwinLinksAsync)}");

@@ -93,7 +93,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableTwinPatchAsync(cancellationToken));
         }
-        
+
+        public override Task DisableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.DisableTwinPatchAsync(cancellationToken));
+        }
+
         public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinGetAsync(cancellationToken));

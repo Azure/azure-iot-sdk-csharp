@@ -1003,6 +1003,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinPatchTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
         }
 
+        public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            await _channel.WriteAsync(new UnsubscribePacket(0, TwinPatchTopicFilter)).ConfigureAwait(true);
+        }
+
         private bool ParseResponseTopic(string topicName, out string rid, out Int32 status)
         {
             Match match = _twinResponseTopicRegex.Match(topicName);

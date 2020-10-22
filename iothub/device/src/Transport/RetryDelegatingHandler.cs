@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Ensure that the connection has been opened, before enabling the callback for receiving messages.
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerLock. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Ensure that the connection has been opened, before disabling the callback for receiving messages.
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerLock. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -498,6 +498,44 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                 {
                     Logging.Exit(this, cancellationToken, nameof(EnableTwinPatchAsync));
+                }
+            }
+        }
+
+        public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
+                }
+
+                await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            try
+                            {
+                                Debug.Assert(_twinEnabled);
+                                await base.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                                _twinEnabled = false;
+                            }
+                            finally
+                            {
+                                _handlerSemaphore.Release();
+                            }
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
                 }
             }
         }

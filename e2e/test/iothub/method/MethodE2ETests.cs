@@ -39,6 +39,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
+
+        [LoggedTestMethod]
+        public async Task Method_DeviceUnsubscribes_Mqtt()
+        {
+            await SendMethodAndUnsubscribeAsync(Client.TransportType.Mqtt_Tcp_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+        }
+
+
+        [LoggedTestMethod]
+        public async Task Method_DeviceUnsubscribes_MqttWs()
+        {
+            await SendMethodAndUnsubscribeAsync(Client.TransportType.Mqtt_WebSocket_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+        }
+
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Mqtt()
         {
@@ -73,6 +87,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Method_DeviceUnsubscribes_Amqp()
+        {
+            await SendMethodAndUnsubscribeAsync(Client.TransportType.Amqp_Tcp_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Method_DeviceUnsubscribes_AmqpWs()
+        {
+            await SendMethodAndUnsubscribeAsync(Client.TransportType.Amqp_WebSocket_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -221,6 +247,39 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
+        public static async Task ServiceSendMethodAndVerifyNotReceivedAsync(string deviceId, string methodName, MsTestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        {
+            ServiceClient serviceClient = null;
+            if (serviceClientTransportSettings == default)
+            {
+                serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            }
+            else
+            {
+                serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
+            }
+
+            TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
+            logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
+            try
+            {
+                CloudToDeviceMethodResult response =
+                    await serviceClient.InvokeDeviceMethodAsync(
+                        deviceId,
+                        new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(null)).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (!(ex is DeviceNotFoundException))
+                    throw ex;
+            }
+            finally
+            {
+                await serviceClient.CloseAsync().ConfigureAwait(false);
+                serviceClient.Dispose();
+            }
+        }
+
         public static async Task ServiceSendMethodAndVerifyResponseAsync(string deviceId, string methodName, string respJson, string reqJson, MsTestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             ServiceClient serviceClient = null;
@@ -277,6 +336,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             await serviceClient.CloseAsync().ConfigureAwait(false);
             serviceClient.Dispose();
+        }
+
+        public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
+        {
+            var methodCallReceived = new TaskCompletionSource<bool>();
+
+            await deviceClient
+                .SetMethodHandlerAsync(
+                methodName,
+                (request, context) =>
+                {
+                    logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+                },
+                null)
+                .ConfigureAwait(false);
+
+            await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
+
+            // Return the task that tells us we have received the callback.
+            return methodCallReceived.Task;
         }
 
         public static async Task<Task> SetDeviceReceiveMethodAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
@@ -419,6 +499,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 null).ConfigureAwait(false);
 
             return methodCallReceived.Task;
+        }
+
+        private async Task SendMethodAndUnsubscribeAsync(Client.TransportType transport, Func<DeviceClient, string, MsTestLogger, Task<Task>> subscribeAndUnsubscribeMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+
+            await subscribeAndUnsubscribeMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
+
+            await ServiceSendMethodAndVerifyNotReceivedAsync(testDevice.Id, MethodName, Logger, responseTimeout, serviceClientTransportSettings).ConfigureAwait(false);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
