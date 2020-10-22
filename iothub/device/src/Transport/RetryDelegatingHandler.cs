@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private readonly SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
         private bool _openCalled;
         private bool _opened;
         private bool _methodsEnabled;
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
                             // Wait to acquire the _handlerLock. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 // The telemetry downlink needs to be enabled only for the first time that the callback is set.
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerLock.Release();
+                                _handlerSemaphore.Release();
                             }
                         },
                         cancellationToken)
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
                             // Wait to acquire the _handlerLock. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 // Ensure that a callback for receiving messages has been previously set.
@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerLock.Release();
+                                _handlerSemaphore.Release();
                             }
                         },
                         cancellationToken)
@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
-                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(!_methodsEnabled);
@@ -335,7 +335,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerLock.Release();
+                                _handlerSemaphore.Release();
                             }
                         },
                         cancellationToken)
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_methodsEnabled);
@@ -373,7 +373,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerLock.Release();
+                                _handlerSemaphore.Release();
                             }
                         },
                         cancellationToken)
@@ -402,7 +402,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 await base.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerLock.Release();
+                                _handlerSemaphore.Release();
                             }
                         },
                         cancellationToken)
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_eventsEnabled);
@@ -449,7 +449,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerLock.Release();
+                                _handlerSemaphore.Release();
                             }
                         },
                         cancellationToken)
@@ -478,7 +478,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(!_twinEnabled);
@@ -487,7 +487,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerLock.Release();
+                                _handlerSemaphore.Release();
                             }
                         },
                         cancellationToken)
@@ -649,7 +649,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
-            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 if (!_openCalled)
@@ -673,7 +673,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
                 }
 
-                _handlerLock.Release();
+                _handlerSemaphore.Release();
             }
         }
 
@@ -687,7 +687,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return;
             }
 
-            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 if (!_opened)
@@ -720,7 +720,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerLock.Release();
+                _handlerSemaphore.Release();
             }
         }
 
@@ -731,7 +731,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return;
             }
 
-            bool gain = await _handlerLock.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
+            bool gain = await _handlerSemaphore.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
             if (!gain)
             {
                 throw new TimeoutException("Timed out to acquire handler lock.");
@@ -769,7 +769,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerLock.Release();
+                _handlerSemaphore.Release();
             }
         }
 
@@ -875,7 +875,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
             }
 
-            await _handlerLock.WaitAsync().ConfigureAwait(false);
+            await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
             _opened = false;
 
             try
@@ -965,7 +965,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerLock.Release();
+                _handlerSemaphore.Release();
             }
         }
 

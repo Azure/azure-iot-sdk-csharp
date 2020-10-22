@@ -393,7 +393,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken);
 
-            // -1 millisecond represents for SemaphoreSlim to wait indefinitely until either of the linked cancellation tokens have been cancelled.
+            // -1 millisecond represents for SemaphoreSlim to wait indefinitely until either of the linked cancellation tokens have been canceled.
             return await _receivingSemaphore.WaitAsync(TimeSpan.FromMilliseconds(-1), linkedCts.Token).ConfigureAwait(true);
         }
 

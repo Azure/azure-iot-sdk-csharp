@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class Message : IDisposable, IReadOnlyIndicator
     {
-        private readonly object _messageLock = new object();
+        private readonly SemaphoreSlim _amqpMessageSemaphore = new SemaphoreSlim(1, 1);
         private volatile Stream _bodyStream;
         private AmqpMessage _serializedAmqpMessage;
         private bool _disposed;
@@ -285,9 +285,14 @@ namespace Microsoft.Azure.Devices
         {
             get
             {
-                lock (_messageLock)
+                try
                 {
+                    _amqpMessageSemaphore.Wait();
                     return _serializedAmqpMessage;
+                }
+                finally
+                {
+                    _amqpMessageSemaphore.Release();
                 }
             }
         }
@@ -399,8 +404,9 @@ namespace Microsoft.Azure.Devices
             ThrowIfDisposed();
             if (_serializedAmqpMessage == null)
             {
-                lock (_messageLock)
+                try
                 {
+                    _amqpMessageSemaphore.Wait();
                     if (_serializedAmqpMessage == null)
                     {
                         // Interlocked exchange two variable does allow for a small period
@@ -419,6 +425,10 @@ namespace Microsoft.Azure.Devices
                             : AmqpMessage.Create(_bodyStream, false);
                         _serializedAmqpMessage = PopulateAmqpMessageForSend(_serializedAmqpMessage);
                     }
+                }
+                finally
+                {
+                    _amqpMessageSemaphore.Release();
                 }
             }
 
