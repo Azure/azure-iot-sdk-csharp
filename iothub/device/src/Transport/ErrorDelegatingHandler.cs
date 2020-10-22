@@ -59,6 +59,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeoutHelper));
         }
 
+        public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.EnableReceiveMessageAsync(cancellationToken));
+        }
+
+        public override Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.DisableReceiveMessageAsync(cancellationToken));
+        }
+
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableMethodsAsync(cancellationToken));

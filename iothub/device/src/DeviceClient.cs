@@ -326,6 +326,18 @@ namespace Microsoft.Azure.Devices.Client
         public Task<Message> ReceiveAsync(TimeSpan timeout) => InternalClient.ReceiveAsync(timeout);
 
         /// <summary>
+        /// Registers a new delegate for receiving a message from the device queue using the default timeout.
+        /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
+        /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
+        /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
+        /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// </summary>
+        public Task SetReceiveMessageHandlerAsync(ReceiveMessageCallback messageHandler, object userContext, CancellationToken cancellationToken = default) =>
+            InternalClient.SetReceiveMessageHandlerAsync(messageHandler, userContext, cancellationToken);
+
+        /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
