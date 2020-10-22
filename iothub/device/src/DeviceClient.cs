@@ -527,9 +527,9 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.CompleteFileUploadAsync(notification, cancellationToken);
 
         /// <summary>
-        /// Registers a new delegate for the named method. If a delegate is already associated with
+        /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
-        /// A method hanler can be unset by passing null.
+        /// A method handler can be unset by passing null.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -538,9 +538,9 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
 
         /// <summary>
-        /// Registers a new delegate for the named method. If a delegate is already associated with
+        /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
-        /// A method hanler can be unset by passing null.
+        /// A method handler can be unset by passing null.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -551,9 +551,9 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
 
         /// <summary>
-        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
+        /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
-        /// A method hanler can be unset by passing null.
+        /// A method handler can be unset by passing null.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -561,9 +561,9 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
 
         /// <summary>
-        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name.
+        /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
-        /// A method hanler can be unset by passing null.
+        /// A method handler can be unset by passing null.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -573,7 +573,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
 
         /// <summary>
-        /// Registers a new delegate for the named method. If a delegate is already associated with
+        /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
@@ -585,7 +585,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMethodHandler(methodName, methodHandler, userContext);
 
         /// <summary>
-        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated,
+        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP, as that protocol is stateless.
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
