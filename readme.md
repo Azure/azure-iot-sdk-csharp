@@ -113,7 +113,7 @@ For details on OS support see the following resources:
 | [Jobs](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs)                                  | :heavy_check_mark:        | HTTP | Use your backend app to perform job operation.                                                                           |
 | [File Upload](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload)                    | :heavy_check_mark:        | AMQP | Set up your backend app to receive file upload notifications. 
 | [Digital Twin Client](https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play)              | :heavy_check_mark:        | HTTP | Set up your backend app to perform operations on plug and play devices.                                                      |
-| [IoT Hub Statistics](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-metrics)                          | :heavy_check_mark:        | HTTP | Get IoT Hub identity registry statistics; such as total device couent for device statistics, and connected device count for service statistics. |
+| [IoT Hub Statistics](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-metrics)                          | :heavy_check_mark:        | HTTP | Get IoT Hub identity registry statistics; such as total device count for device statistics, and connected device count for service statistics. |
 
 ### Provisioning Device SDK
 
