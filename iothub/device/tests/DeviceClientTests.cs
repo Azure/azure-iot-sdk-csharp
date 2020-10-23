@@ -158,6 +158,32 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public async Task DeviceClient_OnMethodCalled_Unsubscribe()
+        {
+            // arrange
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            // act
+            await deviceClient
+                .SetMethodHandlerAsync(
+                    "TestMethodName", 
+                    (payload, context) => Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200)), "custom data")
+                .ConfigureAwait(false);
+
+            await deviceClient
+                .SetMethodHandlerAsync("TestMethodName", null, null)
+                .ConfigureAwait(false);
+
+            // assert
+            await innerHandler
+                .Received()
+                .DisableMethodsAsync(Arg.Any<CancellationToken>())
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
         // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest()
         {
@@ -728,8 +754,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
             await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
-            // TODO #890
-            await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
         }
 
@@ -790,8 +815,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
             await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
-            // TODO #890
-            await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
         }
 
@@ -852,8 +876,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
             await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
-            // TODO #890
-            await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
         }
 
@@ -1013,8 +1036,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
             await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
-            //TODO #890
-            await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
         }
 

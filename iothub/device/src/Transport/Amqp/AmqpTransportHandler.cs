@@ -367,6 +367,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
+        public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, cancellationToken, $"{nameof(DisableTwinPatchAsync)}");
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await _amqpUnit.DisableTwinLinksAsync(_operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, cancellationToken, $"{nameof(DisableTwinPatchAsync)}");
+                }
+            }
+        }
+
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)

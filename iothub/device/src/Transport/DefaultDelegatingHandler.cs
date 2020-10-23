@@ -164,6 +164,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.EnableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
+        public virtual Task DisableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.DisableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
         public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
