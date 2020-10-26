@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices
         // This call is executed over AMQP.
         public async override Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
         {
-            Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device [{deviceId}]", nameof(SendAsync));
+            Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
 
             if (string.IsNullOrWhiteSpace(deviceId))
             {
@@ -137,12 +137,12 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
             {
-                Logging.Error(this, $"SendAsync threw an exception: {ex.Message}", nameof(SendAsync));
+                Logging.Error(this, $"SendAsync threw an exception: {ex}", nameof(SendAsync));
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
             {
-                Logging.Exit(this, $"Sending message {message?.MessageId} for device {deviceId}", nameof(SendAsync));
+                Logging.Exit(this, $"Sending message [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
             }
         }
 
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"PurgeMessageQueueAsync threw an exception: {ex.Message}", nameof(PurgeMessageQueueAsync));
+                Logging.Error(this, $"PurgeMessageQueueAsync threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
                 throw;
             }
             finally
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetServiceStatisticsAsync)} threw an exception: {ex.Message}", nameof(GetServiceStatisticsAsync));
+                Logging.Error(this, $"{nameof(GetServiceStatisticsAsync)} threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
                 throw;
             }
             finally
@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(InvokeDeviceMethodAsync)} threw an exception: {ex.Message}", nameof(InvokeDeviceMethodAsync));
+                Logging.Error(this, $"{nameof(InvokeDeviceMethodAsync)} threw an exception: {ex}", nameof(InvokeDeviceMethodAsync));
                 throw;
             }
             finally
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices
         // This call is executed over AMQP.
         public override async Task SendAsync(string deviceId, string moduleId, Message message)
         {
-            Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device [{deviceId}], module [{moduleId}]", nameof(SendAsync));
+            Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
 
             if (string.IsNullOrWhiteSpace(deviceId))
             {
@@ -328,12 +328,12 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex.Message}", nameof(SendAsync));
+                Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
             {
-                Logging.Exit(this, $"Sending message with Id [{message?.MessageId}] for device [{deviceId}], module [{moduleId}]", nameof(SendAsync));
+                Logging.Exit(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
             }
         }
 
