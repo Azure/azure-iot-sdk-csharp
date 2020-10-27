@@ -33,6 +33,9 @@ namespace Microsoft.Azure.Devices.Client
             Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             InitializeWithStream(Stream.Null, true);
+
+            // Set the default value for MessageId.
+            SystemProperties[MessageSystemPropertyNames.MessageId] = Guid.NewGuid().ToString();
         }
 
         /// <summary>
@@ -88,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         public string MessageId
         {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId) ?? Guid.NewGuid().ToString();
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId);
             set => SystemProperties[MessageSystemPropertyNames.MessageId] = value;
         }
 
