@@ -62,10 +62,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Enter(object thisOrContextObject, FormattableString formattableString = null, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(formattableString);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(formattableString);
+
                 Log.Enter(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
             }
         }
@@ -79,10 +80,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Enter(object thisOrContextObject, object arg0, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(arg0);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(arg0);
+
                 Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)})");
             }
         }
@@ -95,11 +97,12 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Enter(object thisOrContextObject, object arg0, object arg1, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(arg0);
-            DebugValidateArg(arg1);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(arg0);
+                DebugValidateArg(arg1);
+
                 Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)})");
             }
         }
@@ -113,12 +116,13 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Enter(object thisOrContextObject, object arg0, object arg1, object arg2, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(arg0);
-            DebugValidateArg(arg1);
-            DebugValidateArg(arg2);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(arg0);
+                DebugValidateArg(arg1);
+                DebugValidateArg(arg2);
+
                 Log.Enter(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
             }
         }
@@ -140,10 +144,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Exit(object thisOrContextObject, FormattableString formattableString = null, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(formattableString);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(formattableString);
+
                 Log.Exit(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
             }
         }
@@ -157,10 +162,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Exit(object thisOrContextObject, object arg0, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(arg0);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(arg0);
+
                 Log.Exit(IdOf(thisOrContextObject), memberName, Format(arg0).ToString());
             }
         }
@@ -173,11 +179,12 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Exit(object thisOrContextObject, object arg0, object arg1, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(arg0);
-            DebugValidateArg(arg1);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(arg0);
+                DebugValidateArg(arg1);
+
                 Log.Exit(IdOf(thisOrContextObject), memberName, $"{Format(arg0)}, {Format(arg1)}");
             }
         }
@@ -191,12 +198,13 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Exit(object thisOrContextObject, object arg0, object arg1, object arg2, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(arg0);
-            DebugValidateArg(arg1);
-            DebugValidateArg(arg2);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(arg0);
+                DebugValidateArg(arg1);
+                DebugValidateArg(arg2);
+
                 Log.Exit(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
             }
         }
@@ -218,10 +226,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Info(object thisOrContextObject, FormattableString formattableString = null, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(formattableString);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(formattableString);
+
                 Log.Info(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
             }
         }
@@ -235,10 +244,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Info(object thisOrContextObject, object message, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(message);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(message);
+
                 Log.Info(IdOf(thisOrContextObject), memberName, Format(message).ToString());
             }
         }
@@ -260,10 +270,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Error(object thisOrContextObject, FormattableString formattableString, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(formattableString);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(formattableString);
+
                 Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(formattableString));
             }
         }
@@ -277,10 +288,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Error(object thisOrContextObject, object message, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(message);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(message);
+
                 Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(message).ToString());
             }
         }
@@ -420,10 +432,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Associate(object first, object second, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(first);
-            DebugValidateArg(second);
             if (IsEnabled)
             {
+                DebugValidateArg(first);
+                DebugValidateArg(second);
+
                 Log.Associate(IdOf(first), memberName, IdOf(first), IdOf(second));
             }
         }
@@ -436,11 +449,12 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void Associate(object thisOrContextObject, object first, object second, [CallerMemberName] string memberName = null)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(first);
-            DebugValidateArg(second);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(first);
+                DebugValidateArg(second);
+
                 Log.Associate(IdOf(thisOrContextObject), memberName, IdOf(first), IdOf(second));
             }
         }
