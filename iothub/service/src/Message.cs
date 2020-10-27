@@ -35,6 +35,9 @@ namespace Microsoft.Azure.Devices
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             InitializeWithStream(Stream.Null, true);
             _serializedAmqpMessage = null;
+
+            // Set the default value for MessageId.
+            SystemProperties[MessageSystemPropertyNames.MessageId] = Guid.NewGuid().ToString();
         }
 
         /// <summary>
@@ -106,7 +109,7 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         public string MessageId
         {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId) ?? Guid.NewGuid().ToString();
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId);
             set => SystemProperties[MessageSystemPropertyNames.MessageId] = value;
         }
 
@@ -131,12 +134,9 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// A string property in a response message that typically contains the MessageId of the request, in request-reply patterns.
         /// </summary>
-        /// <remarks>
-        /// If this value is not supplied by the user, the service client will set this to <see cref="MessageId"/>.
-        /// </remarks>
         public string CorrelationId
         {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.CorrelationId) ?? MessageId;
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.CorrelationId);
             set => SystemProperties[MessageSystemPropertyNames.CorrelationId] = value;
         }
 
@@ -540,6 +540,8 @@ namespace Microsoft.Azure.Devices
                         _bodyStream.Dispose();
                         _bodyStream = null;
                     }
+
+                    _amqpMessageSemaphore?.Dispose();
                 }
 
                 _disposed = true;
