@@ -29,24 +29,29 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
-        public Message()
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
+        public Message(bool setDefaultMessageId = false)
         {
             Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             InitializeWithStream(Stream.Null, true);
             _serializedAmqpMessage = null;
 
-            // Set the default value for MessageId.
-            SystemProperties[MessageSystemPropertyNames.MessageId] = Guid.NewGuid().ToString();
+            if (setDefaultMessageId)
+            {
+                // Set the default value for MessageId.
+                SystemProperties[MessageSystemPropertyNames.MessageId] = Guid.NewGuid().ToString();
+            }
         }
 
         /// <summary>
         /// Constructor which uses the argument stream as the body stream.
         /// </summary>
-        /// <param name="stream">a stream which will be used as body stream.</param>
         /// <remarks>User is expected to own the disposing of the stream when using this constructor.</remarks>
-        public Message(Stream stream)
-            : this()
+        /// <param name="stream">a stream which will be used as body stream.</param>
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
+        public Message(Stream stream, bool setDefaultMessageId = false)
+            : this(setDefaultMessageId)
         {
             if (stream != null)
             {
@@ -55,26 +60,25 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Constructor which uses the input byte array as the body
+        /// Constructor which uses the input byte array as the body.
         /// </summary>
-        /// <param name="byteArray">a byte array which will be used to
-        /// form the body stream</param>
-        /// <remarks>user should treat the input byte array as immutable when
-        /// sending the message.</remarks>
-        public Message(byte[] byteArray)
-            : this(new MemoryStream(byteArray))
+        /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
+        /// <param name="byteArray">A byte array which will be used to form the body stream.</param>
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
+        public Message(byte[] byteArray, bool setDefaultMessageId = false)
+            : this(new MemoryStream(byteArray), setDefaultMessageId)
         {
             // reset the owning of the steams
             _ownsBodyStream = true;
         }
 
         /// <summary>
-        /// This constructor is only used in the receive path from Amqp path,
-        /// or in Cloning from a Message that has serialized.
+        /// This constructor is only used in the receive path from AMQP path, or in cloning from a Message that has serialized.
         /// </summary>
-        /// <param name="amqpMessage"></param>
-        internal Message(AmqpMessage amqpMessage)
-            : this()
+        /// <param name="amqpMessage">The AMQP message received, or the message to be cloned.</param>
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
+        internal Message(AmqpMessage amqpMessage, bool setDefaultMessageId = false)
+            : this(setDefaultMessageId)
         {
             if (amqpMessage == null)
             {
@@ -87,13 +91,13 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// This constructor is only used on the Gateway http path so that
-        /// we can clean up the stream.
+        /// This constructor is only used on the Gateway http path so that we can clean up the stream.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="ownStream"></param>
-        internal Message(Stream stream, bool ownStream)
-            : this(stream)
+        /// <param name="stream">A stream which will be used as body stream.</param>
+        /// <param name="ownStream">A flag indicating that the client library will dispose the stream when the Message is disposed.</param>
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
+        internal Message(Stream stream, bool ownStream, bool setDefaultMessageId = false)
+            : this(stream, setDefaultMessageId)
         {
             _ownsBodyStream = ownStream;
         }
