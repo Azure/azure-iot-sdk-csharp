@@ -28,24 +28,29 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
-        public Message()
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
+        public Message(bool setDefaultMessageId = false)
         {
             Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             InitializeWithStream(Stream.Null, true);
 
-            // Set the default value for MessageId.
-            SystemProperties[MessageSystemPropertyNames.MessageId] = Guid.NewGuid().ToString();
+            if (setDefaultMessageId)
+            {
+                // Set the default value for MessageId.
+                SystemProperties[MessageSystemPropertyNames.MessageId] = Guid.NewGuid().ToString();
+            }
         }
 
         /// <summary>
         /// Constructor which uses the argument stream as the body stream.
         /// </summary>
-        /// <param name="stream">a stream which will be used as body stream.</param>
         /// <remarks>User is expected to own the disposing of the stream when using this constructor.</remarks>
+        /// <param name="stream">A stream which will be used as body stream.</param>
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
         // UWP cannot expose a method with System.IO.Stream in signature. TODO: consider adding an IRandomAccessStream overload
-        public Message(Stream stream)
-            : this()
+        public Message(Stream stream, bool setDefaultMessageId = false)
+            : this(setDefaultMessageId)
         {
             if (stream != null)
             {
@@ -54,17 +59,15 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Constructor which uses the input byte array as the body
+        /// Constructor which uses the input byte array as the body.
         /// </summary>
-        /// <param name="byteArray">a byte array which will be used to
-        /// form the body stream</param>
-        /// <remarks>user should treat the input byte array as immutable when
-        /// sending the message.</remarks>
-        public Message(
-            byte[] byteArray)
-            : this(new MemoryStream(byteArray))
+        /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
+        /// <param name="byteArray">A byte array which will be used to form the body stream.</param>
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
+        public Message(byte[] byteArray, bool setDefaultMessageId = false)
+            : this(new MemoryStream(byteArray), setDefaultMessageId)
         {
-            // reset the owning of the steams
+            // reset the owning of the streams
             _ownsBodyStream = true;
         }
 
@@ -72,10 +75,11 @@ namespace Microsoft.Azure.Devices.Client
         /// This constructor is only used on the Gateway http path so that
         /// we can clean up the stream.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="ownStream"></param>
-        internal Message(Stream stream, bool ownStream)
-            : this(stream)
+        /// <param name="stream">A stream which will be used as body stream.</param>
+        /// <param name="ownStream">A flag indicating that the client library will dispose the stream when the Message is disposed.</param>
+        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
+        internal Message(Stream stream, bool ownStream, bool setDefaultMessageId = false)
+            : this(stream, setDefaultMessageId)
         {
             _ownsBodyStream = ownStream;
         }
@@ -86,9 +90,6 @@ namespace Microsoft.Azure.Devices.Client
         /// + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
         /// Non-alphanumeric characters are from URN RFC.
         /// </summary>
-        /// <remarks>
-        /// If this value is not supplied by the user, the device client will set this to a new GUID.
-        /// </remarks>
         public string MessageId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId);
@@ -343,24 +344,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="byteArray"/> on it.
         /// </summary>
+        /// <remarks>
+        /// The cloned message has the message <see cref="MessageId" /> as the original message.
+        /// User should treat the input byte array as immutable when sending the message.
+        /// </remarks>
         /// <param name="byteArray">Message content to be set after clone.</param>
         /// <returns>A new instance of <see cref="Message"/> with body content defined by <paramref name="byteArray"/>,
         /// and user/system properties of the cloned <see cref="Message"/> instance.
         /// </returns>
-        /// <remarks>user should treat the input byte array as immutable when
-        /// sending the message.</remarks>
         public Message CloneWithBody(in byte[] byteArray)
         {
             var result = new Message(byteArray);
 
             foreach (string key in Properties.Keys)
             {
-                result.Properties.Add(key, Properties[key]);
+                result.Properties[key] = Properties[key];
             }
 
             foreach (string key in SystemProperties.Keys)
             {
-                result.SystemProperties.Add(key, SystemProperties[key]);
+                result.SystemProperties[key] = SystemProperties[key];
             }
 
             return result;

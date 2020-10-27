@@ -127,14 +127,14 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             // ownStream = true
             var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            var msg = new Message(ms, true);
+            var msg = new Message(ms, ownStream: true);
             msg.Dispose();
 
             TestAssert.Throws<ObjectDisposedException>(() => ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5));
 
             // ownStream = false
             ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            msg = new Message(ms, false);
+            msg = new Message(ms, ownStream: false);
             msg.Dispose();
 
             ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5);
@@ -150,10 +150,45 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public void MessageShouldAlwaysSetMessageIdByDefault()
+        public void MessageDoesNotSetMessageIdByDefault()
         {
-            using var message = new Message(Encoding.UTF8.GetBytes("test message"));
-            message.MessageId.Should().NotBeNullOrEmpty();
+            // arrange
+            string messageText = "test message";
+            byte[] messageByteArray = Encoding.UTF8.GetBytes(messageText);
+            using var ms = new MemoryStream(messageByteArray);
+
+            // act
+            using var emptyBodyMessage = new Message();
+            using var byteBodyMessage = new Message(messageByteArray);
+            using var streamMessage = new Message(ms);
+            using var libraryManagedStreamMessage = new Message(ms, ownStream: true);
+
+            // assert
+            emptyBodyMessage.MessageId.Should().BeNull();
+            byteBodyMessage.MessageId.Should().BeNull();
+            streamMessage.MessageId.Should().BeNull();
+            libraryManagedStreamMessage.MessageId.Should().BeNull();
+        }
+
+        [TestMethod]
+        public void MessageSetMessageIdBasedOnCtorParams()
+        {
+            // arrange
+            string messageText = "test message";
+            byte[] messageByteArray = Encoding.UTF8.GetBytes(messageText);
+            using var ms = new MemoryStream(messageByteArray);
+
+            // act
+            using var emptyBodyMessage = new Message(setDefaultMessageId: true);
+            using var byteBodyMessage = new Message(messageByteArray, setDefaultMessageId: true);
+            using var streamMessage = new Message(ms, setDefaultMessageId: true);
+            using var libraryManagedStreamMessage = new Message(ms, ownStream: true, setDefaultMessageId: true);
+
+            // assert
+            emptyBodyMessage.MessageId.Should().NotBeNullOrEmpty();
+            byteBodyMessage.MessageId.Should().NotBeNullOrEmpty();
+            streamMessage.MessageId.Should().NotBeNullOrEmpty();
+            libraryManagedStreamMessage.MessageId.Should().NotBeNullOrEmpty();
         }
 
         [TestMethod]
