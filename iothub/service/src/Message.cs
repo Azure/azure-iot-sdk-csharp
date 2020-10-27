@@ -533,6 +533,7 @@ namespace Microsoft.Azure.Devices
                         // the amqpMessage will dispose the body stream so we don't
                         // need to dispose bodyStream twice.
                         _serializedAmqpMessage.Dispose();
+                        _serializedAmqpMessage = null;
                         _bodyStream = null;
                     }
                     else if (_bodyStream != null && _ownsBodyStream)
