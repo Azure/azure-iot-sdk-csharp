@@ -168,34 +168,5 @@ namespace Microsoft.Azure.Devices.Api.Test
             message.MessageId.Should().NotBeNullOrEmpty();
             message.MessageId.Should().Be(messageId, "MessageId should have the value set by user.");
         }
-
-        [TestMethod]
-        public void MessageShouldSetMessageIdToCorrelationIdByDefault()
-        {
-            string messageId = Guid.NewGuid().ToString();
-            using var message = new Message(Encoding.UTF8.GetBytes("test message"))
-            {
-                MessageId = messageId,
-            };
-
-            message.CorrelationId.Should().NotBeNullOrEmpty();
-            message.CorrelationId.Should().Be(messageId, "Default value of correlation Id should be the MessageId.");
-        }
-
-        [TestMethod]
-        public void MessageShouldAllowCorrelationIdToBeUserSettable()
-        {
-            string messageId = Guid.NewGuid().ToString();
-            string correlationId = Guid.NewGuid().ToString();
-            using var message = new Message(Encoding.UTF8.GetBytes("test message"))
-            {
-                MessageId = messageId,
-                CorrelationId = correlationId,
-            };
-
-            message.CorrelationId.Should().NotBeNullOrEmpty();
-            message.CorrelationId.Should().NotBe(messageId, "CorrelationId should have the value set by user.");
-            message.CorrelationId.Should().Be(correlationId, "CorrelationId should have the value set by user.");
-        }
     }
 }
