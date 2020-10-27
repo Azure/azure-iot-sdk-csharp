@@ -838,44 +838,43 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                    Logging.Exit(this, cancellationToken, nameof(OpenInternalAsync));
                 }
             }
         }
 
-        private async Task OpenInternalAsync(TimeoutHelper timeoutHelper)
+        private Task OpenInternalAsync(TimeoutHelper timeoutHelper)
         {
-            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-            await _internalRetryPolicy
-                .ExecuteAsync(
-                    async () =>
-                    {
-                        try
-                        {
-                            if (Logging.IsEnabled)
-                            {
-                                Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
-                            }
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, timeoutHelper, nameof(OpenInternalAsync));
+            }
 
+            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            try
+            {
+                return _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
                             // Will throw on error.
                             await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
                             _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
-                        }
-                        catch (IotHubException ex)
-                        {
-                            HandleConnectionStatusExceptions(ex);
-                            throw;
-                        }
-                        finally
-                        {
-                            if (Logging.IsEnabled)
-                            {
-                                Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
-                            }
-                        }
-                    },
-                    cts.Token)
-                .ConfigureAwait(false);
+                        },
+                    cts.Token);
+            }
+            catch (IotHubException ex)
+            {
+                HandleConnectionStatusExceptions(ex);
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, timeoutHelper, nameof(OpenInternalAsync));
+                }
+            }
         }
 
         private async Task HandleDisconnectAsync()
