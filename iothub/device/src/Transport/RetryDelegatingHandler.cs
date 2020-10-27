@@ -813,35 +813,34 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private Task OpenInternalAsync(CancellationToken cancellationToken)
         {
-            return _internalRetryPolicy
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, cancellationToken, nameof(OpenInternalAsync));
+            }
+            try
+            {
+                return _internalRetryPolicy
                 .ExecuteAsync(
                     async () =>
                     {
-                        try
-                        {
-                            if (Logging.IsEnabled)
-                            {
-                                Logging.Enter(this, cancellationToken, nameof(OpenAsync));
-                            }
-
-                            // Will throw on error.
-                            await base.OpenAsync(cancellationToken).ConfigureAwait(false);
-                            _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
-                        }
-                        catch (IotHubException ex)
-                        {
-                            HandleConnectionStatusExceptions(ex);
-                            throw;
-                        }
-                        finally
-                        {
-                            if (Logging.IsEnabled)
-                            {
-                                Logging.Exit(this, cancellationToken, nameof(OpenAsync));
-                            }
-                        }
+                        // Will throw on error.
+                        await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                        _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
                     },
                     cancellationToken);
+            }
+            catch (IotHubException ex)
+            {
+                HandleConnectionStatusExceptions(ex);
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                }
+            }
         }
 
         private async Task OpenInternalAsync(TimeoutHelper timeoutHelper)
