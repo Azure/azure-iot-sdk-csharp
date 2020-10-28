@@ -13,6 +13,12 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices
 {
+    internal enum StreamDisposalOwnership
+    {
+        User,
+        Library
+    }
+
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
@@ -22,7 +28,7 @@ namespace Microsoft.Azure.Devices
         private volatile Stream _bodyStream;
         private AmqpMessage _serializedAmqpMessage;
         private bool _disposed;
-        private bool _ownsBodyStream;
+        private StreamDisposalOwnership _streamDisposalOwnership;
         private int _getBodyCalled;
         private long _sizeInBytesCalled;
 
@@ -34,7 +40,7 @@ namespace Microsoft.Azure.Devices
         {
             Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
-            InitializeWithStream(Stream.Null, true);
+            InitializeWithStream(Stream.Null, StreamDisposalOwnership.Library);
             _serializedAmqpMessage = null;
 
             if (setDefaultMessageId)
@@ -55,7 +61,7 @@ namespace Microsoft.Azure.Devices
         {
             if (stream != null)
             {
-                InitializeWithStream(stream, false);
+                InitializeWithStream(stream, StreamDisposalOwnership.User);
             }
         }
 
@@ -68,8 +74,8 @@ namespace Microsoft.Azure.Devices
         public Message(byte[] byteArray, bool setDefaultMessageId = false)
             : this(new MemoryStream(byteArray), setDefaultMessageId)
         {
-            // reset the owning of the steams
-            _ownsBodyStream = true;
+            // Reset the owning of the stream.
+            _streamDisposalOwnership = StreamDisposalOwnership.Library;
         }
 
         /// <summary>
@@ -87,19 +93,19 @@ namespace Microsoft.Azure.Devices
 
             MessageConverter.UpdateMessageHeaderAndProperties(amqpMessage, this);
             Stream stream = amqpMessage.BodyStream;
-            InitializeWithStream(stream, true);
+            InitializeWithStream(stream, StreamDisposalOwnership.Library);
         }
 
         /// <summary>
         /// This constructor is only used on the Gateway http path so that we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
-        /// <param name="ownStream">A flag indicating that the client library will dispose the stream when the Message is disposed.</param>
+        /// <param name="streamDisposalOwnership">Indicates if the stream passed in should be disposed by the client library, or by the user.</param>
         /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
-        internal Message(Stream stream, bool ownStream, bool setDefaultMessageId = false)
+        internal Message(Stream stream, StreamDisposalOwnership streamDisposalOwnership, bool setDefaultMessageId = false)
             : this(stream, setDefaultMessageId)
         {
-            _ownsBodyStream = ownStream;
+            _streamDisposalOwnership = streamDisposalOwnership;
         }
 
         /// <summary>
@@ -325,7 +331,7 @@ namespace Microsoft.Azure.Devices
                 // The new Message always owns the cloned stream.
                 message = new Message(CloneStream(_bodyStream))
                 {
-                    _ownsBodyStream = true
+                    _streamDisposalOwnership = StreamDisposalOwnership.Library
                 };
             }
 
@@ -462,12 +468,12 @@ namespace Microsoft.Azure.Devices
             Interlocked.Exchange(ref _sizeInBytesCalled, 1);
         }
 
-        private void InitializeWithStream(Stream stream, bool ownsStream)
+        private void InitializeWithStream(Stream stream, StreamDisposalOwnership streamDisposalOwnership)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
             _bodyStream = stream;
-            _ownsBodyStream = ownsStream;
+            _streamDisposalOwnership = streamDisposalOwnership;
         }
 
         private static byte[] ReadFullStream(Stream inputStream)
@@ -540,7 +546,7 @@ namespace Microsoft.Azure.Devices
                         _serializedAmqpMessage = null;
                         _bodyStream = null;
                     }
-                    else if (_bodyStream != null && _ownsBodyStream)
+                    else if (_bodyStream != null && _streamDisposalOwnership == StreamDisposalOwnership.Library)
                     {
                         _bodyStream.Dispose();
                         _bodyStream = null;

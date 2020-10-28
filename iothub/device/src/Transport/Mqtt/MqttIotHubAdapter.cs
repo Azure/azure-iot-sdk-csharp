@@ -782,7 +782,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 var bodyStream = new ReadOnlyByteBufferStream(publish.Payload, true);
 
-                message = new Message(bodyStream, ownStream: true);
+                message = new Message(bodyStream, StreamDisposalOwnership.Library);
 
                 PopulateMessagePropertiesFromPacket(message, publish);
 
