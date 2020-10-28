@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices
 
             timeout ??= OperationTimeout;
 
-            using var amqpMessage = message.ToAmqpMessage();
+            using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
 
             try
@@ -146,7 +146,17 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
             {
                 Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+                // In case of an exception we need to reset the GetBodyCalled property,
+                // so that the send operation can be attempted for the same message again.
+                message.ResetGetBodyCalled();
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
+            }
+            catch (Exception)
+            {
+                // In case of an exception we need to reset the GetBodyCalled property,
+                // so that the send operation can be attempted for the same message again.
+                message.ResetGetBodyCalled();
+                throw;
             }
             finally
             {
@@ -319,7 +329,7 @@ namespace Microsoft.Azure.Devices
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
-            using var amqpMessage = message.ToAmqpMessage();
+            using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
             try
             {
@@ -342,7 +352,18 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex) when (!ex.IsFatal())
             {
                 Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+
+                // In case of an exception we need to reset the GetBodyCalled property,
+                // so that the send operation can be attempted for the same message again.
+                message.ResetGetBodyCalled();
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
+            }
+            catch (Exception)
+            {
+                // In case of an exception we need to reset the GetBodyCalled property,
+                // so that the send operation can be attempted for the same message again.
+                message.ResetGetBodyCalled();
+                throw;
             }
             finally
             {
