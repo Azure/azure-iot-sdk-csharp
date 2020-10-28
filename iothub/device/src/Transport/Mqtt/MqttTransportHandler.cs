@@ -994,6 +994,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
@@ -1001,14 +1006,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinPatchTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, cancellationToken, nameof(EnableTwinPatchAsync));
+            }
         }
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
             await _channel.WriteAsync(new UnsubscribePacket(0, TwinPatchTopicFilter)).ConfigureAwait(true);
+
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
+            }
         }
 
         private bool ParseResponseTopic(string topicName, out string rid, out Int32 status)
