@@ -114,6 +114,7 @@
     <Compile Include="$(Common)\service\Utils.cs">
       <Link>Common\Utils.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
   </ItemGroup>
 
   <ItemGroup>

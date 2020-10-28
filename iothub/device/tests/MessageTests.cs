@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Text;
     using FluentAssertions;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -136,16 +137,16 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DisposingOwnedStreamTest()
         {
-            // Library should dispose the stream.
+            // SDK should dispose the stream.
             var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            var msg = new Message(ms, StreamDisposalOwnership.Library);
+            var msg = new Message(ms, StreamDisposalResponsibility.Sdk);
             msg.Dispose();
 
             TestAssert.Throws<ObjectDisposedException>(() => ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5));
 
-            // User will dispose the stream.
+            // The calling application will dispose the stream.
             ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            msg = new Message(ms, StreamDisposalOwnership.User);
+            msg = new Message(ms, StreamDisposalResponsibility.App);
             msg.Dispose();
 
             ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5);
@@ -173,13 +174,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             string contentEncoding = "gzip";
             string contentType = "text/plain";
             string userId = "JohnDoe";
+            string messageId = Guid.NewGuid().ToString();
             string propName1 = "test1";
             string propValue1 = "test_v_1";
             string propName2 = "test2";
             string propValue2 = "test_v_2";
             string originalMessageContent = "Original copy";
-            using var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent), setDefaultMessageId: true)
+            using var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
             {
+                MessageId = messageId,
                 ContentEncoding = contentEncoding,
                 ContentType = contentType,
                 UserId = userId,
@@ -201,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             clonedMessage.ContentEncoding.Should().Be(contentEncoding, "Cloned message should have the original message's system properties.");
             clonedMessage.ContentType.Should().Be(contentType, "Cloned message should have the original message's system properties.");
             clonedMessage.UserId.Should().Be(userId, "Cloned message should have the original message's system properties.");
-            clonedMessage.MessageId.Should().Be(originalMessage.MessageId, "Cloned message should have the original message's system properties.");
+            clonedMessage.MessageId.Should().Be(messageId, "Cloned message should have the original message's system properties.");
 
             using var originalContentReader = new StreamReader(originalMessage.BodyStream, Encoding.UTF8);
             string originalContent = originalContentReader.ReadToEnd();
@@ -216,20 +219,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string contentEncoding = "gzip";
-            string contentType = null;
             string propName1 = "test1";
             string propValue1 = "test_v_1";
             string propName2 = "test2";
-            string propValue2 = null;
             string originalMessageContent = "Original copy";
             using var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
             {
                 ContentEncoding = contentEncoding,
-                ContentType = contentType,
+                ContentType = null,
                 Properties =
                 {
                     { propName1, propValue1 },
-                    { propName2, propValue2 },
+                    { propName2, null },
                 },
             };
 
@@ -240,66 +241,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             clonedMessage.Properties.Count.Should().Be(2);
             clonedMessage.Properties[propName1].Should().Be(propValue1, "Cloned message should have the original message's properties.");
-            clonedMessage.Properties[propName2].Should().Be(propValue2, "Cloned message should have the original message's properties.");
+            clonedMessage.Properties[propName2].Should().BeNull("Cloned message should have the original message's properties.");
             clonedMessage.ContentEncoding.Should().Be(contentEncoding, "Cloned message should have the original message's system properties.");
             clonedMessage.SystemProperties.Keys.Should().Contain(MessageSystemPropertyNames.ContentType);
-            clonedMessage.ContentType.Should().Be(contentType, "Cloned message should have the original message's system properties.");
-            clonedMessage.MessageId.Should().Be(originalMessage.MessageId, "Cloned message should have the original message's system properties.");
-        }
-
-        [TestMethod]
-        public void MessageDoesNotSetMessageIdByDefault()
-        {
-            // arrange
-            string messageText = "test message";
-            byte[] messageByteArray = Encoding.UTF8.GetBytes(messageText);
-            using var ms = new MemoryStream(messageByteArray);
-
-            // act
-            using var emptyBodyMessage = new Message();
-            using var byteBodyMessage = new Message(messageByteArray);
-            using var streamMessage = new Message(ms);
-            using var libraryManagedStreamMessage = new Message(ms, StreamDisposalOwnership.Library);
-
-            // assert
-            emptyBodyMessage.MessageId.Should().BeNull();
-            byteBodyMessage.MessageId.Should().BeNull();
-            streamMessage.MessageId.Should().BeNull();
-            libraryManagedStreamMessage.MessageId.Should().BeNull();
-        }
-
-        [TestMethod]
-        public void MessageSetMessageIdBasedOnCtorParams()
-        {
-            // arrange
-            string messageText = "test message";
-            byte[] messageByteArray = Encoding.UTF8.GetBytes(messageText);
-            using var ms = new MemoryStream(messageByteArray);
-
-            // act
-            using var emptyBodyMessage = new Message(true);
-            using var byteBodyMessage = new Message(messageByteArray, true);
-            using var streamMessage = new Message(ms, true);
-            using var libraryManagedStreamMessage = new Message(ms, StreamDisposalOwnership.Library, true);
-
-            // assert
-            emptyBodyMessage.MessageId.Should().NotBeNullOrEmpty();
-            byteBodyMessage.MessageId.Should().NotBeNullOrEmpty();
-            streamMessage.MessageId.Should().NotBeNullOrEmpty();
-            libraryManagedStreamMessage.MessageId.Should().NotBeNullOrEmpty();
-        }
-
-        [TestMethod]
-        public void MessageShouldAllowMessageIdToBeUserSettable()
-        {
-            string messageId = Guid.NewGuid().ToString();
-            using var message = new Message(Encoding.UTF8.GetBytes("test message"))
-            {
-                MessageId = messageId,
-            };
-
-            message.MessageId.Should().NotBeNullOrEmpty();
-            message.MessageId.Should().Be(messageId, "MessageId should have the value set by user.");
+            clonedMessage.ContentType.Should().BeNull("Cloned message should have the original message's system properties.");
+            clonedMessage.MessageId.Should().BeNull("Cloned message should have the original message's system properties.");
         }
     }
 }

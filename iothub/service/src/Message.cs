@@ -6,19 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
-
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
 {
-    internal enum StreamDisposalOwnership
-    {
-        User,
-        Library
-    }
-
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
@@ -28,26 +22,19 @@ namespace Microsoft.Azure.Devices
         private volatile Stream _bodyStream;
         private AmqpMessage _serializedAmqpMessage;
         private bool _disposed;
-        private StreamDisposalOwnership _streamDisposalOwnership;
+        private StreamDisposalResponsibility _streamDisposalResponsibility;
         private int _getBodyCalled;
         private long _sizeInBytesCalled;
 
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
-        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
-        public Message(bool setDefaultMessageId = false)
+        public Message()
         {
             Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
-            InitializeWithStream(Stream.Null, StreamDisposalOwnership.Library);
+            InitializeWithStream(Stream.Null, StreamDisposalResponsibility.Sdk);
             _serializedAmqpMessage = null;
-
-            if (setDefaultMessageId)
-            {
-                // Set the default value for MessageId.
-                SystemProperties[MessageSystemPropertyNames.MessageId] = Guid.NewGuid().ToString();
-            }
         }
 
         /// <summary>
@@ -55,13 +42,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <remarks>User is expected to own the disposing of the stream when using this constructor.</remarks>
         /// <param name="stream">a stream which will be used as body stream.</param>
-        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
-        public Message(Stream stream, bool setDefaultMessageId = false)
-            : this(setDefaultMessageId)
+        public Message(Stream stream)
+            : this()
         {
             if (stream != null)
             {
-                InitializeWithStream(stream, StreamDisposalOwnership.User);
+                InitializeWithStream(stream, StreamDisposalResponsibility.App);
             }
         }
 
@@ -70,21 +56,19 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
         /// <param name="byteArray">A byte array which will be used to form the body stream.</param>
-        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
-        public Message(byte[] byteArray, bool setDefaultMessageId = false)
-            : this(new MemoryStream(byteArray), setDefaultMessageId)
+        public Message(byte[] byteArray)
+            : this(new MemoryStream(byteArray))
         {
             // Reset the owning of the stream.
-            _streamDisposalOwnership = StreamDisposalOwnership.Library;
+            _streamDisposalResponsibility = StreamDisposalResponsibility.Sdk;
         }
 
         /// <summary>
         /// This constructor is only used in the receive path from AMQP path, or in cloning from a Message that has serialized.
         /// </summary>
         /// <param name="amqpMessage">The AMQP message received, or the message to be cloned.</param>
-        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
-        internal Message(AmqpMessage amqpMessage, bool setDefaultMessageId = false)
-            : this(setDefaultMessageId)
+        internal Message(AmqpMessage amqpMessage)
+            : this()
         {
             if (amqpMessage == null)
             {
@@ -93,19 +77,18 @@ namespace Microsoft.Azure.Devices
 
             MessageConverter.UpdateMessageHeaderAndProperties(amqpMessage, this);
             Stream stream = amqpMessage.BodyStream;
-            InitializeWithStream(stream, StreamDisposalOwnership.Library);
+            InitializeWithStream(stream, StreamDisposalResponsibility.Sdk);
         }
 
         /// <summary>
         /// This constructor is only used on the Gateway http path so that we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
-        /// <param name="streamDisposalOwnership">Indicates if the stream passed in should be disposed by the client library, or by the user.</param>
-        /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
-        internal Message(Stream stream, StreamDisposalOwnership streamDisposalOwnership, bool setDefaultMessageId = false)
-            : this(stream, setDefaultMessageId)
+        /// <param name="streamDisposalResponsibility">Indicates if the stream passed in should be disposed by the client library, or by the calling application.</param>
+        internal Message(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
+            : this(stream)
         {
-            _streamDisposalOwnership = streamDisposalOwnership;
+            _streamDisposalResponsibility = streamDisposalResponsibility;
         }
 
         /// <summary>
@@ -331,7 +314,7 @@ namespace Microsoft.Azure.Devices
                 // The new Message always owns the cloned stream.
                 message = new Message(CloneStream(_bodyStream))
                 {
-                    _streamDisposalOwnership = StreamDisposalOwnership.Library
+                    _streamDisposalResponsibility = StreamDisposalResponsibility.Sdk
                 };
             }
 
@@ -468,12 +451,12 @@ namespace Microsoft.Azure.Devices
             Interlocked.Exchange(ref _sizeInBytesCalled, 1);
         }
 
-        private void InitializeWithStream(Stream stream, StreamDisposalOwnership streamDisposalOwnership)
+        private void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
             _bodyStream = stream;
-            _streamDisposalOwnership = streamDisposalOwnership;
+            _streamDisposalResponsibility = streamDisposalResponsibility;
         }
 
         private static byte[] ReadFullStream(Stream inputStream)
@@ -546,7 +529,7 @@ namespace Microsoft.Azure.Devices
                         _serializedAmqpMessage = null;
                         _bodyStream = null;
                     }
-                    else if (_bodyStream != null && _streamDisposalOwnership == StreamDisposalOwnership.Library)
+                    else if (_bodyStream != null && _streamDisposalResponsibility == StreamDisposalResponsibility.Sdk)
                     {
                         _bodyStream.Dispose();
                         _bodyStream = null;

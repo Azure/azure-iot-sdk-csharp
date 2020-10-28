@@ -33,10 +33,11 @@ namespace Microsoft.Azure.Devices
         private readonly AmqpFileNotificationReceiver _fileNotificationReceiver;
         private readonly IHttpClientHelper _httpClientHelper;
         private readonly string _iotHubName;
+        private readonly ServiceClientOptions _clientOptions;
 
         private int _sendingDeliveryTag;
 
-        public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
+        public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings, ServiceClientOptions options)
         {
             var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly, transportSettings);
             Connection = iotHubConnection;
@@ -47,6 +48,7 @@ namespace Microsoft.Azure.Devices
             _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
             _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
             _iotHubName = iotHubConnectionString.IotHubName;
+            _clientOptions = options;
             _httpClientHelper = new HttpClientHelper(
                 iotHubConnectionString.HttpsEndpoint,
                 iotHubConnectionString,
@@ -116,6 +118,12 @@ namespace Microsoft.Azure.Devices
             {
                 throw new ArgumentNullException(nameof(message));
             }
+
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
+            {
+                message.MessageId = Guid.NewGuid().ToString();
+            }
+
             timeout ??= OperationTimeout;
 
             using var amqpMessage = message.ToAmqpMessage();
@@ -304,6 +312,11 @@ namespace Microsoft.Azure.Devices
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
+            }
+
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
+            {
+                message.MessageId = Guid.NewGuid().ToString();
             }
 
             using var amqpMessage = message.ToAmqpMessage();
