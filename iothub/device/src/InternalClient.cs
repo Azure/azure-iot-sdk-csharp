@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
-        private readonly SemaphoreSlim _twinSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new SemaphoreSlim(1, 1);
         private readonly ProductInfo _productInfo = new ProductInfo();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly ITransportSettings[] _transportSettings;
@@ -1104,13 +1104,10 @@ namespace Microsoft.Azure.Devices.Client
             // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
             // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
 
-            // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
-            }
+            Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
 
-            await _twinSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
+            await _twinDesiredPropertySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -1136,25 +1133,18 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    _twinSemaphore.Release();
+                    _twinDesiredPropertySemaphore.Release();
                 }
                 catch (SemaphoreFullException)
                 {
                     // this semaphore is typically grabbed at the start of the method, but if
                     // this method is canceled while waiting to grab the semaphore, then this semaphore.release
                     // will throw this SemaphoreFullException since it was never grabbed in the first place
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.Info(this, "SemaphoreFullException thrown while releasing" +
-                        " message receiving semaphore, but will be ignored since that means the semaphore" +
-                        " is available for other threads to grab again anyways");
-                    }
+                    Logging.Info(this, "SemaphoreFullException thrown while releasing" +
+                    " message receiving semaphore, but will be ignored since that means the semaphore" +
+                    " is available for other threads to grab again anyways");
                 }
-
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
-                }
+                Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
             }
         }
 
