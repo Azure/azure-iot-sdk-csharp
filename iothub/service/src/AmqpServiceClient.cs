@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
             {
-                Logging.Error(this, $"SendAsync threw an exception: {ex}", nameof(SendAsync));
+                Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"PurgeMessageQueueAsync threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
+                Logging.Error(this, $"{nameof(PurgeMessageQueueAsync)} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
                 throw;
             }
             finally
