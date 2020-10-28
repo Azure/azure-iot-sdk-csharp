@@ -136,16 +136,16 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DisposingOwnedStreamTest()
         {
-            // ownStream = true
+            // Library should dispose the stream.
             var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            var msg = new Message(ms, ownStream: true);
+            var msg = new Message(ms, StreamDisposalOwnership.Library);
             msg.Dispose();
 
             TestAssert.Throws<ObjectDisposedException>(() => ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5));
 
-            // ownStream = false
+            // User will dispose the stream.
             ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            msg = new Message(ms, ownStream: false);
+            msg = new Message(ms, StreamDisposalOwnership.User);
             msg.Dispose();
 
             ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5);
@@ -183,18 +183,21 @@ namespace Microsoft.Azure.Devices.Client.Test
                 ContentEncoding = contentEncoding,
                 ContentType = contentType,
                 UserId = userId,
+                Properties =
+                {
+                    { propName1, propValue1 },
+                    { propName2, propValue2 },
+                },
             };
-            originalMessage.Properties[propName1] = propValue1;
-            originalMessage.Properties[propName2] = propValue2;
 
             // act
             string clonedMessageContent = "Cloned version";
             using var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
 
             // assert
+            clonedMessage.Properties.Count.Should().Be(2);
             clonedMessage.Properties[propName1].Should().Be(propValue1, "Cloned message should have the original message's properties.");
             clonedMessage.Properties[propName2].Should().Be(propValue2, "Cloned message should have the original message's properties.");
-            clonedMessage.Properties.Count.Should().Be(2);
             clonedMessage.ContentEncoding.Should().Be(contentEncoding, "Cloned message should have the original message's system properties.");
             clonedMessage.ContentType.Should().Be(contentType, "Cloned message should have the original message's system properties.");
             clonedMessage.UserId.Should().Be(userId, "Cloned message should have the original message's system properties.");
@@ -223,18 +226,21 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 ContentEncoding = contentEncoding,
                 ContentType = contentType,
+                Properties =
+                {
+                    { propName1, propValue1 },
+                    { propName2, propValue2 },
+                },
             };
-            originalMessage.Properties[propName1] = propValue1;
-            originalMessage.Properties[propName2] = propValue2;
 
             // act
             string clonedMessageContent = "Cloned version";
             using var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
 
             // assert
+            clonedMessage.Properties.Count.Should().Be(2);
             clonedMessage.Properties[propName1].Should().Be(propValue1, "Cloned message should have the original message's properties.");
             clonedMessage.Properties[propName2].Should().Be(propValue2, "Cloned message should have the original message's properties.");
-            clonedMessage.Properties.Count.Should().Be(2);
             clonedMessage.ContentEncoding.Should().Be(contentEncoding, "Cloned message should have the original message's system properties.");
             clonedMessage.SystemProperties.Keys.Should().Contain(MessageSystemPropertyNames.ContentType);
             clonedMessage.ContentType.Should().Be(contentType, "Cloned message should have the original message's system properties.");
@@ -253,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var emptyBodyMessage = new Message();
             using var byteBodyMessage = new Message(messageByteArray);
             using var streamMessage = new Message(ms);
-            using var libraryManagedStreamMessage = new Message(ms, ownStream: true);
+            using var libraryManagedStreamMessage = new Message(ms, StreamDisposalOwnership.Library);
 
             // assert
             emptyBodyMessage.MessageId.Should().BeNull();
@@ -271,10 +277,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var ms = new MemoryStream(messageByteArray);
 
             // act
-            using var emptyBodyMessage = new Message(setDefaultMessageId: true);
-            using var byteBodyMessage = new Message(messageByteArray, setDefaultMessageId: true);
-            using var streamMessage = new Message(ms, setDefaultMessageId: true);
-            using var libraryManagedStreamMessage = new Message(ms, ownStream: true, setDefaultMessageId: true);
+            using var emptyBodyMessage = new Message(true);
+            using var byteBodyMessage = new Message(messageByteArray, true);
+            using var streamMessage = new Message(ms, true);
+            using var libraryManagedStreamMessage = new Message(ms, StreamDisposalOwnership.Library, true);
 
             // assert
             emptyBodyMessage.MessageId.Should().NotBeNullOrEmpty();

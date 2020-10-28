@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw Fx.Exception.ArgumentNull(nameof(AmqpMessage));
             }
             Stream stream = amqpMessage.BodyStream;
-            Message message = new Message(stream, ownStream: true);
+            Message message = new Message(stream, StreamDisposalOwnership.Library);
             UpdateMessageHeaderAndProperties(amqpMessage, message);
             return message;
         }

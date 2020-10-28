@@ -10,6 +10,12 @@ using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client
 {
+    internal enum StreamDisposalOwnership
+    {
+        User,
+        Library
+    }
+
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
@@ -17,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         private volatile Stream _bodyStream;
         private bool _disposed;
-        private bool _ownsBodyStream;
+        private StreamDisposalOwnership _streamDisposalOwnership;
 
         private const long StreamCannotSeek = -1;
         private long _originalStreamPosition = StreamCannotSeek;
@@ -33,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
-            InitializeWithStream(Stream.Null, true);
+            InitializeWithStream(Stream.Null, StreamDisposalOwnership.Library);
 
             if (setDefaultMessageId)
             {
@@ -54,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (stream != null)
             {
-                InitializeWithStream(stream, false);
+                InitializeWithStream(stream, StreamDisposalOwnership.User);
             }
         }
 
@@ -67,8 +73,8 @@ namespace Microsoft.Azure.Devices.Client
         public Message(byte[] byteArray, bool setDefaultMessageId = false)
             : this(new MemoryStream(byteArray), setDefaultMessageId)
         {
-            // reset the owning of the streams
-            _ownsBodyStream = true;
+            // Reset the owning of the stream
+            _streamDisposalOwnership = StreamDisposalOwnership.Library;
         }
 
         /// <summary>
@@ -76,12 +82,12 @@ namespace Microsoft.Azure.Devices.Client
         /// we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
-        /// <param name="ownStream">A flag indicating that the client library will dispose the stream when the Message is disposed.</param>
+        /// <param name="streamDisposalOwnership">Indicates if the stream passed in should be disposed by the client library, or by the user.</param>
         /// <param name="setDefaultMessageId">A flag indicating if the MessageId should be set to a random GUID.</param>
-        internal Message(Stream stream, bool ownStream, bool setDefaultMessageId = false)
+        internal Message(Stream stream, StreamDisposalOwnership streamDisposalOwnership, bool setDefaultMessageId = false)
             : this(stream, setDefaultMessageId)
         {
-            _ownsBodyStream = ownStream;
+            _streamDisposalOwnership = streamDisposalOwnership;
         }
 
         /// <summary>
@@ -403,12 +409,12 @@ namespace Microsoft.Azure.Devices.Client
             Interlocked.Exchange(ref _sizeInBytesCalled, 1);
         }
 
-        private void InitializeWithStream(Stream stream, bool ownsStream)
+        private void InitializeWithStream(Stream stream, StreamDisposalOwnership streamDisposalOwnership)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
             _bodyStream = stream;
-            _ownsBodyStream = ownsStream;
+            _streamDisposalOwnership = streamDisposalOwnership;
 
             if (_bodyStream.CanSeek)
             {
@@ -449,7 +455,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-                    if (_bodyStream != null && _ownsBodyStream)
+                    if (_bodyStream != null && _streamDisposalOwnership == StreamDisposalOwnership.Library)
                     {
                         _bodyStream.Dispose();
                         _bodyStream = null;
