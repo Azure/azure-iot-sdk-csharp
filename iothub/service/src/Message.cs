@@ -24,9 +24,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class Message : IDisposable, IReadOnlyIndicator
     {
-        private readonly SemaphoreSlim _amqpMessageSemaphore = new SemaphoreSlim(1, 1);
         private volatile Stream _bodyStream;
-        private AmqpMessage _serializedAmqpMessage;
         private bool _disposed;
         private StreamDisposalOwnership _streamDisposalOwnership;
         private int _getBodyCalled;
@@ -41,7 +39,6 @@ namespace Microsoft.Azure.Devices
             Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             InitializeWithStream(Stream.Null, StreamDisposalOwnership.Library);
-            _serializedAmqpMessage = null;
 
             if (setDefaultMessageId)
             {
@@ -97,7 +94,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// This constructor is only used on the Gateway http path so that we can clean up the stream.
+        /// This constructor is only used on the Gateway HTTP path so that we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
         /// <param name="streamDisposalOwnership">Indicates if the stream passed in should be disposed by the client library, or by the user.</param>
@@ -291,20 +288,9 @@ namespace Microsoft.Azure.Devices
 
         internal Stream BodyStream => _bodyStream;
 
-        internal AmqpMessage SerializedAmqpMessage
+        internal bool HasBodyStream()
         {
-            get
-            {
-                try
-                {
-                    _amqpMessageSemaphore.Wait();
-                    return _serializedAmqpMessage;
-                }
-                finally
-                {
-                    _amqpMessageSemaphore.Release();
-                }
-            }
+            return _bodyStream != null;
         }
 
         /// <summary>
@@ -320,10 +306,6 @@ namespace Microsoft.Azure.Devices
         public Message Clone()
         {
             ThrowIfDisposed();
-            if (_serializedAmqpMessage != null)
-            {
-                return new Message(_serializedAmqpMessage);
-            }
 
             var message = new Message();
             if (_bodyStream != null)
@@ -409,43 +391,8 @@ namespace Microsoft.Azure.Devices
             return ReadFullStream(_bodyStream);
         }
 
-        internal AmqpMessage ToAmqpMessage(bool setBodyCalled = true)
-        {
-            ThrowIfDisposed();
-            if (_serializedAmqpMessage == null)
-            {
-                try
-                {
-                    _amqpMessageSemaphore.Wait();
-                    if (_serializedAmqpMessage == null)
-                    {
-                        // Interlocked exchange two variable does allow for a small period
-                        // where one is set while the other is not. Not sure if it is worth
-                        // correct this gap. The intention of setting this two variable is
-                        // so that GetBody should not be called and all Properties are
-                        // readonly because the amqpMessage has been serialized.
-                        if (setBodyCalled)
-                        {
-                            SetGetBodyCalled();
-                        }
-
-                        SetSizeInBytesCalled();
-                        _serializedAmqpMessage = _bodyStream == null
-                            ? AmqpMessage.Create()
-                            : AmqpMessage.Create(_bodyStream, false);
-                        _serializedAmqpMessage = PopulateAmqpMessageForSend(_serializedAmqpMessage);
-                    }
-                }
-                finally
-                {
-                    _amqpMessageSemaphore.Release();
-                }
-            }
-
-            return _serializedAmqpMessage;
-        }
-
-        // Test hook only
+        // The Message body stream needs to be reset if the send operation failed.
+        // This will ensure that the send operation can be attempted for the same message again.
         internal void ResetGetBodyCalled()
         {
             Interlocked.Exchange(ref _getBodyCalled, 0);
@@ -522,7 +469,7 @@ namespace Microsoft.Azure.Devices
                 : default;
         }
 
-        private void ThrowIfDisposed()
+        internal void ThrowIfDisposed()
         {
             if (_disposed)
             {
@@ -536,23 +483,11 @@ namespace Microsoft.Azure.Devices
             {
                 if (disposing)
                 {
-                    if (_serializedAmqpMessage != null)
-                    {
-                        // in the receive scenario, this.bodyStream is a reference
-                        // to serializedAmqpMessage.BodyStream, and we assume disposing
-                        // the amqpMessage will dispose the body stream so we don't
-                        // need to dispose bodyStream twice.
-                        _serializedAmqpMessage.Dispose();
-                        _serializedAmqpMessage = null;
-                        _bodyStream = null;
-                    }
-                    else if (_bodyStream != null && _streamDisposalOwnership == StreamDisposalOwnership.Library)
+                    if (_bodyStream != null && _streamDisposalOwnership == StreamDisposalOwnership.Library)
                     {
                         _bodyStream.Dispose();
                         _bodyStream = null;
                     }
-
-                    _amqpMessageSemaphore?.Dispose();
                 }
 
                 _disposed = true;
