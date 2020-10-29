@@ -33,7 +33,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         transportSetting as AmqpTransportSettings,
                         new Func<MethodRequestInternal, Task>(onMethodCallback),
                         onDesiredStatePatchReceived,
-                        new Func<string, Message, Task>(onModuleEventReceivedCallback));
+                        new Func<string, Message, Task>(onModuleEventReceivedCallback),
+                        new Func<Message, Task>(onDeviceMessageReceivedCallback));
 
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
