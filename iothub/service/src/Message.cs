@@ -24,6 +24,9 @@ namespace Microsoft.Azure.Devices
         private int _getBodyCalled;
         private long _sizeInBytesCalled;
 
+        private const long StreamCannotSeek = -1;
+        private long _originalStreamPosition = StreamCannotSeek;
+
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
@@ -374,16 +377,22 @@ namespace Microsoft.Azure.Devices
             return ReadFullStream(_bodyStream);
         }
 
-        // The Message body stream needs to be reset if the send operation failed.
-        // This will ensure that the send operation can be attempted for the same message again.
-        internal void ResetGetBodyCalled()
+        // The Message body stream needs to be reset if the send operation is to be attempted for the same message.
+        internal void ResetBody()
         {
-            Interlocked.Exchange(ref _getBodyCalled, 0);
+            if (_originalStreamPosition == StreamCannotSeek)
+            {
+                throw new IOException("Stream cannot seek.");
+            }
+
             if (_bodyStream != null && _bodyStream.CanSeek)
             {
-                _bodyStream.Seek(0, SeekOrigin.Begin);
+                _bodyStream.Seek(_originalStreamPosition, SeekOrigin.Begin);
             }
+            Interlocked.Exchange(ref _getBodyCalled, 0);
         }
+
+        internal bool IsBodyCalled => Volatile.Read(ref _getBodyCalled) == 1;
 
         private void SetGetBodyCalled()
         {
@@ -404,6 +413,11 @@ namespace Microsoft.Azure.Devices
             // this has no locking on the bodyStream.
             _bodyStream = stream;
             _streamDisposalResponsibility = streamDisposalResponsibility;
+
+            if (_bodyStream.CanSeek)
+            {
+                _originalStreamPosition = _bodyStream.Position;
+            }
         }
 
         private static byte[] ReadFullStream(Stream inputStream)
@@ -471,8 +485,6 @@ namespace Microsoft.Azure.Devices
                         _bodyStream.Dispose();
                         _bodyStream = null;
                     }
-
-                    _amqpMessageSemaphore?.Dispose();
                 }
 
                 _disposed = true;
