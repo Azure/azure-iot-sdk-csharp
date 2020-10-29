@@ -17,9 +17,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
-            Func<MethodRequestInternal, Task> methodHandler,
+            Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection> twinMessageListener,
-            Func<string, Message, Task> eventListener,
+            Func<string, Message, Task> onModuleMessageReceivedCallback,
+            Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
             if (Logging.IsEnabled)
@@ -41,7 +42,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
                 }
 
-                return amqpConnectionHolder.CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener, onUnitDisconnected);
+                return amqpConnectionHolder.CreateAmqpUnit(
+                    deviceIdentity,
+                    onMethodCallback,
+                    twinMessageListener,
+                    onModuleMessageReceivedCallback,
+                    onDeviceMessageReceivedCallback,
+                    onUnitDisconnected);
             }
             else
             {
@@ -50,7 +57,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
                 }
 
-                return new AmqpConnectionHolder(deviceIdentity).CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener, onUnitDisconnected);
+                return new AmqpConnectionHolder(deviceIdentity)
+                    .CreateAmqpUnit(
+                        deviceIdentity,
+                        onMethodCallback,
+                        twinMessageListener,
+                        onModuleMessageReceivedCallback,
+                        onDeviceMessageReceivedCallback,
+                        onUnitDisconnected);
             }
         }
 

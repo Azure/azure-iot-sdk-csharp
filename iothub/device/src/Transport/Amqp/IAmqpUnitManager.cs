@@ -12,9 +12,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
-            Func<MethodRequestInternal, Task> methodHandler,
+            Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection> twinMessageListener,
-            Func<string, Message, Task> eventListener,
+            Func<string, Message, Task> onModuleMessageReceivedCallback,
+            Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected);
 
         void RemoveAmqpUnit(AmqpUnit amqpUnit);

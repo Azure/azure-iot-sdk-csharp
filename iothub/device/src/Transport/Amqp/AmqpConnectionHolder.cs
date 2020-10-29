@@ -35,9 +35,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
-            Func<MethodRequestInternal, Task> methodHandler,
+            Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection> twinMessageListener,
-            Func<string, Message, Task> eventListener,
+            Func<string, Message, Task> onModuleMessageReceivedCallback,
+            Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
             if (Logging.IsEnabled)
@@ -48,9 +49,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             var amqpUnit = new AmqpUnit(
                 deviceIdentity,
                 this,
-                methodHandler,
+                onMethodCallback,
                 twinMessageListener,
-                eventListener,
+                onModuleMessageReceivedCallback,
+                onDeviceMessageReceivedCallback,
                 onUnitDisconnected);
             lock (_unitsLock)
             {
