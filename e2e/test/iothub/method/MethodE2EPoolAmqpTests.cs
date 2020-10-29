@@ -225,13 +225,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Func<DeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
                 Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
-            };
+            }
 
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 await MethodE2ETests
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         MethodE2ETests.ServiceRequestJson,
                         Logger)
                     .ConfigureAwait(false);
-            };
+            }
 
             await PoolingOverAmqp
                 .TestPoolAmqpAsync(
@@ -250,8 +250,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     transport,
                     poolSize,
                     devicesCount,
-                    initOperation,
-                    testOperation,
+                    InitOperationAsync,
+                    TestOperationAsync,
                     null,
                     authScope,
                     true,

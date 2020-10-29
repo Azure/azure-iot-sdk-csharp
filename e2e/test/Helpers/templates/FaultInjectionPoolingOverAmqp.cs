@@ -24,8 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string reason,
             int delayInSec,
             int durationInSec,
-            Func<DeviceClient, TestDevice, Task> initOperation,
-            Func<DeviceClient, TestDevice, Task> testOperation,
+            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
+            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<IList<DeviceClient>, Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
@@ -45,6 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             IList<TestDevice> testDevices = new List<TestDevice>();
             IList<DeviceClient> deviceClients = new List<DeviceClient>();
+            IList<TestDeviceCallbackHandler> testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
             IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
             IList<Task> operations = new List<Task>();
 
@@ -60,11 +61,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevice.Id, logger);
                 deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
 
+                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
+
                 testDevices.Add(testDevice);
                 deviceClients.Add(deviceClient);
+                testDeviceCallbackHandlers.Add(testDeviceCallbackHandler);
                 amqpConnectionStatuses.Add(amqpConnectionStatusChange);
 
-                operations.Add(initOperation(deviceClient, testDevice));
+                operations.Add(initOperation(deviceClient, testDevice, testDeviceCallbackHandler));
             }
             await Task.WhenAll(operations).ConfigureAwait(false);
             operations.Clear();
@@ -80,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 for (int i = 0; i < devicesCount; i++)
                 {
                     logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing baseline operation for device {i}.");
-                    operations.Add(testOperation(deviceClients[i], testDevices[i]));
+                    operations.Add(testOperation(deviceClients[i], testDevices[i], testDeviceCallbackHandlers[i]));
                 }
                 await Task.WhenAll(operations).ConfigureAwait(false);
                 operations.Clear();
@@ -144,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     for (int i = 0; i < devicesCount; i++)
                     {
                         logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device {i}.");
-                        operations.Add(testOperation(deviceClients[i], testDevices[i]));
+                        operations.Add(testOperation(deviceClients[i], testDevices[i], testDeviceCallbackHandlers[i]));
                     }
                     await Task.WhenAll(operations).ConfigureAwait(false);
                     operations.Clear();
@@ -156,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     for (int i = 0; i < FaultInjection.LatencyTimeBufferInSec; i++)
                     {
                         logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {i}.");
-                        await testOperation(deviceClients[0], testDevices[0]).ConfigureAwait(false);
+                        await testOperation(deviceClients[0], testDevices[0], testDeviceCallbackHandlers[0]).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
                 }
