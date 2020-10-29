@@ -881,7 +881,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -890,9 +890,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-            };
+            }
 
-            Func<IList<DeviceClient>, Task> cleanupOperation = (deviceClients) =>
+            Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
             {
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
@@ -900,7 +900,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 return Task.FromResult(0);
-            };
+            }
 
             await FaultInjectionPoolingOverAmqp
                 .TestFaultInjectionPoolAmqpAsync(
@@ -913,9 +913,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     reason,
                     delayInSec,
                     durationInSec,
-                    (d, t) => { return Task.FromResult(false); },
-                    testOperation,
-                    cleanupOperation,
+                    (d, t, h) => { return Task.FromResult(false); },
+                    TestOperationAsync,
+                    CleanupOperationAsync,
                     authScope,
                     Logger)
                 .ConfigureAwait(false);

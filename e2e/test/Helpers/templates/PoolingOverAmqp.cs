@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, TestDevice, Task> initOperation,
-            Func<DeviceClient, TestDevice, Task> testOperation,
+            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
+            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             bool ignoreConnectionStatus,
@@ -49,6 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             IList<TestDevice> testDevices = new List<TestDevice>();
             IList<DeviceClient> deviceClients = new List<DeviceClient>();
+            IList<TestDeviceCallbackHandler> testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
             IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
             IList<Task> operations = new List<Task>();
 
@@ -68,13 +69,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     var amqpConnectionStatusChange = new AmqpConnectionStatusChange(logger);
                     deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
 
+                    var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
+
                     testDevices.Add(testDevice);
                     deviceClients.Add(deviceClient);
+                    testDeviceCallbackHandlers.Add(testDeviceCallbackHandler);
                     amqpConnectionStatuses.Add(amqpConnectionStatusChange);
 
                     if (initOperation != null)
                     {
-                        operations.Add(initOperation(deviceClient, testDevice));
+                        operations.Add(initOperation(deviceClient, testDevice, testDeviceCallbackHandler));
                     }
                 }
 
@@ -85,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     for (int i = 0; i < devicesCount; i++)
                     {
-                        operations.Add(testOperation(deviceClients[i], testDevices[i]));
+                        operations.Add(testOperation(deviceClients[i], testDevices[i], testDeviceCallbackHandlers[i]));
                     }
                     await Task.WhenAll(operations).ConfigureAwait(false);
                     operations.Clear();

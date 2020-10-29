@@ -423,7 +423,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
                 await serviceClient.OpenAsync().ConfigureAwait(false);
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
             }
 
