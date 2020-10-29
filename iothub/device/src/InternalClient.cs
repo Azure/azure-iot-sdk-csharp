@@ -1955,6 +1955,7 @@ namespace Microsoft.Azure.Devices.Client
             _moduleReceiveMessageSemaphore?.Dispose();
             _fileUploadHttpTransportHandler?.Dispose();
             _deviceReceiveMessageSemaphore?.Dispose();
+            _twinDesiredPropertySemaphore?.Dispose();
         }
 
         internal bool IsE2EDiagnosticSupportedProtocol()
