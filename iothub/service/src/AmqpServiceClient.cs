@@ -153,10 +153,6 @@ namespace Microsoft.Azure.Devices
                 Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
-            catch (Exception)
-            {
-                throw;
-            }
             finally
             {
                 Logging.Exit(this, $"Sending message [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
@@ -357,10 +353,6 @@ namespace Microsoft.Azure.Devices
             {
                 Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
-            }
-            catch (Exception)
-            {
-                throw;
             }
             finally
             {
