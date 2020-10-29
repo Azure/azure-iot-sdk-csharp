@@ -65,6 +65,7 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
   </ItemGroup>
 
   <!-- Net451 -->

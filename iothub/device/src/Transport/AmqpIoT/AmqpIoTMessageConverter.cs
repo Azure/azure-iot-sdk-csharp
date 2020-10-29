@@ -12,6 +12,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Common.Api;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
@@ -39,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw Fx.Exception.ArgumentNull(nameof(AmqpMessage));
             }
             Stream stream = amqpMessage.BodyStream;
-            Message message = new Message(stream, true);
+            Message message = new Message(stream, StreamDisposalResponsibility.Sdk);
             UpdateMessageHeaderAndProperties(amqpMessage, message);
             return message;
         }

@@ -113,6 +113,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly ProductInfo _productInfo = new ProductInfo();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly ITransportSettings[] _transportSettings;
+        private readonly ClientOptions _clientOptions;
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
@@ -155,6 +156,7 @@ namespace Microsoft.Azure.Devices.Client
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             IotHubConnectionString = iotHubConnectionString;
+            _clientOptions = options;
 
             var pipelineContext = new PipelineContext();
             pipelineContext.Set(transportSettings);
@@ -661,6 +663,11 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(message));
             }
 
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
+            {
+                message.MessageId = Guid.NewGuid().ToString();
+            }
+
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
             // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             try
@@ -702,6 +709,17 @@ namespace Microsoft.Azure.Devices.Client
             if (messages == null)
             {
                 throw new ArgumentNullException(nameof(messages));
+            }
+
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
+            {
+                foreach (Message message in messages)
+                {
+                    if (message.MessageId == null)
+                    {
+                        message.MessageId = Guid.NewGuid().ToString();
+                    }
+                }
             }
 
             // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]

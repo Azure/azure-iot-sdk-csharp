@@ -7,18 +7,27 @@ using System.Net;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// contains the AMQP and HTTP proxy settings for Service Client
+    /// The transport settings configurable on a service client instance.
     /// </summary>
     public sealed class ServiceClientTransportSettings
     {
+        /// <summary>
+        /// Creates an instance of <see cref="ServiceClientTransportSettings"/> with the default proxy settings.
+        /// </summary>
         public ServiceClientTransportSettings()
         {
             AmqpProxy = DefaultWebProxySettings.Instance;
             HttpProxy = DefaultWebProxySettings.Instance;
         }
 
+        /// <summary>
+        /// The proxy settings to be used on the AMQP client.
+        /// </summary>
         public IWebProxy AmqpProxy { get; set; }
 
+        /// <summary>
+        /// The proxy settings to be used on the HTTP client.
+        /// </summary>
         public IWebProxy HttpProxy { get; set; }
     }
 }

@@ -44,11 +44,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Create ServiceClient from the specified connection string
         /// </summary>
-        /// <param name="connectionString">Connection string for the iothub</param>
+        /// <param name="connectionString">Connection string for the IoT Hub</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
         /// <returns></returns>
-        public static ServiceClient CreateFromConnectionString(string connectionString)
+        public static ServiceClient CreateFromConnectionString(string connectionString, ServiceClientOptions options = default)
         {
-            return CreateFromConnectionString(connectionString, TransportType.Amqp);
+            return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
         }
 
         /// <inheritdoc />
@@ -67,26 +68,33 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Create ServiceClient from the specified connection string using specified Transport Type
         /// </summary>
-        /// <param name="connectionString">Connection string for the iothub</param>
-        /// <param name="transportType">Specifies whether Amqp or Amqp over Websocket transport is used</param>
+        /// <param name="connectionString">Connection string for the IoT Hub</param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
         /// <returns></returns>
-        public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType)
+        public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientOptions options = default)
         {
-            return CreateFromConnectionString(connectionString, transportType, new ServiceClientTransportSettings());
+            return CreateFromConnectionString(connectionString, transportType, new ServiceClientTransportSettings(), options);
         }
 
         /// <summary>
         /// Create ServiceClient from the specified connection string using specified Transport Type
         /// </summary>
-        /// <param name="connectionString">Connection string for the iothub</param>
-        /// <param name="transportType">Specifies whether Amqp or Amqp over Websocket transport is used</param>
+        /// <param name="connectionString">Connection string for the IoT Hub</param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used</param>
         /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
         /// <returns></returns>
-        public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings)
+        public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings, ServiceClientOptions options = default)
         {
+            if (transportSettings == null)
+            {
+                throw new ArgumentNullException(nameof(transportSettings));
+            }
+
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            bool useWebSocketOnly = (transportType == TransportType.Amqp_WebSocket_Only);
-            var serviceClient = new AmqpServiceClient(iotHubConnectionString, useWebSocketOnly, transportSettings);
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+            var serviceClient = new AmqpServiceClient(iotHubConnectionString, useWebSocketOnly, transportSettings, options);
             return serviceClient;
         }
 
