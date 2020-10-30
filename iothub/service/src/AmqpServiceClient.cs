@@ -124,9 +124,14 @@ namespace Microsoft.Azure.Devices
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
+            if (message.IsBodyCalled)
+            {
+                message.ResetBody();
+            }
+
             timeout ??= OperationTimeout;
 
-            using var amqpMessage = message.ToAmqpMessage();
+            using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
 
             try
@@ -319,7 +324,12 @@ namespace Microsoft.Azure.Devices
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
-            using var amqpMessage = message.ToAmqpMessage();
+            if (message.IsBodyCalled)
+            {
+                message.ResetBody();
+            }
+
+            using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
             try
             {

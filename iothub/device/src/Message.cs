@@ -64,8 +64,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// This constructor is only used on the Gateway http path so that
-        /// we can clean up the stream.
+        /// This constructor is only used on the Gateway HTTP path so that we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
         /// <param name="streamDisposalResponsibility">Indicates if the stream passed in should be disposed by the client library, or by the calling application.</param>
