@@ -18,19 +18,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         // If the first argument is set to true, we are disconnecting gracefully via CloseAsync.
         private readonly DeviceIdentity _deviceIdentity;
 
-        private readonly Func<MethodRequestInternal, Task> _methodHandler;
+        private readonly Func<MethodRequestInternal, Task> _onMethodCallback;
         private readonly Action<Twin, string, TwinCollection> _twinMessageListener;
-        private readonly Func<string, Message, Task> _eventListener;
+        private readonly Func<string, Message, Task> _onModuleMessageReceivedCallback;
+        private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
         private readonly Action _onUnitDisconnected;
         private volatile bool _disposed;
         private volatile bool _closed;
 
-        private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _sessionSemaphore = new SemaphoreSlim(1, 1);
 
         private AmqpIoTSendingLink _messageSendingLink;
         private AmqpIoTReceivingLink _messageReceivingLink;
         private readonly SemaphoreSlim _messageReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
+
+        private readonly SemaphoreSlim _messageReceivingCallbackSemaphore = new SemaphoreSlim(1, 1);
+        private bool _isDeviceReceiveMessageCallbackSet  = false;
 
         private AmqpIoTReceivingLink _eventReceivingLink;
         private readonly SemaphoreSlim _eventReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
@@ -49,22 +53,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public AmqpUnit(
             DeviceIdentity deviceIdentity,
             IAmqpConnectionHolder amqpConnectionHolder,
-            Func<MethodRequestInternal, Task> methodHandler,
+            Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection> twinMessageListener,
-            Func<string, Message, Task> eventListener,
+            Func<string, Message, Task> onModuleMessageReceivedCallback,
+            Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
             _deviceIdentity = deviceIdentity;
-            _methodHandler = methodHandler;
+            _onMethodCallback = onMethodCallback;
             _twinMessageListener = twinMessageListener;
-            _eventListener = eventListener;
+            _onModuleMessageReceivedCallback = onModuleMessageReceivedCallback;
+            _onDeviceMessageReceivedCallback = onDeviceMessageReceivedCallback;
             _amqpConnectionHolder = amqpConnectionHolder;
             _onUnitDisconnected = onUnitDisconnected;
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Associate(this, _deviceIdentity, $"{nameof(_deviceIdentity)}");
-            }
+            Logging.Associate(this, _deviceIdentity, nameof(_deviceIdentity));
         }
 
         internal DeviceIdentity GetDeviceIdentity()
@@ -76,10 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         public async Task OpenAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(OpenAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(OpenAsync));
 
             try
             {
@@ -88,10 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(OpenAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(OpenAsync));
             }
         }
 
@@ -102,15 +99,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw new IotHubException("Device is now offline.", false);
             }
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(EnsureSessionAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(EnsureSessionAsync));
 
-            bool gain = await _sessionLock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+            bool enteredSemaphore = await _sessionSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
             {
-                throw new TimeoutException();
+                throw new TimeoutException("Failed to enter the semaphore required for opening an AMQP session.");
             }
 
             try
@@ -120,18 +114,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     _amqpIoTSession?.SafeClose();
 
                     _amqpIoTSession = await _amqpConnectionHolder.OpenSessionAsync(_deviceIdentity, timeout).ConfigureAwait(false);
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.Associate(this, _amqpIoTSession, $"{nameof(_amqpIoTSession)}");
-                    }
+                    Logging.Associate(this, _amqpIoTSession, nameof(_amqpIoTSession));
 
                     if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
                     {
                         _amqpAuthenticationRefresher = await _amqpConnectionHolder.CreateRefresherAsync(_deviceIdentity, timeout).ConfigureAwait(false);
-                        if (Logging.IsEnabled)
-                        {
-                            Logging.Associate(this, _amqpAuthenticationRefresher, $"{nameof(_amqpAuthenticationRefresher)}");
-                        }
+                        Logging.Associate(this, _amqpAuthenticationRefresher, nameof(_amqpAuthenticationRefresher));
                     }
 
                     _amqpIoTSession.Closed += OnSessionDisconnected;
@@ -141,10 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         _amqpIoTSession.SafeClose();
                     };
 
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.Associate(this, _messageSendingLink, $"{nameof(_messageSendingLink)}");
-                    }
+                    Logging.Associate(this, _messageSendingLink, nameof(_messageSendingLink));
                 }
 
                 if (_disposed)
@@ -159,28 +144,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                _sessionLock.Release();
+                _sessionSemaphore.Release();
             }
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Exit(this, timeout, $"{nameof(EnsureSessionAsync)}");
-            }
+            Logging.Exit(this, timeout, nameof(EnsureSessionAsync));
 
             return _amqpIoTSession;
         }
 
         public async Task CloseAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(CloseAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(CloseAsync));
 
-            bool gain = await _sessionLock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+            bool enteredSemaphore = await _sessionSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
             {
-                throw new TimeoutException();
+                throw new TimeoutException("Failed to enter the semaphore required for closing an AMQP session.");
             }
 
             try
@@ -200,21 +179,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             finally
             {
                 _closed = true;
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(CloseAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(CloseAsync));
 
-                _sessionLock.Release();
+                _sessionSemaphore.Release();
             }
         }
 
         private void Cleanup()
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, $"{nameof(Cleanup)}");
-            }
+            Logging.Enter(this, nameof(Cleanup));
 
             _amqpIoTSession?.SafeClose();
             _amqpAuthenticationRefresher?.StopLoop();
@@ -223,33 +196,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 _amqpConnectionHolder?.Shutdown();
             }
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Exit(this, $"{nameof(Cleanup)}");
-            }
+            Logging.Exit(this, nameof(Cleanup));
         }
 
         #endregion Open-Close
 
         #region Message
 
-        private async Task EnsureMessageReceivingLinkAsync(TimeSpan timeout)
+        private async Task EnsureMessageReceivingLinkAsync(TimeSpan timeout, bool enableCallback = false)
         {
             if (_closed)
             {
                 throw new IotHubException("Device is now offline.", false);
             }
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(EnsureMessageReceivingLinkAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(EnsureMessageReceivingLinkAsync));
 
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
-            bool gain = await _messageReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+            bool enteredSemaphore = await _messageReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
             {
-                throw new TimeoutException();
+                throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP message receiver links are open.");
             }
 
             try
@@ -264,28 +231,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     {
                         amqpIoTSession.SafeClose();
                     };
-                    if (Logging.IsEnabled)
+                    if (enableCallback)
                     {
-                        Logging.Associate(this, this, _messageReceivingLink, $"{nameof(EnsureMessageReceivingLinkAsync)}");
+                        _messageReceivingLink.RegisterReceiveMessageListener(OnDeviceMessageReceived);
                     }
+                    Logging.Associate(this, this, _messageReceivingLink, nameof(EnsureMessageReceivingLinkAsync));
                 }
             }
             finally
             {
                 _messageReceivingLinkSemaphore.Release();
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(EnsureMessageReceivingLinkAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(EnsureMessageReceivingLinkAsync));
             }
         }
 
         public async Task<AmqpIoTOutcome> SendMessagesAsync(IEnumerable<Message> messages, TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, messages, timeout, $"{nameof(SendMessagesAsync)}");
-            }
+            Logging.Enter(this, messages, timeout, nameof(SendMessagesAsync));
 
             await EnsureSessionAsync(timeout).ConfigureAwait(false);
             try
@@ -295,19 +257,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, messages, timeout, $"{nameof(SendMessagesAsync)}");
-                }
+                Logging.Exit(this, messages, timeout, nameof(SendMessagesAsync));
             }
         }
 
         public async Task<AmqpIoTOutcome> SendMessageAsync(Message message, TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, message, timeout, $"{nameof(SendMessageAsync)}");
-            }
+            Logging.Enter(this, message, timeout, nameof(SendMessageAsync));
 
             await EnsureSessionAsync(timeout).ConfigureAwait(false);
             try
@@ -317,19 +273,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, message, timeout, $"{nameof(SendMessageAsync)}");
-                }
+                Logging.Exit(this, message, timeout, nameof(SendMessageAsync));
             }
         }
 
         public async Task<Message> ReceiveMessageAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
+            if (_isDeviceReceiveMessageCallbackSet )
             {
-                Logging.Enter(this, timeout, $"{nameof(ReceiveMessageAsync)}");
+                Logging.Error(this, "Callback handler set for receiving c2d messages, ReceiveAsync() will now always return null", nameof(ReceiveMessageAsync));
+                return null;
             }
+
+            Logging.Enter(this, timeout, nameof(ReceiveMessageAsync));
 
             await EnsureMessageReceivingLinkAsync(timeout).ConfigureAwait(false);
             try
@@ -339,19 +295,110 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
+                Logging.Exit(this, timeout, nameof(ReceiveMessageAsync));
+            }
+        }
+
+        public async Task EnableReceiveMessageAsync(TimeSpan timeout)
+        {
+            if (_closed)
+            {
+                throw new IotHubException("Device is now offline.", false);
+            }
+
+            Logging.Enter(this, timeout, nameof(EnableReceiveMessageAsync));
+
+            try
+            {
+                // Wait to grab the semaphore, and then open the telemetry receiving link and set the callback,
+                // and set _isDeviceReceiveMessageCallbackSet  to true.
+                // Once _isDeviceReceiveMessageCallbackSet  is set to true, all received c2d messages will be returned on the callback,
+                // and not via the polling ReceiveAsync() call.
+                bool enteredSemaphore = await _messageReceivingCallbackSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+                if (!enteredSemaphore)
                 {
-                    Logging.Exit(this, timeout, $"{nameof(ReceiveMessageAsync)}");
+                    throw new TimeoutException("Failed to enter the semaphore required for ensuring that" +
+                        " AMQP message receiver links are open and a listener can be set.");
                 }
+                await EnsureMessageReceivingLinkAsync(timeout, true).ConfigureAwait(false);
+                _isDeviceReceiveMessageCallbackSet  = true;
+            }
+            finally
+            {
+                _messageReceivingCallbackSemaphore.Release();
+                Logging.Exit(this, timeout, nameof(EnableReceiveMessageAsync));
+            }
+        }
+
+        public async Task DisableReceiveMessageAsync(TimeSpan timeout)
+        {
+            if (_closed)
+            {
+                throw new IotHubException("Device is now offline.", false);
+            }
+
+            Logging.Enter(this, timeout, nameof(DisableReceiveMessageAsync));
+
+            try
+            {
+                // Wait to grab the semaphore, and then close the telemetry receiving link and set _isDeviceReceiveMessageCallbackSet  to false.
+                // Once _isDeviceReceiveMessageCallbackSet  is set to false, all received c2d messages can be returned via the polling ReceiveAsync() call.
+                bool enteredSemaphore = await _messageReceivingCallbackSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+                if (!enteredSemaphore)
+                {
+                    throw new TimeoutException("Failed to enter the semaphore required for ensuring that" +
+                        " AMQP message receiver links are closed.");
+                }
+                await DisableMessageReceivingLinkAsync(timeout).ConfigureAwait(false);
+                _isDeviceReceiveMessageCallbackSet  = false;
+            }
+            finally
+            {
+                _messageReceivingCallbackSemaphore.Release();
+                Logging.Exit(this, timeout, nameof(DisableReceiveMessageAsync));
+            }
+        }
+
+        public async Task DisableMessageReceivingLinkAsync(TimeSpan timeout)
+        {
+            Logging.Enter(this, timeout, nameof(DisableMessageReceivingLinkAsync));
+
+            Debug.Assert(_messageReceivingLink != null);
+
+            bool enteredSemaphore = await _messageReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
+            {
+                throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP message receiver links are closed.");
+            }
+
+            try
+            {
+                await _messageReceivingLink.CloseAsync(timeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                _messageReceivingLinkSemaphore.Release();
+                Logging.Exit(this, timeout, nameof(DisableMessageReceivingLinkAsync));
+            }
+        }
+
+        private void OnDeviceMessageReceived(Message message)
+        {
+            Logging.Enter(this, message, nameof(OnDeviceMessageReceived));
+
+            try
+            {
+                _onDeviceMessageReceivedCallback?.Invoke(message);
+            }
+            finally
+            {
+                Logging.Exit(this, message, nameof(OnDeviceMessageReceived));
             }
         }
 
         public async Task<AmqpIoTOutcome> DisposeMessageAsync(string lockToken, AmqpIoTDisposeActions disposeAction, TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, lockToken, $"{nameof(DisposeMessageAsync)}");
-            }
+            Logging.Enter(this, lockToken, nameof(DisposeMessageAsync));
 
             AmqpIoTOutcome disposeOutcome;
             if (_deviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
@@ -364,10 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 await EnableEventReceiveAsync(timeout).ConfigureAwait(false);
                 disposeOutcome = await _eventReceivingLink.DisposeMessageAsync(lockToken, AmqpIoTResultAdapter.GetResult(disposeAction), timeout).ConfigureAwait(false);
             }
-            if (Logging.IsEnabled)
-            {
-                Logging.Exit(this, lockToken, $"{nameof(DisposeMessageAsync)}");
-            }
+            Logging.Exit(this, lockToken, nameof(DisposeMessageAsync));
 
             return disposeOutcome;
         }
@@ -383,16 +427,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw new IotHubException("Device is now offline.", false);
             }
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(EnableEventReceiveAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(EnableEventReceiveAsync));
 
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
-            bool gain = await _eventReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+            bool enteredSemaphore = await _eventReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
             {
-                throw new TimeoutException();
+                throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP event receiver links are open.");
             }
 
             try
@@ -407,28 +448,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         amqpIoTSession.SafeClose();
                     };
                     _eventReceivingLink.RegisterEventListener(OnEventsReceived);
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.Associate(this, this, _eventReceivingLink, $"{nameof(EnableEventReceiveAsync)}");
-                    }
+                    Logging.Associate(this, this, _eventReceivingLink, nameof(EnableEventReceiveAsync));
                 }
             }
             finally
             {
                 _eventReceivingLinkSemaphore.Release();
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(EnableEventReceiveAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(EnableEventReceiveAsync));
             }
         }
 
         public async Task<AmqpIoTOutcome> SendEventsAsync(IEnumerable<Message> messages, TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, messages, timeout, $"{nameof(SendEventsAsync)}");
-            }
+            Logging.Enter(this, messages, timeout, nameof(SendEventsAsync));
 
             try
             {
@@ -436,19 +468,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, messages, timeout, $"{nameof(SendEventsAsync)}");
-                }
+                Logging.Exit(this, messages, timeout, nameof(SendEventsAsync));
             }
         }
 
         public async Task<AmqpIoTOutcome> SendEventAsync(Message message, TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, message, timeout, $"{nameof(SendEventAsync)}");
-            }
+            Logging.Enter(this, message, timeout, nameof(SendEventAsync));
 
             try
             {
@@ -456,16 +482,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, message, timeout, $"{nameof(SendEventAsync)}");
-                }
+                Logging.Exit(this, message, timeout, nameof(SendEventAsync));
             }
         }
 
         public void OnEventsReceived(Message message)
         {
-            _eventListener?.Invoke(message.InputName, message);
+            _onModuleMessageReceivedCallback?.Invoke(message.InputName, message);
         }
 
         #endregion Event
@@ -479,16 +502,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw new IotHubException("Device is now offline.", false);
             }
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(EnableMethodsAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(EnableMethodsAsync));
 
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
-            bool gain = await _methodLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+            bool enteredSemaphore = await _methodLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
             {
-                throw new TimeoutException();
+                throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP method sender and receiver links are open.");
             }
 
             string correlationIdSuffix = Guid.NewGuid().ToString();
@@ -502,10 +522,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             finally
             {
                 _methodLinkSemaphore.Release();
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(EnableMethodsAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(EnableMethodsAsync));
             }
         }
 
@@ -521,27 +538,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     amqpIoTSession.SafeClose();
                 };
                 _methodReceivingLink.RegisterMethodListener(OnMethodReceived);
-                if (Logging.IsEnabled)
-                {
-                    Logging.Associate(this, _methodReceivingLink, $"{nameof(_methodReceivingLink)}");
-                }
+                Logging.Associate(this, _methodReceivingLink, nameof(_methodReceivingLink));
             }
         }
 
         public async Task DisableTwinLinksAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(DisableTwinLinksAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(DisableTwinLinksAsync));
 
             Debug.Assert(_twinSendingLink != null);
             Debug.Assert(_twinReceivingLink != null);
 
-            bool gain = await _twinLinksSemaphore.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+            bool enteredSemaphore = await _twinLinksSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
             {
-                throw new TimeoutException();
+                throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP twin sender and receiver links are closed.");
             }
 
             try
@@ -566,23 +577,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(DisableTwinLinksAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(DisableTwinLinksAsync));
                 _twinLinksSemaphore.Release();
             }
         }
 
         public async Task DisableMethodsAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(DisableMethodsAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(DisableMethodsAsync));
 
             Debug.Assert(_methodSendingLink != null);
             Debug.Assert(_methodReceivingLink != null);
+
+            bool enteredSemaphore = await _methodLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
+            {
+                throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP method sender and receiver links are closed.");
+            }
 
             try
             {
@@ -606,10 +617,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(DisableMethodsAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(DisableMethodsAsync));
             }
         }
 
@@ -624,39 +632,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     amqpIoTSession.SafeClose();
                 };
-                if (Logging.IsEnabled)
-                {
-                    Logging.Associate(this, _methodSendingLink, $"{nameof(_methodSendingLink)}");
-                }
+                Logging.Associate(this, _methodSendingLink, nameof(_methodSendingLink));
             }
         }
 
         private void OnMethodReceived(MethodRequestInternal methodRequestInternal)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, methodRequestInternal, $"{nameof(OnMethodReceived)}");
-            }
+            Logging.Enter(this, methodRequestInternal, nameof(OnMethodReceived));
 
             try
             {
-                _methodHandler?.Invoke(methodRequestInternal);
+                _onMethodCallback?.Invoke(methodRequestInternal);
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, methodRequestInternal, $"{nameof(OnMethodReceived)}");
-                }
+                Logging.Exit(this, methodRequestInternal, nameof(OnMethodReceived));
             }
         }
 
         public async Task<AmqpIoTOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, methodResponse, $"{nameof(SendMethodResponseAsync)}");
-            }
+            Logging.Enter(this, methodResponse, nameof(SendMethodResponseAsync));
 
             await EnableMethodsAsync(timeout).ConfigureAwait(false);
             Debug.Assert(_methodSendingLink != null);
@@ -667,10 +663,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, methodResponse, $"{nameof(SendMethodResponseAsync)}");
-                }
+                Logging.Exit(this, methodResponse, nameof(SendMethodResponseAsync));
             }
         }
 
@@ -685,16 +678,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw new IotHubException("Device is now offline.", false);
             }
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(EnableTwinLinksAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(EnableTwinLinksAsync));
 
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
-            bool gain = await _twinLinksSemaphore.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+            bool enteredSemaphore = await _twinLinksSemaphore.WaitAsync(timeout).ConfigureAwait(false);
+            if (!enteredSemaphore)
             {
-                throw new TimeoutException();
+                throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP twin sender and receiver links are open.");
             }
 
             try
@@ -709,10 +699,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             finally
             {
                 _twinLinksSemaphore.Release();
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(EnableTwinLinksAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(EnableTwinLinksAsync));
             }
         }
 
@@ -728,10 +715,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     amqpIoTSession.SafeClose();
                 };
                 _twinReceivingLink.RegisterTwinListener(OnDesiredPropertyReceived);
-                if (Logging.IsEnabled)
-                {
-                    Logging.Associate(this, _twinReceivingLink, $"{nameof(_twinReceivingLink)}");
-                }
+                Logging.Associate(this, _twinReceivingLink, nameof(_twinReceivingLink));
             }
         }
 
@@ -746,19 +730,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     amqpIoTSession.SafeClose();
                 };
-                if (Logging.IsEnabled)
-                {
-                    Logging.Associate(this, _twinSendingLink, $"{nameof(_twinSendingLink)}");
-                }
+                Logging.Associate(this, _twinSendingLink, nameof(_twinSendingLink));
             }
         }
 
         private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, twin, $"{nameof(OnDesiredPropertyReceived)}");
-            }
+            Logging.Enter(this, twin, nameof(OnDesiredPropertyReceived));
 
             try
             {
@@ -766,19 +744,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, twin, $"{nameof(OnDesiredPropertyReceived)}");
-                }
+                Logging.Exit(this, twin, nameof(OnDesiredPropertyReceived));
             }
         }
 
         public async Task SendTwinMessageAsync(AmqpTwinMessageType amqpTwinMessageType, string correlationId, TwinCollection reportedProperties, TimeSpan timeout)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, timeout, $"{nameof(SendTwinMessageAsync)}");
-            }
+            Logging.Enter(this, timeout, nameof(SendTwinMessageAsync));
 
             await EnableTwinLinksAsync(timeout).ConfigureAwait(false);
             Debug.Assert(_twinSendingLink != null);
@@ -818,10 +790,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, timeout, $"{nameof(SendTwinMessageAsync)}");
-                }
+                Logging.Exit(this, timeout, nameof(SendTwinMessageAsync));
             }
         }
 
@@ -831,36 +800,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         public void OnConnectionDisconnected()
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, $"{nameof(OnConnectionDisconnected)}");
-            }
+            Logging.Enter(this, nameof(OnConnectionDisconnected));
 
             _amqpAuthenticationRefresher?.StopLoop();
             _onUnitDisconnected();
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Exit(this, $"{nameof(OnConnectionDisconnected)}");
-            }
+            Logging.Exit(this, nameof(OnConnectionDisconnected));
         }
 
         private void OnSessionDisconnected(object o, EventArgs args)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, o, $"{nameof(OnSessionDisconnected)}");
-            }
+            Logging.Enter(this, o, nameof(OnSessionDisconnected));
 
             if (ReferenceEquals(o, _amqpIoTSession))
             {
                 _amqpAuthenticationRefresher?.StopLoop();
                 _onUnitDisconnected();
             }
-            if (Logging.IsEnabled)
-            {
-                Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
-            }
+            Logging.Exit(this, o, nameof(OnSessionDisconnected));
         }
 
         #endregion Connectivity Event
@@ -884,10 +841,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (disposing)
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Enter(this, disposing, $"{nameof(Dispose)}");
-                }
+                Logging.Enter(this, disposing, nameof(Dispose));
 
                 Cleanup();
                 if (!_deviceIdentity.IsPooling())
@@ -895,10 +849,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     _amqpConnectionHolder?.Dispose();
                 }
 
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, disposing, $"{nameof(Dispose)}");
-                }
+                _sessionSemaphore?.Dispose();
+                _messageReceivingLinkSemaphore?.Dispose();
+                _messageReceivingCallbackSemaphore?.Dispose();
+                _eventReceivingLinkSemaphore?.Dispose();
+                _methodLinkSemaphore?.Dispose();
+                _twinLinksSemaphore?.Dispose();
+
+                Logging.Exit(this, disposing, nameof(Dispose));
             }
         }
 

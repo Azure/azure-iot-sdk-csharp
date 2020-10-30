@@ -233,23 +233,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
                 await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
-            };
+            }
 
-            await PoolingOverAmqp.TestPoolAmqpAsync(
-                _devicePrefix,
-                transport,
-                poolSize,
-                devicesCount,
-                null,
-                testOperation,
-                null,
-                authScope,
-                true,
-                Logger).ConfigureAwait(false);
+            await PoolingOverAmqp
+                .TestPoolAmqpAsync(
+                    _devicePrefix,
+                    transport,
+                    poolSize,
+                    devicesCount,
+                    null,
+                    TestOperationAsync,
+                    null,
+                    authScope,
+                    true,
+                    Logger)
+                .ConfigureAwait(false);
         }
 
         private async Task ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -262,7 +264,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
@@ -271,9 +273,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
                 Logger.Trace($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
                 Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue, Logger).ConfigureAwait(false);
-            };
+            }
 
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
@@ -281,25 +283,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 string propValue = twinProperties[1];
 
                 await TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue).ConfigureAwait(false);
-            };
+            }
 
-            Func<Task> cleanupOperation = () =>
+            Task CleanupOperationAsync()
             {
                 twinPropertyMap.Clear();
                 return Task.FromResult(0);
-            };
+            }
 
-            await PoolingOverAmqp.TestPoolAmqpAsync(
-                _devicePrefix,
-                transport,
-                poolSize,
-                devicesCount,
-                initOperation,
-                testOperation,
-                cleanupOperation,
-                authScope,
-                true,
-                Logger).ConfigureAwait(false);
+            await PoolingOverAmqp
+                .TestPoolAmqpAsync(
+                    _devicePrefix,
+                    transport,
+                    poolSize,
+                    devicesCount,
+                    InitOperationAsync,
+                    TestOperationAsync,
+                    CleanupOperationAsync,
+                    authScope,
+                    true,
+                    Logger)
+                .ConfigureAwait(false);
         }
     }
 }

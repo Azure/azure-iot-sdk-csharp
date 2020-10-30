@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
                 Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-            };
+            }
 
             await PoolingOverAmqp
                 .TestPoolAmqpAsync(
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     poolSize,
                     devicesCount,
                     null,
-                    testOperation,
+                    TestOperationAsync,
                     null,
                     authScope,
                     true,

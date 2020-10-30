@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private readonly ReceivingAmqpLink _receivingAmqpLink;
 
         private Action<Message> _onEventsReceived;
+        private Action<Message> _onDeviceMessageReceived;
         private Action<MethodRequestInternal> _onMethodReceived;
         private Action<Twin, string, TwinCollection> _onDesiredPropertyReceived;
 
@@ -70,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             try
             {
-                var amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                AmqpMessage amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
                 Message message = null;
                 if (amqpMessage != null)
                 {
@@ -141,6 +142,32 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             return new ArraySegment<byte>(lockTokenGuid.ToByteArray());
+        }
+
+        internal void RegisterReceiveMessageListener(Action<Message> onDeviceMessageReceived)
+        {
+            _onDeviceMessageReceived = onDeviceMessageReceived;
+            _receivingAmqpLink.RegisterMessageListener(OnDeviceMessageReceived);
+        }
+
+        private void OnDeviceMessageReceived(AmqpMessage amqpMessage)
+        {
+            Logging.Enter(this, amqpMessage, $"{nameof(OnDeviceMessageReceived)}");
+
+            try
+            {
+                Message message = null;
+                if (amqpMessage != null)
+                {
+                    message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
+                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                }
+                _onDeviceMessageReceived?.Invoke(message);
+            }
+            finally
+            {
+                Logging.Exit(this, amqpMessage, $"{nameof(OnDeviceMessageReceived)}");
+            }
         }
 
         #endregion Receive Message

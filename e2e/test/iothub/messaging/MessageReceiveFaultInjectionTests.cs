@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
@@ -225,6 +226,135 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
+        [LoggedTestMethod]
+        public async Task Message_TcpConnectionLossReceiveWithCallbackRecovery_Amqp()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_TcpConnectionLossReceiveWithCallbackRecovery_AmqpWs()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_Tcp,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_AmqpConnectionLossReceiveWithCallbackRecovery_Amqp()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpConn,
+                    "",
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_AmqpConnectionLossReceiveWithCallbackRecovery_AmqpWs()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpConn, "",
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_AmqpSessionLossReceiveWithCallbackRecovery_Amqp()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpSess,
+                    "",
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_AmqpSessionLossReceiveWithCallbackRecovery_AmqpWs()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpSess,
+                    "",
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_AmqpC2DLinkDropReceiveWithCallbackRecovery_Amqp()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_AmqpC2D,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_AmqpC2DLinkDropReceiveWithCallbackRecovery_AmqpWs()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_AmqpD2C,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_GracefulShutdownReceiveWithCallbackRecovery_Amqp()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_GracefulShutdownAmqp,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_GracefulShutdownReceiveWithCallbackRecovery_AmqpWs()
+        {
+            await
+                ReceiveMessageWithCallbackRecoveryAsync(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_GracefulShutdownAmqp,
+                    FaultInjection.FaultCloseReason_Bye,
+                    FaultInjection.DefaultDelayInSec)
+                .ConfigureAwait(false);
+        }
+
         private async Task ReceiveMessageRecovery(
             TestDeviceType type,
             Client.TransportType transport,
@@ -293,18 +423,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
                 await serviceClient.OpenAsync().ConfigureAwait(false);
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+                var timeout = TimeSpan.FromSeconds(20);
+                using var cts = new CancellationTokenSource(timeout);
                 (Message message, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
 
                 testDeviceCallbackHandler.ExpectedMessageSentByService = message;
                 await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+
+                Client.Message receivedMessage = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
+                receivedMessage.Should().BeNull();
             }
 
             Task CleanupOperationAsync()

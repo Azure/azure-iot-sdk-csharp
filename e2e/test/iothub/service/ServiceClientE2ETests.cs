@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -62,6 +63,89 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 sw.Stop();
                 Logger.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
             }
+        }
+
+        // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
+        // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
+        // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
+        [LoggedTestMethod]
+        public async Task MessageIdDefaultNotSet_SendEventDoesNotSetMessageId()
+        {
+            // arrange
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            string messageId = Guid.NewGuid().ToString();
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+            await sender.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().BeNull();
+            messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
+        // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
+        // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
+        [LoggedTestMethod]
+        public async Task MessageIdDefaultSetToNull_SendEventDoesNotSetMessageId()
+        {
+            // arrange
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            var options = new ServiceClientOptions
+            {
+                SdkAssignsMessageId = Shared.SdkAssignsMessageId.Never,
+            };
+            using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, options);
+            string messageId = Guid.NewGuid().ToString();
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+            await sender.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().BeNull();
+            messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
+        // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
+        // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
+        [LoggedTestMethod]
+        public async Task MessageIdDefaultSetToGuid_SendEventSetMessageIdIfNotSet()
+        {
+            // arrange
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            var options = new ServiceClientOptions
+            {
+                SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,
+            };
+            using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, options);
+            string messageId = Guid.NewGuid().ToString();
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+            await sender.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
+            messageWithId.MessageId.Should().Be(messageId);
         }
     }
 }

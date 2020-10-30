@@ -23,10 +23,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private static readonly string s_devicePrefix = $"{nameof(MessageReceiveE2ETests)}_";
 
-        private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_oneSecond = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan s_fiveSeconds = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan s_tenSeconds = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_twentySeconds = TimeSpan.FromSeconds(20);
+        private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
 
         [LoggedTestMethod]
         public async Task Message_DeviceReceiveSingleMessage_Amqp()
@@ -173,6 +174,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod]
+        [ExpectedException(typeof(NotSupportedException))]
+        public async Task DeviceReceiveMessageUsingCallback_Http()
+        {
+            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Http1);
+        }
+
+        [LoggedTestMethod]
         public async Task DeviceReceiveMessageUsingCallback_Mqtt()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only);
@@ -218,6 +226,54 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_MqttWs()
         {
             await ReceiveSingleMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceReceiveMessageUsingCallback_Amqp()
+        {
+            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceReceiveMessageUsingCallback_AmqpWs()
+        {
+            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_DeviceReceiveMessageUsingCallback_Amqp()
+        {
+            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_DeviceReceiveMessageUsingCallback_AmqpWs()
+        {
+            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
+        {
+            await ReceiveSingleMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_AmqpWs()
+        {
+            await ReceiveSingleMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
+        {
+            await ReceiveSingleMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_AmqpWs()
+        {
+            await ReceiveSingleMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only);
         }
 
         public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(MsTestLogger logger)
@@ -486,7 +542,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
-            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
+            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
 
             using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -499,6 +555,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
+                Logger.Trace($"Sending C2D message from service, messageId={msg.MessageId}");
                 await Task
                     .WhenAll(
                         serviceClient.SendAsync(testDevice.Id, msg),
@@ -514,7 +571,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
-            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
+            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
 
             using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -528,11 +585,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             // Now, send a message to the device from the service.
             testDeviceCallbackHandler.ExpectedMessageSentByService = firstMessage;
             await serviceClient.SendAsync(testDevice.Id, firstMessage).ConfigureAwait(false);
-            Logger.Trace($"Sent C2D message from service, messageId={firstMessage.MessageId}");
+            Logger.Trace($"Sent C2D message from service, messageId={firstMessage.MessageId} - to be received on callback");
 
             // The message should be received on the callback, while a call to ReceiveAsync() should return null.
-            using var cts = new CancellationTokenSource(s_oneMinute);
-            Client.Message receivedMessage = await deviceClient.ReceiveAsync(s_oneMinute).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(s_tenSeconds);
+            Client.Message receivedMessage = await deviceClient.ReceiveAsync(s_tenSeconds).ConfigureAwait(false);
             await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             receivedMessage.Should().BeNull();
 
@@ -544,20 +601,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             if (transport == Client.TransportType.Mqtt_Tcp_Only
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
+                Client.Message leftoverMessage = await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
+                Logger.Trace($"Leftover message on Mqtt was: {leftoverMessage} with Id={leftoverMessage?.MessageId}");
             }
 
             // Send a message to the device from the service.
             (Message secondMessage, _, _) = ComposeC2dTestMessage(Logger);
             await serviceClient.SendAsync(testDevice.Id, secondMessage).ConfigureAwait(false);
-            Logger.Trace($"Sent C2D message from service, messageId={secondMessage.MessageId}");
+            Logger.Trace($"Sent C2D message from service, messageId={secondMessage.MessageId} - to be received on polling ReceiveAsync");
 
             // This time, the message should not be received on the callback, rather it should be received on a call to ReceiveAsync().
             Func<Task> receiveMessageOverCallback = async () =>
             {
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             };
-            Client.Message message = await deviceClient.ReceiveAsync(s_oneMinute).ConfigureAwait(false);
+            Client.Message message = await deviceClient.ReceiveAsync(s_tenSeconds).ConfigureAwait(false);
             message.MessageId.Should().Be(secondMessage.MessageId);
             receiveMessageOverCallback.Should().Throw<OperationCanceledException>();
 

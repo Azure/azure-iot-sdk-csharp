@@ -109,9 +109,11 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new SemaphoreSlim(1, 1);
         private readonly ProductInfo _productInfo = new ProductInfo();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly ITransportSettings[] _transportSettings;
+        private readonly ClientOptions _clientOptions;
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
@@ -154,6 +156,7 @@ namespace Microsoft.Azure.Devices.Client
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             IotHubConnectionString = iotHubConnectionString;
+            _clientOptions = options;
 
             var pipelineContext = new PipelineContext();
             pipelineContext.Set(transportSettings);
@@ -660,6 +663,11 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(message));
             }
 
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
+            {
+                message.MessageId = Guid.NewGuid().ToString();
+            }
+
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
             // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             try
@@ -701,6 +709,17 @@ namespace Microsoft.Azure.Devices.Client
             if (messages == null)
             {
                 throw new ArgumentNullException(nameof(messages));
+            }
+
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
+            {
+                foreach (Message message in messages)
+                {
+                    if (message.MessageId == null)
+                    {
+                        message.MessageId = Guid.NewGuid().ToString();
+                    }
+                }
             }
 
             // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
@@ -1063,7 +1082,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets or clears a callback that will be called whenever the client receives a state update
+        /// Sets a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.
         /// Set callback value to null to clear.
         /// </summary>
@@ -1102,6 +1121,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
             // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
+
+            Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+
+            // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
+            await _twinDesiredPropertySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
             try
             {
                 if (callback != null && !_twinPatchSubscribedWithService)
@@ -1121,6 +1146,23 @@ namespace Microsoft.Azure.Devices.Client
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
+            }
+            finally
+            {
+                try
+                {
+                    _twinDesiredPropertySemaphore.Release();
+                }
+                catch (SemaphoreFullException)
+                {
+                    // this semaphore is typically grabbed at the start of the method, but if
+                    // this method is canceled while waiting to grab the semaphore, then this semaphore.release
+                    // will throw this SemaphoreFullException since it was never grabbed in the first place
+                    Logging.Info(this, "SemaphoreFullException thrown while releasing" +
+                    " message receiving semaphore, but will be ignored since that means the semaphore" +
+                    " is available for other threads to grab again anyways");
+                }
+                Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
             }
         }
 
@@ -1652,6 +1694,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate for the particular input. If a delegate is already associated with
         /// the input, it will be replaced with the new delegate.
+        /// Set messageHandler value to null to clear.
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -1675,6 +1718,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate for the particular input. If a delegate is already associated with
         /// the input, it will be replaced with the new delegate.
+        /// Set messageHandler value to null to clear.
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -1749,6 +1793,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
         /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
         /// it will be overwritten.
+        /// Set messageHandler value to null to clear.
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
@@ -1771,6 +1816,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
         /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
+        /// Set messageHandler value to null to clear.
         /// it will be overwritten.
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -1927,6 +1973,7 @@ namespace Microsoft.Azure.Devices.Client
             _moduleReceiveMessageSemaphore?.Dispose();
             _fileUploadHttpTransportHandler?.Dispose();
             _deviceReceiveMessageSemaphore?.Dispose();
+            _twinDesiredPropertySemaphore?.Dispose();
         }
 
         internal bool IsE2EDiagnosticSupportedProtocol()

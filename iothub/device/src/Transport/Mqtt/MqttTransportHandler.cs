@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly ConcurrentQueue<Message> _messageQueue;
 
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
-        private bool _deviceReceiveMessageCallbackSet = false;
+        private bool _isDeviceReceiveMessageCallbackSet  = false;
 
         private readonly TaskCompletionSource _connectCompletion = new TaskCompletionSource();
         private readonly TaskCompletionSource _subscribeCompletionSource = new TaskCompletionSource();
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (_deviceReceiveMessageCallbackSet)
+            if (_isDeviceReceiveMessageCallbackSet )
             {
                 if (Logging.IsEnabled)
                 {
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            if (_deviceReceiveMessageCallbackSet)
+            if (_isDeviceReceiveMessageCallbackSet )
             {
                 if (Logging.IsEnabled)
                 {
@@ -315,37 +315,34 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 return null;
             }
-            else
+            try
             {
-                try
+                if (Logging.IsEnabled)
                 {
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.Enter(this, timeoutHelper, $"Time remaining for ReceiveAsync(): {timeoutHelper.GetRemainingTime()}", $"{nameof(ReceiveAsync)}");
-                    }
-
-                    Message message = null;
-
-                    EnsureValidState();
-
-                    if (State != TransportState.Receiving)
-                    {
-                        await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(true);
-                    }
-
-                    TimeSpan timeout = timeoutHelper.GetRemainingTime();
-                    using var cts = new CancellationTokenSource(timeout);
-                    bool hasMessage = await ReceiveMessageArrivalAsync(cts.Token).ConfigureAwait(true);
-                    message = ProcessMessage(message, hasMessage);
-
-                    return message;
+                    Logging.Enter(this, timeoutHelper, $"Time remaining for ReceiveAsync(): {timeoutHelper.GetRemainingTime()}", $"{nameof(ReceiveAsync)}");
                 }
-                finally
+
+                Message message = null;
+
+                EnsureValidState();
+
+                if (State != TransportState.Receiving)
                 {
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.Exit(this, timeoutHelper, $"Time remaining for ReceiveAsync(): {timeoutHelper.GetRemainingTime()}", $"{nameof(ReceiveAsync)}");
-                    }
+                    await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(true);
+                }
+
+                TimeSpan timeout = timeoutHelper.GetRemainingTime();
+                using var cts = new CancellationTokenSource(timeout);
+                bool hasMessage = await ReceiveMessageArrivalAsync(cts.Token).ConfigureAwait(true);
+                message = ProcessMessage(message, hasMessage);
+
+                return message;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, timeoutHelper, $"Time remaining for ReceiveAsync(): {timeoutHelper.GetRemainingTime()}", $"{nameof(ReceiveAsync)}");
                 }
             }
         }
@@ -399,6 +396,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
+            Logging.Enter(this, $"Completing a message with lockToken: {lockToken}", nameof(CompleteAsync));
+
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
@@ -436,6 +435,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             await completeOperationCompletion.ConfigureAwait(true);
+
+            Logging.Exit(this, $"Completing a message with lockToken: {lockToken}", nameof(CompleteAsync));
         }
 
         public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
@@ -468,6 +469,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 _disconnectAwaitersCancellationSource.Dispose();
+                _receivingSemaphore?.Dispose();
+                _deviceReceiveMessageSemaphore?.Dispose();
             }
         }
 
@@ -611,7 +614,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     else if (topic.StartsWith(_deviceboundMessagePrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         _messageQueue.Enqueue(message);
-                        if (_deviceReceiveMessageCallbackSet)
+                        if (_isDeviceReceiveMessageCallbackSet )
                         {
                             await HandleIncomingMessagesAsync(message).ConfigureAwait(false);
                         }
@@ -871,8 +874,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                // Wait to grab the semaphore, and then enable c2d message subscription and set _deviceReceiveMessageCallbackSet to true.
-                // Once _deviceReceiveMessageCallbackSet is set to true, all received c2d messages will be returned on the callback,
+                // Wait to grab the semaphore, and then enable c2d message subscription and set _isDeviceReceiveMessageCallbackSet  to true.
+                // Once _isDeviceReceiveMessageCallbackSet  is set to true, all received c2d messages will be returned on the callback,
                 // and not via the polling ReceiveAsync() call.
                 await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -880,7 +883,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(false);
                 }
-                _deviceReceiveMessageCallbackSet = true;
+                _isDeviceReceiveMessageCallbackSet  = true;
             }
             finally
             {
@@ -904,9 +907,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                // Wait to grab the semaphore, and then unsubscriobe from c2d messages and set _deviceReceiveMessageCallbackSet to true.
-                // Once _deviceReceiveMessageCallbackSet is set to true, all received c2d messages will be returned on the callback,
-                // and not via the polling ReceiveAsync() call.
+                // Wait to grab the semaphore, and then unsubscribe from c2d messages and set _isDeviceReceiveMessageCallbackSet  to false.
+                // Once _isDeviceReceiveMessageCallbackSet  is set to false, all received c2d messages can be returned via the polling ReceiveAsync() call.
                 await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 // The TransportState is transitioned to Receiving only if the device is subscribed to _deviceboundMessageFilter.
@@ -919,7 +921,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         await _channel.WriteAsync(new UnsubscribePacket(0, _deviceboundMessageFilter)).ConfigureAwait(true);
                     }
                 }
-                _deviceReceiveMessageCallbackSet = false;
+                _isDeviceReceiveMessageCallbackSet  = false;
             }
             finally
             {
@@ -994,6 +996,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
+            Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
+
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
@@ -1001,14 +1005,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinPatchTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+
+            Logging.Exit(this, cancellationToken, nameof(EnableTwinPatchAsync));
         }
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
+            Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
+
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
             await _channel.WriteAsync(new UnsubscribePacket(0, TwinPatchTopicFilter)).ConfigureAwait(true);
+
+            Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
         }
 
         private bool ParseResponseTopic(string topicName, out string rid, out Int32 status)

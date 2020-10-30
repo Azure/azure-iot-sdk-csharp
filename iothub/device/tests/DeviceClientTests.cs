@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -1273,6 +1276,172 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             await client.AbandonAsync((string)null, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task MessageIdDefaultNotSet_SendEventDoesNotSetMessageId()
+        {
+            // arrange
+            var messageId = Guid.NewGuid().ToString();
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler;
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+            await deviceClient.SendEventAsync(messageWithoutId).ConfigureAwait(false);
+            await deviceClient.SendEventAsync(messageWithId).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().BeNull();
+            messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        [TestMethod]
+        public async Task MessageIdDefaultSetToNull_SendEventDoesNotSetMessageId()
+        {
+            // arrange
+            var messageId = Guid.NewGuid().ToString();
+            var options = new ClientOptions
+            {
+                SdkAssignsMessageId = SdkAssignsMessageId.Never,
+            };
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, options);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler;
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+            await deviceClient.SendEventAsync(messageWithoutId).ConfigureAwait(false);
+            await deviceClient.SendEventAsync(messageWithId).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().BeNull();
+            messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        [TestMethod]
+        public async Task MessageIdDefaultSetToGuid_SendEventSetMessageIdIfNotSet()
+        {
+            // arrange
+            var messageId = Guid.NewGuid().ToString();
+            var options = new ClientOptions
+            {
+                SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+            };
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, options);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler;
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+            await deviceClient.SendEventAsync(messageWithoutId).ConfigureAwait(false);
+            await deviceClient.SendEventAsync(messageWithId).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
+            messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        [TestMethod]
+        public async Task MessageIdDefaultNotSet_SendEventBatchDoesNotSetMessageId()
+        {
+            // arrange
+            var messageId = Guid.NewGuid().ToString();
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler;
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+
+            await deviceClient.SendEventBatchAsync(new List<Message> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().BeNull();
+            messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        [TestMethod]
+        public async Task MessageIdDefaultSetToNull_SendEventBatchDoesNotSetMessageId()
+        {
+            // arrange
+            var messageId = Guid.NewGuid().ToString();
+            var options = new ClientOptions
+            {
+                SdkAssignsMessageId = SdkAssignsMessageId.Never,
+            };
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, options);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler;
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+
+            await deviceClient.SendEventBatchAsync(new List<Message> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().BeNull();
+            messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        [TestMethod]
+        public async Task MessageIdDefaultSetToGuid_SendEventBatchSetMessageIdIfNotSet()
+        {
+            // arrange
+            var messageId = Guid.NewGuid().ToString();
+            var options = new ClientOptions
+            {
+                SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+            };
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, options);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler;
+
+            // act
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
+            {
+                MessageId = messageId,
+            };
+
+            await deviceClient.SendEventBatchAsync(new List<Message> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+
+            // assert
+            messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
+            messageWithId.MessageId.Should().Be(messageId);
         }
     }
 }
