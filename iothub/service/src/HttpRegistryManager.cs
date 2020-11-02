@@ -233,13 +233,13 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        [Obsolete]
+        [Obsolete("Use AddDevices2Async")]
         public override Task<string[]> AddDevicesAsync(IEnumerable<Device> devices)
         {
             return AddDevicesAsync(devices, CancellationToken.None);
         }
 
-        [Obsolete]
+        [Obsolete("Use AddDevices2Async")]
         public override Task<string[]> AddDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken)
         {
             Logging.Enter(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
@@ -247,9 +247,9 @@ namespace Microsoft.Azure.Devices
             try
             {
                 return BulkDeviceOperationsAsync<string[]>(
-                GenerateExportImportDeviceListForBulkOperations(devices, ImportMode.Create),
-                ClientApiVersionHelper.ApiVersionQueryString,
-                cancellationToken);
+                    GenerateExportImportDeviceListForBulkOperations(devices, ImportMode.Create),
+                    ClientApiVersionHelper.ApiVersionQueryString,
+                    cancellationToken);
             }
             catch (Exception ex)
             {
@@ -681,13 +681,13 @@ namespace Microsoft.Azure.Devices
             return _httpClientHelper.DeleteAsync(GetConfigurationRequestUri(configurationId), eTagHolder, errorMappingOverrides, null, cancellationToken);
         }
 
-        [Obsolete]
+        [Obsolete("Use UpdateDevices2Async")]
         public override Task<string[]> UpdateDevicesAsync(IEnumerable<Device> devices)
         {
             return UpdateDevicesAsync(devices, false, CancellationToken.None);
         }
 
-        [Obsolete]
+        [Obsolete("Use UpdateDevices2Async")]
         public override Task<string[]> UpdateDevicesAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken)
         {
             Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()}", nameof(UpdateDevicesAsync));
@@ -863,13 +863,13 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        [Obsolete]
+        [Obsolete("Use RemoveDevices2Async")]
         public override Task<string[]> RemoveDevicesAsync(IEnumerable<Device> devices)
         {
             return RemoveDevicesAsync(devices, false, CancellationToken.None);
         }
 
-        [Obsolete]
+        [Obsolete("Use RemoveDevices2Async")]
         public override Task<string[]> RemoveDevicesAsync(IEnumerable<Device> devices, bool forceRemove, CancellationToken cancellationToken)
         {
             Logging.Enter(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
