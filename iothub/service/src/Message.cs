@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices
         public string LockToken
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.LockToken);
-            set => SystemProperties[MessageSystemPropertyNames.LockToken] = value;
+            internal set => SystemProperties[MessageSystemPropertyNames.LockToken] = value;
         }
 
         /// <summary>
