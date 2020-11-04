@@ -231,11 +231,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     {
                         amqpIoTSession.SafeClose();
                     };
-                    if (enableCallback)
-                    {
-                        _messageReceivingLink.RegisterReceiveMessageListener(OnDeviceMessageReceived);
-                    }
                     Logging.Associate(this, this, _messageReceivingLink, nameof(EnsureMessageReceivingLinkAsync));
+                }
+                if (enableCallback)
+                {
+                    _messageReceivingLink.RegisterReceiveMessageListener(OnDeviceMessageReceived);
                 }
             }
             finally
