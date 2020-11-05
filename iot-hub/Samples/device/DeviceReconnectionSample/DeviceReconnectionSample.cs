@@ -25,10 +25,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly TransportType _transportType;
 
         private readonly ILogger _logger;
-        private static DeviceClient s_deviceClient;
 
-        private static ConnectionStatus s_connectionStatus;
-        private static bool s_wasEverConnected;
+        // Mark these fields as volatile so that their latest values are referenced.
+        private static volatile DeviceClient s_deviceClient;
+        private static volatile ConnectionStatus s_connectionStatus = ConnectionStatus.Disconnected;
 
         public DeviceReconnectionSample(List<string> deviceConnectionStrings, TransportType transportType, ILogger logger)
         {
@@ -53,9 +53,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             InitializeClient();
         }
 
+        private bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;
+
         public async Task RunSampleAsync()
         {
-            Console.WriteLine("Press Control+C to quit the sample.");
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
@@ -63,6 +64,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 cts.Cancel();
                 _logger.LogInformation("Sample execution cancellation requested; will exit.");
             };
+
+            _logger.LogInformation($"Sample execution started, press Control+C to quit the sample.");
 
             try
             {
@@ -76,30 +79,39 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private void InitializeClient()
         {
-            // If the client reports Connected status, it is already in operational state.
-            if (s_connectionStatus != ConnectionStatus.Connected
-                && _deviceConnectionStrings.Any())
+            if (ShouldClientBeInitialized(s_connectionStatus))
             {
+                // Allow a single thread to dispose and initialize the client instance.
                 lock (_initLock)
                 {
-                    _logger.LogDebug($"Attempting to initialize the client instance, current status={s_connectionStatus}");
-
-                    // If the device client instance has been previously initialized, then dispose it.
-                    // The s_wasEverConnected variable is required to store if the client ever reported Connected status.
-                    if (s_wasEverConnected && s_connectionStatus == ConnectionStatus.Disconnected)
+                    if (ShouldClientBeInitialized(s_connectionStatus))
                     {
-                        s_deviceClient?.Dispose();
-                        s_wasEverConnected = false;
+                        _logger.LogDebug($"Attempting to initialize the client instance, current status={s_connectionStatus}");
+
+                        // If the device client instance has been previously initialized, then dispose it.
+                        if (s_deviceClient != null)
+                        {
+                            s_deviceClient.Dispose();
+                            s_deviceClient = null;
+                        }
                     }
 
-                    s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _transportType);
+                    var options = new ClientOptions
+                    {
+                        SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,
+                    };
+
+                    s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _transportType, options);
                     s_deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
                     s_deviceClient.OperationTimeoutInMilliseconds = (uint)s_operationTimeout.TotalMilliseconds;
+
+                    _logger.LogDebug($"Initialized the client instance.");
                 }
 
                 try
                 {
-                    // Force connection now
+                    // Force connection now.
+                    // OpenAsync() is an idempotent call, it has the same effect if called once or multiple times on the same client.
                     s_deviceClient.OpenAsync().GetAwaiter().GetResult();
                     _logger.LogDebug($"Initialized the client instance.");
                 }
@@ -119,8 +131,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 case ConnectionStatus.Connected:
                     _logger.LogDebug("### The DeviceClient is CONNECTED; all operations will be carried out as normal.");
-
-                    s_wasEverConnected = true;
                     break;
 
                 case ConnectionStatus.Disconnected_Retrying:
@@ -190,7 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (s_connectionStatus == ConnectionStatus.Connected)
+                if (IsDeviceConnected)
                 {
                     _logger.LogInformation($"Device sending message {++messageCount} to IoT Hub...");
 
@@ -231,13 +241,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (s_connectionStatus != ConnectionStatus.Connected)
+                if (!IsDeviceConnected)
                 {
                     await Task.Delay(s_sleepDuration);
                     continue;
                 }
 
-                _logger.LogInformation($"Device waiting for C2D messages from the hub - for {s_sleepDuration}...");
+                _logger.LogInformation($"Device waiting for C2D messages from the hub for {s_sleepDuration}...");
                 _logger.LogInformation("Use the IoT Hub Azure Portal or Azure IoT Explorer to send a message to this device.");
 
                 try
@@ -297,6 +307,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await s_deviceClient.CompleteAsync(receivedMessage);
             _logger.LogInformation($"Completed message [{messageData}].");
+        }
+
+        // If the client reports Connected status, it is already in operational state.
+        // If the client reports Disconnected_retrying status, it is trying to recover its connection.
+        // If the client reports Disconnected status, you will need to dispose and recreate the client.
+        // If the client reports Disabled status, you will need to dispose and recreate the client.
+        private bool ShouldClientBeInitialized(ConnectionStatus connectionStatus)
+        {
+            return (connectionStatus == ConnectionStatus.Disconnected || connectionStatus == ConnectionStatus.Disabled)
+                && _deviceConnectionStrings.Any();
         }
     }
 }

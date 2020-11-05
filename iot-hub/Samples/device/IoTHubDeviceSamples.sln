@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileUploadSample", "FileUploadSample\FileUploadSample.csproj", "{B0E80EC3-9655-44E6-8671-34404879E557}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageSample", "MessageSample\MessageSample.csproj", "{5EF666EB-4C46-47CF-9175-C403DDFB24DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageReceiveSample", "MessageReceiveSample\MessageReceiveSample.csproj", "{5EF666EB-4C46-47CF-9175-C403DDFB24DD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MethodSample", "MethodSample\MethodSample.csproj", "{2834C055-7427-4742-BE88-0EC7E0B8FB1D}"
 EndProject
