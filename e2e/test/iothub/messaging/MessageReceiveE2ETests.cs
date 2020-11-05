@@ -713,10 +713,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             (Message firstMessage, _, _) = ComposeC2dTestMessage(Logger);
             Logger.Trace($"Sending C2D message from service, messageId={firstMessage.MessageId}");
             await Task
-                    .WhenAll(
-                        serviceClient.SendAsync(testDevice.Id, firstMessage),
-                        firstHandlerSemaphore.WaitAsync(firstCts.Token))
-                    .ConfigureAwait(false);
+                .WhenAll(
+                    serviceClient.SendAsync(testDevice.Id, firstMessage),
+                    firstHandlerSemaphore.WaitAsync(firstCts.Token))
+                .ConfigureAwait(false);
 
             // Set the second C2D message handler.
             await deviceClient.SetReceiveMessageHandlerAsync(
