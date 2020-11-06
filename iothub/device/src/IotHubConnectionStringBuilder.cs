@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Net;
 using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -294,9 +295,14 @@ namespace Microsoft.Azure.Devices.Client
         {
             IotHubName = GetIotHubName(HostName);
 
+            // We expect the hostname to be of the format "acme.azure-devices.net", in which case the IotHubName is "acme".
+            // For transparent gateway scenarios, we can simplify the input credentials to only specify the gateway device hostname,
+            // instead of having to specify both the IoT Hub hostname and the gateway device hostname.
+            // In this case, the hostname will be of the format "myGatewayDevice", and will not have ".azure-devices.net" suffix.
             if (IotHubName.IsNullOrWhiteSpace())
             {
-                throw new FormatException("Missing IOT hub name");
+                Logging.Info(this, $"Connecting to a gateway device with hostname=[{HostName}]");
+                IotHubName = HostName;
             }
         }
 
