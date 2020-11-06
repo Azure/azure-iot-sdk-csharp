@@ -316,14 +316,13 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             Assert.IsNotNull(iotHubConnectionStringBuilder.SharedAccessSignature);
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is DeviceAuthenticationWithToken);
 
-            try
-            {
-                iotHubConnectionStringBuilder.HostName = "adshgfvyregferuehfiuehr";
-                Assert.Fail("Expected FormatException");
-            }
-            catch (FormatException)
-            {               
-            }
+            iotHubConnectionStringBuilder.HostName = "adshgfvyregferuehfiuehr";
+            iotHubConnectionStringBuilder.AuthenticationMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1-.+%_#*?!(),=@;$'", "dGVzdFN0cmluZzE=");
+            Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is DeviceAuthenticationWithRegistrySymmetricKey);
+            Assert.IsTrue(iotHubConnectionStringBuilder.HostName == "adshgfvyregferuehfiuehr");
+            Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessSignature == null);
+            Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessKey == "dGVzdFN0cmluZzE=");
+            Assert.IsTrue(iotHubConnectionStringBuilder.DeviceId == "Device1-.+%_#*?!(),=@;$'");
 
             iotHubConnectionStringBuilder.HostName = "acme.azure-devices.net";
             iotHubConnectionStringBuilder.AuthenticationMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1-.+%_#*?!(),=@;$'", "dGVzdFN0cmluZzE=");
