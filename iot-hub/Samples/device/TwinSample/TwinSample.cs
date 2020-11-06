@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
+            Console.WriteLine("Press Control+C to quit the sample.");
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
