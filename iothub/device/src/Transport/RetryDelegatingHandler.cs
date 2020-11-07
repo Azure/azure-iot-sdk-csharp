@@ -278,14 +278,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     try
                     {
-                        await _handlerLock.WaitAsync().ConfigureAwait(false);
+                        await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
                         await base.EnableStreamsAsync(cancellationToken).ConfigureAwait(false);
                         Debug.Assert(!_deviceStreamingEnabled);
                         _deviceStreamingEnabled = true;
                     }
                     finally
                     {
-                        _handlerLock.Release();
+                        _handlerSemaphore.Release();
                     }
                 },
                 cancellationToken).ConfigureAwait(false);
@@ -308,14 +308,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     try
                     {
-                        await _handlerLock.WaitAsync().ConfigureAwait(false);
+                        await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
                         await base.DisableStreamsAsync(cancellationToken).ConfigureAwait(false);
                         Debug.Assert(_deviceStreamingEnabled);
                         _deviceStreamingEnabled = false;
                     }
                     finally
                     {
-                        _handlerLock.Release();
+                        _handlerSemaphore.Release();
                     }
                 },
                 cancellationToken).ConfigureAwait(false);

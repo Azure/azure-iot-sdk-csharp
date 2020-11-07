@@ -814,7 +814,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw new IotHubException("Device is now offline.", false);
             }
 
-            AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
+            AmqpIoTSession amqpIoTSession = await EnsureSessionIsOpenAsync(timeout).ConfigureAwait(false);
             bool gain = await _streamLinksLock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
