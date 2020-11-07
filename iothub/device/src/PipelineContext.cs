@@ -17,7 +17,11 @@ namespace Microsoft.Azure.Devices.Client
 
         public void Set<T>(string key, T value)
         {
-            if (Logging.IsEnabled) Logging.Info(this, $"{key} = {value}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, $"{key} = {value}");
+            }
+
             this.context[key] = value;
         }
 

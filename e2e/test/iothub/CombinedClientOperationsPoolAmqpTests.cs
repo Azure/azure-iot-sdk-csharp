@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize service client for service-side operations
-            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             // Message payload and properties for C2D operation
             var messagesSent = new Dictionary<string, Tuple<Message, string>>();
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Twin properties
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 IList<Task> initOperations = new List<Task>();
 
@@ -158,9 +158,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     await Task.WhenAll(initOperations).ConfigureAwait(false);
                 }
-            };
+            }
 
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 IList<Task> clientOperations = new List<Task>();
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -199,14 +199,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await Task.WhenAll(clientOperations).ConfigureAwait(false);
                 Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: All operations completed for device={testDevice.Id}");
-            };
+            }
 
-            Func<Task> cleanupOperation = () =>
+            Task CleanupOperationAsync()
             {
                 messagesSent.Clear();
                 twinPropertyMap.Clear();
                 return Task.FromResult(0);
-            };
+            }
 
             await PoolingOverAmqp
                 .TestPoolAmqpAsync(
@@ -214,9 +214,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport,
                     poolSize,
                     devicesCount,
-                    initOperation,
-                    testOperation,
-                    cleanupOperation,
+                    InitOperationAsync,
+                    TestOperationAsync,
+                    CleanupOperationAsync,
                     authScope,
                     false,
                     Logger)

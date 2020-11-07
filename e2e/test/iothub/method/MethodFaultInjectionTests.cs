@@ -253,16 +253,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
             // Configure the callback and start accepting method calls.
-            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAsync(MethodName, DeviceResponseJson, ServiceRequestJson)
                     .ConfigureAwait(false);
-            };
+            }
 
             // Call the method from the service side and verify the device received the call.
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
                 Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
@@ -274,7 +274,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     completedTask.GetAwaiter().GetResult();
                     tasks.Remove(completedTask);
                 }
-            };
+            }
+
+            // Cleanup references.
+            Task CleanupOperationAsync()
+            {
+                testDeviceCallbackHandler?.Dispose();
+                return Task.FromResult(false);
+            }
 
             await FaultInjection
                 .TestErrorInjectionAsync(
@@ -286,9 +293,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     reason,
                     delayInSec,
                     FaultInjection.DefaultDelayInSec,
-                    initOperation,
-                    testOperation,
-                    () => { return Task.FromResult<bool>(false); },
+                    InitOperationAsync,
+                    TestOperationAsync,
+                    CleanupOperationAsync,
                     Logger)
                 .ConfigureAwait(false);
         }

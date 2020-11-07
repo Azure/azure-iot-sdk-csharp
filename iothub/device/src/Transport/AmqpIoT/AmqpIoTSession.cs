@@ -27,9 +27,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private void AmqpSessionClosed(object sender, EventArgs e)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpSessionClosed)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(AmqpSessionClosed)}");
+            }
+
             Closed?.Invoke(this, e);
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpSessionClosed)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, $"{nameof(AmqpSessionClosed)}");
+            }
         }
 
         internal Task CloseAsync(TimeSpan timeout)
@@ -247,7 +254,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             TimeSpan timeout
         )
         {
-            if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
+            }
 
             AmqpLinkSettings amqpLinkSettings = new AmqpLinkSettings
             {
@@ -307,7 +317,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
+                }
             }
         }
 
@@ -322,7 +335,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             string correlationId,
             TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+            }
 
             uint prefetchCount = deviceIdentity.AmqpTransportSettings.PrefetchCount;
 
@@ -377,7 +393,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+                }
             }
         }
 

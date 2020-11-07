@@ -59,6 +59,27 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(client.InternalClient._desiredPropertyUpdateCallback, myCallback);
         }
 
+        [TestMethod]
+        public async Task DeviceClientDesiredPropertyUpdateCallbackUnsubscribes()
+        {
+            // arrange
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            client.InnerHandler = innerHandler;
+            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
+            var context = new object();
+
+            // act
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
+
+            // assert
+            await innerHandler
+                .Received(1)
+                .DisableTwinPatchAsync(Arg.Any<CancellationToken>())
+                .ConfigureAwait(false);
+        }
+
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
         [TestMethod]
         public async Task DeviceClientSetDesiredPropertyUpdateCallbackDoesNotRegisterForPatchesAfterFirstCall()
@@ -152,36 +173,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act and assert
             await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
-        }
-
-        // Tests_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackThrowsIfCallbackIsNull()
-        {
-            // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-
-            // act and assert
-#pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallback(null, null).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        // Tests_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncThrowsIfCallbackIsNull()
-        {
-            // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-
-            // act and assert
-            await client.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
         }
 
         //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.

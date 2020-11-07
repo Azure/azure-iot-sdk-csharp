@@ -31,13 +31,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _audience = deviceIdentity.Audience;
             _amqpIoTCbsTokenProvider = new AmqpIoTCbsTokenProvider(_connectionString);
 
-            if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
-            if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(_amqpIoTCbsLink)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
+            }
+
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, amqpCbsLink, $"{nameof(_amqpIoTCbsLink)}");
+            }
         }
 
         public async Task InitLoopAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(InitLoopAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, timeout, $"{nameof(InitLoopAsync)}");
+            }
+
             CancellationTokenSource oldTokenSource = _cancellationTokenSource;
             _cancellationTokenSource = new CancellationTokenSource();
             CancellationToken newToken = _cancellationTokenSource.Token;
@@ -58,14 +69,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 StartLoop(refreshOn, newToken);
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
+            }
         }
 
         public void StartLoop(DateTime refreshOn, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, refreshOn, $"{nameof(StartLoop)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, refreshOn, $"{nameof(StartLoop)}");
+            }
+
             _refreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
-            if (Logging.IsEnabled) Logging.Exit(this, refreshOn, $"{nameof(StartLoop)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, refreshOn, $"{nameof(StartLoop)}");
+            }
         }
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
@@ -75,7 +96,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (Logging.IsEnabled) Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)}");
+                }
 
                 if (waitTime > TimeSpan.Zero)
                 {
@@ -98,11 +122,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     }
                     catch (IotHubCommunicationException ex)
                     {
-                        if (Logging.IsEnabled) Logging.Info(this, refreshesOn, $"Refresh token failed {ex}");
+                        if (Logging.IsEnabled)
+                        {
+                            Logging.Info(this, refreshesOn, $"Refresh token failed {ex}");
+                        }
                     }
                     finally
                     {
-                        if (Logging.IsEnabled) Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
+                        if (Logging.IsEnabled)
+                        {
+                            Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
+                        }
                     }
 
                     waitTime = refreshesOn - DateTime.UtcNow;
@@ -112,7 +142,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public void StopLoop()
         {
-            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(StopLoop)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, $"{nameof(StopLoop)}");
+            }
+
             _cancellationTokenSource?.Cancel();
         }
 
@@ -124,9 +158,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
 
-            if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, disposing, $"{nameof(Dispose)}");
+            }
+
             if (disposing)
             {
                 StopLoop();

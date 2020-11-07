@@ -7,11 +7,10 @@ using System.Threading;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Common.Api;
 using System.Collections.Generic;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using DateTimeT = System.DateTime;
-
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
@@ -19,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         private volatile Stream _bodyStream;
         private bool _disposed;
-        private bool _ownsBodyStream;
+        private StreamDisposalResponsibility _streamDisposalResponsibility;
 
         private const long StreamCannotSeek = -1;
         private long _originalStreamPosition = StreamCannotSeek;
@@ -34,49 +33,45 @@ namespace Microsoft.Azure.Devices.Client
         {
             Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
-            InitializeWithStream(Stream.Null, true);
+            InitializeWithStream(Stream.Null, StreamDisposalResponsibility.Sdk);
         }
 
         /// <summary>
         /// Constructor which uses the argument stream as the body stream.
         /// </summary>
-        /// <param name="stream">a stream which will be used as body stream.</param>
         /// <remarks>User is expected to own the disposing of the stream when using this constructor.</remarks>
+        /// <param name="stream">A stream which will be used as body stream.</param>
         // UWP cannot expose a method with System.IO.Stream in signature. TODO: consider adding an IRandomAccessStream overload
         public Message(Stream stream)
             : this()
         {
             if (stream != null)
             {
-                InitializeWithStream(stream, false);
+                InitializeWithStream(stream, StreamDisposalResponsibility.App);
             }
         }
 
         /// <summary>
-        /// Constructor which uses the input byte array as the body
+        /// Constructor which uses the input byte array as the body.
         /// </summary>
-        /// <param name="byteArray">a byte array which will be used to
-        /// form the body stream</param>
-        /// <remarks>user should treat the input byte array as immutable when
-        /// sending the message.</remarks>
-        public Message(
-            byte[] byteArray)
+        /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
+        /// <param name="byteArray">A byte array which will be used to form the body stream.</param>
+        public Message(byte[] byteArray)
             : this(new MemoryStream(byteArray))
         {
-            // reset the owning of the steams
-            _ownsBodyStream = true;
+            // Reset the owning of the stream
+            _streamDisposalResponsibility = StreamDisposalResponsibility.Sdk;
         }
 
         /// <summary>
-        /// This constructor is only used on the Gateway http path so that
-        /// we can clean up the stream.
+        /// This constructor is only used on the Gateway HTTP path so that we can clean up the stream.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="ownStream"></param>
-        internal Message(Stream stream, bool ownStream)
+        /// <param name="stream">A stream which will be used as body stream.</param>
+        /// <param name="streamDisposalResponsibility">Indicates if the stream passed in should be disposed by the client library, or by the calling application.</param>
+        internal Message(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
             : this(stream)
         {
-            _ownsBodyStream = ownStream;
+            _streamDisposalResponsibility = streamDisposalResponsibility;
         }
 
         /// <summary>
@@ -103,9 +98,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// [Optional] The time when this message is considered expired
         /// </summary>
-        public DateTimeT ExpiryTimeUtc
+        public DateTime ExpiryTimeUtc
         {
-            get => GetSystemProperty<DateTimeT>(MessageSystemPropertyNames.ExpiryTimeUtc);
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
             internal set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
         }
 
@@ -153,11 +148,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Time when the message was received by the server
+        /// Date and time when the device-to-cloud message was received by the server.
         /// </summary>
-        public DateTimeT EnqueuedTimeUtc
+        public DateTime EnqueuedTimeUtc
         {
-            get => GetSystemProperty<DateTimeT>(MessageSystemPropertyNames.EnqueuedTime);
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
             internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
         }
 
@@ -198,9 +193,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Custom date property set by the originator of the message.
         /// </summary>
-        public DateTimeT CreationTimeUtc
+        public DateTime CreationTimeUtc
         {
-            get => GetSystemProperty<DateTimeT>(MessageSystemPropertyNames.CreationTimeUtc);
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
             set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
         }
 
@@ -339,12 +334,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="byteArray"/> on it.
         /// </summary>
+        /// <remarks>
+        /// The cloned message has the message <see cref="MessageId" /> as the original message.
+        /// User should treat the input byte array as immutable when sending the message.
+        /// </remarks>
         /// <param name="byteArray">Message content to be set after clone.</param>
         /// <returns>A new instance of <see cref="Message"/> with body content defined by <paramref name="byteArray"/>,
         /// and user/system properties of the cloned <see cref="Message"/> instance.
         /// </returns>
-        /// <remarks>user should treat the input byte array as immutable when
-        /// sending the message.</remarks>
         public Message CloneWithBody(in byte[] byteArray)
         {
             var result = new Message(byteArray);
@@ -396,12 +393,12 @@ namespace Microsoft.Azure.Devices.Client
             Interlocked.Exchange(ref _sizeInBytesCalled, 1);
         }
 
-        private void InitializeWithStream(Stream stream, bool ownsStream)
+        private void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
             _bodyStream = stream;
-            _ownsBodyStream = ownsStream;
+            _streamDisposalResponsibility = streamDisposalResponsibility;
 
             if (_bodyStream.CanSeek)
             {
@@ -442,7 +439,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-                    if (_bodyStream != null && _ownsBodyStream)
+                    if (_bodyStream != null && _streamDisposalResponsibility == StreamDisposalResponsibility.Sdk)
                     {
                         _bodyStream.Dispose();
                         _bodyStream = null;

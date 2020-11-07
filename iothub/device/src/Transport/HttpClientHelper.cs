@@ -438,7 +438,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 msg.Headers.UserAgent.ParseAdd(this.productInfo.ToString(UserAgentFormats.Http));
 
-                if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
+                if (modifyRequestMessageAsync != null)
+                {
+                    await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
+                }
 
                 // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.
                 HttpResponseMessage responseMsg;

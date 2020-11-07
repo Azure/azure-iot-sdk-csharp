@@ -59,6 +59,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeoutHelper));
         }
 
+        public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.EnableReceiveMessageAsync(cancellationToken));
+        }
+
+        public override Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.DisableReceiveMessageAsync(cancellationToken));
+        }
+
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableMethodsAsync(cancellationToken));
@@ -83,7 +93,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableTwinPatchAsync(cancellationToken));
         }
-        
+
+        public override Task DisableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.DisableTwinPatchAsync(cancellationToken));
+        }
+
         public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinGetAsync(cancellationToken));
@@ -189,7 +204,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
+                }
 
                 try
                 {
@@ -197,7 +215,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 catch (Exception exception) when (!exception.IsFatal())
                 {
-                    if (Logging.IsEnabled) Logging.Error(this, $"Exception caught: {exception}");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, $"Exception caught: {exception}");
+                    }
 
                     if (IsSecurityExceptionChain(exception))
                     {
@@ -221,7 +242,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
+                }
             }
         }
     }

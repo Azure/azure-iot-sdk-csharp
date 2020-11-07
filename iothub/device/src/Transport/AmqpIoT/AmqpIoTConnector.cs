@@ -39,7 +39,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public async Task<AmqpIoTConnection> OpenConnectionAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(OpenConnectionAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, timeout, $"{nameof(OpenConnectionAsync)}");
+            }
 
             var amqpSettings = new AmqpSettings();
             var amqpTransportProvider = new AmqpTransportProvider();
@@ -69,7 +72,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpConnection.Closed += amqpIoTConnection.AmqpConnectionClosed;
                 await amqpConnection.OpenAsync(timeout).ConfigureAwait(false);
 
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
+                }
+
                 return amqpIoTConnection;
             }
             catch (Exception e) when (!e.IsFatal())
@@ -79,7 +86,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
+                }
             }
         }
 
@@ -116,9 +126,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
 
-            if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, disposing, $"{nameof(Dispose)}");
+            }
 
             _disposed = true;
         }

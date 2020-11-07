@@ -283,14 +283,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var props = new TwinCollection();
 
             // Configure the callback and start accepting twin changes.
-            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
-            };
+            }
 
             // Change the twin from the service side and verify the device received it.
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
                 var propValue = Guid.NewGuid().ToString();
                 testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
@@ -307,7 +307,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     completedTask.GetAwaiter().GetResult();
                     tasks.Remove(completedTask);
                 }
-            };
+            }
+
+            // Cleanup references.
+            Task CleanupOperationAsync()
+            {
+                testDeviceCallbackHandler?.Dispose();
+                return Task.FromResult(false);
+            }
 
             await FaultInjection
                 .TestErrorInjectionAsync(
@@ -319,9 +326,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     reason,
                     delayInSec,
                     FaultInjection.DefaultDurationInSec,
-                    initOperation,
-                    testOperation,
-                    () => { return Task.FromResult(false); },
+                    InitOperationAsync,
+                    TestOperationAsync,
+                    CleanupOperationAsync,
                     Logger)
                 .ConfigureAwait(false);
         }

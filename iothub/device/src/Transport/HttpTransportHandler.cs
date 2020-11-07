@@ -139,7 +139,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected override void Dispose(bool disposing)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
 
             base.Dispose(disposing);
             if (disposing)
@@ -314,6 +317,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new NotSupportedException("HTTP protocol does not support setting callbacks for receiving messages." +
+                " You can either call DeviceClient.ReceiveAsync() to wait and receive messages," +
+                " or set the callback over MQTT or AMQP.");
+        }
+
+        public override Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new NotSupportedException("HTTP protocol does not support setting callbacks for receiving messages." +
+                " You can either call DeviceClient.ReceiveAsync() to wait and receive messages," +
+                " or set the callback over MQTT or AMQP.");
+        }
+
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(
@@ -369,6 +388,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
+        // This is for invoking methods from an edge module to another edge device or edge module.
         internal Task<MethodInvokeResponse> InvokeMethodAsync(MethodInvokeRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(_moduleId))

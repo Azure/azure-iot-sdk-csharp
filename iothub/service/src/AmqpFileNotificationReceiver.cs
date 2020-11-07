@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices
 
         Task<ReceivingAmqpLink> CreateReceivingLinkAsync(TimeSpan timeout)
         {
-            return this.Connection.CreateReceivingLink(this.receivingPath, timeout, 0);
+            return this.Connection.CreateReceivingLinkAsync(this.receivingPath, timeout, 0);
         }
 
         public override Task CompleteAsync(FileNotification fileNotification)

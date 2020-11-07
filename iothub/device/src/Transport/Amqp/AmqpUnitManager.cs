@@ -28,17 +28,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
-            Func<MethodRequestInternal, Task> methodHandler,
+            Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection> twinMessageListener,
-            Func<string, Message, Task> eventListener,
+            Func<string, Message, Task> onModuleMessageReceivedCallback,
+            Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
             IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(deviceIdentity.IotHubConnectionString.HostName);
             return amqpConnectionPool.CreateAmqpUnit(
                 deviceIdentity,
-                methodHandler,
+                onMethodCallback,
                 twinMessageListener,
-                eventListener,
+                onModuleMessageReceivedCallback,
+                onDeviceMessageReceivedCallback,
                 onUnitDisconnected);
         }
 
@@ -60,7 +62,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     _amqpConnectionPools.Add(host, amqpConnectionPool);
                 }
 
-                if (Logging.IsEnabled) Logging.Associate(this, amqpConnectionPool, $"{nameof(ResolveConnectionPool)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Associate(this, amqpConnectionPool, $"{nameof(ResolveConnectionPool)}");
+                }
+
                 return amqpConnectionPool;
             }
         }

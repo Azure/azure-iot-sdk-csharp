@@ -17,12 +17,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
-            Func<MethodRequestInternal, Task> methodHandler,
+            Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection> twinMessageListener,
-            Func<string, Message, Task> eventListener,
+            Func<string, Message, Task> onModuleMessageReceivedCallback,
+            Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
+            }
+
             if (deviceIdentity.IsPooling())
             {
                 AmqpConnectionHolder amqpConnectionHolder;
@@ -32,19 +37,44 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, deviceIdentity);
                 }
 
-                if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-                return amqpConnectionHolder.CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener, onUnitDisconnected);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
+                }
+
+                return amqpConnectionHolder.CreateAmqpUnit(
+                    deviceIdentity,
+                    onMethodCallback,
+                    twinMessageListener,
+                    onModuleMessageReceivedCallback,
+                    onDeviceMessageReceivedCallback,
+                    onUnitDisconnected);
             }
             else
             {
-                if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-                return new AmqpConnectionHolder(deviceIdentity).CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener, onUnitDisconnected);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
+                }
+
+                return new AmqpConnectionHolder(deviceIdentity)
+                    .CreateAmqpUnit(
+                        deviceIdentity,
+                        onMethodCallback,
+                        twinMessageListener,
+                        onModuleMessageReceivedCallback,
+                        onDeviceMessageReceivedCallback,
+                        onUnitDisconnected);
             }
         }
 
         public void RemoveAmqpUnit(AmqpUnit amqpUnit)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
+            }
+
             DeviceIdentity deviceIdentity = amqpUnit.GetDeviceIdentity();
             if (deviceIdentity.IsPooling())
             {
@@ -57,7 +87,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpConnectionHolder.RemoveAmqpUnit(amqpUnit);
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
+            }
         }
 
         private AmqpConnectionHolder[] ResolveConnectionGroup(DeviceIdentity deviceIdentity)
@@ -87,14 +120,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, DeviceIdentity deviceIdentity)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(ResolveConnectionByHashing)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, deviceIdentity, $"{nameof(ResolveConnectionByHashing)}");
+            }
+
             int index = Math.Abs(deviceIdentity.GetHashCode()) % pool.Length;
             if (pool[index] == null)
             {
                 pool[index] = new AmqpConnectionHolder(deviceIdentity);
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(ResolveConnectionByHashing)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, deviceIdentity, $"{nameof(ResolveConnectionByHashing)}");
+            }
+
             return pool[index];
         }
     }

@@ -46,9 +46,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             if (operation?.RegistrationState?.Tpm?.AuthenticationKey == null)
             {
-                if (Logging.IsEnabled) Logging.Error(
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(
                     this,
                     $"Authentication key not found. OperationId=${operation?.OperationId}");
+                }
 
                 throw new ProvisioningTransportException(
                     "Authentication key not found.",
@@ -57,7 +60,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);
-            if (Logging.IsEnabled) Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
+            if (Logging.IsEnabled)
+            {
+                Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
+            }
 
             _security.ActivateIdentityKey(key);
         }

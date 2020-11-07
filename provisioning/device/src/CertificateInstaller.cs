@@ -28,15 +28,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             catch (Exception ex)
             {
-                if (Logging.IsEnabled) Logging.Error(
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(
                      null,
                      $"{nameof(CertificateInstaller)} failed to read store: {ex}.");
+                }
             }
         }
 
         public static void EnsureChainIsInstalled(X509Certificate2Collection certificates)
         {
-            if (certificates == null) return;
+            if (certificates == null)
+            {
+                return;
+            }
 
             lock (s_lock)
             {
@@ -49,7 +55,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         if (!s_installedCertificates.Contains(certificate.Thumbprint))
                         {
                             if (Logging.IsEnabled)
+                            {
                                 Logging.Info(null, $"{nameof(CertificateInstaller)} adding {certificate.Thumbprint}");
+                            }
 
                             store.Add(certificate);
                             s_installedCertificates.Add(certificate.Thumbprint);

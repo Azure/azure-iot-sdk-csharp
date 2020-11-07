@@ -72,7 +72,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+            }
 
             if (message == null)
             {
@@ -120,7 +123,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
                 else
                 {
-                    if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
+                    }
+
                     throw new NotSupportedException(
                         $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
                 }
@@ -129,16 +136,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
-                if (Logging.IsEnabled) Logging.Error(
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(
                     this,
                     $"{nameof(ProvisioningTransportHandlerMqtt)} threw exception {ex}",
                     nameof(RegisterAsync));
+                }
 
                 throw new ProvisioningTransportException($"MQTT transport exception", ex, true);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+                }
             }
         }
 
@@ -225,10 +238,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
                 }));
 
-            if (Logging.IsEnabled) Logging.Associate(bootstrap, this);
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(bootstrap, this);
+            }
 
             IPAddress[] addresses = await Dns.GetHostAddressesAsync(message.GlobalDeviceEndpoint).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Info(this, $"DNS resolved {addresses.Length} addresses.");
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, $"DNS resolved {addresses.Length} addresses.");
+            }
 
             IChannel channel = null;
             Exception lastException = null;
@@ -238,7 +257,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 try
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}.");
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"Connecting to {address.ToString()}.");
+                    }
+
                     channel = await bootstrap.ConnectAsync(address, Port).ConfigureAwait(false);
                     break;
                 }
@@ -249,9 +272,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         if (ex is ConnectException)     // We will handle DotNetty.Transport.Channels.ConnectException
                         {
                             lastException = ex;
-                            if (Logging.IsEnabled) Logging.Info(
+                            if (Logging.IsEnabled)
+                            {
+                                Logging.Info(
                                 this,
                                 $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}");
+                            }
+
                             return true;
                         }
 
@@ -263,7 +290,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (channel == null)
             {
                 string errorMessage = "Cannot connect to Provisioning Service.";
-                if (Logging.IsEnabled) Logging.Error(this, errorMessage);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, errorMessage);
+                }
+
                 ExceptionDispatchInfo.Capture(lastException).Throw();
             }
 

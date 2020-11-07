@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices
 {
-    internal class AmqpIoTTransportLog : AmqpTrace
+    // This class overrides the trace providers available in Azure.Amqp library to
+    // write into the service client log provider as well.
+    internal class AmqpTransportLog : AmqpTrace
     {
         public override void AmqpAbortThrowingException(string exception)
         {

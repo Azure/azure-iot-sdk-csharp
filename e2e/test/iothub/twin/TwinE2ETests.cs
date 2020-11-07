@@ -81,6 +81,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Mqtt()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType.Mqtt_Tcp_Only, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_MqttWs()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType.Mqtt_WebSocket_Only, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Amqp()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType.Amqp_Tcp_Only, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_AmqpWs()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType.Amqp_WebSocket_Only, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Mqtt_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
@@ -391,7 +415,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType transport, Func<DeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType transport, object propValue)
+        {
+            var propName = Guid.NewGuid().ToString();
+
+            Logger.Trace($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            
+            // Set a callback
+            await deviceClient.
+                SetDesiredPropertyUpdateCallbackAsync(
+                    (patch, context) =>
+                    {
+                        Logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
+                        
+                        // After unsubscribing it should never reach here
+                        Assert.IsNull(patch);
+
+                        return Task.FromResult<bool>(true);
+                    },
+                    null)
+                .ConfigureAwait(false);
+
+            // Unsubscribe
+            await deviceClient
+                .SetDesiredPropertyUpdateCallbackAsync(null, null)
+                .ConfigureAwait(false);
+
+            await RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue)
+                .ConfigureAwait(false);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+        }
+
+            private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType transport, Func<DeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
         {
             var propName = Guid.NewGuid().ToString();
 
@@ -406,6 +465,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
                 updateReceivedTask).ConfigureAwait(false);
 
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 

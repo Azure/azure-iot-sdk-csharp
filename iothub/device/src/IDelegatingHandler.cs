@@ -27,10 +27,14 @@ namespace Microsoft.Azure.Devices.Client
 
         Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
 
-        // Telemetry downlink.
+        // Telemetry downlink for devices.
         Task<Message> ReceiveAsync(CancellationToken cancellationToken);
 
         Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper);
+
+        Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
+
+        Task DisableReceiveMessageAsync(CancellationToken cancellationToken);
 
         Task RejectAsync(string lockToken, CancellationToken cancellationToken);
 
@@ -63,5 +67,7 @@ namespace Microsoft.Azure.Devices.Client
         Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken);
 
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
+
+        Task DisableTwinPatchAsync(CancellationToken cancellationToken);
     }
 }

@@ -7,11 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
     using System.Collections.Generic;
-    using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Transport;
+    using FluentAssertions;
     using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+    using Microsoft.Azure.Devices.Client.Transport;
 
     [TestClass]
     [TestCategory("Unit")]
@@ -55,12 +55,46 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public void HttpTransportHandler_EnableReceiveMessageAsync_ThrowsNotSupportedException()
+        {
+            // arrange
+            using var tokenSource = new CancellationTokenSource();
+            HttpTransportHandler mockTransport = CreateFromConnectionString();
+
+            // act
+            Func<Task> act = async () =>
+            {
+                await mockTransport.EnableReceiveMessageAsync(tokenSource.Token).ConfigureAwait(false);
+            };
+
+            // assert
+            act.Should().Throw<NotSupportedException>();
+        }
+
+        [TestMethod]
+        public void HttpTransportHandler_DisableReceiveMessageAsync_ThrowsNotSupportedException()
+        {
+            // arrange
+            using var tokenSource = new CancellationTokenSource();
+            HttpTransportHandler mockTransport = CreateFromConnectionString();
+
+            // act
+            Func<Task> act = async () =>
+            {
+                await mockTransport.DisableReceiveMessageAsync(tokenSource.Token).ConfigureAwait(false);
+            };
+
+            // assert
+            act.Should().Throw<NotSupportedException>();
+        }
+
         HttpTransportHandler CreateFromConnectionString()
         {
             return new HttpTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(DumpyConnectionString), new Http1TransportSettings());
         }
 
-        async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             using var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();

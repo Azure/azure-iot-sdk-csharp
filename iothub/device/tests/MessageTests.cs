@@ -6,8 +6,9 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System;
     using System.IO;
     using System.Text;
-
+    using FluentAssertions;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -136,16 +137,16 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DisposingOwnedStreamTest()
         {
-            // ownStream = true
+            // SDK should dispose the stream.
             var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            var msg = new Message(ms, true);
+            var msg = new Message(ms, StreamDisposalResponsibility.Sdk);
             msg.Dispose();
 
             TestAssert.Throws<ObjectDisposedException>(() => ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5));
 
-            // ownStream = false
+            // The calling application will dispose the stream.
             ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            msg = new Message(ms, false);
+            msg = new Message(ms, StreamDisposalResponsibility.App);
             msg.Dispose();
 
             ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5);
@@ -169,59 +170,82 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void CloneWithBodyTest()
         {
-            using (var original = new Message(Encoding.UTF8.GetBytes("Original copy")))
+            // arrange
+            string contentEncoding = "gzip";
+            string contentType = "text/plain";
+            string userId = "JohnDoe";
+            string messageId = Guid.NewGuid().ToString();
+            string propName1 = "test1";
+            string propValue1 = "test_v_1";
+            string propName2 = "test2";
+            string propValue2 = "test_v_2";
+            string originalMessageContent = "Original copy";
+            using var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
             {
-                original.Properties["test1"] = "test_v_1";
-                original.Properties["test2"] = "test_v_2";
+                MessageId = messageId,
+                ContentEncoding = contentEncoding,
+                ContentType = contentType,
+                UserId = userId,
+                Properties =
+                {
+                    { propName1, propValue1 },
+                    { propName2, propValue2 },
+                },
+            };
 
-                original.ContentEncoding = "gzip";
-                original.ContentType = "text/plain";
-                original.UserId = "JohnDoe";
+            // act
+            string clonedMessageContent = "Cloned version";
+            using var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
 
-                using (var clone = original.CloneWithBody(Encoding.UTF8.GetBytes("Cloned version")))
-                { 
-                    Assert.AreEqual("test_v_1", clone.Properties["test1"]);
-                    Assert.AreEqual("test_v_2", clone.Properties["test2"]);
+            // assert
+            clonedMessage.Properties.Count.Should().Be(2);
+            clonedMessage.Properties[propName1].Should().Be(propValue1, "Cloned message should have the original message's properties.");
+            clonedMessage.Properties[propName2].Should().Be(propValue2, "Cloned message should have the original message's properties.");
+            clonedMessage.ContentEncoding.Should().Be(contentEncoding, "Cloned message should have the original message's system properties.");
+            clonedMessage.ContentType.Should().Be(contentType, "Cloned message should have the original message's system properties.");
+            clonedMessage.UserId.Should().Be(userId, "Cloned message should have the original message's system properties.");
+            clonedMessage.MessageId.Should().Be(messageId, "Cloned message should have the original message's system properties.");
 
-                    Assert.AreEqual("gzip", clone.ContentEncoding);
-                    Assert.AreEqual("text/plain", clone.ContentType);
-                    Assert.AreEqual("JohnDoe", clone.UserId);
-
-                    var clonedContent = default(string);
-
-                    using (var reader = new StreamReader(clone.BodyStream, Encoding.UTF8))
-                    {
-                        clonedContent = reader.ReadToEnd();
-                    }
-                
-                    Assert.AreEqual("Cloned version", clonedContent);
-                }
-            }
+            using var originalContentReader = new StreamReader(originalMessage.BodyStream, Encoding.UTF8);
+            string originalContent = originalContentReader.ReadToEnd();
+            using var clonedContentReader = new StreamReader(clonedMessage.BodyStream, Encoding.UTF8);
+            string clonedContent = clonedContentReader.ReadToEnd();
+            clonedContent.Should().NotBe(originalContent, "Cloned message was initialized with a different content body.");
+            clonedContent.Should().Be(clonedMessageContent, $"Cloned message was initialized with \"{clonedMessageContent}\" as content body.");
         }
 
         [TestMethod]
         public void CloneWithBodyWithNullTest()
         {
-            using (var original = new Message(Encoding.UTF8.GetBytes("Original copy")))
+            // arrange
+            string contentEncoding = "gzip";
+            string propName1 = "test1";
+            string propValue1 = "test_v_1";
+            string propName2 = "test2";
+            string originalMessageContent = "Original copy";
+            using var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
             {
-                original.Properties["test1"] = "test_v_1";
-                original.Properties["test2"] = null;
+                ContentEncoding = contentEncoding,
+                ContentType = null,
+                Properties =
+                {
+                    { propName1, propValue1 },
+                    { propName2, null },
+                },
+            };
 
-                original.ContentEncoding = "gzip";
-                original.ContentType = null;
+            // act
+            string clonedMessageContent = "Cloned version";
+            using var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
 
-                using (var clone = original.CloneWithBody(Encoding.UTF8.GetBytes("Cloned version")))
-                {                    
-                    Assert.AreEqual("test_v_1", clone.Properties["test1"]);
-                    Assert.AreEqual(null, clone.Properties["test2"]);
-                    Assert.AreEqual(2, clone.Properties.Count);
-
-                    Assert.AreEqual("gzip", clone.ContentEncoding);                    
-                    Assert.IsTrue(clone.SystemProperties.Keys.Contains(MessageSystemPropertyNames.ContentType));
-                    Assert.IsNull(clone.SystemProperties[MessageSystemPropertyNames.ContentType]);
-                    Assert.IsFalse(clone.SystemProperties.Keys.Contains(MessageSystemPropertyNames.UserId));
-                }
-            }
+            // assert
+            clonedMessage.Properties.Count.Should().Be(2);
+            clonedMessage.Properties[propName1].Should().Be(propValue1, "Cloned message should have the original message's properties.");
+            clonedMessage.Properties[propName2].Should().BeNull("Cloned message should have the original message's properties.");
+            clonedMessage.ContentEncoding.Should().Be(contentEncoding, "Cloned message should have the original message's system properties.");
+            clonedMessage.SystemProperties.Keys.Should().Contain(MessageSystemPropertyNames.ContentType);
+            clonedMessage.ContentType.Should().BeNull("Cloned message should have the original message's system properties.");
+            clonedMessage.MessageId.Should().BeNull("Cloned message should have the original message's system properties.");
         }
     }
 }

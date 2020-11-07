@@ -43,6 +43,11 @@ namespace Microsoft.Azure.Devices.Client
         public static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
+        /// The default idle timeout
+        /// </summary>
+        public static readonly TimeSpan DefaultIdleTimeout = TimeSpan.FromMinutes(2);
+
+        /// <summary>
         /// The default prefetch count
         /// </summary>
         public const uint DefaultPrefetchCount = 50;
@@ -76,6 +81,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             OperationTimeout = DefaultOperationTimeout;
             OpenTimeout = DefaultOpenTimeout;
+            IdleTimeout = DefaultIdleTimeout;
 
             PrefetchCount = prefetchCount <= 0
                 ? throw new ArgumentOutOfRangeException(nameof(prefetchCount), "Must be greater than zero")
@@ -103,7 +109,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Specify client-side heartbeat interval
+        /// Specify client-side heartbeat interval.
+        /// The default value is 2 minutes.
         /// </summary>
         public TimeSpan IdleTimeout { get; set; }
 

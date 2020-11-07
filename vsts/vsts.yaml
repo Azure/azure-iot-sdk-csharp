@@ -20,6 +20,7 @@ jobs:
   ### Linux build ###
   - job: LINUX
     displayName: Linux
+    timeoutInMinutes: 75
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
@@ -32,7 +33,6 @@ jobs:
     condition: succeeded()
     pool:
       name: Hosted Ubuntu 1604
-      timeoutInMinutes: 180
     steps:
       - task: Docker@1
         displayName: "Start TPM Simulator"
@@ -119,6 +119,7 @@ jobs:
   ### Windows build ###
   - job: WINDOWS
     displayName: Windows
+    timeoutInMinutes: 75
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
@@ -135,7 +136,6 @@ jobs:
     condition: succeeded()
     pool:
       name: Hosted VS2017
-      timeoutInMinutes: 180
     steps:
       - script: |
           call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
@@ -223,11 +223,11 @@ jobs:
   ### WINDOWS Analyzers ###
   - job: Analyzers
     displayName: Analyzers
+    timeoutInMinutes: 60
 
     condition: succeeded()
     pool:
       name: Hosted VS2017
-      timeoutInMinutes: 60
     steps:
       - script: |
           rem Run dotnet first experience.

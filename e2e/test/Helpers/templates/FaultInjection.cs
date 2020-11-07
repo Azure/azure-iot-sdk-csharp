@@ -67,9 +67,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         public static bool FaultShouldDisconnect(string faultType)
         {
-            return (faultType != FaultType_Auth) &&
-                (faultType != FaultType_Throttle) &&
-                (faultType != FaultType_QuotaExceeded);
+            return faultType != FaultType_Auth
+                && faultType != FaultType_Throttle
+                && faultType != FaultType_QuotaExceeded;
         }
 
         // Fault timings:
@@ -107,14 +107,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http1) throw;
+                if (transport == Client.TransportType.Http1)
+                {
+                    throw;
+                }
             }
             catch (TimeoutException ex)
             {
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http1) throw;
+                if (transport == Client.TransportType.Http1)
+                {
+                    throw;
+                }
             }
             finally
             {
@@ -182,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // For disconnect type faults, the device should disconnect and recover.
                 if (FaultShouldDisconnect(faultType))
                 {
-                    logger.Trace($"{nameof(FaultInjection)}: Confirming fault injection has been actived.");
+                    logger.Trace($"{nameof(FaultInjection)}: Confirming fault injection has been activated.");
                     // Check that service issued the fault to the faulting device
                     bool isFaulted = false;
                     for (int i = 0; i < LatencyTimeBufferInSec; i++)
@@ -197,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     }
 
                     Assert.IsTrue(isFaulted, $"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
-                    logger.Trace($"{nameof(FaultInjection)}: Confirmed fault injection has been actived.");
+                    logger.Trace($"{nameof(FaultInjection)}: Confirmed fault injection has been activated.");
 
                     // Check the device is back online
                     logger.Trace($"{nameof(FaultInjection)}: Confirming device back online.");

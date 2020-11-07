@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IotHubConnectionString connectionString = context.Get<IotHubConnectionString>();
             InternalClient.OnMethodCalledDelegate onMethodCallback = context.Get<InternalClient.OnMethodCalledDelegate>();
             Action<TwinCollection> onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
-            InternalClient.OnReceiveEventMessageCalledDelegate onReceiveCallback = context.Get<InternalClient.OnReceiveEventMessageCalledDelegate>();
+            InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.Get<InternalClient.OnModuleEventMessageReceivedDelegate>();
+            InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.Get<InternalClient.OnDeviceMessageReceivedDelegate>();
 
             switch (transportSetting.GetTransportType())
             {
@@ -32,7 +33,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         transportSetting as AmqpTransportSettings,
                         new Func<MethodRequestInternal, Task>(onMethodCallback),
                         onDesiredStatePatchReceived,
-                        new Func<string, Message, Task>(onReceiveCallback));
+                        new Func<string, Message, Task>(onModuleEventReceivedCallback),
+                        new Func<Message, Task>(onDeviceMessageReceivedCallback));
 
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
@@ -45,7 +47,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         transportSetting as MqttTransportSettings,
                         new Func<MethodRequestInternal, Task>(onMethodCallback),
                         onDesiredStatePatchReceived,
-                        new Func<string, Message, Task>(onReceiveCallback));
+                        new Func<string, Message, Task>(onModuleEventReceivedCallback),
+                        new Func<Message, Task>(onDeviceMessageReceivedCallback));
 
                 default:
                     throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));

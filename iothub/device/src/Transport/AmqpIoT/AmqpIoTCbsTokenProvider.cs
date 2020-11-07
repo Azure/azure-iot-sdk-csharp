@@ -22,7 +22,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIoTCbsTokenProvider.GetTokenAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIoTCbsTokenProvider.GetTokenAsync)}");
+                }
 
                 string tokenValue;
                 DateTime expiresOn;
@@ -34,7 +37,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 }
                 else
                 {
-                    if (Logging.IsEnabled && (_connectionString.TokenRefresher == null)) Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(AmqpIoTCbsTokenProvider.GetTokenAsync));
+                    if (Logging.IsEnabled && (_connectionString.TokenRefresher == null))
+                    {
+                        Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(AmqpIoTCbsTokenProvider.GetTokenAsync));
+                    }
+
                     Debug.Assert(_connectionString.TokenRefresher != null);
                     tokenValue = await _connectionString.TokenRefresher.GetTokenAsync(_connectionString.Audience).ConfigureAwait(false);
                     expiresOn = _connectionString.TokenRefresher.RefreshesOn;
@@ -44,7 +51,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIoTCbsTokenProvider.GetTokenAsync)}");
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIoTCbsTokenProvider.GetTokenAsync)}");
+                }
             }
         }
     }

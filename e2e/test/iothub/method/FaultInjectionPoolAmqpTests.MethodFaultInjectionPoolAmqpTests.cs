@@ -737,44 +737,51 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             var testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
 
-            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
+                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
 
                 Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method callback handler for device {testDevice.Id}");
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson)
                     .ConfigureAwait(false);
-            };
+            }
 
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 TestDeviceCallbackHandler testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
                 Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
-                Task serviceSendTask = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(
-                    testDevice.Id,
-                    MethodName,
-                    MethodE2ETests.DeviceResponseJson,
-                    MethodE2ETests.ServiceRequestJson,
-                    Logger);
+                Task serviceSendTask = MethodE2ETests
+                    .ServiceSendMethodAndVerifyResponseAsync(
+                        testDevice.Id,
+                        MethodName,
+                        MethodE2ETests.DeviceResponseJson,
+                        MethodE2ETests.ServiceRequestJson,
+                        Logger);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
 
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
-            };
+            }
 
-            Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
+            async Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
             {
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     deviceClient.Dispose();
                 }
 
+                foreach (KeyValuePair<string, TestDeviceCallbackHandler> entry in testDevicesWithCallbackHandler)
+                {
+                    TestDeviceCallbackHandler testDeviceCallbackHandler = entry.Value;
+                    testDeviceCallbackHandler?.Dispose();
+                }
+
                 testDevicesWithCallbackHandler.Clear();
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
-            };
+            }
 
             await FaultInjectionPoolingOverAmqp
                 .TestFaultInjectionPoolAmqpAsync(
@@ -787,9 +794,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     reason,
                     delayInSec,
                     durationInSec,
-                    initOperation,
-                    testOperation,
-                    cleanupOperation,
+                    InitOperationAsync,
+                    TestOperationAsync,
+                    CleanupOperationAsync,
                     authScope,
                     Logger)
                 .ConfigureAwait(false);

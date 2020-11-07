@@ -1433,36 +1433,38 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
                 await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
-            };
+            }
 
-            Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
+            async Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
             {
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     deviceClient.Dispose();
                 }
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
-            };
+            }
 
-            await FaultInjectionPoolingOverAmqp.TestFaultInjectionPoolAmqpAsync(
-                Twin_DevicePrefix,
-                transport,
-                proxyAddress,
-                poolSize,
-                devicesCount,
-                faultType,
-                reason,
-                delayInSec,
-                durationInSec,
-                (d, t) => { return Task.FromResult(false); },
-                testOperation,
-                cleanupOperation,
-                authScope,
-                Logger).ConfigureAwait(false);
+            await FaultInjectionPoolingOverAmqp
+                .TestFaultInjectionPoolAmqpAsync(
+                    Twin_DevicePrefix,
+                    transport,
+                    proxyAddress,
+                    poolSize,
+                    devicesCount,
+                    faultType,
+                    reason,
+                    delayInSec,
+                    durationInSec,
+                    (d, t, h) => { return Task.FromResult(false); },
+                    TestOperationAsync,
+                    CleanupOperationAsync,
+                    authScope,
+                    Logger)
+                .ConfigureAwait(false);
         }
 
         private async Task Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -1478,12 +1480,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
-            Dictionary<string, List<string>> twinPropertyMap = new Dictionary<string, List<string>>();
-            Dictionary<string, TestDeviceCallbackHandler> testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
+            var twinPropertyMap = new Dictionary<string, List<string>>();
+            var testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
 
-            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, Logger);
+                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
 
                 var propName = Guid.NewGuid().ToString();
@@ -1493,11 +1495,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
                 Logger.Trace($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp)}: name={propName}, value={propValue}");
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
-            };
+            }
 
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                var testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
+                TestDeviceCallbackHandler testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
@@ -1511,35 +1513,43 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);
 
                 await Task.WhenAll(serviceSendTask, twinReceivedTask).ConfigureAwait(false);
-            };
+            }
 
-            Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
+            async Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
             {
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     deviceClient.Dispose();
                 }
 
+                foreach (KeyValuePair<string, TestDeviceCallbackHandler> entry in testDevicesWithCallbackHandler)
+                {
+                    TestDeviceCallbackHandler testDeviceCallbackHandler = entry.Value;
+                    testDeviceCallbackHandler?.Dispose();
+                }
+
                 twinPropertyMap.Clear();
                 testDevicesWithCallbackHandler.Clear();
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
-            };
+            }
 
-            await FaultInjectionPoolingOverAmqp.TestFaultInjectionPoolAmqpAsync(
-                Twin_DevicePrefix,
-                transport,
-                proxyAddress,
-                poolSize,
-                devicesCount,
-                faultType,
-                reason,
-                delayInSec,
-                durationInSec,
-                initOperation,
-                testOperation,
-                cleanupOperation,
-                authScope,
-                Logger).ConfigureAwait(false);
+            await FaultInjectionPoolingOverAmqp
+                .TestFaultInjectionPoolAmqpAsync(
+                    Twin_DevicePrefix,
+                    transport,
+                    proxyAddress,
+                    poolSize,
+                    devicesCount,
+                    faultType,
+                    reason,
+                    delayInSec,
+                    durationInSec,
+                    InitOperationAsync,
+                    TestOperationAsync,
+                    CleanupOperationAsync,
+                    authScope,
+                    Logger)
+                .ConfigureAwait(false);
         }
     }
 }
