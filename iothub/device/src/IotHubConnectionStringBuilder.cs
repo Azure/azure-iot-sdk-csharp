@@ -2,15 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
-using Microsoft.Azure.Devices.Client.Extensions;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text.RegularExpressions;
-using System.Net;
-using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
+using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
 
 namespace Microsoft.Azure.Devices.Client
 {
