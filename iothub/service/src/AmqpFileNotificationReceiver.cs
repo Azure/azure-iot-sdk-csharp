@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
 {
     internal sealed class AmqpFileNotificationReceiver : FileNotificationReceiver<FileNotification>, IDisposable
     {
-        readonly FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink;
+        private readonly FaultTolerantAmqpObject<ReceivingAmqpLink> _faultTolerantReceivingLink;
         private readonly string _receivingPath;
 
         public AmqpFileNotificationReceiver(IotHubConnection iotHubConnection)
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
             OpenTimeout = IotHubConnection.DefaultOpenTimeout;
             OperationTimeout = IotHubConnection.DefaultOperationTimeout;
             _receivingPath = AmqpClientHelper.GetReceivingPath(EndpointKind.FileNotification);
-            faultTolerantReceivingLink = new FaultTolerantAmqpObject<ReceivingAmqpLink>(CreateReceivingLinkAsync, Connection.CloseLink);
+            _faultTolerantReceivingLink = new FaultTolerantAmqpObject<ReceivingAmqpLink>(CreateReceivingLinkAsync, Connection.CloseLink);
         }
 
         public TimeSpan OpenTimeout { get; }
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                return faultTolerantReceivingLink.GetReceivingLinkAsync();
+                return _faultTolerantReceivingLink.GetReceivingLinkAsync();
             }
             finally
             {
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                return faultTolerantReceivingLink.CloseAsync();
+                return _faultTolerantReceivingLink.CloseAsync();
             }
             finally
             {
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                ReceivingAmqpLink receivingLink = await faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
+                ReceivingAmqpLink receivingLink = await _faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
                 AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
 
                 Logging.Info(this, $"Message received is [{amqpMessage}]", nameof(ReceiveAsync));
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices
         public override Task CompleteAsync(FileNotification fileNotification)
         {
             return AmqpClientHelper.DisposeMessageAsync(
-                faultTolerantReceivingLink,
+                _faultTolerantReceivingLink,
                 fileNotification.LockToken,
                 AmqpConstants.AcceptedOutcome,
                 false);
@@ -141,16 +141,16 @@ namespace Microsoft.Azure.Devices
         public override Task AbandonAsync(FileNotification fileNotification)
         {
             return AmqpClientHelper.DisposeMessageAsync(
-                faultTolerantReceivingLink, 
+                _faultTolerantReceivingLink,
                 fileNotification.LockToken,
-                AmqpConstants.ReleasedOutcome, 
+                AmqpConstants.ReleasedOutcome,
                 false);
         }
         
         /// <inheritdoc/>
         public void Dispose()
         {
-            faultTolerantReceivingLink.Dispose();
+            _faultTolerantReceivingLink.Dispose();
         }
     }
 }
