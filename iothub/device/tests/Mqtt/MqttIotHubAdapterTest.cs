@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Threading.Tasks;
+using DotNetty.Codecs.Mqtt.Packets;
+using DotNetty.Transport.Channels;
+using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+
 namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 {
-    using DotNetty.Codecs.Mqtt.Packets;
-    using DotNetty.Transport.Channels;
-    using FluentAssertions;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using System.Threading.Tasks;
-
     [TestClass]
     [TestCategory("Unit")]
     public class MqttIotHubAdapterTest
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         [TestMethod]
         public void TestPopulateMessagePropertiesFromPacket_NormalMessage()
         {
-            var message = new Message();
+            using var message = new Message();
             var publishPacket = new PublishPacket(QualityOfService.AtMostOnce, false, false)
             {
                 PacketId = 0,
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         [TestMethod]
         public void TestPopulateMessagePropertiesFromPacket_ModuleEndpointMessage()
         {
-            var message = new Message();
+            using var message = new Message();
             var publishPacket = new PublishPacket(QualityOfService.AtMostOnce, false, false)
             {
                 PacketId = 0,
@@ -102,6 +102,18 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 (packet) => new UnsubAckPacket() { PacketId = packet.PacketId };
 
             await SendRequestAndAcknowledgementsInSpecificOrder(request, ackFactory, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public void PopulateMessagePropertiesFromMessageSecurityMessageTest()
+        {
+            byte[] bytes = { 1, 2, 3, 4 };
+
+            using var message = new Message(bytes);
+            message.SetAsSecurityMessage();
+
+            var topicName = MqttIotHubAdapter.PopulateMessagePropertiesFromMessage("", message);
+            Assert.AreEqual("/%24.ifid=urn%3Aazureiot%3ASecurity%3ASecurityAgent%3A1", topicName);
         }
 
         [TestMethod]

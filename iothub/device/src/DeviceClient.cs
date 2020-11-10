@@ -679,5 +679,31 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
+
+        /// <summary>
+        /// Waits for an incoming device stream request.
+        /// </summary>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>A stream request when received.</returns>
+        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken = default)
+            => InternalClient.WaitForDeviceStreamRequestAsync(cancellationToken);
+
+        /// <summary>
+        /// Accepts a device stream request.
+        /// </summary>
+        /// <param name="request">The incoming device stream request.</param>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>An awaitable async task.</returns>
+        public Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken = default)
+            => InternalClient.AcceptDeviceStreamRequestAsync(request, cancellationToken);
+
+        /// <summary>
+        /// Rejects a device stream request.
+        /// </summary>
+        /// <param name="request">The incoming device stream request.</param>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>An awaitable async task.</returns>
+        public Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken = default)
+            => InternalClient.RejectDeviceStreamRequestAsync(request, cancellationToken);
     }
 }

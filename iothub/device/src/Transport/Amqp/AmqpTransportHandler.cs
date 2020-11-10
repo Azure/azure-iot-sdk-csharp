@@ -441,6 +441,90 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #endregion Events
 
+        #region Device streaming
+
+        public override async Task EnableStreamsAsync(CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, cancellationToken, $"{nameof(EnableStreamsAsync)}");
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _amqpUnit.EnableStreamsAsync(_operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, cancellationToken, $"{nameof(EnableStreamsAsync)}");
+            }
+        }
+
+        public override async Task DisableStreamsAsync(CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, cancellationToken, $"{nameof(DisableStreamsAsync)}");
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _amqpUnit.DisableStreamsAsync(_operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, cancellationToken, $"{nameof(DisableStreamsAsync)}");
+            }
+        }
+
+        public override async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, cancellationToken, $"{nameof(WaitForDeviceStreamRequestAsync)}");
+
+            try
+            {
+                while (true)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    DeviceStreamRequest deviceStreamRequest = await _amqpUnit.WaitForDeviceStreamRequestAsync(_operationTimeout).ConfigureAwait(false);
+                    if (deviceStreamRequest != null)
+                    {
+                        return deviceStreamRequest;
+                    }
+                }
+            }
+            finally
+            {
+                Logging.Exit(this, cancellationToken, $"{nameof(WaitForDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public override async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, request, cancellationToken, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _amqpUnit.AcceptDeviceStreamRequestAsync(request, _operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, request, cancellationToken, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public override async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, request, cancellationToken, $"{nameof(RejectDeviceStreamRequestAsync)}");
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _amqpUnit.RejectDeviceStreamRequestAsync(request, _operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, request, cancellationToken, $"{nameof(RejectDeviceStreamRequestAsync)}");
+            }
+        }
+
+        #endregion Device streaming
+
         #region Accept-Dispose
 
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)

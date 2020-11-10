@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportType">The transportType used (Http1 or AMQP)</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
-        public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, 
+        public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
             TransportType transportType, ClientOptions options = default)
         {
             return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportType, options));
@@ -492,7 +492,8 @@ namespace Microsoft.Azure.Devices.Client
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
-        #region Module Specific API 
+        #region Module Specific API
+
         // APIs that are available only in module client
 
         /// <summary>
@@ -652,11 +653,11 @@ namespace Microsoft.Azure.Devices.Client
                     TlsVersions.Instance.SetLegacyAcceptableVersions();
 
 #if !NET451
-                httpClientHandler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = customCertificateValidation,
-                    SslProtocols = TlsVersions.Instance.Preferred,
-                };
+                    httpClientHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = customCertificateValidation,
+                        SslProtocols = TlsVersions.Instance.Preferred,
+                    };
 #else
                     httpClientHandler = new WebRequestHandler();
                     ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
@@ -702,5 +703,35 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         #endregion Module Specific API
+
+        #region Device Streaming
+
+        /// <summary>
+        /// Waits for an incoming Cloud-to-Device Stream request.
+        /// </summary>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>A stream request when received</returns>
+        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken = default)
+            => InternalClient.WaitForDeviceStreamRequestAsync(cancellationToken);
+
+        /// <summary>
+        /// Accepts a Device Stream request.
+        /// </summary>
+        /// <param name="request">The Device Stream request received through </param>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>A awaitable async task</returns>
+        public Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken = default)
+            => InternalClient.AcceptDeviceStreamRequestAsync(request, cancellationToken);
+
+        /// <summary>
+        /// Rejects a Device Stream request.
+        /// </summary>
+        /// <param name="request">The Device Stream request received through </param>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>A awaitable async task</returns>
+        public Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken = default)
+            => InternalClient.RejectDeviceStreamRequestAsync(request, cancellationToken);
+
+        #endregion Device Streaming
     }
 }

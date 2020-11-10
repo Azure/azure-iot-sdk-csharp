@@ -40,6 +40,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         internal const string MethodName = "IoThub-methodname";
         internal const string Status = "IoThub-status";
 
+        internal const string StreamsSenderLinkSuffix = "_StreamsSenderLink:";
+        internal const string StreamsReceiverLinkSuffix = "_StreamsReceiverLink:";
+        internal const string StreamsCorrelationIdPrefix = "streams:";
+
+        internal const string DeviceStreamingFieldStreamName = "IoThub-streaming-name";
+        internal const string DeviceStreamingFieldProxyUri = "IoThub-streaming-url";
+        internal const string DeviceStreamingFieldAuthorizationToken = "IoThub-streaming-auth-token";
+        internal const string DeviceStreamingFieldIsAccepted = "IoThub-streaming-is-accepted";
+
         // The tracking Id identifier, for an Amqp Error returned by the service.
         public static readonly AmqpSymbol TrackingId = Vendor + ":tracking-id";
 

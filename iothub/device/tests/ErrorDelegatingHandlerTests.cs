@@ -22,6 +22,9 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class ErrorDelegatingHandlerTests
     {
+        private const string FakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
+        private const string FakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
+
         internal static readonly HashSet<Type> NonTransientExceptions = new HashSet<Type>
         {
             typeof(MessageTooLargeException),
@@ -55,12 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(WebException), () => new WebException() },
             { typeof(AmqpException), () => new AmqpException(new Amqp.Framing.Error()) },
             { typeof(WebSocketException), () => new WebSocketException(1) },
-            { typeof(TestSecurityException), () => new Exception(
-                                                            "Test top level",
-                                                            new Exception(
-                                                                "Inner exception",
-                                                                new AuthenticationException()))
-            },
+            { typeof(TestSecurityException), () => new Exception("Test top level", new Exception("Inner exception", new AuthenticationException())) },
             { typeof(TestDerivedException), () => new TestDerivedException() },
         };
 
@@ -135,6 +133,70 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 await TestExceptionThrown(exceptionType, exceptionType).ConfigureAwait(false);
             }
+        }
+
+        [TestMethod]
+        public async Task ErrorHandler_EnableStreams()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            ErrorDelegatingHandler edh = new ErrorDelegatingHandler(contextMock, innerHandler);
+
+            await edh.EnableStreamsAsync(default).ConfigureAwait(false);
+
+            await innerHandler.Received().EnableStreamsAsync(default).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ErrorHandler_DisableStreams()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var edh = new ErrorDelegatingHandler(contextMock, innerHandler);
+
+            await edh.DisableStreamsAsync(default).ConfigureAwait(false);
+
+            await innerHandler.Received().DisableStreamsAsync(default).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ErrorHandler_WaitForDeviceStreamRequest()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var edh = new ErrorDelegatingHandler(contextMock, innerHandler);
+
+            Task<DeviceStreamRequest> requestTask = edh.WaitForDeviceStreamRequestAsync(default);
+
+            await innerHandler.Received().WaitForDeviceStreamRequestAsync(default).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ErrorHandler_AcceptDeviceStreamRequestAsync()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var edh = new ErrorDelegatingHandler(contextMock, innerHandler);
+
+            var request = new DeviceStreamRequest("1", "StreamA", new Uri(FakeDeviceStreamSGWUrl), FakeDeviceStreamAuthToken);
+
+            _ = edh.AcceptDeviceStreamRequestAsync(request, default);
+
+            await innerHandler.Received().AcceptDeviceStreamRequestAsync(request, default).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ErrorHandler_RejectDeviceStreamRequestAsync()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var edh = new ErrorDelegatingHandler(contextMock, innerHandler);
+
+            var request = new DeviceStreamRequest("1", "StreamA", new Uri(FakeDeviceStreamSGWUrl), FakeDeviceStreamAuthToken);
+
+            _ = edh.RejectDeviceStreamRequestAsync(request, default);
+
+            await innerHandler.Received().RejectDeviceStreamRequestAsync(request, default).ConfigureAwait(false);
         }
 
         private static async Task TestExceptionThrown(Type thrownExceptionType, Type expectedExceptionType)

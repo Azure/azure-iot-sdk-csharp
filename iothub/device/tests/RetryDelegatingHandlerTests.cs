@@ -19,6 +19,8 @@ namespace Microsoft.Azure.Devices.Client.Test
     public class RetryDelegatingHandlerTests
     {
         public const string TestExceptionMessage = "Test exception";
+        private const string FakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
+        private const string FakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
 
         [TestMethod]
         public async Task RetryDelegatingHandler_OpenAsyncRetries()
@@ -381,6 +383,72 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
             await sut.RejectAsync(Arg.Any<string>(), cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandlerEnableStreamsAsync()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var rdh = new RetryDelegatingHandler(contextMock, innerHandler);
+
+            await rdh.EnableStreamsAsync(default).ConfigureAwait(false);
+
+            await innerHandler.Received().EnableStreamsAsync(default).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandlerDisableStreamsAsync()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            RetryDelegatingHandler rdh = new RetryDelegatingHandler(contextMock, innerHandler);
+
+            await rdh.EnableStreamsAsync(default).ConfigureAwait(false);
+            await rdh.DisableStreamsAsync(default).ConfigureAwait(false);
+
+            await innerHandler.Received().EnableStreamsAsync(default).ConfigureAwait(false);
+            await innerHandler.Received().DisableStreamsAsync(default).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandlerWaitForDeviceStreamRequestAsync()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var rdh = new RetryDelegatingHandler(contextMock, innerHandler);
+
+            await rdh.WaitForDeviceStreamRequestAsync(default).ConfigureAwait(false);
+
+            await innerHandler.Received().WaitForDeviceStreamRequestAsync(default).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandlerAcceptDeviceStreamRequestAsync()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var rdh = new RetryDelegatingHandler(contextMock, innerHandler);
+
+            var request = new DeviceStreamRequest("1", "StreamA", new Uri(FakeDeviceStreamSGWUrl), FakeDeviceStreamAuthToken);
+
+            await rdh.AcceptDeviceStreamRequestAsync(request, default).ConfigureAwait(false);
+
+            await innerHandler.Received().AcceptDeviceStreamRequestAsync(request, default).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandlerRejectDeviceStreamRequestAsync()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var rdh = new RetryDelegatingHandler(contextMock, innerHandler);
+
+            var request = new DeviceStreamRequest("1", "StreamA", new Uri(FakeDeviceStreamSGWUrl), FakeDeviceStreamAuthToken);
+
+            await rdh.RejectDeviceStreamRequestAsync(request, default).ConfigureAwait(false);
+
+            await innerHandler.Received().RejectDeviceStreamRequestAsync(request, default).ConfigureAwait(false);
         }
 
         private class NotSeekableStream : MemoryStream

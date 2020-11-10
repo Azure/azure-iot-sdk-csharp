@@ -47,6 +47,17 @@ namespace Microsoft.Azure.Devices.Client
 
         Task DisableEventReceiveAsync(CancellationToken cancellationToken);
 
+        // Device Streaming.
+        Task EnableStreamsAsync(CancellationToken cancellationToken);
+
+        Task DisableStreamsAsync(CancellationToken cancellationToken);
+
+        Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken);
+
+        Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken);
+
+        Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken);
+
         // Methods.
         Task EnableMethodsAsync(CancellationToken cancellationToken);
 

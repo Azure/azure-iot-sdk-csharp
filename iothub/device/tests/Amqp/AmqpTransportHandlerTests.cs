@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     public class AmqpTransportHandlerTests
     {
         private const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private const string FakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
+        private const string FakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
 
         [TestMethod]
         public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()
@@ -84,6 +86,38 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             //{
             //    Assert.IsTrue(ae.Message.Contains("AmqpTransportSettings cannot be modified from the initial settings."), "Did not return the correct error message");
             //}
+        }
+
+        [TestMethod]
+        public async Task AmqpTransportHandlerEnableStreamsAsyncTokenCancellationRequested()
+        {
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().EnableStreamsAsync(token)).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task AmqpTransportHandlerDisableStreamsAsyncTokenCancellationRequested()
+        {
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().DisableStreamsAsync(token)).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task AmqpTransportHandlerWaitForDeviceStreamRequestAsyncTokenCancellationRequested()
+        {
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().WaitForDeviceStreamRequestAsync(token)).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task AmqpTransportHandlerAcceptDeviceStreamRequestAsyncTokenCancellationRequested()
+        {
+            DeviceStreamRequest request = new DeviceStreamRequest("1", "StreamA", new Uri(FakeDeviceStreamSGWUrl), FakeDeviceStreamAuthToken);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().AcceptDeviceStreamRequestAsync(request, token)).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task AmqpTransportHandlerRejectDeviceStreamRequestAsyncTokenCancellationRequested()
+        {
+            DeviceStreamRequest request = new DeviceStreamRequest("1", "StreamA", new Uri(FakeDeviceStreamSGWUrl), FakeDeviceStreamAuthToken);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectDeviceStreamRequestAsync(request, token)).ConfigureAwait(false);
         }
 
         private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)

@@ -10,6 +10,9 @@ using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Amqp;
+using System.IO;
+using System.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
@@ -34,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private readonly SemaphoreSlim _messageReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
 
         private readonly SemaphoreSlim _messageReceivingCallbackSemaphore = new SemaphoreSlim(1, 1);
-        private bool _isDeviceReceiveMessageCallbackSet  = false;
+        private bool _isDeviceReceiveMessageCallbackSet = false;
 
         private AmqpIoTReceivingLink _eventReceivingLink;
         private readonly SemaphoreSlim _eventReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
@@ -46,6 +49,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private AmqpIoTSendingLink _twinSendingLink;
         private AmqpIoTReceivingLink _twinReceivingLink;
         private readonly SemaphoreSlim _twinLinksSemaphore = new SemaphoreSlim(1, 1);
+
+        private AmqpIoTSendingLink _streamSendingLink;
+        private AmqpIoTReceivingLink _streamReceivingLink;
+        private readonly SemaphoreSlim _streamLinksLock = new SemaphoreSlim(1, 1);
 
         private AmqpIoTSession _amqpIoTSession;
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
@@ -280,7 +287,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         public async Task<Message> ReceiveMessageAsync(TimeSpan timeout)
         {
-            if (_isDeviceReceiveMessageCallbackSet )
+            if (_isDeviceReceiveMessageCallbackSet)
             {
                 Logging.Error(this, "Callback handler set for receiving c2d messages, ReceiveAsync() will now always return null", nameof(ReceiveMessageAsync));
                 return null;
@@ -322,7 +329,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         " AMQP message receiver links are open and a listener can be set.");
                 }
                 await EnsureMessageReceivingLinkIsOpenAsync(timeout, true).ConfigureAwait(false);
-                _isDeviceReceiveMessageCallbackSet  = true;
+                _isDeviceReceiveMessageCallbackSet = true;
             }
             finally
             {
@@ -351,7 +358,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         " AMQP message receiver links are closed.");
                 }
                 await DisableMessageReceivingLinkAsync(timeout).ConfigureAwait(false);
-                _isDeviceReceiveMessageCallbackSet  = false;
+                _isDeviceReceiveMessageCallbackSet = false;
             }
             finally
             {
@@ -796,6 +803,211 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         }
 
         #endregion Twin
+
+        #region Device streaming
+
+        public async Task EnableStreamsAsync(TimeSpan timeout)
+        {
+            Logging.Enter(this, timeout, $"{nameof(EnableStreamsAsync)}");
+
+            if (_closed)
+            {
+                throw new IotHubException("Device is now offline.", false);
+            }
+
+            AmqpIoTSession amqpIoTSession = await EnsureSessionIsOpenAsync(timeout).ConfigureAwait(false);
+            bool wasLockAcquired = await _streamLinksLock.WaitAsync(timeout).ConfigureAwait(false);
+            if (!wasLockAcquired)
+            {
+                throw new TimeoutException();
+            }
+
+            try
+            {
+                string correlationIdSuffix = Guid.NewGuid().ToString();
+
+                await Task
+                    .WhenAll(
+                       EnsureStreamsReceiverLinkAsync(amqpIoTSession, correlationIdSuffix, timeout),
+                       EnsureStreamsSenderLinkAsync(amqpIoTSession, correlationIdSuffix, timeout))
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                _streamLinksLock.Release();
+                Logging.Exit(this, timeout, $"{nameof(EnableStreamsAsync)}");
+            }
+        }
+
+        private async Task EnsureStreamsReceiverLinkAsync(AmqpIoTSession amqpIoTSession, string correlationIdSuffix, TimeSpan timeout)
+        {
+            if (_streamReceivingLink == null || _streamReceivingLink.IsClosing())
+            {
+                _streamReceivingLink = await amqpIoTSession.OpenStreamsReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
+                _streamReceivingLink.Closed += (obj, arg) =>
+                {
+                    amqpIoTSession.SafeClose();
+                };
+                Logging.Associate(this, _streamReceivingLink, $"{nameof(_streamReceivingLink)}");
+            }
+        }
+
+        private async Task EnsureStreamsSenderLinkAsync(AmqpIoTSession amqpIoTSession, string correlationIdSuffix, TimeSpan timeout)
+        {
+            if (_streamSendingLink == null || _streamSendingLink.IsClosing())
+            {
+                _streamSendingLink = await amqpIoTSession.OpenStreamsSenderLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
+                _streamSendingLink.Closed += (obj, arg) =>
+                {
+                    amqpIoTSession.SafeClose();
+                };
+                Logging.Associate(this, _streamReceivingLink, $"{nameof(_streamReceivingLink)}");
+            }
+        }
+
+        public async Task DisableStreamsAsync(TimeSpan timeout)
+        {
+            Logging.Enter(this, timeout, $"{nameof(DisableStreamsAsync)}");
+
+            Debug.Assert(_streamSendingLink != null);
+            Debug.Assert(_streamReceivingLink != null);
+
+            try
+            {
+                ICollection<Task> tasks = new List<Task>();
+                if (_streamSendingLink != null)
+                {
+                    tasks.Add(_streamSendingLink.CloseAsync(timeout));
+                }
+
+                if (_streamReceivingLink != null)
+                {
+                    tasks.Add(_streamReceivingLink.CloseAsync(timeout));
+                }
+
+                if (tasks.Any())
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    _streamSendingLink = null;
+                    _streamReceivingLink = null;
+                }
+            }
+            finally
+            {
+                Logging.Exit(this, timeout, $"{nameof(DisableStreamsAsync)}");
+            }
+        }
+
+        public async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(TimeSpan timeout)
+        {
+            Logging.Enter(this, timeout, $"{nameof(WaitForDeviceStreamRequestAsync)}");
+
+            try
+            {
+                await EnableStreamsAsync(timeout).ConfigureAwait(false);
+                using Message message = await _streamReceivingLink.ReceiveAmqpMessageAsync(timeout).ConfigureAwait(false);
+                if (message == null)
+                {
+                    return null;
+                }
+
+                DeviceStreamRequest deviceStreamRequest = ConstructStreamRequestFromMessage(message);
+                await _streamReceivingLink.DisposeMessageAsync(message.LockToken, AmqpConstants.AcceptedOutcome, timeout).ConfigureAwait(false);
+                return deviceStreamRequest;
+            }
+            finally
+            {
+                Logging.Exit(this, timeout, $"{nameof(WaitForDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, TimeSpan timeout)
+        {
+            if (request == null || request.RequestId == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            Logging.Enter(this, request, timeout, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+            try
+            {
+                var response = new DeviceStreamResponse(request.RequestId, true);
+                await SendDeviceStreamResponseAsync(response, timeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, request, timeout, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, TimeSpan timeout)
+        {
+            if (request == null || request.RequestId == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            Logging.Enter(this, request, timeout, $"{nameof(RejectDeviceStreamRequestAsync)}");
+            try
+            {
+                DeviceStreamResponse response = new DeviceStreamResponse(request.RequestId, false);
+                await SendDeviceStreamResponseAsync(response, timeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, request, timeout, $"{nameof(RejectDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public async Task SendDeviceStreamResponseAsync(DeviceStreamResponse streamResponse, TimeSpan timeout)
+        {
+            Logging.Enter(this, streamResponse, timeout, $"{nameof(SendDeviceStreamResponseAsync)}");
+            try
+            {
+                await EnableStreamsAsync(timeout).ConfigureAwait(false);
+                await _streamSendingLink.SendDeviceStreamResponseAsync(streamResponse, timeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, streamResponse, timeout, $"{nameof(SendDeviceStreamResponseAsync)}");
+            }
+        }
+
+        private DeviceStreamRequest ConstructStreamRequestFromMessage(Message message)
+        {
+            Logging.Enter(this, message, $"{nameof(ConstructStreamRequestFromMessage)}");
+
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            string streamRequestId = message.CorrelationId;
+            string streamName = string.Empty;
+            string proxyUri = string.Empty;
+            string authorizationToken = string.Empty;
+
+            if (!(message.Properties?.TryGetValue(AmqpIoTConstants.DeviceStreamingFieldStreamName, out streamName) ?? false))
+            {
+                throw new InvalidDataException("Stream name is missing");
+            }
+
+            if (!(message.Properties?.TryGetValue(AmqpIoTConstants.DeviceStreamingFieldProxyUri, out proxyUri) ?? false))
+            {
+                throw new InvalidDataException("Proxy URI is missing");
+            }
+
+            if (!(message.Properties?.TryGetValue(AmqpIoTConstants.DeviceStreamingFieldAuthorizationToken, out authorizationToken) ?? false))
+            {
+                throw new InvalidDataException("AmqpIoTConstants.Authorization Token is missing");
+            }
+
+            Logging.Exit(this, message, $"{nameof(ConstructStreamRequestFromMessage)}");
+
+            return new DeviceStreamRequest(streamRequestId, streamName, new Uri(proxyUri), authorizationToken);
+        }
+
+        #endregion Device streaming
 
         #region Connectivity Event
 

@@ -7,6 +7,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _twinEnabled;
         private bool _eventsEnabled;
         private bool _deviceReceiveMessageEnabled;
+        private bool _isDeviceStreamingEnabled;
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
@@ -261,6 +263,118 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+            }
+        }
+
+        public override async Task EnableStreamsAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logging.Enter(this, cancellationToken, nameof(EnableStreamsAsync));
+
+                await _internalRetryPolicy.ExecuteAsync(async () =>
+                {
+                    await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+                    try
+                    {
+                        await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
+                        await base.EnableStreamsAsync(cancellationToken).ConfigureAwait(false);
+                        Debug.Assert(!_isDeviceStreamingEnabled);
+                        _isDeviceStreamingEnabled = true;
+                    }
+                    finally
+                    {
+                        _handlerSemaphore.Release();
+                    }
+                },
+                cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, cancellationToken, nameof(EnableStreamsAsync));
+            }
+        }
+
+        public override async Task DisableStreamsAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logging.Enter(this, cancellationToken, nameof(DisableStreamsAsync));
+
+                await _internalRetryPolicy.ExecuteAsync(async () =>
+                {
+                    await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+                    try
+                    {
+                        await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
+                        await base.DisableStreamsAsync(cancellationToken).ConfigureAwait(false);
+                        Debug.Assert(_isDeviceStreamingEnabled);
+                        _isDeviceStreamingEnabled = false;
+                    }
+                    finally
+                    {
+                        _handlerSemaphore.Release();
+                    }
+                },
+                cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, cancellationToken, nameof(DisableStreamsAsync));
+            }
+        }
+
+        public override async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logging.Enter(this, cancellationToken, nameof(WaitForDeviceStreamRequestAsync));
+
+                return await _internalRetryPolicy.ExecuteAsync(async () =>
+                {
+                    await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                    return await base.WaitForDeviceStreamRequestAsync(cancellationToken).ConfigureAwait(false);
+                }, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, cancellationToken, nameof(WaitForDeviceStreamRequestAsync));
+            }
+        }
+
+        public override async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logging.Enter(this, request, cancellationToken, nameof(AcceptDeviceStreamRequestAsync));
+
+                await _internalRetryPolicy.ExecuteAsync(() =>
+                {
+                    return base.AcceptDeviceStreamRequestAsync(request, cancellationToken);
+                }, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, request, cancellationToken, nameof(AcceptDeviceStreamRequestAsync));
+            }
+        }
+
+        public override async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logging.Enter(this, request, cancellationToken, nameof(RejectDeviceStreamRequestAsync));
+
+                await _internalRetryPolicy.ExecuteAsync(() =>
+                {
+                    return base.RejectDeviceStreamRequestAsync(request, cancellationToken);
+                }, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, request, cancellationToken, nameof(RejectDeviceStreamRequestAsync));
             }
         }
 
@@ -812,7 +926,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                    var tasks = new List<Task>(3);
+                    var tasks = new List<Task>(5);
 
                     if (_methodsEnabled)
                     {
@@ -834,7 +948,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         tasks.Add(base.EnableReceiveMessageAsync(cancellationToken));
                     }
 
-                    if (tasks.Count > 0)
+                    if (_isDeviceStreamingEnabled)
+                    {
+                        tasks.Add(base.EnableStreamsAsync(cancellationToken));
+                    }
+
+                    if (tasks.Any())
                     {
                         await Task.WhenAll(tasks).ConfigureAwait(false);
                     }
