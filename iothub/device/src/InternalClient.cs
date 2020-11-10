@@ -106,10 +106,14 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal class InternalClient : IDisposable
     {
+        private const double _defaultDeviceStreamingTimeoutSecs = 60;
+
         private readonly SemaphoreSlim _methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _deviceStreamsSemaphore = new SemaphoreSlim(1, 1);
+
         private readonly ProductInfo _productInfo = new ProductInfo();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly ITransportSettings[] _transportSettings;
@@ -117,16 +121,19 @@ namespace Microsoft.Azure.Devices.Client
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
+
         private volatile Tuple<MessageHandler, object> _defaultEventCallback;
 
         // Stores methods supported by the client device and their associated delegate.
         private volatile Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods;
+
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
         private volatile ConnectionStatusChangesHandler _connectionStatusChangesHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount = 0;
+
         private int _diagnosticSamplingPercentage = 0;
 
         private ConnectionStatus _lastConnectionStatus = ConnectionStatus.Disconnected;
@@ -534,8 +541,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message)
         {
-            return message == null 
-                ? throw new ArgumentNullException(nameof(message)) 
+            return message == null
+                ? throw new ArgumentNullException(nameof(message))
                 : AbandonAsync(message.LockToken);
         }
 
@@ -1966,6 +1973,69 @@ namespace Microsoft.Azure.Devices.Client
 
         #endregion Module Specific API
 
+        #region DeviceStreaming APIs
+
+        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync()
+        {
+            try
+            {
+                using CancellationTokenSource cts = CancellationTokenSourceFactory();
+                return WaitForDeviceStreamRequestAsync(cts.Token);
+            }
+            catch (OperationCanceledException ex)
+            {
+                // Exception adaptation for non-CancellationToken public API.
+                throw new TimeoutException("The operation timed out.", ex);
+            }
+        }
+
+        public async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _deviceStreamsSemaphore.WaitAsync().ConfigureAwait(false);
+
+                await EnableStreamAsync(cancellationToken).ConfigureAwait(false);
+
+                return await InnerHandler.WaitForDeviceStreamRequestAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _deviceStreamsSemaphore.Release();
+            }
+        }
+
+        public async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request)
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_defaultDeviceStreamingTimeoutSecs));
+            await AcceptDeviceStreamRequestAsync(request, cts.Token).ConfigureAwait(false);
+        }
+
+        public async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            await InnerHandler.AcceptDeviceStreamRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request)
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_defaultDeviceStreamingTimeoutSecs));
+            await InnerHandler.RejectDeviceStreamRequestAsync(request, cts.Token).ConfigureAwait(false);
+        }
+
+        public async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            await InnerHandler.RejectDeviceStreamRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task EnableStreamAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await InnerHandler.EnableStreamsAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        #endregion DeviceStreaming APIs
+
         public void Dispose()
         {
             InnerHandler?.Dispose();
@@ -1974,6 +2044,7 @@ namespace Microsoft.Azure.Devices.Client
             _fileUploadHttpTransportHandler?.Dispose();
             _deviceReceiveMessageSemaphore?.Dispose();
             _twinDesiredPropertySemaphore?.Dispose();
+            _deviceStreamsSemaphore?.Dispose();
         }
 
         internal bool IsE2EDiagnosticSupportedProtocol()

@@ -48,7 +48,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(timeoutHelper));
         }
 
-
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(cancellationToken));
@@ -103,8 +102,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinGetAsync(cancellationToken));
         }
-        
-        public override Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
+
+        public override Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken));
         }
@@ -137,6 +136,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
+        }
+
+        public override Task EnableStreamsAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.EnableStreamsAsync(cancellationToken));
+        }
+
+        public override Task DisableStreamsAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.DisableStreamsAsync(cancellationToken));
+        }
+
+        public override Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.WaitForDeviceStreamRequestAsync(cancellationToken));
+        }
+
+        public override Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.AcceptDeviceStreamRequestAsync(request, cancellationToken));
+        }
+
+        public override Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.RejectDeviceStreamRequestAsync(request, cancellationToken));
         }
 
         private static bool IsNetworkExceptionChain(Exception exceptionChain)

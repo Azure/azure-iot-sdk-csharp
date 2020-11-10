@@ -19,6 +19,13 @@ docker ps -a
 . .\vsts\determine_tests_to_run.ps1
 
 $runTestCmd = ".\build.ps1 -clean -build -configuration DEBUG -framework $env:FRAMEWORK -noBuildBeforeTesting"
+
+if (ShouldSkipDeviceStreamTests)
+{
+	Write-Host "Will skip Device Stream tests"
+	$runTestCmd += " -skipDeviceStreamTests"
+}
+
 if (IsPullRequestBuild)
 {
 	Write-Host "Pull request build detected, will run pr tests"

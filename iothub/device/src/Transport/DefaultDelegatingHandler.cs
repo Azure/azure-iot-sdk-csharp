@@ -140,6 +140,36 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
+        public virtual Task EnableStreamsAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.EnableStreamsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task DisableStreamsAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.DisableStreamsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.WaitForDeviceStreamRequestAsync(cancellationToken) ?? Task.FromResult<DeviceStreamRequest>(null);
+        }
+
+        public virtual Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.AcceptDeviceStreamRequestAsync(request, cancellationToken);
+        }
+
+        public virtual Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.RejectDeviceStreamRequestAsync(request, cancellationToken);
+        }
+
         public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();

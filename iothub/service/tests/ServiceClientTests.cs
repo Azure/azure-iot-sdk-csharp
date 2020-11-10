@@ -1,24 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+
 namespace Microsoft.Azure.Devices.Api.Test
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
-
     [TestClass]
     [TestCategory("Unit")]
     public class ServiceClientTests
     {
+        private const string DS_Http_Resp_Header_Is_Accepted = "iothub-streaming-is-accepted";
+        private const string DS_Http_Resp_Header_Url = "iothub-streaming-url";
+        private const string DS_Http_Resp_Header_Auth_Token = "iothub-streaming-auth-token";
+        private const string FakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
+        private const string FakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
+
         [TestMethod]
         public async Task PurgeMessageQueueTest()
         {
@@ -73,11 +79,93 @@ namespace Microsoft.Azure.Devices.Api.Test
             PurgeMessageQueueResult result = await serviceClient.PurgeMessageQueueAsync("TestDevice", CancellationToken.None).ConfigureAwait(false);
         }
 
-        Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> SetupPurgeMessageQueueTests()
+        [TestMethod]
+        public async Task CreateStreamAsyncDeviceClientAccepts()
+        {
+            await TestCreateStreamAsync("myDevice01", null, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task CreateStreamAsyncDeviceClientRejects()
+        {
+            await TestCreateStreamAsync("myDevice01", null, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task CreateStreamAsyncModuleClientAccepts()
+        {
+            await TestCreateStreamAsync("myDevice01", "myModule01", true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task CreateStreamAsyncModuleClientRejects()
+        {
+            await TestCreateStreamAsync("myDevice01", "myModule01", false).ConfigureAwait(false);
+        }
+
+        private static async Task TestCreateStreamAsync(string deviceId, string moduleId, bool acceptRequest)
+        {
+            // arrange
+            string streamName = "StreamA";
+
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.Dispose());
+            Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
+            Action<AmqpSession> onClose = _ => { };
+
+            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+            var connection = new IotHubConnection(onCreate, onClose);
+            var serviceClient = new AmqpServiceClient(connection, restOpMock.Object);
+
+            var httpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            httpResponse.Headers.Add(DS_Http_Resp_Header_Is_Accepted, acceptRequest ? "true" : "false");
+            httpResponse.Headers.Add(DS_Http_Resp_Header_Url, FakeDeviceStreamSGWUrl);
+            httpResponse.Headers.Add(DS_Http_Resp_Header_Auth_Token, FakeDeviceStreamAuthToken);
+
+            Uri requestUri = string.IsNullOrEmpty(moduleId)
+                ? new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryString}", UriKind.Relative)
+                : new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryString}", UriKind.Relative);
+
+            restOpMock.Setup(m => m.PostAsync<byte[], HttpResponseMessage>(
+                requestUri,
+                null as byte[],
+                It.IsAny<TimeSpan>(),
+                null,
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(httpResponse));
+
+            // run
+            var request = new DeviceStreamRequest(streamName);
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            DeviceStreamResponse response = string.IsNullOrEmpty(moduleId)
+                ? await serviceClient.CreateStreamAsync(deviceId, request, cts.Token).ConfigureAwait(false)
+                : await serviceClient.CreateStreamAsync(deviceId, moduleId, request, cts.Token).ConfigureAwait(false);
+
+            // assert
+            Assert.IsNotNull(response);
+            Assert.AreEqual(response.StreamName, streamName);
+
+            if (acceptRequest)
+            {
+                Assert.IsTrue(response.IsAccepted);
+                Assert.AreEqual(response.Uri.ToString(), FakeDeviceStreamSGWUrl);
+                Assert.AreEqual(response.AuthorizationToken, FakeDeviceStreamAuthToken);
+            }
+            else
+            {
+                Assert.IsFalse(response.IsAccepted);
+                Assert.IsNull(response.Uri);
+                Assert.IsNull(response.AuthorizationToken);
+            }
+        }
+
+        private Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> SetupPurgeMessageQueueTests()
         {
             // Create expected return object
             var deviceId = "TestDevice";
-            var expectedResult = new PurgeMessageQueueResult()
+            var expectedResult = new PurgeMessageQueueResult
             {
                 DeviceId = deviceId,
                 TotalMessagesPurged = 1
@@ -86,9 +174,14 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Mock IHttpClientHelper to return expected object on DeleteAsync
             var restOpMock = new Mock<IHttpClientHelper>();
 
-            restOpMock.Setup(restOp => restOp.DeleteAsync<PurgeMessageQueueResult>(
-                It.IsAny<Uri>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), null, It.IsAny<CancellationToken>())
-                ).ReturnsAsync(expectedResult);
+            restOpMock
+                .Setup(restOp =>
+                    restOp.DeleteAsync<PurgeMessageQueueResult>(
+                        It.IsAny<Uri>(),
+                        It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
+                        null,
+                        It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResult);
 
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");

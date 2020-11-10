@@ -61,8 +61,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
         private readonly ConcurrentQueue<Message> _messageQueue;
 
+        private readonly SemaphoreSlim _streamRequestSemaphore = new SemaphoreSlim(0);
+        private readonly ConcurrentQueue<DeviceStreamRequest> _streamRequestQueue = new ConcurrentQueue<DeviceStreamRequest>();
+
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
-        private bool _isDeviceReceiveMessageCallbackSet  = false;
+        private bool _isDeviceReceiveMessageCallbackSet = false;
 
         private readonly TaskCompletionSource _connectCompletion = new TaskCompletionSource();
         private readonly TaskCompletionSource _subscribeCompletionSource = new TaskCompletionSource();
@@ -76,6 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public TransportState State => (TransportState)Volatile.Read(ref _state);
 
         // Topic names for receiving cloud-to-device messages.
+
         private const string DeviceBoundMessagesTopicFilter = "devices/{0}/messages/devicebound/#";
         private const string DeviceBoundMessagesTopicPrefix = "devices/{0}/messages/devicebound/";
 
@@ -83,6 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
         // It then sends an empty message to the topic "$iothub/twin/GET/?$rid={request id}, with a populated value for request ID.
         // The service then sends a response message containing the device twin data on topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request ID as the request.
+
         private const string TwinResponseTopicFilter = "$iothub/twin/res/#";
         private const string TwinResponseTopicPrefix = "$iothub/twin/res/";
         private const string TwinGetTopic = "$iothub/twin/GET/?$rid={0}";
@@ -96,6 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         // Topic names for receiving twin desired property update notifications.
         private const string TwinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
+
         private const string TwinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
 
         // Topic name for responding to direct methods.
@@ -103,12 +109,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The service sends method requests to the topic "$iothub/methods/POST/{method name}/?$rid={request id}".
         // The client responds to the direct method invocation by sending a message to the topic "$iothub/methods/res/{status}/?$rid={request id}", using the same request ID as the request.
         private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
+
         private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
         // Topic names for enabling events on Modules.
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
+
         private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
+
+        // Topic names for enabling device streams.
+        private const string DeviceStreamingPostTopicFilter = "$iothub/streams/POST/#";
+
+        private const string DeviceStreamingPostTopicPrefix = "$iothub/streams/POST/";
+        private const string DeviceStreamingResponseTopicFilter = "$iothub/streams/res/#";
 
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
@@ -119,6 +133,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
         private Action<Message> _twinResponseEvent;
+
+        private const int DeviceStreamingTopicNameLevelCount = 5;
 
         private readonly string _receiveEventMessageFilter;
         private readonly string _receiveEventMessagePrefix;
@@ -261,7 +277,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (_isDeviceReceiveMessageCallbackSet )
+            if (_isDeviceReceiveMessageCallbackSet)
             {
                 if (Logging.IsEnabled)
                 {
@@ -307,7 +323,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            if (_isDeviceReceiveMessageCallbackSet )
+            if (_isDeviceReceiveMessageCallbackSet)
             {
                 if (Logging.IsEnabled)
                 {
@@ -538,6 +554,77 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
+        public static IDictionary<string, string> ParseQueryString(string queryString)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+
+            if (!String.IsNullOrWhiteSpace(queryString))
+            {
+                if (queryString[0] == '?')
+                {
+                    queryString = queryString.Substring(1);
+                }
+
+                string[] tokens = queryString.Split('&');
+
+                foreach (string token in tokens)
+                {
+                    int keyValueSeparatorPos = token.IndexOf('=');
+
+                    if (keyValueSeparatorPos != -1 && keyValueSeparatorPos > 0)
+                    {
+                        string key = token.Substring(0, keyValueSeparatorPos);
+                        string value = String.Empty;
+
+                        if (keyValueSeparatorPos < (token.Length - 1))
+                        {
+                            value = token.Substring(keyValueSeparatorPos + 1, token.Length - keyValueSeparatorPos - 1);
+                        }
+
+                        result.Add(key, value);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private void HandleIncomingStreamingPost(Message message)
+        {
+            try
+            {
+                string[] tokens = message.MqttTopicName.Split('/');
+
+                if (tokens.Length != DeviceStreamingTopicNameLevelCount)
+                {
+                    throw new FormatException("Unexpected format for device streaming topic name");
+                }
+                else
+                {
+                    IDictionary<string, string> param = ParseQueryString(tokens[4]);
+
+                    string streamName = tokens[3];
+                    string rid = param.GetValueOrDefault("$rid") ?? string.Empty;
+                    string webSocketUrl = Uri.UnescapeDataString(param.GetValueOrDefault("$url") ?? string.Empty);
+                    string authToken = param.GetValueOrDefault("$auth") ?? string.Empty;
+
+                    var request = new DeviceStreamRequest(rid, streamName, new Uri(webSocketUrl), authToken);
+
+                    _streamRequestQueue.Enqueue(request);
+
+                    _streamRequestSemaphore.Release();
+                }
+            }
+            catch (Exception exception) when (!exception.IsFatal())
+            {
+                throw ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                message.Dispose();
+            }
+        }
+
         private async Task HandleIncomingMethodPostAsync(Message message)
         {
             try
@@ -611,10 +698,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         await HandleIncomingEventMessageAsync(message).ConfigureAwait(true);
                     }
+                    else if (message.MqttTopicName.StartsWith(DeviceStreamingPostTopicPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        HandleIncomingStreamingPost(message);
+                    }
                     else if (topic.StartsWith(_deviceboundMessagePrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         _messageQueue.Enqueue(message);
-                        if (_isDeviceReceiveMessageCallbackSet )
+                        if (_isDeviceReceiveMessageCallbackSet)
                         {
                             await HandleIncomingMessagesAsync(message).ConfigureAwait(false);
                         }
@@ -643,6 +734,116 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Exit(this, message, nameof(OnMessageReceived));
                 }
             }
+        }
+
+        public override async Task EnableStreamsAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            await _channel
+                .WriteAsync(new SubscribePacket(0, new SubscriptionRequest(DeviceStreamingPostTopicFilter, QualityOfService.AtMostOnce)))
+                .ConfigureAwait(true);
+            await _channel
+                .WriteAsync(new SubscribePacket(0, new SubscriptionRequest(DeviceStreamingResponseTopicFilter, QualityOfService.AtMostOnce)))
+                .ConfigureAwait(true);
+        }
+
+        public override async Task DisableStreamsAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            await _channel.WriteAsync(new UnsubscribePacket(0, DeviceStreamingPostTopicFilter)).ConfigureAwait(true);
+            await _channel.WriteAsync(new UnsubscribePacket(0, DeviceStreamingResponseTopicFilter)).ConfigureAwait(true);
+        }
+
+        public override async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _disconnectAwaitersCancellationSource.Token))
+            {
+                await _streamRequestSemaphore.WaitAsync(linkedCts.Token).ConfigureAwait(false);
+            }
+
+            _streamRequestQueue.TryDequeue(out DeviceStreamRequest result);
+
+            return result;
+        }
+
+        public override async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            if (request == null || request.RequestId == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            try
+            {
+                Logging.Enter(this, request, cancellationToken, $"{nameof(MqttTransportHandler)}.{nameof(AcceptDeviceStreamRequestAsync)}");
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var response = new DeviceStreamResponse(request.RequestId, true);
+
+                await SendDeviceStreamResponseAsync(response, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (!exception.IsFatal())
+            {
+                throw ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                Logging.Exit(this, request, cancellationToken, $"{nameof(MqttTransportHandler)}.{nameof(AcceptDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public override async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            if (request == null || request.RequestId == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            try
+            {
+                Logging.Enter(this, request, cancellationToken, $"{nameof(MqttTransportHandler)}.{nameof(RejectDeviceStreamRequestAsync)}");
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var response = new DeviceStreamResponse(request.RequestId, false);
+
+                await SendDeviceStreamResponseAsync(response, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (!exception.IsFatal())
+            {
+                throw ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                Logging.Exit(this, request, cancellationToken, $"{nameof(MqttTransportHandler)}.{nameof(RejectDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public async Task SendDeviceStreamResponseAsync(DeviceStreamResponse streamResponse, CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, streamResponse, cancellationToken, $"{nameof(MqttTransportHandler)}.{nameof(SendDeviceStreamResponseAsync)}");
+
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            var message = new Message(Stream.Null);
+
+            int statusCode = streamResponse.IsAccepted ? 200 : 400;
+            string topicName = $"$iothub/streams/res/{statusCode}/?$rid={streamResponse.RequestId}";
+
+            message.MqttTopicName = topicName;
+
+            await SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+
+            Logging.Exit(this, streamResponse, cancellationToken, $"{nameof(MqttTransportHandler)}.{nameof(SendDeviceStreamResponseAsync)}");
         }
 
         private async Task HandleIncomingEventMessageAsync(Message message)
@@ -883,7 +1084,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(false);
                 }
-                _isDeviceReceiveMessageCallbackSet  = true;
+                _isDeviceReceiveMessageCallbackSet = true;
             }
             finally
             {
@@ -921,7 +1122,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         await _channel.WriteAsync(new UnsubscribePacket(0, _deviceboundMessageFilter)).ConfigureAwait(true);
                     }
                 }
-                _isDeviceReceiveMessageCallbackSet  = false;
+                _isDeviceReceiveMessageCallbackSet = false;
             }
             finally
             {
@@ -1418,6 +1619,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             return new MultithreadEventLoopGroup();
+        }
+
+        private static Exception ToIotHubClientContract(Exception exception)
+        {
+            if (exception is TimeoutException)
+            {
+                return new IotHubCommunicationException(exception.Message, exception);
+            }
+
+            if (exception is UnauthorizedAccessException)
+            {
+                return new UnauthorizedException(exception.Message, exception);
+            }
+
+            return exception;
         }
 
         private bool IsProxyConfigured()

@@ -70,6 +70,7 @@ Param(
     [string] $framework = "*",
     [switch] $skipIotHubTests,
     [switch] $skipDPSTests,
+    [switch] $skipDeviceStreamTests,
     [switch] $noBuildBeforeTesting
 )
 
@@ -306,6 +307,11 @@ try
             $testCategory += "&TestCategory!=DPS"
         }
 
+        if ($skipDeviceStreamTests) 
+        {
+            $testCategory += "&TestCategory!=DeviceStreaming"
+        }
+
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
     }
 
@@ -351,8 +357,15 @@ try
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
         $verbosity = "normal"
+        $testCategory = "TestCategory=E2E"
 
-        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        # Skip the Device Streaming tests when running on the production pipeline as device streaming is not yet available in all regions.
+        if ($skipDeviceStreamTests) 
+        {
+            $testCategory += "&TestCategory!=DeviceStreaming"
+        }
+
+        RunTests "E2E tests" -framework $framework -filterTestCategory $testCategory
 
         $verbosity = $oldVerbosity
 

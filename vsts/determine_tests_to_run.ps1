@@ -11,12 +11,12 @@ function IsPullRequestBuild
 	return !($env:TARGET_BRANCH -and $env:TARGET_BRANCH.toLower().Contains("system.pullrequest.targetbranch"))
 }
 
-function ShouldSkipIotHubTests 
+function ShouldSkipIotHubTests
 {	
 	return !(DoChangesAffectAnyOfFolders @("iothub", "common", "shared", "vsts"))
 }
 
-function ShouldSkipDPSTests 
+function ShouldSkipDPSTests
 {
 	if (ShouldSkipIotHubTests) 
 	{
@@ -25,6 +25,14 @@ function ShouldSkipDPSTests
 	
 	#Provisioning tests depend on iot hub packages, so if iot hub tests aren't being skipped, neither should provisioning tests
 	return $false
+}
+
+function ShouldSkipDeviceStreamTests
+{
+	return ($env:SOURCE_BRANCH_NAME -and `
+		$env:SOURCE_BRANCH_NAME.toLower() -eq 'preview' -and `
+		$env:PIPELINE_ENVIRONMENT -and `
+		$env:PIPELINE_ENVIRONMENT.toLower() -eq 'prod')
 }
 
 # $folderNames is an array of strings where each string is the name of a folder within the codebase to look for in the git diff between the source and target branches
