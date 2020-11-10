@@ -219,21 +219,21 @@ namespace Microsoft.Azure.Devices
             try
             {
                 var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-            {
                 {
-                    HttpStatusCode.PreconditionFailed,
-                    async (responseMessage) =>
-                        new PreconditionFailedException(
-                            await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
-                },
-                {
-                    HttpStatusCode.NotFound, async responseMessage =>
                     {
-                        string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
-                        return (Exception) new DeviceNotFoundException(responseContent, (Exception) null);
+                        HttpStatusCode.PreconditionFailed,
+                        async (responseMessage) =>
+                            new PreconditionFailedException(
+                                await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
+                    },
+                    {
+                        HttpStatusCode.NotFound, async responseMessage =>
+                        {
+                            string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
+                            return (Exception) new DeviceNotFoundException(responseContent, (Exception) null);
+                        }
                     }
-                }
-            };
+                };
 
                 return _httpClientHelper.PutAsync<JobRequest, JobResponse>(
                     GetJobUri(jobRequest.JobId),
