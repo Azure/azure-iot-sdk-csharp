@@ -1,85 +1,97 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Extensions;
+using Microsoft.Azure.Devices.Shared;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Extensions;
-
-    sealed class AmqpFeedbackReceiver : FeedbackReceiver<FeedbackBatch>, IDisposable
+    internal sealed class AmqpFeedbackReceiver : FeedbackReceiver<FeedbackBatch>, IDisposable
     {
-        readonly IotHubConnection iotHubConnection;
-        readonly TimeSpan openTimeout;
-        readonly TimeSpan operationTimeout;
-        readonly FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink;
-        readonly string receivingPath;
+        private readonly FaultTolerantAmqpObject<ReceivingAmqpLink> _faultTolerantReceivingLink;
+        private readonly string _receivingPath;
 
         public AmqpFeedbackReceiver(IotHubConnection iotHubConnection)
         {
-            this.iotHubConnection = iotHubConnection;
-            this.openTimeout = IotHubConnection.DefaultOpenTimeout;
-            this.operationTimeout = IotHubConnection.DefaultOperationTimeout;
-            this.receivingPath = AmqpClientHelper.GetReceivingPath(EndpointKind.Feedback);
-            this.faultTolerantReceivingLink = new FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateReceivingLinkAsync, this.iotHubConnection.CloseLink);
+            Connection = iotHubConnection;
+            OpenTimeout = IotHubConnection.DefaultOpenTimeout;
+            OperationTimeout = IotHubConnection.DefaultOperationTimeout;
+            _receivingPath = AmqpClientHelper.GetReceivingPath(EndpointKind.Feedback);
+            _faultTolerantReceivingLink = new FaultTolerantAmqpObject<ReceivingAmqpLink>(CreateReceivingLinkAsync, Connection.CloseLink);
         }
 
-        public TimeSpan OpenTimeout
-        {
-            get
-            {
-                return this.openTimeout;
-            }
-        }
+        public TimeSpan OpenTimeout { get; private set; }
 
-        public TimeSpan OperationTimeout
-        {
-            get
-            {
-                return this.operationTimeout;
-            }
-        }
+        public TimeSpan OperationTimeout { get; private set; }
 
-        public IotHubConnection Connection
-        {
-            get
-            {
-                return this.iotHubConnection;
-            }
-        }
+        public IotHubConnection Connection { get; private set; }
 
         public Task OpenAsync()
         {
-            return this.faultTolerantReceivingLink.GetReceivingLinkAsync();
+            Logging.Enter(this, nameof(OpenAsync));
+
+            try
+            {
+                return _faultTolerantReceivingLink.GetReceivingLinkAsync();
+            }
+            finally
+            {
+                Logging.Exit(this, nameof(OpenAsync));
+            }
         }
 
         public Task CloseAsync()
         {
-            return this.faultTolerantReceivingLink.CloseAsync();
+            Logging.Enter(this, nameof(CloseAsync));
+
+            try
+            {
+                return _faultTolerantReceivingLink.CloseAsync();
+            }
+            finally
+            {
+                Logging.Exit(this, nameof(CloseAsync));
+            }
         }
 
         public override Task<FeedbackBatch> ReceiveAsync()
         {
-            return this.ReceiveAsync(this.OperationTimeout);
+            Logging.Enter(this, OperationTimeout, nameof(ReceiveAsync));
+
+            try
+            {
+                return ReceiveAsync(OperationTimeout);
+            }
+            finally
+            {
+                Logging.Exit(this, OperationTimeout, nameof(ReceiveAsync));
+            }
         }
 
         public override async Task<FeedbackBatch> ReceiveAsync(TimeSpan timeout)
         {
+            Logging.Enter(this, timeout, nameof(ReceiveAsync));
+
             try
             {
-                ReceivingAmqpLink receivingLink = await faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
+                ReceivingAmqpLink receivingLink = await _faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
                 AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+
+                Logging.Info(this, $"Message received is [{amqpMessage}]", nameof(ReceiveAsync));
 
                 if (amqpMessage != null)
                 {
                     using (amqpMessage)
                     {
                         AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.BatchedFeedbackContentType);
-                        var records = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
+                        IEnumerable<FeedbackRecord> records = await AmqpClientHelper
+                            .GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
 
                         return new FeedbackBatch
                         {
@@ -95,6 +107,8 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception exception)
             {
+                Logging.Error(this, exception, nameof(ReceiveAsync));
+
                 if (exception.IsFatal())
                 {
                     throw;
@@ -102,17 +116,30 @@ namespace Microsoft.Azure.Devices
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
             }
+            finally
+            {
+                Logging.Exit(this, timeout, nameof(ReceiveAsync));
+            }
         }
 
-        Task<ReceivingAmqpLink> CreateReceivingLinkAsync(TimeSpan timeout)
+        private Task<ReceivingAmqpLink> CreateReceivingLinkAsync(TimeSpan timeout)
         {
-            return this.iotHubConnection.CreateReceivingLinkAsync(this.receivingPath, timeout, 0);
+            Logging.Enter(this, timeout, nameof(CreateReceivingLinkAsync));
+
+            try
+            {
+                return Connection.CreateReceivingLinkAsync(_receivingPath, timeout, 0);
+            }
+            finally
+            {
+                Logging.Exit(this, timeout, nameof(CreateReceivingLinkAsync));
+            }
         }
 
         public override Task CompleteAsync(FeedbackBatch feedback)
         {
             return AmqpClientHelper.DisposeMessageAsync(
-                this.faultTolerantReceivingLink,
+                _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.AcceptedOutcome,
                 true);
@@ -121,7 +148,7 @@ namespace Microsoft.Azure.Devices
         public override Task AbandonAsync(FeedbackBatch feedback)
         {
             return AmqpClientHelper.DisposeMessageAsync(
-                this.faultTolerantReceivingLink,
+                _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.ReleasedOutcome,
                 true);
@@ -130,7 +157,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc/>
         public void Dispose()
         {
-            this.faultTolerantReceivingLink.Dispose();
+            _faultTolerantReceivingLink.Dispose();
         }
     }
 }
