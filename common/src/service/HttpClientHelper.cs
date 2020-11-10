@@ -803,83 +803,104 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> mergedErrorMapping = MergeErrorMapping(errorMappingOverrides);
+            Logging.Enter(this, httpMethod.Method, requestUri, nameof(ExecuteAsync));
 
-            using var msg = new HttpRequestMessage(httpMethod, requestUri);
-            msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
-            msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
-
-            if (modifyRequestMessageAsync != null)
-            {
-                await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
-            }
-
-            // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.
-            HttpResponseMessage responseMsg;
             try
             {
-                responseMsg = await httpClient.SendAsync(msg, cancellationToken).ConfigureAwait(false);
-                if (responseMsg == null)
+                IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> mergedErrorMapping = MergeErrorMapping(errorMappingOverrides);
+
+                using var msg = new HttpRequestMessage(httpMethod, requestUri);
+                msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
+                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
+
+                if (modifyRequestMessageAsync != null)
                 {
-                    throw new InvalidOperationException("The response message was null when executing operation {0}.".FormatInvariant(httpMethod));
+                    await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (!isMappedToException(responseMsg))
+                // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.
+                HttpResponseMessage responseMsg;
+                try
                 {
-                    if (processResponseMessageAsync != null)
+                    responseMsg = await httpClient.SendAsync(msg, cancellationToken).ConfigureAwait(false);
+                    if (responseMsg == null)
                     {
-                        await processResponseMessageAsync(responseMsg, cancellationToken).ConfigureAwait(false);
+                        throw new InvalidOperationException("The response message was null when executing operation {0}.".FormatInvariant(httpMethod));
+                    }
+
+                    if (!isMappedToException(responseMsg))
+                    {
+                        if (processResponseMessageAsync != null)
+                        {
+                            await processResponseMessageAsync(responseMsg, cancellationToken).ConfigureAwait(false);
+                        }
                     }
                 }
-            }
-            catch (AggregateException ex)
-            {
-                ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
-                if (innerExceptions.Any(Fx.IsFatal))
+                catch (AggregateException ex)
                 {
-                    throw;
-                }
+                    Logging.Error(this, ex, nameof(ExecuteAsync));
 
-                // Apparently HttpClient throws AggregateException when a timeout occurs.
-                // TODO: pradeepc - need to confirm this with ASP.NET team
-                if (innerExceptions.Any(e => e is TimeoutException))
+                    ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
+                    if (innerExceptions.Any(Fx.IsFatal))
+                    {
+                        throw;
+                    }
+
+                    // Apparently HttpClient throws AggregateException when a timeout occurs.
+                    // TODO: pradeepc - need to confirm this with ASP.NET team
+                    if (innerExceptions.Any(e => e is TimeoutException))
+                    {
+                        throw new IotHubCommunicationException(ex.Message, ex);
+                    }
+
+                    throw new IotHubException(ex.Message, ex);
+                }
+                catch (TimeoutException ex)
                 {
+                    Logging.Error(this, ex, nameof(ExecuteAsync));
+
                     throw new IotHubCommunicationException(ex.Message, ex);
                 }
-
-                throw new IotHubException(ex.Message, ex);
-            }
-            catch (TimeoutException ex)
-            {
-                throw new IotHubCommunicationException(ex.Message, ex);
-            }
-            catch (IOException ex)
-            {
-                throw new IotHubCommunicationException(ex.Message, ex);
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new IotHubCommunicationException(ex.Message, ex);
-            }
-            catch (TaskCanceledException ex)
-            {
-                // Unfortunately TaskCanceledException is thrown when HttpClient times out.
-                if (cancellationToken.IsCancellationRequested)
+                catch (IOException ex)
                 {
+                    Logging.Error(this, ex, nameof(ExecuteAsync));
+
+                    throw new IotHubCommunicationException(ex.Message, ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    Logging.Error(this, ex, nameof(ExecuteAsync));
+
+                    throw new IotHubCommunicationException(ex.Message, ex);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    Logging.Error(this, ex, nameof(ExecuteAsync));
+
+                    // Unfortunately TaskCanceledException is thrown when HttpClient times out.
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        throw new IotHubException(ex.Message, ex);
+                    }
+
+                    throw new IotHubCommunicationException(string.Format(CultureInfo.InvariantCulture, "The {0} operation timed out.", httpMethod), ex);
+                }
+                catch (Exception ex) when (!Fx.IsFatal(ex))
+                {
+                    Logging.Error(this, ex, nameof(ExecuteAsync));
+
                     throw new IotHubException(ex.Message, ex);
                 }
 
-                throw new IotHubCommunicationException(string.Format(CultureInfo.InvariantCulture, "The {0} operation timed out.", httpMethod), ex);
+                if (isMappedToException(responseMsg))
+                {
+                    Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping).ConfigureAwait(false);
+                    throw mappedEx;
+                }
             }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
+            finally
             {
-                throw new IotHubException(ex.Message, ex);
-            }
-
-            if (isMappedToException(responseMsg))
-            {
-                Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping).ConfigureAwait(false);
-                throw mappedEx;
+                Logging.Exit(this, httpMethod.Method, requestUri, nameof(ExecuteAsync));
             }
         }
 

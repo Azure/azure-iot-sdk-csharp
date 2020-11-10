@@ -40,12 +40,7 @@ namespace Microsoft.Azure.Devices
         // internal test helper
         internal HttpJobClient(IHttpClientHelper httpClientHelper, string iotHubName)
         {
-            if (httpClientHelper == null)
-            {
-                throw new ArgumentNullException(nameof(httpClientHelper));
-            }
-
-            _httpClientHelper = httpClientHelper;
+            _httpClientHelper = httpClientHelper ?? throw new ArgumentNullException(nameof(httpClientHelper));
         }
 
         public override Task OpenAsync()
@@ -102,9 +97,13 @@ namespace Microsoft.Azure.Devices
 
         public override Task<JobResponse> GetJobAsync(string jobId, CancellationToken cancellationToken)
         {
-            EnsureInstanceNotClosed();
+            Logging.Enter(this, jobId, nameof(GetJobAsync));
 
-            var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
+            try
+            {
+                EnsureInstanceNotClosed();
+
+                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
                 {
                     HttpStatusCode.NotFound,
@@ -112,23 +111,37 @@ namespace Microsoft.Azure.Devices
                 }
             };
 
-            return _httpClientHelper.GetAsync<JobResponse>(
-                GetJobUri(jobId),
-                errorMappingOverrides,
-                null,
-                cancellationToken);
+                return _httpClientHelper.GetAsync<JobResponse>(
+                    GetJobUri(jobId),
+                    errorMappingOverrides,
+                    null,
+                    cancellationToken);
+            }
+            finally
+            {
+                Logging.Exit(this, jobId, nameof(GetJobAsync));
+            }
         }
 
         public override Task<JobResponse> CancelJobAsync(string jobId, CancellationToken cancellationToken)
         {
-            EnsureInstanceNotClosed();
+            Logging.Enter(this, jobId, nameof(CancelJobAsync));
 
-            return _httpClientHelper.PostAsync<string, JobResponse>(
-                new Uri(CancelJobUriFormat.FormatInvariant(jobId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative),
-                null,
-                null,
-                null,
-                cancellationToken);
+            try
+            {
+                EnsureInstanceNotClosed();
+
+                return _httpClientHelper.PostAsync<string, JobResponse>(
+                    new Uri(CancelJobUriFormat.FormatInvariant(jobId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative),
+                    null,
+                    null,
+                    null,
+                    cancellationToken);
+            }
+            finally
+            {
+                Logging.Exit(this, jobId, nameof(CancelJobAsync));
+            }
         }
 
         /// <inheritdoc/>
@@ -201,7 +214,11 @@ namespace Microsoft.Azure.Devices
 
         private Task<JobResponse> CreateJobAsync(JobRequest jobRequest, CancellationToken cancellationToken)
         {
-            var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
+            Logging.Enter(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateJobAsync));
+
+            try
+            {
+                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
                 {
                     HttpStatusCode.PreconditionFailed,
@@ -218,11 +235,16 @@ namespace Microsoft.Azure.Devices
                 }
             };
 
-            return _httpClientHelper.PutAsync<JobRequest, JobResponse>(
-                GetJobUri(jobRequest.JobId),
-                jobRequest,
-                errorMappingOverrides,
-                cancellationToken);
+                return _httpClientHelper.PutAsync<JobRequest, JobResponse>(
+                    GetJobUri(jobRequest.JobId),
+                    jobRequest,
+                    errorMappingOverrides,
+                    cancellationToken);
+            }
+            finally
+            {
+                Logging.Exit(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateJobAsync));
+            }
         }
 
         private void EnsureInstanceNotClosed()
@@ -235,26 +257,35 @@ namespace Microsoft.Azure.Devices
 
         private async Task<QueryResult> GetJobsAsync(JobType? jobType, JobStatus? jobStatus, int? pageSize, string continuationToken, CancellationToken cancellationToken)
         {
-            EnsureInstanceNotClosed();
+            Logging.Enter(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetJobsAsync));
 
-            var customHeaders = new Dictionary<string, string>();
-            if (!string.IsNullOrWhiteSpace(continuationToken))
+            try
             {
-                customHeaders.Add(ContinuationTokenHeader, continuationToken);
-            }
+                EnsureInstanceNotClosed();
 
-            if (pageSize != null)
+                var customHeaders = new Dictionary<string, string>();
+                if (!string.IsNullOrWhiteSpace(continuationToken))
+                {
+                    customHeaders.Add(ContinuationTokenHeader, continuationToken);
+                }
+
+                if (pageSize != null)
+                {
+                    customHeaders.Add(PageSizeHeader, pageSize.ToString());
+                }
+
+                HttpResponseMessage response = await _httpClientHelper.GetAsync<HttpResponseMessage>(
+                    BuildQueryJobUri(jobType, jobStatus),
+                    null,
+                    customHeaders,
+                    cancellationToken).ConfigureAwait(false);
+
+                return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
+            }
+            finally
             {
-                customHeaders.Add(PageSizeHeader, pageSize.ToString());
+                Logging.Exit(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetJobsAsync));
             }
-
-            HttpResponseMessage response = await _httpClientHelper.GetAsync<HttpResponseMessage>(
-                BuildQueryJobUri(jobType, jobStatus),
-                null,
-                customHeaders,
-                cancellationToken).ConfigureAwait(false);
-
-            return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
 
         private static Uri BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
