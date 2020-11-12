@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await Task.Delay(1000);
             }
 
-            // This is how one can unsubscribe a callback for the methods using a null callback handler
+            // You can unsubscribe from receiving a callback for direct methods by setting a null callback handler.
             await _deviceClient.SetMethodHandlerAsync(
                 "GetDeviceName",
                 null,
