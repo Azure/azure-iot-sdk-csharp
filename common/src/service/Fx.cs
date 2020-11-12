@@ -8,12 +8,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+
+#if NET451
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
-
-#if NET451
-using System.Runtime.ConstrainedExecution;
 using System.Transactions;
 using Microsoft.Win32;
 #endif
@@ -126,7 +125,7 @@ namespace Microsoft.Azure.Devices.Common
         public static Exception AssertAndFailFastService(string description)
         {
             Assert(description);
-            string failFastMessage = CommonResources.GetString(CommonResources.FailFastMessage, description);
+            string failFastMessage = CommonResources.GetString(Resources.FailFastMessage, description);
 
             // The catch is here to force the finally to run, as finallys don't run until the stack walk gets to a catch.
             // The catch makes sure that the finally will run before the stack-walk leaves the frame, but the code inside is impossible to reach.
@@ -134,13 +133,6 @@ namespace Microsoft.Azure.Devices.Common
             {
                 try
                 {
-                    ////MessagingClientEtwProvider.Provider.EventWriteFailFastOccurred(description);
-                    Exception.TraceFailFast(failFastMessage);
-
-                    // Mark that a FailFast is in progress, so that we can take ourselves out of the NLB if for
-                    // any reason we can't kill ourselves quickly.  Wait 15 seconds so this state gets picked up for sure.
-                    FailFastInProgress = true;
-
                     Thread.Sleep(TimeSpan.FromSeconds(15));
                 }
                 finally
@@ -153,10 +145,13 @@ namespace Microsoft.Azure.Devices.Common
                     // Workaround for the issue above. Throwing an unhandled exception on a separate thread to trigger process crash and crash dump collection
                     // Throwing FatalException since our service does not morph/eat up fatal exceptions
                     // We should find the tracking bug in Azure for this issue, and remove the workaround when fixed by Azure
-                    Thread failFastWorkaroundThread = new Thread(delegate ()
-                    {
-                        throw new FatalException(failFastMessage);
-                    });
+                    var failFastWorkaroundThread = new Thread(
+                        delegate ()
+                        {
+#pragma warning disable CA2219 // Do not raise exceptions in finally clauses
+                            throw new FatalException(failFastMessage);
+#pragma warning restore CA2219 // Do not raise exceptions in finally clauses
+                        });
 
                     failFastWorkaroundThread.Start();
                     failFastWorkaroundThread.Join();
@@ -170,8 +165,6 @@ namespace Microsoft.Azure.Devices.Common
             return null; // we'll never get here since we've just fail-fasted
         }
 #endif
-
-        internal static bool FailFastInProgress { get; private set; }
 
         public static bool IsFatal(Exception exception)
         {
@@ -292,6 +285,7 @@ namespace Microsoft.Azure.Devices.Common
             return new TransactionEventHandlerThunk(handler).ThunkFrame;
         }
 #endif
+
 #if DEBUG
 
         internal static bool AssertsFailFast
@@ -361,6 +355,7 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "Parameter 'name' used in NET451; remove when no longer supported.")]
         private static bool TryGetDebugSwitch(string name, out object value)
         {
             value = null;
@@ -385,49 +380,6 @@ namespace Microsoft.Azure.Devices.Common
         }
 
 #endif
-
-        [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
-            Justification = "Don't want to hide the exception which is about to crash the process.")]
-#if NET451
-        [Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
-        private static void TraceExceptionNoThrow(Exception exception)
-        {
-            try
-            {
-                // This call exits the CER.  However, when still inside a catch, normal ThreadAbort is prevented.
-                // Rude ThreadAbort will still be allowed to terminate processing.
-                Exception.TraceUnhandled(exception);
-            }
-            catch
-            {
-                // This empty catch is only acceptable because we are a) in a CER and b) processing an exception
-                // which is about to crash the process anyway.
-            }
-        }
-
-        [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
-            Justification = "Don't want to hide the exception which is about to crash the process.")]
-        [SuppressMessage(FxCop.Category.ReliabilityBasic, FxCop.Rule.IsFatalRule,
-            Justification = "Don't want to hide the exception which is about to crash the process.")]
-        [Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-#if NET451
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
-        private static bool HandleAtThreadBase(Exception exception)
-        {
-            // This area is too sensitive to do anything but return.
-            if (exception == null)
-            {
-                Assert("Null exception in HandleAtThreadBase.");
-                return false;
-            }
-
-            TraceExceptionNoThrow(exception);
-
-            return false;
-        }
 
 #if NET451
         // This can't derive from Thunk since T would be unsafe.
@@ -455,17 +407,7 @@ namespace Microsoft.Azure.Devices.Common
             private void UnhandledExceptionFrame(uint error, uint bytesRead, NativeOverlapped* nativeOverlapped)
             {
                 RuntimeHelpers.PrepareConstrainedRegions();
-                try
-                {
-                    _callback(error, bytesRead, nativeOverlapped);
-                }
-                catch (Exception exception)
-                {
-                    if (!HandleAtThreadBase(exception))
-                    {
-                        throw;
-                    }
-                }
+                _callback(error, bytesRead, nativeOverlapped);
             }
         }
 #endif

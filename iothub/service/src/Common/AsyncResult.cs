@@ -420,9 +420,9 @@ namespace Microsoft.Azure.Devices.Common
             {
                 // Trace before PrepareForRethrow to avoid weird callstack strings
 #if NET451
-                Fx.Exception.TraceException(asyncResult._exception, asyncResult.TraceEventType, asyncResult.Activity);
+                Fx.Exception.TraceException(asyncResult._exception, asyncResult.TraceEventType);
 #else
-                Fx.Exception.TraceException(asyncResult._exception, TraceEventType.Verbose, asyncResult.Activity);
+                Fx.Exception.TraceException(asyncResult._exception, TraceEventType.Verbose);
 #endif
                 ExceptionDispatcher.Throw(asyncResult._exception);
             }
@@ -443,10 +443,10 @@ namespace Microsoft.Azure.Devices.Common
         private class TransactionSignalScope : SignalGate<IAsyncResult>, IDisposable
         {
             [NonSerialized]
-            TransactionScope _transactionScope;
+            private TransactionScope _transactionScope;
             [NonSerialized]
-            AsyncResult _parent;
-            bool _disposed;
+            readonly AsyncResult _parent;
+            private bool _disposed;
 
             public TransactionSignalScope(AsyncResult result, Transaction transaction)
             {
@@ -457,15 +457,9 @@ namespace Microsoft.Azure.Devices.Common
 
             public TransactionSignalState State { get; private set; }
 
-            public bool IsPotentiallyAbandoned
-            {
-                get
-                {
-                    return State == TransactionSignalState.Abandoned
-                        || State == TransactionSignalState.Completed
-                        && !IsSignalled;
-                }
-            }
+            public bool IsPotentiallyAbandoned => State == TransactionSignalState.Abandoned
+                || State == TransactionSignalState.Completed
+                && !IsSignalled;
 
             public void Prepared()
             {
@@ -478,7 +472,7 @@ namespace Microsoft.Azure.Devices.Common
 
             protected virtual void Dispose(bool disposing)
             {
-                if (disposing && !this._disposed)
+                if (disposing && !_disposed)
                 {
                     _disposed = true;
 
@@ -497,7 +491,7 @@ namespace Microsoft.Azure.Devices.Common
 
                     try
                     {
-                        Fx.CompleteTransactionScope(ref this._transactionScope);
+                        Fx.CompleteTransactionScope(ref _transactionScope);
                     }
                     catch (Exception exception)
                     {
@@ -521,7 +515,7 @@ namespace Microsoft.Azure.Devices.Common
                     {
                         if (_parent._deferredTransactionalResult != null)
                         {
-                            ThrowInvalidAsyncResult(this._parent._deferredTransactionalResult);
+                            ThrowInvalidAsyncResult(_parent._deferredTransactionalResult);
                         }
                         _parent._deferredTransactionalResult = result;
                     }
@@ -551,8 +545,6 @@ namespace Microsoft.Azure.Devices.Common
                 AsyncResult = result;
             }
 
-            [SuppressMessage(FxCop.Category.Performance, FxCop.Rule.AvoidUncalledPrivateCode,
-                Justification = "Debug-only facility")]
             public AsyncResult AsyncResult { get; set; }
         }
 
