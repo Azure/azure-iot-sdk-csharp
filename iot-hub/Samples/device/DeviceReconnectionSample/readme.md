@@ -160,7 +160,7 @@ The device client exhibits the following connection status changes with reason:
   <tr>
     <td> Retry_Expired </td>
     <td> This signifies that the client was disconnected due to a transient exception, but the retry policy expired before a connection could be re-established. </td>
-    <td> If you want to perform more operations on the device client, you should dispose and then re-initialize the client. </td>
+    <td> If you want to perform more operations on the device client, you should dispose and then re-initialize the client. </br> Note that the SDK's default retry policy is set to never expire. </td>
   </tr>
   <tr>
     <td> Disabled </td>
