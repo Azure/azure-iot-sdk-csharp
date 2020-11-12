@@ -43,11 +43,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
+            var waitTime = TimeSpan.FromMinutes(1);
+            var timer = Stopwatch.StartNew();
             Console.WriteLine($"Use the IoT Hub Azure Portal or IoT Explorer utility to change the twin desired properties.");
-            while (!cts.IsCancellationRequested)
+
+            Console.WriteLine($"Waiting up to {waitTime} for IoT Hub method calls ...");
+            while (!cts.IsCancellationRequested
+                && timer.Elapsed < waitTime)
             {
                 await Task.Delay(1000);
             }
+
+            // This is how one can unsubscribe a callback for properties using a null callback handler.
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(null, null);
         }
 
         private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties, object userContext)
