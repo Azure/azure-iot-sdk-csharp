@@ -65,6 +65,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
+        [LoggedTestMethod]
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket_Only)]
+        public async Task ServiceClient_SendsMessage(TransportType transportType)
+        {
+            // arrange
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, transportType);
+            string messageId = Guid.NewGuid().ToString();
+
+            // act and expect no exception
+            var message = new Message
+            {
+                MessageId = messageId,
+            };
+            await sender.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+        }
+
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.

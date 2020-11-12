@@ -221,7 +221,7 @@ $groupDeviceCert = New-SelfSignedCertificate `
     -Signer $intermediateCert2
 
 Export-PFXCertificate -cert $groupDeviceCert -filePath $groupPfxPath -password $certPassword | Out-Null
-$dpsGroupX509PfxCertificate = [Convert]::ToBase64String((Get-Content $groupPfxPath -Encoding Byte))
+$dpsGroupX509PfxCertificate = [Convert]::ToBase64String((Get-Content $groupPfxPath -AsByteStream))
 
 # Certificate for enrollment of a device using individual enrollment.
 $individualDeviceCert = New-SelfSignedCertificate `
@@ -233,7 +233,7 @@ $individualDeviceCert = New-SelfSignedCertificate `
 
 Export-Certificate -cert $individualDeviceCert -FilePath $individualDeviceCertPath -Type CERT | Out-Null
 Export-PFXCertificate -cert $individualDeviceCert -filePath $individualDevicePfxPath -password $certPassword | Out-Null
-$dpsIndividualX509PfxCertificate = [Convert]::ToBase64String((Get-Content $individualDevicePfxPath -Encoding Byte))
+$dpsIndividualX509PfxCertificate = [Convert]::ToBase64String((Get-Content $individualDevicePfxPath -AsByteStream))
 
 # IoT hub certificate for authemtication. The tests are not setup to use a password for the certificate so create the certificate is created with no password.
 $iotHubCert = New-SelfSignedCertificate `
@@ -245,9 +245,9 @@ $iotHubCert = New-SelfSignedCertificate `
 
 $iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
 Export-PFXCertificate -cert $iotHubCert -filePath $iotHubPfxPath -password $iotHubCredentials.Password | Out-Null
-$iothubX509PfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubPfxPath -Encoding Byte))
+$iothubX509PfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubPfxPath -AsByteStream))
 
-$dpsGroupX509CertificateChain = [Convert]::ToBase64String((Get-Content $groupCertChainPath -Encoding Byte))
+$dpsGroupX509CertificateChain = [Convert]::ToBase64String((Get-Content $groupCertChainPath -AsByteStream))
 $dpsX509PfxCertificatePassword = $GroupCertificatePassword
 
 ########################################################################################################
@@ -485,7 +485,7 @@ if (Test-Path $selfSignedCerts -PathType Leaf)
 }
 
 az keyvault secret download --file $selfSignedCerts --vault-name $keyVaultName -n $ResourceGroup --encoding base64
-$fileContent = Get-Content $selfSignedCerts -Encoding Byte
+$fileContent = Get-Content $selfSignedCerts -AsByteStream
 $fileContentB64String = [System.Convert]::ToBase64String($fileContent);
 
 Write-Host "`nSuccessfully fetched the certificate bytes ... removing the cert file from the disk"
