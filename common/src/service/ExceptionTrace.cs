@@ -1,15 +1,18 @@
-// Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license. See LICENSE file in the project root
-// for full license information.
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Runtime.Versioning;
 using System.Text;
-using System.Threading;
 using Microsoft.Azure.Devices.Common.Tracing;
+
+#if NET451
+using System.Globalization;
+using System.Runtime.Versioning;
+using System.Threading;
+#endif
 
 namespace Microsoft.Azure.Devices.Common
 {
@@ -22,24 +25,24 @@ namespace Microsoft.Azure.Devices.Common
             _eventSourceName = eventSourceName;
         }
 
-        public Exception AsError(Exception exception, EventTraceActivity activity = null)
+        public Exception AsError(Exception exception)
         {
-            return TraceException(exception, TraceEventType.Error, activity);
+            return TraceException(exception, TraceEventType.Error);
         }
 
-        public Exception AsInformation(Exception exception, EventTraceActivity activity = null)
+        public Exception AsInformation(Exception exception)
         {
-            return TraceException(exception, TraceEventType.Information, activity);
+            return TraceException(exception, TraceEventType.Information);
         }
 
-        public Exception AsWarning(Exception exception, EventTraceActivity activity = null)
+        public Exception AsWarning(Exception exception)
         {
-            return TraceException(exception, TraceEventType.Warning, activity);
+            return TraceException(exception, TraceEventType.Warning);
         }
 
-        public Exception AsVerbose(Exception exception, EventTraceActivity activity = null)
+        public Exception AsVerbose(Exception exception)
         {
-            return TraceException(exception, TraceEventType.Verbose, activity);
+            return TraceException(exception, TraceEventType.Verbose);
         }
 
         public ArgumentException Argument(string paramName, string message)
@@ -83,6 +86,7 @@ namespace Microsoft.Azure.Devices.Common
             return TraceException<ObjectDisposedException>(new ObjectDisposedException(null, message), TraceEventType.Error);
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "Parameter 'catchLocation' used in NET451; remove when no longer supported.")]
         public void TraceHandled(Exception exception, string catchLocation, EventTraceActivity activity = null)
         {
 #if NET451 && DEBUG
@@ -95,15 +99,7 @@ namespace Microsoft.Azure.Devices.Common
                 exception.ToStringSlim()));
 #endif
 
-            ////MessagingClientEtwProvider.Provider.HandledExceptionWithFunctionName(
-            ////    activity, catchLocation, exception.ToStringSlim(), string.Empty);
-
             BreakOnException(exception);
-        }
-
-        public void TraceUnhandled(Exception exception)
-        {
-            ////MessagingClientEtwProvider.Provider.EventWriteUnhandledException(this.eventSourceName + ": " + exception.ToStringSlim());
         }
 
 #if NET451
@@ -112,7 +108,7 @@ namespace Microsoft.Azure.Devices.Common
 
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",
             Safe = "Does not leak any resource, needed for debugging")]
-        public TException TraceException<TException>(TException exception, TraceEventType level, EventTraceActivity activity = null)
+        public TException TraceException<TException>(TException exception, TraceEventType level)
             where TException : Exception
         {
             if (!exception.Data.Contains(_eventSourceName))
@@ -125,39 +121,10 @@ namespace Microsoft.Azure.Devices.Common
                     case TraceEventType.Critical:
                     case TraceEventType.Error:
                         Trace.TraceError("An Exception is being thrown: {0}", GetDetailsForThrownException(exception));
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Error,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionError(activity, GetDetailsForThrownException(exception));
-                        ////}
-
                         break;
 
                     case TraceEventType.Warning:
                         Trace.TraceWarning("An Exception is being thrown: {0}", GetDetailsForThrownException(exception));
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Warning,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionWarning(activity, GetDetailsForThrownException(exception));
-                        ////}
-
-                        break;
-
-                    default:
-#if DEBUG
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Verbose,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionVerbose(activity, GetDetailsForThrownException(exception));
-                        ////}
-#endif
-
                         break;
                 }
             }
@@ -194,6 +161,7 @@ namespace Microsoft.Azure.Devices.Common
         [SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
         [Fx.Tag.SecurityNote(Critical = "Calls into critical method UnsafeNativeMethods.IsDebuggerPresent and UnsafeNativeMethods.DebugBreak",
             Safe = "Safe because it's a no-op in retail builds.")]
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "Parameter 'exception' used in NET451; remove when no longer supported.")]
         internal void BreakOnException(Exception exception)
         {
 #if DEBUG
@@ -219,62 +187,5 @@ namespace Microsoft.Azure.Devices.Common
 
 #endif
         }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public void TraceFailFast(string message)
-        {
-            ////            EventLogger logger = null;
-            ////#pragma warning disable 618
-            ////            logger = new EventLogger(this.seventSourceName, Fx.Trace);
-            ////#pragma warning restore 618
-            ////            TraceFailFast(message, logger);
-        }
-
-        // Generate an event Log entry for failfast purposes To force a Watson on a dev machine, do the following:
-        // 1. Set \HKLM\SOFTWARE\Microsoft\PCHealth\ErrorReporting ForceQueueMode = 0
-        // 2. In the command environment, set COMPLUS_DbgJitDebugLaunchSetting=0
-        ////[SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
-        ////[MethodImpl(MethodImplOptions.NoInlining)]
-        ////internal void TraceFailFast(string message, EventLogger logger)
-        ////{
-        ////    if (logger != null)
-        ////    {
-        ////        try
-        ////        {
-        ////            string stackTrace = null;
-        ////            try
-        ////            {
-        ////                stackTrace = new StackTrace().ToString();
-        ////            }
-        ////            catch (Exception exception)
-        ////            {
-        ////                stackTrace = exception.Message;
-        ////                if (Fx.IsFatal(exception))
-        ////                {
-        ////                    throw;
-        ////                }
-        ////            }
-        ////            finally
-        ////            {
-        ////                logger.LogEvent(TraceEventType.Critical,
-        ////                    FailFastEventLogCategory,
-        ////                    (uint)EventLogEventId.FailFast,
-        ////                    message,
-        ////                    stackTrace);
-        ////            }
-        ////        }
-        ////        catch (Exception ex)
-        ////        {
-        ////            logger.LogEvent(TraceEventType.Critical,
-        ////                FailFastEventLogCategory,
-        ////                (uint)EventLogEventId.FailFastException,
-        ////                ex.ToString());
-        ////            if (Fx.IsFatal(ex))
-        ////            {
-        ////                throw;
-        ////            }
-        ////        }
-        ////    }
-        ////}
     }
 }
