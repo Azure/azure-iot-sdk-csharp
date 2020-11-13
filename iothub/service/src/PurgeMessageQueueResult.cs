@@ -2,10 +2,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ---------------------------------------------------------------
 
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices
 {
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Result of a device message queue purge operation.
     /// </summary>
@@ -21,6 +21,6 @@ namespace Microsoft.Azure.Devices
         /// The total number of messages that were purged from the device's queue.
         /// </summary>
         [JsonProperty(PropertyName = "totalMessagesPurged", Required = Required.Always)]
-        public int TotalMessagesPurged;
+        public int TotalMessagesPurged { get; set; }
     }
 }

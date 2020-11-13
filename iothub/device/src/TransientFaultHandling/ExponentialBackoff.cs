@@ -23,55 +23,55 @@ using System;
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
     /// <summary>
-    /// A retry strategy with backoff parameters for calculating the exponential delay between retries.
+    /// A retry strategy with back-off parameters for calculating the exponential delay between retries.
     /// </summary>
     internal class ExponentialBackoff : RetryStrategy
     {
-        private readonly int retryCount;
+        private readonly int _retryCount;
 
-        private readonly TimeSpan minBackoff;
+        private readonly TimeSpan _minBackoff;
 
-        private readonly TimeSpan maxBackoff;
+        private readonly TimeSpan _maxBackoff;
 
-        private readonly TimeSpan deltaBackoff;
+        private readonly TimeSpan _deltaBackoff;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ExponentialBackoff" /> class.
+        /// Initializes a new instance of the <see cref="ExponentialBackoff" /> class.
         /// </summary>
-        public ExponentialBackoff() : this(RetryStrategy.DefaultClientRetryCount, RetryStrategy.DefaultMinBackoff, RetryStrategy.DefaultMaxBackoff, RetryStrategy.DefaultClientBackoff)
+        public ExponentialBackoff() : this(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ExponentialBackoff" /> class with the specified retry settings.
+        /// Initializes a new instance of the <see cref="ExponentialBackoff" /> class with the specified retry settings.
         /// </summary>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
-        /// <param name="minBackoff">The minimum backoff time</param>
-        /// <param name="maxBackoff">The maximum backoff time.</param>
+        /// <param name="minBackoff">The minimum back-off time</param>
+        /// <param name="maxBackoff">The maximum back-off time.</param>
         /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
         public ExponentialBackoff(int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff) : this(null, retryCount, minBackoff, maxBackoff, deltaBackoff, RetryStrategy.DefaultFirstFastRetry)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ExponentialBackoff" /> class with the specified name and retry settings.
+        /// Initializes a new instance of the <see cref="ExponentialBackoff" /> class with the specified name and retry settings.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
-        /// <param name="minBackoff">The minimum backoff time</param>
-        /// <param name="maxBackoff">The maximum backoff time.</param>
+        /// <param name="minBackoff">The minimum back-off time</param>
+        /// <param name="maxBackoff">The maximum back-off time.</param>
         /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
         public ExponentialBackoff(string name, int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff) : this(name, retryCount, minBackoff, maxBackoff, deltaBackoff, RetryStrategy.DefaultFirstFastRetry)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ExponentialBackoff" /> class with the specified name, retry settings, and fast retry option.
+        /// Initializes a new instance of the <see cref="ExponentialBackoff" /> class with the specified name, retry settings, and fast retry option.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
-        /// <param name="minBackoff">The minimum backoff time</param>
-        /// <param name="maxBackoff">The maximum backoff time.</param>
+        /// <param name="minBackoff">The minimum back-off time</param>
+        /// <param name="maxBackoff">The maximum back-off time.</param>
         /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
         /// <param name="firstFastRetry">true to immediately retry in the first attempt; otherwise, false. The subsequent retries will remain subject to the configured retry interval.</param>
         public ExponentialBackoff(string name, int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff, bool firstFastRetry) : base(name, firstFastRetry)
@@ -81,10 +81,10 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             Guard.ArgumentNotNegativeValue(maxBackoff.Ticks, "maxBackoff");
             Guard.ArgumentNotNegativeValue(deltaBackoff.Ticks, "deltaBackoff");
             Guard.ArgumentNotGreaterThan(minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds, "minBackoff");
-            this.retryCount = retryCount;
-            this.minBackoff = minBackoff;
-            this.maxBackoff = maxBackoff;
-            this.deltaBackoff = deltaBackoff;
+            _retryCount = retryCount;
+            _minBackoff = minBackoff;
+            _maxBackoff = maxBackoff;
+            _deltaBackoff = deltaBackoff;
         }
 
         /// <summary>
@@ -95,11 +95,18 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             return delegate (int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
-                if (currentRetryCount < this.retryCount)
+                if (currentRetryCount < _retryCount)
                 {
                     Random random = new Random();
-                    double exponentialInterval = (Math.Pow(2.0, currentRetryCount) - 1.0) * random.Next((int)this.deltaBackoff.TotalMilliseconds * 8 / 10, (int)this.deltaBackoff.TotalMilliseconds * 12 / 10) + this.minBackoff.TotalMilliseconds;
-                    double maxInterval = this.maxBackoff.TotalMilliseconds;
+
+                    double exponentialInterval =
+                        (Math.Pow(2.0, currentRetryCount) - 1.0)
+                        * random.Next(
+                            (int)_deltaBackoff.TotalMilliseconds * 8 / 10,
+                            (int)_deltaBackoff.TotalMilliseconds * 12 / 10)
+                        + _minBackoff.TotalMilliseconds;
+
+                    double maxInterval = _maxBackoff.TotalMilliseconds;
                     double num2 = Math.Min(exponentialInterval, maxInterval);
                     retryInterval = TimeSpan.FromMilliseconds(num2);
                     return true;

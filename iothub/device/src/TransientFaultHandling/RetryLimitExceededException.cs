@@ -35,14 +35,14 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 #pragma warning restore CA1064 // Exceptions should be public
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryLimitExceededException" /> class with a default error message.
+        /// Initializes a new instance of the <see cref="RetryLimitExceededException" /> class with a default error message.
         /// </summary>
         public RetryLimitExceededException() : this(Resources.RetryLimitExceeded)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryLimitExceededException" /> class with a specified error message.
+        /// Initializes a new instance of the <see cref="RetryLimitExceededException" /> class with a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public RetryLimitExceededException(string message) : base(message)
@@ -50,16 +50,17 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryLimitExceededException" /> class with a reference to the inner exception
+        /// Initializes a new instance of the <see cref="RetryLimitExceededException" /> class with a reference to the inner exception
         /// that is the cause of this exception.
         /// </summary>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public RetryLimitExceededException(Exception innerException) : base((innerException != null) ? innerException.Message : Resources.RetryLimitExceeded, innerException)
+        public RetryLimitExceededException(Exception innerException)
+            : base((innerException != null) ? innerException.Message : Resources.RetryLimitExceeded, innerException)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryLimitExceededException" /> class with a specified error message and inner exception.
+        /// Initializes a new instance of the <see cref="RetryLimitExceededException" /> class with a specified error message and inner exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
