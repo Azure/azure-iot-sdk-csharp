@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         public string TrackingId { get; set; }
 
         /// <summary>
-        /// Create an instance of <see cref="IotHubException"/> with the default error message and mark it as non-transient.
+        /// Creates an instance of <see cref="IotHubException"/> with the default error message and mark it as non-transient.
         /// </summary>
         public IotHubException()
             : this(IotHubExceptionDefaultMessage, false)
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Create an instance of <see cref="IotHubException"/> with the supplied error message and mark it as non-transient.
+        /// Creates an instance of <see cref="IotHubException"/> with the supplied error message and mark it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public IotHubException(string message)
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Create an instance of <see cref="IotHubException"/> with the supplied error message and tracking Id, and mark it as non-transient.
+        /// Creates an instance of <see cref="IotHubException"/> with the supplied error message and tracking Id, and mark it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Create an instance of <see cref="IotHubException"/> with the supplied error message, tracking Id and a flag indicating if the error was transient.
+        /// Creates an instance of <see cref="IotHubException"/> with the supplied error message, tracking Id and a flag indicating if the error was transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Create an instance of <see cref="IotHubException"/> with the supplied error message and a flag indicating if the error was transient.
+        /// Creates an instance of <see cref="IotHubException"/> with the supplied error message and a flag indicating if the error was transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
