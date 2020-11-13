@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Property container
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Publicly property. No behavior changes allowed.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Public property. No behavior changes allowed.")]
         public sealed class PropertyContainer
         {
             /// <summary>
@@ -38,14 +38,14 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an ExportImportDevice
+        /// Create an ExportImportDevice <see cref="ExportImportDevice" />
         /// </summary>
         public ExportImportDevice()
         {
         }
 
         /// <summary>
-        /// Create an ExportImportDevice
+        /// Create an ExportImportDevice <see cref="ExportImportDevice" />
         /// </summary>
         /// <param name="device">Device properties</param>
         /// <param name="importmode">Identifies the behavior when merging a device to the registry during import actions.</param>
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices
         public string ModuleId { get; set; }
 
         /// <summary>
-        /// ETag of the device
+        /// A string representing an ETag for the entity as per RFC7232.
         /// </summary>
         [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore)]
         public string ETag
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices
         public AuthenticationMechanism Authentication { get; set; }
 
         /// <summary>
-        /// Twin ETag
+        /// string representing a Twin ETag for the entity, as per RFC7232.
         /// </summary>
         [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
         public string TwinETag
@@ -128,13 +128,13 @@ namespace Microsoft.Azure.Devices
         public TwinCollection Tags { get; set; }
 
         /// <summary>
-        /// Properties
+        /// Desired and Reported property bags
         /// </summary>
         [JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
         public PropertyContainer Properties { get; set; }
 
         /// <summary>
-        /// Device Capabilities
+        /// Status of Capabilities enabled on the device
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
         public DeviceCapabilities Capabilities { get; set; }
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices
                 if (eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {
                     // remove only the first char
-                    localETag = eTag[1..];
+                    localETag = eTag.Substring(1);
                 }
 
                 if (localETag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
