@@ -19,29 +19,29 @@ namespace Microsoft.Azure.Devices.Api.Test
     {
         private const string IotHubName = "localhost";
         private const int Port = 12346;
-        private static HttpListener listener;
         private static readonly Action<TransportAsyncCallbackArgs> onReadOperationComplete = OnReadOperationComplete;
         private static readonly Action<TransportAsyncCallbackArgs> onWriteOperationComplete = OnWriteOperationComplete;
-        private static ClientWebSocketTransport clientWebSocketTransport;
+
+        private static HttpListener s_listener;
 #if NET451
-        static LegacyClientWebSocketTransport legacyClientWebSocketTransport;
+        private static LegacyClientWebSocketTransport s_legacyClientWebSocketTransport;
 #endif
-        private static byte[] byteArray = new byte[10] { 0x5, 0x6, 0x7, 0x8, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
-        private static volatile bool readComplete;
+        private static byte[] s_byteArray = new byte[10] { 0x5, 0x6, 0x7, 0x8, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
+        private static volatile bool s_isReadComplete;
 
         [AssemblyInitialize()]
         public static void AssembyInitialize(TestContext testcontext)
         {
-            listener = new HttpListener();
-            listener.Prefixes.Add("http://+:" + Port + WebSocketConstants.UriSuffix + "/");
-            listener.Start();
+            s_listener = new HttpListener();
+            s_listener.Prefixes.Add("http://+:" + Port + WebSocketConstants.UriSuffix + "/");
+            s_listener.Start();
             RunWebSocketServer().Fork();
         }
 
         [AssemblyCleanup()]
         public static void AssemblyCleanup()
         {
-            listener.Stop();
+            s_listener.Stop();
         }
 
         [ExpectedException(typeof(AmqpException))]
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var websocket = new ClientWebSocket();
             var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
             var args = new TransportAsyncCallbackArgs();
-            args.SetBuffer(byteArray, 0, byteArray.Length);
+            args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
             clientWebSocketTransport.WriteAsync(args);
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             args.SetBuffer(byteArray, 0, 10);
             if (clientWebSocketTransport.ReadAsync(args))
             {
-                while (!readComplete)
+                while (!s_isReadComplete)
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
@@ -85,19 +85,19 @@ namespace Microsoft.Azure.Devices.Api.Test
             websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
             Uri uri = new Uri("ws://" + IotHubName + ":" + Port + WebSocketConstants.UriSuffix);
             await websocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
-            clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
+            using var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
 
             // Test Write API
             var args = new TransportAsyncCallbackArgs();
             args.CompletedCallback = onWriteOperationComplete;
-            args.SetBuffer(byteArray, 0, byteArray.Length);
+            args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
             clientWebSocketTransport.WriteAsync(args);
 
             // Test Read API
             args.CompletedCallback = onReadOperationComplete;
             if (clientWebSocketTransport.ReadAsync(args))
             {
-                while (!readComplete)
+                while (!s_isReadComplete)
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
             var uri = new Uri("ws://" + IotHubName + ":" + Port + WebSocketConstants.UriSuffix);
             await websocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
-            clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
+            using var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
             await clientWebSocketTransport.CloseAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
 
             var args = new TransportAsyncCallbackArgs();
@@ -138,11 +138,11 @@ namespace Microsoft.Azure.Devices.Api.Test
             websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
             var uri = new Uri("ws://" + IotHubName + ":" + Port + WebSocketConstants.UriSuffix);
             await websocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
-            clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
+            using var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
             await clientWebSocketTransport.CloseAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
 
             var args = new TransportAsyncCallbackArgs();
-            args.SetBuffer(byteArray, 0, byteArray.Length);
+            args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
             args.CompletedCallback = onWriteOperationComplete;
             clientWebSocketTransport.WriteAsync(args);
         }
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
             Uri uri = new Uri("ws://" + IotHubName + ":" + Port + WebSocketConstants.UriSuffix);
             await websocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
-            clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
+            using var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
             clientWebSocketTransport.Abort();
             var args = new TransportAsyncCallbackArgs();
             var byteArray = new byte[10];
@@ -174,10 +174,10 @@ namespace Microsoft.Azure.Devices.Api.Test
             websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
             Uri uri = new Uri("ws://" + IotHubName + ":" + Port + WebSocketConstants.UriSuffix);
             await websocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
-            clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
+            using var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
             clientWebSocketTransport.Abort();
             var args = new TransportAsyncCallbackArgs();
-            args.SetBuffer(byteArray, 0, byteArray.Length);
+            args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
             clientWebSocketTransport.WriteAsync(args);
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             var clientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromSeconds(60), null, null);
             var args = new TransportAsyncCallbackArgs();
-            args.SetBuffer(byteArray, 0, byteArray.Length);
+            args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
             clientWebSocketTransport.WriteAsync(args);
         }
 
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             args.SetBuffer(byteArray, 0, 10);
             if (clientWebSocketTransport.ReadAsync(args))
             {
-                while (!readComplete)
+                while (!s_isReadComplete)
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
@@ -221,26 +221,26 @@ namespace Microsoft.Azure.Devices.Api.Test
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket.ConnectAsync(IotHubName, Port, "ws://", TimeSpan.FromMinutes(1)).ConfigureAwait(false);
 
-            legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromSeconds(60), null, null);
+            s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromSeconds(60), null, null);
 
             // Test Write API
             TransportAsyncCallbackArgs args = new TransportAsyncCallbackArgs();
             args.CompletedCallback = onWriteOperationComplete;
-            args.SetBuffer(byteArray, 0, byteArray.Length);
-            legacyClientWebSocketTransport.WriteAsync(args);
+            args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
+            s_legacyClientWebSocketTransport.WriteAsync(args);
 
             // Test Read API
             args.CompletedCallback = onReadOperationComplete;
-            if (legacyClientWebSocketTransport.ReadAsync(args))
+            if (s_legacyClientWebSocketTransport.ReadAsync(args))
             {
-                while (!readComplete)
+                while (!s_isReadComplete)
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
             }
 
             // Once Read operation is complete, close websocket transport
-            legacyClientWebSocketTransport.CloseAsync(TimeSpan.FromSeconds(30)).Wait(CancellationToken.None);
+            s_legacyClientWebSocketTransport.CloseAsync(TimeSpan.FromSeconds(30)).Wait(CancellationToken.None);
         }
 
         [ExpectedException(typeof(ObjectDisposedException))]
@@ -250,12 +250,12 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket.ConnectAsync(IotHubName, Port, "ws://", TimeSpan.FromMinutes(1)).ConfigureAwait(false);
-            legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromMinutes(1), null, null);
-            await legacyClientWebSocketTransport.CloseAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+            s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromMinutes(1), null, null);
+            await s_legacyClientWebSocketTransport.CloseAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
             var args = new TransportAsyncCallbackArgs();
             var byteArray = new byte[10];
             args.SetBuffer(byteArray, 0, 10);
-            legacyClientWebSocketTransport.ReadAsync(args);
+            s_legacyClientWebSocketTransport.ReadAsync(args);
         }
 
         [ExpectedException(typeof(ObjectDisposedException))]
@@ -265,11 +265,11 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket.ConnectAsync(IotHubName, Port, "ws://", TimeSpan.FromMinutes(1)).ConfigureAwait(false);
-            legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromMinutes(1), null, null);
-            await legacyClientWebSocketTransport.CloseAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+            s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromMinutes(1), null, null);
+            await s_legacyClientWebSocketTransport.CloseAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
             var args = new TransportAsyncCallbackArgs();
-            args.SetBuffer(byteArray, 0, byteArray.Length);
-            legacyClientWebSocketTransport.WriteAsync(args);
+            args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
+            s_legacyClientWebSocketTransport.WriteAsync(args);
         }
 
         [ExpectedException(typeof(ObjectDisposedException))]
@@ -279,13 +279,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket.ConnectAsync(IotHubName, Port, "ws://", TimeSpan.FromMinutes(1)).ConfigureAwait(false);
-            legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromMinutes(1), null, null);
-            legacyClientWebSocketTransport.Abort();
+            s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromMinutes(1), null, null);
+            s_legacyClientWebSocketTransport.Abort();
 
             var args = new TransportAsyncCallbackArgs();
             var byteArray = new byte[10];
             args.SetBuffer(byteArray, 0, 10);
-            legacyClientWebSocketTransport.ReadAsync(args);
+            s_legacyClientWebSocketTransport.ReadAsync(args);
             Assert.Fail("Did not throw object disposed exception");
         }
 
@@ -296,19 +296,19 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket.ConnectAsync(IotHubName, Port, "ws://", TimeSpan.FromMinutes(1)).ConfigureAwait(false);
-            legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromMinutes(1), null, null);
-            legacyClientWebSocketTransport.Abort();
+            s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, TimeSpan.FromMinutes(1), null, null);
+            s_legacyClientWebSocketTransport.Abort();
 
             var args = new TransportAsyncCallbackArgs();
-            args.SetBuffer(byteArray, 0, byteArray.Length);
-            legacyClientWebSocketTransport.WriteAsync(args);
+            args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
+            s_legacyClientWebSocketTransport.WriteAsync(args);
             Assert.Fail("Did not throw object disposed exception");
         }
 #endif
 
         private static void OnWriteOperationComplete(TransportAsyncCallbackArgs args)
         {
-            if (args.BytesTransfered != byteArray.Length)
+            if (args.BytesTransfered != s_byteArray.Length)
             {
                 throw new InvalidOperationException("All the bytes sent were not transferred");
             }
@@ -327,20 +327,20 @@ namespace Microsoft.Azure.Devices.Api.Test
             }
 
             // Verify that data matches what was sent
-            if (byteArray.Length != args.Count)
+            if (s_byteArray.Length != args.Count)
             {
-                throw new InvalidOperationException("Expected " + byteArray.Length + " bytes in response");
+                throw new InvalidOperationException("Expected " + s_byteArray.Length + " bytes in response");
             }
 
             for (int i = 0; i < args.Count; i++)
             {
-                if (byteArray[i] != args.Buffer[i])
+                if (s_byteArray[i] != args.Buffer[i])
                 {
                     throw new InvalidOperationException("Response contents do not match what was sent");
                 }
             }
 
-            readComplete = true;
+            s_isReadComplete = true;
         }
 
         static public async Task RunWebSocketServer()
@@ -349,7 +349,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             {
                 while (true)
                 {
-                    HttpListenerContext context = await listener.GetContextAsync().ConfigureAwait(false);
+                    HttpListenerContext context = await s_listener.GetContextAsync().ConfigureAwait(false);
                     if (!context.Request.IsWebSocketRequest)
                     {
                         context.Response.StatusCode = (int)HttpStatusCode.BadRequest;

@@ -189,9 +189,10 @@ namespace Microsoft.Azure.Devices
 
         protected override bool CloseInternal()
         {
-            if (_webSocket.State != WebSocketState.Closed && _webSocket.State != WebSocketState.Aborted)
+            if (_webSocket.State != WebSocketState.Closed
+                && _webSocket.State != WebSocketState.Aborted)
             {
-                CloseInternalAsync(s_closeTimeout);
+                CloseInternalAsync(s_closeTimeout).GetAwaiter().GetResult();
             }
 
             return true;
