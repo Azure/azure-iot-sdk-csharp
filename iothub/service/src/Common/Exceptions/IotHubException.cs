@@ -12,30 +12,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     [Serializable]
     public class IotHubException : Exception
     {
-        private const string IotHubExceptionDefaultMessage = "An IoT Hub exception has occurred.";
         private const string IsTransientValueSerializationStoreName = "IotHubException-IsTransient";
         private const string TrackingIdSerializationStoreName = "IoTHubException-TrackingId";
 
         /// <summary>
-        /// Indicates if the error is transient and should be retried.
-        /// </summary>
-        public bool IsTransient { get; private set; }
-
-        /// <summary>
-        /// The service returned tracking Id associated with this particular error.
-        /// </summary>
-        public string TrackingId { get; set; }
-
-        /// <summary>
-        /// Creates an instance of <see cref="IotHubException"/> with the default error message and mark it as non-transient.
-        /// </summary>
-        public IotHubException()
-            : this(IotHubExceptionDefaultMessage, false)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="IotHubException"/> with the supplied error message and mark it as non-transient.
+        /// Creates an instance of <see cref="IotHubException"/> with the supplied error message and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public IotHubException(string message)
@@ -44,7 +25,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubException"/> with the supplied error message and tracking Id, and mark it as non-transient.
+        /// Creates an instance of <see cref="IotHubException"/> with the supplied error message and tracking Id, and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
@@ -85,7 +66,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// Creates an instance of <see cref="IotHubException"/> with a specified error message and
-        /// a reference to the inner exception that caused this exception, and mark it as non-transient.
+        /// a reference to the inner exception that caused this exception, and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
@@ -166,6 +147,29 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
+        /// Creates an instance of <see cref="IotHubException"/> with an empty error message and marks it as non-transient.
+        /// </summary>
+        protected IotHubException()
+            : base()
+        {
+        }
+
+        /// <summary>
+        /// Indicates if the error is transient and should be retried.
+        /// </summary>
+        public bool IsTransient { get; private set; }
+
+        /// <summary>
+        /// The service returned tracking Id associated with this particular error.
+        /// </summary>
+        public string TrackingId { get; set; }
+
+        /// <summary>
+        /// The <see cref="ErrorCode"/> associated with the exception.
+        /// </summary>
+        public ErrorCode Code { get; private set; }
+
+        /// <summary>
         /// Sets the <see cref="IsTransient"/> and <see cref="TrackingId"/> information to the <see cref="SerializationInfo"/>.
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
@@ -175,15 +179,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             base.GetObjectData(info, context);
             info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
             info.AddValue(TrackingIdSerializationStoreName, TrackingId);
-        }
-
-        /// <summary>
-        /// The <see cref="ErrorCode"/> associated with the exception.
-        /// </summary>
-        public ErrorCode Code
-        {
-            get;
-            private set;
         }
     }
 }
