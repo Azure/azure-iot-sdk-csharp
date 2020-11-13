@@ -69,25 +69,25 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// <summary>
         /// Returns a default policy that performs no retries, but invokes the action only once.
         /// </summary>
-        public static RetryPolicy NoRetry { get; } = new RetryPolicy(new RetryPolicy.TransientErrorIgnoreStrategy(), RetryStrategy.NoRetry);
+        public static RetryPolicy NoRetry { get; } = new RetryPolicy(new TransientErrorIgnoreStrategy(), RetryStrategy.NoRetry);
 
         /// <summary>
-        /// Returns a default policy that implements a fixed retry interval configured with the default <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> retry strategy.
+        /// Returns a default policy that implements a fixed retry interval configured with the default <see cref="FixedInterval" /> retry strategy.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryPolicy DefaultFixed { get; } = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultFixed);
+        public static RetryPolicy DefaultFixed { get; } = new RetryPolicy(new TransientErrorCatchAllStrategy(), RetryStrategy.DefaultFixed);
 
         /// <summary>
-        /// Returns a default policy that implements a progressive retry interval configured with the default <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> retry strategy.
+        /// Returns a default policy that implements a progressive retry interval configured with the default <see cref="Incremental" /> retry strategy.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryPolicy DefaultProgressive { get; } = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultProgressive);
+        public static RetryPolicy DefaultProgressive { get; } = new RetryPolicy(new TransientErrorCatchAllStrategy(), RetryStrategy.DefaultProgressive);
 
         /// <summary>
-        /// Returns a default policy that implements a random exponential retry interval configured with the default <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> retry strategy.
+        /// Returns a default policy that implements a random exponential retry interval configured with the default <see cref="FixedInterval" /> retry strategy.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryPolicy DefaultExponential { get; } = new RetryPolicy(new RetryPolicy.TransientErrorCatchAllStrategy(), RetryStrategy.DefaultExponential);
+        public static RetryPolicy DefaultExponential { get; } = new RetryPolicy(new TransientErrorCatchAllStrategy(), RetryStrategy.DefaultExponential);
 
         /// <summary>
         /// Gets the retry strategy.
@@ -100,9 +100,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         public ITransientErrorDetectionStrategy ErrorDetectionStrategy { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryPolicy" /> class with the specified number of retry attempts and parameters defining the progressive delay between retries.
+        /// Initializes a new instance of the <see cref="RetryPolicy" /> class with the specified number of retry attempts and parameters defining the progressive delay between retries.
         /// </summary>
-        /// <param name="errorDetectionStrategy">The <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
+        /// <param name="errorDetectionStrategy">The <see cref="ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
         /// <param name="retryStrategy">The strategy to use for this retry policy.</param>
         public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, RetryStrategy retryStrategy)
         {
@@ -117,40 +117,48 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryPolicy" /> class with the specified number of retry attempts and default fixed time interval between retries.
+        /// Initializes a new instance of the <see cref="RetryPolicy" /> class with the specified number of retry attempts and default fixed time interval between retries.
         /// </summary>
-        /// <param name="errorDetectionStrategy">The <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
+        /// <param name="errorDetectionStrategy">The <see cref="ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
         /// <param name="retryCount">The number of retry attempts.</param>
-        public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, int retryCount) : this(errorDetectionStrategy, new FixedInterval(retryCount))
+        public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, int retryCount)
+            : this(errorDetectionStrategy, new FixedInterval(retryCount))
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryPolicy" /> class with the specified number of retry attempts and fixed time interval between retries.
+        /// Initializes a new instance of the <see cref="RetryPolicy" /> class with the specified number of retry attempts and fixed time interval between retries.
         /// </summary>
-        /// <param name="errorDetectionStrategy">The <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
+        /// <param name="errorDetectionStrategy">The <see cref="ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
         /// <param name="retryCount">The number of retry attempts.</param>
         /// <param name="retryInterval">The interval between retries.</param>
-        public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, int retryCount, TimeSpan retryInterval) : this(errorDetectionStrategy, new FixedInterval(retryCount, retryInterval))
+        public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, int retryCount, TimeSpan retryInterval)
+            : this(errorDetectionStrategy, new FixedInterval(retryCount, retryInterval))
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryPolicy" /> class with the specified number of retry attempts and backoff parameters for calculating the exponential delay between retries.
+        /// Initializes a new instance of the <see cref="RetryPolicy" /> class with the specified number of retry attempts and back-off parameters for calculating the exponential delay between retries.
         /// </summary>
-        /// <param name="errorDetectionStrategy">The <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
+        /// <param name="errorDetectionStrategy">The <see cref="ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
         /// <param name="retryCount">The number of retry attempts.</param>
-        /// <param name="minBackoff">The minimum backoff time.</param>
-        /// <param name="maxBackoff">The maximum backoff time.</param>
+        /// <param name="minBackoff">The minimum back-off time.</param>
+        /// <param name="maxBackoff">The maximum back-off time.</param>
         /// <param name="deltaBackoff">The time value that will be used to calculate a random delta in the exponential delay between retries.</param>
-        public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff) : this(errorDetectionStrategy, new ExponentialBackoff(retryCount, minBackoff, maxBackoff, deltaBackoff))
+        public RetryPolicy(
+            ITransientErrorDetectionStrategy errorDetectionStrategy,
+            int retryCount,
+            TimeSpan minBackoff,
+            TimeSpan maxBackoff,
+            TimeSpan deltaBackoff)
+            : this(errorDetectionStrategy, new ExponentialBackoff(retryCount, minBackoff, maxBackoff, deltaBackoff))
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryPolicy" /> class with the specified number of retry attempts and parameters defining the progressive delay between retries.
+        /// Initializes a new instance of the <see cref="RetryPolicy" /> class with the specified number of retry attempts and parameters defining the progressive delay between retries.
         /// </summary>
-        /// <param name="errorDetectionStrategy">The <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
+        /// <param name="errorDetectionStrategy">The <see cref="ITransientErrorDetectionStrategy" /> that is responsible for detecting transient conditions.</param>
         /// <param name="retryCount">The number of retry attempts.</param>
         /// <param name="initialInterval">The initial interval that will apply for the first retry.</param>
         /// <param name="increment">The incremental time value that will be used to calculate the progressive delay between retries.</param>
@@ -180,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// <returns>The result from the action.</returns>
         public virtual TResult ExecuteAction<TResult>(Func<TResult> func)
         {
-            Guard.ArgumentNotNull(func, "func");
+            Guard.ArgumentNotNull(func, nameof(func));
             int num = 0;
             ShouldRetry shouldRetry = RetryStrategy.GetShouldRetry();
             TResult result;
@@ -249,11 +257,15 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// </returns>
         public Task ExecuteAsync(Func<Task> taskAction, CancellationToken cancellationToken)
         {
-            if (taskAction == null)
-            {
-                throw new ArgumentNullException(nameof(taskAction));
-            }
-            return new AsyncExecution(taskAction, RetryStrategy.GetShouldRetry(), new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient), new Action<int, Exception, TimeSpan>(OnRetrying), RetryStrategy.FastFirstRetry, cancellationToken).ExecuteAsync();
+            return taskAction == null
+                ? throw new ArgumentNullException(nameof(taskAction))
+                : new AsyncExecution(
+                    taskAction,
+                    RetryStrategy.GetShouldRetry(),
+                    new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient),
+                    new Action<int, Exception, TimeSpan>(OnRetrying),
+                    RetryStrategy.FastFirstRetry,
+                    cancellationToken).ExecuteAsync();
         }
 
         /// <summary>
@@ -282,11 +294,15 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// </returns>
         public Task<TResult> ExecuteAsync<TResult>(Func<Task<TResult>> taskFunc, CancellationToken cancellationToken)
         {
-            if (taskFunc == null)
-            {
-                throw new ArgumentNullException(nameof(taskFunc));
-            }
-            return new AsyncExecution<TResult>(taskFunc, RetryStrategy.GetShouldRetry(), new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient), new Action<int, Exception, TimeSpan>(OnRetrying), RetryStrategy.FastFirstRetry, cancellationToken).ExecuteAsync();
+            return taskFunc == null
+                ? throw new ArgumentNullException(nameof(taskFunc))
+                : new AsyncExecution<TResult>(
+                    taskFunc,
+                    RetryStrategy.GetShouldRetry(),
+                    new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient),
+                    new Action<int, Exception, TimeSpan>(OnRetrying),
+                    RetryStrategy.FastFirstRetry,
+                    cancellationToken).ExecuteAsync();
         }
 
         /// <summary>

@@ -27,21 +27,21 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     /// </summary>
     internal class Incremental : RetryStrategy
     {
-        private readonly int retryCount;
+        private readonly int _retryCount;
 
-        private readonly TimeSpan initialInterval;
+        private readonly TimeSpan _initialInterval;
 
-        private readonly TimeSpan increment;
+        private readonly TimeSpan _increment;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> class.
+        /// Initializes a new instance of the <see cref="Incremental" /> class.
         /// </summary>
-        public Incremental() : this(RetryStrategy.DefaultClientRetryCount, RetryStrategy.DefaultRetryInterval, RetryStrategy.DefaultRetryIncrement)
+        public Incremental() : this(DefaultClientRetryCount, DefaultRetryInterval, DefaultRetryIncrement)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> class with the specified retry settings.
+        /// Initializes a new instance of the <see cref="Incremental" /> class with the specified retry settings.
         /// </summary>
         /// <param name="retryCount">The number of retry attempts.</param>
         /// <param name="initialInterval">The initial interval that will apply for the first retry.</param>
@@ -51,18 +51,18 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> class with the specified name and retry settings.
+        /// Initializes a new instance of the <see cref="Incremental" /> class with the specified name and retry settings.
         /// </summary>
         /// <param name="name">The retry strategy name.</param>
         /// <param name="retryCount">The number of retry attempts.</param>
         /// <param name="initialInterval">The initial interval that will apply for the first retry.</param>
         /// <param name="increment">The incremental time value that will be used to calculate the progressive delay between retries.</param>
-        public Incremental(string name, int retryCount, TimeSpan initialInterval, TimeSpan increment) : this(name, retryCount, initialInterval, increment, RetryStrategy.DefaultFirstFastRetry)
+        public Incremental(string name, int retryCount, TimeSpan initialInterval, TimeSpan increment) : this(name, retryCount, initialInterval, increment, DefaultFirstFastRetry)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.Incremental" /> class with the specified number of retry attempts, time interval, retry strategy, and fast start option.
+        /// Initializes a new instance of the <see cref="Incremental" /> class with the specified number of retry attempts, time interval, retry strategy, and fast start option.
         /// </summary>
         /// <param name="name">The retry strategy name.</param>
         /// <param name="retryCount">The number of retry attempts.</param>
@@ -74,9 +74,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             Guard.ArgumentNotNegativeValue(retryCount, "retryCount");
             Guard.ArgumentNotNegativeValue(initialInterval.Ticks, "initialInterval");
             Guard.ArgumentNotNegativeValue(increment.Ticks, "increment");
-            this.retryCount = retryCount;
-            this.initialInterval = initialInterval;
-            this.increment = increment;
+            _retryCount = retryCount;
+            _initialInterval = initialInterval;
+            _increment = increment;
         }
 
         /// <summary>
@@ -87,9 +87,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             return delegate (int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
-                if (currentRetryCount < this.retryCount)
+                if (currentRetryCount < _retryCount)
                 {
-                    retryInterval = TimeSpan.FromMilliseconds(this.initialInterval.TotalMilliseconds + this.increment.TotalMilliseconds * (double)currentRetryCount);
+                    retryInterval = TimeSpan.FromMilliseconds(_initialInterval.TotalMilliseconds + _increment.TotalMilliseconds * currentRetryCount);
                     return true;
                 }
                 retryInterval = TimeSpan.Zero;

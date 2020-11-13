@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// <summary>
         /// Represents the default number of retry attempts.
         /// </summary>
-        public static readonly int DefaultClientRetryCount = 10;
+        public const int DefaultClientRetryCount = 10;
 
         /// <summary>
         /// Represents the default amount of time used when calculating a random delta in the exponential delay between retries.
@@ -61,62 +61,45 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// Represents the default flag indicating whether the first retry attempt will be made immediately,
         /// whereas subsequent retries will remain subject to the retry interval.
         /// </summary>
-        public static readonly bool DefaultFirstFastRetry = true;
+        public const bool DefaultFirstFastRetry = true;
 
-        private static RetryStrategy noRetry = new FixedInterval(0, RetryStrategy.DefaultRetryInterval);
+        private static readonly RetryStrategy s_noRetry = new FixedInterval(0, DefaultRetryInterval);
 
-        private static RetryStrategy defaultFixed = new FixedInterval(RetryStrategy.DefaultClientRetryCount, RetryStrategy.DefaultRetryInterval);
+        private static readonly RetryStrategy s_defaultFixed = new FixedInterval(DefaultClientRetryCount, DefaultRetryInterval);
 
-        private static RetryStrategy defaultProgressive = new Incremental(RetryStrategy.DefaultClientRetryCount, RetryStrategy.DefaultRetryInterval, RetryStrategy.DefaultRetryIncrement);
+        private static readonly RetryStrategy s_defaultProgressive = new Incremental(DefaultClientRetryCount, DefaultRetryInterval, DefaultRetryIncrement);
 
-        private static RetryStrategy defaultExponential = new ExponentialBackoff(RetryStrategy.DefaultClientRetryCount, RetryStrategy.DefaultMinBackoff, RetryStrategy.DefaultMaxBackoff, RetryStrategy.DefaultClientBackoff);
+        private static readonly RetryStrategy s_defaultExponential = new ExponentialBackoff(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff);
 
         /// <summary>
         /// Returns a default policy that performs no retries, but invokes the action only once.
         /// </summary>
-        public static RetryStrategy NoRetry
-        {
-            get
-            {
-                return RetryStrategy.noRetry;
-            }
-        }
+        public static RetryStrategy NoRetry => s_noRetry;
 
         /// <summary>
-        /// Returns a default policy that implements a fixed retry interval configured with the <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultClientRetryCount" /> and <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultRetryInterval" /> parameters.
+        /// Returns a default policy that implements a fixed retry interval configured with the <see cref="DefaultClientRetryCount" /> and <see cref="DefaultRetryInterval" /> parameters.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryStrategy DefaultFixed
-        {
-            get
-            {
-                return RetryStrategy.defaultFixed;
-            }
-        }
+        public static RetryStrategy DefaultFixed => s_defaultFixed;
 
         /// <summary>
-        /// Returns a default policy that implements a progressive retry interval configured with the <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultClientRetryCount" />, <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultRetryInterval" />, and <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultRetryIncrement" /> parameters.
+        /// Returns a default policy that implements a progressive retry interval configured with the 
+        /// <see cref="DefaultClientRetryCount" />, 
+        /// <see cref="DefaultRetryInterval" />, 
+        /// and <see cref="DefaultRetryIncrement" /> parameters.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryStrategy DefaultProgressive
-        {
-            get
-            {
-                return RetryStrategy.defaultProgressive;
-            }
-        }
+        public static RetryStrategy DefaultProgressive => s_defaultProgressive;
 
         /// <summary>
-        /// Returns a default policy that implements a random exponential retry interval configured with the <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultClientRetryCount" />, <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultMinBackoff" />, <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultMaxBackoff" />, and <see cref="F:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy.DefaultClientBackoff" /> parameters.
+        /// Returns a default policy that implements a random exponential retry interval configured with the 
+        /// <see cref="DefaultClientRetryCount" />,
+        /// <see cref="DefaultMinBackoff" />,
+        /// <see cref="DefaultMaxBackoff" />,
+        /// and <see cref="DefaultClientBackoff" /> parameters.
         /// The default retry policy treats all caught exceptions as transient errors.
         /// </summary>
-        public static RetryStrategy DefaultExponential
-        {
-            get
-            {
-                return RetryStrategy.defaultExponential;
-            }
-        }
+        public static RetryStrategy DefaultExponential => s_defaultExponential;
 
         /// <summary>
         /// Gets or sets a value indicating whether the first retry attempt will be made immediately,
@@ -138,14 +121,14 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryStrategy" /> class.
+        /// Initializes a new instance of the <see cref="RetryStrategy" /> class.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="firstFastRetry">true to immediately retry in the first attempt; otherwise, false. The subsequent retries will remain subject to the configured retry interval.</param>
         protected RetryStrategy(string name, bool firstFastRetry)
         {
-            this.Name = name;
-            this.FastFirstRetry = firstFastRetry;
+            Name = name;
+            FastFirstRetry = firstFastRetry;
         }
 
         /// <summary>
