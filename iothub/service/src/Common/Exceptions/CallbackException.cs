@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-    using System.Runtime.Serialization;
-
     [Serializable]
     internal class CallbackException : FatalException
     {
@@ -24,6 +24,11 @@ namespace Microsoft.Azure.Devices.Common
 
         protected CallbackException(SerializationInfo info, StreamingContext context)
             : base(info, context)
+        {
+        }
+
+        internal CallbackException(string message)
+            : base(message)
         {
         }
     }
