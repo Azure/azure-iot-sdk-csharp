@@ -19,7 +19,7 @@ using Microsoft.Azure.Devices.Common.Data;
 using Microsoft.Azure.Devices.Shared;
 
 #if NET451
-    using System.Configuration;
+using System.Configuration;
 #endif
 
 namespace Microsoft.Azure.Devices
@@ -31,19 +31,23 @@ namespace Microsoft.Azure.Devices
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan s_refreshTokenRetryInterval = TimeSpan.FromSeconds(30);
         private static readonly Lazy<bool> s_shouldDisableServerCertificateValidation = new Lazy<bool>(InitializeDisableServerCertificateValidation);
+        internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
+        internal static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
         private readonly AccessRights _accessRights;
-        private readonly FaultTolerantAmqpObject<AmqpSession> _faultTolerantSession;
-#if !NET451
-        private readonly IOThreadTimerSlim _refreshTokenTimer;
-#else
-        private readonly IOThreadTimer _refreshTokenTimer;
-#endif
+
         private readonly bool _useWebSocketOnly;
         private readonly ServiceClientTransportSettings _transportSettings;
 
-        internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
-        internal static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
+        // Disposables
+        private FaultTolerantAmqpObject<AmqpSession> _faultTolerantSession;
+
+        private ClientWebSocketTransport _clientWebSocketTransport = null;
+#if !NET451
+        private IOThreadTimerSlim _refreshTokenTimer;
+#else
+        private IOThreadTimer _refreshTokenTimer;
+#endif
 
         public IotHubConnection(IotHubConnectionString connectionString, AccessRights accessRights, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
@@ -205,17 +209,19 @@ namespace Microsoft.Azure.Devices
         {
             Logging.Enter(this, timeout, nameof(CreateSessionAsync));
 
+            TransportBase transport = null;
+
             try
             {
                 var timeoutHelper = new TimeoutHelper(timeout);
                 _refreshTokenTimer.Cancel();
 
                 AmqpSettings amqpSettings = CreateAmqpSettings();
-                TransportBase transport;
                 if (_useWebSocketOnly)
                 {
                     // Try only AMQP transport over WebSocket
-                    transport = await CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime())
+                        .ConfigureAwait(false);
                 }
                 else
                 {
@@ -225,11 +231,7 @@ namespace Microsoft.Azure.Devices
                     {
                         transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     }
-                    catch (AuthenticationException)
-                    {
-                        throw;
-                    }
-                    catch (Exception e)
+                    catch (Exception e) when (!(e is AuthenticationException))
                     {
                         Logging.Error(this, e, nameof(CreateSessionAsync));
 
@@ -241,7 +243,7 @@ namespace Microsoft.Azure.Devices
                         // AMQP transport over TCP failed. Retry AMQP transport over WebSocket
                         if (timeoutHelper.RemainingTime() != TimeSpan.Zero)
                         {
-                            transport = await CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                            transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                         }
                         else
                         {
@@ -284,6 +286,9 @@ namespace Microsoft.Azure.Devices
                 catch (Exception ex) when (!ex.IsFatal())
                 {
                     Logging.Error(this, ex, nameof(CreateSessionAsync));
+
+                    _clientWebSocketTransport?.Dispose();
+                    _clientWebSocketTransport = null;
 
                     if (amqpConnection.TerminalException != null)
                     {
@@ -380,29 +385,29 @@ namespace Microsoft.Azure.Devices
                 Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
 
 #if NET451
-            // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
-            if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
-            {
-                IotHubClientWebSocket websocket = await CreateLegacyClientWebSocketAsync(
-                        websocketUri,
-                        timeoutHelper.RemainingTime())
-                    .ConfigureAwait(false);
-                return new LegacyClientWebSocketTransport(
-                    websocket,
-                    DefaultOperationTimeout,
-                    null,
-                    null);
-            }
-            else
-            {
+                // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
+                if (Environment.OSVersion.Version.Major < 6
+                        || (Environment.OSVersion.Version.Major == 6
+                            && Environment.OSVersion.Version.Minor <= 1))
+                {
+                    IotHubClientWebSocket websocket = await CreateLegacyClientWebSocketAsync(
+                            websocketUri,
+                            timeoutHelper.RemainingTime())
+                        .ConfigureAwait(false);
+
+                    return new LegacyClientWebSocketTransport(
+                        websocket,
+                        DefaultOperationTimeout,
+                        null,
+                        null);
+                }
+                else
+                {
 #endif
-                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                return new ClientWebSocketTransport(
-                    websocket,
-                    null,
-                    null);
+                    ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    return new ClientWebSocketTransport(websocket, null, null);
 #if NET451
-            }
+                }
 #endif
             }
             finally
@@ -540,8 +545,8 @@ namespace Microsoft.Azure.Devices
             X509Chain chain,
             SslPolicyErrors sslPolicyErrors)
         {
-            return sslPolicyErrors == SslPolicyErrors.None 
-                || (s_shouldDisableServerCertificateValidation.Value 
+            return sslPolicyErrors == SslPolicyErrors.None
+                || (s_shouldDisableServerCertificateValidation.Value
                     && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch);
         }
 
@@ -571,7 +576,13 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _faultTolerantSession?.Dispose();
+            _faultTolerantSession = null;
+
             _refreshTokenTimer?.Dispose();
+            _refreshTokenTimer = null;
+
+            _clientWebSocketTransport?.Dispose();
+            _clientWebSocketTransport = null;
         }
 
         private void ScheduleTokenRefresh(DateTime expiresAtUtc)
