@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    ///  contains device properties specified during export/import operation
+    /// Contains device properties specified during export/import operation
     /// </summary>
     public sealed class ExportImportDevice
     {
@@ -19,19 +19,43 @@ namespace Microsoft.Azure.Devices
         private string _twinETag;
 
         /// <summary>
-        /// making default ctor public
+        /// Property container
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Publicly property. No behavior changes allowed.")]
+        public sealed class PropertyContainer
+        {
+            /// <summary>
+            /// Desired properties
+            /// </summary>
+            [JsonProperty(PropertyName = "desired", NullValueHandling = NullValueHandling.Ignore)]
+            public TwinCollection DesiredProperties { get; set; }
+
+            /// <summary>
+            /// Reported properties
+            /// </summary>
+            [JsonProperty(PropertyName = "reported", NullValueHandling = NullValueHandling.Ignore)]
+            public TwinCollection ReportedProperties { get; set; }
+        }
+
+        /// <summary>
+        /// Create an ExportImportDevice
         /// </summary>
         public ExportImportDevice()
         {
         }
 
         /// <summary>
-        /// ctor which takes a Device object along with import mode
+        /// Create an ExportImportDevice
         /// </summary>
-        /// <param name="device"></param>
-        /// <param name="importmode"></param>
+        /// <param name="device">Device properties</param>
+        /// <param name="importmode">Identifies the behavior when merging a device to the registry during import actions.</param>
         public ExportImportDevice(Device device, ImportMode importmode)
         {
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
+
             Id = device.Id;
             _eTag = SanitizeETag(device.ETag);
             ImportMode = importmode;
@@ -87,6 +111,9 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "authentication")]
         public AuthenticationMechanism Authentication { get; set; }
 
+        /// <summary>
+        /// Twin ETag
+        /// </summary>
         [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
         public string TwinETag
         {
@@ -94,25 +121,25 @@ namespace Microsoft.Azure.Devices
             set => _twinETag = SanitizeETag(value);
         }
 
+        /// <summary>
+        /// Tags representing a collection of properties.
+        /// </summary>
         [JsonProperty(PropertyName = "tags", NullValueHandling = NullValueHandling.Ignore)]
         public TwinCollection Tags { get; set; }
 
+        /// <summary>
+        /// Properties
+        /// </summary>
         [JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
         public PropertyContainer Properties { get; set; }
 
+        /// <summary>
+        /// Device Capabilities
+        /// </summary>
         [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
         public DeviceCapabilities Capabilities { get; set; }
 
-        public sealed class PropertyContainer
-        {
-            [JsonProperty(PropertyName = "desired", NullValueHandling = NullValueHandling.Ignore)]
-            public TwinCollection DesiredProperties { get; set; }
-
-            [JsonProperty(PropertyName = "reported", NullValueHandling = NullValueHandling.Ignore)]
-            public TwinCollection ReportedProperties { get; set; }
-        }
-
-        private string SanitizeETag(string eTag)
+        private static string SanitizeETag(string eTag)
         {
             if (!string.IsNullOrWhiteSpace(eTag))
             {
@@ -121,7 +148,7 @@ namespace Microsoft.Azure.Devices
                 if (eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {
                     // remove only the first char
-                    localETag = eTag.Substring(1);
+                    localETag = eTag[1..];
                 }
 
                 if (localETag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
@@ -134,7 +161,7 @@ namespace Microsoft.Azure.Devices
             }
             else
             {
-                // in case it is empty or contains whitespace
+                // In case it is empty or contains whitespace
                 return eTag;
             }
         }
