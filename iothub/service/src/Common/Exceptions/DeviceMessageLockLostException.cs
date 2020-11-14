@@ -6,31 +6,75 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
+    /// <summary>
+    /// The exception that is thrown when an attempt to communicate with a device fails
+    /// because the lock token was lost (if the connection is lost and regained for example).
+    /// This timeout has the same effect as if the message was abandoned.
+    /// </summary>
     [Serializable]
     public class DeviceMessageLockLostException : IotHubException
     {
+        /// <summary>
+        /// Creates an instance of <see cref="DeviceMessageLockLostException"/> with a specified error message and marks it as non-transient.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public DeviceMessageLockLostException(string message)
             : base(message)
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="DeviceMessageLockLostException"/> with a specified <see cref="ErrorCode"/>
+        /// and error message, and marks it as non-transient.
+        /// </summary>
+        /// <param name="code">The <see cref="ErrorCode"/> associated with the error.</param>
+        /// <param name="message">The message that describes the error.</param>
         public DeviceMessageLockLostException(ErrorCode code, string message)
             : base(code, message)
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="DeviceMessageLockLostException"/> with the device Id and message Id,
+        /// and marks it as non-transient.
+        /// </summary>
+        /// <param name="deviceId">The Id of the device to which the message was sent.</param>
+        /// <param name="messageId">The Id of the message that was sent.</param>
         public DeviceMessageLockLostException(string deviceId, Guid messageId)
             : this(deviceId, messageId, null)
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="DeviceMessageLockLostException"/> with the device Id, message Id
+        /// and tracking Id, and marks it as non-transient.
+        /// </summary>
+        /// <param name="deviceId">The Id of the device to which the message was sent.</param>
+        /// <param name="messageId">The Id of the message that was sent.</param>
+        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public DeviceMessageLockLostException(string deviceId, Guid messageId, string trackingId)
-            : base("Message {0} lock was lost for Device {1}".FormatInvariant(messageId, deviceId), trackingId)
+            : base($"Message {messageId} lock was lost for Device {deviceId}.", trackingId)
         {
         }
 
-        private DeviceMessageLockLostException(SerializationInfo info, StreamingContext context)
+        /// <summary>
+        /// Creates an instance of <see cref="DeviceMessageLockLostException"/> with the <see cref="SerializationInfo"/>
+        /// and <see cref="StreamingContext"/> associated with the exception.
+        /// </summary>
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        protected DeviceMessageLockLostException(SerializationInfo info, StreamingContext context)
             : base(info, context)
+        {
+        }
+
+        internal DeviceMessageLockLostException()
+            : base()
+        {
+        }
+
+        internal DeviceMessageLockLostException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
     }

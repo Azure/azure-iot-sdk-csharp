@@ -1,19 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
+
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Amqp.Encoding;
-
-    static class IotHubAmqpErrorCode
+    internal static class IotHubAmqpErrorCode
     {
         // Properties
         public static readonly AmqpSymbol TimeoutName = AmqpConstants.Vendor + ":timeout";
+
         public static readonly AmqpSymbol StackTraceName = AmqpConstants.Vendor + ":stack-trace";
 
         // Error codes
         public static readonly AmqpSymbol DeadLetterName = AmqpConstants.Vendor + ":dead-letter";
+
         public const string DeadLetterReasonHeader = "DeadLetterReason";
         public const string DeadLetterErrorDescriptionHeader = "DeadLetterErrorDescription";
         public static readonly AmqpSymbol TimeoutError = AmqpConstants.Vendor + ":timeout";

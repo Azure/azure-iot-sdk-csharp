@@ -1,26 +1,56 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-
+    /// <summary>
+    /// The exception that is thrown when a request is made against an IoT Hub that does not exist.
+    /// </summary>
     [Serializable]
     public class IotHubNotFoundException : IotHubException
     {
+        /// <summary>
+        /// Creates an instance of <see cref="IotHubSuspendedException"/> with a name of the IoT Hub
+        /// and marks it as non-transient.
+        /// </summary>
+        /// <param name="iotHubName">The name of the IoT Hub.</param>
         public IotHubNotFoundException(string iotHubName)
-            : base("IoT hub not found: {0}".FormatInvariant(iotHubName))
+            : base($"IoT hub not found: {iotHubName}.")
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="IotHubNotFoundException"/> with a name of the IoT Hub
+        /// and tracking Id, and marks it as non-transient.
+        /// </summary>
+        /// <param name="iotHubName">The name of the IoT Hub.</param>
+        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public IotHubNotFoundException(string iotHubName, string trackingId)
-            : base("IoT hub not found: {0}".FormatInvariant(iotHubName), trackingId)
+            : base($"IoT hub not found: {iotHubName}.", trackingId)
         {
         }
 
-        private IotHubNotFoundException(SerializationInfo info, StreamingContext context)
+        /// <summary>
+        /// Creates an instance of <see cref="IotHubNotFoundException"/> with the <see cref="SerializationInfo"/>
+        /// and <see cref="StreamingContext"/> associated with the exception.
+        /// </summary>
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        protected IotHubNotFoundException(SerializationInfo info, StreamingContext context)
             : base(info, context)
+        {
+        }
+
+        internal IotHubNotFoundException()
+            : base()
+        {
+        }
+
+        internal IotHubNotFoundException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
     }
