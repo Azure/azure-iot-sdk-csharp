@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <param name="deviceId">The Id of the device that is already registered on IoT Hub.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public DeviceAlreadyExistsException(string deviceId, string trackingId)
-            : base($"Device {deviceId} already registered", trackingId)
+            : base($"Device {deviceId} already registered.", trackingId)
         {
         }
 
@@ -61,7 +61,15 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-        private DeviceAlreadyExistsException(SerializationInfo info, StreamingContext context)
+        /// <summary>
+        /// Creates an instance of <see cref="DeviceAlreadyExistsException"/> with the <see cref="SerializationInfo"/>
+        /// and <see cref="StreamingContext"/> associated with the exception.
+        /// </summary>
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2229:Implement serialization constructors",
+            Justification = "Cannot modify public API surface since it will be a breaking change")]
+        public DeviceAlreadyExistsException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }

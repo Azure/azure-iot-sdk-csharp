@@ -7,65 +7,71 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// An exception for configuration not found
+    /// The exception that is thrown when the queried configuration is not available on IoT Hub.
     /// </summary>
     [Serializable]
-#pragma warning disable CA1032 // Implement standard exception constructors
     public class ConfigurationNotFoundException : IotHubException
-#pragma warning restore CA1032 // Implement standard exception constructors
     {
         /// <summary>
-        /// Creates an instance by configuration Id
+        /// Creates an instance of <see cref="ConfigurationNotFoundException"/> with the Id of the configuration and marks it as non-transient.
         /// </summary>
-        /// <param name="configurationId">The configuration Id</param>
+        /// <param name="configurationId">The Id of the configuration whose details are unavailable on IoT Hub.</param>
         public ConfigurationNotFoundException(string configurationId)
             : this(configurationId, null, null)
         {
         }
 
         /// <summary>
-        /// Creates an instance by configuration Id and hub name
+        /// Creates an instance of <see cref="ConfigurationNotFoundException"/> with the Id of the configuration
+        /// and the name of the IoT Hub, and marks it as non-transient.
         /// </summary>
-        /// <param name="configurationId">The configuration Id</param>
-        /// <param name="iotHubName">The hub name</param>
+        /// <param name="configurationId">The Id of the configuration whose details are unavailable on IoT Hub.</param>
+        /// <param name="iotHubName">The name of the IoT Hub.</param>
         public ConfigurationNotFoundException(string configurationId, string iotHubName)
             : this(configurationId, iotHubName, null)
         {
         }
 
         /// <summary>
-        /// Creates an instance by configuration Id, hub name, and tracking Id
+        /// Creates an instance of <see cref="ConfigurationNotFoundException"/> with the Id of the configuration,
+        /// the name of the IoT Hub and the tracking Id, and marks it as non-transient.
         /// </summary>
-        /// <param name="configurationId">The configuration Id</param>
-        /// <param name="iotHubName">The hub name</param>
-        /// <param name="trackingId">The tracking Id</param>
+        /// <param name="configurationId">The Id of the configuration whose details are unavailable on IoT Hub.</param>
+        /// <param name="iotHubName">The name of the IoT Hub.</param>
+        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public ConfigurationNotFoundException(string configurationId, string iotHubName, string trackingId)
             : base(!string.IsNullOrEmpty(iotHubName)
-                  ? "Configuration {0} at IotHub {1} is not registered".FormatInvariant(configurationId, iotHubName)
-                  : "Configuration {0} not registered".FormatInvariant(configurationId), trackingId)
+                  ? $"Configuration {configurationId} at IotHub {iotHubName} is not registered."
+                  : $"Configuration {configurationId} not registered.", trackingId)
         {
         }
 
         /// <summary>
-        /// Creates an instance with a message and inner exception
+        /// Creates an instance of <see cref="ConfigurationNotFoundException"/> with a specified error message and
+        /// a reference to the inner exception that caused this exception, and marks it as non-transient.
         /// </summary>
-        /// <param name="message">The exception message</param>
-        /// <param name="innerException">An inner exception</param>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public ConfigurationNotFoundException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
 
         /// <summary>
-        /// For serialization purposes
+        /// Creates an instance of <see cref="ConfigurationNotFoundException"/> with the <see cref="SerializationInfo"/>
+        /// and <see cref="StreamingContext"/> associated with the exception.
         /// </summary>
-        /// <param name="info">Serialization info</param>
-        /// <param name="context">Streaming context</param>
-#pragma warning disable CA2229 // Implement serialization constructors
-
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2229:Implement serialization constructors",
+            Justification = "Cannot modify public API surface since it will be a breaking change")]
         public ConfigurationNotFoundException(SerializationInfo info, StreamingContext context)
-#pragma warning restore CA2229 // Implement serialization constructors
             : base(info, context)
+        {
+        }
+
+        internal ConfigurationNotFoundException()
+            : base()
         {
         }
     }

@@ -15,11 +15,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     {
         /// <summary>
         /// Creates an instance of <see cref="DeviceInvalidResultCountException"/> with the value of the
-        /// maximum allowable count of device results.
+        /// maximum allowable count of device results and marks it as non-transient.
         /// </summary>
         /// <param name="maximumResultCount">The maximum count of device results allowed.</param>
         public DeviceInvalidResultCountException(int maximumResultCount)
-            : base("Number of device results must be between 0 and {0}".FormatInvariant(maximumResultCount))
+            : base($"Number of device results must be between 0 and {maximumResultCount}")
         {
             MaximumResultCount = maximumResultCount;
         }

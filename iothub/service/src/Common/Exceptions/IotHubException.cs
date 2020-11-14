@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Creates an instance of <see cref="IotHubException"/> with an empty error message and marks it as non-transient.
         /// </summary>
-        protected IotHubException()
+        internal IotHubException()
             : base()
         {
         }

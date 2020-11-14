@@ -6,52 +6,83 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
+    /// <summary>
+    /// The exception that is thrown when a message is sent to IoT Hub that exceeds the maximum allowed bytes in size.
+    /// </summary>
     [Serializable]
     public sealed class MessageTooLargeException : IotHubException
     {
+        /// <summary>
+        /// Creates an instance of <see cref="MessageTooLargeException"/> with the value of the
+        /// maximum allowed size of a message in bytes, and marks it as non-transient.
+        /// </summary>
+        /// <param name="maximumMessageSizeInBytes">The maximum allowed size of the message in bytes.</param>
         public MessageTooLargeException(int maximumMessageSizeInBytes)
             : this(maximumMessageSizeInBytes, string.Empty)
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="MessageTooLargeException"/> with the value of the
+        /// maximum allowed size of a message in bytes and the tracking Id, and marks it as non-transient.
+        /// </summary>
+        /// <param name="maximumMessageSizeInBytes">The maximum allowed size of the message in bytes.</param>
+        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public MessageTooLargeException(int maximumMessageSizeInBytes, string trackingId)
-            : base("Message size cannot exceed {0} bytes".FormatInvariant(maximumMessageSizeInBytes), trackingId)
+            : base($"Message size cannot exceed {maximumMessageSizeInBytes} bytes.", trackingId)
         {
-            this.MaximumMessageSizeInBytes = maximumMessageSizeInBytes;
+            MaximumMessageSizeInBytes = maximumMessageSizeInBytes;
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="MessageTooLargeException"/> with a specified error message and marks it as non-transient.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         public MessageTooLargeException(string message)
             : base(message)
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="MessageTooLargeException"/> with a specified <see cref="ErrorCode"/>, error message
+        /// and marks it as non-transient.
+        /// </summary>
+        /// <param name="code">The <see cref="ErrorCode"/> associated with the error.</param>
+        /// <param name="message">The message that describes the error.</param>
         public MessageTooLargeException(ErrorCode code, string message)
             : base(code, message)
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="MessageTooLargeException"/> with a specified error message and
+        /// a reference to the inner exception that caused this exception, and marks it as non-transient.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public MessageTooLargeException(string message, Exception innerException)
             : base(message, innerException)
+        {
+        }
+
+        internal MessageTooLargeException()
+            : base()
         {
         }
 
         private MessageTooLargeException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            this.MaximumMessageSizeInBytes = info.GetInt32("MaximumMessageSizeInBytes");
+            MaximumMessageSizeInBytes = info.GetInt32("MaximumMessageSizeInBytes");
         }
 
-        internal int MaximumMessageSizeInBytes
-        {
-            get;
-            private set;
-        }
+        internal int MaximumMessageSizeInBytes { get; private set; }
 
         /// <inheritdoc />
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue("MaximumMessageSizeInBytes", this.MaximumMessageSizeInBytes);
+            info.AddValue("MaximumMessageSizeInBytes", MaximumMessageSizeInBytes);
         }
     }
 }

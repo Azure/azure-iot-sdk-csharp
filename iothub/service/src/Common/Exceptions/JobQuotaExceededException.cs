@@ -2,31 +2,42 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// Exception thrown when IoT Hub exceeds the available quota for active jobs
+    /// The exception that is thrown when IoT Hub exceeds the available quota for active jobs.
     /// </summary>
     [Serializable]
     public sealed class JobQuotaExceededException : IotHubException
     {
-        private const string JobQuotaExceededMessage = "Job quota has been exceeded";
+        private const string DefaultErrorMessage = "Job quota has been exceeded.";
 
         /// <summary>
-        /// Initializes an instance of JobQuotaExceededException with the default message
+        /// Creates an instance of <see cref="JobQuotaExceededException"/> with the default error message and marks it as non-transient.
         /// </summary>
         public JobQuotaExceededException()
-            : base(JobQuotaExceededMessage)
+            : this(DefaultErrorMessage)
         {
         }
 
         /// <summary>
-        /// Initializes an instance of JobQuotaExceededException with the message from the Http response filled in
+        /// Creates an instance of <see cref="JobQuotaExceededException"/> with a specified error message and marks it as non-transient.
         /// </summary>
-        /// <param name="message">The error message returned in the Http response</param>
+        /// <param name="message">The message that describes the error.</param>
         public JobQuotaExceededException(string message)
             : base(message)
+        {
+        }
+
+        internal JobQuotaExceededException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+
+        private JobQuotaExceededException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }
