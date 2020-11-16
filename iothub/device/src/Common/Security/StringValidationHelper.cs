@@ -30,9 +30,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public static bool IsBase64StringValid(string value)
         {
-            return value == null
-                ? false
-                : IsBase64String(value);
+            return value != null && IsBase64String(value);
         }
 
         public static void EnsureNullOrBase64String(string value, string paramName)
@@ -45,16 +43,19 @@ namespace Microsoft.Azure.Devices.Client
 
         public static bool IsNullOrBase64String(string value)
         {
-            return value == null
-                ? true
-                : IsBase64String(value);
+            return value == null || IsBase64String(value);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Globalization", "CA1307:Specify StringComparison"
+            , Justification = "string.Replace(string, string, StringComparison) is not supported in .net Standard 2.0")]
+        // https://docs.microsoft.com/en-us/dotnet/api/system.string.replace?view=net-5.0#System_String_Replace_System_String_System_String_System_StringComparison_
         public static bool IsBase64String(string value)
         {
-            value = value.Replace("\r", string.Empty).Replace("\n", string.Empty);
+            value = value.Replace("\r", string.Empty)
+                .Replace("\n", string.Empty);
 
-            if (value.Length == 0 || (value.Length % 4) != 0)
+            if (value.Length == 0 || value.Length % 4 != 0)
             {
                 return false;
             }

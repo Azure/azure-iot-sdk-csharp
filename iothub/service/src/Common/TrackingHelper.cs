@@ -4,41 +4,42 @@
 namespace Microsoft.Azure.Devices.Common
 {
     using System;
+    using System.Globalization;
     using System.Linq;
 
-    using Microsoft.Azure.Amqp;    
+    using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;
     using Microsoft.Azure.Devices.Common.Client;
     using Microsoft.Azure.Devices.Common.Exceptions;
 
-    //TrackingId format is Guid[-G:<GatewayId>][-B:<BackendId>][-P:<PartitionId>]-TimeStamp:<Timestamp>
+    //TrackingId format is GUID[-G:<GatewayId>][-B:<BackendId>][-P:<PartitionId>]-TimeStamp:<Timestamp>
 
     public static class TrackingHelper
     {
         public static string GatewayId;
-        const string GatewayPrefix = "-G:";
-        const string BackendPrefix = "-B:";        
-        const string PartitionPrefix = "-P:";
-        const string TimeStampPrefix = "-TimeStamp:";
+        private const string GatewayPrefix = "-G:";
+        private const string BackendPrefix = "-B:";
+        private const string PartitionPrefix = "-P:";
+        private const string TimeStampPrefix = "-TimeStamp:";
 
         public static string GenerateTrackingId()
         {
-            return GenerateTrackingId(String.Empty, String.Empty);
+            return GenerateTrackingId(string.Empty, string.Empty);
         }
 
         public static string GenerateTrackingId(string backendId, string partitionId)
         {
-            string gatewayId = TrackingHelper.GatewayId;
+            string gatewayId = GatewayId;
             return GenerateTrackingId(gatewayId, backendId, partitionId);
         }
 
         public static string GenerateTrackingId(string gatewayId, string backendId, string partitionId)
         {
-            string trackingId = Guid.NewGuid().ToString("N");
+            string trackingId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             if (!string.IsNullOrEmpty(gatewayId))
             {
-                if (gatewayId.Contains('.'))
+                if (gatewayId.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) > 0)
                 {
                     gatewayId = gatewayId.Substring(gatewayId.LastIndexOf(".", StringComparison.OrdinalIgnoreCase) + 1);
                 }
@@ -52,7 +53,7 @@ namespace Microsoft.Azure.Devices.Common
 
             if (!string.IsNullOrEmpty(backendId))
             {
-                if (backendId.Contains("."))
+                if (backendId.IndexOf(".", StringComparison.InvariantCultureIgnoreCase) > 0)
                 {
                     backendId = backendId.Substring(backendId.LastIndexOf(".", StringComparison.OrdinalIgnoreCase) + 1);
                 }
@@ -79,7 +80,7 @@ namespace Microsoft.Azure.Devices.Common
             return exception.GenerateTrackingId(TrackingHelper.GatewayId, backendId, partitionId);
         }
 
-        public static string GenerateTrackingId(this AmqpException exception,string gatewayId, string backendId, string partitionId)
+        public static string GenerateTrackingId(this AmqpException exception, string gatewayId, string backendId, string partitionId)
         {
             if (exception.Error.Info == null)
             {
@@ -112,14 +113,21 @@ namespace Microsoft.Azure.Devices.Common
         public static string CheckAndAddGatewayIdToTrackingId(string trackingId)
         {
 
-            if (!String.IsNullOrEmpty(trackingId) && !trackingId.Contains(GatewayPrefix) && trackingId.Contains(BackendPrefix) && TrackingHelper.GatewayId != null)
+            if (!string.IsNullOrEmpty(trackingId)
+                && !(trackingId.IndexOf(GatewayPrefix, StringComparison.InvariantCultureIgnoreCase) > 0)
+                && trackingId.IndexOf(BackendPrefix, StringComparison.InvariantCultureIgnoreCase) > 0
+                && GatewayId != null)
             {
-                var indexOfBackend = trackingId.IndexOf(BackendPrefix, StringComparison.Ordinal);
-                return "{0}{3}{1}{2}".FormatInvariant(trackingId.Substring(0, indexOfBackend), TrackingHelper.GatewayId, trackingId.Substring(indexOfBackend), GatewayPrefix);
+                int indexOfBackend = trackingId.IndexOf(BackendPrefix, StringComparison.Ordinal);
+                return "{0}{3}{1}{2}".FormatInvariant(
+                    trackingId.Substring(0, indexOfBackend),
+                    GatewayId,
+                    trackingId.Substring(indexOfBackend),
+                    GatewayPrefix);
             }
             else
             {
-                return GenerateTrackingId(TrackingHelper.GatewayId, String.Empty, String.Empty);
+                return GenerateTrackingId(GatewayId, string.Empty, string.Empty);
             }
 
         }
@@ -138,10 +146,10 @@ namespace Microsoft.Azure.Devices.Common
         public static string GetGatewayId(this AmqpLink link)
         {
             string gatewayId = null;
-            if(link.Settings.LinkName.Contains("_G:"))
+            if (link.Settings.LinkName.IndexOf("_G:", StringComparison.InvariantCultureIgnoreCase) > 0)
             {
                 gatewayId = link.Settings.LinkName.Substring(link.Settings.LinkName.IndexOf("_G:", StringComparison.Ordinal) + 3);
-            } 
+            }
             return gatewayId;
         }
 

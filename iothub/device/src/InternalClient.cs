@@ -534,8 +534,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message)
         {
-            return message == null 
-                ? throw new ArgumentNullException(nameof(message)) 
+            return message == null
+                ? throw new ArgumentNullException(nameof(message))
                 : AbandonAsync(message.LockToken);
         }
 
@@ -1468,12 +1468,12 @@ namespace Microsoft.Azure.Devices.Client
 
         internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken = default)
         {
-            return await _fileUploadHttpTransportHandler.GetFileUploadSasUri(request, cancellationToken).ConfigureAwait(false);
+            return await _fileUploadHttpTransportHandler.GetFileUploadSasUriAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
         {
-            await _fileUploadHttpTransportHandler.CompleteFileUpload(notification, cancellationToken).ConfigureAwait(false);
+            await _fileUploadHttpTransportHandler.CompleteFileUploadAsync(notification, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

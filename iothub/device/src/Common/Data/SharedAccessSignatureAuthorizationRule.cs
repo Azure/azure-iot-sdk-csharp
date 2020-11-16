@@ -51,9 +51,13 @@ namespace Microsoft.Azure.Devices.Client
             return equals;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Globalization", "CA1307:Specify StringComparison",
+            Justification = "string.GetHashCode(StringComparison) is not supported for .net standard 2.0")]
+        // https://docs.microsoft.com/en-us/dotnet/api/system.string.gethashcode?view=net-5.0#System_String_GetHashCode_System_StringComparison_
         public int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
         {
-            if (Object.ReferenceEquals(rule, null))
+            if (rule == null)
             {
                 return 0;
             }
