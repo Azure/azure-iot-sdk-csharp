@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 handler.ClientCertificates.Add(clientCert);
-                this._usingX509ClientCert = true;
+                _usingX509ClientCert = true;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 handler.Proxy = proxy;
             }
 
-            this._httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
+            _httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
             if (httpClientHandler == null)
             {
