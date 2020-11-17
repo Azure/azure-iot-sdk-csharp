@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Naming",
         "CA1716:Identifiers should not match keywords",
-        Justification = "Cannot rename publicly facing types since they are considered behavior changes.")]
+        Justification = "Cannot rename public facing types since they are considered behavior changes.")]
     public class Module : IETagHolder
     {
         /// <summary>

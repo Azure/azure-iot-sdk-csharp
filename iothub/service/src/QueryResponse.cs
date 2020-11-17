@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Naming",
         "CA1710:Identifiers should have correct suffix",
-        Justification = "Cannot rename publicly facing types since they are considered behavior changes.")]
+        Justification = "Cannot rename public facing types since they are considered behavior changes.")]
     public class QueryResponse<T> : IEnumerable<T>
     {
         private readonly IEnumerable<T> _queryResults;
