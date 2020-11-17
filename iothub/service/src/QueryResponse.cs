@@ -1,23 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices
 {
-    using System.Collections;
-    using System.Collections.Generic;
-
     /// <summary>
     /// Represents the template class for the results of an IQuery request
     /// </summary>
     /// <typeparam name="T">The result type</typeparam>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Naming",
+        "CA1710:Identifiers should have correct suffix",
+        Justification = "Cannot rename publicly facing types since they are considered behavior changes.")]
     public class QueryResponse<T> : IEnumerable<T>
     {
-        readonly IEnumerable<T> queryResults;
+        private readonly IEnumerable<T> _queryResults;
 
+        /// <summary>
+        /// Instantiates a QueryResponse that represents the template class for the results of an IQuery request
+        /// </summary>
         public QueryResponse(IEnumerable<T> queryResults, string continuationToken)
         {
-            this.queryResults = queryResults;
-            this.ContinuationToken = continuationToken;
+            _queryResults = queryResults;
+            ContinuationToken = continuationToken;
         }
 
         /// <summary>
@@ -28,12 +34,12 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc />
         public IEnumerator<T> GetEnumerator()
         {
-            return this.queryResults.GetEnumerator();
+            return _queryResults.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.queryResults.GetEnumerator();
+            return _queryResults.GetEnumerator();
         }
     }
 }
