@@ -1,36 +1,39 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-
     /// <summary>
-    /// 
+    /// Contains IoTHub Module properties and their accessors.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Naming",
+        "CA1716:Identifiers should not match keywords",
+        Justification = "Cannot rename public facing types since they are considered behavior changes.")]
     public class Module : IETagHolder
     {
         /// <summary>
-        /// 
+        /// Creates a new instance of <see cref="Module"/>
         /// </summary>
         public Module()
         {
         }
 
         /// <summary>
-        /// 
+        /// Creates a new instance of <see cref="Module"/>
         /// </summary>
-        /// <param name="deviceId"></param>
-        /// <param name="moduleId"></param>
+        /// <param name="deviceId">Device identifier</param>
+        /// <param name="moduleId">Module identifier</param>
         public Module(string deviceId, string moduleId)
         {
-            this.Id = moduleId;
-            this.DeviceId = deviceId;
-            this.ConnectionState = DeviceConnectionState.Disconnected;
-            this.LastActivityTime = this.ConnectionStateUpdatedTime = DateTime.MinValue;
+            Id = moduleId;
+            DeviceId = deviceId;
+            ConnectionState = DeviceConnectionState.Disconnected;
+            LastActivityTime = ConnectionStateUpdatedTime = DateTime.MinValue;
         }
 
         /// <summary>
@@ -55,11 +58,7 @@ namespace Microsoft.Azure.Devices
         /// Module's ETag
         /// </summary>
         [JsonProperty(PropertyName = "etag")]
-        public string ETag
-        {
-            get;
-            set;
-        }
+        public string ETag { get; set; }
 
         /// <summary>
         /// Modules's ConnectionState
