@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -51,6 +50,13 @@ namespace Microsoft.Azure.Devices.Client
             return equals;
         }
 
+        public override bool Equals(object obj)
+        {
+            return obj is SharedAccessSignatureAuthorizationRule
+                ? Equals(obj)
+                : throw new InvalidOperationException($"{nameof(obj)} should be an instance of {nameof(SharedAccessSignatureAuthorizationRule)} for comparison");
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Globalization", "CA1307:Specify StringComparison",
             Justification = "string.GetHashCode(StringComparison) is not supported for .net standard 2.0")]
@@ -71,6 +77,11 @@ namespace Microsoft.Azure.Devices.Client
             int hashRights = rule.Rights.GetHashCode();
 
             return hashKeyName ^ hashPrimaryKey ^ hashSecondaryKey ^ hashRights;
+        }
+
+        public override int GetHashCode()
+        {
+            return GetHashCode(this);
         }
     }
 }

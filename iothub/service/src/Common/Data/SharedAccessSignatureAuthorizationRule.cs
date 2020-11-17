@@ -54,5 +54,37 @@ namespace Microsoft.Azure.Devices.Common.Data
 
             return equals;
         }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as SharedAccessSignatureAuthorizationRule);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Globalization", "CA1307:Specify StringComparison",
+            Justification = "string.GetHashCode(StringComparison) is not supported for .net standard 2.0")]
+        // https://docs.microsoft.com/en-us/dotnet/api/system.string.gethashcode?view=net-5.0#System_String_GetHashCode_System_StringComparison_
+        public int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
+        {
+            if (rule == null)
+            {
+                return 0;
+            }
+
+            int hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
+
+            int hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
+
+            int hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
+
+            int hashRights = rule.Rights.GetHashCode();
+
+            return hashKeyName ^ hashPrimaryKey ^ hashSecondaryKey ^ hashRights;
+        }
+
+        public override int GetHashCode()
+        {
+            return GetHashCode(this);
+        }
     }
 }
