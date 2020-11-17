@@ -32,17 +32,12 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-
         /// <summary>
         /// <para>Specify the format of the content in the parentheses of the UserAgent string</para>
         /// <para>Example: "{runtime}; {operatingSystem}; {architecture}; {deviceId}"</para>
         /// </summary>
         /// <param name="format"></param>
         /// <returns></returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Globalization", "CA1307:Specify StringComparison"
-            , Justification = "string.Replace(string, string, StringComparison) is not supported in net standard 2.0")]
-        // https://docs.microsoft.com/en-us/dotnet/api/system.string.replace?view=net-5.0#System_String_Replace_System_String_System_String_System_Boolean_System_Globalization_CultureInfo_
         private string ToString(string format)
         {
             const string name = ".NET";
@@ -60,11 +55,19 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (!string.IsNullOrWhiteSpace(format))
                 {
+#if NETSTANDARD2_0 || NET451 || NET472
                     infoParts = format
                         .Replace("{runtime}", runtime)
                         .Replace("{operatingSystem}", operatingSystem + productType)
                         .Replace("{architecture}", processorArchitecture)
                         .Replace("{deviceId}", deviceId);
+#else
+                    infoParts = format
+                        .Replace("{runtime}", runtime, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{operatingSystem}", operatingSystem + productType, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{architecture}", processorArchitecture, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{deviceId}", deviceId, StringComparison.InvariantCultureIgnoreCase);
+#endif
                 }
                 else
                 {

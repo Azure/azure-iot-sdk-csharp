@@ -46,15 +46,15 @@ namespace Microsoft.Azure.Devices.Client
             return value == null || IsBase64String(value);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Globalization", "CA1307:Specify StringComparison"
-            , Justification = "string.Replace(string, string, StringComparison) is not supported in .net Standard 2.0")]
-        // https://docs.microsoft.com/en-us/dotnet/api/system.string.replace?view=net-5.0#System_String_Replace_System_String_System_String_System_StringComparison_
         public static bool IsBase64String(string value)
         {
+#if NETSTANDARD2_0 || NET451 || NET472
             value = value.Replace("\r", string.Empty)
                 .Replace("\n", string.Empty);
-
+#else
+            value = value.Replace("\r", string.Empty, StringComparison.InvariantCultureIgnoreCase)
+                .Replace("\n", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+#endif
             if (value.Length == 0 || value.Length % 4 != 0)
             {
                 return false;

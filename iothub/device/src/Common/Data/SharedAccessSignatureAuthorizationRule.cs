@@ -55,24 +55,32 @@ namespace Microsoft.Azure.Devices.Client
             return Equals(obj as SharedAccessSignatureAuthorizationRule);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Globalization", "CA1307:Specify StringComparison",
-            Justification = "string.GetHashCode(StringComparison) is not supported for .net standard 2.0")]
-        // https://docs.microsoft.com/en-us/dotnet/api/system.string.gethashcode?view=net-5.0#System_String_GetHashCode_System_StringComparison_
-        public int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
+        private int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
         {
             if (rule == null)
             {
                 return 0;
             }
 
-            int hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
+            int hashKeyName, hashPrimaryKey, hashSecondaryKey, hashRights;
 
-            int hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
+#if NETSTANDARD2_0 || NET451 || NET472
+            hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
 
-            int hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
+            hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
 
-            int hashRights = rule.Rights.GetHashCode();
+            hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
+
+            hashRights = rule.Rights.GetHashCode();
+#else
+            hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
+
+            hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
+
+            hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
+
+            hashRights = rule.Rights.GetHashCode();
+#endif
 
             return hashKeyName ^ hashPrimaryKey ^ hashSecondaryKey ^ hashRights;
         }
