@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -38,20 +39,14 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 throw new ArgumentNullException(nameof(value));
             }
 
-            if (value.Length == 0)
-            {
-                return prefix.ToString();
-            }
-            else
-            {
-                return value[0] == prefix ? value : prefix + value;
-            }
+            return value.Length == 0
+                ? prefix.ToString(CultureInfo.InvariantCulture)
+                : value[0] == prefix ? value : prefix + value;
         }
 
         public static string GetValueOrDefault(this IDictionary<string, string> map, string keyName)
         {
-            string value;
-            if (!map.TryGetValue(keyName, out value))
+            if (!map.TryGetValue(keyName, out string value))
             {
                 value = null;
             }
@@ -113,14 +108,9 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 
         public static string GetIotHubName(this HttpRequestMessage requestMessage)
         {
-            string iotHubName = null;
-
-            if (!TryGetIotHubName(requestMessage, out iotHubName))
-            {
-                throw new ArgumentException("Invalid request URI");
-            }
-
-            return iotHubName;
+            return !TryGetIotHubName(requestMessage, out string iotHubName)
+                ? throw new ArgumentException("Invalid request URI")
+                : iotHubName;
         }
 
 #if NET451 // Depends on Owin

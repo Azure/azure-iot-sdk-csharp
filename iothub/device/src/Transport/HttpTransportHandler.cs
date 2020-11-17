@@ -98,18 +98,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             cancellationToken.ThrowIfCancellationRequested();
 
             var customHeaders = new Dictionary<string, string>(message.SystemProperties.Count + message.Properties.Count);
-            foreach (var property in message.SystemProperties)
+            foreach (KeyValuePair<string, object> property in message.SystemProperties)
             {
-                string strValue = property.Value is DateTime ? ((DateTime)property.Value).ToString("o") : property.Value.ToString();
+                string strValue = property.Value is DateTime time
+                    ? time.ToString("o", CultureInfo.InvariantCulture)
+                    : property.Value.ToString();
                 customHeaders.Add(s_mapMessagePropertiesToHttpHeaders[property.Key], strValue);
             }
 
-            foreach (var property in message.Properties)
+            foreach (KeyValuePair<string, string> property in message.Properties)
             {
                 customHeaders.Add(CustomHeaderConstants.HttpAppPropertyPrefix + property.Key, property.Value);
             }
 
-            return _httpClientHelper.PostAsync<byte[]>(
+            return _httpClientHelper.PostAsync(
                 GetRequestUri(_deviceId, CommonConstants.DeviceEventPathTemplate, null),
                 message.GetBytes(),
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -126,10 +128,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var customHeaders = PrepareCustomHeaders(CommonConstants.DeviceEventPathTemplate.FormatInvariant(_deviceId), string.Empty, CommonConstants.DeviceToCloudOperation);
+            IDictionary<string, string> customHeaders = PrepareCustomHeaders(
+                CommonConstants.DeviceEventPathTemplate.FormatInvariant(_deviceId),
+                string.Empty,
+                CommonConstants.DeviceToCloudOperation);
 
             string body = ToJson(messages);
-            return _httpClientHelper.PostAsync<string>(
+            return _httpClientHelper.PostAsync(
                 GetRequestUri(_deviceId, CommonConstants.DeviceEventPathTemplate, null),
                 body,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -160,14 +165,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 BlobName = blobName
             };
 
-            var fileUploadResponse = await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
-            GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
-            fileUploadRequest,
-            ExceptionHandlingHelper.GetDefaultErrorMapping(),
-            null,
-            cancellationToken).ConfigureAwait(false);
+            FileUploadSasUriResponse fileUploadResponse = await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
+                GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
+                fileUploadRequest,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                null,
+                cancellationToken).ConfigureAwait(false);
 
-            string putString = String.Format(
+            string putString = string.Format(
                 CultureInfo.InvariantCulture,
                 "https://{0}/{1}/{2}{3}",
                 fileUploadResponse.HostName,
@@ -180,8 +185,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // 2. Use SAS URI to send data to Azure Storage Blob (PUT)
-                CloudBlockBlob blob = new CloudBlockBlob(new Uri(putString));
-                var uploadTask = blob.UploadFromStreamAsync(source);
+                var blob = new CloudBlockBlob(new Uri(putString));
+                Task uploadTask = blob.UploadFromStreamAsync(source);
                 await uploadTask.ConfigureAwait(false);
 
                 notification.CorrelationId = fileUploadResponse.CorrelationId;
@@ -190,7 +195,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 notification.StatusDescription = uploadTask.IsCompleted ? null : "Failed to upload to storage.";
 
                 // 3. POST to IoTHub with upload status
-                await _httpClientHelper.PostAsync<FileUploadCompletionNotification>(
+                await _httpClientHelper.PostAsync(
                     GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
                     notification,
                     ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -205,8 +210,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 notification.StatusDescription = ex.Message;
 
                 await _httpClientHelper
-                    .PostAsync<FileUploadCompletionNotification>(
-                        GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications/" + fileUploadResponse.CorrelationId, null),
+                    .PostAsync(
+                        GetRequestUri(
+                            _deviceId,
+                            CommonConstants.BlobUploadStatusPathTemplate + "notifications/" + fileUploadResponse.CorrelationId,
+                            null),
                         notification,
                         ExceptionHandlingHelper.GetDefaultErrorMapping(),
                         null,
@@ -217,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUri(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
@@ -228,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken).ConfigureAwait(false);
         }
 
-        internal async Task CompleteFileUpload(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -510,93 +518,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // {
                 writer.WriteStartObject();
 
-                foreach (var property in message.SystemProperties)
+                foreach (KeyValuePair<string, object> property in message.SystemProperties)
                 {
                     writer.WritePropertyName(s_mapMessagePropertiesToHttpHeaders[property.Key]);
                     writer.WriteValue(property.Value);
                 }
 
-                foreach (var property in message.Properties)
+                foreach (KeyValuePair<string, string> property in message.Properties)
                 {
                     writer.WritePropertyName(CustomHeaderConstants.HttpAppPropertyPrefix + property.Key);
-                    writer.WriteValue(property.Value);
-                }
-
-                // }
-                writer.WriteEndObject();
-
-                // }
-                writer.WriteEndObject();
-            }
-
-            writer.WriteEndArray();
-            // ]
-
-            return sw.ToString();
-        }
-
-        private static string ToJson(IEnumerable<string> messages)
-        {
-            using (var sw = new StringWriter())
-            using (var writer = new JsonTextWriter(sw))
-            {
-                // [
-                writer.WriteStartArray();
-
-                foreach (var message in messages)
-                {
-                    // {
-                    writer.WriteStartObject();
-
-                    // "body" : "{\"my\": \"message\", \"is\": \"json\"}"
-                    writer.WritePropertyName("body");
-                    writer.WriteValue(message);
-
-                    // "base64Encoded":false
-                    writer.WritePropertyName("base64Encoded");
-                    writer.WriteValue(false);
-
-                    // }
-                    writer.WriteEndObject();
-                }
-
-                writer.WriteEndArray();
-                // ]
-
-                return sw.ToString();
-            }
-        }
-
-        private static string ToJson(IEnumerable<Tuple<string, IDictionary<string, string>>> messages)
-        {
-            using var sw = new StringWriter();
-            using var writer = new JsonTextWriter(sw);
-
-            // [
-            writer.WriteStartArray();
-
-            foreach (var message in messages)
-            {
-                // {
-                writer.WriteStartObject();
-
-                // "body" : "{\"my\": \"message\", \"is\": \"json\"}"
-                writer.WritePropertyName("body");
-                writer.WriteValue(message.Item1);
-
-                // "base64Encoded":false
-                writer.WritePropertyName("base64Encoded");
-                writer.WriteValue(false);
-
-                // "properties" :
-                writer.WritePropertyName("properties");
-
-                // {
-                writer.WriteStartObject();
-
-                foreach (var property in message.Item2)
-                {
-                    writer.WritePropertyName(property.Key);
                     writer.WriteValue(property.Value);
                 }
 

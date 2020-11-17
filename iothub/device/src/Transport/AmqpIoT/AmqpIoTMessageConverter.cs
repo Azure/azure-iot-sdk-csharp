@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw Fx.Exception.ArgumentNull(nameof(AmqpMessage));
             }
             Stream stream = amqpMessage.BodyStream;
-            Message message = new Message(stream, StreamDisposalResponsibility.Sdk);
+            var message = new Message(stream, StreamDisposalResponsibility.Sdk);
             UpdateMessageHeaderAndProperties(amqpMessage, message);
             return message;
         }
@@ -53,23 +54,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             message.ThrowIfDisposed();
 
-            AmqpMessage amqpMessage = null;
+            AmqpMessage amqpMessage = message.HasBodyStream()
+                ? AmqpMessage.Create(message.GetBodyStream(), false)
+                : AmqpMessage.Create();
 
-            if (message.HasBodyStream())
-            {
-                amqpMessage = AmqpMessage.Create(message.GetBodyStream(), false);
-            }
-            else
-            {
-                amqpMessage = AmqpMessage.Create();
-            }
             UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);
 
             return amqpMessage;
         }
 
         /// <summary>
-        /// Copies the properties from the amqp message to the Message instance.
+        /// Copies the properties from the AMQP message to the Message instance.
         /// </summary>
         public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, Message message)
         {
@@ -80,15 +75,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if ((sections & SectionFlag.Properties) != 0)
             {
                 // Extract only the Properties that we support
-                message.MessageId = amqpMessage.Properties.MessageId != null ? amqpMessage.Properties.MessageId.ToString() : null;
-                message.To = amqpMessage.Properties.To != null ? amqpMessage.Properties.To.ToString() : null;
+                message.MessageId = amqpMessage.Properties.MessageId?.ToString();
+                message.To = amqpMessage.Properties.To?.ToString();
 
                 if (amqpMessage.Properties.AbsoluteExpiryTime.HasValue)
                 {
                     message.ExpiryTimeUtc = amqpMessage.Properties.AbsoluteExpiryTime.Value;
                 }
 
-                message.CorrelationId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
+                message.CorrelationId = amqpMessage.Properties.CorrelationId?.ToString();
 
                 if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentType.Value))
                 {
@@ -100,7 +95,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     message.ContentEncoding = amqpMessage.Properties.ContentEncoding.Value;
                 }
 
-                message.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length) : null;
+                message.UserId = amqpMessage.Properties.UserId.Array != null
+                    ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length)
+                    : null;
             }
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
@@ -145,10 +142,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 foreach (KeyValuePair<MapKey, object> pair in amqpMessage.ApplicationProperties.Map)
                 {
-                    object netObject = null;
-                    if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out netObject))
+                    if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out object netObject))
                     {
-                        var stringObject = netObject as string;
+                        string stringObject = netObject as string;
 
                         if (stringObject != null)
                         {
@@ -163,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                                     break;
 
                                 case MessageSystemPropertyNames.CreationTimeUtc:
-                                    message.CreationTimeUtc = DateTime.Parse(stringObject);
+                                    message.CreationTimeUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
                                     break;
 
                                 default:
@@ -173,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         }
                         else
                         {
-                            // TODO: RDBug 4093369 Handling of non-string property values in Amqp messages
+                            // TODO: RDBug 4093369 Handling of non-string property values in AMQP messages
                             // Drop non-string properties and log an error
                             Fx.Exception.TraceHandled(new InvalidDataException("IotHub does not accept non-string Amqp properties"), "MessageConverter.UpdateMessageHeaderAndProperties");
                         }
@@ -194,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 amqpMessage.Properties.To = data.To;
             }
 
-            if (!data.ExpiryTimeUtc.Equals(default(DateTime)))
+            if (!data.ExpiryTimeUtc.Equals(default))
             {
                 amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc;
             }
@@ -214,8 +210,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 amqpMessage.ApplicationProperties = new ApplicationProperties();
             }
 
-            object propertyValue;
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.Ack, out propertyValue))
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.Ack, out object propertyValue))
             {
                 amqpMessage.ApplicationProperties.Map["iothub-ack"] = (string)propertyValue;
             }
@@ -227,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.CreationTimeUtc, out propertyValue))
             {
-                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o");    // Convert to string that complies with ISO 8601
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o", CultureInfo.InvariantCulture);    // Convert to string that complies with ISO 8601
             }
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out propertyValue))
@@ -257,10 +252,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (copyUserProperties && data.Properties.Count > 0)
             {
-                foreach (var pair in data.Properties)
+                foreach (KeyValuePair<string, string> pair in data.Properties)
                 {
-                    object amqpObject;
-                    if (TryGetAmqpObjectFromNetObject(pair.Value, MappingType.ApplicationProperty, out amqpObject))
+                    if (TryGetAmqpObjectFromNetObject(pair.Value, MappingType.ApplicationProperty, out object amqpObject))
                     {
                         amqpMessage.ApplicationProperties.Map[pair.Key] = amqpObject;
                     }
@@ -282,22 +276,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             methodResponseInternal.ThrowIfDisposed();
 
-            AmqpMessage amqpMessage = null;
+            AmqpMessage amqpMessage = methodResponseInternal.BodyStream == null
+                ? AmqpMessage.Create()
+                : AmqpMessage.Create(methodResponseInternal.BodyStream, false);
 
-            if (methodResponseInternal.BodyStream == null)
-            {
-                amqpMessage = AmqpMessage.Create();
-            }
-            else
-            {
-                amqpMessage = AmqpMessage.Create(methodResponseInternal.BodyStream, false);
-            }
             PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponseInternal);
             return amqpMessage;
         }
 
         /// <summary>
-        /// Copies the properties from the amqp message to the MethodRequest instance.
+        /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
         public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, CancellationToken cancellationToken)
         {
@@ -313,7 +301,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if ((sections & SectionFlag.Properties) != 0)
             {
                 // Extract only the Properties that we support
-                methodRequestId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
+                methodRequestId = amqpMessage.Properties.CorrelationId?.ToString();
             }
 
             if ((sections & SectionFlag.ApplicationProperties) != 0)
@@ -400,15 +388,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         if (describedType.Descriptor is AmqpSymbol)
                         {
                             AmqpSymbol symbol = (AmqpSymbol)describedType.Descriptor;
-                            if (symbol.Equals((AmqpSymbol)UriName))
+                            if (symbol.Equals(UriName))
                             {
                                 netObject = new Uri((string)describedType.Value);
                             }
-                            else if (symbol.Equals((AmqpSymbol)TimeSpanName))
+                            else if (symbol.Equals(TimeSpanName))
                             {
                                 netObject = new TimeSpan((long)describedType.Value);
                             }
-                            else if (symbol.Equals((AmqpSymbol)DateTimeOffsetName))
+                            else if (symbol.Equals(DateTimeOffsetName))
                             {
                                 netObject = new DateTimeOffset(new DateTime((long)describedType.Value, DateTimeKind.Utc));
                             }
@@ -416,13 +404,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(new SerializationException(IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
+                        throw FxTrace.Exception.AsError(new SerializationException(
+                            IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
                     }
                     else if (amqpObject is AmqpMap)
                     {
                         AmqpMap map = (AmqpMap)amqpObject;
-                        Dictionary<string, object> dictionary = new Dictionary<string, object>();
-                        foreach (var pair in map)
+                        var dictionary = new Dictionary<string, object>();
+                        foreach (KeyValuePair<MapKey, object> pair in map)
                         {
                             dictionary.Add(pair.Key.ToString(), pair.Value);
                         }

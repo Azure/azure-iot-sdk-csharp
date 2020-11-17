@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices
                                     break;
 
                                 case MessageSystemPropertyNames.CreationTimeUtc:
-                                    data.CreationTimeUtc = DateTime.Parse(stringObject);
+                                    data.CreationTimeUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
                                     break;
 
                                 default:

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                 await request.Content.CopyToAsync(stream).ConfigureAwait(false);
             }
 
-            HttpResponseMessage response = await serializer.DeserializeResponse(stream, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await serializer.DeserializeResponseAsync(stream, cancellationToken).ConfigureAwait(false);
 
             return response;
         }
