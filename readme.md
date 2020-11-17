@@ -157,7 +157,7 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 
 The Azure IoT Hub certificates presented during TLS negotiation shall be always validated using the appropriate root CA certificate(s).
 
-Always prefer using the local system's Trusted Root Certificate Authority store instead of hardcoding the certificates (i.e. using certs.c such as our samples require in certain combinations). 
+Always prefer using the local system's Trusted Root Certificate Authority store instead of hardcoding the certificates. 
 
 A couple of examples:
 
