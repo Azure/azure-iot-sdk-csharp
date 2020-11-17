@@ -57,9 +57,7 @@ namespace Microsoft.Azure.Devices.Common.Data
 
         public override bool Equals(object obj)
         {
-            return obj is SharedAccessSignatureAuthorizationRule
-                ? Equals(obj)
-                : throw new InvalidOperationException($"{nameof(obj)} should be an instance of {nameof(SharedAccessSignatureAuthorizationRule)} for comparison");
+            return Equals(obj as SharedAccessSignatureAuthorizationRule);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
