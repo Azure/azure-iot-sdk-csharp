@@ -170,7 +170,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         public ErrorCode Code { get; private set; }
 
         /// <summary>
-        /// Sets <see cref="IsTransient"/> and <see cref="TrackingId"/> to the serialized object data.
+        /// Sets the <see cref="SerializationInfo"/> with information about the exception.
+        /// Use this to set <see cref="IsTransient"/> and <see cref="TrackingId"/> to the serialized object data.
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>

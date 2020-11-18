@@ -145,7 +145,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         public string TrackingId { get; set; }
 
         /// <summary>
-        /// Sets the <see cref="IsTransient"/> and <see cref="TrackingId"/> information to the <see cref="SerializationInfo"/>.
+        /// Sets the <see cref="SerializationInfo"/> with information about the exception.
+        /// Use this to set <see cref="IsTransient"/> and <see cref="TrackingId"/> to the serialized object data.
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
