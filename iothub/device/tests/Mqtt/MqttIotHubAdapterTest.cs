@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using DotNetty.Codecs.Mqtt.Packets;
+using DotNetty.Transport.Channels;
+using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 {
-    using DotNetty.Codecs.Mqtt.Packets;
-    using DotNetty.Transport.Channels;
-    using FluentAssertions;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Linq;
-    using System.Threading.Tasks;
-
     [TestClass]
     [TestCategory("Unit")]
     public class MqttIotHubAdapterTest

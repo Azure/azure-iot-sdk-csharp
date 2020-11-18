@@ -75,6 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 transportBase?.Close();
                 _amqpIotTransport?.Dispose();
+                _amqpIotTransport = null;
                 throw;
             }
             finally
