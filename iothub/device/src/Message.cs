@@ -114,22 +114,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Indicates whether consumption or expiration of the message should post data to the feedback queue
-        /// </summary>
-        private DeliveryAcknowledgement Ack
-        {
-            get
-            {
-                string deliveryAckAsString = GetSystemProperty<string>(MessageSystemPropertyNames.Ack);
-
-                return !deliveryAckAsString.IsNullOrWhiteSpace()
-                    ? Utils.ConvertDeliveryAckTypeFromString(deliveryAckAsString)
-                    : DeliveryAcknowledgement.None;
-            }
-            set => SystemProperties[MessageSystemPropertyNames.Ack] = Utils.ConvertDeliveryAckTypeToString(value);
-        }
-
-        /// <summary>
         /// [Required] SequenceNumber of the received message
         /// </summary>
         public ulong SequenceNumber
@@ -271,10 +255,18 @@ namespace Microsoft.Azure.Devices.Client
 
         bool IReadOnlyIndicator.IsReadOnly => Interlocked.Read(ref _sizeInBytesCalled) == 1;
 
+
+        /// <summary>
+        /// The body stream of the current event data instance
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Naming",
+            "CA1721:Property names should not match get methods",
+            Justification = "Cannot remove public property on a public facing type")]
         public Stream BodyStream => _bodyStream;
 
         /// <summary>
-        /// Gets or sets the deliveryTag which is used for server side checkpointing.
+        /// Gets or sets the deliveryTag which is used for server side check-pointing.
         /// </summary>
         internal ArraySegment<byte> DeliveryTag { get; set; }
 
@@ -302,12 +294,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             ThrowIfDisposed();
             SetGetBodyCalled();
-            if (_bodyStream != null)
-            {
-                return _bodyStream;
-            }
-
-            return Stream.Null;
+            return _bodyStream ?? Stream.Null;
         }
 
         /// <summary>
@@ -388,11 +375,6 @@ namespace Microsoft.Azure.Devices.Client
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
-        private void SetSizeInBytesCalled()
-        {
-            Interlocked.Exchange(ref _sizeInBytesCalled, 1);
-        }
-
         private void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
         {
             // This method should only be used in constructor because
@@ -408,21 +390,16 @@ namespace Microsoft.Azure.Devices.Client
 
         private static byte[] ReadFullStream(Stream inputStream)
         {
-            using (var ms = new MemoryStream())
-            {
-                inputStream.CopyTo(ms);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            inputStream.CopyTo(ms);
+            return ms.ToArray();
         }
 
         private T GetSystemProperty<T>(string key)
         {
-            if (SystemProperties.ContainsKey(key))
-            {
-                return (T)SystemProperties[key];
-            }
-
-            return default(T);
+            return SystemProperties.ContainsKey(key)
+                ? (T)SystemProperties[key]
+                : default;
         }
 
         internal void ThrowIfDisposed()
