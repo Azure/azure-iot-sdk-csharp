@@ -88,7 +88,6 @@ namespace Microsoft.Azure.Devices.Common
         /// <returns>The value, if present</returns>
         public static string GetValueOrDefault(this IDictionary<string, string> map, string keyName)
         {
-            if (map == null) { throw new ArgumentNullException(nameof(map)); }
             if (!map.TryGetValue(keyName, out string value))
             {
                 value = null;
@@ -133,7 +132,6 @@ namespace Microsoft.Azure.Devices.Common
         /// <returns>True, if found</returns>
         public static bool TryGetIotHubName(this HttpRequestMessage requestMessage, out string iotHubName)
         {
-            if (requestMessage == null) { throw new ArgumentNullException(nameof(requestMessage)); }
             iotHubName = null;
 
             // IotHubMessageHandler sets the request message property with IotHubName read from hostname
@@ -155,7 +153,7 @@ namespace Microsoft.Azure.Devices.Common
         public static string GetIotHubNameFromHostName(this HttpRequestMessage requestMessage)
         {
             // {IotHubname}.[env-specific-sub-domain.]IotHub[-int].net
-            if (requestMessage == null) { throw new ArgumentNullException(nameof(requestMessage)); }
+
             string[] hostNameParts = requestMessage.RequestUri.Host.Split('.');
             if (hostNameParts.Length < 3)
             {
@@ -183,7 +181,6 @@ namespace Microsoft.Azure.Devices.Common
 #if NET451
         public static string GetMaskedClientIpAddress(this HttpRequestMessage requestMessage)
         {
-            if (requestMessage == null) { throw new ArgumentNullException(nameof(requestMessage)); }
             // note that this only works if we are hosted as an OWIN app
             if (requestMessage.Properties.ContainsKey("MS_OwinContext"))
             {
@@ -226,7 +223,6 @@ namespace Microsoft.Azure.Devices.Common
 
         public static void AppendKeyValuePairIfNotEmpty(this StringBuilder builder, string name, object value)
         {
-            if (builder == null) { throw new ArgumentNullException(nameof(builder)); }
             if (value != null)
             {
                 builder.Append(name);

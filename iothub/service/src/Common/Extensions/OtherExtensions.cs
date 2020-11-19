@@ -3,7 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Common.Extensions
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http.Headers;
@@ -12,7 +11,6 @@ namespace Microsoft.Azure.Devices.Common.Extensions
     {
         public static T GetValueOrDefault<T>(this IDictionary<string, object> dictionary, string key)
         {
-            if (dictionary == null) { throw new ArgumentNullException(nameof(dictionary)); }
             object o;
             if (dictionary.TryGetValue(key, out o) && o is T)
             {
@@ -30,7 +28,6 @@ namespace Microsoft.Azure.Devices.Common.Extensions
 
         public static IEnumerable<string> GetValuesOrNull(this HttpHeaders headers, string name)
         {
-            if (headers == null) { throw new ArgumentNullException(nameof(headers)); }
             IEnumerable<string> values;
             headers.TryGetValues(name, out values);
             return values;

@@ -11,7 +11,6 @@ namespace Microsoft.Azure.Devices.Common
     {
         public static long HashToLong(string data)
         {
-            if (data == null) { throw new ArgumentNullException(nameof(data)); }
             uint hash1;
             uint hash2;
 
@@ -25,7 +24,6 @@ namespace Microsoft.Azure.Devices.Common
 
         public static short HashToShort(string data)
         {
-            if (data == null) { throw new ArgumentNullException(nameof(data)); }
             uint hash1;
             uint hash2;
 

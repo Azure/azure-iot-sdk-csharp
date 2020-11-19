@@ -11,7 +11,6 @@ namespace Microsoft.Azure.Devices.Common.Extensions
     {
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
         {
-            if (dictionary == null) { throw new ArgumentNullException(nameof(dictionary)); }
             TValue value;
             dictionary.TryGetValue(key, out value);
             return value;
@@ -19,20 +18,17 @@ namespace Microsoft.Azure.Devices.Common.Extensions
 
         public static TValue GetValueOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> valueProvider)
         {
-            if (dictionary == null) { throw new ArgumentNullException(nameof(dictionary)); }
-            if (valueProvider == null) { throw new ArgumentNullException(nameof(valueProvider)); }
             TValue value;
             if (!dictionary.TryGetValue(key, out value))
             {
                 value = valueProvider(key);
-                dictionary.Add(key, value);
+                dictionary.Add(key, value); 
             }
             return value;
         }
 
         public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, out TValue value)
         {
-            if (dictionary == null) { throw new ArgumentNullException(nameof(dictionary)); }
             if (dictionary.TryGetValue(key, out value))
             {
                 dictionary.Remove(key);
@@ -47,9 +43,6 @@ namespace Microsoft.Azure.Devices.Common.Extensions
             Func<TKey, TValue> valueFactory)
             where TValue : class
         {
-            if (dictionary == null) { throw new ArgumentNullException(nameof(dictionary)); }
-            if (valueFactory == null) { throw new ArgumentNullException(nameof(valueFactory)); }
-
             TValue value;
             if (dictionary.TryGetValue(key, out value))
             {

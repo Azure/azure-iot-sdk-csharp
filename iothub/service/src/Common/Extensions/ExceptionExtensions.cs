@@ -72,14 +72,12 @@ namespace Microsoft.Azure.Devices.Common
 
         public static Exception DisablePrepareForRethrow(this Exception exception)
         {
-            if (exception == null) { throw new ArgumentNullException(nameof(exception)); }
             exception.Data[AsyncResult.DisablePrepareForRethrow] = string.Empty;
             return exception;
         }
 
         public static string ToStringSlim(this Exception exception)
         {
-            if (exception == null) { throw new ArgumentNullException(nameof(exception)); }
             // exception.Data is empty collection by default.
             if (exception.Data != null && exception.Data.Contains(ExceptionIdentifierName))
             {
@@ -106,7 +104,6 @@ namespace Microsoft.Azure.Devices.Common
 
         public static string GetReferenceCode(this Exception exception)
         {
-            if (exception == null) { throw new ArgumentNullException(nameof(exception)); }
             if (exception.Data != null && exception.Data.Contains(ExceptionIdentifierName))
             {
                 return (string)exception.Data[ExceptionIdentifierName];
