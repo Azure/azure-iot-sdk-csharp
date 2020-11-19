@@ -193,6 +193,52 @@ namespace Microsoft.Azure.Devices
             Logging.Exit(this, link.Name, nameof(CloseAsync));
         }
 
+        public static bool OnRemoteCertificateValidation(
+            object sender,
+            X509Certificate certificate,
+            X509Chain chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            return sslPolicyErrors == SslPolicyErrors.None
+                || (s_shouldDisableServerCertificateValidation.Value
+                    && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch);
+        }
+
+        public static ArraySegment<byte> GetNextDeliveryTag(ref int deliveryTag)
+        {
+            int nextDeliveryTag = Interlocked.Increment(ref deliveryTag);
+            return new ArraySegment<byte>(BitConverter.GetBytes(nextDeliveryTag));
+        }
+
+        public static ArraySegment<byte> ConvertToDeliveryTag(string lockToken)
+        {
+            if (lockToken == null)
+            {
+                throw new ArgumentNullException(nameof(lockToken));
+            }
+
+            if (!Guid.TryParse(lockToken, out Guid lockTokenGuid))
+            {
+                throw new ArgumentException("Should be a valid GUID", nameof(lockToken));
+            }
+
+            var deliveryTag = new ArraySegment<byte>(lockTokenGuid.ToByteArray());
+            return deliveryTag;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _faultTolerantSession?.Dispose();
+            _faultTolerantSession = null;
+
+            _refreshTokenTimer?.Dispose();
+            _refreshTokenTimer = null;
+
+            _clientWebSocketTransport?.Dispose();
+            _clientWebSocketTransport = null;
+        }
+
         private static bool InitializeDisableServerCertificateValidation()
         {
 #if NET451
@@ -364,7 +410,9 @@ namespace Microsoft.Azure.Devices
             try
             {
                 var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-                await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, timeout).ConfigureAwait(false);
+                await websocket
+                    .ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, timeout)
+                    .ConfigureAwait(false);
                 return websocket;
             }
             finally
@@ -380,15 +428,15 @@ namespace Microsoft.Azure.Devices
             try
             {
                 var timeoutHelper = new TimeoutHelper(timeout);
-                var websocketUri = new Uri(WebSocketConstants.Scheme + ConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix);
+                var websocketUri = new Uri($"{ WebSocketConstants.Scheme }{ ConnectionString.HostName}:{ WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}");
 
                 Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
 
 #if NET451
                 // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
                 if (Environment.OSVersion.Version.Major < 6
-                        || (Environment.OSVersion.Version.Major == 6
-                            && Environment.OSVersion.Version.Minor <= 1))
+                    || (Environment.OSVersion.Version.Major == 6
+                        && Environment.OSVersion.Version.Minor <= 1))
                 {
                     IotHubClientWebSocket websocket = await CreateLegacyClientWebSocketAsync(
                             websocketUri,
@@ -404,8 +452,8 @@ namespace Microsoft.Azure.Devices
                 else
                 {
 #endif
-                    ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                    return new ClientWebSocketTransport(websocket, null, null);
+                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                return new ClientWebSocketTransport(websocket, null, null);
 #if NET451
                 }
 #endif
@@ -497,13 +545,15 @@ namespace Microsoft.Azure.Devices
 
             string audience = ConnectionString.AmqpEndpoint.AbsoluteUri;
             string resource = ConnectionString.AmqpEndpoint.AbsoluteUri;
-            DateTime expiresAtUtc = await cbsLink.SendTokenAsync(
-                ConnectionString,
-                ConnectionString.AmqpEndpoint,
-                audience,
-                resource,
-                AccessRightsHelper.AccessRightsToStringArray(_accessRights),
-                timeout).ConfigureAwait(false);
+            DateTime expiresAtUtc = await cbsLink
+                .SendTokenAsync(
+                    ConnectionString,
+                    ConnectionString.AmqpEndpoint,
+                    audience,
+                    resource,
+                    AccessRightsHelper.AccessRightsToStringArray(_accessRights),
+                    timeout)
+                .ConfigureAwait(false);
             ScheduleTokenRefresh(expiresAtUtc);
 
             Logging.Exit(this, cbsLink, timeout, nameof(SendCbsTokenAsync));
@@ -513,7 +563,9 @@ namespace Microsoft.Azure.Devices
         {
             Logging.Enter(this, nameof(OnRefreshTokenAsync));
 
-            if (_faultTolerantSession.TryGetOpenedObject(out AmqpSession amqpSession) && amqpSession != null && !amqpSession.IsClosing())
+            if (_faultTolerantSession.TryGetOpenedObject(out AmqpSession amqpSession)
+                && amqpSession != null
+                && !amqpSession.IsClosing())
             {
                 AmqpCbsLink cbsLink = amqpSession.Connection.Extensions.Find<AmqpCbsLink>();
                 if (cbsLink != null)
@@ -522,11 +574,11 @@ namespace Microsoft.Azure.Devices
                     {
                         await SendCbsTokenAsync(cbsLink, DefaultOperationTimeout).ConfigureAwait(false);
                     }
-                    catch (Exception exception)
+                    catch (Exception ex)
                     {
-                        Logging.Error(this, exception, nameof(OnRefreshTokenAsync));
+                        Logging.Error(this, ex, nameof(OnRefreshTokenAsync));
 
-                        if (Fx.IsFatal(exception))
+                        if (Fx.IsFatal(ex))
                         {
                             throw;
                         }
@@ -537,52 +589,6 @@ namespace Microsoft.Azure.Devices
             }
 
             Logging.Exit(this, nameof(OnRefreshTokenAsync));
-        }
-
-        public static bool OnRemoteCertificateValidation(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            return sslPolicyErrors == SslPolicyErrors.None
-                || (s_shouldDisableServerCertificateValidation.Value
-                    && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch);
-        }
-
-        public static ArraySegment<byte> GetNextDeliveryTag(ref int deliveryTag)
-        {
-            int nextDeliveryTag = Interlocked.Increment(ref deliveryTag);
-            return new ArraySegment<byte>(BitConverter.GetBytes(nextDeliveryTag));
-        }
-
-        public static ArraySegment<byte> ConvertToDeliveryTag(string lockToken)
-        {
-            if (lockToken == null)
-            {
-                throw new ArgumentNullException(nameof(lockToken));
-            }
-
-            if (!Guid.TryParse(lockToken, out Guid lockTokenGuid))
-            {
-                throw new ArgumentException("Should be a valid GUID", nameof(lockToken));
-            }
-
-            var deliveryTag = new ArraySegment<byte>(lockTokenGuid.ToByteArray());
-            return deliveryTag;
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            _faultTolerantSession?.Dispose();
-            _faultTolerantSession = null;
-
-            _refreshTokenTimer?.Dispose();
-            _refreshTokenTimer = null;
-
-            _clientWebSocketTransport?.Dispose();
-            _clientWebSocketTransport = null;
         }
 
         private void ScheduleTokenRefresh(DateTime expiresAtUtc)

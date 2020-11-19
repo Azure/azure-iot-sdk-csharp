@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         private string ToString(string format)
         {
-            const string Name = ".NET";
+            const string name = ".NET";
             string version = string.Empty;
             string infoParts = string.Empty;
 
@@ -55,11 +55,19 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (!string.IsNullOrWhiteSpace(format))
                 {
+#if NETSTANDARD2_0 || NET451 || NET472
                     infoParts = format
                         .Replace("{runtime}", runtime)
                         .Replace("{operatingSystem}", operatingSystem + productType)
                         .Replace("{architecture}", processorArchitecture)
                         .Replace("{deviceId}", deviceId);
+#else
+                    infoParts = format
+                        .Replace("{runtime}", runtime, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{operatingSystem}", operatingSystem + productType, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{architecture}", processorArchitecture, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{deviceId}", deviceId, StringComparison.InvariantCultureIgnoreCase);
+#endif
                 }
                 else
                 {
@@ -79,11 +87,11 @@ namespace Microsoft.Azure.Devices.Client
                 // no-op
             }
 
-            string userAgent = $"{Name}/{version} ({infoParts})";
+            string userAgent = $"{name}/{version} ({infoParts})";
 
-            if (!string.IsNullOrWhiteSpace(this.Extra))
+            if (!string.IsNullOrWhiteSpace(Extra))
             {
-                userAgent += $" {this.Extra.Trim()}";
+                userAgent += $" {Extra.Trim()}";
             }
 
             return userAgent;

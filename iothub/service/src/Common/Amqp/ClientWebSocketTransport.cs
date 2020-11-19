@@ -102,6 +102,59 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        protected override bool OpenInternal()
+        {
+            ThrowIfNotOpen();
+
+            return true;
+        }
+
+        protected override bool CloseInternal()
+        {
+            if (_webSocket.State != WebSocketState.Closed && _webSocket.State != WebSocketState.Aborted)
+            {
+                // Do not wait
+                _ = CloseImplAsync(s_closeTimeout);
+            }
+
+            return true;
+        }
+
+        private async Task CloseImplAsync(TimeSpan timeout)
+        {
+            try
+            {
+                // Cancel any pending write
+                CancelPendingWrite();
+
+                using var cancellationTokenSource = new CancellationTokenSource(timeout);
+                await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!Fx.IsFatal(ex))
+            {
+            }
+
+            // Call Abort anyway to ensure that all WebSocket Resources are released
+            Abort();
+        }
+
+        private void CancelPendingWrite()
+        {
+            try
+            {
+                _writeCancellationTokenSource.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // ignore this error
+            }
+        }
+
+        protected override void AbortInternal()
+        {
+            Dispose();
+        }
+
         private async Task WriteImplAsync(TransportAsyncCallbackArgs args)
         {
             bool succeeded = false;
@@ -178,62 +231,6 @@ namespace Microsoft.Azure.Devices
                     Abort();
                 }
             }
-        }
-
-        protected override bool OpenInternal()
-        {
-            ThrowIfNotOpen();
-
-            return true;
-        }
-
-        protected override bool CloseInternal()
-        {
-            if (_webSocket.State != WebSocketState.Closed && _webSocket.State != WebSocketState.Aborted)
-            {
-                CloseInternalAsync(s_closeTimeout);
-            }
-
-            return true;
-        }
-
-        private async Task CloseInternalAsync(TimeSpan timeout)
-        {
-            try
-            {
-                // Cancel any pending write
-                CancelPendingWrite();
-
-                using var cancellationTokenSource = new CancellationTokenSource(timeout);
-                await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                if (Fx.IsFatal(e))
-                {
-                    throw;
-                }
-            }
-
-            // Call Abort anyway to ensure that all WebSocket Resources are released
-            Abort();
-        }
-
-        private void CancelPendingWrite()
-        {
-            try
-            {
-                _writeCancellationTokenSource.Cancel();
-            }
-            catch (ObjectDisposedException)
-            {
-                // ignore this error
-            }
-        }
-
-        protected override void AbortInternal()
-        {
-            Dispose();
         }
 
         private static void OnReadComplete(IAsyncResult result)

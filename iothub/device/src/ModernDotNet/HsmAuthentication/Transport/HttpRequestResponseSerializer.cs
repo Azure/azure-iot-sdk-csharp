@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -34,11 +35,13 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
             PreProcessRequest(request);
 
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             // request-line   = method SP request-target SP HTTP-version CRLF
             builder.Append(request.Method);
             builder.Append(SP);
-            builder.Append(request.RequestUri.IsAbsoluteUri ? request.RequestUri.PathAndQuery : Uri.EscapeUriString(request.RequestUri.ToString()));
+            builder.Append(request.RequestUri.IsAbsoluteUri
+                ? request.RequestUri.PathAndQuery
+                : Uri.EscapeUriString(request.RequestUri.ToString()));
             builder.Append(SP);
             builder.Append($"{Protocol}{ProtocolVersionSeparator}");
             builder.Append(new Version(1, 1).ToString(2));
@@ -50,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
             if (request.Content != null)
             {
-                var contentLength = request.Content.Headers.ContentLength;
+                long? contentLength = request.Content.Headers.ContentLength;
                 if (contentLength.HasValue)
                 {
                     request.Content.Headers.ContentLength = contentLength.Value;
@@ -66,17 +69,20 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             return Encoding.ASCII.GetBytes(builder.ToString());
         }
 
-        public async Task<HttpResponseMessage> DeserializeResponse(HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> DeserializeResponseAsync(HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
         {
             var httpResponse = new HttpResponseMessage();
 
-            await SetResponseStatusLine(httpResponse, bufferedStream, cancellationToken).ConfigureAwait(false);
-            await SetHeadersAndContent(httpResponse, bufferedStream, cancellationToken).ConfigureAwait(false);
+            await SetResponseStatusLineAsync(httpResponse, bufferedStream, cancellationToken).ConfigureAwait(false);
+            await SetHeadersAndContentAsync(httpResponse, bufferedStream, cancellationToken).ConfigureAwait(false);
 
             return httpResponse;
         }
 
-        private async Task SetHeadersAndContent(HttpResponseMessage httpResponse, HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
+        private static async Task SetHeadersAndContentAsync(
+            HttpResponseMessage httpResponse,
+            HttpBufferedStream bufferedStream,
+            CancellationToken cancellationToken)
         {
             IList<string> headers = new List<string>();
             string line = await bufferedStream.ReadLineAsync(cancellationToken).ConfigureAwait(false);
@@ -87,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             }
 
             httpResponse.Content = new StreamContent(bufferedStream);
-            foreach (var header in headers)
+            foreach (string header in headers)
             {
                 if (string.IsNullOrWhiteSpace(header))
                 {
@@ -95,7 +101,10 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                     break;
                 }
 
-                int headerSeparatorPosition = header.IndexOf(HeaderSeparator);
+                int headerSeparatorPosition = header.IndexOf(
+                    HeaderSeparator.ToString(CultureInfo.InvariantCulture),
+                    StringComparison.InvariantCultureIgnoreCase);
+
                 if (headerSeparatorPosition <= 0)
                 {
                     throw new HttpRequestException($"Header is invalid {header}.");
@@ -121,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             }
         }
 
-        private async Task SetResponseStatusLine(HttpResponseMessage httpResponse, HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
+        private async Task SetResponseStatusLineAsync(HttpResponseMessage httpResponse, HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
         {
             string statusLine = await bufferedStream.ReadLineAsync(cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(statusLine))

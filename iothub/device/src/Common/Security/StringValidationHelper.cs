@@ -30,9 +30,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public static bool IsBase64StringValid(string value)
         {
-            return value == null
-                ? false
-                : IsBase64String(value);
+            return value != null && IsBase64String(value);
         }
 
         public static void EnsureNullOrBase64String(string value, string paramName)
@@ -45,16 +43,19 @@ namespace Microsoft.Azure.Devices.Client
 
         public static bool IsNullOrBase64String(string value)
         {
-            return value == null
-                ? true
-                : IsBase64String(value);
+            return value == null || IsBase64String(value);
         }
 
         public static bool IsBase64String(string value)
         {
-            value = value.Replace("\r", string.Empty).Replace("\n", string.Empty);
-
-            if (value.Length == 0 || (value.Length % 4) != 0)
+#if NETSTANDARD2_0 || NET451 || NET472
+            value = value.Replace("\r", string.Empty)
+                .Replace("\n", string.Empty);
+#else
+            value = value.Replace("\r", string.Empty, StringComparison.InvariantCultureIgnoreCase)
+                .Replace("\n", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+#endif
+            if (value.Length == 0 || value.Length % 4 != 0)
             {
                 return false;
             }

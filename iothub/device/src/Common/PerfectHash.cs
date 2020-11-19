@@ -10,21 +10,26 @@ namespace Microsoft.Azure.Devices.Common.Cloud
     {
         public static long HashToLong(string data)
         {
-            uint hash1;
-            uint hash2;
+            ComputeHash(
+                Encoding.UTF8.GetBytes(data.ToUpperInvariant()),
+                seed1: 0,
+                seed2: 0,
+                hash1: out uint hash1,
+                hash2: out uint hash2);
 
-            PerfectHash.ComputeHash(Encoding.UTF8.GetBytes(data.ToUpper()), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
-            long hashedValue = ((long)hash1 << 32) | (long)hash2;
+            long hashedValue = ((long)hash1 << 32) | hash2;
 
             return hashedValue;
         }
 
         public static short HashToShort(string data)
         {
-            uint hash1;
-            uint hash2;
-
-            PerfectHash.ComputeHash(Encoding.UTF8.GetBytes(data.ToUpper()), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
+            ComputeHash(
+                Encoding.UTF8.GetBytes(data.ToUpperInvariant()),
+                seed1: 0,
+                seed2: 0,
+                hash1: out uint hash1,
+                hash2: out uint hash2);
             long hashedValue = hash1 ^ hash2;
 
             return (short)hashedValue;
@@ -102,7 +107,7 @@ namespace Microsoft.Azure.Devices.Common.Cloud
                     b += ((uint)data[index + 5]) << 8;
                     goto case 5;
                 case 5:
-                    b += ((uint)data[index + 4]);
+                    b += data[index + 4];
                     goto case 4;
                 case 4:
                     a += BitConverter.ToUInt32(data, index);

@@ -11,18 +11,33 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     public class HttpHsmComunicationException : Exception
     {
         /// <summary>
-        /// Status code of the communication failure.
+        /// Creates an instance of <see cref="HttpHsmComunicationException"/> with the supplied error message and status code.
         /// </summary>
-        public int StatusCode { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpHsmComunicationException"/> class with the message string.
-        /// </summary>
-        /// <param name="message">A description of the error. The content of message is intended to be understood by humans.</param>
+        /// <param name="message">The message that describes the error.</param>
         /// <param name="statusCode">Status code of the communication failure.</param>
         public HttpHsmComunicationException(string message, int statusCode) : base($"{message}, StatusCode: {statusCode}")
         {
-            this.StatusCode = statusCode;
+            StatusCode = statusCode;
         }
+
+        internal HttpHsmComunicationException()
+            : base()
+        {
+        }
+
+        internal HttpHsmComunicationException(string message)
+            : base(message)
+        {
+        }
+
+        internal HttpHsmComunicationException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+
+        /// <summary>
+        /// Status code of the communication failure.
+        /// </summary>
+        public int StatusCode { get; }
     }
 }
