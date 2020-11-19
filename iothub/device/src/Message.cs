@@ -388,6 +388,16 @@ namespace Microsoft.Azure.Devices.Client
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
+        /// <summary>
+        /// Set the message as a Distributed Tracing
+        /// </summary>
+        public void SetAsDistributedTracingMessage()
+        {
+            long unixTimestamp = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+
+            SystemProperties[MessageSystemPropertyNames.DistributedTrace] = $"timestamp={unixTimestamp}";
+        }
+
         private void SetSizeInBytesCalled()
         {
             Interlocked.Exchange(ref _sizeInBytesCalled, 1);
