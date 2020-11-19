@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
         public string DeviceId { get; set; }
 
         [JsonProperty(PropertyName = "blobUri", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056: Uri properties should not be strings.", Justification = "Changing this would break the API.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056: Uri properties should not be strings.", Justification = "Public facing types cannot change as they are considered a breaking change.")]
         public string BlobUri { get; set; }
 
         [JsonProperty(PropertyName = "blobName", DefaultValueHandling = DefaultValueHandling.Ignore)]
