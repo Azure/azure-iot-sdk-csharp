@@ -255,12 +255,15 @@ namespace Microsoft.Azure.Devices.Client
 
         bool IReadOnlyIndicator.IsReadOnly => Interlocked.Read(ref _sizeInBytesCalled) == 1;
 
-#pragma warning disable CA1721 // Property names should not match get methods; Justification: Cannot remove public property on a public facing type
+
         /// <summary>
         /// The body stream of the current event data instance
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Naming",
+            "CA1721:Property names should not match get methods",
+            Justification = "Cannot remove public property on a public facing type")]
         public Stream BodyStream => _bodyStream;
-#pragma warning restore CA1721 // Property names should not match get methods; Justification: Cannot remove public property on a public facing type
 
         /// <summary>
         /// Gets or sets the deliveryTag which is used for server side check-pointing.
