@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
@@ -12,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal static class AmqpIoTTrackingHelper
     {
         // TODO: GatewayId is not assigned to anywhere in this class. Likely a bug!
-        private static string GatewayId = string.Empty;
+        private static readonly string s_gatewayId = string.Empty;
 
         public static string GenerateTrackingId()
         {
@@ -21,14 +22,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         public static string GenerateTrackingId(string backendId, string partitionId)
         {
-            string gatewayId = AmqpIoTTrackingHelper.GatewayId;
+            string gatewayId = s_gatewayId;
             return GenerateTrackingId(gatewayId, backendId, partitionId);
         }
 
         public static string GenerateTrackingId(string gatewayId, string backendId, string partitionId)
         {
             string trackingId;
-            trackingId = Guid.NewGuid().ToString("N");
+            trackingId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             if (!string.IsNullOrEmpty(gatewayId))
             {
                 gatewayId = "0";
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (!string.IsNullOrEmpty(backendId))
             {
-                backendId = backendId.Substring(backendId.LastIndexOf("_") + 1);
+                backendId = backendId.Substring(backendId.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
                 trackingId = "{0}-B:{1}".FormatInvariant(trackingId, backendId);
             }
 
@@ -52,12 +53,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         public static string GenerateTrackingId(this AmqpException exception)
         {
-            return exception.GenerateTrackingId(AmqpIoTTrackingHelper.GatewayId, string.Empty, string.Empty);
+            return exception.GenerateTrackingId(s_gatewayId, string.Empty, string.Empty);
         }
 
         public static string GenerateTrackingId(this AmqpException exception, string backendId, string partitionId)
         {
-            return exception.GenerateTrackingId(AmqpIoTTrackingHelper.GatewayId, backendId, partitionId);
+            return exception.GenerateTrackingId(s_gatewayId, backendId, partitionId);
         }
 
         public static string GenerateTrackingId(this AmqpException exception, string gatewayId, string backendId, string partitionId)
@@ -67,8 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 exception.Error.Info = new Fields();
             }
 
-            string trackingId;
-            if (!exception.Error.Info.Any() || !exception.Error.Info.TryGetValue(AmqpIoTConstants.TrackingId, out trackingId))
+            if (!exception.Error.Info.Any() || !exception.Error.Info.TryGetValue(AmqpIoTConstants.TrackingId, out string trackingId))
             {
                 trackingId = GenerateTrackingId(gatewayId, backendId, partitionId);
                 exception.Error.Info.Add(AmqpIoTConstants.TrackingId, trackingId);
@@ -78,13 +78,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         public static string CheckAndAddGatewayIdToTrackingId(string gatewayId, string trackingId)
         {
-            if (!string.IsNullOrEmpty(trackingId) && trackingId.Contains("-B:"))
+            if (!string.IsNullOrEmpty(trackingId) && trackingId.IndexOf("-B:", StringComparison.InvariantCultureIgnoreCase) > 0)
             {
-                return "{0}-G:{1}{2}".FormatInvariant(trackingId.Substring(0, trackingId.IndexOf("-B:")), gatewayId, trackingId.Substring(trackingId.IndexOf("-B:") + 3));
+                return "{0}-G:{1}{2}".FormatInvariant(
+                    trackingId.Substring(0, trackingId.IndexOf("-B:", StringComparison.InvariantCultureIgnoreCase)),
+                    gatewayId,
+                    trackingId.Substring(trackingId.IndexOf("-B:", StringComparison.InvariantCultureIgnoreCase) + 3));
             }
             else
             {
-                return GenerateTrackingId(gatewayId, String.Empty, String.Empty);
+                return GenerateTrackingId(gatewayId, string.Empty, string.Empty);
             }
         }
 
@@ -102,9 +105,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public static string GetGatewayId(this AmqpLink link)
         {
             string gatewayId = null;
-            if (link.Settings.LinkName.Contains("_G:"))
+
+            if (link.Settings.LinkName.IndexOf("_G:", StringComparison.InvariantCultureIgnoreCase) > 0)
             {
-                gatewayId = link.Settings.LinkName.Substring(link.Settings.LinkName.IndexOf("_G:") + 3);
+                gatewayId = link.Settings.LinkName.Substring(link.Settings.LinkName.IndexOf("_G:", StringComparison.InvariantCultureIgnoreCase) + 3);
             }
             return gatewayId;
         }

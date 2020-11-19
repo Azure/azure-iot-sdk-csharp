@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -51,22 +50,44 @@ namespace Microsoft.Azure.Devices.Client
             return equals;
         }
 
-        public int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
+        public override bool Equals(object obj)
         {
-            if (Object.ReferenceEquals(rule, null))
+            return Equals(obj as SharedAccessSignatureAuthorizationRule);
+        }
+
+        private int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
+        {
+            if (rule == null)
             {
                 return 0;
             }
 
-            int hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
+            int hashKeyName, hashPrimaryKey, hashSecondaryKey, hashRights;
 
-            int hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
+#if NETSTANDARD2_0 || NET451 || NET472
+            hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
 
-            int hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
+            hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
 
-            int hashRights = rule.Rights.GetHashCode();
+            hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
+
+            hashRights = rule.Rights.GetHashCode();
+#else
+            hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
+
+            hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
+
+            hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
+
+            hashRights = rule.Rights.GetHashCode();
+#endif
 
             return hashKeyName ^ hashPrimaryKey ^ hashSecondaryKey ^ hashRights;
+        }
+
+        public override int GetHashCode()
+        {
+            return GetHashCode(this);
         }
     }
 }

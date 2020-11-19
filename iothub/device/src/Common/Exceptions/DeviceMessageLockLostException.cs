@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        private DeviceMessageLockLostException(SerializationInfo info, StreamingContext context)
+        protected DeviceMessageLockLostException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
