@@ -29,14 +29,9 @@ namespace Microsoft.Azure.Devices.Client
             else
             {
                 Fx.Assert(maxBufferPoolSize > 0 && maxBufferSize >= 0, "bad params, caller should verify");
-                if (isTransportBufferPool)
-                {
-                    return new PreallocatedBufferManager(maxBufferPoolSize, maxBufferSize);
-                }
-                else
-                {
-                    return new PooledBufferManager(maxBufferPoolSize, maxBufferSize);
-                }
+                return isTransportBufferPool
+                    ? new PreallocatedBufferManager(maxBufferPoolSize, maxBufferSize)
+                    : (InternalBufferManager)new PooledBufferManager(maxBufferPoolSize, maxBufferSize);
             }
         }
 
@@ -50,82 +45,82 @@ namespace Microsoft.Azure.Devices.Client
 
         private class PreallocatedBufferManager : InternalBufferManager
         {
-            private int maxBufferSize;
-            private int medBufferSize;
-            private int smallBufferSize;
+            private readonly int _maxBufferSize;
+            private readonly int _medBufferSize;
+            private readonly int _smallBufferSize;
 
-            private byte[][] buffersList;
-            private GCHandle[] handles;
-            private ConcurrentStack<byte[]> freeSmallBuffers;
-            private ConcurrentStack<byte[]> freeMedianBuffers;
-            private ConcurrentStack<byte[]> freeLargeBuffers;
+            private byte[][] _buffersList;
+            private readonly GCHandle[] _handles;
+            private readonly ConcurrentStack<byte[]> _freeSmallBuffers;
+            private readonly ConcurrentStack<byte[]> _freeMedianBuffers;
+            private readonly ConcurrentStack<byte[]> _freeLargeBuffers;
 
             internal PreallocatedBufferManager(long maxMemoryToPool, int maxBufferSize)
             {
                 // default values: maxMemoryToPool = 48MB, maxBufferSize = 64KB
                 // This creates the following buffers:
                 // max: 64KB = 256, med 16KB = 1024, small 4KB = 4096
-                this.maxBufferSize = maxBufferSize;
-                this.medBufferSize = maxBufferSize / 4;
-                this.smallBufferSize = maxBufferSize / 16;
+                _maxBufferSize = maxBufferSize;
+                _medBufferSize = maxBufferSize / 4;
+                _smallBufferSize = maxBufferSize / 16;
 
                 long eachPoolSize = maxMemoryToPool / 3;
                 long numLargeBuffers = eachPoolSize / maxBufferSize;
-                long numMedBuffers = eachPoolSize / medBufferSize;
-                long numSmallBuffers = eachPoolSize / smallBufferSize;
+                long numMedBuffers = eachPoolSize / _medBufferSize;
+                long numSmallBuffers = eachPoolSize / _smallBufferSize;
                 long numBuffers = numLargeBuffers + numMedBuffers + numSmallBuffers;
 
-                this.buffersList = new byte[numBuffers][];
-                this.handles = new GCHandle[numBuffers];
-                this.freeSmallBuffers = new ConcurrentStack<byte[]>();
-                this.freeMedianBuffers = new ConcurrentStack<byte[]>();
-                this.freeLargeBuffers = new ConcurrentStack<byte[]>();
+                _buffersList = new byte[numBuffers][];
+                _handles = new GCHandle[numBuffers];
+                _freeSmallBuffers = new ConcurrentStack<byte[]>();
+                _freeMedianBuffers = new ConcurrentStack<byte[]>();
+                _freeLargeBuffers = new ConcurrentStack<byte[]>();
 
                 int lastLarge = 0;
                 for (int i = 0; i < numLargeBuffers; i++, lastLarge++)
                 {
-                    buffersList[i] = new byte[maxBufferSize];
-                    handles[i] = GCHandle.Alloc(buffersList[i], GCHandleType.Pinned);
-                    this.freeLargeBuffers.Push(buffersList[i]);
+                    _buffersList[i] = new byte[maxBufferSize];
+                    _handles[i] = GCHandle.Alloc(_buffersList[i], GCHandleType.Pinned);
+                    _freeLargeBuffers.Push(_buffersList[i]);
                 }
 
                 int lastMed = lastLarge;
                 for (int i = lastLarge; i < numMedBuffers + lastLarge; i++, lastMed++)
                 {
-                    buffersList[i] = new byte[this.medBufferSize];
-                    handles[i] = GCHandle.Alloc(buffersList[i], GCHandleType.Pinned);
-                    this.freeMedianBuffers.Push(buffersList[i]);
+                    _buffersList[i] = new byte[_medBufferSize];
+                    _handles[i] = GCHandle.Alloc(_buffersList[i], GCHandleType.Pinned);
+                    _freeMedianBuffers.Push(_buffersList[i]);
                 }
 
                 for (int i = lastMed; i < numSmallBuffers + lastMed; i++)
                 {
-                    buffersList[i] = new byte[this.smallBufferSize];
-                    handles[i] = GCHandle.Alloc(buffersList[i], GCHandleType.Pinned);
-                    this.freeSmallBuffers.Push(buffersList[i]);
+                    _buffersList[i] = new byte[_smallBufferSize];
+                    _handles[i] = GCHandle.Alloc(_buffersList[i], GCHandleType.Pinned);
+                    _freeSmallBuffers.Push(_buffersList[i]);
                 }
             }
 
             public override byte[] TakeBuffer(int bufferSize)
             {
-                if (bufferSize > this.maxBufferSize)
+                if (bufferSize > _maxBufferSize)
                 {
                     return null;
                 }
 
-                byte[] returnedBuffer = null;
-                if (bufferSize <= this.smallBufferSize)
+                byte[] returnedBuffer;
+                if (bufferSize <= _smallBufferSize)
                 {
-                    this.freeSmallBuffers.TryPop(out returnedBuffer);
+                    _ = _freeSmallBuffers.TryPop(out returnedBuffer);
                     return returnedBuffer;
                 }
 
-                if (bufferSize <= this.medBufferSize)
+                if (bufferSize <= _medBufferSize)
                 {
-                    this.freeMedianBuffers.TryPop(out returnedBuffer);
+                    _ = _freeMedianBuffers.TryPop(out returnedBuffer);
                     return returnedBuffer;
                 }
 
-                this.freeLargeBuffers.TryPop(out returnedBuffer);
+                _ = _freeLargeBuffers.TryPop(out returnedBuffer);
                 return returnedBuffer;
             }
 
@@ -135,67 +130,67 @@ namespace Microsoft.Azure.Devices.Client
             /// <param name="buffer"></param>
             public override void ReturnBuffer(byte[] buffer)
             {
-                if (buffer.Length <= this.smallBufferSize)
+                if (buffer.Length <= _smallBufferSize)
                 {
-                    this.freeSmallBuffers.Push(buffer);
+                    _freeSmallBuffers.Push(buffer);
                 }
-                else if (buffer.Length <= this.medBufferSize)
+                else if (buffer.Length <= _medBufferSize)
                 {
-                    this.freeMedianBuffers.Push(buffer);
+                    _freeMedianBuffers.Push(buffer);
                 }
                 else
                 {
-                    this.freeLargeBuffers.Push(buffer);
+                    _freeLargeBuffers.Push(buffer);
                 }
             }
 
             public override void Clear()
             {
-                for (int i = 0; i < this.buffersList.Length; i++)
+                for (int i = 0; i < _buffersList.Length; i++)
                 {
-                    this.handles[i].Free();
-                    this.buffersList[i] = null;
+                    _handles[i].Free();
+                    _buffersList[i] = null;
                 }
-                this.buffersList = null;
-                this.freeSmallBuffers.Clear();
-                this.freeMedianBuffers.Clear();
-                this.freeLargeBuffers.Clear();
+                _buffersList = null;
+                _freeSmallBuffers.Clear();
+                _freeMedianBuffers.Clear();
+                _freeLargeBuffers.Clear();
             }
         }
 
         private class PooledBufferManager : InternalBufferManager
         {
-            private const int minBufferSize = 128;
-            private const int maxMissesBeforeTuning = 8;
-            private const int initialBufferCount = 1;
-            private readonly object tuningLock;
+            private const int MinBufferSize = 128;
+            private const int MaxMissesBeforeTuning = 8;
+            private const int InitialBufferCount = 1;
+            private readonly object _tuningLock;
 
-            private int[] bufferSizes;
-            private BufferPool[] bufferPools;
-            private long remainingMemory;
-            private bool areQuotasBeingTuned;
-            private int totalMisses;
+            private readonly int[] _bufferSizes;
+            private readonly BufferPool[] _bufferPools;
+            private long _remainingMemory;
+            private bool _areQuotasBeingTuned;
+            private int _totalMisses;
 
             public PooledBufferManager(long maxMemoryToPool, int maxBufferSize)
             {
-                this.tuningLock = new object();
-                this.remainingMemory = maxMemoryToPool;
-                List<BufferPool> bufferPoolList = new List<BufferPool>();
+                _tuningLock = new object();
+                _remainingMemory = maxMemoryToPool;
+                var bufferPoolList = new List<BufferPool>();
 
-                for (int bufferSize = minBufferSize; ;)
+                for (int bufferSize = MinBufferSize; ;)
                 {
-                    long bufferCountLong = this.remainingMemory / bufferSize;
+                    long bufferCountLong = _remainingMemory / bufferSize;
 
                     int bufferCount = bufferCountLong > int.MaxValue ? int.MaxValue : (int)bufferCountLong;
 
-                    if (bufferCount > initialBufferCount)
+                    if (bufferCount > InitialBufferCount)
                     {
-                        bufferCount = initialBufferCount;
+                        bufferCount = InitialBufferCount;
                     }
 
                     bufferPoolList.Add(BufferPool.CreatePool(bufferSize, bufferCount));
 
-                    this.remainingMemory -= (long)bufferCount * bufferSize;
+                    _remainingMemory -= (long)bufferCount * bufferSize;
 
                     if (bufferSize >= maxBufferSize)
                     {
@@ -204,29 +199,24 @@ namespace Microsoft.Azure.Devices.Client
 
                     long newBufferSizeLong = (long)bufferSize * 2;
 
-                    if (newBufferSizeLong > (long)maxBufferSize)
-                    {
-                        bufferSize = maxBufferSize;
-                    }
-                    else
-                    {
-                        bufferSize = (int)newBufferSizeLong;
-                    }
+                    bufferSize = newBufferSizeLong > maxBufferSize
+                        ? maxBufferSize
+                        : (int)newBufferSizeLong;
                 }
 
-                this.bufferPools = bufferPoolList.ToArray();
-                this.bufferSizes = new int[bufferPools.Length];
-                for (int i = 0; i < bufferPools.Length; i++)
+                _bufferPools = bufferPoolList.ToArray();
+                _bufferSizes = new int[_bufferPools.Length];
+                for (int i = 0; i < _bufferPools.Length; i++)
                 {
-                    this.bufferSizes[i] = bufferPools[i].BufferSize;
+                    _bufferSizes[i] = _bufferPools[i].BufferSize;
                 }
             }
 
             public override void Clear()
             {
-                for (int i = 0; i < this.bufferPools.Length; i++)
+                for (int i = 0; i < _bufferPools.Length; i++)
                 {
-                    BufferPool bufferPool = this.bufferPools[i];
+                    BufferPool bufferPool = _bufferPools[i];
                     bufferPool.Clear();
                 }
             }
@@ -235,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 BufferPool oldBufferPool = bufferPool;
                 int newLimit = oldBufferPool.Limit + delta;
-                BufferPool newBufferPool = BufferPool.CreatePool(oldBufferPool.BufferSize, newLimit);
+                var newBufferPool = BufferPool.CreatePool(oldBufferPool.BufferSize, newLimit);
                 for (int i = 0; i < newLimit; i++)
                 {
                     byte[] buffer = oldBufferPool.Take();
@@ -246,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client
                     newBufferPool.Return(buffer);
                     newBufferPool.IncrementCount();
                 }
-                this.remainingMemory -= oldBufferPool.BufferSize * delta;
+                _remainingMemory -= oldBufferPool.BufferSize * delta;
                 bufferPool = newBufferPool;
             }
 
@@ -260,9 +250,9 @@ namespace Microsoft.Azure.Devices.Client
                 long maxBytesInExcess = 0;
                 int index = -1;
 
-                for (int i = 0; i < this.bufferPools.Length; i++)
+                for (int i = 0; i < _bufferPools.Length; i++)
                 {
-                    BufferPool bufferPool = this.bufferPools[i];
+                    BufferPool bufferPool = _bufferPools[i];
 
                     if (bufferPool.Peak < bufferPool.Limit)
                     {
@@ -284,9 +274,9 @@ namespace Microsoft.Azure.Devices.Client
                 long maxBytesMissed = 0;
                 int index = -1;
 
-                for (int i = 0; i < this.bufferPools.Length; i++)
+                for (int i = 0; i < _bufferPools.Length; i++)
                 {
-                    BufferPool bufferPool = this.bufferPools[i];
+                    BufferPool bufferPool = _bufferPools[i];
 
                     if (bufferPool.Peak == bufferPool.Limit)
                     {
@@ -305,11 +295,11 @@ namespace Microsoft.Azure.Devices.Client
 
             private BufferPool FindPool(int desiredBufferSize)
             {
-                for (int i = 0; i < this.bufferSizes.Length; i++)
+                for (int i = 0; i < _bufferSizes.Length; i++)
                 {
-                    if (desiredBufferSize <= this.bufferSizes[i])
+                    if (desiredBufferSize <= _bufferSizes[i])
                     {
-                        return this.bufferPools[i];
+                        return _bufferPools[i];
                     }
                 }
 
@@ -330,7 +320,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (buffer.Length != bufferPool.BufferSize)
                     {
-                        throw Fx.Exception.Argument("buffer", CommonResources.BufferIsNotRightSizeForBufferManager);
+                        throw Fx.Exception.Argument(nameof(buffer), Common.Resources.BufferIsNotRightSizeForBufferManager);
                     }
 
                     if (bufferPool.Return(buffer))
@@ -356,22 +346,22 @@ namespace Microsoft.Azure.Devices.Client
                     if (bufferPool.Peak == bufferPool.Limit)
                     {
                         bufferPool.Misses++;
-                        if (++totalMisses >= maxMissesBeforeTuning)
+                        if (++_totalMisses >= MaxMissesBeforeTuning)
                         {
                             TuneQuotas();
                         }
                     }
-                    return InternalBufferManager.AllocateByteArray(bufferPool.BufferSize);
+                    return AllocateByteArray(bufferPool.BufferSize);
                 }
                 else
                 {
-                    return InternalBufferManager.AllocateByteArray(bufferSize);
+                    return AllocateByteArray(bufferSize);
                 }
             }
 
             private void TuneQuotas()
             {
-                if (this.areQuotasBeingTuned)
+                if (_areQuotasBeingTuned)
                 {
                     return;
                 }
@@ -379,21 +369,21 @@ namespace Microsoft.Azure.Devices.Client
                 bool lockHeld = false;
                 try
                 {
-                    Monitor.TryEnter(this.tuningLock, ref lockHeld);
+                    Monitor.TryEnter(_tuningLock, ref lockHeld);
 
                     // Don't bother if another thread already has the lock
-                    if (!lockHeld || this.areQuotasBeingTuned)
+                    if (!lockHeld || _areQuotasBeingTuned)
                     {
                         return;
                     }
 
-                    this.areQuotasBeingTuned = true;
+                    _areQuotasBeingTuned = true;
                 }
                 finally
                 {
                     if (lockHeld)
                     {
-                        Monitor.Exit(this.tuningLock);
+                        Monitor.Exit(_tuningLock);
                     }
                 }
 
@@ -401,96 +391,79 @@ namespace Microsoft.Azure.Devices.Client
                 int starvedIndex = FindMostStarvedPool();
                 if (starvedIndex >= 0)
                 {
-                    BufferPool starvedBufferPool = this.bufferPools[starvedIndex];
+                    BufferPool starvedBufferPool = _bufferPools[starvedIndex];
 
-                    if (this.remainingMemory < starvedBufferPool.BufferSize)
+                    if (_remainingMemory < starvedBufferPool.BufferSize)
                     {
                         // find the "richest" pool
                         int excessiveIndex = FindMostExcessivePool();
                         if (excessiveIndex >= 0)
                         {
                             // steal from the richest
-                            DecreaseQuota(ref this.bufferPools[excessiveIndex]);
+                            DecreaseQuota(ref _bufferPools[excessiveIndex]);
                         }
                     }
 
-                    if (this.remainingMemory >= starvedBufferPool.BufferSize)
+                    if (_remainingMemory >= starvedBufferPool.BufferSize)
                     {
                         // give to the poorest
-                        IncreaseQuota(ref this.bufferPools[starvedIndex]);
+                        IncreaseQuota(ref _bufferPools[starvedIndex]);
                     }
                 }
 
                 // reset statistics
-                for (int i = 0; i < this.bufferPools.Length; i++)
+                for (int i = 0; i < _bufferPools.Length; i++)
                 {
-                    BufferPool bufferPool = this.bufferPools[i];
+                    BufferPool bufferPool = _bufferPools[i];
                     bufferPool.Misses = 0;
                 }
 
-                this.totalMisses = 0;
-                this.areQuotasBeingTuned = false;
+                _totalMisses = 0;
+                _areQuotasBeingTuned = false;
             }
 
             private abstract class BufferPool
             {
-                private int bufferSize;
-                private int count;
-                private int limit;
-                private int misses;
-                private int peak;
+                private int _count;
 
                 public BufferPool(int bufferSize, int limit)
                 {
-                    this.bufferSize = bufferSize;
-                    this.limit = limit;
+                    BufferSize = bufferSize;
+                    Limit = limit;
                 }
 
-                public int BufferSize
-                {
-                    get { return this.bufferSize; }
-                }
+                public int BufferSize { get; private set; }
 
-                public int Limit
-                {
-                    get { return this.limit; }
-                }
+                public int Limit { get; private set; }
 
-                public int Misses
-                {
-                    get { return this.misses; }
-                    set { this.misses = value; }
-                }
+                public int Misses { get; set; }
 
-                public int Peak
-                {
-                    get { return this.peak; }
-                }
+                public int Peak { get; private set; }
 
                 public void Clear()
                 {
-                    this.OnClear();
-                    this.count = 0;
+                    OnClear();
+                    _count = 0;
                 }
 
                 public void DecrementCount()
                 {
-                    int newValue = this.count - 1;
+                    int newValue = _count - 1;
                     if (newValue >= 0)
                     {
-                        this.count = newValue;
+                        _count = newValue;
                     }
                 }
 
                 public void IncrementCount()
                 {
-                    int newValue = this.count + 1;
-                    if (newValue <= this.limit)
+                    int newValue = _count + 1;
+                    if (newValue <= Limit)
                     {
-                        this.count = newValue;
-                        if (newValue > this.peak)
+                        _count = newValue;
+                        if (newValue > Peak)
                         {
-                            this.peak = newValue;
+                            Peak = newValue;
                         }
                     }
                 }
@@ -507,65 +480,54 @@ namespace Microsoft.Azure.Devices.Client
                     // get allocated on the LOH, we use the LargeBufferPool and for
                     // bufferSize < 85000, the SynchronizedPool. There is a 12 or 24(x64)
                     // byte overhead for an array so we use 85000-24=84976 as the limit
-                    if (bufferSize < 84976)
-                    {
-                        return new SynchronizedBufferPool(bufferSize, limit);
-                    }
-                    else
-                    {
-                        return new LargeBufferPool(bufferSize, limit);
-                    }
+                    return bufferSize < 84976
+                        ? new SynchronizedBufferPool(bufferSize, limit)
+                        : (BufferPool)new LargeBufferPool(bufferSize, limit);
                 }
 
                 private class SynchronizedBufferPool : BufferPool
                 {
-                    private SynchronizedPool<byte[]> innerPool;
+                    private readonly SynchronizedPool<byte[]> _innerPool;
 
                     internal SynchronizedBufferPool(int bufferSize, int limit)
                         : base(bufferSize, limit)
                     {
-                        this.innerPool = new SynchronizedPool<byte[]>(limit);
+                        _innerPool = new SynchronizedPool<byte[]>(limit);
                     }
 
                     internal override void OnClear()
                     {
-                        this.innerPool.Clear();
+                        _innerPool.Clear();
                     }
 
                     internal override byte[] Take()
                     {
-                        return this.innerPool.Take();
+                        return _innerPool.Take();
                     }
 
                     internal override bool Return(byte[] buffer)
                     {
-                        return this.innerPool.Return(buffer);
+                        return _innerPool.Return(buffer);
                     }
                 }
 
                 private class LargeBufferPool : BufferPool
                 {
-                    private Stack<byte[]> items;
+                    private readonly Stack<byte[]> _items;
 
                     internal LargeBufferPool(int bufferSize, int limit)
                         : base(bufferSize, limit)
                     {
-                        this.items = new Stack<byte[]>(limit);
+                        _items = new Stack<byte[]>(limit);
                     }
 
-                    private object ThisLock
-                    {
-                        get
-                        {
-                            return this.items;
-                        }
-                    }
+                    private object ThisLock => _items;
 
                     internal override void OnClear()
                     {
                         lock (ThisLock)
                         {
-                            this.items.Clear();
+                            _items.Clear();
                         }
                     }
 
@@ -573,9 +535,9 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         lock (ThisLock)
                         {
-                            if (this.items.Count > 0)
+                            if (_items.Count > 0)
                             {
-                                return this.items.Pop();
+                                return _items.Pop();
                             }
                         }
 
@@ -586,9 +548,9 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         lock (ThisLock)
                         {
-                            if (this.items.Count < this.Limit)
+                            if (_items.Count < Limit)
                             {
-                                this.items.Push(buffer);
+                                _items.Push(buffer);
                                 return true;
                             }
                         }
@@ -601,16 +563,11 @@ namespace Microsoft.Azure.Devices.Client
 
         private class GCBufferManager : InternalBufferManager
         {
-            private static GCBufferManager value = new GCBufferManager();
-
             private GCBufferManager()
             {
             }
 
-            public static GCBufferManager Value
-            {
-                get { return value; }
-            }
+            public static GCBufferManager Value { get; } = new GCBufferManager();
 
             public override void Clear()
             {
@@ -618,7 +575,7 @@ namespace Microsoft.Azure.Devices.Client
 
             public override byte[] TakeBuffer(int bufferSize)
             {
-                return InternalBufferManager.AllocateByteArray(bufferSize);
+                return AllocateByteArray(bufferSize);
             }
 
             public override void ReturnBuffer(byte[] buffer)

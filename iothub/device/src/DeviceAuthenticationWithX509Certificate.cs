@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceAuthenticationWithX509Certificate : IAuthenticationMethod
     {
-        private string deviceId;
+        private string _deviceId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithX509Certificate"/> class.
@@ -21,8 +21,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="certificate">X.509 Certificate.</param>
         public DeviceAuthenticationWithX509Certificate(string deviceId, X509Certificate2 certificate)
         {
-            this.SetDeviceId(deviceId);
-            this.Certificate = certificate;
+            SetDeviceId(deviceId);
+            Certificate = certificate;
         }
 
         /// <summary>
@@ -30,8 +30,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string DeviceId
         {
-            get { return this.deviceId; }
-            set { this.SetDeviceId(value); }
+            get => _deviceId;
+            set => SetDeviceId(value);
         }
 
         /// <summary>
@@ -49,12 +49,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException("iotHubConnectionStringBuilder");
+                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
+            iotHubConnectionStringBuilder.DeviceId = DeviceId;
             iotHubConnectionStringBuilder.UsingX509Cert = true;
-            iotHubConnectionStringBuilder.Certificate = this.Certificate;
+            iotHubConnectionStringBuilder.Certificate = Certificate;
             iotHubConnectionStringBuilder.SharedAccessSignature = null;
             iotHubConnectionStringBuilder.SharedAccessKey = null;
             iotHubConnectionStringBuilder.SharedAccessKeyName = null;
@@ -66,10 +66,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
-            this.deviceId = deviceId;
+            _deviceId = deviceId;
         }
     }
 }
