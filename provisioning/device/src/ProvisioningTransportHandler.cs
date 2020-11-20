@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -20,6 +19,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private int _port;
 
         /// <summary>
+        /// Creates an instance of the ProvisioningTransportHandler class.
+        /// </summary>
+        public ProvisioningTransportHandler() { }
+
+        /// <summary>
         /// Gets or sets the proxy for Provisioning Client operations.
         /// </summary>
         public IWebProxy Proxy { get; set; }
@@ -29,11 +33,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// If incorrectly implemented, your device may fail to connect to DPS and/or be open to security vulnerabilities.
         /// </summary>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
-
-        /// <summary>
-        /// Creates an instance of the ProvisioningTransportHandler class.
-        /// </summary>
-        public ProvisioningTransportHandler() { }
 
         /// <summary>
         /// Gets or sets the inner handler.
@@ -48,10 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     throw new ArgumentNullException(nameof(value));
                 }
 
-                if (Logging.IsEnabled)
-                {
-                    Logging.Associate(this, value);
-                }
+                Logging.Associate(this, value);
 
                 _innerHandler = value;
             }
@@ -70,10 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                if (Logging.IsEnabled)
-                {
-                    Logging.Info(this, $"{nameof(Port)} set to {value}");
-                }
+                Logging.Info(this, $"{nameof(Port)} set to {value}");
 
                 _port = value;
             }
@@ -93,6 +86,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
+        /// Releases the unmanaged resources and disposes of the managed resources used by the invoker.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
         /// Releases the unmanaged resources used by the ProvisioningTransportHandler and optionally disposes of the managed resources.
         /// </summary>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
@@ -102,15 +104,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 _innerHandler?.Dispose();
             }
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources and disposes of the managed resources used by the invoker.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }
