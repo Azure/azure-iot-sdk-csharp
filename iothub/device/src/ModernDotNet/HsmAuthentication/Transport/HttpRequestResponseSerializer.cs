@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             }
         }
 
-        private async Task SetResponseStatusLineAsync(HttpResponseMessage httpResponse, HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
+        private static async Task SetResponseStatusLineAsync(HttpResponseMessage httpResponse, HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
         {
             string statusLine = await bufferedStream.ReadLineAsync(cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(statusLine))
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             httpResponse.ReasonPhrase = statusLineParts[2];
         }
 
-        private void PreProcessRequest(HttpRequestMessage request)
+        private static void PreProcessRequest(HttpRequestMessage request)
         {
             if (string.IsNullOrEmpty(request.Headers.Host))
             {
