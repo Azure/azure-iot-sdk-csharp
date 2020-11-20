@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
         /// </summary>
         /// <param name="innerException">The inner exception.</param>
         public ProvisioningTransportException(Exception innerException)
@@ -45,16 +45,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         public ProvisioningTransportException(string message)
-            :this(message, null, false)
+            : this(message, null, false)
         {
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="innerException">The inner exception.</param>
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Sets the SerializationInfo with information about the exception.
+        /// Sets the <see cref="SerializationInfo"/> with information about the exception.
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
