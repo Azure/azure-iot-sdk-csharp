@@ -58,6 +58,11 @@ namespace Microsoft.Azure.Devices.Client.Common
 
         public static void Deserialize(string value, int startIndex, IDictionary<string, string> properties)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value), "The value parameter cannot be null.");
+            }
+
             if (value.Length < startIndex)
             {
                 return;

@@ -112,7 +112,6 @@ namespace Microsoft.Azure.Devices.Common
 
         public static string CheckAndAddGatewayIdToTrackingId(string trackingId)
         {
-
             if (!string.IsNullOrEmpty(trackingId)
                 && !(trackingId.IndexOf(GatewayPrefix, StringComparison.InvariantCultureIgnoreCase) > 0)
                 && trackingId.IndexOf(BackendPrefix, StringComparison.InvariantCultureIgnoreCase) > 0
@@ -129,7 +128,6 @@ namespace Microsoft.Azure.Devices.Common
             {
                 return GenerateTrackingId(GatewayId, string.Empty, string.Empty);
             }
-
         }
 
         public static string GetTrackingId(this AmqpException amqpException)
@@ -155,6 +153,11 @@ namespace Microsoft.Azure.Devices.Common
 
         public static ErrorCode GetErrorCodeFromAmqpError(Error ex)
         {
+            if (ex == null)
+            {
+                throw new ArgumentNullException(nameof(ex), "The Error property of the Ampq exception is null.");
+            }
+
             if (ex.Condition.Equals(AmqpErrorCode.NotFound))
             {
                 return ErrorCode.DeviceNotFound;

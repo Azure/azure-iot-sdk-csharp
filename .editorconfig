@@ -298,3 +298,19 @@ dotnet_naming_style.end_in_async.required_prefix =
 dotnet_naming_style.end_in_async.required_suffix = Async
 dotnet_naming_style.end_in_async.capitalization = pascal_case
 dotnet_naming_style.end_in_async.word_separator = 
+
+# Exclude extension method 'this' parameter
+# https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1062
+dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = true
+
+# CA2016: Forward the 'CancellationToken' parameter to methods that take one
+dotnet_diagnostic.CA2016.severity = warning
+
+# CA1805: Do not initialize unnecessarily
+dotnet_diagnostic.CA1805.severity = warning
+
+# CA1834: Consider using 'StringBuilder.Append(char)' when applicable
+dotnet_diagnostic.CA1834.severity = warning
+
+# CA2000: Dispose objects before losing scope
+dotnet_diagnostic.CA2000.severity = warning
