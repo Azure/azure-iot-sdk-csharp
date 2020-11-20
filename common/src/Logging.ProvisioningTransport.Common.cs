@@ -10,22 +10,23 @@ namespace Microsoft.Azure.Devices.Shared
     {
         private const int RegisterDeviceId = 12;
         private const int OperationStatusLookupId = 13;
-        
+
         [NonEvent]
         public static void RegisterDevice(
             object thisOrContextObject,
-            string registrationId, 
+            string registrationId,
             string idScope,
-            string attestationType, 
-            string operationId, 
-            TimeSpan? retryAfter, 
+            string attestationType,
+            string operationId,
+            TimeSpan? retryAfter,
             string status)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(attestationType);
-            DebugValidateArg(retryAfter);
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(attestationType);
+                DebugValidateArg(retryAfter);
+
                 Log.RegisterDevice(
                 IdOf(thisOrContextObject),
                 registrationId,
@@ -40,22 +41,22 @@ namespace Microsoft.Azure.Devices.Shared
         [Event(RegisterDeviceId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
         private void RegisterDevice(
             string thisOrContextObject,
-            string registrationId, 
-            string idScope, 
-            string attestationType, 
-            string operationId, 
-            int retryAfterSeconds, 
+            string registrationId,
+            string idScope,
+            string attestationType,
+            string operationId,
+            int retryAfterSeconds,
             string status) =>
                 WriteEvent(
                     RegisterDeviceId,
                     thisOrContextObject,
-                    registrationId, 
-                    idScope, 
-                    attestationType, 
-                    operationId, 
-                    retryAfterSeconds, 
+                    registrationId,
+                    idScope,
+                    attestationType,
+                    operationId,
+                    retryAfterSeconds,
                     status);
-        
+
         [NonEvent]
         public static void OperationStatusLookup(
             object thisOrContextObject,
@@ -65,18 +66,20 @@ namespace Microsoft.Azure.Devices.Shared
             string status,
             int attempts)
         {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(retryAfter);
-
             if (IsEnabled)
             {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(retryAfter);
+
                 Log.OperationStatusLookup(
-                IdOf(thisOrContextObject),
-                registrationId,
-                operationId,
-                (int)(retryAfter == null ? 0 : retryAfter?.TotalSeconds),
-                status,
-                attempts);
+                    IdOf(thisOrContextObject),
+                    registrationId,
+                    operationId,
+                    retryAfter.HasValue
+                        ? (int)retryAfter.Value.TotalSeconds
+                        : 0,
+                    status,
+                    attempts);
             }
         }
 
