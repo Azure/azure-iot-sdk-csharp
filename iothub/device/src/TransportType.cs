@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         /// <summary>
         /// Advanced Message Queuing Protocol transport.
-        /// Try AMQP over TCP first and fallback to AMQP over WebSocket if that fails
+        /// Try AMQP over TCP first and fall back to AMQP over WebSocket if that fails
         /// </summary>
         Amqp = 0,
 
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Message Queuing Telemetry Transport.
-        /// Try Mqtt over TCP first and fallback to Mqtt over WebSocket if that fails
+        /// Try Mqtt over TCP first and fall back to Mqtt over WebSocket if that fails
         /// </summary>
         Mqtt = 4,
 
