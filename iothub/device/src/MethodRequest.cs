@@ -30,6 +30,10 @@ namespace Microsoft.Azure.Devices.Client
 
         public string Name { get; private set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Performance",
+            "CA1819:Properties should not return arrays",
+            Justification = "Cannot change property types on public classes.")]
         public byte[] Data { get; private set; }
 
         public TimeSpan? ResponseTimeout { get; private set; }

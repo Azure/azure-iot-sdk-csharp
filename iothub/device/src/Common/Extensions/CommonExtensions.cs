@@ -127,9 +127,8 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                     string maskedRemoteIpAddress = string.Empty;
 
                     IPAddress remoteIp = null;
-                    IPAddress.TryParse(remoteIpAddress, out remoteIp);
 
-                    if (null != remoteIp)
+                    if (IPAddress.TryParse(remoteIpAddress, out remoteIp))
                     {
                         byte[] addressBytes = remoteIp.GetAddressBytes();
                         if (remoteIp.AddressFamily == AddressFamily.InterNetwork)
