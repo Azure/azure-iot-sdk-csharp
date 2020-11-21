@@ -317,7 +317,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _amqpUnit.EnableTwinLinksAsync(_operationTimeout).ConfigureAwait(false);
                 await _amqpUnit.SendTwinMessageAsync(AmqpTwinMessageType.Put, Guid.NewGuid().ToString(), null, _operationTimeout).ConfigureAwait(false);
             }
             finally
