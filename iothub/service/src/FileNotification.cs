@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Contains properties for file upload notifications 
+    /// Contains properties for file upload notifications
     /// </summary>
     public class FileNotification
     {
@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices
         public string DeviceId { get; set; }
 
         [JsonProperty(PropertyName = "blobUri", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056: Uri properties should not be strings.", Justification = "Public facing types cannot change as they are considered a breaking change.")]
         public string BlobUri { get; set; }
 
         [JsonProperty(PropertyName = "blobName", DefaultValueHandling = DefaultValueHandling.Ignore)]
