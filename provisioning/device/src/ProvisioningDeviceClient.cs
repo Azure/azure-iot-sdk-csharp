@@ -37,10 +37,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             SecurityProvider securityProvider,
             ProvisioningTransportHandler transport)
         {
-            if (securityProvider is SecurityProviderX509)
+            if (securityProvider is SecurityProviderX509 x509securityProvider)
             {
-                CertificateInstaller.EnsureChainIsInstalled(
-                    ((SecurityProviderX509)securityProvider).GetAuthenticationCertificateChain());
+                CertificateInstaller.EnsureChainIsInstalled(x509securityProvider.GetAuthenticationCertificateChain());
             }
 
             return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, securityProvider, transport);
@@ -57,11 +56,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             _transport = transport;
             _security = securityProvider;
 
-            if (Logging.IsEnabled)
-            {
-                Logging.Associate(this, _security);
-                Logging.Associate(this, _transport);
-            }
+            Logging.Associate(this, _security);
+            Logging.Associate(this, _transport);
         }
 
         /// <summary>
@@ -90,10 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
-            }
+            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
             var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security)
             {
@@ -110,14 +103,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(ProvisioningRegistrationAdditionalData data, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
-            }
+            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
             var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData)
             {
-                ProductInfo = ProductInfo
+                ProductInfo = ProductInfo,
             };
             return _transport.RegisterAsync(request, cancellationToken);
         }
