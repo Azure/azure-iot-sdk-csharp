@@ -31,6 +31,10 @@ namespace Microsoft.Azure.Devices
         /// <returns> An RegistryManager instance. </returns>
         public static RegistryManager CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
         {
+            if (transportSettings == null)
+            {
+                throw new ArgumentNullException(nameof(transportSettings), "The HTTP transport settings cannot be null.");
+            }
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);

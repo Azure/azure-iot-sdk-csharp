@@ -141,6 +141,10 @@ namespace Microsoft.Azure.Devices.Common.Security
 
         public void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)
         {
+            if (sasAuthorizationRule == null)
+            {
+                throw new ArgumentNullException(nameof(sasAuthorizationRule), "The SAS Authorization Rule cannot be null.");
+            }
             if (IsExpired())
             {
                 throw new UnauthorizedAccessException("The specified SAS token has expired.");

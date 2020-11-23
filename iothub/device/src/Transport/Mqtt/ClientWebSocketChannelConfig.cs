@@ -49,7 +49,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return default(T);
         }
 
-        public bool SetOption(ChannelOption option, object value) => option.Set(this, value);
+        public bool SetOption(ChannelOption option, object value) {
+            if (option == null)
+            {
+                throw new ArgumentNullException(nameof(option), "The Channel Option cannot be null.");
+            }
+            return option.Set(this, value);
+        }
+
 
         public bool SetOption<T>(ChannelOption<T> option, T value)
         {
