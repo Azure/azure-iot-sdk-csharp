@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (ex == null)
             {
-                throw new ArgumentNullException(nameof(ex), "The Error property of the Ampq exception is null.");
+                throw new ArgumentNullException(nameof(ex), "The Error property of the AMQP exception is null.");
             }
 
             if (ex.Condition.Equals(AmqpErrorCode.NotFound))
