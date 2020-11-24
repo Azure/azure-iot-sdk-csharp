@@ -53,6 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Queue<string> _completionQueue;
         private readonly MqttIotHubAdapterFactory _mqttIotHubAdapterFactory;
         private readonly QualityOfService _qos;
+        private readonly bool _retainMessagesAcrossSessions;
 
         private readonly object _syncRoot = new object();
         private readonly CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
@@ -162,6 +163,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _deviceboundMessagePrefix = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicPrefix, iotHubConnectionString.DeviceId);
 
             _qos = settings.PublishToServerQoS;
+
+            // If the CleanSession flag is set to false, C2D messages will be retained across device sessions, i.e. the device
+            // will receive the C2D messages that were sent to it while it was disconnected.
+            // If the CleanSession flag is set to true, the device will receive only those C2D messages that were sent
+            // after it had subscribed to the message topic.
+            _retainMessagesAcrossSessions = !settings.CleanSession;
 
             _webProxy = settings.Proxy;
 
@@ -360,14 +367,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     lock (_syncRoot)
                     {
-                        _messageQueue.TryDequeue(out message);
-                        message.LockToken = message.LockToken;
-                        if (_qos == QualityOfService.AtLeastOnce)
+                        if (_messageQueue.TryDequeue(out message))
                         {
-                            _completionQueue.Enqueue(message.LockToken);
-                        }
+                            message.LockToken = message.LockToken;
+                            if (_qos == QualityOfService.AtLeastOnce)
+                            {
+                                _completionQueue.Enqueue(message.LockToken);
+                            }
 
-                        message.LockToken = _generationId + message.LockToken;
+                            message.LockToken = _generationId + message.LockToken;
+                        }
                     }
                 }
 
@@ -553,26 +562,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private async Task HandleIncomingMessagesAsync(Message message)
+        private async Task HandleIncomingMessagesAsync()
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, message, "Process c2d message via callback", nameof(HandleIncomingMessagesAsync));
-            }
-
-            try
-            {
-                using Message receivedMessage = ProcessMessage(message, true);
-                await (_deviceMessageReceivedListener?.Invoke(message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
-            }
-            finally
-            {
-                message.Dispose();
-            }
+            Message message = null;
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, message, "Process c2d message via callback", nameof(HandleIncomingMessagesAsync));
+                Logging.Enter(this, "Process c2d message via callback", nameof(HandleIncomingMessagesAsync));
+            }
+
+            message = ProcessMessage(message, true);
+            await (_deviceMessageReceivedListener?.Invoke(message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+
+            if (Logging.IsEnabled)
+            {
+                Logging.Exit(this, "Process c2d message via callback", nameof(HandleIncomingMessagesAsync));
             }
         }
 
@@ -616,7 +620,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         _messageQueue.Enqueue(message);
                         if (_isDeviceReceiveMessageCallbackSet )
                         {
-                            await HandleIncomingMessagesAsync(message).ConfigureAwait(false);
+                            await HandleIncomingMessagesAsync().ConfigureAwait(false);
                         }
                         else
                         {
@@ -875,7 +879,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 // Wait to grab the semaphore, and then enable c2d message subscription and set _isDeviceReceiveMessageCallbackSet  to true.
-                // Once _isDeviceReceiveMessageCallbackSet  is set to true, all received c2d messages will be returned on the callback,
+                // Once _isDeviceReceiveMessageCallbackSet is set to true, all received c2d messages will be returned on the callback,
                 // and not via the polling ReceiveAsync() call.
                 await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -888,9 +892,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             finally
             {
                 _deviceReceiveMessageSemaphore.Release();
+
                 if (Logging.IsEnabled)
                 {
                     Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+                }
+            }
+        }
+
+        public override async Task EnsurePendingMessagesAreDelivered(CancellationToken cancellationToken)
+        {
+            // If the device connects with a CleanSession flag set to false, we will need to deliver the messages
+            // that were sent before the client had subscribed to the C2D message receive topic.
+            if (_retainMessagesAcrossSessions)
+            {
+                // Received C2D messages are enqueued into _messageQueue.
+                while (!_messageQueue.IsEmpty)
+                {
+                    await HandleIncomingMessagesAsync().ConfigureAwait(false);
                 }
             }
         }
