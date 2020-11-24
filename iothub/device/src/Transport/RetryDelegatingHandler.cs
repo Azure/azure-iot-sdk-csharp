@@ -228,6 +228,44 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
+        // then any message sent while the device was disconnected is delivered on the callback.
+        public override async Task EnsurePendingMessagesAreDelivered(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDelivered));
+
+                await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            // Ensure that the connection has been opened before returning pending messages to the callback.
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                            try
+                            {
+                                // Ensure that a callback for receiving messages has been previously set.
+                                Debug.Assert(_deviceReceiveMessageEnabled);
+                                await base.EnsurePendingMessagesAreDelivered(cancellationToken).ConfigureAwait(false);
+                            }
+                            finally
+                            {
+                                _handlerSemaphore.Release();
+                            }
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(EnsurePendingMessagesAreDelivered));
+            }
+        }
+
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             try
