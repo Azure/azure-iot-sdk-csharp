@@ -106,10 +106,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
         // then any message sent while the device was disconnected is delivered on the callback.
-        public virtual Task EnsurePendingMessagesAreDelivered(CancellationToken cancellationToken)
+        public virtual Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler.EnsurePendingMessagesAreDelivered(cancellationToken);
+            return InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken);
         }
 
         public virtual Task DisableReceiveMessageAsync(CancellationToken cancellationToken)

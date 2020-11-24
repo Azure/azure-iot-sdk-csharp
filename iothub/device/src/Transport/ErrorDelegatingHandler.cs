@@ -48,7 +48,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(timeoutHelper));
         }
 
-
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(cancellationToken));
@@ -66,9 +65,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
         // then any message sent while the device was disconnected is delivered on the callback.
-        public override Task EnsurePendingMessagesAreDelivered(CancellationToken cancellationToken)
+        public override Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.EnsurePendingMessagesAreDelivered(cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.EnsurePendingMessagesAreDeliveredAsync(cancellationToken));
         }
 
         public override Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
@@ -110,8 +109,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinGetAsync(cancellationToken));
         }
-        
-        public override Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
+
+        public override Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken));
         }

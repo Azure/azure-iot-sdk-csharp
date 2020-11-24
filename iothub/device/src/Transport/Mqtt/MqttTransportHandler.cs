@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly ConcurrentQueue<Message> _messageQueue;
 
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
-        private bool _isDeviceReceiveMessageCallbackSet  = false;
+        private bool _isDeviceReceiveMessageCallbackSet = false;
 
         private readonly TaskCompletionSource _connectCompletion = new TaskCompletionSource();
         private readonly TaskCompletionSource _subscribeCompletionSource = new TaskCompletionSource();
@@ -78,6 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         // Topic names for receiving cloud-to-device messages.
         private const string DeviceBoundMessagesTopicFilter = "devices/{0}/messages/devicebound/#";
+
         private const string DeviceBoundMessagesTopicPrefix = "devices/{0}/messages/devicebound/";
 
         // Topic names for retrieving a device's twin properties.
@@ -85,6 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // It then sends an empty message to the topic "$iothub/twin/GET/?$rid={request id}, with a populated value for request ID.
         // The service then sends a response message containing the device twin data on topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request ID as the request.
         private const string TwinResponseTopicFilter = "$iothub/twin/res/#";
+
         private const string TwinResponseTopicPrefix = "$iothub/twin/res/";
         private const string TwinGetTopic = "$iothub/twin/GET/?$rid={0}";
         private const string TwinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
@@ -97,6 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         // Topic names for receiving twin desired property update notifications.
         private const string TwinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
+
         private const string TwinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
 
         // Topic name for responding to direct methods.
@@ -104,11 +107,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The service sends method requests to the topic "$iothub/methods/POST/{method name}/?$rid={request id}".
         // The client responds to the direct method invocation by sending a message to the topic "$iothub/methods/res/{status}/?$rid={request id}", using the same request ID as the request.
         private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
+
         private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
         // Topic names for enabling events on Modules.
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
+
         private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
@@ -268,7 +273,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (_isDeviceReceiveMessageCallbackSet )
+            if (_isDeviceReceiveMessageCallbackSet)
             {
                 if (Logging.IsEnabled)
                 {
@@ -314,7 +319,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            if (_isDeviceReceiveMessageCallbackSet )
+            if (_isDeviceReceiveMessageCallbackSet)
             {
                 if (Logging.IsEnabled)
                 {
@@ -369,7 +374,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         if (_messageQueue.TryDequeue(out message))
                         {
-                            message.LockToken = message.LockToken;
                             if (_qos == QualityOfService.AtLeastOnce)
                             {
                                 _completionQueue.Enqueue(message.LockToken);
@@ -618,7 +622,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     else if (topic.StartsWith(_deviceboundMessagePrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         _messageQueue.Enqueue(message);
-                        if (_isDeviceReceiveMessageCallbackSet )
+                        if (_isDeviceReceiveMessageCallbackSet)
                         {
                             await HandleIncomingMessagesAsync().ConfigureAwait(false);
                         }
@@ -887,7 +891,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(false);
                 }
-                _isDeviceReceiveMessageCallbackSet  = true;
+                _isDeviceReceiveMessageCallbackSet = true;
             }
             finally
             {
@@ -900,7 +904,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task EnsurePendingMessagesAreDelivered(CancellationToken cancellationToken)
+        public override async Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
         {
             // If the device connects with a CleanSession flag set to false, we will need to deliver the messages
             // that were sent before the client had subscribed to the C2D message receive topic.
@@ -940,7 +944,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         await _channel.WriteAsync(new UnsubscribePacket(0, _deviceboundMessageFilter)).ConfigureAwait(true);
                     }
                 }
-                _isDeviceReceiveMessageCallbackSet  = false;
+                _isDeviceReceiveMessageCallbackSet = false;
             }
             finally
             {

@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
         // then any message sent while the device was disconnected is delivered on the callback.
-        Task EnsurePendingMessagesAreDelivered(CancellationToken cancellationToken);
+        Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken);
 
         Task DisableReceiveMessageAsync(CancellationToken cancellationToken);
 
