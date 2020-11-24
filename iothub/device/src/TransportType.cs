@@ -6,11 +6,15 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Transport types supported by DeviceClient - AMQP/TCP, HTTP 1.1, MQTT/TCP, AMQP/WS, MQTT/WS
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Naming",
+        "CA1707:Identifiers should not contain underscores",
+        Justification = "Public facing types cannot be renamed. This is considered a breaking change")]
     public enum TransportType
     {
         /// <summary>
         /// Advanced Message Queuing Protocol transport.
-        /// Try Amqp over TCP first and fallback to Amqp over WebSocket if that fails
+        /// Try AMQP over TCP first and fallback to AMQP over WebSocket if that fails
         /// </summary>
         Amqp = 0,
 

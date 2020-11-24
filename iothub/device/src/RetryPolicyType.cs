@@ -6,6 +6,10 @@ namespace Microsoft.Azure.Devices.Client
     /// Retry Strategy types supported by DeviceClient
     /// </summary>
     [Obsolete("This enum has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Naming",
+        "CA1707:Identifiers should not contain underscores",
+        Justification = "Public facing types cannot be renamed. This is considered a breaking change")]
     public enum RetryPolicyType
     {
         /// <summary>

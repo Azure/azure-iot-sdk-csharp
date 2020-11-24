@@ -446,7 +446,7 @@ namespace Microsoft.Azure.Devices.Client
 
                     if (elementType == null)
                     {
-                        throw Fx.Exception.ArgumentNull("elementType");
+                        throw Fx.Exception.ArgumentNull(nameof(elementType));
                     }
 
                     ElementType = elementType;
@@ -470,13 +470,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     Scope = Strings.DeclaringInstance;
                     SizeLimit = Strings.Unbounded;
-
-                    if (elementType == null)
-                    {
-                        throw Fx.Exception.ArgumentNull("elementType");
-                    }
-
-                    ElementType = elementType;
+                    ElementType = elementType ?? throw Fx.Exception.ArgumentNull(nameof(elementType));
                 }
 
                 public Type ElementType { get; private set; }

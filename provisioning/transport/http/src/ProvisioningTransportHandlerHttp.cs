@@ -42,10 +42,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-            {
-                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(RegisterAsync)}");
-            }
+            Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(RegisterAsync)}");
 
             if (message == null)
             {
@@ -58,41 +55,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 HttpAuthStrategy authStrategy;
 
-                if (message.Security is SecurityProviderTpm)
+                switch (message.Security)
                 {
-                    authStrategy = new HttpAuthStrategyTpm((SecurityProviderTpm)message.Security);
-                }
-                else if (message.Security is SecurityProviderX509)
-                {
-                    authStrategy = new HttpAuthStrategyX509((SecurityProviderX509)message.Security);
-                }
-                else if (message.Security is SecurityProviderSymmetricKey)
-                {
-                    authStrategy = new HttpAuthStrategySymmetricKey((SecurityProviderSymmetricKey)message.Security);
-                }
-                else
-                {
-                    if (Logging.IsEnabled)
-                    {
+                    case SecurityProviderTpm _:
+                        authStrategy = new HttpAuthStrategyTpm((SecurityProviderTpm)message.Security);
+                        break;
+
+                    case SecurityProviderX509 _:
+                        authStrategy = new HttpAuthStrategyX509((SecurityProviderX509)message.Security);
+                        break;
+
+                    case SecurityProviderSymmetricKey _:
+                        authStrategy = new HttpAuthStrategySymmetricKey((SecurityProviderSymmetricKey)message.Security);
+                        break;
+
+                    default:
                         Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
-                    }
 
-                    throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)}, " +
-                        $"{nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
+                        throw new NotSupportedException(
+                            $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)}, {nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
                 }
 
-                if (Logging.IsEnabled)
-                {
-                    Logging.Associate(authStrategy, this);
-                }
-
-                var builder = new UriBuilder
-                {
-                    Scheme = Uri.UriSchemeHttps,
-                    Host = message.GlobalDeviceEndpoint,
-                    Port = Port,
-                };
+                Logging.Associate(authStrategy, this);
 
                 var httpClientHandler = new HttpClientHandler
                 {
@@ -105,40 +89,41 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 if (Proxy != DefaultWebProxySettings.Instance)
                 {
-                    httpClientHandler.UseProxy = (Proxy != null);
+                    httpClientHandler.UseProxy = Proxy != null;
                     httpClientHandler.Proxy = Proxy;
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.Info(this, $"{nameof(RegisterAsync)} Setting HttpClientHandler.Proxy");
-                    }
+                    Logging.Info(this, $"{nameof(RegisterAsync)} Setting HttpClientHandler.Proxy");
                 }
+
+                var builder = new UriBuilder
+                {
+                    Scheme = Uri.UriSchemeHttps,
+                    Host = message.GlobalDeviceEndpoint,
+                    Port = Port,
+                };
 
                 DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri, httpClientHandler);
                 client.HttpClient.DefaultRequestHeaders.Add("User-Agent", message.ProductInfo);
-                if (Logging.IsEnabled)
-                {
-                    Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
-                }
+                Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
 
                 DeviceRegistration deviceRegistration = authStrategy.CreateDeviceRegistration();
-                if (message.Payload != null && message.Payload.Length > 0)
+                if (message.Payload != null
+                    && message.Payload.Length > 0)
                 {
                     deviceRegistration.Payload = new JRaw(message.Payload);
                 }
                 string registrationId = message.Security.GetRegistrationID();
 
-                RegistrationOperationStatus operation =
-                    await client.RuntimeRegistration.RegisterDeviceAsync(
+                RegistrationOperationStatus operation = await client.RuntimeRegistration
+                    .RegisterDeviceAsync(
                         registrationId,
                         message.IdScope,
-                        deviceRegistration).ConfigureAwait(false);
+                        deviceRegistration)
+                    .ConfigureAwait(false);
 
                 int attempts = 0;
                 string operationId = operation.OperationId;
 
-                if (Logging.IsEnabled)
-                {
-                    Logging.RegisterDevice(
+                Logging.RegisterDevice(
                     this,
                     registrationId,
                     message.IdScope,
@@ -146,89 +131,83 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     operation.OperationId,
                     operation.RetryAfter,
                     operation.Status);
-                }
 
                 // Poll with operationId until registration complete.
-                while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0 ||
-                       string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
+                while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0
+                    || string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     TimeSpan? serviceRecommendedDelay = operation.RetryAfter;
-                    if (serviceRecommendedDelay != null && serviceRecommendedDelay?.TotalSeconds < s_defaultOperationPoolingIntervalMilliseconds.TotalSeconds)
+                    if (serviceRecommendedDelay != null
+                        && serviceRecommendedDelay?.TotalSeconds < s_defaultOperationPoolingIntervalMilliseconds.TotalSeconds)
                     {
-                        if (Logging.IsEnabled)
-                        {
-                            Logging.Error(this, $"Service recommended unexpected retryAfter of {operation.RetryAfter?.TotalSeconds}, defaulting to delay of {s_defaultOperationPoolingIntervalMilliseconds.ToString()}", nameof(RegisterAsync));
-                        }
+                        Logging.Error(this, $"Service recommended unexpected retryAfter of {operation.RetryAfter?.TotalSeconds}, defaulting to delay of {s_defaultOperationPoolingIntervalMilliseconds.ToString()}", nameof(RegisterAsync));
 
                         serviceRecommendedDelay = s_defaultOperationPoolingIntervalMilliseconds;
                     }
 
-                    await Task.Delay(serviceRecommendedDelay ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingIntervalMilliseconds)).ConfigureAwait(false);
+                    await Task
+                        .Delay(serviceRecommendedDelay ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingIntervalMilliseconds))
+                        .ConfigureAwait(false);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
                     try
                     {
-                        operation = await client.RuntimeRegistration.OperationStatusLookupAsync(
-                        registrationId,
-                        operationId,
-                        message.IdScope).ConfigureAwait(false);
+                        operation = await client
+                            .RuntimeRegistration.OperationStatusLookupAsync(
+                                registrationId,
+                                operationId,
+                                message.IdScope)
+                            .ConfigureAwait(false);
                     }
-                    catch(HttpOperationException oe)
+                    catch (HttpOperationException ex)
                     {
-                        bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError
-                            || (int)oe.Response.StatusCode == 429;
+                        bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
+                            || (int)ex.Response.StatusCode == 429;
+
                         try
                         {
-                            var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(oe.Response.Content);
+                            var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
+
                             if (isTransient)
                             {
                                 serviceRecommendedDelay = errorDetails.RetryAfter;
                             }
                             else
                             {
-                                if (Logging.IsEnabled)
-                                {
-                                    Logging.Error(
+                                Logging.Error(
                                    this,
-                                   $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {oe}",
+                                   $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}",
                                    nameof(RegisterAsync));
-                                }
 
-                                throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
+                                throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient, errorDetails);
                             }
                         }
-                        catch (JsonException ex)
+                        catch (JsonException jex)
                         {
-                            if (Logging.IsEnabled)
-                            {
-                                Logging.Error(
+                            Logging.Error(
                                 this,
                                 $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response." +
-                                $"Parsing error: {ex}. Server response: {oe.Response.Content}",
+                                $"Parsing error: {jex}. Server response: {ex.Response.Content}",
                                 nameof(RegisterAsync));
-                            }
 
                             throw new ProvisioningTransportException(
-                                $"HTTP transport exception: malformed server error message: '{oe.Response.Content}'",
-                                ex,
+                                $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
+                                jex,
                                 false);
                         }
                     }
 
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.OperationStatusLookup(
+                    Logging.OperationStatusLookup(
                         this,
                         registrationId,
                         operation.OperationId,
                         operation.RetryAfter,
                         operation.Status,
                         attempts);
-                    }
 
-                    attempts++;
+                    ++attempts;
                 }
 
                 if (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigned) == 0)
@@ -238,69 +217,53 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
-            catch (HttpOperationException oe)
+            catch (HttpOperationException ex)
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Error(
+                Logging.Error(
                    this,
-                   $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {oe}",
+                   $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}",
                    nameof(RegisterAsync));
-                }
 
-                bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError
-                    || (int)oe.Response.StatusCode == 429;
+                bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
+                    || (int)ex.Response.StatusCode == 429;
 
                 try
                 {
-                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(oe.Response.Content);
-                    throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
+                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
+                    throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient, errorDetails);
                 }
-                catch (JsonException ex)
+                catch (JsonException jex)
                 {
-                    if (Logging.IsEnabled)
-                    {
-                        Logging.Error(
+                    Logging.Error(
                         this,
-                        $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response." +
-                        $"Parsing error: {ex}. Server response: {oe.Response.Content}",
+                        $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
                         nameof(RegisterAsync));
-                    }
 
                     throw new ProvisioningTransportException(
-                        $"HTTP transport exception: malformed server error message: '{oe.Response.Content}'",
-                        ex,
+                        $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
+                        jex,
                         false);
                 }
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Error(
+                Logging.Error(
                     this,
                     $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}",
                     nameof(RegisterAsync));
-                }
 
                 throw new ProvisioningTransportException($"HTTP transport exception", ex, true);
             }
             finally
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(RegisterAsync)}");
-                }
+                Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(RegisterAsync)}");
             }
         }
 
         private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
         {
-            var status = ProvisioningRegistrationStatusType.Failed;
-            Enum.TryParse(result.Status, true, out status);
-
-            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
-            Enum.TryParse(result.Substatus, true, out substatus);
+            Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
+            Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
 
             return new DeviceRegistrationResult(
                 result.RegistrationId,
