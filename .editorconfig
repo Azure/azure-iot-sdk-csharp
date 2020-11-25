@@ -298,3 +298,28 @@ dotnet_naming_style.end_in_async.required_prefix =
 dotnet_naming_style.end_in_async.required_suffix = Async
 dotnet_naming_style.end_in_async.capitalization = pascal_case
 dotnet_naming_style.end_in_async.word_separator = 
+
+# Exclude extension method 'this' parameter
+#
+# For all methods the default behaivor of the analyzer is to check to see if any argument is being 
+# used without a null check (this is good). However, for extension methods, this means that 
+# the "this" argument to the extension method is checked alongside of the other arguments.
+#
+# This is not great behavior as an extension method should behave like an instance method and we should
+# allow a NullRefException be generated if we attempt to access the "this" object.
+#
+# This flag ignores all of the "this" arguments but still reports the others.
+dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = true
+
+
+# All of these severity changes below were because of an upgrade to the 3.3.1 analyzers which turned them
+# from warnings to errors. As we fix these warnings we should remove these lines to allow the default behaivor
+# and break the build.
+# CA2016: Forward the 'CancellationToken' parameter to methods that take one
+dotnet_diagnostic.CA2016.severity = warning
+# CA1805: Do not initialize unnecessarily
+dotnet_diagnostic.CA1805.severity = warning
+# CA1834: Consider using 'StringBuilder.Append(char)' when applicable
+dotnet_diagnostic.CA1834.severity = warning
+# CA2000: Dispose objects before losing scope
+dotnet_diagnostic.CA2000.severity = warning

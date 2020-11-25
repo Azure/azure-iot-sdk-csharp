@@ -18,6 +18,10 @@ namespace Microsoft.Azure.Devices.Common.Extensions
 
         public static TValue GetValueOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> valueProvider)
         {
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider), "The value provider function cannot be null.");
+            }
             TValue value;
             if (!dictionary.TryGetValue(key, out value))
             {
@@ -43,6 +47,10 @@ namespace Microsoft.Azure.Devices.Common.Extensions
             Func<TKey, TValue> valueFactory)
             where TValue : class
         {
+            if (valueFactory == null)
+            {
+                throw new ArgumentNullException(nameof(valueFactory), "The value factory function cannot be null.");
+            }
             TValue value;
             if (dictionary.TryGetValue(key, out value))
             {

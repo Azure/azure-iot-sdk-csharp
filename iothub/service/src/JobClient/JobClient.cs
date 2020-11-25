@@ -31,6 +31,10 @@ namespace Microsoft.Azure.Devices
         /// <returns> A JobClient instance. </returns>
         public static JobClient CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
         {
+            if (transportSettings == null)
+            {
+                throw new ArgumentNullException(nameof(transportSettings), "HTTP Transport settings cannot be null.");
+            }
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);

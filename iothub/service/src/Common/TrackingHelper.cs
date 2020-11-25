@@ -155,6 +155,11 @@ namespace Microsoft.Azure.Devices.Common
 
         public static ErrorCode GetErrorCodeFromAmqpError(Error ex)
         {
+            if (ex == null)
+            {
+                throw new ArgumentNullException(nameof(ex), "The Error property of the AMQP exception is null.");
+            }
+
             if (ex.Condition.Equals(AmqpErrorCode.NotFound))
             {
                 return ErrorCode.DeviceNotFound;
