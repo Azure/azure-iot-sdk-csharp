@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.Client
         private readonly int _timeBufferPercentage;
 
         private int _bufferSeconds;
-        private SemaphoreSlim _lock = new SemaphoreSlim(1);
-        private string _token = null;
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
+        private string _token;
 
         /// <summary>
         /// Gets a snapshot of the UTC token expiry time.
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
 
-                SharedAccessSignature sas = SharedAccessSignature.Parse(".", _token);
+                var sas = SharedAccessSignature.Parse(".", _token);
                 ExpiresOn = sas.ExpiresOn;
                 UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
 

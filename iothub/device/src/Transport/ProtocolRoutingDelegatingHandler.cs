@@ -21,10 +21,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <summary>
         /// After we've verified that we could open the transport for any operation, we will stop attempting others in the list.
         /// </summary>
-        private bool _transportSelectionComplete = false;
-        private int _nextTransportIndex = 0;
+        private bool _transportSelectionComplete;
+        private int _nextTransportIndex;
 
-        private SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
 
         public ProtocolRoutingDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler) :
             base(context, innerHandler)
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 // Try next protocol if we're still searching.
 
-                ITransportSettings[] transportSettingsArray = this.Context.Get<ITransportSettings[]>();
+                ITransportSettings[] transportSettingsArray = Context.Get<ITransportSettings[]>();
                 Debug.Assert(transportSettingsArray != null);
 
                 // Keep cycling through all transports until we find one that works.

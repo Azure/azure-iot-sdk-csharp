@@ -128,17 +128,17 @@ namespace Microsoft.Azure.Devices.Client
         private volatile ConnectionStatusChangesHandler _connectionStatusChangesHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
-        private int _currentMessageCount = 0;
+        private int _currentMessageCount;
 
-        private int _diagnosticSamplingPercentage = 0;
+        private int _diagnosticSamplingPercentage;
 
         private ConnectionStatus _lastConnectionStatus = ConnectionStatus.Disconnected;
         private ConnectionStatusChangeReason _lastConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close;
 
         private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
 
-        private bool _twinPatchSubscribedWithService = false;
-        private object _twinPatchCallbackContext = null;
+        private bool _twinPatchSubscribedWithService;
+        private object _twinPatchCallbackContext;
 
         // Callback to call whenever the twin's desired state is updated by the service.
         internal DesiredPropertyUpdateCallback _desiredPropertyUpdateCallback;
@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        internal IotHubConnectionString IotHubConnectionString { get; private set; } = null;
+        internal IotHubConnectionString IotHubConnectionString { get; private set; }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
@@ -1464,7 +1464,8 @@ namespace Microsoft.Azure.Devices.Client
                 callbackContextTuple = _deviceReceiveMessageCallback;
                 _deviceReceiveMessageSemaphore.Release();
 
-                await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+                await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2)
+                    ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
             }
             finally
             {

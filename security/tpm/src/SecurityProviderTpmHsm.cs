@@ -13,23 +13,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
     /// </summary>
     public class SecurityProviderTpmHsm : SecurityProviderTpm
     {
-        private bool _disposed = false;
+        private bool _disposed;
 
         private const uint TPM_20_SRK_HANDLE = ((uint)Ht.Persistent << 24) | 0x00000001;
         private const uint TPM_20_EK_HANDLE = ((uint)Ht.Persistent << 24) | 0x00010001;
         private const uint AIOTH_PERSISTED_URI_INDEX = ((uint)Ht.NvIndex << 24) | 0x00400100;
         private const uint AIOTH_PERSISTED_KEY_HANDLE = ((uint)Ht.Persistent << 24) | 0x00000100;
 
-        private Tpm2Device _tpmDevice = null;
-        private Tpm2 _tpm2 = null;
+        private Tpm2Device _tpmDevice;
+        private Tpm2 _tpm2;
 
         // TPM identity cache
-        private TpmPublic _ekPub = null;
+        private TpmPublic _ekPub;
 
-        private TpmPublic _srkPub = null;
-        private TpmPublic _idKeyPub = null;
+        private TpmPublic _srkPub;
+        private TpmPublic _idKeyPub;
         private TpmHandle _idKeyHandle = TpmHandle.RhNull;
-        private byte[] _activationSecret = null;
+        private byte[] _activationSecret;
 
         /// <summary>
         /// Initializes a new instance of the SecurityProviderTpmHsm class using the system TPM.
@@ -95,9 +95,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                 {
                     Logging.Error(null, $"TPM not supported on {RuntimeInformation.OSDescription}");
                 }
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
+
                 throw new PlatformNotSupportedException("The library doesn't support the current OS platform.");
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
             }
         }
 
@@ -122,7 +121,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             TpmPrivate dupBlob = m.Get<TpmPrivate>();
             byte[] encWrapKey = new byte[m.Get<ushort>()];
             encWrapKey = m.GetArray<byte>(encWrapKey.Length, "encWrapKey");
-            UInt16 pubSize = m.Get<UInt16>();
+            ushort pubSize = m.Get<ushort>();
             _idKeyPub = m.Get<TpmPublic>();
             byte[] cipherText = new byte[m.Get<ushort>()];
             cipherText = m.GetArray<byte>(cipherText.Length, "uriInfo");
@@ -153,7 +152,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             _idKeyHandle = _tpm2.Load(new TpmHandle(TPM_20_SRK_HANDLE), importedKeyBlob, _idKeyPub);
 
             // Persist the key in NV
-            TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
+            var hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
             _tpm2.EvictControl(new TpmHandle(TpmRh.Owner), _idKeyHandle, hmacKeyHandle);
 
             // Unload the transient copy from the TPM
@@ -229,14 +228,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                 while (data.Length > dataIndex + 1024)
                 {
                     // Repeat to update the HMAC until we only have <=1024 bytes left.
-                    iterationBuffer = new Byte[1024];
+                    iterationBuffer = new byte[1024];
                     Array.Copy(data, dataIndex, iterationBuffer, 0, 1024);
                     _tpm2.SequenceUpdate(hmacHandle, iterationBuffer);
                     dataIndex += 1024;
                 }
 
                 // Finalize the HMAC with the remainder of the data.
-                iterationBuffer = new Byte[data.Length - dataIndex];
+                iterationBuffer = new byte[data.Length - dataIndex];
                 Array.Copy(data, dataIndex, iterationBuffer, 0, data.Length - dataIndex);
                 result = _tpm2.SequenceComplete(hmacHandle, iterationBuffer, TpmHandle.RhNull, out TkHashcheck nullChk);
             }
@@ -332,12 +331,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                     new NullAsymScheme(),
                     2048,
                     0),
-                new Tpm2bPublicKeyRsa(new Byte[2048 / 8]));
+                new Tpm2bPublicKeyRsa(new byte[2048 / 8]));
 
             _ekPub = ReadOrCreatePersistedKey(new TpmHandle(TPM_20_EK_HANDLE), new TpmHandle(TpmHandle.RhEndorsement), ekTemplate);
 
             // Get the real SRK ready.
-            TpmPublic srkTemplate = new TpmPublic(
+            var srkTemplate = new TpmPublic(
                 TpmAlgId.Sha256,
                 ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin |
                 ObjectAttr.UserWithAuth | ObjectAttr.NoDA | ObjectAttr.Restricted | ObjectAttr.Decrypt,
@@ -347,7 +346,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                     new NullAsymScheme(),
                     2048,
                     0),
-                    new Tpm2bPublicKeyRsa(new Byte[2048 / 8]));
+                    new Tpm2bPublicKeyRsa(new byte[2048 / 8]));
 
             _srkPub = ReadOrCreatePersistedKey(new TpmHandle(TPM_20_SRK_HANDLE), new TpmHandle(TpmHandle.RhOwner), srkTemplate);
 
@@ -359,27 +358,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
 
         private TpmPublic ReadOrCreatePersistedKey(TpmHandle persHandle, TpmHandle hierarchy, TpmPublic template)
         {
-            byte[] name;
-            byte[] qualifiedName;
-
             // Let's see if the key was already created and installed.
-            TpmPublic keyPub = _tpm2._AllowErrors().ReadPublic(persHandle, out name, out qualifiedName);
+            TpmPublic keyPub = _tpm2._AllowErrors().ReadPublic(persHandle, out _, out _);
 
             // If not create and install it.
             if (!_tpm2._LastCommandSucceeded())
             {
-                CreationData creationData;
-                byte[] creationHash;
-                TkCreation creationTicket;
                 TpmHandle keyHandle = _tpm2.CreatePrimary(hierarchy,
                     new SensitiveCreate(),
                     template,
                     Array.Empty<byte>(),
                     Array.Empty<PcrSelection>(),
                     out keyPub,
-                    out creationData,
-                    out creationHash,
-                    out creationTicket);
+                    out _,
+                    out _,
+                    creationTicket: out _);
                 _tpm2.EvictControl(TpmHandle.RhOwner, keyHandle, persHandle);
                 _tpm2.FlushContext(keyHandle);
             }
