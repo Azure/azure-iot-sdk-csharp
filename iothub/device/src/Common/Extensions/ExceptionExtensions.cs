@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                     // PrepForRemoting is not thread-safe. When the same exception instance is thrown by multiple threads
                     // the remote stack trace string may not format correctly. However, We don't lock this to protect us from it given
                     // it is discouraged to throw the same exception instance from multiple threads and the side impact is ignorable.
-                    _ = prepForRemotingMethodInfo.Invoke(exception, new object[] { });
+                    prepForRemotingMethodInfo.Invoke(exception, new object[] { });
                 }
             }
 
