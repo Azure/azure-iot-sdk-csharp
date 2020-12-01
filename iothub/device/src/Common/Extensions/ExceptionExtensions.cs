@@ -50,10 +50,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             return exception.Unwind().OfType<TException>();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Performance",
-            "CA1825:Avoid zero-length array allocations",
-            Justification = "net451 does not support Array.Empty<T>")]
         public static Exception PrepareForRethrow(this Exception exception)
         {
             Fx.Assert(exception != null, "The specified Exception is null.");
@@ -68,6 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 // Racing here is harmless
                 if (prepForRemotingMethodInfo == null)
                 {
+#if NET451
                     prepForRemotingMethodInfo =
                         typeof(Exception).GetMethod(
                             "PrepForRemoting",
@@ -75,13 +72,27 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                             null,
                             new Type[] { },
                             new ParameterModifier[] { });
+#else
+                    prepForRemotingMethodInfo =
+                        typeof(Exception).GetMethod(
+                            "PrepForRemoting",
+                            BindingFlags.Instance | BindingFlags.NonPublic,
+                            null,
+                            Array.Empty<Type>(),
+                            Array.Empty<ParameterModifier>());
+#endif
                 }
+
                 if (prepForRemotingMethodInfo != null)
                 {
                     // PrepForRemoting is not thread-safe. When the same exception instance is thrown by multiple threads
                     // the remote stack trace string may not format correctly. However, We don't lock this to protect us from it given
                     // it is discouraged to throw the same exception instance from multiple threads and the side impact is ignorable.
+#if NET451
                     prepForRemotingMethodInfo.Invoke(exception, new object[] { });
+#else
+                    prepForRemotingMethodInfo.Invoke(exception, Array.Empty<object>());
+#endif
                 }
             }
 
