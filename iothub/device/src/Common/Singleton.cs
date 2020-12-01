@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
@@ -11,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     internal abstract class Singleton<TValue> : IDisposable where TValue : class
     {
         private readonly object _syncLock;
-        
+
         private TaskCompletionSource<TValue> _taskCompletionSource;
         private volatile bool _isDisposed;
 
@@ -39,6 +40,7 @@ namespace Microsoft.Azure.Devices.Client
             return GetOrCreateAsync(timeout, cancellationToken);
         }
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Leaving as is since cancellation token does not stop other tasks and would cause the resource to not be disposed.")]
         public Task CloseAsync(CancellationToken cancellationToken)
         {
             Dispose();

@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     using System;
-
+    using System.Diagnostics.CodeAnalysis;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;
     using Microsoft.Azure.Devices.Common;
@@ -78,12 +78,14 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             return ToAmqpException(exception, gatewayId, false);
         }
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is to preserve the API.")]
         public static AmqpException ToAmqpException(Exception exception, string gatewayId, bool includeStackTrace)
         {
             Error amqpError = ToAmqpError(exception, includeStackTrace);
             return new AmqpException(amqpError);
         }
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is to preserve the API.")]
         public static Error ToAmqpError(Exception exception, string gatewayId)
         {
             return ToAmqpError(exception, false);

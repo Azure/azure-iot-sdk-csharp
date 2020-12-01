@@ -763,6 +763,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task OpenAsyncInternalAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (IsProxyConfigured())
             {
                 //No need to do a DNS lookup since we have the proxy address already

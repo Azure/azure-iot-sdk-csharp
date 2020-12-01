@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
@@ -46,6 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return message;
         }
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is.")]
         public static AmqpMessage MessageToAmqpMessage(Message message, bool setBodyCalled = true)
         {
             if (message == null)
@@ -272,6 +274,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         #region AmqpMessage <--> Methods
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is.")]
         public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal, bool setBodyCalled = true)
         {
             methodResponseInternal.ThrowIfDisposed();

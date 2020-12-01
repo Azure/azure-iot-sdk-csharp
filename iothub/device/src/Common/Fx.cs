@@ -229,6 +229,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of a DEBUG compilation flag.")]
         private static bool TryGetDebugSwitch(string name, out object value)
         {
 #if !NET451

@@ -209,6 +209,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is to preserve the API.")]
         public async Task<int> ReceiveAsync(byte[] buffer, int offset, int size, TimeSpan timeout)
         {
             byte[] header = new byte[2];

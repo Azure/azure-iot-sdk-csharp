@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Api.Test.JobClient
         public void Setup()
         {
             httpClientHelperMock = new Mock<IHttpClientHelper>();
-            jobClient = new HttpJobClient(httpClientHelperMock.Object, iotHubName);
+            jobClient = new HttpJobClient(httpClientHelperMock.Object);
         }
 
         private void NoExtraJobParamTestSetup(JobType jobType, CancellationToken cancellationToken)
