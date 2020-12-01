@@ -117,16 +117,19 @@ namespace Microsoft.Azure.Devices.Client
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
+
         private volatile Tuple<MessageHandler, object> _defaultEventCallback;
 
         // Stores methods supported by the client device and their associated delegate.
         private volatile Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods;
+
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
         private volatile ConnectionStatusChangesHandler _connectionStatusChangesHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount = 0;
+
         private int _diagnosticSamplingPercentage = 0;
 
         private ConnectionStatus _lastConnectionStatus = ConnectionStatus.Disconnected;
@@ -1391,6 +1394,12 @@ namespace Microsoft.Azure.Devices.Client
                 try
                 {
                     _deviceReceiveMessageSemaphore.Release();
+
+                    if (_deviceReceiveMessageCallback != null)
+                    {
+                        // Any previously received C2D messages will also need to be delivered.
+                        await InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (SemaphoreFullException)
                 {

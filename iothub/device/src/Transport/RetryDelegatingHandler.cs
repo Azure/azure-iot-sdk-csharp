@@ -7,6 +7,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -225,6 +226,44 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+            }
+        }
+
+        // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
+        // then any message sent while the device was disconnected is delivered on the callback.
+        public override async Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
+
+                await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            // Ensure that the connection has been opened before returning pending messages to the callback.
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
+                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                            try
+                            {
+                                // Ensure that a callback for receiving messages has been previously set.
+                                Debug.Assert(_deviceReceiveMessageEnabled);
+                                await base.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                            }
+                            finally
+                            {
+                                _handlerSemaphore.Release();
+                            }
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
             }
         }
 
@@ -812,31 +851,41 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                    var tasks = new List<Task>(3);
+                    var tasks = new List<Task>(4);
 
+                    // This is to ensure that, if previously enabled, the callback to receive direct methods is recovered.
                     if (_methodsEnabled)
                     {
                         tasks.Add(base.EnableMethodsAsync(cancellationToken));
                     }
 
+                    // This is to ensure that, if previously enabled, the callback to receive twin properties is recovered.
                     if (_twinEnabled)
                     {
                         tasks.Add(base.EnableTwinPatchAsync(cancellationToken));
                     }
 
+                    // This is to ensure that, if previously enabled, the callback to receive events for modules is recovered.
                     if (_eventsEnabled)
                     {
                         tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
                     }
 
+                    // This is to ensure that, if previously enabled, the callback to receive C2D messages is recovered.
                     if (_deviceReceiveMessageEnabled)
                     {
                         tasks.Add(base.EnableReceiveMessageAsync(cancellationToken));
                     }
 
-                    if (tasks.Count > 0)
+                    if (tasks.Any())
                     {
                         await Task.WhenAll(tasks).ConfigureAwait(false);
+                    }
+
+                    // Don't check for unhandled C2D messages until the callback (EnableReceiveMessageAsync) is hooked up.
+                    if (_deviceReceiveMessageEnabled)
+                    {
+                        await base.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
                     }
 
                     // Send the request for transport close notification.
