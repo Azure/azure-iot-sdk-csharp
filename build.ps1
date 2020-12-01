@@ -120,7 +120,7 @@ Function BuildProject($path, $message)
         }
     }
 
-    & dotnet build $projectPath --verbosity $verbosity --configuration $configuration -logger:"C:\Users\jamdavi\source\repos\BasicFileLogger\BasicFileLogger\bin\Debug\BasicFileLogger.dll;out.log;CA1801"
+    & dotnet build $projectPath --verbosity $verbosity --configuration $configuration
 
     if ($LASTEXITCODE -ne 0)
     {
