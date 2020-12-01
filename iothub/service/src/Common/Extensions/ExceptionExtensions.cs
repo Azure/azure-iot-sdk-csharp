@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Reflection;
-
-    using Microsoft.Azure.Devices.Common.Exceptions;
-
     public static class ExceptionExtensions
     {
         private const string ExceptionIdentifierName = "ExceptionId";
@@ -40,6 +38,10 @@ namespace Microsoft.Azure.Devices.Common
             return exception.Unwind().OfType<TException>();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Performance",
+            "CA1825:Avoid zero-length array allocations",
+            Justification = "net451 does not support Array.Empty<T>")]
         public static Exception PrepareForRethrow(this Exception exception)
         {
             Fx.Assert(exception != null, "The specified Exception is null.");
@@ -52,13 +54,18 @@ namespace Microsoft.Azure.Devices.Common
             if (PartialTrustHelpers.UnsafeIsInFullTrust())
             {
                 // Racing here is harmless
-                if (ExceptionExtensions.prepForRemotingMethodInfo == null)
+                if (prepForRemotingMethodInfo == null)
                 {
-                    ExceptionExtensions.prepForRemotingMethodInfo =
-                        typeof(Exception).GetMethod("PrepForRemoting", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { }, new ParameterModifier[] { });
+                    prepForRemotingMethodInfo =
+                        typeof(Exception).GetMethod(
+                            "PrepForRemoting",
+                            BindingFlags.Instance | BindingFlags.NonPublic,
+                            null,
+                            new Type[] { },
+                            new ParameterModifier[] { });
                 }
 
-                if (ExceptionExtensions.prepForRemotingMethodInfo != null)
+                if (prepForRemotingMethodInfo != null)
                 {
                     // PrepForRemoting is not thread-safe. When the same exception instance is thrown by multiple threads
                     // the remote stack trace string may not format correctly. However, We don't lock this to protect us from it given
@@ -130,7 +137,7 @@ namespace Microsoft.Azure.Devices.Common
 
         public static bool CheckIotHubErrorCode(this Exception ex, params ErrorCode[] errorCodeList)
         {
-            foreach (var errorCode in errorCodeList)
+            foreach (ErrorCode errorCode in errorCodeList)
             {
                 if (ex is IotHubException && ((IotHubException)ex).Code == errorCode)
                 {
