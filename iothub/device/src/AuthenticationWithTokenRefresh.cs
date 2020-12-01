@@ -12,14 +12,15 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a shared access signature token and allows for token refresh.
     /// </summary>
-    public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod
+    public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod, IDisposable
     {
         private readonly int _suggestedTimeToLiveSeconds;
         private readonly int _timeBufferPercentage;
 
         private int _bufferSeconds;
-        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
+        private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private string _token;
+        private bool _isDisposed;
 
         /// <summary>
         /// Gets a snapshot of the UTC token expiry time.
@@ -133,6 +134,33 @@ namespace Microsoft.Azure.Devices.Client
         private void UpdateTimeBufferSeconds(int ttl)
         {
             _bufferSeconds = (int)(ttl * ((float)_timeBufferPercentage / 100));
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _lock?.Dispose();
+                    _lock = null;
+                }
+
+                _isDisposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Dispose resources
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

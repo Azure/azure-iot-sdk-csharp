@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _transportSelectionComplete;
         private int _nextTransportIndex;
 
-        private readonly SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
 
         public ProtocolRoutingDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler) :
             base(context, innerHandler)
@@ -185,6 +185,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             // Operations above should never throw. If they do, it's not safe to continue.
             _handlerLock.Release();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            _handlerLock?.Dispose();
+            _handlerLock = null;
         }
     }
 }
