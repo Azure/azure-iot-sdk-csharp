@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly Uri _baseAddress;
         private readonly IAuthorizationProvider _authenticationHeaderProvider;
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
-        private readonly bool _usingX509ClientCert = false;
+        private readonly bool _usingX509ClientCert;
         private HttpClient _httpClientObj;
         private bool _isDisposed;
         private readonly ProductInfo _productInfo;

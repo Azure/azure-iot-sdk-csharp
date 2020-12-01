@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices
         // Disposables
         private FaultTolerantAmqpObject<AmqpSession> _faultTolerantSession;
 
-        private ClientWebSocketTransport _clientWebSocketTransport = null;
+        private ClientWebSocketTransport _clientWebSocketTransport;
 #if !NET451
         private IOThreadTimerSlim _refreshTokenTimer;
 #else

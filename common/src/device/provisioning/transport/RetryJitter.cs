@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
-using System.Diagnostics.CodeAnalysis;
 using System;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
@@ -12,13 +10,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     internal class RetryJitter
     {
-        private static int jitterMax = 5;
-        private static int jitterMin = 0;
-		
+        private const int JitterMax = 5;
+        private const int JitterMin = 0;
+
         public static TimeSpan GenerateDelayWithJitterForRetry(TimeSpan defaultDelay)
         {
-            Random random = new Random();
-            double jitterSeconds = random.NextDouble() * jitterMax + jitterMin;
+            var random = new Random();
+            double jitterSeconds = random.NextDouble() * JitterMax + JitterMin;
             TimeSpan defaultDelayWithJitter = defaultDelay.Add(TimeSpan.FromSeconds(jitterSeconds));
             return defaultDelayWithJitter;
         }
