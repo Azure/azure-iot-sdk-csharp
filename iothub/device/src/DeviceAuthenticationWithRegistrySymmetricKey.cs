@@ -37,6 +37,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets or sets the key associated with the device.
         /// </summary>
+        /// 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Performance",
+            "CA1819:Properties should not return arrays",
+            Justification = "Cannot change property types on public classes.")]
         public byte[] Key
         {
             get => _key;

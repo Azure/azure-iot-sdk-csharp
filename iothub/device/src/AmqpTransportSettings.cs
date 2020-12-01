@@ -22,10 +22,14 @@ namespace Microsoft.Azure.Devices.Client
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
         /// </summary>
         internal string AuthenticationChain { get; set; }
-        
+
         /// <summary>
         /// To enable certificate revocation check. Default to be false.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Performance",
+            "CA1822:Mark members as static",
+            Justification = "Cannot change public property in public facing classes.")]
         public bool CertificateRevocationCheck
         {
             get => TlsVersions.Instance.CertificateRevocationCheck;
@@ -48,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
         public static readonly TimeSpan DefaultIdleTimeout = TimeSpan.FromMinutes(2);
 
         /// <summary>
-        /// The default prefetch count
+        /// The default pre-fetch count
         /// </summary>
         public const uint DefaultPrefetchCount = 50;
 
@@ -65,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of the <see cref="AmqpTransportSettings" />
         /// </summary>
         /// <param name="transportType">The AMQP transport type.</param>
-        /// <param name="prefetchCount">The prefetch count.</param>
+        /// <param name="prefetchCount">The pre-fetch count.</param>
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount)
             : this(transportType, prefetchCount, new AmqpConnectionPoolSettings())
         {
@@ -75,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of the <see cref="AmqpTransportSettings" />
         /// </summary>
         /// <param name="transportType">The AMQP transport type.</param>
-        /// <param name="prefetchCount">The prefetch count.</param>
+        /// <param name="prefetchCount">The pre-fetch count.</param>
         /// <param name="amqpConnectionPoolSettings">AMQP connection pool settings.</param>
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount, AmqpConnectionPoolSettings amqpConnectionPoolSettings)
         {
@@ -133,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The prefetch count
+        /// The pre-fetch count
         /// </summary>
         public uint PrefetchCount { get; set; }
 

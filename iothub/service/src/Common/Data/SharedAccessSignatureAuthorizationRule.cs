@@ -60,7 +60,11 @@ namespace Microsoft.Azure.Devices.Common.Data
             return Equals(obj as SharedAccessSignatureAuthorizationRule);
         }
 
-        public int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
+        /// <summary>
+        /// Gets a hash code for a given object.
+        /// </summary>
+        /// <returns>A hash code for the given object.</returns>
+        public static int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
         {
             if (rule == null)
             {
@@ -90,6 +94,10 @@ namespace Microsoft.Azure.Devices.Common.Data
             return hashKeyName ^ hashPrimaryKey ^ hashSecondaryKey ^ hashRights;
         }
 
+        /// <summary>
+        /// Gets a hash code for the current object.
+        /// </summary>
+        /// <returns>A hash code for the current object.</returns>
         public override int GetHashCode()
         {
             return GetHashCode(this);

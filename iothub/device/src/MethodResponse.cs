@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class MethodResponse
     {
-        private byte[] result;
+        private byte[] _result;
 
         /// <summary>
         /// Make a new instance of the return class and validates that the payload is correct JSON.
@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public MethodResponse(byte[] result, int status)
         {
-            this.Result = result;
-            this.Status = status;
+            Result = result;
+            Status = status;
         }
 
         /// <summary>
@@ -30,13 +30,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="status">an integer code containing a method call status.</param>
         public MethodResponse(int status)
         {
-            this.Status = status;
+            Status = status;
         }
 
         /// <summary>
         /// Property containing entire result data. The formatting is checked for JSON correctness
         /// upon setting this property.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Performance",
+            "CA1819:Properties should not return arrays",
+            Justification = "Cannot change property types on public classes.")]
         public byte[] Result
         {
             private set
@@ -45,12 +49,9 @@ namespace Microsoft.Azure.Devices.Client
                 // codes_SRS_METHODCALLBACKRETURN_10_003: [ Result shall percolate the invalid token exception to the caller ]
                 Utils.ValidateDataIsEmptyOrJson(value);
 
-                this.result = value;
+                _result = value;
             }
-            get
-            {
-                return this.result;
-            }
+            get => _result;
         }
 
         public string ResultAsJson => Result == null || Result.Length == 0 ? null : Encoding.UTF8.GetString(Result);
