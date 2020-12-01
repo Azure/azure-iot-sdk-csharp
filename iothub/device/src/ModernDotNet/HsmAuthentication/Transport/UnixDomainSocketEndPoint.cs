@@ -20,11 +20,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         private static readonly Encoding s_pathEncoding = Encoding.UTF8;
 
-        private static readonly int s_nativePathOffset = 2; // = offsetof(struct sockaddr_un, sun_path). It's the same on Linux and OSX
+        private const int NativePathOffset = 2; // = offset of(struct sockaddr_un, sun_path). It's the same on Linux and OSX
 
-        private static readonly int s_nativePathLength = 91; // sockaddr_un.sun_path at http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_un.h.html, -1 for terminator
+        private const int NativePathLength = 91; // sockaddr_un.sun_path at http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_un.h.html, -1 for terminator
 
-        private static readonly int s_nativeAddressSize = s_nativePathOffset + s_nativePathLength;
+        private const int NativeAddressSize = NativePathOffset + NativePathLength;
 
         private readonly string _path;
 
@@ -32,15 +32,10 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         public UnixDomainSocketEndPoint(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            _path = path;
+            _path = path ?? throw new ArgumentNullException(nameof(path));
             _encodedPath = s_pathEncoding.GetBytes(_path);
 
-            if (path.Length == 0 || _encodedPath.Length > s_nativePathLength)
+            if (path.Length == 0 || _encodedPath.Length > NativePathLength)
             {
                 throw new ArgumentOutOfRangeException(nameof(path), path);
             }
@@ -54,17 +49,17 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             }
 
             if (socketAddress.Family != EndPointAddressFamily ||
-                socketAddress.Size > s_nativeAddressSize)
+                socketAddress.Size > NativeAddressSize)
             {
                 throw new ArgumentOutOfRangeException(nameof(socketAddress));
             }
 
-            if (socketAddress.Size > s_nativePathOffset)
+            if (socketAddress.Size > NativePathOffset)
             {
-                _encodedPath = new byte[socketAddress.Size - s_nativePathOffset];
+                _encodedPath = new byte[socketAddress.Size - NativePathOffset];
                 for (int i = 0; i < _encodedPath.Length; i++)
                 {
-                    _encodedPath[i] = socketAddress[s_nativePathOffset + i];
+                    _encodedPath[i] = socketAddress[NativePathOffset + i];
                 }
 
                 _path = s_pathEncoding.GetString(_encodedPath, 0, _encodedPath.Length);
@@ -78,14 +73,14 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         public override SocketAddress Serialize()
         {
-            var result = new SocketAddress(AddressFamily.Unix, s_nativeAddressSize);
-            Debug.Assert(_encodedPath.Length + s_nativePathOffset <= result.Size, "Expected path to fit in address");
+            var result = new SocketAddress(AddressFamily.Unix, NativeAddressSize);
+            Debug.Assert(_encodedPath.Length + NativePathOffset <= result.Size, "Expected path to fit in address");
 
             for (int index = 0; index < _encodedPath.Length; index++)
             {
-                result[s_nativePathOffset + index] = _encodedPath[index];
+                result[NativePathOffset + index] = _encodedPath[index];
             }
-            result[s_nativePathOffset + _encodedPath.Length] = 0; // path must be null-terminated
+            result[NativePathOffset + _encodedPath.Length] = 0; // path must be null-terminated
 
             return result;
         }
