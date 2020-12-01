@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// contains AMQP Connection Pool settings for DeviceClient
+    /// Contains AMQP Connection Pool settings for DeviceClient
     /// </summary>
     public sealed class AmqpConnectionPoolSettings
     {
