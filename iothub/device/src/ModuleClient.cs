@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportType">The transportType used (Http1 or AMQP)</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
-        public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, 
+        public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
             TransportType transportType, ClientOptions options = default)
         {
             return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportType, options));
@@ -361,14 +361,16 @@ namespace Microsoft.Azure.Devices.Client
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => InternalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to IoT hub. Requires AMQP or AMQP over WebSockets.
+        /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
         /// </summary>
         /// <param name="messages">The messages.</param>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages) => InternalClient.SendEventBatchAsync(messages);
 
         /// <summary>
-        /// Sends a batch of events to IoT hub. Requires AMQP or AMQP over WebSockets.
+        /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>/// Sends a batch of events to IoT hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -492,7 +494,8 @@ namespace Microsoft.Azure.Devices.Client
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
-        #region Module Specific API 
+        #region Module Specific API
+
         // APIs that are available only in module client
 
         /// <summary>
@@ -517,7 +520,8 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SendEventAsync(outputName, message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to IoT hub
+        /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
         /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="messages">A list of one or more messages to send</param>
@@ -527,7 +531,8 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SendEventBatchAsync(outputName, messages);
 
         /// <summary>
-        /// Sends a batch of events to IoT hub
+        /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
         /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="messages">A list of one or more messages to send</param>
@@ -652,11 +657,11 @@ namespace Microsoft.Azure.Devices.Client
                     TlsVersions.Instance.SetLegacyAcceptableVersions();
 
 #if !NET451
-                httpClientHandler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = customCertificateValidation,
-                    SslProtocols = TlsVersions.Instance.Preferred,
-                };
+                    httpClientHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = customCertificateValidation,
+                        SslProtocols = TlsVersions.Instance.Preferred,
+                    };
 #else
                     httpClientHandler = new WebRequestHandler();
                     ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
