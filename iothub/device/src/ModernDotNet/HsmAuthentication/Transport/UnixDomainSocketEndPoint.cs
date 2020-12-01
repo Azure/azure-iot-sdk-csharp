@@ -2,10 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the thirdpartynotice.txt file for more information.
 
-// THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
-// Change Log:
-// 5/14/2018 ancan Renamed namespace to Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
-
 using System;
 using System.Diagnostics;
 using System.Text;

@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
 
-        private ClientWebSocketTransport _clientWebSocketTransport = null;
+        private ClientWebSocketTransport _clientWebSocketTransport;
 
         public AmqpIoTTransport(
             AmqpSettings amqpSettings,

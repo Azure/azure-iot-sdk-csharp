@@ -32,8 +32,6 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-//using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     internal sealed class MqttTransportHandler : TransportHandler, IMqttIotHubEventHandler
@@ -63,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly ConcurrentQueue<Message> _messageQueue;
 
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
-        private bool _isDeviceReceiveMessageCallbackSet = false;
+        private bool _isDeviceReceiveMessageCallbackSet;
 
         private readonly TaskCompletionSource _connectCompletion = new TaskCompletionSource();
         private readonly TaskCompletionSource _subscribeCompletionSource = new TaskCompletionSource();
@@ -94,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // Topic name for updating device twin's reported properties.
         // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
         // The client then sends a message containing the twin update to "$iothub/twin/PATCH/properties/reported/?$rid={request id}", with a populated value for request ID.
-        // The service then sends a response message containing the new ETag value for the reported propeties collection on the topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request ID as the request.
+        // The service then sends a response message containing the new ETag value for the reported properties collection on the topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request ID as the request.
         private const string TwinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";
 
         // Topic names for receiving twin desired property update notifications.

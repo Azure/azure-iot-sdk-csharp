@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private readonly SemaphoreSlim _messageReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
 
         private readonly SemaphoreSlim _messageReceivingCallbackSemaphore = new SemaphoreSlim(1, 1);
-        private bool _isDeviceReceiveMessageCallbackSet  = false;
+        private bool _isDeviceReceiveMessageCallbackSet;
 
         private AmqpIoTReceivingLink _eventReceivingLink;
         private readonly SemaphoreSlim _eventReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         public async Task<Message> ReceiveMessageAsync(TimeSpan timeout)
         {
-            if (_isDeviceReceiveMessageCallbackSet )
+            if (_isDeviceReceiveMessageCallbackSet)
             {
                 Logging.Error(this, "Callback handler set for receiving c2d messages, ReceiveAsync() will now always return null", nameof(ReceiveMessageAsync));
                 return null;
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         " AMQP message receiver links are open and a listener can be set.");
                 }
                 await EnsureMessageReceivingLinkIsOpenAsync(timeout, true).ConfigureAwait(false);
-                _isDeviceReceiveMessageCallbackSet  = true;
+                _isDeviceReceiveMessageCallbackSet = true;
             }
             finally
             {
@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         " AMQP message receiver links are closed.");
                 }
                 await DisableMessageReceivingLinkAsync(timeout).ConfigureAwait(false);
-                _isDeviceReceiveMessageCallbackSet  = false;
+                _isDeviceReceiveMessageCallbackSet = false;
             }
             finally
             {

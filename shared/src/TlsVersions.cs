@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Shared
     public class TlsVersions
     {
         /// <summary>
-        /// A static intance of this class to be used by the Azure IoT .NET SDKs when opening connections
+        /// A static instance of this class to be used by the Azure IoT .NET SDKs when opening connections
         /// </summary>
         public static readonly TlsVersions Instance = new TlsVersions();
 
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// To enable certificate revocation check. Default to be false.
         /// </summary>
-        public bool CertificateRevocationCheck { get; set; } = false;
+        public bool CertificateRevocationCheck { get; set; }
 
         /// <summary>
         /// Sets the minimum acceptable versions of TLS.
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Shared
                 return;
             }
 
-            // ensure the prefered TLS version is included
+            // ensure the preferred TLS version is included
             if (((protocols & SslProtocols.Tls) != 0
                     || (protocols & SslProtocols.Tls11) != 0)
                 && (protocols & PreferredProtocol) == 0)
