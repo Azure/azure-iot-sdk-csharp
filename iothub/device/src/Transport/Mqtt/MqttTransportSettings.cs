@@ -76,13 +76,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <summary>
         /// Indicates if certificate revocation check is enabled. The default value is <c>false</c>.
         /// </summary>
-#pragma warning disable IDE1006 // Naming Styles
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Performance",
+            "CA1822:Mark members as static",
+            Justification = "Cannot change public property in public facing classes.")]
         public bool CertificateRevocationCheck
         {
             get => TlsVersions.Instance.CertificateRevocationCheck;
             set => TlsVersions.Instance.CertificateRevocationCheck = value;
         }
-#pragma warning restore IDE1006 // Naming Styles
 
         /// <summary>
         /// Indicates if a device can timeout while waiting for a acknowledgment from service.

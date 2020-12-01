@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private readonly SemaphoreSlim _messageReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
 
         private readonly SemaphoreSlim _messageReceivingCallbackSemaphore = new SemaphoreSlim(1, 1);
-        private bool _isDeviceReceiveMessageCallbackSet = false;
+        private bool _isDeviceReceiveMessageCallbackSet;
 
         private AmqpIoTReceivingLink _eventReceivingLink;
         private readonly SemaphoreSlim _eventReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
