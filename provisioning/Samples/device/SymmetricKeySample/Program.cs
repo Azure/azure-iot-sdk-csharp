@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace SymmetricKeySample
 {
     /// <summary>
-    /// A sample to illustrate connecting a device to hub using the device provisioning service.
+    /// A sample to illustrate connecting a device to hub using the device provisioning service and a symmetric key.
     /// </summary>
     internal class Program
     {
