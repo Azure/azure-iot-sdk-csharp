@@ -11,11 +11,6 @@ namespace Microsoft.Azure.Devices.Client.Edge
     {
         public static NullCertificateValidator Instance { get; } = new NullCertificateValidator();
 
-        public void SetupCertificateValidation()
-        {
-            Debug.WriteLine("NullCertificateValidator.SetupCertificateValidation()");
-        }
-
         public Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> GetCustomCertificateValidation()
         {
             return null;

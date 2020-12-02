@@ -29,9 +29,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public void TestSetupCertificateValidation_Mqtt_ShouldSucceed()
         {
             ITransportSettings[] transportSettings = { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) };
-            var certs = new TrustBundleProvider().ParseCertificates(certificatesString);
+            var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
-            
+
             Assert.IsNotNull(((MqttTransportSettings)transportSettings[0]).RemoteCertificateValidationCallback);
         }
 
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public void TestSetupCertificateValidation_Amqp_ShouldSucceed()
         {
             ITransportSettings[] transportSettings = new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) };
-            var certs = new TrustBundleProvider().ParseCertificates(certificatesString);
+            var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
             Assert.IsNotNull(((AmqpTransportSettings)transportSettings[0]).RemoteCertificateValidationCallback);
@@ -48,8 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestSetupCertificateValidation_Mqtt_CallbackAlreadySet_ShouldSucceed()
         {
-            var trustBundleProvider = new TrustBundleProvider();
-            var certs = trustBundleProvider.ParseCertificates(certificatesString);
+            var certs = TrustBundleProvider.ParseCertificates(certificatesString);
 
             var setting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) =>
@@ -66,8 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestSetupCertificateValidation_Amqp_CallbackAlreadySet_ShouldSucceed()
         {
-            var trustBundleProvider = new TrustBundleProvider();
-            var certs = trustBundleProvider.ParseCertificates(certificatesString);
+            var certs = TrustBundleProvider.ParseCertificates(certificatesString);
 
             var setting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
             RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) =>

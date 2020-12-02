@@ -93,16 +93,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return hashCode;
         }
 
-        private int UpdateHashCode(int hashCode, object field)
+        private static int UpdateHashCode(int hashCode, object field)
         {
-            if (field == null)
-            {
-                return hashCode;
-            }
-            else
-            {
-                return hashCode * -1521134295 + field.GetHashCode();
-            }
+            return field == null
+                ? hashCode
+                : hashCode * -1521134295 + field.GetHashCode();
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestParseCertificates_Single_ShouldReturnCetificate()
         {
-            var certs = new TrustBundleProvider().ParseCertificates(certificatesString);
+            var certs = TrustBundleProvider.ParseCertificates(certificatesString);
 
             Assert.AreEqual(certs.Count(), 1);
         }
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestParseCertificates_MultipleCerts_ShouldReturnCetificates()
         {
-            var certs = new TrustBundleProvider().ParseCertificates(certificatesString + certificatesString);
+            var certs = TrustBundleProvider.ParseCertificates(certificatesString + certificatesString);
 
             Assert.AreEqual(certs.Count(), 2);
         }
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestParseCertificates_WithNonCertificatesEntries_ShouldReturnCetificates()
         {
-            var certs = new TrustBundleProvider().ParseCertificates(certificatesString + certificatesString + "test");
+            var certs = TrustBundleProvider.ParseCertificates(certificatesString + certificatesString + "test");
 
             Assert.AreEqual(certs.Count(), 2);
         }
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestParseCertificates_NoCertificatesEntries_ShouldReturnNoCetificates()
         {
-            var certs = new TrustBundleProvider().ParseCertificates("test");
+            var certs = TrustBundleProvider.ParseCertificates("test");
 
             Assert.AreEqual(certs.Count(), 0);
         }
@@ -71,19 +71,19 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestParseCertificates_InvalidCertificates_ShouldThrow()
         {
-            TestAssert.Throws<CryptographicException>(() => new TrustBundleProvider().ParseCertificates(certificateStringInvalid));
+            TestAssert.Throws<CryptographicException>(() => TrustBundleProvider.ParseCertificates(certificateStringInvalid));
         }
 
         [TestMethod]
         public void TestParseCertificates_NullCertificates_ShouldThrow()
         {
-            TestAssert.Throws<InvalidOperationException>(() => new TrustBundleProvider().ParseCertificates(null));
+            TestAssert.Throws<InvalidOperationException>(() => TrustBundleProvider.ParseCertificates(null));
         }
 
         [TestMethod]
         public void TestParseCertificates_EmptyCertificates_ShouldThrow()
         {
-            TestAssert.Throws<InvalidOperationException>(() => new TrustBundleProvider().ParseCertificates(string.Empty));
+            TestAssert.Throws<InvalidOperationException>(() => TrustBundleProvider.ParseCertificates(string.Empty));
         }
     }
 }
