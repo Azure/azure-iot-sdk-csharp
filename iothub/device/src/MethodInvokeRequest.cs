@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of DirectMethodRequest type
         /// </summary>
         /// <param name="methodName">Method name</param>
+        /// <param name="payload">Method invocation payload</param>
         /// <param name="responseTimeout">Method timeout</param>
         /// <param name="connectionTimeout">Device connection timeout</param>
         /// <exception cref="ArgumentException">If <b>methodName</b> is null or whitespace</exception>
@@ -29,16 +30,16 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentNullException(nameof(methodName));
             }
-            this.MethodName = methodName;
+            MethodName = methodName;
 
             if (!string.IsNullOrEmpty(payload))
             {
                 ValidatePayloadIsJson(payload);
-                this.Payload = new JRaw(payload);
+                Payload = new JRaw(payload);
             }
 
-            this.ResponseTimeout = responseTimeout;
-            this.ConnectionTimeout = connectionTimeout;
+            ResponseTimeout = responseTimeout;
+            ConnectionTimeout = connectionTimeout;
         }
 
         /// <summary>
@@ -63,18 +64,18 @@ namespace Microsoft.Azure.Devices.Client
         /// Method timeout in seconds
         /// </summary>
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => !this.ResponseTimeout.HasValue || this.ResponseTimeout <= TimeSpan.Zero ? (int?)null : (int)this.ResponseTimeout.Value.TotalSeconds;
+        internal int? ResponseTimeoutInSeconds => !ResponseTimeout.HasValue || ResponseTimeout <= TimeSpan.Zero ? (int?)null : (int)ResponseTimeout.Value.TotalSeconds;
 
         /// <summary>
         /// Connection timeout in seconds
         /// </summary>
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => !this.ConnectionTimeout.HasValue || this.ConnectionTimeout <= TimeSpan.Zero ? (int?)null : (int)this.ConnectionTimeout.Value.TotalSeconds;
+        internal int? ConnectionTimeoutInSeconds => !ConnectionTimeout.HasValue || ConnectionTimeout <= TimeSpan.Zero ? (int?)null : (int)ConnectionTimeout.Value.TotalSeconds;
 
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
         internal JRaw Payload { get; set; }
 
-        private void ValidatePayloadIsJson(string json)
+        private static void ValidatePayloadIsJson(string json)
         {
             try
             {

@@ -26,8 +26,6 @@ namespace Microsoft.Azure.Devices.Client
     internal class IotHubClientWebSocket
     {
         private const string HttpGetHeaderFormat = "GET {0} HTTP/1.1\r\n";
-        private const string HttpConnectMethod = "CONNECT";
-        private const string Http10 = "HTTP/1.0";
         private const string EndOfLineSuffix = "\r\n";
         private const byte FIN = 0x80;
         private const byte RSV = 0x00;
@@ -60,9 +58,6 @@ namespace Microsoft.Azure.Devices.Client
         private readonly string _requestPath;
         private string _webSocketKey;
         private string _host;
-        private const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
-
-        private static readonly Lazy<bool> s_disableServerCertificateValidation = new Lazy<bool>(InitializeDisableServerCertificateValidation);
 
         private TcpClient _tcpClient;
         private Stream _webSocketStream;
@@ -551,7 +546,7 @@ namespace Microsoft.Azure.Devices.Client
                 octet[4] = s_maskingKey[2];
                 octet[5] = s_maskingKey[3];
             }
-            else if (bufferLength <= UInt16.MaxValue)
+            else if (bufferLength <= ushort.MaxValue)
             {
                 // Handle medium payloads
                 octet = new byte[8];
@@ -815,9 +810,9 @@ namespace Microsoft.Azure.Devices.Client
 
         private static string ComputeHash(string key)
         {
-            const string WebSocketGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+            const string webSocketGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
-            string modifiedString = key + WebSocketGuid;
+            string modifiedString = key + webSocketGuid;
             byte[] modifiedStringBytes = Encoding.ASCII.GetBytes(modifiedString);
 
             byte[] hashBytes;
@@ -906,7 +901,7 @@ namespace Microsoft.Azure.Devices.Client
                         return false;
                     }
 
-                    var statusCodeString = Encoding.ASCII.GetString(_buffer, firstSpace + 1, secondSpace - (firstSpace + 1));
+                    string statusCodeString = Encoding.ASCII.GetString(_buffer, firstSpace + 1, secondSpace - (firstSpace + 1));
                     StatusCode = (HttpStatusCode)int.Parse(statusCodeString, CultureInfo.InvariantCulture);
                     int endOfLine = IndexOfAsciiChars(_buffer, secondSpace + 1, _totalBytesRead - (secondSpace + 1), '\r', '\n');
                     if (endOfLine == -1)
@@ -991,7 +986,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Check if the given buffer contains the 2 specified ascii characters (in sequence) without having to allocate or convert byte[] into string
+        /// Check if the given buffer contains the 2 specified ASCII characters (in sequence) without having to allocate or convert byte[] into string
         /// </summary>
         public static int IndexOfAsciiChars(byte[] array, int offset, int count, char asciiChar1, char asciiChar2)
         {
@@ -1010,29 +1005,9 @@ namespace Microsoft.Azure.Devices.Client
             return -1;
         }
 
-        protected static bool InitializeDisableServerCertificateValidation()
-        {
-            string value = ""; // ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
-            if (!string.IsNullOrEmpty(value))
-            {
-                return bool.Parse(value);
-            }
-            return false;
-        }
-
         public static bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            if (sslPolicyErrors == SslPolicyErrors.None)
-            {
-                return true;
-            }
-
-            if (s_disableServerCertificateValidation.Value && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
-            {
-                return true;
-            }
-
-            return false;
+            return sslPolicyErrors == SslPolicyErrors.None;
         }
     }
 }

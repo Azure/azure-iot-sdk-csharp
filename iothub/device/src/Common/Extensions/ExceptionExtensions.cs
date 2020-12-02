@@ -62,17 +62,37 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             if (PartialTrustHelpers.UnsafeIsInFullTrust())
             {
                 // Racing here is harmless
-                if (ExceptionExtensions.prepForRemotingMethodInfo == null)
+                if (prepForRemotingMethodInfo == null)
                 {
-                    ExceptionExtensions.prepForRemotingMethodInfo =
-                        typeof(Exception).GetMethod("PrepForRemoting", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { }, new ParameterModifier[] { });
+#if NET451
+                    prepForRemotingMethodInfo =
+                        typeof(Exception).GetMethod(
+                            "PrepForRemoting",
+                            BindingFlags.Instance | BindingFlags.NonPublic,
+                            null,
+                            new Type[] { },
+                            new ParameterModifier[] { });
+#else
+                    prepForRemotingMethodInfo =
+                        typeof(Exception).GetMethod(
+                            "PrepForRemoting",
+                            BindingFlags.Instance | BindingFlags.NonPublic,
+                            null,
+                            Array.Empty<Type>(),
+                            Array.Empty<ParameterModifier>());
+#endif
                 }
-                if (ExceptionExtensions.prepForRemotingMethodInfo != null)
+
+                if (prepForRemotingMethodInfo != null)
                 {
                     // PrepForRemoting is not thread-safe. When the same exception instance is thrown by multiple threads
                     // the remote stack trace string may not format correctly. However, We don't lock this to protect us from it given
                     // it is discouraged to throw the same exception instance from multiple threads and the side impact is ignorable.
+#if NET451
                     prepForRemotingMethodInfo.Invoke(exception, new object[] { });
+#else
+                    prepForRemotingMethodInfo.Invoke(exception, Array.Empty<object>());
+#endif
                 }
             }
 
@@ -81,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 
         public static Exception DisablePrepareForRethrow(this Exception exception)
         {
-            exception.Data[AsyncResult.DisablePrepareForRethrow] = String.Empty;
+            exception.Data[AsyncResult.DisablePrepareForRethrow] = string.Empty;
             return exception;
         }
 
@@ -90,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             // exception.Data is empty collection by default.
             if (exception.Data != null && exception.Data.Contains(ExceptionIdentifierName))
             {
-                return String.Format(CultureInfo.InvariantCulture,
+                return string.Format(CultureInfo.InvariantCulture,
                     "ExceptionId: {0}-{1}: {2}",
                     exception.Data[ExceptionIdentifierName],
                     exception.GetType(),
@@ -101,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 string exceptionIdentifier = Guid.NewGuid().ToString();
                 exception.Data[ExceptionIdentifierName] = exceptionIdentifier;
 
-                return String.Format(CultureInfo.InvariantCulture,
+                return string.Format(CultureInfo.InvariantCulture,
                     "ExceptionId: {0}-{1}",
                     exceptionIdentifier,
                     exception.ToString());
@@ -113,14 +133,9 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 
         public static string GetReferenceCode(this Exception exception)
         {
-            if (exception.Data != null && exception.Data.Contains(ExceptionIdentifierName))
-            {
-                return (string)exception.Data[ExceptionIdentifierName];
-            }
-            else
-            {
-                return null;
-            }
+            return exception.Data != null && exception.Data.Contains(ExceptionIdentifierName)
+                ? (string)exception.Data[ExceptionIdentifierName]
+                : null;
         }
 
         private static bool ShouldPrepareForRethrow(Exception exception)

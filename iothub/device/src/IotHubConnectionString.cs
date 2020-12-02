@@ -10,7 +10,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
     {
-        private const string UserSeparator = "@";
         private const int DefaultSecurePort = 5671;
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
