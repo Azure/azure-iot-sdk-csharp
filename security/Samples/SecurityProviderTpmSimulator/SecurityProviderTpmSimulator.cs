@@ -4,6 +4,7 @@
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -26,20 +27,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         private const int SimulatorPort = 2321;
 
         private static string s_simulatorExeName;
+
+        private TcpTpmDevice _tcpTpmDevice;
+        private Tpm2 _tpm2;
         private SecurityProviderTpmHsm _innerClient;
 
         public SecurityProviderTpmSimulator(string registrationId) : base(registrationId)
         {
-            var tpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
-            tpmDevice.Connect();
-            tpmDevice.PowerCycle();
+            _tcpTpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
+            _tcpTpmDevice.Connect();
+            _tcpTpmDevice.PowerCycle();
 
-            using (var tpm2 = new Tpm2(tpmDevice))
-            {
-                tpm2.Startup(Su.Clear);
-            }
+            _tpm2 = new Tpm2(_tcpTpmDevice);
+            _tpm2.Startup(Su.Clear);
 
-            _innerClient = new SecurityProviderTpmHsm(GetRegistrationID(), tpmDevice);
+            _innerClient = new SecurityProviderTpmHsm(GetRegistrationID(), _tcpTpmDevice);
         }
 
         public override void ActivateIdentityKey(byte[] encryptedKey)
@@ -62,6 +64,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
             return _innerClient.Sign(data);
         }
 
+
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Sample code resiliency")]
         public static void StopSimulatorProcess()
         {
             foreach (var process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(s_simulatorExeName)))
@@ -95,18 +99,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 
             // Exe is found at the exact specified path.
             if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(s_simulatorExeName)).Length > 0) return;
-            
+
             // Search next to the simulator DLL location.
             string[] files = Directory.GetFiles(
-                Directory.GetCurrentDirectory(), 
-                s_simulatorExeName, 
+                Directory.GetCurrentDirectory(),
+                s_simulatorExeName,
                 SearchOption.AllDirectories);
 
             if (files.Length == 0)
             {
                 files = Directory.GetFiles(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
-                    s_simulatorExeName, 
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    s_simulatorExeName,
                     SearchOption.AllDirectories);
             }
 
@@ -115,13 +119,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
                 throw new InvalidOperationException($"TPM Simulator not found : {s_simulatorExeName}");
             }
 
-            var simulatorProcess = new Process
+            using var simulatorProcess = new Process
             {
                 StartInfo =
                 {
                     FileName = files[0],
                     WindowStyle = ProcessWindowStyle.Normal,
-                    UseShellExecute = true
+                    UseShellExecute = true,
                 }
             };
 
@@ -132,7 +136,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         {
             if (disposing)
             {
-                _innerClient.Dispose();
+                _tcpTpmDevice?.Dispose();
+                _tcpTpmDevice = null;
+
+                _tpm2?.Dispose();
+                _tpm2 = null;
+
+                _innerClient?.Dispose();
+                _innerClient = null;
             }
         }
     }
