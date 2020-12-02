@@ -18,8 +18,7 @@ namespace Microsoft.Azure.Devices.Client
             this.timer = new Timer((obj) => callback(obj), callbackState, TimeSpan.FromMilliseconds(-1), TimeSpan.FromMilliseconds(-1));
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is to preserve the API.")]
-        public IOThreadTimerSlim(Action<object> callback, object callbackState, bool isTypicallyCanceledShortlyAfterBeingSet)
+        public IOThreadTimerSlim(Action<object> callback, object callbackState)
         {
             this.callback = callback;
             this.callbackState = callbackState;

@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Amqp.Transport
             bool succeeded = false;
             try
             {
-                int numBytes = await webSocket.ReceiveAsync(asyncReadBuffer, asyncReadBufferOffset, asyncReadBufferSize, operationTimeout).ConfigureAwait(false);
+                int numBytes = await webSocket.ReceiveAsync(asyncReadBuffer, asyncReadBufferOffset, operationTimeout).ConfigureAwait(false);
 
                 succeeded = true;
                 return numBytes;

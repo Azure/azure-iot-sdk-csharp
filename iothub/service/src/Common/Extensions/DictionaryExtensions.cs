@@ -10,12 +10,13 @@ namespace Microsoft.Azure.Devices.Common.Extensions
 
     public static class DictionaryExtensions
     {
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is to preserve the API.")]
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
         {
-            TValue value;
-            dictionary.TryGetValue(key, out value);
-            return value;
+            if (dictionary.TryGetValue(key, out TValue value))
+            {
+                return value;
+            }
+            return defaultValue;
         }
 
         public static TValue GetValueOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> valueProvider)
@@ -43,7 +44,6 @@ namespace Microsoft.Azure.Devices.Common.Extensions
             return false;
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is to preserve the API.")]
         public static TValue GetOrAddNonNull<TKey, TValue>(
             this ConcurrentDictionary<TKey, TValue> dictionary,
             TKey key,

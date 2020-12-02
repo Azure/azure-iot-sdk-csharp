@@ -22,24 +22,24 @@ namespace Microsoft.Azure.Devices.Client
             this.eventSourceName = eventSourceName;
         }
 
-        public Exception AsError(Exception exception, EventTraceActivity activity = null)
+        public Exception AsError(Exception exception)
         {
-            return TraceException<Exception>(exception, TraceEventType.Error, activity);
+            return TraceException<Exception>(exception, TraceEventType.Error);
         }
 
-        public Exception AsInformation(Exception exception, EventTraceActivity activity = null)
+        public Exception AsInformation(Exception exception)
         {
-            return TraceException<Exception>(exception, TraceEventType.Information, activity);
+            return TraceException<Exception>(exception, TraceEventType.Information);
         }
 
-        public Exception AsWarning(Exception exception, EventTraceActivity activity = null)
+        public Exception AsWarning(Exception exception)
         {
-            return TraceException<Exception>(exception, TraceEventType.Warning, activity);
+            return TraceException<Exception>(exception, TraceEventType.Warning);
         }
 
-        public Exception AsVerbose(Exception exception, EventTraceActivity activity = null)
+        public Exception AsVerbose(Exception exception)
         {
-            return TraceException<Exception>(exception, TraceEventType.Verbose, activity);
+            return TraceException<Exception>(exception, TraceEventType.Verbose);
         }
 
         public ArgumentException Argument(string paramName, string message)
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client
             return TraceException<ObjectDisposedException>(new ObjectDisposedException(null, message), TraceEventType.Error);
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of a DEBUG compilation flag.")]
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of the DEBUG compilation flag.")]
         public void TraceHandled(Exception exception, string catchLocation, EventTraceActivity activity = null)
         {
 #if NET451 && DEBUG
@@ -91,20 +91,13 @@ namespace Microsoft.Azure.Devices.Client
             this.BreakOnException(exception);
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Method is public but the implementation has been commented out. Needs further review.")]
-        public void TraceUnhandled(Exception exception)
-        {
-            ////MessagingClientEtwProvider.Provider.EventWriteUnhandledException(this.eventSourceName + ": " + exception.ToStringSlim());
-        }
-
 #if NET451
         [ResourceConsumption(ResourceScope.Process)]
 #endif
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Public method is widely used in the API, but the parameter usage has been commented out.")]
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",
             Safe = "Does not leak any resource, needed for debugging")]
-        public TException TraceException<TException>(TException exception, TraceEventType level, EventTraceActivity activity = null)
+        public TException TraceException<TException>(TException exception, TraceEventType level)
             where TException : Exception
         {
             if (!exception.Data.Contains(this.eventSourceName))
@@ -184,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client
             return details;
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Exception is used with the NET451 compilation flag.")]
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of the NET451 compilation flag.")]
         [SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
         [Fx.Tag.SecurityNote(Critical = "Calls into critical method UnsafeNativeMethods.IsDebuggerPresent and UnsafeNativeMethods.DebugBreak",
             Safe = "Safe because it's a no-op in retail builds.")]
@@ -210,17 +203,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 #endif
-        }
-
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Method is public but the implementation has been commented out. Needs further review.")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public void TraceFailFast(string message)
-        {
-            ////            EventLogger logger = null;
-            ////#pragma warning disable 618
-            ////            logger = new EventLogger(this.eventSourceName, Fx.Trace);
-            ////#pragma warning restore 618
-            ////            TraceFailFast(message, logger);
         }
 
         // Generate an event Log entry for failfast purposes

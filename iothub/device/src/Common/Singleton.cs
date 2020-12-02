@@ -40,8 +40,7 @@ namespace Microsoft.Azure.Devices.Client
             return GetOrCreateAsync(timeout, cancellationToken);
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Leaving as is since cancellation token does not stop other tasks and would cause the resource to not be disposed.")]
-        public Task CloseAsync(CancellationToken cancellationToken)
+        public Task CloseAsync()
         {
             Dispose();
 

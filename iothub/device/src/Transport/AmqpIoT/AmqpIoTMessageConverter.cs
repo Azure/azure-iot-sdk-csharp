@@ -47,8 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return message;
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is.")]
-        public static AmqpMessage MessageToAmqpMessage(Message message, bool setBodyCalled = true)
+        public static AmqpMessage MessageToAmqpMessage(Message message)
         {
             if (message == null)
             {
@@ -274,8 +273,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         #region AmqpMessage <--> Methods
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unknown if this is used by customers so we should leave as is.")]
-        public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal, bool setBodyCalled = true)
+        public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal)
         {
             methodResponseInternal.ThrowIfDisposed();
 
