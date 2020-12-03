@@ -33,7 +33,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 #if !NET451
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
-                client = new HttpClient(new HttpUdsMessageHandler(providerUri));
+                using var httpUdsMessageHandler = new HttpUdsMessageHandler(providerUri);
+                client = new HttpClient(httpUdsMessageHandler);
                 return client;
             }
 #endif

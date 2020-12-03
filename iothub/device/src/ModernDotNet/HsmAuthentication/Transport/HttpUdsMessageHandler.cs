@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            Socket socket = await GetConnectedSocketAsync().ConfigureAwait(false);
-            HttpBufferedStream stream = new HttpBufferedStream(new NetworkStream(socket, true));
+            using Socket socket = await GetConnectedSocketAsync().ConfigureAwait(false);
+            using var stream = new HttpBufferedStream(new NetworkStream(socket, true));
 
             byte[] requestBytes = HttpRequestResponseSerializer.SerializeRequest(request);
             await stream.WriteAsync(requestBytes, 0, requestBytes.Length, cancellationToken).ConfigureAwait(false);

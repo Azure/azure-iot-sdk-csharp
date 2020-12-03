@@ -156,13 +156,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             try
             {
-                Message message = null;
-                if (amqpMessage != null)
+                if (amqpMessage == null)
                 {
-                    message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
-                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                    _onDeviceMessageReceived?.Invoke(null);
                 }
-                _onDeviceMessageReceived?.Invoke(message);
+                else
+                {
+                    using Message message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
+                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                    _onDeviceMessageReceived?.Invoke(message);
+                }
             }
             finally
             {
@@ -189,7 +192,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             try
             {
-                Message message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
+                using Message message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
                 message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
                 _onEventsReceived?.Invoke(message);
             }
@@ -221,7 +224,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             try
             {
-                MethodRequestInternal methodRequestInternal = AmqpIoTMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, new CancellationToken(false));
+                using MethodRequestInternal methodRequestInternal = AmqpIoTMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, new CancellationToken(false));
                 DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
                 _onMethodReceived?.Invoke(methodRequestInternal);
             }

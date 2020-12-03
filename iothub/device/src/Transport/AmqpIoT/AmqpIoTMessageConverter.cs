@@ -515,7 +515,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         internal static ArraySegment<byte> ReadStream(Stream stream)
         {
-            MemoryStream memoryStream = new MemoryStream();
+            using var memoryStream = new MemoryStream();
             int bytesRead;
             byte[] readBuffer = new byte[512];
             while ((bytesRead = stream.Read(readBuffer, 0, readBuffer.Length)) > 0)

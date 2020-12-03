@@ -87,26 +87,32 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
+
+
             if (httpClientHandler == null)
             {
                 httpClientHandler = new HttpClientHandler();
             }
-            httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 
-            if (clientCert != null)
+            using (httpClientHandler)
             {
-                httpClientHandler.ClientCertificates.Add(clientCert);
-                _usingX509ClientCert = true;
-            }
+                httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
+                httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 
-            if (proxy != DefaultWebProxySettings.Instance)
-            {
-                httpClientHandler.UseProxy = proxy != null;
-                httpClientHandler.Proxy = proxy;
-            }
+                if (clientCert != null)
+                {
+                    httpClientHandler.ClientCertificates.Add(clientCert);
+                    _usingX509ClientCert = true;
+                }
 
-            _httpClientObj = new HttpClient(httpClientHandler);
+                if (proxy != DefaultWebProxySettings.Instance)
+                {
+                    httpClientHandler.UseProxy = proxy != null;
+                    httpClientHandler.Proxy = proxy;
+                }
+
+                _httpClientObj = new HttpClient(httpClientHandler);
+            }
 #endif
 
             _httpClientObj.BaseAddress = _baseAddress;

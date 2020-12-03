@@ -291,7 +291,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    Message message = null;
                     EnsureValidState();
 
                     if (State != TransportState.Receiving)
@@ -300,7 +299,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
 
                     bool hasMessage = await ReceiveMessageArrivalAsync(cancellationToken).ConfigureAwait(true);
-                    message = ProcessMessage(message, hasMessage);
+                    using Message message = ProcessMessage(hasMessage);
 
                     return message;
                 }
@@ -332,8 +331,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Enter(this, timeoutHelper, $"Time remaining for ReceiveAsync(): {timeoutHelper.GetRemainingTime()}", $"{nameof(ReceiveAsync)}");
                 }
 
-                Message message = null;
-
                 EnsureValidState();
 
                 if (State != TransportState.Receiving)
@@ -344,7 +341,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 TimeSpan timeout = timeoutHelper.GetRemainingTime();
                 using var cts = new CancellationTokenSource(timeout);
                 bool hasMessage = await ReceiveMessageArrivalAsync(cts.Token).ConfigureAwait(true);
-                message = ProcessMessage(message, hasMessage);
+                using Message message = ProcessMessage(hasMessage);
 
                 return message;
             }
@@ -357,8 +354,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private Message ProcessMessage(Message message, bool hasMessage)
+        private Message ProcessMessage(bool hasMessage)
         {
+            Message message = null;
             try
             {
                 if (Logging.IsEnabled)
@@ -566,14 +564,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleIncomingMessagesAsync()
         {
-            Message message = null;
-
             if (Logging.IsEnabled)
             {
                 Logging.Enter(this, "Process c2d message via callback", nameof(HandleIncomingMessagesAsync));
             }
 
-            message = ProcessMessage(message, true);
+            using Message message = ProcessMessage(true);
             await (_deviceMessageReceivedListener?.Invoke(message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
 
             if (Logging.IsEnabled)

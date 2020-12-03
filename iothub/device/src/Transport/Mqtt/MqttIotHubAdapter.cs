@@ -749,16 +749,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, publish, nameof(AcceptMessageAsync));
 
-            Message message;
             try
             {
                 var bodyStream = new ReadOnlyByteBufferStream(publish.Payload, true);
 
-                message = new Message(bodyStream, StreamDisposalResponsibility.Sdk);
+                using var message = new Message(bodyStream, StreamDisposalResponsibility.Sdk);
 
                 PopulateMessagePropertiesFromPacket(message, publish);
 
                 message.MqttTopicName = publish.TopicName;
+                _mqttIotHubEventHandler.OnMessageReceived(message);
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, context.Name, publish, nameof(AcceptMessageAsync));
+
+                return TaskHelpers.CompletedTask;
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -768,13 +773,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 ShutdownOnErrorAsync(context, ex);
                 return TaskHelpers.CompletedTask;
             }
-
-            _mqttIotHubEventHandler.OnMessageReceived(message);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, context.Name, publish, nameof(AcceptMessageAsync));
-
-            return TaskHelpers.CompletedTask;
         }
 
         private Task ProcessAckAsync(IChannelHandlerContext context, PublishWorkItem publish)
