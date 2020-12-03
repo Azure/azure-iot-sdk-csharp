@@ -53,9 +53,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 security,
                 transportHandler);
 
-            Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}");
+            Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}.");
 
-            Console.WriteLine("Registering with the device provisioning service... ");
+            Console.WriteLine("Registering with the device provisioning service...");
             DeviceRegistrationResult result = await provClient.RegisterAsync();
 
             Console.WriteLine($"Registration status: {result.Status}.");
