@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices
                 TcpClient.Client.SendTimeout = GetSocketTimeoutInMilliSeconds(timeout);
 
                 // Send WebSocket Upgrade request
-                await WriteToStream(WebSocketStream, upgradeRequestBytes).ConfigureAwait(false);
+                await WriteToStreamAsync(WebSocketStream, upgradeRequestBytes).ConfigureAwait(false);
 
                 // receive WebSocket Upgrade response
                 byte[] responseBuffer = new byte[8 * 1024];
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices
                         // Encountered a close frame or error in parsing frame from server. Close connection
                         byte[] closeHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
-                        await WriteToStream(WebSocketStream, closeHeader).ConfigureAwait(false);
+                        await WriteToStreamAsync(WebSocketStream, closeHeader).ConfigureAwait(false);
 
                         State = WebSocketState.Closed;
                         WebSocketStream.Close();
@@ -1003,7 +1003,7 @@ namespace Microsoft.Azure.Devices
 #endif
         }
 
-        private static async Task WriteToStream(Stream stream, byte[] buffer)
+        private static async Task WriteToStreamAsync(Stream stream, byte[] buffer)
         {
 #if NET451 || NET472 || NETSTANDARD2_0
             await stream.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
