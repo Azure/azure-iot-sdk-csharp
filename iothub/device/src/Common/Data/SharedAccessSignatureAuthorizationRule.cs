@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
             return Equals(obj as SharedAccessSignatureAuthorizationRule);
         }
 
-        private int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
+        private static int GetHashCode(SharedAccessSignatureAuthorizationRule rule)
         {
             if (rule == null)
             {

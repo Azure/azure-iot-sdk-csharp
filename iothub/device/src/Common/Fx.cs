@@ -28,9 +28,7 @@ namespace Microsoft.Azure.Devices.Client
 
 #if DEBUG
         private const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
-        private const string AssertsFailFastName = "AssertsFailFast";
         private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
-        private const string FastDebugName = "FastDebug";
 
         private static bool breakOnExceptionTypesRetrieved;
         private static Type[] breakOnExceptionTypesCache;

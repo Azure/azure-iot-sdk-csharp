@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
+    /// <threadsafety static="true" instance="true" />
     public sealed class DeviceClient : IDisposable
     {
         /// <summary>
@@ -482,14 +483,14 @@ namespace Microsoft.Azure.Devices.Client
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => InternalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to a hub. Requires AMQP or AMQP over WebSockets.
+        /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
         /// </summary>
         /// <param name="messages">A list of one or more messages to send. The messages should be disposed after sending.</param>
         /// <returns>The task to await</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages) => InternalClient.SendEventBatchAsync(messages);
 
         /// <summary>
-        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
+        /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>

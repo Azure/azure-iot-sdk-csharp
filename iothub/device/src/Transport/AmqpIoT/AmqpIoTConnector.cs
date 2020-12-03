@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly string _hostName;
 
-        private AmqpIoTTransport _amqpIotTransport = null;
+        private AmqpIoTTransport _amqpIotTransport;
 
         internal AmqpIoTConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
         {

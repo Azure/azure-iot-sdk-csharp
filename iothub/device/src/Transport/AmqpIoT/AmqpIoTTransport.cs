@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
 
-        private ClientWebSocketTransport _clientWebSocketTransport = null;
+        private ClientWebSocketTransport _clientWebSocketTransport;
 
         public AmqpIoTTransport(
             AmqpSettings amqpSettings,
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return false;
         }
 
-        private bool CausedByRevocationCheckError(X509Chain chain)
+        private static bool CausedByRevocationCheckError(X509Chain chain)
         {
             return chain.ChainStatus.All(status => status.Status == X509ChainStatusFlags.RevocationStatusUnknown);
         }

@@ -176,6 +176,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override async void DoWrite(ChannelOutboundBuffer channelOutboundBuffer)
         {
+            if (channelOutboundBuffer == null)
+            {
+                throw new ArgumentNullException(nameof(channelOutboundBuffer), "The channel outbound buffer cannot be null.");
+            }
+
             try
             {
                 WriteInProgress = true;

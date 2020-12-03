@@ -117,25 +117,28 @@ namespace Microsoft.Azure.Devices.Client
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
+
         private volatile Tuple<MessageHandler, object> _defaultEventCallback;
 
         // Stores methods supported by the client device and their associated delegate.
         private volatile Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods;
+
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
         private volatile ConnectionStatusChangesHandler _connectionStatusChangesHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
-        private int _currentMessageCount = 0;
-        private int _diagnosticSamplingPercentage = 0;
+        private int _currentMessageCount;
+
+        private int _diagnosticSamplingPercentage;
 
         private ConnectionStatus _lastConnectionStatus = ConnectionStatus.Disconnected;
         private ConnectionStatusChangeReason _lastConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close;
 
         private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
 
-        private bool _twinPatchSubscribedWithService = false;
-        private object _twinPatchCallbackContext = null;
+        private bool _twinPatchSubscribedWithService;
+        private object _twinPatchCallbackContext;
 
         // Callback to call whenever the twin's desired state is updated by the service.
         internal DesiredPropertyUpdateCallback _desiredPropertyUpdateCallback;
@@ -247,7 +250,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        internal IotHubConnectionString IotHubConnectionString { get; private set; } = null;
+        internal IotHubConnectionString IotHubConnectionString { get; private set; }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
@@ -1391,6 +1394,12 @@ namespace Microsoft.Azure.Devices.Client
                 try
                 {
                     _deviceReceiveMessageSemaphore.Release();
+
+                    if (_deviceReceiveMessageCallback != null)
+                    {
+                        // Any previously received C2D messages will also need to be delivered.
+                        await InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (SemaphoreFullException)
                 {
@@ -1455,7 +1464,8 @@ namespace Microsoft.Azure.Devices.Client
                 callbackContextTuple = _deviceReceiveMessageCallback;
                 _deviceReceiveMessageSemaphore.Release();
 
-                await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+                await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2)
+                    ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
             }
             finally
             {

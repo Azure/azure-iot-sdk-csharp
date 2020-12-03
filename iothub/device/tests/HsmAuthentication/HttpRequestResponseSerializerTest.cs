@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             request.Content.Headers.TryAddWithoutValidation("content-type", "application/json");
             request.Content.Headers.TryAddWithoutValidation("content-length", "100");
 
-            byte[] httpRequestData = new HttpRequestResponseSerializer().SerializeRequest(request);
+            byte[] httpRequestData = HttpRequestResponseSerializer.SerializeRequest(request);
             string actual = Encoding.ASCII.GetString(httpRequestData);
             Assert.AreEqual(expected, actual, true, CultureInfo.InvariantCulture);
         }
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             request.Content.Headers.TryAddWithoutValidation("content-type", "application/json");
             request.Content.Headers.TryAddWithoutValidation("content-length", "100");
 
-            byte[] httpRequestData = new HttpRequestResponseSerializer().SerializeRequest(request);
+            byte[] httpRequestData = HttpRequestResponseSerializer.SerializeRequest(request);
             string actual = Encoding.ASCII.GetString(httpRequestData);
             Assert.AreEqual(expected, actual, true, CultureInfo.InvariantCulture);
         }
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes("test"));
             request.Content.Headers.TryAddWithoutValidation("content-type", "application/json");
 
-            byte[] httpRequestData = new HttpRequestResponseSerializer().SerializeRequest(request);
+            byte[] httpRequestData = HttpRequestResponseSerializer.SerializeRequest(request);
             string actual = Encoding.ASCII.GetString(httpRequestData);
             Assert.AreEqual(expected, actual, true, CultureInfo.InvariantCulture);
         }
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             request.RequestUri = new Uri("http://localhost:8081/modules/testModule/sign?api-version=2018-06-28", UriKind.Absolute);
             request.Method = HttpMethod.Get;
 
-            byte[] httpRequestData = new HttpRequestResponseSerializer().SerializeRequest(request);
+            byte[] httpRequestData = HttpRequestResponseSerializer.SerializeRequest(request);
             string actual = Encoding.ASCII.GetString(httpRequestData);
             Assert.AreEqual(expected, actual, true, CultureInfo.InvariantCulture);
         }
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public void TestSerializeRequest_RequestIsNull_ShouldThrowArgumentNullException()
         {
-            TestAssert.Throws<ArgumentNullException>(() => new HttpRequestResponseSerializer().SerializeRequest(null));
+            TestAssert.Throws<ArgumentNullException>(() => HttpRequestResponseSerializer.SerializeRequest(null));
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes("test"));
             request.Content.Headers.TryAddWithoutValidation("content-type", "application/json");
 
-            TestAssert.Throws<ArgumentNullException>(() => new HttpRequestResponseSerializer().SerializeRequest(request));
+            TestAssert.Throws<ArgumentNullException>(() => HttpRequestResponseSerializer.SerializeRequest(request));
         }
 
         [TestMethod]
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             request.Content.Headers.TryAddWithoutValidation("content-type", "application/json");
             request.Content.Headers.TryAddWithoutValidation("content-length", "100");
 
-            byte[] httpRequestData = new HttpRequestResponseSerializer().SerializeRequest(request);
+            byte[] httpRequestData = HttpRequestResponseSerializer.SerializeRequest(request);
             string actual = Encoding.ASCII.GetString(httpRequestData);
             Assert.AreEqual(expected, actual, true, CultureInfo.InvariantCulture);
         }
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<IOException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<IOException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<HttpRequestException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<HttpRequestException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<HttpRequestException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<HttpRequestException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<HttpRequestException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<HttpRequestException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<ArgumentOutOfRangeException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<ArgumentOutOfRangeException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<HttpRequestException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<HttpRequestException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<IOException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<IOException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            HttpResponseMessage response = await new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken);
+            HttpResponseMessage response = await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken);
 
             Assert.AreEqual(response.Version, Version.Parse("1.1"));
             Assert.AreEqual(response.StatusCode, System.Net.HttpStatusCode.OK);
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            TestAssert.ThrowsAsync<HttpRequestException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, cancellationToken)).Wait();
+            TestAssert.ThrowsAsync<HttpRequestException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             var memory = new MemoryStream(expected, true);
             var stream = new HttpBufferedStream(memory);
 
-            TestAssert.ThrowsAsync<HttpRequestException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, default)).Wait();
+            TestAssert.ThrowsAsync<HttpRequestException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, default)).Wait();
         }
 
         [TestMethod]
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             var memory = new MemoryStream(expected, true);
             var stream = new HttpBufferedStream(memory);
 
-            TestAssert.ThrowsAsync<IOException>(() => new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, default)).Wait();
+            TestAssert.ThrowsAsync<IOException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, default)).Wait();
         }
 
         [TestMethod]
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             var memory = new MemoryStream(expected, true);
             var stream = new HttpBufferedStream(memory);
 
-            HttpResponseMessage response = await new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, default).ConfigureAwait(false);
+            HttpResponseMessage response = await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, default).ConfigureAwait(false);
 
             Assert.AreEqual(Version.Parse("1.1"), response.Version);
             Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             var memory = new MemoryStream(expected, true);
             var stream = new HttpBufferedStream(memory);
 
-            var response = await new HttpRequestResponseSerializer().DeserializeResponseAsync(stream, default);
+            var response = await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, default);
 
             Assert.AreEqual(response.Version, Version.Parse("1.1"));
             Assert.AreEqual(response.StatusCode, System.Net.HttpStatusCode.OK);

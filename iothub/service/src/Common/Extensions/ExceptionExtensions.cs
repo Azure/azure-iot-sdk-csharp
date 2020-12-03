@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Reflection;
-
-    using Microsoft.Azure.Devices.Common.Exceptions;
-
     public static class ExceptionExtensions
     {
         private const string ExceptionIdentifierName = "ExceptionId";
@@ -51,19 +49,40 @@ namespace Microsoft.Azure.Devices.Common
 
             if (PartialTrustHelpers.UnsafeIsInFullTrust())
             {
+
                 // Racing here is harmless
-                if (ExceptionExtensions.prepForRemotingMethodInfo == null)
+
+                if (prepForRemotingMethodInfo == null)
                 {
-                    ExceptionExtensions.prepForRemotingMethodInfo =
-                        typeof(Exception).GetMethod("PrepForRemoting", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { }, new ParameterModifier[] { });
+#if NET451
+                    prepForRemotingMethodInfo =
+                        typeof(Exception).GetMethod(
+                            "PrepForRemoting",
+                            BindingFlags.Instance | BindingFlags.NonPublic,
+                            null,
+                            new Type[] { },
+                            new ParameterModifier[] { });
+#else
+                    prepForRemotingMethodInfo =
+                        typeof(Exception).GetMethod(
+                            "PrepForRemoting",
+                            BindingFlags.Instance | BindingFlags.NonPublic,
+                            null,
+                            Array.Empty<Type>(),
+                            Array.Empty<ParameterModifier>());
+#endif
                 }
 
-                if (ExceptionExtensions.prepForRemotingMethodInfo != null)
+                if (prepForRemotingMethodInfo != null)
                 {
                     // PrepForRemoting is not thread-safe. When the same exception instance is thrown by multiple threads
                     // the remote stack trace string may not format correctly. However, We don't lock this to protect us from it given
                     // it is discouraged to throw the same exception instance from multiple threads and the side impact is ignorable.
+#if NET451
                     prepForRemotingMethodInfo.Invoke(exception, new object[] { });
+#else
+                    prepForRemotingMethodInfo.Invoke(exception, Array.Empty<object>());
+#endif
                 }
             }
 
@@ -130,7 +149,7 @@ namespace Microsoft.Azure.Devices.Common
 
         public static bool CheckIotHubErrorCode(this Exception ex, params ErrorCode[] errorCodeList)
         {
-            foreach (var errorCode in errorCodeList)
+            foreach (ErrorCode errorCode in errorCodeList)
             {
                 if (ex is IotHubException && ((IotHubException)ex).Code == errorCode)
                 {
