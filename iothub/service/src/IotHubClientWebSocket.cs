@@ -976,6 +976,11 @@ namespace Microsoft.Azure.Devices
             return -1;
         }
 
+        private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer)
+        {
+            return await ReadFromStreamAsync(stream, buffer, 0, buffer.Length).ConfigureAwait(false)
+        }
+
         private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer, int offset, int size)
         {
 #if NET451 || NET472 || NETSTANDARD2_0
@@ -985,13 +990,9 @@ namespace Microsoft.Azure.Devices
 #endif
         }
 
-        private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer)
+        private static async Task WriteToStreamAsync(Stream stream, byte[] buffer)
         {
-#if NET451 || NET472 || NETSTANDARD2_0
-            return await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
-#else
-            return await stream.ReadAsync(buffer).ConfigureAwait(false);
-#endif
+            await WriteToStreamAsync(stream, buffer, 0, buffer.Length).ConfigureAwait(false);
         }
 
         private static async Task WriteToStreamAsync(Stream stream, byte[] buffer, int offset, int size)
@@ -1000,15 +1001,6 @@ namespace Microsoft.Azure.Devices
             await stream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
 #else
             await stream.WriteAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);
-#endif
-        }
-
-        private static async Task WriteToStreamAsync(Stream stream, byte[] buffer)
-        {
-#if NET451 || NET472 || NETSTANDARD2_0
-            await stream.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
-#else
-            await stream.WriteAsync(buffer).ConfigureAwait(false);
 #endif
         }
     }
