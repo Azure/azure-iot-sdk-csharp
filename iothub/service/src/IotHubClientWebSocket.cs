@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices
                 TcpClient.Client.SendTimeout = GetSocketTimeoutInMilliSeconds(timeout);
 
                 // Send WebSocket Upgrade request
-                await WebSocketStream.WriteAsync(upgradeRequestBytes, 0, upgradeRequestBytes.Length).ConfigureAwait(false);
+                await WriteToStream(WebSocketStream, upgradeRequestBytes).ConfigureAwait(false);
 
                 // receive WebSocket Upgrade response
                 byte[] responseBuffer = new byte[8 * 1024];
@@ -229,24 +229,19 @@ namespace Microsoft.Azure.Devices
                 {
                     // Ignore pong frame and start over
                     totalBytesRead = 0;
-                    do
-                    {
-                        bytesRead = await WebSocketStream.ReadAsync(header, totalBytesRead, header.Length - totalBytesRead).ConfigureAwait(false);
-                        if (bytesRead == 0)
-                        {
-                            throw new IOException(FramingPrematureEOF, new InvalidDataException("IotHubClientWebSocket was expecting more bytes"));
-                        }
+                    totalBytesRead = await ReadFromStreamAsync(WebSocketStream, header).ConfigureAwait(false);
 
-                        totalBytesRead += bytesRead;
+                    if (totalBytesRead == 0)
+                    {
+                        throw new IOException(FramingPrematureEOF, new InvalidDataException("IotHubClientWebSocket was expecting more bytes"));
                     }
-                    while (totalBytesRead < header.Length);
 
                     if (!ParseWebSocketFrameHeader(header, out payloadLength, out pongFrame))
                     {
                         // Encountered a close frame or error in parsing frame from server. Close connection
                         byte[] closeHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
-                        await WebSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length).ConfigureAwait(false);
+                        await WriteToStream(WebSocketStream, closeHeader).ConfigureAwait(false);
 
                         State = WebSocketState.Closed;
                         WebSocketStream.Close();
@@ -257,10 +252,10 @@ namespace Microsoft.Azure.Devices
                     if (pongFrame && payloadLength > 0)
                     {
                         totalBytesRead = 0;
-                        var tempBuffer = new byte[payloadLength];
+                        byte[] tempBuffer = new byte[payloadLength];
                         while (totalBytesRead < payloadLength)
                         {
-                            bytesRead = await WebSocketStream.ReadAsync(tempBuffer, totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
+                            bytesRead = await ReadFromStreamAsync(WebSocketStream, tempBuffer, totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
                             if (bytesRead == 0)
                             {
                                 throw new IOException(FramingPrematureEOF, new InvalidDataException("IotHubClientWebSocket was expecting more bytes"));
@@ -283,7 +278,7 @@ namespace Microsoft.Azure.Devices
                 {
                     while (totalBytesRead < payloadLength)
                     {
-                        bytesRead = await WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
+                        bytesRead = await ReadFromStreamAsync(WebSocketStream, buffer, offset + totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
 
                         if (bytesRead == 0)
                         {
@@ -301,7 +296,7 @@ namespace Microsoft.Azure.Devices
                             // read payload length (< 64K)
                             do
                             {
-                                bytesRead = await WebSocketStream.ReadAsync(header, totalBytesRead, header.Length - totalBytesRead).ConfigureAwait(false);
+                                bytesRead = await ReadFromStreamAsync(WebSocketStream, header, totalBytesRead, header.Length - totalBytesRead).ConfigureAwait(false);
 
                                 if (bytesRead == 0)
                                 {
@@ -320,7 +315,7 @@ namespace Microsoft.Azure.Devices
                             {
                                 while (totalBytesRead < extendedPayloadLength)
                                 {
-                                    bytesRead = await WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, extendedPayloadLength - totalBytesRead).ConfigureAwait(false);
+                                    bytesRead = await ReadFromStreamAsync(WebSocketStream, buffer, offset + totalBytesRead, extendedPayloadLength - totalBytesRead).ConfigureAwait(false);
 
                                     if (bytesRead == 0)
                                     {
@@ -339,10 +334,10 @@ namespace Microsoft.Azure.Devices
 
                         case LargeSizeFrame:
                             // read payload length (>= 64K)
-                            var payloadLengthBuffer = new byte[8];
+                            byte[] payloadLengthBuffer = new byte[8];
                             do
                             {
-                                bytesRead = await WebSocketStream.ReadAsync(payloadLengthBuffer, totalBytesRead, payloadLengthBuffer.Length - totalBytesRead).ConfigureAwait(false);
+                                bytesRead = await ReadFromStreamAsync(WebSocketStream, payloadLengthBuffer, totalBytesRead, payloadLengthBuffer.Length - totalBytesRead).ConfigureAwait(false);
 
                                 if (bytesRead == 0)
                                 {
@@ -363,7 +358,7 @@ namespace Microsoft.Azure.Devices
                             {
                                 while (totalBytesRead < superExtendedPayloadLength)
                                 {
-                                    bytesRead = await WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, (int)(superExtendedPayloadLength - totalBytesRead)).ConfigureAwait(false);
+                                    bytesRead = await ReadFromStreamAsync(WebSocketStream, buffer, offset + totalBytesRead, (int)(superExtendedPayloadLength - totalBytesRead)).ConfigureAwait(false);
 
                                     if (bytesRead == 0)
                                     {
@@ -402,9 +397,15 @@ namespace Microsoft.Azure.Devices
             try
             {
                 byte[] webSocketHeader = PrepareWebSocketHeader(size, webSocketMessageType);
+#if NET451 || NET472 || NETSTANDARD2_0
                 await WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
                 MaskWebSocketData(buffer, offset, size);
                 await WebSocketStream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
+#else
+                await WebSocketStream.WriteAsync(webSocketHeader).ConfigureAwait(false);
+                MaskWebSocketData(buffer, offset, size);
+                await WebSocketStream.WriteAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);
+#endif
                 succeeded = true;
             }
             finally
@@ -426,7 +427,7 @@ namespace Microsoft.Azure.Devices
                 {
                     byte[] webSocketHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
-                    await WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
+                    await WriteToStreamAsync(WebSocketStream, webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
 
                     WebSocketStream.Close();
                     TcpClient.Close();
@@ -477,11 +478,9 @@ namespace Microsoft.Azure.Devices
             }
 
             long ticks = Ticks.FromTimeSpan(timeout);
-            if (ticks / TimeSpan.TicksPerMillisecond > int.MaxValue)
-            {
-                return int.MaxValue;
-            }
-            return Ticks.ToMilliseconds(ticks);
+            return ticks / TimeSpan.TicksPerMillisecond > int.MaxValue
+                ? int.MaxValue
+                : Ticks.ToMilliseconds(ticks);
         }
 
         private static byte[] PrepareWebSocketHeader(int bufferLength, WebSocketMessageType webSocketMessageType)
@@ -505,7 +504,7 @@ namespace Microsoft.Azure.Devices
                 octet[4] = s_maskingKey[2];
                 octet[5] = s_maskingKey[3];
             }
-            else if (bufferLength <= UInt16.MaxValue)
+            else if (bufferLength <= ushort.MaxValue)
             {
                 // Handle medium payloads
                 octet = new byte[8];
@@ -784,9 +783,9 @@ namespace Microsoft.Azure.Devices
 
         private static string ComputeHash(string key)
         {
-            const string WebSocketGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+            const string webSocketGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
-            string modifiedString = key + WebSocketGuid;
+            string modifiedString = key + webSocketGuid;
             byte[] modifiedStringBytes = Encoding.ASCII.GetBytes(modifiedString);
 
             byte[] hashBytes;
@@ -827,7 +826,7 @@ namespace Microsoft.Azure.Devices
                     TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeoutHelper.RemainingTime());
                     _bytesRead = 0;
 
-                    _bytesRead = await Stream.ReadAsync(Buffer, TotalBytesRead, Buffer.Length - TotalBytesRead).ConfigureAwait(false);
+                    _bytesRead = await ReadFromStreamAsync(Stream, Buffer, TotalBytesRead, Buffer.Length - TotalBytesRead).ConfigureAwait(false);
 
                     TotalBytesRead += _bytesRead;
                     if (_bytesRead == 0 || TryParseBuffer())
@@ -882,7 +881,7 @@ namespace Microsoft.Azure.Devices
                         return false;
                     }
 
-                    var statusCodeString = Encoding.ASCII.GetString(Buffer, firstSpace + 1, secondSpace - (firstSpace + 1));
+                    string statusCodeString = Encoding.ASCII.GetString(Buffer, firstSpace + 1, secondSpace - (firstSpace + 1));
                     StatusCode = (HttpStatusCode)int.Parse(statusCodeString, CultureInfo.InvariantCulture);
                     int endOfLine = IndexOfAsciiChars(Buffer, secondSpace + 1, TotalBytesRead - (secondSpace + 1), '\r', '\n');
                     if (endOfLine == -1)
@@ -958,7 +957,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Check if the given buffer contains the 2 specified ascii characters (in sequence) without having to allocate or convert byte[] into string
+        /// Check if the given buffer contains the 2 specified ASCII characters (in sequence) without having to allocate or convert byte[] into string
         /// </summary>
         public static int IndexOfAsciiChars(byte[] array, int offset, int count, char asciiChar1, char asciiChar2)
         {
@@ -975,6 +974,42 @@ namespace Microsoft.Azure.Devices
             }
 
             return -1;
+        }
+
+        private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer, int offset, int size)
+        {
+#if NET451 || NET472 || NETSTANDARD2_0
+            return await stream.ReadAsync(buffer, offset, size).ConfigureAwait(false);
+#else
+            return await stream.ReadAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);
+#endif
+        }
+
+        private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer)
+        {
+#if NET451 || NET472 || NETSTANDARD2_0
+            return await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+#else
+            return await stream.ReadAsync(buffer).ConfigureAwait(false);
+#endif
+        }
+
+        private static async Task WriteToStreamAsync(Stream stream, byte[] buffer, int offset, int size)
+        {
+#if NET451 || NET472 || NETSTANDARD2_0
+            await stream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
+#else
+            await stream.WriteAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);
+#endif
+        }
+
+        private static async Task WriteToStream(Stream stream, byte[] buffer)
+        {
+#if NET451 || NET472 || NETSTANDARD2_0
+            await stream.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+#else
+            await stream.WriteAsync(buffer).ConfigureAwait(false);
+#endif
         }
     }
 }
