@@ -978,7 +978,7 @@ namespace Microsoft.Azure.Devices
 
         private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer)
         {
-            return await ReadFromStreamAsync(stream, buffer, 0, buffer.Length).ConfigureAwait(false)
+            return await ReadFromStreamAsync(stream, buffer, 0, buffer.Length).ConfigureAwait(false);
         }
 
         private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer, int offset, int size)
