@@ -4,7 +4,6 @@
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -28,11 +27,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 
         private static string s_simulatorExeName;
 
+        private static int s_simulatorProcessId;
+
         private TcpTpmDevice _tcpTpmDevice;
         private Tpm2 _tpm2;
         private SecurityProviderTpmHsm _innerClient;
 
-        public SecurityProviderTpmSimulator(string registrationId) : base(registrationId)
+        public SecurityProviderTpmSimulator(string registrationId)
+            : base(registrationId)
         {
             _tcpTpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
             _tcpTpmDevice.Connect();
@@ -65,17 +67,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         }
 
 
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Sample code resiliency")]
         public static void StopSimulatorProcess()
         {
-            foreach (var process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(s_simulatorExeName)))
+            if (s_simulatorProcessId != 0)
             {
                 try
                 {
-                    process?.Kill();
+                    Process process = Process.GetProcessById(s_simulatorProcessId);
+                    process.Kill();
                 }
-                catch (Exception)
+                catch (ArgumentException)
                 {
+                    // Process not found
+                }
+                finally
+                {
+                    s_simulatorProcessId = 0;
                 }
             }
         }
@@ -116,7 +123,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 
             if (files.Length == 0)
             {
-                throw new InvalidOperationException($"TPM Simulator not found : {s_simulatorExeName}");
+                throw new InvalidOperationException($"TPM Simulator not found: {s_simulatorExeName}");
             }
 
             using var simulatorProcess = new Process
@@ -130,6 +137,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
             };
 
             simulatorProcess.Start();
+            s_simulatorProcessId = simulatorProcess.Id;
         }
 
         protected override void Dispose(bool disposing)

@@ -25,7 +25,7 @@ Certificate: Select the public key 'certificate.cer' file.
 
 To run the sample, in a developer command prompt enter: `dotnet run -s <IdScope>`
 
-> Replace `IdScope` with the value found within the Device Provisioning Service Overview tab. E.g. `dotnet run 0ne1234ABCD`
+> Replace `IdScope` with the value found within the Device Provisioning Service Overview tab.
 > To see a full list of parameters, run `dotnet run -?`.
 
 Continue by following the instructions presented in the sample console window.
