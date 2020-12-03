@@ -73,8 +73,8 @@ namespace Microsoft.Azure.Devices.Client
             return TraceException<ObjectDisposedException>(new ObjectDisposedException(null, message), TraceEventType.Error);
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of the DEBUG compilation flag.")]
-        public void TraceHandled(Exception exception, string catchLocation, EventTraceActivity activity = null)
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameter catchLocation is inside of the DEBUG compilation flag.")]
+        public void TraceHandled(Exception exception, string catchLocation)
         {
 #if NET451 && DEBUG
             Trace.WriteLine(string.Format(
@@ -85,9 +85,6 @@ namespace Microsoft.Azure.Devices.Client
                 exception.GetType(),
                 exception.ToStringSlim()));
 #endif
-            ////MessagingClientEtwProvider.Provider.HandledExceptionWithFunctionName(
-            ////    activity, catchLocation, exception.ToStringSlim(), string.Empty);
-
             this.BreakOnException(exception);
         }
 
