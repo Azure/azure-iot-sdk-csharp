@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Common
 
     public static class TrackingHelper
     {
-        [SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "This property may be used by others so it is not safe to modify it. We will depreciate it in the next LTS, but will need to make sure no one needs to set this for any reason before then.")]
+        [SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "This property may be used by others so it is not safe to modify it.")]
         public static string GatewayId;
 
         private const string GatewayPrefix = "-G:";
