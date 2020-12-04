@@ -88,7 +88,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
 
-
             if (httpClientHandler == null)
             {
                 httpClientHandler = new HttpClientHandler();
