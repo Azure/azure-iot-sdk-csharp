@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 {
@@ -51,9 +52,13 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             var builder = new StringBuilder();
             while (true)
             {
-                var length = await _innerStream
+#if NET451 || NET472 || NETSTANDARD2_0
+                int length = await _innerStream
                     .ReadAsync(buffer, 0, buffer.Length, cancellationToken)
                     .ConfigureAwait(false);
+#else
+                int length = await _innerStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+#endif
 
                 if (length == 0)
                 {

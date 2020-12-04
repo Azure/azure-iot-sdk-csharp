@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     internal sealed class IotHubConnectionString : IAuthorizationHeaderProvider, ICbsTokenProvider
     {
         private static readonly TimeSpan s_defaultTokenTimeToLive = TimeSpan.FromHours(1);
-        private const string UserSeparator = "@";
+        private const char UserSeparator = '@';
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
         {
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices
             string password;
             if (string.IsNullOrWhiteSpace(SharedAccessSignature))
             {
-                password = BuildToken(out TimeSpan timeToLive);
+                password = BuildToken(out _);
             }
             else
             {

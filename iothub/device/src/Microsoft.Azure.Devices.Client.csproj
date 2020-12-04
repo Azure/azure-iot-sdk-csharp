@@ -47,6 +47,7 @@
 
   <PropertyGroup>
     <common>$(RootDir)\common\src</common>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
