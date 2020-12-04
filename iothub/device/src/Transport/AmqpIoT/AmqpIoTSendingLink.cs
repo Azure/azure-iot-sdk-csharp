@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
@@ -201,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         #region Twin handling
 
-        internal async Task<AmqpIoTOutcome> SendTwinGetMessageAsync(string correlationId, TwinCollection reportedProperties, TimeSpan timeout)
+        internal async Task<AmqpIoTOutcome> SendTwinGetMessageAsync(string correlationId, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
