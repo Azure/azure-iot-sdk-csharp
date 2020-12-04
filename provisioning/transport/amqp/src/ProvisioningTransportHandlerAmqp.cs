@@ -65,8 +65,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            AmqpClientConnection connection = null;
-
             try
             {
                 AmqpAuthStrategy authStrategy;
@@ -107,7 +105,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 string registrationId = message.Security.GetRegistrationID();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
-                connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
+                using AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
                 await authStrategy.OpenConnectionAsync(connection, s_timeoutConstant, useWebSocket, Proxy, RemoteCertificateValidationCallback).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
