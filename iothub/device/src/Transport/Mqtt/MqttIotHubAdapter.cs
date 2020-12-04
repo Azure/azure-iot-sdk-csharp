@@ -760,9 +760,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 message.MqttTopicName = publish.TopicName;
                 _mqttIotHubEventHandler.OnMessageReceived(message);
 
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, context.Name, publish, nameof(AcceptMessageAsync));
-
                 return TaskHelpers.CompletedTask;
             }
             catch (Exception ex) when (!ex.IsFatal())
@@ -772,6 +769,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 ShutdownOnErrorAsync(context, ex);
                 return TaskHelpers.CompletedTask;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, context.Name, publish, nameof(AcceptMessageAsync));
             }
         }
 
