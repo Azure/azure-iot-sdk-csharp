@@ -42,6 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private HttpClient _httpClientObj;
         private bool _isDisposed;
         private readonly ProductInfo _productInfo;
+        private HttpClientHandler _httpClientHandler;
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -89,30 +90,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
 
-            if (httpClientHandler == null)
+            _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
+
+            _httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
+            _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+
+            if (clientCert != null)
             {
-                httpClientHandler = new HttpClientHandler();
+                _httpClientHandler.ClientCertificates.Add(clientCert);
+                _usingX509ClientCert = true;
             }
 
-            using (httpClientHandler)
+            if (proxy != DefaultWebProxySettings.Instance)
             {
-                httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
-                httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
-
-                if (clientCert != null)
-                {
-                    httpClientHandler.ClientCertificates.Add(clientCert);
-                    _usingX509ClientCert = true;
-                }
-
-                if (proxy != DefaultWebProxySettings.Instance)
-                {
-                    httpClientHandler.UseProxy = proxy != null;
-                    httpClientHandler.Proxy = proxy;
-                }
-
-                _httpClientObj = new HttpClient(httpClientHandler);
+                _httpClientHandler.UseProxy = proxy != null;
+                _httpClientHandler.Proxy = proxy;
             }
+
+            _httpClientObj = new HttpClient(_httpClientHandler);
 #endif
 
             _httpClientObj.BaseAddress = _baseAddress;
@@ -535,6 +530,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     _httpClientObj.Dispose();
                     _httpClientObj = null;
+                }
+                if (_httpClientHandler != null)
+                {
+                    _httpClientHandler.Dispose();
+                    _httpClientHandler = null;
                 }
 
                 _isDisposed = true;
