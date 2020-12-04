@@ -429,9 +429,9 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // Trace before PrepareForRethrow to avoid weird callstack strings
 #if NET451
-                Fx.Exception.TraceException(asyncResult._exception, asyncResult.TraceEventType, asyncResult.Activity);
+                Fx.Exception.TraceException(asyncResult._exception, asyncResult.TraceEventType);
 #else
-                Fx.Exception.TraceException(asyncResult._exception, TraceEventType.Verbose, asyncResult.Activity);
+                Fx.Exception.TraceException(asyncResult._exception, TraceEventType.Verbose);
 #endif
                 ExceptionDispatcher.Throw(asyncResult._exception);
             }

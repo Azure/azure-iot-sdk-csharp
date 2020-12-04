@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information. 
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Specialized;
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        public async Task<int> ReceiveAsync(byte[] buffer, int offset, int size, TimeSpan timeout)
+        public async Task<int> ReceiveAsync(byte[] buffer, int offset, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
@@ -359,6 +359,7 @@ namespace Microsoft.Azure.Devices.Client
                             }
 
                             break;
+
                         case LargeSizeFrame:
                             // read payload length (>= 64K)
                             var payloadLengthBuffer = new byte[8];
@@ -868,7 +869,6 @@ namespace Microsoft.Azure.Devices.Client
                     throw Fx.Exception.AsWarning(new IOException(socketException.Message, socketException));
                 }
             }
-
 
             public override string ToString()
             {
