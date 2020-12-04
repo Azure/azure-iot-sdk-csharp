@@ -321,6 +321,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (disposing)
             {
+                // We don't know if the transport object is instantiated as a disposable or not
+                // We check and dispose if it is.
                 if (_transport is IDisposable disposable)
                 {
                     disposable.Dispose();
