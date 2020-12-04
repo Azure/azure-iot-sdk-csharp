@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public async Task<int> ReceiveAsync(byte[] buffer, int offset, int size, TimeSpan timeout)
+        public async Task<int> ReceiveAsync(byte[] buffer, int offset, TimeSpan timeout)
         {
             byte[] header = new byte[2];
 
