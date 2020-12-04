@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client
             bool succeeded = false;
             try
             {
-                int numBytes = await this.webSocket.ReceiveAsync(this.asyncReadBuffer, this.asyncReadBufferOffset, this.asyncReadBufferSize, this.operationTimeout).ConfigureAwait(false);
+                int numBytes = await this.webSocket.ReceiveAsync(this.asyncReadBuffer, this.asyncReadBufferOffset, this.operationTimeout).ConfigureAwait(false);
 
                 succeeded = true;
                 return numBytes;

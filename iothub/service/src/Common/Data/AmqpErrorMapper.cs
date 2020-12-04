@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     using System;
-
+    using System.Diagnostics.CodeAnalysis;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;
     using Microsoft.Azure.Devices.Common;
@@ -73,18 +73,18 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             return Tuple.Create(AmqpErrorCode.InternalError.ToString(), ex.ToStringSlim(), (string)null);
         }
 
-        public static AmqpException ToAmqpException(Exception exception, string gatewayId)
+        public static AmqpException ToAmqpException(Exception exception)
         {
-            return ToAmqpException(exception, gatewayId, false);
+            return ToAmqpException(exception, false);
         }
 
-        public static AmqpException ToAmqpException(Exception exception, string gatewayId, bool includeStackTrace)
+        public static AmqpException ToAmqpException(Exception exception, bool includeStackTrace)
         {
             Error amqpError = ToAmqpError(exception, includeStackTrace);
             return new AmqpException(amqpError);
         }
 
-        public static Error ToAmqpError(Exception exception, string gatewayId)
+        public static Error ToAmqpError(Exception exception)
         {
             return ToAmqpError(exception, false);
         }

@@ -15,6 +15,7 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 #if NET451
     using System.Net.Http.Formatting;
@@ -559,6 +560,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private static async Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
             using var reader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(reader);
