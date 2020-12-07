@@ -570,7 +570,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 Logging.Enter(this, "Process c2d message via callback", nameof(HandleIncomingMessagesAsync));
             }
 
-            using Message message = ProcessMessage(true);
+            Message message = ProcessMessage(true);
             await (_deviceMessageReceivedListener?.Invoke(message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
