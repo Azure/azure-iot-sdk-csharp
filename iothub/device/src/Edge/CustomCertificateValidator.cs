@@ -95,7 +95,8 @@ namespace Microsoft.Azure.Devices.Client.Edge
             chain.ChainPolicy.ExtraStore.Add(trustedCertificate);
             chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
 #if !NET451
-            if (!chain.Build(new X509Certificate2(certificate)))
+            using var cert = new X509Certificate2(certificate);
+            if (!chain.Build(cert))
             {
                 Debug.WriteLine("Unable to build the chain using the expected root certificate.");
                 return false;
