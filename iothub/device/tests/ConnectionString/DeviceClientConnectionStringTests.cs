@@ -97,6 +97,15 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void DeviceClientConnectionStringInvalidCharacterTest()
+        {
+            // The device name has a semi-colon, which is a character that is not allowed in a device Id
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=dGVzdFN0cmluZzE=;DeviceId=device;1";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+        }
+
+        [TestMethod]
         [Ignore] // TODO #583
         public void DeviceClientConnectionStringX509CertificateAmqpTest()
         {
@@ -267,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             const string gatewayHostName = "gateway.acme.azure-devices.net";
             const string transparentGatewayHostName = "test";
             const string deviceId = "device1";
-            const string deviceIdSplChar = "device1-.+%_#*?!(),=@;$'";
+            const string deviceIdSplChar = "device1-.+%_#*?!(),=@$'";
             const string sharedAccessKey = "dGVzdFN0cmluZzE=";
             const string sharedAccessKeyName = "AllAccessKey";
             const string credentialScope = "Device";
