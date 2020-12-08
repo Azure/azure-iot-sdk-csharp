@@ -40,14 +40,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 eventArgs.Cancel = true;
                 cts.Cancel();
-                Console.WriteLine("Sample execution cancellation requested; will exit.");
+                Console.WriteLine("Cancellation requested; will exit.");
             };
 
             var waitTime = TimeSpan.FromMinutes(1);
             var timer = Stopwatch.StartNew();
             Console.WriteLine($"Use the IoT Hub Azure Portal or IoT Explorer utility to change the twin desired properties.");
 
-            Console.WriteLine($"Waiting up to {waitTime} for IoT Hub method calls ...");
+            Console.WriteLine($"Waiting up to {waitTime} for receiving twin desired property updates ...");
             while (!cts.IsCancellationRequested
                 && timer.Elapsed < waitTime)
             {

@@ -54,10 +54,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             InitializeClient();
         }
 
-        public async Task RunSampleAsync()
+        public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
             _logger.LogInformation(">> Press Control+C to quit the sample.");
-            using var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource(sampleRunningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;

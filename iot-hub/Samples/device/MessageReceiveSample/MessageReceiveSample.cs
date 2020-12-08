@@ -71,8 +71,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 await _deviceClient.CompleteAsync(receivedMessage);
                 Console.WriteLine($"{DateTime.Now}> Completed C2D message with Id={receivedMessage.MessageId}.");
-
-                receivedMessage.Dispose();
             }
 
             sw.Stop();

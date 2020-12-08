@@ -5,6 +5,7 @@ using CommandLine;
 using Microsoft.Azure.Devices.Logging;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
@@ -45,8 +46,12 @@ namespace Microsoft.Azure.Devices.Samples
             // Instantiating this seems to do all we need for outputting SDK events to our console log
             _ = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
+            var runningTime = parameters.ApplicationRunningTime != null
+                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                : Timeout.InfiniteTimeSpan;
+
             var sample = new ServiceClientSample(parameters.HubConnectionString, parameters.TransportType, parameters.DeviceId, logger);
-            await sample.RunSampleAsync();
+            await sample.RunSampleAsync(runningTime);
 
             Console.WriteLine("Done.");
             return 0;

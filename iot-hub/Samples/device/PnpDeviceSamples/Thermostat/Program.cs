@@ -39,8 +39,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 throw new ArgumentException("Required parameters are not set. Please recheck required variables by using \"--help\"");
             }
 
+            var runningTime = parameters.ApplicationRunningTime != null
+                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                : Timeout.InfiniteTimeSpan;
+
             s_logger.LogInformation("Press Control+C to quit the sample.");
-            using var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource(runningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
