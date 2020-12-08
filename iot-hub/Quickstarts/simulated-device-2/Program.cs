@@ -14,24 +14,37 @@ using System.Threading.Tasks;
 
 namespace SimulatedDevice
 {
+    /// <summary>
+    /// This sample illustrates the very basics of a device app sending telemetry and receiving a command.
+    /// For a more comprehensive device app sample, please see
+    /// <see href="https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/DeviceReconnectionSample"/>.
+    /// </summary>
     internal class Program
     {
         private static DeviceClient s_deviceClient;
+        private static readonly TransportType s_transportType = TransportType.Mqtt;
 
         // The device connection string to authenticate the device with your IoT hub.
         // Using the Azure CLI:
         // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyDotnetDevice --output table
         private static string s_connectionString = "{Your device connection string here}";
 
+        private static TimeSpan s_telemetryInterval = TimeSpan.FromSeconds(1); // Seconds
+
         private static async Task Main(string[] args)
         {
             Console.WriteLine("IoT Hub Quickstarts #1 - Simulated device.");
 
-            CheckForConnectionStringArgument(args);
+            // This sample accepts the device connection string as a parameter, if present
+            ValidateConnectionString(args);
 
             // Connect to the IoT hub using the MQTT protocol
-            s_deviceClient = DeviceClient.CreateFromConnectionString(s_connectionString, TransportType.Mqtt);
+            s_deviceClient = DeviceClient.CreateFromConnectionString(s_connectionString, s_transportType);
 
+            // Create a handler for the direct method call
+            await s_deviceClient.SetMethodHandlerAsync("SetTelemetryInterval", SetTelemetryInterval, null);
+
+            // Set up a condition to quit the sample
             Console.WriteLine("Press control-C to exit.");
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
@@ -41,25 +54,41 @@ namespace SimulatedDevice
                 Console.WriteLine("Device simulator exit requested...");
             };
 
+            // Run the telemetry loop
             await SendDeviceToCloudMessagesAsync(cts.Token);
 
+            s_deviceClient.Dispose();
             Console.WriteLine("Device simulator finished.");
         }
 
-        private static void CheckForConnectionStringArgument(string[] args)
+        private static void ValidateConnectionString(string[] args)
         {
             if (args.Any())
             {
                 try
                 {
-                    var cs = IotHubConnectionStringBuilder.Create(args.First());
+                    var cs = IotHubConnectionStringBuilder.Create(args[0]);
                     s_connectionString = cs.ToString();
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    Console.WriteLine($"Error: Unrecognizable parameter '{args[0]}' as connection string.");
+                    Environment.Exit(1);
+                }
+            }
+            else
+            {
+                try
+                {
+                    _ = IotHubConnectionStringBuilder.Create(s_connectionString);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("This sample needs a device connection string to run. Program.cs can be edited to specify it, or it can be included on the command-line as the only parameter.");
+                    Environment.Exit(1);
+                }
             }
         }
-
-        private static int s_telemetryInterval = 1; // Seconds
 
         // Handle the direct method call
         private static Task<MethodResponse> SetTelemetryInterval(MethodRequest methodRequest, object userContext)
@@ -67,14 +96,16 @@ namespace SimulatedDevice
             var data = Encoding.UTF8.GetString(methodRequest.Data);
 
             // Check the payload is a single integer value
-            if (Int32.TryParse(data, out s_telemetryInterval))
+            if (int.TryParse(data, out int telemetryIntervalInSeconds))
             {
+                s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalInSeconds);
+
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Telemetry interval set to {0} seconds", data);
+                Console.WriteLine($"Telemetry interval set to {s_telemetryInterval}");
                 Console.ResetColor();
 
                 // Acknowlege the direct method call with a 200 success message
-                string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
+                string result = $"{{\"result\":\"Executed direct method: {methodRequest.Name}\"}}";
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
             }
             else
@@ -119,7 +150,15 @@ namespace SimulatedDevice
                 await s_deviceClient.SendEventAsync(message);
                 Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
 
-                await Task.Delay(s_telemetryInterval * 1000);
+                try
+                {
+                    await Task.Delay(s_telemetryInterval, ct);
+                }
+                catch (TaskCanceledException)
+                {
+                    // User canceled
+                    return;
+                }
             }
         }
     }

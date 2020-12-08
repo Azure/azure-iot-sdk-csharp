@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "read-d2c-messages", "read-d
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "simulated-device\SimulatedDevice.csproj", "{C22BD1F5-D8A7-452A-96C4-FF0C0553EBF3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "simulated-device-2", "simulated-device-2\simulated-device-2.csproj", "{3B033BD3-38B4-4B92-8871-2787DD7C86CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDeviceWithCommand", "simulated-device-2\SimulatedDeviceWithCommand.csproj", "{3B033BD3-38B4-4B92-8871-2787DD7C86CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -21,6 +21,7 @@ namespace SimulatedDevice
     internal class Program
     {
         private static DeviceClient s_deviceClient;
+        private static readonly TransportType s_transportType = TransportType.Mqtt;
 
         // The device connection string to authenticate the device with your IoT hub.
         // Using the Azure CLI:
@@ -32,10 +33,10 @@ namespace SimulatedDevice
             Console.WriteLine("IoT Hub Quickstarts #1 - Simulated device.");
 
             // This sample accepts the device connection string as a parameter, if present
-            CheckForConnectionStringArgument(args);
+            ValidateConnectionString(args);
 
             // Connect to the IoT hub using the MQTT protocol
-            s_deviceClient = DeviceClient.CreateFromConnectionString(s_connectionString, TransportType.Mqtt);
+            s_deviceClient = DeviceClient.CreateFromConnectionString(s_connectionString, s_transportType);
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press control-C to exit.");
@@ -50,19 +51,36 @@ namespace SimulatedDevice
             // Run the telemetry loop
             await SendDeviceToCloudMessagesAsync(cts.Token);
 
+            s_deviceClient.Dispose();
             Console.WriteLine("Device simulator finished.");
         }
 
-        private static void CheckForConnectionStringArgument(string[] args)
+        private static void ValidateConnectionString(string[] args)
         {
             if (args.Any())
             {
                 try
                 {
-                    var cs = IotHubConnectionStringBuilder.Create(args.First());
+                    var cs = IotHubConnectionStringBuilder.Create(args[0]);
                     s_connectionString = cs.ToString();
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    Console.WriteLine($"Error: Unrecognizable parameter '{args[0]}' as connection string.");
+                    Environment.Exit(1);
+                }
+            }
+            else
+            {
+                try
+                {
+                    _ = IotHubConnectionStringBuilder.Create(s_connectionString);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("This sample needs a device connection string to run. Program.cs can be edited to specify it, or it can be included on the command-line as the only parameter.");
+                    Environment.Exit(1);
+                }
             }
         }
 
