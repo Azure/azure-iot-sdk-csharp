@@ -28,9 +28,9 @@ namespace Microsoft.Azure.Devices.Samples
             _logger = logger;
         }
 
-        public async Task RunSampleAsync()
+        public async Task RunSampleAsync(TimeSpan runningTime)
         {
-            using var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource(runningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;

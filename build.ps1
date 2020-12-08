@@ -68,15 +68,16 @@ Function BuildProject($path, $message) {
     }
 }
 
-Function RunApp($path, $message, $args) {
+Function RunApp($path, $message, $params) {
 
-    $label = "RUN: --- $message $configuration ($args)---"
+    $label = "RUN: --- $message $configuration ($params)---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
-    & dotnet run $args
+    $runCommand = "dotnet run -- $params"
+    Invoke-Expression $runCommand
 
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed: $label"
@@ -103,26 +104,34 @@ try {
 
     if ($run)
     {
-        # Run cleanup first so the samples don't get overloaded with old device instances
+        $sampleRunningTime = 60
+
+        # Run cleanup first so the samples don't get overloaded with old devices
         RunApp provisioning\Samples\service\CleanupEnrollmentsSample "Provisioning\Service\CleanupEnrollmentsSample"
         RunApp iot-hub\Samples\service\CleanUpDevicesSample "IoTHub\Service\CleanUpDevicesSample"
 
-        RunApp iot-hub\Samples\device\FileUploadSample "IoTHub\Device\FileUploadSample"
-        RunApp iot-hub\Samples\device\KeysRolloverSample "IoTHub\Device\KeysRolloverSample"
-        RunApp iot-hub\Samples\device\MessageSample "IoTHub\Device\MessageSample"
-        RunApp iot-hub\Samples\device\MethodSample "IoTHub\Device\MethodSample"
-        RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample"
+        RunApp iot-hub\Samples\device\DeviceReconnectionSample "IoTHub\Device\DeviceReconnectionSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTime"
+        RunApp iot-hub\Samples\device\FileUploadSample "IoTHub\Device\FileUploadSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
+        RunApp iot-hub\Samples\device\MessageReceiveSample "IoTHub\Device\MessageReceiveSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
+        RunApp iot-hub\Samples\device\MethodSample "IoTHub\Device\MethodSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
+        RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
 
-        RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
-        RunApp iot-hub\Samples\module\TwinSample "IoTHub\Module\TwinSample"
+        $pnpDeviceSecurityType = "connectionString"
+        RunApp iot-hub\Samples\device\PnpDeviceSamples\TemperatureController "IoTHub\Device\PnpDeviceSamples\TemperatureController" "-s $pnpDeviceSecurityType -p ""$env:PNP_TC_DEVICE_CONN_STRING"" -r $sampleRunningTime"
+        RunApp iot-hub\Samples\device\PnpDeviceSamples\Thermostat "IoTHub\Device\PnpDeviceSamples\Thermostat" "-s $pnpDeviceSecurityType -p ""$env:PNP_THERMOSTAT_DEVICE_CONN_STRING"" -r $sampleRunningTime"
+        # DeviceStreaming sample is not added since it is not available in all regions.
+
+        RunApp iot-hub\Samples\module\ModuleSample "IoTHub\Module\ModuleSample" "-p ""$env:IOTHUB_MODULE_CONN_STRING"" -r $sampleRunningTime"
 
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
+        RunApp iot-hub\Samples\service\EdgeDeploymentSample "IoTHub\Service\EdgeDeploymentSample"
         RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
         RunApp iot-hub\Samples\service\RegistryManagerSample "IoTHub\Service\RegistryManagerSample"
 
         $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | where {$_ -like "DeviceId*"}).Split("=")[1]
-        Write-Warning $deviceId
-        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample" - $deviceId
+        Write-Warning "Using device $deviceId for the ServiceClientSample."
+        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONN_STRING_CSHARP"" -d $deviceId -r $sampleRunningTime"
+        # DigitalTwinClientSamples and PnpServiceSamples are not added here since they require the device counterparts to be running as well.
 
         # TODO #11: Modify Provisioning\device samples to run unattended.
 

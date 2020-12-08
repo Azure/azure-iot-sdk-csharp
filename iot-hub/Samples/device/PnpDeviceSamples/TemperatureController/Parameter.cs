@@ -55,6 +55,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             "\nDefaults to environment variable \"IOTHUB_DEVICE_DPS_DEVICE_KEY\".")]
         public string DeviceSymmetricKey { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_DPS_DEVICE_KEY");
 
+        [Option(
+            'r',
+            "Application running time (in seconds)",
+            Required = false,
+            HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
+        public double? ApplicationRunningTime { get; set; }
+
         public bool Validate(ILogger logger)
         {
             if (string.IsNullOrWhiteSpace(DeviceSecurityType))

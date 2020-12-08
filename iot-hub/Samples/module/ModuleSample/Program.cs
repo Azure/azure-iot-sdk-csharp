@@ -5,6 +5,7 @@ using CommandLine;
 using Microsoft.Azure.Devices.Logging;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -46,8 +47,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _ = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
             // Run the sample
+            var runningTime = parameters.ApplicationRunningTime != null
+                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                : Timeout.InfiniteTimeSpan;
+
             var sample = new ModuleSample(parameters.GetConnectionStrings(), parameters.TransportType, logger);
-            await sample.RunSampleAsync();
+            await sample.RunSampleAsync(runningTime);
 
             logger.LogInformation("Done.");
         }

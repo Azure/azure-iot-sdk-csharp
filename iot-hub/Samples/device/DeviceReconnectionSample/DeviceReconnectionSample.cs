@@ -53,9 +53,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;
 
-        public async Task RunSampleAsync()
+        public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
-            using var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource(sampleRunningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // It is not good practice to have async void methods, however, DeviceClient.SetConnectionStatusChangesHandler() event handler signature has a void return type.
         // As a result, any operation within this block will be executed unmonitored on another thread.
         // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock
-        // before attempting to initailize or dispose the device client instance.
+        // before attempting to initialize or dispose the device client instance.
         private async void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
         {
             _logger.LogDebug($"Connection status changed: status={status}, reason={reason}");
