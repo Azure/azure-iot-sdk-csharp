@@ -14,11 +14,11 @@ namespace Microsoft.Azure.Devices.Samples
 {
     public class DeviceStreamSample
     {
-        private ServiceClient _serviceClient;
-        private String _deviceId;
-        private int _localPort;
+        private readonly ServiceClient _serviceClient;
+        private readonly string _deviceId;
+        private readonly int _localPort;
 
-        public DeviceStreamSample(ServiceClient deviceClient, String deviceId, int localPort)
+        public DeviceStreamSample(ServiceClient deviceClient, string deviceId, int localPort)
         {
             _serviceClient = deviceClient;
             _deviceId = deviceId;
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Samples
                     try
                     {
                         using (var cancellationTokenSource = new CancellationTokenSource())
-                        using (var remoteStream = await DeviceStreamingCommon.GetStreamingClientAsync(result.Url, result.AuthorizationToken, cancellationTokenSource.Token).ConfigureAwait(false))
+                        using (var remoteStream = await DeviceStreamingCommon.GetStreamingClientAsync(result.Uri, result.AuthorizationToken, cancellationTokenSource.Token).ConfigureAwait(false))
                         {
                             Console.WriteLine("Starting streaming");
 
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Samples
                                 HandleOutgoingDataAsync(localStream, remoteStream, cancellationTokenSource.Token)).ConfigureAwait(false);
                         }
 
-                            Console.WriteLine("Done streaming");
+                        Console.WriteLine("Done streaming");
                     }
                     catch (Exception ex)
                     {
