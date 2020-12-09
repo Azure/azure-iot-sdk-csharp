@@ -14,11 +14,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class DeviceStreamSample
     {
-        private DeviceClient _deviceClient;
-        private String _host;
-        private int _port;
+        private readonly DeviceClient _deviceClient;
+        private readonly string _host;
+        private readonly int _port;
 
-        public DeviceStreamSample(DeviceClient deviceClient, String host, int port)
+        public DeviceStreamSample(DeviceClient deviceClient, string host, int port)
         {
             _deviceClient = deviceClient;
             _host = host;
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             while (localStream.CanRead)
             {
                 int receiveCount = await localStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
-                    
+
                 await remoteStream.SendAsync(new ArraySegment<byte>(buffer, 0, receiveCount), WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     await _deviceClient.AcceptDeviceStreamRequestAsync(streamRequest, cancellationTokenSource.Token).ConfigureAwait(false);
 
-                    using (ClientWebSocket webSocket = await DeviceStreamingCommon.GetStreamingClientAsync(streamRequest.Url, streamRequest.AuthorizationToken, cancellationTokenSource.Token).ConfigureAwait(false))
+                    using (ClientWebSocket webSocket = await DeviceStreamingCommon.GetStreamingClientAsync(streamRequest.Uri, streamRequest.AuthorizationToken, cancellationTokenSource.Token).ConfigureAwait(false))
                     {
                         using (TcpClient tcpClient = new TcpClient())
                         {
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             }
                         }
 
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
                 else
