@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Samples
 
         // Select one of the following transports used by ServiceClient to connect to IoT Hub.
         private static readonly TransportType s_transportType = TransportType.Amqp;
-        //private static TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
+        //private static readonly TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
 
         public static int Main(string[] args)
         {
