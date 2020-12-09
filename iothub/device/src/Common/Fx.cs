@@ -14,9 +14,9 @@ using System.Threading;
 using Microsoft.Azure.Devices.Client.Exceptions;
 
 #if NET451
-    using System.Runtime.ConstrainedExecution;
-    using System.Transactions;
-    using Microsoft.Win32;
+using System.Runtime.ConstrainedExecution;
+using System.Transactions;
+using Microsoft.Win32;
 #endif
 
 namespace Microsoft.Azure.Devices.Client
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (TransactionAbortedException)
             {
-                CommittableTransaction tempTransaction = new CommittableTransaction();
+                using var tempTransaction = new CommittableTransaction();
                 try
                 {
                     return new TransactionScope(tempTransaction.Clone());

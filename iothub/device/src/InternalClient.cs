@@ -962,7 +962,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         internal async Task OnMethodCalledAsync(MethodRequestInternal methodRequestInternal)
         {
-            Tuple<MethodCallback, object> m = null;
+            Tuple<MethodCallback, object> callbackContextPair = null;
 
             if (Logging.IsEnabled)
             {
@@ -982,10 +982,10 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 Utils.ValidateDataIsEmptyOrJson(requestData);
-                _deviceMethods?.TryGetValue(methodRequestInternal.Name, out m);
-                if (m == null)
+                _deviceMethods?.TryGetValue(methodRequestInternal.Name, out callbackContextPair);
+                if (callbackContextPair == null)
                 {
-                    m = _deviceDefaultMethodCallback;
+                    callbackContextPair = _deviceDefaultMethodCallback;
                 }
             }
             catch (Exception ex) when (!ex.IsFatal())
@@ -1025,7 +1025,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            if (m == null)
+            if (callbackContextPair == null)
             {
                 // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) ]
                 methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.MethodNotImplemented);
@@ -1036,7 +1036,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
                     // codes_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
-                    MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2).ConfigureAwait(false);
+                    MethodResponse rv = await callbackContextPair.Item1(new MethodRequest(methodRequestInternal.Name, requestData), callbackContextPair.Item2).ConfigureAwait(false);
 
                     // codes_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
                     // codes_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
@@ -1534,7 +1534,6 @@ namespace Microsoft.Azure.Devices.Client
                     throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
                 }
 
-                HttpTransportHandler httpTransport = null;
                 var context = new PipelineContext();
                 context.Set(_productInfo);
 
@@ -1546,7 +1545,7 @@ namespace Microsoft.Azure.Devices.Client
                     transportSettings.ClientCertificate = Certificate;
                 }
 
-                httpTransport = new HttpTransportHandler(context, IotHubConnectionString, transportSettings);
+                using var httpTransport = new HttpTransportHandler(context, IotHubConnectionString, transportSettings);
 
                 return httpTransport.UploadToBlobAsync(blobName, source, cancellationToken);
             }
