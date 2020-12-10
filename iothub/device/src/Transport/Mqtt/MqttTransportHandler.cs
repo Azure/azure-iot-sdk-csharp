@@ -40,51 +40,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const int MaxMessageSize = 256 * 1024;
         private const string ProcessorThreadCountVariableName = "MqttEventsProcessorThreadCount";
 
-        private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
-
-        private readonly string _generationId = Guid.NewGuid().ToString();
-
-        private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
-
-        private readonly string _hostName;
-        private readonly Func<IPAddress[], int, Task<IChannel>> _channelFactory;
-        private readonly Queue<string> _completionQueue;
-        private readonly MqttIotHubAdapterFactory _mqttIotHubAdapterFactory;
-        private readonly QualityOfService _qos;
-        private readonly bool _retainMessagesAcrossSessions;
-
-        private readonly object _syncRoot = new object();
-        private readonly CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
-        private readonly RetryPolicy _closeRetryPolicy;
-
-        private readonly SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
-        private readonly ConcurrentQueue<Message> _messageQueue;
-
-        private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
-        private bool _isDeviceReceiveMessageCallbackSet;
-
-        private readonly TaskCompletionSource _connectCompletion = new TaskCompletionSource();
-        private readonly TaskCompletionSource _subscribeCompletionSource = new TaskCompletionSource();
-        private Func<Task> _cleanupFunc;
-        private IChannel _channel;
-        private ExceptionDispatchInfo _fatalException;
-        private IPAddress[] _serverAddresses;
-        private IWebProxy _webProxy;
-
-        private int _state = (int)TransportState.NotInitialized;
-        public TransportState State => (TransportState)Volatile.Read(ref _state);
-
         // Topic names for receiving cloud-to-device messages.
-        private const string DeviceBoundMessagesTopicFilter = "devices/{0}/messages/devicebound/#";
 
+        private const string DeviceBoundMessagesTopicFilter = "devices/{0}/messages/devicebound/#";
         private const string DeviceBoundMessagesTopicPrefix = "devices/{0}/messages/devicebound/";
 
         // Topic names for retrieving a device's twin properties.
         // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
         // It then sends an empty message to the topic "$iothub/twin/GET/?$rid={request id}, with a populated value for request ID.
         // The service then sends a response message containing the device twin data on topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request ID as the request.
-        private const string TwinResponseTopicFilter = "$iothub/twin/res/#";
 
+        private const string TwinResponseTopicFilter = "$iothub/twin/res/#";
         private const string TwinResponseTopicPrefix = "$iothub/twin/res/";
         private const string TwinGetTopic = "$iothub/twin/GET/?$rid={0}";
         private const string TwinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
@@ -96,39 +62,63 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string TwinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";
 
         // Topic names for receiving twin desired property update notifications.
-        private const string TwinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
 
+        private const string TwinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
         private const string TwinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
 
         // Topic name for responding to direct methods.
         // The client first subscribes to "$iothub/methods/POST/#".
         // The service sends method requests to the topic "$iothub/methods/POST/{method name}/?$rid={request id}".
         // The client responds to the direct method invocation by sending a message to the topic "$iothub/methods/res/{status}/?$rid={request id}", using the same request ID as the request.
-        private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
 
+        private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
         private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
         // Topic names for enabling events on Modules.
-        private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
 
+        private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
         private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
+        private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
+        private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
-        private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
+        private readonly string _generationId = Guid.NewGuid().ToString();
+        private readonly string _receiveEventMessageFilter;
+        private readonly string _receiveEventMessagePrefix;
+        private readonly string _deviceboundMessageFilter;
+        private readonly string _deviceboundMessagePrefix;
+        private readonly string _hostName;
+        private readonly Func<IPAddress[], int, Task<IChannel>> _channelFactory;
+        private readonly Queue<string> _completionQueue;
+        private readonly MqttIotHubAdapterFactory _mqttIotHubAdapterFactory;
+        private readonly QualityOfService _qos;
+        private readonly bool _retainMessagesAcrossSessions;
+        private readonly object _syncRoot = new object();
+        private readonly RetryPolicy _closeRetryPolicy;
+        private readonly ConcurrentQueue<Message> _messageQueue;
+        private readonly TaskCompletionSource _connectCompletion = new TaskCompletionSource();
+        private readonly TaskCompletionSource _subscribeCompletionSource = new TaskCompletionSource();
+        private readonly IWebProxy _webProxy;
+
+        private SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
+        private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
+        private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
         private readonly Func<MethodRequestInternal, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
+
+        private bool _isDeviceReceiveMessageCallbackSet;
+        private Func<Task> _cleanupFunc;
+        private IChannel _channel;
+        private ExceptionDispatchInfo _fatalException;
+        private IPAddress[] _serverAddresses;
+        private int _state = (int)TransportState.NotInitialized;
         private Action<Message> _twinResponseEvent;
-
-        private readonly string _receiveEventMessageFilter;
-        private readonly string _receiveEventMessagePrefix;
-
-        private readonly string _deviceboundMessageFilter;
-        private readonly string _deviceboundMessagePrefix;
 
         internal MqttTransportHandler(
             IPipelineContext context,
@@ -175,7 +165,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             _webProxy = settings.Proxy;
 
-            if (channelFactory == null)
+            if (channelFactory != null)
+            {
+                _channelFactory = channelFactory;
+            }
+            else
             {
                 ClientOptions options = context.Get<ClientOptions>();
                 switch (settings.GetTransportType())
@@ -192,16 +186,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(settings.GetTransportType()));
                 }
             }
-            else
-            {
-                _channelFactory = channelFactory;
-            }
 
             _closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
 
-        public TimeSpan TwinTimeout { get; set; } = s_defaultTwinTimeout;
+        public TransportState State => (TransportState)Volatile.Read(ref _state);
         public override bool IsUsable => State != TransportState.Closed && State != TransportState.Error;
+        public TimeSpan TwinTimeout { get; set; } = s_defaultTwinTimeout;
 
         #region Client operations
 
@@ -475,12 +466,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (TryStop())
                 {
-                    Cleanup();
+                    CleanUpAsync();
                 }
 
-                _disconnectAwaitersCancellationSource.Dispose();
+                _disconnectAwaitersCancellationSource?.Dispose();
+                _disconnectAwaitersCancellationSource = null;
+
                 _receivingSemaphore?.Dispose();
+                _receivingSemaphore = null;
+
                 _deviceReceiveMessageSemaphore?.Dispose();
+                _deviceReceiveMessageSemaphore = null;
+
+                if (_channel is IDisposable disposableChannel)
+                {
+                    disposableChannel.Dispose();
+                    _channel = null;
+                }
             }
         }
 
@@ -499,7 +501,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     OnTransportClosedGracefully();
 
-                    await _closeRetryPolicy.ExecuteAsync(CleanupAsync, cancellationToken).ConfigureAwait(true);
+                    await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
                 }
                 else
                 {
@@ -721,7 +723,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         throw new InvalidOperationException();
                 }
 
-                await _closeRetryPolicy.ExecuteAsync(CleanupAsync).ConfigureAwait(true);
+                await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -786,6 +788,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 try
                 {
+                    if (_channel != null
+                        && _channel is IDisposable disposableChannel)
+                    {
+                        disposableChannel.Dispose();
+                        _channel = null;
+                    }
                     _channel = await _channelFactory(_serverAddresses, ProtocolGatewayPort).ConfigureAwait(true);
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -801,10 +809,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         return;
                     }
+
                     if (_channel.Active)
                     {
                         await _channel.WriteAsync(DisconnectPacket.Instance).ConfigureAwait(true);
                     }
+
                     if (_channel.Open)
                     {
                         await _channel.CloseAsync().ConfigureAwait(true);
@@ -865,9 +875,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _subscribeCompletionSource.Task.ConfigureAwait(true);
         }
 
-        private async Task SubscribeTwinResponsesAsync()
+        private Task SubscribeTwinResponsesAsync()
         {
-            await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinResponseTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+            return _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinResponseTopicFilter, QualityOfService.AtMostOnce)));
         }
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
@@ -1362,18 +1372,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        private async void Cleanup()
+        private async void CleanUpAsync()
         {
             try
             {
-                await _closeRetryPolicy.ExecuteAsync(CleanupAsync).ConfigureAwait(true);
+                await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
             }
         }
 
-        private Task CleanupAsync()
+        private Task CleanUpImplAsync()
         {
             return _cleanupFunc != null
                 ? _cleanupFunc()

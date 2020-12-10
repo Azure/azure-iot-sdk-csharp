@@ -13,10 +13,10 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    public class ClientWebSocketChannel : AbstractChannel
+    public class ClientWebSocketChannel : AbstractChannel, IDisposable
     {
-        private readonly ClientWebSocket _webSocket;
-        private readonly CancellationTokenSource _writeCancellationTokenSource;
+        private ClientWebSocket _webSocket;
+        private CancellationTokenSource _writeCancellationTokenSource;
         private bool _active;
 
         internal bool ReadPending { get; set; }
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override IChannelConfiguration Configuration { get; }
 
-        public override bool Open => (_webSocket.State == WebSocketState.Open && Active);
+        public override bool Open => _webSocket.State == WebSocketState.Open && Active;
 
         public override bool Active => _active;
 
@@ -104,10 +104,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     CancelPendingWrite();
                     _active = false;
 
-                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
-                    {
-                        await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
-                    }
+                    using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
             catch (Exception e) when (!e.IsFatal())
@@ -262,9 +260,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private void Abort()
         {
-            _webSocket.Abort();
-            _webSocket.Dispose();
-            _writeCancellationTokenSource.Dispose();
+            _webSocket?.Abort();
+            _webSocket?.Dispose();
+            _webSocket = null;
+
+            _writeCancellationTokenSource?.Dispose();
+            _writeCancellationTokenSource = null;
+        }
+
+        /// </inheritdoc>
+        public void Dispose()
+        {
+            _webSocket?.Dispose();
+            _webSocket = null;
+
+            _writeCancellationTokenSource?.Dispose();
+            _writeCancellationTokenSource = null;
         }
     }
 }
