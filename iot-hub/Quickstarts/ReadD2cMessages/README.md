@@ -1,17 +1,16 @@
 # Read device-to-cloud messages
 
-This sample demonstrates how to use the Azure Event Hubs client library for .NET to read messages sent from a device by using the built-in Event Hub that exists by default for every IoT Hub instance. 
+This sample demonstrates how to use the Azure Event Hubs client library for .NET to read messages sent from a device by using the built-in Event Hub that exists by default for every IoT Hub instance.
 
 ## Prerequisites
 
-The .NET Core SDK 3.0.0 or greater is recommended.  You can download the .NET Core SDK for multiple platforms from [.NET](https://www.microsoft.com/net/download/all).  You can verify the current version of C# on your development machine using 'dotnet --version'.
+The .NET SDK 3.1 is recommended. You can download the .NET Core SDK for multiple platforms from [.NET](https://www.microsoft.com/net/download/all). You can verify the current version of C# on your development machine using 'dotnet --version'.
 
-This sample can also be compiled using the NET Core SDK 2.1 SDK if the language version of project is changed to `preview`.
+> Note: the Event Hubs client 5.2 does not work with .NET 5.0.
 
-## Obtain the Event Hubs-compatible connection string
+## Obtain the Event Hub-compatible connection string
 
-You can get the Event Hubs-compatible connection string to your IotHub instance via the Azure portal or
-by using the Azure CLI.
+You can get the Event Hub-compatible connection string to your Iot Hub instance via the Azure portal or by using the Azure CLI.
 
 If using the Azure portal, see [Built in endpoints for IotHub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-read-builtin#read-from-the-built-in-endpoint) to get the Event Hubs-compatible connection string and assign it to the variable `connectionString` in the sample. You can skip the Azure CLI instructions in the sample after this.
 
@@ -42,7 +41,7 @@ IWebProxy proxy = new WebProxy("<< URI TO PROXY >>", true);
 options.ConnectionOptions.Proxy = proxy;
 ```
 
-Once you have your options, you'll need to pass them to the client constructor.  Each constructor accepts a set of options as the last parameter, such as:
+Once you have your options, you'll need to pass them to the client constructor. Each constructor accepts a set of options as the last parameter, such as:
 
 ```csharp
 string consumerGroup = EventHubConsumerClient.DefaultConsumerGroupName;

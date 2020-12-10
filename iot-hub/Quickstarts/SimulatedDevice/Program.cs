@@ -15,8 +15,7 @@ using System.Threading.Tasks;
 namespace SimulatedDevice
 {
     /// <summary>
-    /// This sample illustrates the very basics of a device app sending telemetry and receiving a command.
-    /// For a more comprehensive device app sample, please see
+    /// This sample illustrates the very basics of a device app sending telemetry. For a more comprehensive device app sample, please see
     /// <see href="https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/DeviceReconnectionSample"/>.
     /// </summary>
     internal class Program
@@ -29,8 +28,6 @@ namespace SimulatedDevice
         // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyDotnetDevice --output table
         private static string s_connectionString = "{Your device connection string here}";
 
-        private static TimeSpan s_telemetryInterval = TimeSpan.FromSeconds(1); // Seconds
-
         private static async Task Main(string[] args)
         {
             Console.WriteLine("IoT Hub Quickstarts #1 - Simulated device.");
@@ -41,9 +38,6 @@ namespace SimulatedDevice
             // Connect to the IoT hub using the MQTT protocol
             s_deviceClient = DeviceClient.CreateFromConnectionString(s_connectionString, s_transportType);
 
-            // Create a handler for the direct method call
-            await s_deviceClient.SetMethodHandlerAsync("SetTelemetryInterval", SetTelemetryInterval, null);
-
             // Set up a condition to quit the sample
             Console.WriteLine("Press control-C to exit.");
             using var cts = new CancellationTokenSource();
@@ -51,7 +45,7 @@ namespace SimulatedDevice
             {
                 eventArgs.Cancel = true;
                 cts.Cancel();
-                Console.WriteLine("Device simulator exit requested...");
+                Console.WriteLine("Exiting...");
             };
 
             // Run the telemetry loop
@@ -90,32 +84,6 @@ namespace SimulatedDevice
             }
         }
 
-        // Handle the direct method call
-        private static Task<MethodResponse> SetTelemetryInterval(MethodRequest methodRequest, object userContext)
-        {
-            var data = Encoding.UTF8.GetString(methodRequest.Data);
-
-            // Check the payload is a single integer value
-            if (int.TryParse(data, out int telemetryIntervalInSeconds))
-            {
-                s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalInSeconds);
-
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Telemetry interval set to {s_telemetryInterval}");
-                Console.ResetColor();
-
-                // Acknowlege the direct method call with a 200 success message
-                string result = $"{{\"result\":\"Executed direct method: {methodRequest.Name}\"}}";
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
-            }
-            else
-            {
-                // Acknowlege the direct method call with a 400 error message
-                string result = "{\"result\":\"Invalid parameter\"}";
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 400));
-            }
-        }
-
         // Async method to send simulated telemetry
         private static async Task SendDeviceToCloudMessagesAsync(CancellationToken ct)
         {
@@ -150,15 +118,7 @@ namespace SimulatedDevice
                 await s_deviceClient.SendEventAsync(message);
                 Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
 
-                try
-                {
-                    await Task.Delay(s_telemetryInterval, ct);
-                }
-                catch (TaskCanceledException)
-                {
-                    // User canceled
-                    return;
-                }
+                await Task.Delay(1000);
             }
         }
     }
