@@ -27,23 +27,25 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 var deviceStreamRequest = new DeviceStreamRequest("TestStream");
 
-                DeviceStreamResponse result = await _serviceClient.CreateStreamAsync(_deviceId, deviceStreamRequest).ConfigureAwait(false);
+                DeviceStreamResponse result = await _serviceClient.CreateStreamAsync(_deviceId, deviceStreamRequest);
 
                 Console.WriteLine($"Stream response received: Name={deviceStreamRequest.StreamName} IsAccepted={result.IsAccepted}");
 
                 if (result.IsAccepted)
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-                    using ClientWebSocket stream = await DeviceStreamingCommon.GetStreamingClientAsync(result.Url, result.AuthorizationToken, cts.Token).ConfigureAwait(false);
+                    using ClientWebSocket stream = await DeviceStreamingCommon.GetStreamingClientAsync(result.Uri, result.AuthorizationToken, cts.Token);
 
                     byte[] sendBuffer = Encoding.UTF8.GetBytes("Streaming data over a stream...");
                     byte[] receiveBuffer = new byte[1024];
 
-                    await stream.SendAsync(sendBuffer, WebSocketMessageType.Binary, true, cts.Token).ConfigureAwait(false);
+                    await stream.SendAsync(sendBuffer, WebSocketMessageType.Binary, true, cts.Token);
                     Console.WriteLine($"Sent stream data: {Encoding.UTF8.GetString(sendBuffer, 0, sendBuffer.Length)}");
 
-                    var receiveResult = await stream.ReceiveAsync(receiveBuffer, cts.Token).ConfigureAwait(false);
+                    var receiveResult = await stream.ReceiveAsync(receiveBuffer, cts.Token);
                     Console.WriteLine($"Received stream data: {Encoding.UTF8.GetString(receiveBuffer, 0, receiveResult.Count)}");
+
+                    await stream.CloseAsync(WebSocketCloseStatus.NormalClosure, "Streaming completed", new CancellationToken());
                 }
                 else
                 {
