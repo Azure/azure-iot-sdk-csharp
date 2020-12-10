@@ -79,7 +79,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Logging.Enter(this, message, $"{nameof(SendMessageAsync)}");
             }
 
-            AmqpMessage amqpMessage = AmqpIoTMessageConverter.MessageToAmqpMessage(message);
+            // After this message is sent, we will return the outcome that has no references to the message
+            // So it can safely be disposed.
+            using AmqpMessage amqpMessage = AmqpIoTMessageConverter.MessageToAmqpMessage(message);
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
@@ -97,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Logging.Enter(this, $"{nameof(SendMessagesAsync)}");
             }
 
-            // List to hold messages in Amqp friendly format
+            // List to hold messages in AMQP friendly format
             var messageList = new List<Data>();
 
             foreach (Message message in messages)
@@ -185,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Logging.Enter(this, methodResponse, $"{nameof(SendMethodResponseAsync)}");
             }
 
-            AmqpMessage amqpMessage = AmqpIoTMessageConverter.ConvertMethodResponseInternalToAmqpMessage(methodResponse);
+            using AmqpMessage amqpMessage = AmqpIoTMessageConverter.ConvertMethodResponseInternalToAmqpMessage(methodResponse);
             AmqpIoTMessageConverter.PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponse);
 
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
@@ -209,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Logging.Enter(this, $"{nameof(SendTwinGetMessageAsync)}");
             }
 
-            AmqpMessage amqpMessage = AmqpMessage.Create();
+            using var amqpMessage = AmqpMessage.Create();
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.MessageAnnotations.Map["operation"] = "GET";
 
@@ -230,10 +232,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Logging.Enter(this, $"{nameof(SendTwinPatchMessageAsync)}");
             }
 
-            var body = JsonConvert.SerializeObject(reportedProperties);
+            string body = JsonConvert.SerializeObject(reportedProperties);
             var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
 
-            AmqpMessage amqpMessage = AmqpMessage.Create(bodyStream, true);
+            using var amqpMessage = AmqpMessage.Create(bodyStream, true);
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.MessageAnnotations.Map["operation"] = "PATCH";
             amqpMessage.MessageAnnotations.Map["resource"] = "/properties/reported";
@@ -256,7 +258,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Logging.Enter(this, $"{nameof(SubscribeToDesiredPropertiesAsync)}");
             }
 
-            AmqpMessage amqpMessage = AmqpMessage.Create();
+            using var amqpMessage = AmqpMessage.Create();
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.MessageAnnotations.Map["operation"] = "PUT";
             amqpMessage.MessageAnnotations.Map["resource"] = "/notifications/twin/properties/desired";
