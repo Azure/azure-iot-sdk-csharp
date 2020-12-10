@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 {
     [TestClass]
     [TestCategory("Unit")]
+    [DoNotParallelize]
     public class ClientWebSocketTransportTests
     {
         private const string IotHubName = "localhost";
