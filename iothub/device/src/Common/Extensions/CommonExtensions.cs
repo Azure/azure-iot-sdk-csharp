@@ -61,10 +61,15 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 throw new ArgumentException("Malformed Token");
             }
 
-            IEnumerable<string[]> parts = valuePairString
-                .Split(kvpDelimiter)
-                .Where(p => p.Trim().Length > 0)
-                .Select(p => p.Split(new char[] { kvpSeparator }, 2));
+            IEnumerable<string[]> parts = new Regex($"(?:^|{kvpDelimiter})([^{kvpDelimiter}{kvpSeparator}]*){kvpSeparator}")
+                .Matches(valuePairString)
+                .Cast<Match>()
+                .Select(m => new string[] {
+                    m.Result("$1"),
+                    valuePairString.Substring(
+                        m.Index + m.Value.Length,
+                        (m.NextMatch().Success ? m.NextMatch().Index : valuePairString.Length) - (m.Index + m.Value.Length))
+                });
 
             if (!parts.Any() || parts.Any(p => p.Length != 2))
             {
