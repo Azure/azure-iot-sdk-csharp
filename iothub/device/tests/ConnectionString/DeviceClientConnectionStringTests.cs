@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [ExpectedException(typeof(FormatException))]
         public void DeviceClientConnectionStringInvalidCharacterTest()
         {
-            // The device Id has a semicolon, which is a character that is not allowed
+            // The device name has a semi-colon, which is a character that is not allowed in a device Id
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=dGVzdFN0cmluZzE=;DeviceId=device;1";
             var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
