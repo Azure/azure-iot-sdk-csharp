@@ -875,9 +875,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _subscribeCompletionSource.Task.ConfigureAwait(true);
         }
 
-        private Task SubscribeTwinResponsesAsync()
+        private async Task SubscribeTwinResponsesAsync()
         {
-            return _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinResponseTopicFilter, QualityOfService.AtMostOnce)));
+            await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinResponseTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(false);
         }
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
