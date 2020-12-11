@@ -61,8 +61,8 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 throw new ArgumentException("Malformed Token");
             }
 
-            // This regex allows semi-colons to be part of the allowed characters for device names. Although new devices are not allowed to have semi-colons in the name,
-            // some legacy devices still have them and so this name validation cannot be changed.
+            // This regex allows semi-colons to be part of the allowed characters for device names. Although new devices are not
+            // allowed to have semi-colons in the name, some legacy devices still have them and so this name validation cannot be changed.
             IEnumerable<string[]> parts = new Regex($"(?:^|{kvpDelimiter})([^{kvpDelimiter}{kvpSeparator}]*){kvpSeparator}")
                 .Matches(valuePairString)
                 .Cast<Match>()
