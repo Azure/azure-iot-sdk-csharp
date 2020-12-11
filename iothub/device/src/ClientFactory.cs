@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create an Amqp InternalClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
