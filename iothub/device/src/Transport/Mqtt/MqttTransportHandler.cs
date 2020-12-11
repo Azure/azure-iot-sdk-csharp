@@ -563,6 +563,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "The created message is handed to the user and the user application is in charge of disposing the message.")]
         private async Task HandleIncomingMessagesAsync()
         {
             if (Logging.IsEnabled)

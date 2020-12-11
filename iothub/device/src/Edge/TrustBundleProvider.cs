@@ -25,10 +25,9 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
         public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion)
         {
-            HttpClient httpClient = null;
             try
             {
-                httpClient = HttpClientHelper.GetHttpClient(providerUri);
+                using HttpClient httpClient = HttpClientHelper.GetHttpClient(providerUri);
                 var hsmHttpClient = new HttpHsmClient(httpClient)
                 {
                     BaseUrl = HttpClientHelper.GetBaseUrl(providerUri)
@@ -49,10 +48,6 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     default:
                         throw;
                 }
-            }
-            finally
-            {
-                httpClient?.Dispose();
             }
         }
 

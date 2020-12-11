@@ -744,15 +744,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "The created message is handed to the user and the user application is in charge of disposing the message.")]
         private Task AcceptMessageAsync(IChannelHandlerContext context, PublishPacket publish)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, publish, nameof(AcceptMessageAsync));
 
-            Message message;
+            Message message = null;
+            ReadOnlyByteBufferStream bodyStream = null;
             try
             {
-                var bodyStream = new ReadOnlyByteBufferStream(publish.Payload, true);
+                bodyStream = new ReadOnlyByteBufferStream(publish.Payload, true);
 
                 message = new Message(bodyStream, StreamDisposalResponsibility.Sdk);
 
@@ -766,6 +771,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Error(context, $"Received a non-fatal exception while processing a received PUBLISH packet, will shut down: {ex}", nameof(AcceptMessageAsync));
 
                 ShutdownOnErrorAsync(context, ex);
+
+                // If there is an exception thrown, we will dispose the message and the body stream since the user will not receive this message in order to dispose it.
+                message?.Dispose();
+                bodyStream?.Dispose();
+
                 return TaskHelpers.CompletedTask;
             }
 

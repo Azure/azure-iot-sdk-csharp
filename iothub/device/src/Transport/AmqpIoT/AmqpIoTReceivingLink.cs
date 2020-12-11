@@ -150,6 +150,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _receivingAmqpLink.RegisterMessageListener(OnDeviceMessageReceived);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "The callback that is invoked is responsible for disposing the message.")]
         private void OnDeviceMessageReceived(AmqpMessage amqpMessage)
         {
             Logging.Enter(this, amqpMessage, $"{nameof(OnDeviceMessageReceived)}");
@@ -180,6 +184,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _receivingAmqpLink.RegisterMessageListener(OnEventsReceived);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "The callback that is invoked is responsible for disposing the message.")]
         private void OnEventsReceived(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled)
@@ -212,6 +220,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _receivingAmqpLink.RegisterMessageListener(OnMethodReceived);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "The callback that is invoked is responsible for disposing the message.")]
         private void OnMethodReceived(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled)

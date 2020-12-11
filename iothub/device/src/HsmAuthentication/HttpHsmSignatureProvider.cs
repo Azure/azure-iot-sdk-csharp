@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                 Data = Encoding.UTF8.GetBytes(data)
             };
 
-            HttpClient httpClient = HttpClientHelper.GetHttpClient(_providerUri);
+            using HttpClient httpClient = HttpClientHelper.GetHttpClient(_providerUri);
             try
             {
                 var hsmHttpClient = new HttpHsmClient(httpClient)
@@ -88,10 +88,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                     default:
                         throw;
                 }
-            }
-            finally
-            {
-                httpClient.Dispose();
             }
         }
 

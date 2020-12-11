@@ -184,7 +184,8 @@ namespace Microsoft.Azure.Devices.Client
                 // receive WebSocket Upgrade response
                 byte[] responseBuffer = new byte[8 * 1024];
 
-                var upgradeResponse = new HttpResponse(_tcpClient, _webSocketStream, responseBuffer);
+                // The response object is not returned to the user so it can be disposed.
+                using var upgradeResponse = new HttpResponse(_tcpClient, _webSocketStream, responseBuffer);
 
                 await upgradeResponse.ReadAsync(timeout).ConfigureAwait(false);
 
@@ -267,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client
                     if (!ParseWebSocketFrameHeader(header, out payloadLength, out pongFrame))
                     {
                         // Encountered a close frame or error in parsing frame from server. Close connection
-                        var closeHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
+                        byte[] closeHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
                         await _webSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length).ConfigureAwait(false);
 
@@ -280,7 +281,7 @@ namespace Microsoft.Azure.Devices.Client
                     if (pongFrame && payloadLength > 0)
                     {
                         totalBytesRead = 0;
-                        var tempBuffer = new byte[payloadLength];
+                        byte[] tempBuffer = new byte[payloadLength];
                         while (totalBytesRead < payloadLength)
                         {
                             bytesRead = await _webSocketStream.ReadAsync(tempBuffer, totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
@@ -362,7 +363,7 @@ namespace Microsoft.Azure.Devices.Client
 
                         case LargeSizeFrame:
                             // read payload length (>= 64K)
-                            var payloadLengthBuffer = new byte[8];
+                            byte[] payloadLengthBuffer = new byte[8];
                             do
                             {
                                 bytesRead = await _webSocketStream.ReadAsync(payloadLengthBuffer, totalBytesRead, payloadLengthBuffer.Length - totalBytesRead).ConfigureAwait(false);

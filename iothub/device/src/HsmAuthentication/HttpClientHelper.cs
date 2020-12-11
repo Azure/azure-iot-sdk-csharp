@@ -19,6 +19,9 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         private const string HttpsScheme = "https";
         private const string UnixScheme = "unix";
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The caller of this method is in charge of disposing the HTTP client that is returned.")]
         public static HttpClient GetHttpClient(Uri providerUri)
         {
             HttpClient client;
