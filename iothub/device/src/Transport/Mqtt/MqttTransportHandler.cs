@@ -634,13 +634,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         if (Logging.IsEnabled)
                         {
-                            Logging.Error(this, "Received mqtt message on an unrecognized topic, ignoring message. Topic: " + topic);
+                            Logging.Error(this, $"Received MQTT message on an unrecognized topic, ignoring message. Topic: {topic}", nameof(OnMessageReceived));
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Received an exception while processing an MQTT message: {ex}", nameof(OnMessageReceived));
+
                 OnError(ex);
             }
             finally
