@@ -117,7 +117,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     .RegisterDeviceAsync(
                         registrationId,
                         message.IdScope,
-                        deviceRegistration)
+                        deviceRegistration,
+                        cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
                 int attempts = 0;
@@ -147,10 +148,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     }
 
                     await Task
-                        .Delay(serviceRecommendedDelay ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingIntervalMilliseconds))
+                        .Delay(serviceRecommendedDelay ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingIntervalMilliseconds), cancellationToken)
                         .ConfigureAwait(false);
-
-                    cancellationToken.ThrowIfCancellationRequested();
 
                     try
                     {
@@ -158,7 +157,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                             .RuntimeRegistration.OperationStatusLookupAsync(
                                 registrationId,
                                 operationId,
-                                message.IdScope)
+                                message.IdScope,
+                                cancellationToken: cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch (HttpOperationException ex)

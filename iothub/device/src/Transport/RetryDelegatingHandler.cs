@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private readonly SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
         private bool _openCalled;
         private bool _opened;
         private bool _methodsEnabled;
@@ -958,6 +958,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 _handleDisconnectCts?.Cancel();
                 _handleDisconnectCts?.Dispose();
+
+                _handlerSemaphore?.Dispose();
+                _handlerSemaphore = null;
             }
         }
     }

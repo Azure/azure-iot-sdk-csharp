@@ -112,6 +112,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
             _innerStream.Dispose();
         }
     }

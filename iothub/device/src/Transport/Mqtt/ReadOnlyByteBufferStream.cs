@@ -10,45 +10,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     internal sealed class ReadOnlyByteBufferStream : Stream
     {
-        private readonly IByteBuffer buffer;
-        private bool releaseReferenceOnClosure;
+        private readonly IByteBuffer _buffer;
+        private bool _releaseReferenceOnClosure;
 
         public ReadOnlyByteBufferStream(IByteBuffer buffer, bool releaseReferenceOnClosure)
         {
-            this.buffer = buffer;
-            this.releaseReferenceOnClosure = releaseReferenceOnClosure;
+            _buffer = buffer;
+            _releaseReferenceOnClosure = releaseReferenceOnClosure;
         }
 
-        public override bool CanRead
-        {
-            get { return true; }
-        }
+        public override bool CanRead => true;
 
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
+        public override bool CanSeek => false;
 
-        public override bool CanWrite
-        {
-            get { return false; }
-        }
+        public override bool CanWrite => false;
 
-        public override long Length
-        {
-            get { throw new NotSupportedException(); }
-        }
+        public override long Length => throw new NotSupportedException();
 
         public override long Position
         {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         public override int Read(byte[] output, int offset, int count)
         {
-            int read = Math.Min(count - offset, this.buffer.ReadableBytes);
-            this.buffer.ReadBytes(output, offset, read);
+            int read = Math.Min(count - offset, _buffer.ReadableBytes);
+            _ = _buffer.ReadBytes(output, offset, read);
             return read;
         }
 
@@ -58,16 +46,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override void Dispose(bool disposing)
         {
-            if (this.releaseReferenceOnClosure)
+            base.Dispose(disposing);
+
+            if (_releaseReferenceOnClosure)
             {
-                this.releaseReferenceOnClosure = false;
+                _releaseReferenceOnClosure = false;
                 if (disposing)
                 {
-                    this.buffer.Release();
+                    _ = _buffer.Release();
                 }
                 else
                 {
-                    ReferenceCountUtil.SafeRelease(this.buffer);
+                    ReferenceCountUtil.SafeRelease(_buffer);
                 }
             }
         }
