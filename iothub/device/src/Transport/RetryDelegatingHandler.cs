@@ -625,13 +625,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 _handleDisconnectCts.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
-                Dispose(true);
             }
             finally
             {
                 Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
                 _handlerSemaphore.Release();
+                Dispose(true);
             }
         }
 
