@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Common
         public static void Fork(this Task thisTask, string tracingInfo)
         {
             Fx.Assert(thisTask != null, "task is required!");
-            thisTask.ContinueWith(t => Fx.Exception.TraceHandled(t.Exception, tracingInfo), TaskContinuationOptions.OnlyOnFaulted);
+            thisTask.ContinueWith(t => Fx.Exception.TraceHandled(t.Exception, tracingInfo), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
         }
 
         public static IAsyncResult ToAsyncResult(this Task task, AsyncCallback callback, object state)
@@ -209,7 +209,9 @@ namespace Microsoft.Azure.Devices.Common
                 {
                     task.ContinueWith(
                         t => callback(task),
-                        TaskContinuationOptions.ExecuteSynchronously);
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
                 }
 
                 return task;
@@ -237,7 +239,9 @@ namespace Microsoft.Azure.Devices.Common
                         callback(tcs.Task);
                     }
                 },
-                TaskContinuationOptions.ExecuteSynchronously);
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
 
             return tcs.Task;
         }
@@ -250,7 +254,9 @@ namespace Microsoft.Azure.Devices.Common
                 {
                     task.ContinueWith(
                         t => callback(task),
-                        TaskContinuationOptions.ExecuteSynchronously);
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
                 }
 
                 return task;
@@ -278,7 +284,9 @@ namespace Microsoft.Azure.Devices.Common
                         callback(tcs.Task);
                     }
                 },
-                TaskContinuationOptions.ExecuteSynchronously);
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
 
             return tcs.Task;
         }

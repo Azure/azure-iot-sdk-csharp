@@ -239,9 +239,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             init.HostName = _hostName;
             StringBuilder initContent = new StringBuilder();
             initContent.Append(_idScope);
-            initContent.Append("\0");
+            initContent.Append('\0');
             initContent.Append(_security.GetRegistrationID());
-            initContent.Append("\0");
+            initContent.Append('\0');
 
             byte[] initContentInBytes = Encoding.UTF8.GetBytes(initContent.ToString());
 

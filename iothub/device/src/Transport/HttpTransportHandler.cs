@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
 
@@ -186,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 // 2. Use SAS URI to send data to Azure Storage Blob (PUT)
                 var blob = new CloudBlockBlob(new Uri(putString));
-                Task uploadTask = blob.UploadFromStreamAsync(source);
+                Task uploadTask = blob.UploadFromStreamAsync(source, null, null, null, cancellationToken);
                 await uploadTask.ConfigureAwait(false);
 
                 notification.CorrelationId = fileUploadResponse.CorrelationId;
@@ -404,7 +405,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new InvalidOperationException("ModuleId is required.");
             }
 
-            TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(methodInvokeRequest);
+            _ = GetInvokeDeviceMethodOperationTimeout(methodInvokeRequest);
             var customHeaders = new Dictionary<string, string>
             {
                 { CustomHeaderConstants.ModuleId, $"{_deviceId}/{_moduleId}" }
