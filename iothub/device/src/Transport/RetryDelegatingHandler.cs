@@ -640,6 +640,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// </summary>
         private async Task EnsureOpenedAsync(CancellationToken cancellationToken)
         {
+            // If this object has already been disposed, we will throw an exception indicating that.
+            // This is the entry point for interacting with the client and this safety check should be done here.
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
+            }
+
             if (Volatile.Read(ref _opened))
             {
                 return;
