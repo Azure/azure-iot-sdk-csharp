@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                await _handlerLock.WaitAsync().ConfigureAwait(false);
+                await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 SelectTransport();
 
                 try

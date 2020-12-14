@@ -104,7 +104,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                       }
                       tcs.TrySetResult(true);
                   },
-                TaskContinuationOptions.ExecuteSynchronously);
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
 
             return tcs.Task;
         }

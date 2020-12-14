@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
@@ -22,7 +23,9 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     task.ContinueWith(
                         t => callback(task),
-                        TaskContinuationOptions.ExecuteSynchronously);
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
                 }
 
                 return task;
@@ -50,7 +53,9 @@ namespace Microsoft.Azure.Devices.Client
                         callback(tcs.Task);
                     }
                 },
-                TaskContinuationOptions.ExecuteSynchronously);
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
 
             return tcs.Task;
         }
@@ -63,7 +68,9 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     task.ContinueWith(
                         t => callback(task),
-                        TaskContinuationOptions.ExecuteSynchronously);
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
                 }
 
                 return task;
@@ -91,7 +98,9 @@ namespace Microsoft.Azure.Devices.Client
                         callback(tcs.Task);
                     }
                 },
-                TaskContinuationOptions.ExecuteSynchronously);
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
 
             return tcs.Task;
         }
@@ -104,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client
             switch (source.Status)
             {
                 case TaskStatus.Faulted:
-                    var exception = source.Exception.GetBaseException();
+                    Exception exception = source.Exception.GetBaseException();
                     proxy.TrySetException(exception);
                     break;
 

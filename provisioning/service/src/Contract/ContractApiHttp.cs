@@ -191,14 +191,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (!ifMatch.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
-                quotedIfMatch.Append("\"");
+                quotedIfMatch.Append('"');
             }
 
             quotedIfMatch.Append(ifMatch);
 
             if (!ifMatch.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
-                quotedIfMatch.Append("\"");
+                quotedIfMatch.Append('"');
             }
 
             requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(quotedIfMatch.ToString()));
