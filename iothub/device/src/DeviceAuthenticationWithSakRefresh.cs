@@ -11,18 +11,18 @@ namespace Microsoft.Azure.Devices.Client
     // Implementing SAS Token refresh based on a SharedAccessKey (SAK).
     internal class DeviceAuthenticationWithSakRefresh : DeviceAuthenticationWithTokenRefresh
     {
-        private IotHubConnectionString _connectionString;
+        private readonly IotHubConnectionString _connectionString;
 
         public DeviceAuthenticationWithSakRefresh(
-            string deviceId, 
+            string deviceId,
             IotHubConnectionString connectionString) : base(deviceId)
         {
-            _connectionString = connectionString;
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+        protected override Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive)
         {
-            var builder = new SharedAccessSignatureBuilder()
+            var builder = new SharedAccessSignatureBuilder
             {
                 Key = _connectionString.SharedAccessKey,
                 TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
             if (_connectionString.SharedAccessKeyName == null)
             {
                 builder.Target = "{0}/devices/{1}".FormatInvariant(
-                    iotHub, 
+                    iotHub,
                     WebUtility.UrlEncode(DeviceId));
             }
             else

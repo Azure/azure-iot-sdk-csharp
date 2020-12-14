@@ -38,8 +38,11 @@ namespace Microsoft.Azure.Devices
         public string Id { get; internal set; }
 
         /// <summary>
-        /// Device's Generation ID
+        /// Device's Generation Id
         /// </summary>
+        /// <remarks>
+        /// This value is used to distinguish devices with the same deviceId, when they have been deleted and re-created.
+        /// </remarks>
         [JsonProperty(PropertyName = "generationId")]
         public string GenerationId { get; internal set; }
 
