@@ -975,7 +975,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            MethodResponseInternal methodResponseInternal;
+            MethodResponseInternal methodResponseInternal = null;
             byte[] requestData = methodRequestInternal.GetBytes();
 
             await _methodsDictionarySemaphore.WaitAsync().ConfigureAwait(false);
@@ -999,6 +999,7 @@ namespace Microsoft.Azure.Devices.Client
                 methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.BadRequest);
 
                 await SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
+
                 if (Logging.IsEnabled)
                 {
                     Logging.Error(this, ex, nameof(OnMethodCalledAsync));
@@ -1010,6 +1011,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
+                    methodResponseInternal?.Dispose();
                     _methodsDictionarySemaphore.Release();
                 }
                 catch (SemaphoreFullException)
@@ -1056,7 +1058,14 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            await SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
+            try
+            {
+                await SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                methodResponseInternal?.Dispose();
+            }
 
             if (Logging.IsEnabled)
             {

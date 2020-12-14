@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
     internal sealed class ServiceConnectionString : IAuthorizationHeaderProvider
     {
         private static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromHours(1);
-        private const string UserSeparator = "@";
+        private const char UserSeparator = '@';
 
         /// <summary>
         /// CONSTRUCOR
