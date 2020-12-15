@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
+using System.Threading;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.ApiTest;
@@ -39,6 +41,32 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             var connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}";
             var csBuilder = IotHubConnectionStringBuilder.Create(connectionString);
             csBuilder.DeviceId.Should().Be(DeviceId);
+        }
+
+        [TestMethod]
+        [DoNotParallelize]
+        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesCultureDeviceId()
+        {
+            const string deviceId = "IoTDeviceCheck";
+
+            CultureInfo savedCultureInfo = Thread.CurrentThread.CurrentCulture;
+            CultureInfo[] allCultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
+
+            try
+            {
+                foreach (CultureInfo culture in allCultures)
+                {
+                    Console.WriteLine($"Testing culture {culture}");
+                    Thread.CurrentThread.CurrentCulture = culture;
+                    var connectionString = $"HostName={HostName};DeviceId={deviceId};SharedAccessKey={SharedAccessKey}";
+                    var csBuilder = IotHubConnectionStringBuilder.Create(connectionString);
+                    csBuilder.DeviceId.Should().Be(deviceId, $"failed to match in {culture}");
+                }
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = savedCultureInfo;
+            }
         }
 
         [TestMethod]
