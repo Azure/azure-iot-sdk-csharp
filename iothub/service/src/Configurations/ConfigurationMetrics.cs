@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -24,14 +25,14 @@ namespace Microsoft.Azure.Devices
         /// Results of the metrics collection queries
         /// </summary>
         [JsonProperty("results")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
         public IDictionary<string, long> Results { get; set; }
 
         /// <summary>
         /// Queries used for metrics collection
         /// </summary>
         [JsonProperty("queries")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
         public IDictionary<string, string> Queries { get; set; }
     }
 }
