@@ -323,3 +323,11 @@ dotnet_diagnostic.CA1805.severity = warning
 dotnet_diagnostic.CA1834.severity = warning
 # CA2000: Dispose objects before losing scope
 dotnet_diagnostic.CA2000.severity = warning
+
+# CA2208: Instantiate argument exceptions correctly
+# CA2208 is suggesting that the argument that is passed to ArgumentNullException should match a name of a parameter
+# in the signature of the method that is throwing the exception. However, many of the CA2208 warning instances is
+# because the code throws an ArgumentNullException while passing in a property (or a field) on the object that is
+# passed into the method that is throwing the exception. A proper fix for this would be to throw an ArgumentException
+# instead. However, many of these instances are of a public method. So changing the exception being thrown is a breaking change.
+dotnet_diagnostic.CA2208.severity = suggestion
