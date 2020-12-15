@@ -1543,20 +1543,7 @@ namespace Microsoft.Azure.Devices.Client
                     throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
                 }
 
-                var context = new PipelineContext();
-                context.Set(_productInfo);
-
-                var transportSettings = new Http1TransportSettings();
-
-                //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
-                if (Certificate != null)
-                {
-                    transportSettings.ClientCertificate = Certificate;
-                }
-
-                using var httpTransport = new HttpTransportHandler(context, IotHubConnectionString, transportSettings);
-
-                return httpTransport.UploadToBlobAsync(blobName, source, cancellationToken);
+                return _fileUploadHttpTransportHandler.UploadToBlobAsync(blobName, source, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
