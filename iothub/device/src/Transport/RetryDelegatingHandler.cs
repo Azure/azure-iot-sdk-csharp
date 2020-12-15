@@ -642,6 +642,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             // If this object has already been disposed, we will throw an exception indicating that.
             // This is the entry point for interacting with the client and this safety check should be done here.
+            // The current behavior does not support open->close->open
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
