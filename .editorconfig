@@ -323,3 +323,5 @@ dotnet_diagnostic.CA1805.severity = warning
 dotnet_diagnostic.CA1834.severity = warning
 # CA2000: Dispose objects before losing scope
 dotnet_diagnostic.CA2000.severity = warning
+# CA2208: Instantiate argument exceptions correctly
+dotnet_diagnostic.CA2208.severity = suggestion
