@@ -23,21 +23,6 @@ namespace Microsoft.Azure.Devices.Client
         private bool _isDisposed;
 
         /// <summary>
-        /// Gets a snapshot of the UTC token expiry time.
-        /// </summary>
-        public DateTime ExpiresOn { get; private set; }
-
-        /// <summary>
-        /// Gets a snapshot of the UTC token refresh time.
-        /// </summary>
-        public DateTime RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
-
-        /// <summary>
-        /// Gets a snapshot expiry state.
-        /// </summary>
-        public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
         /// </summary>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
@@ -66,6 +51,21 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Gets a snapshot of the UTC token expiry time.
+        /// </summary>
+        public DateTime ExpiresOn { get; private set; }
+
+        /// <summary>
+        /// Gets a snapshot of the UTC token refresh time.
+        /// </summary>
+        public DateTime RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
+
+        /// <summary>
+        /// Gets a snapshot expiry state.
+        /// </summary>
+        public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
+
+        /// <summary>
         /// Gets a snapshot of the security token associated with the device. This call is thread-safe.
         /// </summary>
         public async Task<string> GetTokenAsync(string iotHub)
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client
                     return _token;
                 }
 
-                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
+                _token = await SafeCreateNewTokenAsync(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
 
                 var sas = SharedAccessSignature.Parse(".", _token);
                 ExpiresOn = sas.ExpiresOn;
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="iotHub">The IoT Hub domain name.</param>
         /// <param name="suggestedTimeToLive">The suggested TTL.</param>
         /// <returns>The token string.</returns>
-        protected abstract Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive);
+        protected abstract Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive);
 
         private void UpdateTimeBufferSeconds(int ttl)
         {

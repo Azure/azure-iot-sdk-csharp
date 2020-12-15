@@ -28,15 +28,16 @@ namespace Microsoft.Azure.Devices.Client
         private const string SharedAccessKeyPropertyName = "SharedAccessKey";
         private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
         private const string GatewayHostNamePropertyName = "GatewayHostName";
-        private const RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
-        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private const string X509CertPropertyName = "X509Cert";
-        private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex IdNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex X509CertRegex = new Regex(@"^[true|false]+$", regexOptions, regexTimeoutMilliseconds);
+
+        private const RegexOptions CommonRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
+        private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        private static readonly Regex s_hostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_idNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessKeyRegex = new Regex(@"^.+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessSignatureRegex = new Regex(@"^.+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_x509CertRegex = new Regex(@"^[true|false]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
 
         private string _hostName;
         private IAuthenticationMethod _authenticationMethod;
@@ -68,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
         public static IotHubConnectionStringBuilder Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
         {
-            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder()
+            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder
             {
                 HostName = hostname,
                 GatewayHostName = gatewayHostname,
@@ -99,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
             string iotHubConnectionString,
             IAuthenticationMethod authenticationMethod)
         {
-            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder()
+            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder
             {
                 HostName = "TEMP.HUB",
             };
@@ -148,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ModuleId { get; internal set; }
 
         /// <summary>
-        /// Gets the shared acess key name used to connect the device to the IoT Hub service.
+        /// Gets the shared access key name used to connect the device to the IoT Hub service.
         /// </summary>
         public string SharedAccessKeyName { get; internal set; }
 
@@ -165,8 +166,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the shared access signature used to connect to the IoT Hub service.
         /// </summary>
+        /// <remarks>
+        /// This is used when a device app creates its own limited-lifespan SAS token, instead of letting
+        /// this SDK derive one from a shared access token. When a device client is initialized with a
+        /// SAS token, when that token expires, the client must be disposed, and if desired, recreated
+        /// with a newly derived SAS token.
+        /// </remarks>
         public string SharedAccessSignature { get; internal set; }
 
+        /// <summary>
+        /// Indicates if the connection string indicates if an x509 certificate is specified for authentication.
+        /// </summary>
         public bool UsingX509Cert { get; internal set; }
 
         internal string IotHubName { get; private set; }
@@ -214,7 +224,7 @@ namespace Microsoft.Azure.Devices.Client
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
-            UsingX509Cert = GetConnectionStringOptionalValueOrDefault<bool>(map, X509CertPropertyName, GetX509, true);
+            UsingX509Cert = GetConnectionStringOptionalValueOrDefault<bool>(map, X509CertPropertyName, ParseX509, true);
             GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
 
             Validate();
@@ -229,14 +239,15 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!(SharedAccessKey.IsNullOrWhiteSpace() ^ SharedAccessSignature.IsNullOrWhiteSpace()))
             {
-                if (!(UsingX509Cert || (AuthenticationMethod is AuthenticationWithTokenRefresh)))
+                if (!(UsingX509Cert || AuthenticationMethod is AuthenticationWithTokenRefresh))
                 {
                     throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is not used");
                 }
             }
 
             if ((UsingX509Cert || Certificate != null) &&
-                (!SharedAccessKey.IsNullOrWhiteSpace() || !SharedAccessSignature.IsNullOrWhiteSpace()))
+                (!SharedAccessKey.IsNullOrWhiteSpace()
+                    || !SharedAccessSignature.IsNullOrWhiteSpace()))
             {
                 throw new ArgumentException("Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used");
             }
@@ -263,18 +274,18 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            ValidateFormat(HostName, HostNamePropertyName, HostNameRegex);
-            ValidateFormat(DeviceId, DeviceIdPropertyName, IdNameRegex);
+            ValidateFormat(HostName, HostNamePropertyName, s_hostNameRegex);
+            ValidateFormat(DeviceId, DeviceIdPropertyName, s_idNameRegex);
             if (!string.IsNullOrEmpty(ModuleId))
             {
-                ValidateFormat(ModuleId, DeviceIdPropertyName, IdNameRegex);
+                ValidateFormat(ModuleId, DeviceIdPropertyName, s_idNameRegex);
             }
 
-            ValidateFormatIfSpecified(SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
-            ValidateFormatIfSpecified(SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
-            ValidateFormatIfSpecified(SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);
-            ValidateFormatIfSpecified(GatewayHostName, GatewayHostNamePropertyName, HostNameRegex);
-            ValidateFormatIfSpecified(UsingX509Cert.ToString(CultureInfo.InvariantCulture), X509CertPropertyName, X509CertRegex);
+            ValidateFormatIfSpecified(SharedAccessKeyName, SharedAccessKeyNamePropertyName, s_sharedAccessKeyNameRegex);
+            ValidateFormatIfSpecified(SharedAccessKey, SharedAccessKeyPropertyName, s_sharedAccessKeyRegex);
+            ValidateFormatIfSpecified(SharedAccessSignature, SharedAccessSignaturePropertyName, s_sharedAccessSignatureRegex);
+            ValidateFormatIfSpecified(GatewayHostName, GatewayHostNamePropertyName, s_hostNameRegex);
+            ValidateFormatIfSpecified(UsingX509Cert.ToString(CultureInfo.InvariantCulture), X509CertPropertyName, s_x509CertRegex);
         }
 
         private void SetHostName(string hostname)
@@ -284,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(hostname));
             }
 
-            ValidateFormat(hostname, HostNamePropertyName, HostNameRegex);
+            ValidateFormat(hostname, HostNamePropertyName, s_hostNameRegex);
 
             _hostName = hostname;
             SetIotHubName();
@@ -356,7 +367,8 @@ namespace Microsoft.Azure.Devices.Client
             bool ignoreCase)
         {
             var value = default(TValue);
-            if (map.TryGetValue(propertyName, out string stringValue) && stringValue != null)
+            if (map.TryGetValue(propertyName, out string stringValue)
+                && stringValue != null)
             {
                 if (!tryParse(stringValue, ignoreCase, out value))
                 {
@@ -374,16 +386,22 @@ namespace Microsoft.Azure.Devices.Client
             return iotHubName;
         }
 
-        private static bool GetX509(string input, bool ignoreCase, out bool usingX509Cert)
+        private static bool ParseX509(string input, bool ignoreCase, out bool usingX509Cert)
         {
             usingX509Cert = false;
 
-            bool isMatch = string.Equals(input, "true", ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            bool isMatch = string.Equals(
+                input,
+                "true",
+                ignoreCase
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal);
             if (isMatch)
             {
                 usingX509Cert = true;
             }
 
+            // Always returns true, but must return a bool because it is used in a delegate that requires that return.
             return true;
         }
     }

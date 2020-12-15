@@ -12,14 +12,14 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Authentication method that uses a shared access signature token and allows for token refresh. 
+    /// Authentication method that uses a shared access signature token and allows for token refresh.
     /// </summary>
     public sealed class DeviceAuthenticationWithTpm : DeviceAuthenticationWithTokenRefresh
     {
         private SecurityProviderTpm _securityProvider;
 
         public DeviceAuthenticationWithTpm(
-            string deviceId, 
+            string deviceId,
             SecurityProviderTpm securityProvider) : base(deviceId)
         {
             _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
             _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }
 
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLiveSeconds)
+        protected override Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLiveSeconds)
         {
             var builder = new TpmSharedAccessSignatureBuilder(_securityProvider)
             {
