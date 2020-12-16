@@ -28,7 +28,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class using default
         /// TTL and TTL buffer time settings.
         /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="deviceId">The Id of the device.</param>
+        /// <param name="moduleId">The Id of the module.</param>
         public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId)
             : this(deviceId, moduleId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
         {

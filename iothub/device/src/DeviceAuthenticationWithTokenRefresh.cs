@@ -15,11 +15,6 @@ namespace Microsoft.Azure.Devices.Client
         private const int DefaultBufferPercentage = 15;
 
         /// <summary>
-        /// Gets the DeviceID.
-        /// </summary>
-        public string DeviceId { get; private set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class using default
         /// TTL and TTL buffer time settings.
         /// </summary>
@@ -50,6 +45,11 @@ namespace Microsoft.Azure.Devices.Client
 
             DeviceId = deviceId;
         }
+
+        /// <summary>
+        /// Gets the DeviceId.
+        /// </summary>
+        public string DeviceId { get; private set; }
 
         /// <summary>
         /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on a snapshot of the properties of

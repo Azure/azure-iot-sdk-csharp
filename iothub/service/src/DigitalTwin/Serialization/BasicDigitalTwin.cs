@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Serialization
@@ -27,6 +28,7 @@ namespace Microsoft.Azure.Devices.Serialization
         /// Additional properties of the digital twin. This field will contain any properties of the digital twin that are not already defined by the other strong types of this class.
         /// </summary>
         [JsonExtensionData]
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
         public IDictionary<string, object> CustomProperties { get; set; } = new Dictionary<string, object>();
     }
 }

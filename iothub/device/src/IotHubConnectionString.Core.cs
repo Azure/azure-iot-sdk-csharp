@@ -10,42 +10,31 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
     {
-        public AuthenticationWithTokenRefresh TokenRefresher
-        {
-            get;
-            private set;
-        }
+        public AuthenticationWithTokenRefresh TokenRefresher { get; private set; }
 
         Task<string> IAuthorizationProvider.GetPasswordAsync()
         {
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, $"{nameof(IotHubConnectionString)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
-                }
 
-                Debug.Assert(this.TokenRefresher != null);
+                Debug.Assert(TokenRefresher != null);
 
-                if (!string.IsNullOrWhiteSpace(this.SharedAccessSignature))
-                {
-                    return Task.FromResult(this.SharedAccessSignature);
-                }
-
-                return this.TokenRefresher.GetTokenAsync(this.Audience);
+                return !string.IsNullOrWhiteSpace(SharedAccessSignature)
+                    ? Task.FromResult(SharedAccessSignature)
+                    : TokenRefresher.GetTokenAsync(Audience);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"{nameof(IotHubConnectionString)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
-                }
             }
         }
 
         public Uri BuildLinkAddress(string path)
         {
-            var builder = new UriBuilder(this.AmqpEndpoint)
+            var builder = new UriBuilder(AmqpEndpoint)
             {
                 Path = path,
             };
