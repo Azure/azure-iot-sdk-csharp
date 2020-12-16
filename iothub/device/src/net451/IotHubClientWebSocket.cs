@@ -498,7 +498,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        [SuppressMessage("Microsoft.Cryptographic.Standard", "CA5354:SHA1CannotBeUsed", Justification = "SHA-1 Hash mandated by RFC 6455")]
+        [SuppressMessage("Security", "CA5350:Do Not Use Weak Cryptographic Algorithms", Justification = "SHA-1 Hash mandated by RFC 6455")]
         private static SHA1 InitCryptoServiceProvider()
         {
             return SHA1.Create();
