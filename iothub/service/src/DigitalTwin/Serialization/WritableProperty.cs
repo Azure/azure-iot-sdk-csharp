@@ -10,9 +10,7 @@ namespace Microsoft.Azure.Devices.Serialization
     /// An optional, helper class for deserializing a digital twin.
     /// </summary>
     /// <remarks>
-    /// <para>
     /// A writable property is one that the service may request a change for from the device.
-    /// </para>
     /// </remarks>
     public class WritableProperty
     {
