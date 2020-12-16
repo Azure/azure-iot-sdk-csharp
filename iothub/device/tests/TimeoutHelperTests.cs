@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,7 +23,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public async Task TimeoutHelper_Ctor_DoesNotStartTimeout()
         {
             // arrange
-
             var timeout = TimeSpan.FromSeconds(1);
 
             // act
@@ -92,7 +92,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             TimeSpan remainingTime = toh.GetRemainingTime();
             remainingTime.Should().NotBe(TimeSpan.Zero);
 
-            await Task.Delay(timeout).ConfigureAwait(false);
+            // ensure we're over the time, because the test will sometimes fail with some microseconds remaining
+            var delay = timeout.Add(TimeSpan.FromMilliseconds(50));
+            await Task.Delay(delay).ConfigureAwait(false);
+
             remainingTime = toh.GetRemainingTime();
             remainingTime.Should().Be(TimeSpan.Zero);
         }
