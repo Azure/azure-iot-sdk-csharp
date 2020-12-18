@@ -28,14 +28,10 @@ namespace Microsoft.Azure.Devices.Common
 #if NET451
         private const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
 #endif
-        private const string AssertsFailFastName = "AssertsFailFast";
         private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
-        private const string FastDebugName = "FastDebug";
 
         private static bool s_breakOnExceptionTypesRetrieved;
         private static Type[] s_breakOnExceptionTypesCache;
-        private static bool s_fastDebugRetrieved;
-        private static bool s_fastDebugCache;
 #endif
 
         private static ExceptionTrace s_exceptionTrace;
@@ -78,14 +74,6 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        public static void AssertIsNotNull(object objectMayBeNull, string description)
-        {
-            if (objectMayBeNull == null)
-            {
-                AssertAndThrow(description);
-            }
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception AssertAndThrow(string description)
         {
@@ -107,64 +95,6 @@ namespace Microsoft.Azure.Devices.Common
             Assert(description);
             throw Exception.AsError(new FatalException(description));
         }
-
-#if NET451
-        public static void AssertAndFailFastService(bool condition, string description)
-        {
-            if (!condition)
-            {
-                AssertAndFailFastService(description);
-            }
-        }
-
-        // This never returns.  The Exception return type lets you write 'throw AssertAndFailFast()' which tells the compiler/tools that
-        // execution stops.
-        [Tag.SecurityNote(Critical = "Calls into critical method Environment.FailFast",
-            Safe = "The side affect of the app crashing is actually intended here")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static Exception AssertAndFailFastService(string description)
-        {
-            Assert(description);
-            string failFastMessage = CommonResources.GetString(Resources.FailFastMessage, description);
-
-            // The catch is here to force the finally to run, as finallys don't run until the stack walk gets to a catch.
-            // The catch makes sure that the finally will run before the stack-walk leaves the frame, but the code inside is impossible to reach.
-            try
-            {
-                try
-                {
-                    Thread.Sleep(TimeSpan.FromSeconds(15));
-                }
-                finally
-                {
-                    // ########################## NOTE ###########################
-                    // Environment.FailFast does not collect crash dumps when used in Azure services.
-                    // Environment.FailFast(failFastMessage);
-
-                    // ################## WORKAROUND #############################
-                    // Workaround for the issue above. Throwing an unhandled exception on a separate thread to trigger process crash and crash dump collection
-                    // Throwing FatalException since our service does not morph/eat up fatal exceptions
-                    // We should find the tracking bug in Azure for this issue, and remove the workaround when fixed by Azure
-                    var failFastWorkaroundThread = new Thread(
-                        delegate ()
-                        {
-#pragma warning disable CA2219 // Do not raise exceptions in finally clauses
-                            throw new FatalException(failFastMessage);
-#pragma warning restore CA2219 // Do not raise exceptions in finally clauses
-                        });
-
-                    failFastWorkaroundThread.Start();
-                    failFastWorkaroundThread.Join();
-                }
-            }
-            catch
-            {
-                throw;
-            }
-
-            return null; // we'll never get here since we've just fail-fasted
-        }
-#endif
 
         public static bool IsFatal(Exception exception)
         {
@@ -230,47 +160,6 @@ namespace Microsoft.Azure.Devices.Common
         }
 
 #if NET451
-        // If the transaction has aborted then we switch over to a new transaction
-        // which we will immediately abort after setting Transaction.Current
-        public static TransactionScope CreateTransactionScope(Transaction transaction)
-        {
-            try
-            {
-                return transaction == null ? null : new TransactionScope(transaction);
-            }
-            catch (TransactionAbortedException)
-            {
-                var tempTransaction = new CommittableTransaction();
-                try
-                {
-                    return new TransactionScope(tempTransaction.Clone());
-                }
-                finally
-                {
-                    tempTransaction.Rollback();
-                }
-            }
-        }
-
-        public static void CompleteTransactionScope(ref TransactionScope scope)
-        {
-            TransactionScope localScope = scope;
-            if (localScope != null)
-            {
-                scope = null;
-                try
-                {
-                    localScope.Complete();
-                }
-                finally
-                {
-                    localScope.Dispose();
-                }
-            }
-        }
-#endif
-
-#if NET451
         [Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
         [SecurityCritical]
         public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
@@ -279,29 +168,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif
 
-#if NET451
-        public static TransactionCompletedEventHandler ThunkTransactionEventHandler(TransactionCompletedEventHandler handler)
-        {
-            return new TransactionEventHandlerThunk(handler).ThunkFrame;
-        }
-#endif
-
 #if DEBUG
-
-        internal static bool AssertsFailFast
-        {
-            get
-            {
-                object value;
-                return TryGetDebugSwitch(AssertsFailFastName, out value) &&
-#if !NET451
-                        typeof(int).GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo())
-#else
-                        typeof(int).IsAssignableFrom(value.GetType())
-#endif
-                    && ((int)value) != 0;
-            }
-        }
 
         internal static Type[] BreakOnExceptionTypes
         {
@@ -328,30 +195,6 @@ namespace Microsoft.Azure.Devices.Common
                     s_breakOnExceptionTypesRetrieved = true;
                 }
                 return s_breakOnExceptionTypesCache;
-            }
-        }
-
-        internal static bool FastDebug
-        {
-            get
-            {
-                if (!s_fastDebugRetrieved)
-                {
-                    if (TryGetDebugSwitch(FastDebugName, out object value))
-                    {
-#if !NET451
-                        s_fastDebugCache = typeof(int).GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo())
-#else
-                        s_fastDebugCache = typeof(int).IsAssignableFrom(value.GetType())
-#endif
-                            && ((int)value) != 0;
-                    }
-
-                    s_fastDebugRetrieved = true;
-                    ////MessagingClientEtwProvider.Provider.EventWriteLogAsWarning(string.Format(CultureInfo.InvariantCulture, "AppDomain({0}).FastDebug={1}", AppDomain.CurrentDomain.FriendlyName, fastDebugCache.ToString()));
-                }
-
-                return s_fastDebugCache;
             }
         }
 
@@ -412,64 +255,8 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif
 
-#if NET451
-        private sealed class TransactionEventHandlerThunk
-        {
-            readonly TransactionCompletedEventHandler _callback;
-
-            public TransactionEventHandlerThunk(TransactionCompletedEventHandler callback)
-            {
-                _callback = callback;
-            }
-
-            public TransactionCompletedEventHandler ThunkFrame => new TransactionCompletedEventHandler(UnhandledExceptionFrame);
-
-            private void UnhandledExceptionFrame(object sender, TransactionEventArgs args)
-            {
-                RuntimeHelpers.PrepareConstrainedRegions();
-                try
-                {
-                    _callback(sender, args);
-                }
-                catch (Exception exception)
-                {
-                    throw AssertAndFailFastService(exception.ToString());
-                }
-            }
-        }
-#endif
-
         public static class Tag
         {
-            public enum CacheAttrition
-            {
-                None,
-                ElementOnTimer,
-
-                // A finalizer/WeakReference based cache, where the elements are held by WeakReferences (or hold an
-                // inner object by a WeakReference), and the weakly-referenced object has a finalizer which cleans the
-                // item from the cache.
-                ElementOnGC,
-
-                // A cache that provides a per-element token, delegate, interface, or other piece of context that can
-                // be used to remove the element (such as IDisposable).
-                ElementOnCallback,
-
-                FullPurgeOnTimer,
-                FullPurgeOnEachAccess,
-                PartialPurgeOnTimer,
-                PartialPurgeOnEachAccess,
-            }
-
-            public enum Location
-            {
-                InProcess,
-                OutOfProcess,
-                LocalSystem,
-                LocalOrRemoteSystem, // as in a file that might live on a share
-                RemoteSystem,
-            }
-
             public enum SynchronizationKind
             {
                 LockStatement,
@@ -510,44 +297,6 @@ namespace Microsoft.Azure.Devices.Common
                 internal const string DeclaringInstance = "instance of declaring class";
                 internal const string Unbounded = "unbounded";
                 internal const string Infinite = "infinite";
-            }
-
-            [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Constructor,
-                AllowMultiple = true, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class ExternalResourceAttribute : Attribute
-            {
-                public ExternalResourceAttribute(Location location, string description)
-                {
-                    Location = location;
-                    Description = description;
-                }
-
-                public Location Location { get; private set; }
-
-                public string Description { get; private set; }
-            }
-
-            [AttributeUsage(AttributeTargets.Field)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class CacheAttribute : Attribute
-            {
-                public CacheAttribute(Type elementType, CacheAttrition cacheAttrition)
-                {
-                    Scope = Strings.DeclaringInstance;
-                    SizeLimit = Strings.Unbounded;
-                    Timeout = Strings.Infinite;
-                    ElementType = elementType ?? throw Exception.ArgumentNull(nameof(elementType));
-                    CacheAttrition = cacheAttrition;
-                }
-
-                public Type ElementType { get; private set; }
-
-                public CacheAttrition CacheAttrition { get; private set; }
-
-                public string Scope { get; set; }
-                public string SizeLimit { get; set; }
-                public string Timeout { get; set; }
             }
 
             [AttributeUsage(AttributeTargets.Field)]
@@ -607,10 +356,6 @@ namespace Microsoft.Azure.Devices.Common
             [Conditional("CODE_ANALYSIS")]
             public sealed class BlockingAttribute : Attribute
             {
-                public BlockingAttribute()
-                {
-                }
-
                 public string CancelMethod { get; set; }
                 public Type CancelDeclaringType { get; set; }
                 public string Conditional { get; set; }
@@ -629,50 +374,6 @@ namespace Microsoft.Azure.Devices.Common
                 public GuaranteeNonBlockingAttribute()
                 {
                 }
-            }
-
-            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class NonThrowingAttribute : Attribute
-            {
-                public NonThrowingAttribute()
-                {
-                }
-            }
-
-            [SuppressMessage(FxCop.Category.Performance, "CA1813:AvoidUnsealedAttributes",
-                Justification = "This is intended to be an attribute heirarchy. It does not affect product perf.")]
-            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor,
-                AllowMultiple = true, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public class ThrowsAttribute : Attribute
-            {
-                public ThrowsAttribute(Type exceptionType, string diagnosis)
-                {
-                    if (string.IsNullOrEmpty(diagnosis))
-                    {
-                        throw Exception.ArgumentNullOrEmpty(nameof(diagnosis));
-                    }
-
-                    ExceptionType = exceptionType ?? throw Exception.ArgumentNull(nameof(exceptionType));
-                    Diagnosis = diagnosis;
-                }
-
-                public Type ExceptionType { get; private set; }
-
-                public string Diagnosis { get; private set; }
-            }
-
-            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class InheritThrowsAttribute : Attribute
-            {
-                public InheritThrowsAttribute()
-                {
-                }
-
-                public Type FromDeclaringType { get; set; }
-                public string From { get; set; }
             }
 
             [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class |
