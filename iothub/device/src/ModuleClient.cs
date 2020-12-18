@@ -44,9 +44,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if (Logging.IsEnabled)
-            {
                 Logging.Associate(this, this, internalClient, nameof(ModuleClient));
-            }
         }
 
         /// <summary>
@@ -457,6 +455,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
+        /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
