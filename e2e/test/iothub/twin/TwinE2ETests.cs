@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -20,244 +21,364 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     {
         private readonly string _devicePrefix = $"E2E_{nameof(TwinE2ETests)}_";
 
+        private static readonly List<object> s_listOfPropertyValues = new List<object>
+        {
+            1,
+            "someString",
+            false,
+            new CustomTwinProperty
+            {
+                Id = 123,
+                Name = "someName"
+            }
+        };
+
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Mqtt()
         {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
+                    Client.TransportType.Mqtt_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_MqttWs()
         {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Amqp()
         {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
+                    Client.TransportType.Amqp_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_AmqpWs()
         {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
+                    Client.TransportType.Amqp_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_Mqtt()
         {
-            await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
+                    Client.TransportType.Mqtt_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_MqttWs()
         {
-            await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_Amqp()
         {
-            await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
+                    Client.TransportType.Amqp_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_AmqpWs()
         {
-            await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
+                    Client.TransportType.Amqp_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Mqtt()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType.Mqtt_Tcp_Only, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType.Mqtt_WebSocket_Only, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Amqp()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType.Amqp_Tcp_Only, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_AmqpWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(Client.TransportType.Amqp_WebSocket_Only, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Mqtt_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Mqtt_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Amqp_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_AmqpWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Amqp_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Mqtt()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Mqtt_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync, JArray.Parse("[1, \"someString\", false]")).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    s_listOfPropertyValues)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Mqtt_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync, JArray.Parse("[1, \"someString\", false]")).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    s_listOfPropertyValues)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Amqp()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Amqp_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync, JArray.Parse("[1, \"someString\", false]")).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    s_listOfPropertyValues)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_AmqpWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Amqp_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync, JArray.Parse("[1, \"someString\", false]")).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    s_listOfPropertyValues)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Mqtt()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Mqtt_Tcp_Only, SetTwinPropertyUpdateCallbackObsoleteHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    SetTwinPropertyUpdateCallbackObsoleteHandlerAsync,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Mqtt_WebSocket_Only, SetTwinPropertyUpdateCallbackObsoleteHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    SetTwinPropertyUpdateCallbackObsoleteHandlerAsync,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Amqp()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Amqp_Tcp_Only, SetTwinPropertyUpdateCallbackObsoleteHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    SetTwinPropertyUpdateCallbackObsoleteHandlerAsync,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_AmqpWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType.Amqp_WebSocket_Only, SetTwinPropertyUpdateCallbackObsoleteHandlerAsync, Guid.NewGuid().ToString()).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    SetTwinPropertyUpdateCallbackObsoleteHandlerAsync,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Mqtt()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
+                    Client.TransportType.Mqtt_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Amqp()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
+                    Client.TransportType.Amqp_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
+                    Client.TransportType.Amqp_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Mqtt()
         {
-            await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
+                    Client.TransportType.Mqtt_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_MqttWs()
         {
-            await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Amqp()
         {
-            await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
+                    Client.TransportType.Amqp_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_AmqpWs()
         {
-            await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
+                    Client.TransportType.Amqp_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Mqtt()
         {
-            await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
+                    Client.TransportType.Mqtt_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
         {
-            await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Amqp()
         {
-            await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
+                    Client.TransportType.Amqp_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_AmqpWs()
         {
-            await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
+                    Client.TransportType.Amqp_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Mqtt()
         {
-            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
+                    Client.TransportType.Mqtt_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_MqttWs()
         {
-            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Amqp()
         {
-            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
+                    Client.TransportType.Amqp_Tcp_Only)
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_AmqpWs()
         {
-            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
+                    Client.TransportType.Amqp_WebSocket_Only)
+                .ConfigureAwait(false);
         }
 
         [DataTestMethod]
@@ -305,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, JArray.Parse("[1, 2, 3]"), Logger).ConfigureAwait(false);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, s_listOfPropertyValues, Logger).ConfigureAwait(false);
         }
 
         public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(DeviceClient deviceClient, object propValue, MsTestLogger logger)
@@ -411,14 +532,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-            
+
             // Set a callback
             await deviceClient.
                 SetDesiredPropertyUpdateCallbackAsync(
                     (patch, context) =>
                     {
                         Logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
-                        
+
                         // After unsubscribing it should never reach here
                         Assert.IsNull(patch);
 
@@ -438,7 +559,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-            private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType transport, Func<DeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(Client.TransportType transport, Func<DeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
         {
             var propName = Guid.NewGuid().ToString();
 
@@ -580,5 +701,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
         }
+    }
+
+    internal class CustomTwinProperty
+    {
+        // The properties in here need to be public otherwise NewtonSoft.Json cannot serialize and deserialize them properly.
+        public int Id { get; set; }
+
+        public string Name { get; set; }
     }
 }
