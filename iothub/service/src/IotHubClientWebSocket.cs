@@ -21,7 +21,6 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices
 {
     // http://tools.ietf.org/html/rfc6455
-    [SuppressMessage(FxCop.Category.Design, FxCop.Rule.TypesThatOwnDisposableFieldsShouldBeDisposable, Justification = "Uses close/abort pattern")]
     internal class IotHubClientWebSocket
     {
         private const string HttpGetHeaderFormat = "GET {0} HTTP/1.1\r\n";
