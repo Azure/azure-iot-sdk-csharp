@@ -280,6 +280,9 @@ namespace Microsoft.Azure.Devices.Common
                 _deferredTransactionalResult = null;
             }
             else
+            {
+                return false;
+            }
 #endif
             if (!result.CompletedSynchronously)
             {
