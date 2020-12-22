@@ -131,10 +131,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     cancellationToken.ThrowIfCancellationRequested();
 
                     await Task.Delay(
-                        operation.RetryAfter ??
-                        RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingInterval)).ConfigureAwait(false);
-
-                    cancellationToken.ThrowIfCancellationRequested();
+                        operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingInterval),
+                        cancellationToken).ConfigureAwait(false);
 
                     try
                     {
@@ -143,9 +141,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         operationId,
                         correlationId).ConfigureAwait(false);
                     }
-                    catch (ProvisioningTransportException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp && e.IsTransient)
+                    catch (ProvisioningTransportException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp amqp && e.IsTransient)
                     {
-                        operation.RetryAfter = ((ProvisioningErrorDetailsAmqp)e.ErrorDetails).RetryAfter;
+                        operation.RetryAfter = amqp.RetryAfter;
                     }
 
                     attempts++;
@@ -183,17 +181,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo)
         {
-            var amqpDeviceSession = connection.CreateSession();
+            AmqpClientSession amqpDeviceSession = connection.CreateSession();
             await amqpDeviceSession.OpenAsync(s_timeoutConstant).ConfigureAwait(false);
 
-            var amqpReceivingLink = amqpDeviceSession.CreateReceivingLink(linkEndpoint);
+            AmqpClientLink amqpReceivingLink = amqpDeviceSession.CreateReceivingLink(linkEndpoint);
 
             amqpReceivingLink.AddClientVersion(productInfo);
             amqpReceivingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
 
             await amqpReceivingLink.OpenAsync(s_timeoutConstant).ConfigureAwait(false);
 
-            var amqpSendingLink = amqpDeviceSession.CreateSendingLink(linkEndpoint);
+            AmqpClientLink amqpSendingLink = amqpDeviceSession.CreateSendingLink(linkEndpoint);
 
             amqpSendingLink.AddClientVersion(productInfo);
             amqpSendingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
@@ -235,15 +233,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(s_timeoutConstant).ConfigureAwait(false);
                 client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
 
-                using (var streamReader = new StreamReader(amqpResponse.BodyStream))
-                {
-                    string jsonResponse = await streamReader
-                        .ReadToEndAsync()
-                        .ConfigureAwait(false);
-                    RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
-                    status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPoolingInterval);
-                    return status;
-                }
+                using var streamReader = new StreamReader(amqpResponse.BodyStream);
+                string jsonResponse = await streamReader
+                    .ReadToEndAsync()
+                    .ConfigureAwait(false);
+                RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+                status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPoolingInterval);
+                return status;
             }
             finally
             {
@@ -256,31 +252,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string operationId,
             string correlationId)
         {
-            using (var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = DeviceOperations.GetOperationStatus }))
-            {
-                amqpMessage.Properties.CorrelationId = correlationId;
-                amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] =
-                    DeviceOperations.GetOperationStatus;
-                amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationId] = operationId;
-                var outcome = await client.AmqpSession.SendingLink
-                    .SendMessageAsync(
-                        amqpMessage,
-                        new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
-                        s_timeoutConstant)
-                    .ConfigureAwait(false);
-                ValidateOutcome(outcome);
-                AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(s_timeoutConstant)
-                    .ConfigureAwait(false);
-                client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
+            using var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = DeviceOperations.GetOperationStatus });
 
-                using (var streamReader = new StreamReader(amqpResponse.BodyStream))
-                {
-                    string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                    RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
-                    status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPoolingInterval);
-                    return status;
-                }
-            }
+            amqpMessage.Properties.CorrelationId = correlationId;
+            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] =
+                DeviceOperations.GetOperationStatus;
+            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationId] = operationId;
+
+            Outcome outcome = await client.AmqpSession.SendingLink
+                .SendMessageAsync(
+                    amqpMessage,
+                    new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
+                    s_timeoutConstant)
+                .ConfigureAwait(false);
+
+            ValidateOutcome(outcome);
+
+            AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(s_timeoutConstant)
+                .ConfigureAwait(false);
+
+            client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
+
+            using var streamReader = new StreamReader(amqpResponse.BodyStream);
+
+            string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+            RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+            status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPoolingInterval);
+
+            return status;
         }
 
         private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(
@@ -310,7 +309,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 try
                 {
-                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
+                    ProvisioningErrorDetailsAmqp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
                     if (isTransient)
