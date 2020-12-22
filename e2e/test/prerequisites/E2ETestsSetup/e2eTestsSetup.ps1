@@ -326,6 +326,8 @@ if ($rgExists -eq "False")
     az group create --name $ResourceGroup --location $Region --output none
 }
 
+$resourceGroupId = az group show -n $ResourceGroup --query id --out tsv
+
 #######################################################################################################
 # Invoke-Deployment - Uses the .\.json template to
 # create the necessary resources to run E2E tests.
@@ -380,6 +382,16 @@ $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --q
 $customAllocationPolicyWebhook = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.customAllocationPolicyWebhook.value' --output tsv
 $keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
 $instrumentationKey = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.instrumentationKey.value' --output tsv
+$iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
+
+##################################################################################################################################
+# Granting the iot hub system idenitty Storage blob contributor access on the resoruce group
+##################################################################################################################################
+Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $resoruceGroupId"
+
+$systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.principalId --out tsv
+
+az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId
 
 ##################################################################################################################################
 # Uploading certificate to DPS, verifying and creating enrollment groups
@@ -519,6 +531,8 @@ az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-TENANT" --value
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value $appId --output none
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-CERT-BASE64" --value $fileContentB64String --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" --value "invalidcertgde1.westus.cloudapp.azure.com" --output none
+az keyvault secret set --vault-name $keyVaultName --name "PIPELINE-ENVIRONMENT" --value "prod" --output none
+
 # Below Environment variables are only used in Java
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-CONNECTION-STRING" --value $farHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IS-BASIC-TIER-HUB" --value "false" --output none
