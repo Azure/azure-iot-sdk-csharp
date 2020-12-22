@@ -281,6 +281,7 @@ namespace Microsoft.Azure.Devices.Common
             }
             else
 #endif
+            if (!result.CompletedSynchronously)
             {
                 return false;
             }
