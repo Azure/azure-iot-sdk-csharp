@@ -143,7 +143,7 @@
     {
       "name": "[parameters('ApplicationInsightsName')]",
       "type": "Microsoft.Insights/components",
-      "location": "[resourceGroup().location]",
+      "location": "WestUs",
       "apiVersion": "2015-05-01",
       "properties": {
           "Application_Type": "web"
@@ -255,9 +255,14 @@
     },
     {
       "type": "Microsoft.Devices/IotHubs",
-      "apiVersion": "2019-11-04",
+      "apiVersion": "2020-01-01",
       "name": "[parameters('HubName')]",
       "location": "[resourceGroup().location]",
+      "identity": {
+        "principalId": "",
+        "tenantId": "",
+        "type": "SystemAssigned"
+      },
       "properties": {
         "eventHubEndpoints": {
           "events": {
@@ -426,7 +431,11 @@
           "appSettings": [
             {
               "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~3"
+              "value": "3.0.14916"
+            },
+            {
+              "name": "FUNCTIONS_V2_COMPATIBILITY_MODE",
+              "value": "true"
             },
             {
               "name": "FUNCTIONS_WORKER_RUNTIME",
@@ -435,7 +444,15 @@
             {
               "name": "AzureWebJobsStorage",
               "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('StorageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', 'core.windows.net')]"
-            }
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('StorageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'), '2019-06-01').keys[0].value, ';EndpointSuffix=', 'core.windows.net')]"
+              },
+              {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(parameters('DpsCustomAllocatorFunctionName'))]"
+              }
           ]
         },
         "serverFarmId": "[variables('serverFarmId')]"
