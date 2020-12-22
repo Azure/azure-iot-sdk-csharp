@@ -19,15 +19,6 @@ namespace Microsoft.Azure.Devices.Common
         /// <summary>
         /// Create a Task based on Begin/End IAsyncResult pattern.
         /// </summary>
-        /// <param name="begin"></param>
-        /// <param name="end"></param>
-        /// <param name="state">
-        /// This parameter helps reduce allocations by passing state to the Funcs. e.g.:
-        ///  await TaskHelpers.CreateTask(
-        ///      (c, s) => ((Transaction)s).BeginCommit(c, s),
-        ///      (a) => ((Transaction)a.AsyncState).EndCommit(a),
-        ///      transaction);
-        /// </param>
         public static void Fork(this Task thisTask)
         {
             Fork(thisTask, "TaskExtensions.Fork");
