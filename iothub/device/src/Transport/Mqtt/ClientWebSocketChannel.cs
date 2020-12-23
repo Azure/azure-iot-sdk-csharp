@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Net;
 using System.Net.WebSockets;
@@ -14,8 +13,7 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "WS is owned by the caller.")]
-    public class ClientWebSocketChannel : AbstractChannel
+    public sealed class ClientWebSocketChannel : AbstractChannel, IDisposable
     {
         private ClientWebSocket _webSocket;
         private CancellationTokenSource _writeCancellationTokenSource;
@@ -55,6 +53,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             Configuration.SetOption(option, value);
             return this;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _webSocket?.Dispose();
+            _webSocket = null;
+
+            _writeCancellationTokenSource?.Dispose();
+            _writeCancellationTokenSource = null;
         }
 
         protected class WebSocketChannelUnsafe : AbstractUnsafe
@@ -104,8 +112,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     CancelPendingWrite();
                     _isActive = false;
 
-                    using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cts.Token).ConfigureAwait(false);
                 }
             }
             catch (Exception e) when (!e.IsFatal())
@@ -217,7 +225,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task<int> DoReadBytesAsync(IByteBuffer byteBuffer)
         {
-            WebSocketReceiveResult receiveResult = await _webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None).ConfigureAwait(false);
+            WebSocketReceiveResult receiveResult = await _webSocket
+                .ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None)
+                .ConfigureAwait(false);
             if (receiveResult.MessageType == WebSocketMessageType.Text)
             {
                 throw new ProtocolViolationException("Mqtt over WS message cannot be in text");
@@ -260,11 +270,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private void Abort()
         {
             _webSocket?.Abort();
-            _webSocket?.Dispose();
-            _webSocket = null;
-
-            _writeCancellationTokenSource?.Dispose();
-            _writeCancellationTokenSource = null;
         }
     }
 }
