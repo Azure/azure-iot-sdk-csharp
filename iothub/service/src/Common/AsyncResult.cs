@@ -272,19 +272,19 @@ namespace Microsoft.Azure.Devices.Common
             }
 
             callback = null;
-            if (result.CompletedSynchronously)
+            if (!result.CompletedSynchronously)
             {
+                return false;
+            }
 #if NET451
+            else
+            {
                 if (ReferenceEquals(result, _deferredTransactionalResult))
                 {
                     _deferredTransactionalResult = null;
                 }
+            }
 #endif
-            }
-            else
-            {
-                return false;
-            }
 
             callback = GetNextCompletion();
             if (callback == null)
