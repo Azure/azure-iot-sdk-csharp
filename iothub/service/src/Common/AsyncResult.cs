@@ -272,18 +272,19 @@ namespace Microsoft.Azure.Devices.Common
             }
 
             callback = null;
-
-#if NET451
-            if (!result.CompletedSynchronously && ReferenceEquals(result, _deferredTransactionalResult))
-            {
-                // Use deferredTransactionalResult to see if we are supposed to execute a post-transaction callback.
-                _deferredTransactionalResult = null;
-            }
-            else
-#endif
+            if (!result.CompletedSynchronously)
             {
                 return false;
             }
+#if NET451
+            else
+            {
+                if (ReferenceEquals(result, _deferredTransactionalResult))
+                {
+                    _deferredTransactionalResult = null;
+                }
+            }
+#endif
 
             callback = GetNextCompletion();
             if (callback == null)
