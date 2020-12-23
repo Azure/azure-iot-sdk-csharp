@@ -14,8 +14,7 @@ using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "WS is owned by the caller.")]
-    internal class ClientWebSocketChannel : AbstractChannel
+    internal class ClientWebSocketChannel : AbstractChannel, IDisposable
     {
         private ClientWebSocket _webSocket;
         private CancellationTokenSource _writeCancellationTokenSource;
@@ -81,6 +80,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             Configuration.SetOption(option, value);
             return this;
+        }
+
+        public void Dispose()
+        {
+            _webSocket?.Dispose();
+            _webSocket = null;
+
+            _writeCancellationTokenSource?.Dispose();
+            _writeCancellationTokenSource = null;
         }
 
         public override bool Equals(object obj)
@@ -152,17 +160,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 WebSocketState webSocketState = _webSocket.State;
-                if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
+                if (webSocketState != WebSocketState.Closed
+                    && webSocketState != WebSocketState.Aborted)
                 {
                     // Cancel any pending write
                     CancelPendingWrite();
                     _isActive = false;
 
                     using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                    await _webSocket.CloseAsync(
-                        WebSocketCloseStatus.NormalClosure,
-                        string.Empty,
-                        cancellationTokenSource.Token).ConfigureAwait(false);
+                    await _webSocket
+                        .CloseAsync(
+                            WebSocketCloseStatus.NormalClosure,
+                            string.Empty,
+                            cancellationTokenSource.Token)
+                        .ConfigureAwait(false);
                 }
             }
             catch (Exception)
@@ -333,11 +344,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private void Abort()
         {
             _webSocket?.Abort();
-            _webSocket?.Dispose();
-            _webSocket = null;
-
-            _writeCancellationTokenSource?.Dispose();
-            _writeCancellationTokenSource = null;
         }
     }
 }

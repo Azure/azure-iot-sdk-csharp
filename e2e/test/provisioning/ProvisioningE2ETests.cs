@@ -559,8 +559,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 ApiVersion = "2019-03-31",
             };
 
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
-            using (SecurityProvider security = await CreateSecurityProviderFromNameAsync(
+            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
+            using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -568,42 +568,41 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AllocationPolicy.Custom,
                     customAllocationDefinition,
                     iotHubsToProvisionTo)
-                .ConfigureAwait(false))
+                .ConfigureAwait(false);
+
+            // Check basic provisioning
+            if (ImplementsWebProxy(transportProtocol) && setCustomProxy)
             {
-                //Check basic provisioning
-                if (ImplementsWebProxy(transportProtocol) && setCustomProxy)
+                transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
+            }
+
+            var provClient = ProvisioningDeviceClient.Create(
+                s_globalDeviceEndpoint,
+                Configuration.Provisioning.IdScope,
+                security,
+                transport);
+            using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
+
+            // Test registering with valid additional data payload
+            DeviceRegistrationResult result = await provClient
+                .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
+                .ConfigureAwait(false);
+            ValidateDeviceRegistrationResult(true, result);
+            Assert.AreEqual(expectedDestinationHub, result.AssignedHub);
+
+            // Test registering without additional data
+            result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+            ValidateDeviceRegistrationResult(false, result);
+
+            if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+            {
+                try
                 {
-                    transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
                 }
-
-                var provClient = ProvisioningDeviceClient.Create(
-                    s_globalDeviceEndpoint,
-                    Configuration.Provisioning.IdScope,
-                    security,
-                    transport);
-                using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
-
-                //Test registering with valid additional data payload
-                DeviceRegistrationResult result = await provClient
-                    .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
-                    .ConfigureAwait(false);
-                ValidateDeviceRegistrationResult(true, result);
-                Assert.AreEqual(expectedDestinationHub, result.AssignedHub);
-
-                //Test registering without additional data
-                result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                ValidateDeviceRegistrationResult(false, result);
-
-                if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        await DeleteCreatedEnrollmentAsync(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
-                    }
+                    Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
                 }
             }
         }
@@ -642,28 +641,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType transportProtocol)
         {
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
-            using (SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid"))
-            {
-                var provClient = ProvisioningDeviceClient.Create(
-                    s_globalDeviceEndpoint,
-                    Configuration.Provisioning.IdScope,
-                    security,
-                    transport);
+            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
+            using SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid");
+            var provClient = ProvisioningDeviceClient.Create(
+                s_globalDeviceEndpoint,
+                Configuration.Provisioning.IdScope,
+                security,
+                transport);
 
-                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+            using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-                Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
-                DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+            Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
+            DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
-                Logger.Trace($"{result.Status}");
+            Logger.Trace($"{result.Status}");
 
-                Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
-                Assert.IsNull(result.AssignedHub);
-                Assert.IsNull(result.DeviceId);
-                // Exception message must contain the errorCode value as below
-                Assert.AreEqual(404201, result.ErrorCode);
-            }
+            Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
+            Assert.IsNull(result.AssignedHub);
+            Assert.IsNull(result.DeviceId);
+            // Exception message must contain the errorCode value as below
+            Assert.AreEqual(404201, result.ErrorCode);
         }
 
         [LoggedTestMethod]
@@ -753,22 +750,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             EnrollmentType? enrollmentType,
             string groupId)
         {
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
-            using (SecurityProvider security = await CreateSecurityProviderFromNameAsync(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false))
-            {
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
-                    s_globalDeviceEndpoint,
-                    InvalidIdScope,
-                    security,
-                    transport);
+            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
+            using SecurityProvider security = await CreateSecurityProviderFromNameAsync(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
+            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+                s_globalDeviceEndpoint,
+                InvalidIdScope,
+                security,
+                transport);
 
-                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+            using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-                var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
-                    () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
+            var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+                () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
 
-                Logger.Trace($"Exception: {exception}");
-            }
+            Logger.Trace($"Exception: {exception}");
         }
 
         #region InvalidGlobalAddress
@@ -864,24 +859,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         private async Task ConfirmRegisteredDeviceWorksAsync(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, Client.TransportType transportProtocol, bool sendReportedPropertiesUpdate)
         {
-            using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol))
+            using DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol);
+            Logger.Trace("DeviceClient OpenAsync.");
+            await iotClient.OpenAsync().ConfigureAwait(false);
+            Logger.Trace("DeviceClient SendEventAsync.");
+            await iotClient.SendEventAsync(
+                new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
+
+            if (sendReportedPropertiesUpdate)
             {
-                Logger.Trace("DeviceClient OpenAsync.");
-                await iotClient.OpenAsync().ConfigureAwait(false);
-                Logger.Trace("DeviceClient SendEventAsync.");
-                await iotClient.SendEventAsync(
-                    new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
-
-                if (sendReportedPropertiesUpdate)
-                {
-                    Logger.Trace("DeviceClient updating desired properties.");
-                    Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                    await iotClient.UpdateReportedPropertiesAsync(new TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
-                }
-
-                Logger.Trace("DeviceClient CloseAsync.");
-                await iotClient.CloseAsync().ConfigureAwait(false);
+                Logger.Trace("DeviceClient updating desired properties.");
+                Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
+                await iotClient.UpdateReportedPropertiesAsync(new TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
             }
+
+            Logger.Trace("DeviceClient CloseAsync.");
+            await iotClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task ConfirmExpectedDeviceCapabilitiesAsync(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, DeviceCapabilities capabilities)
@@ -1065,10 +1058,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <returns>the primary/secondary key for the member of the enrollment group</returns>
         public static string ComputeDerivedSymmetricKey(byte[] masterKey, string registrationId)
         {
-            using (var hmac = new HMACSHA256(masterKey))
-            {
-                return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(registrationId)));
-            }
+            using var hmac = new HMACSHA256(masterKey);
+            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(registrationId)));
         }
 
         public static bool ImplementsWebProxy(Client.TransportType transportProtocol)
