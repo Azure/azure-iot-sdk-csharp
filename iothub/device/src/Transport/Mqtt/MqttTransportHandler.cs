@@ -454,7 +454,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (TryStop())
                 {
-                    CleanUpAsync();
+                    CleanUpAsync().GetAwaiter().GetResult();
                 }
 
                 _disconnectAwaitersCancellationSource?.Dispose();
