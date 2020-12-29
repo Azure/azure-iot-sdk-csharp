@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="lastUpdated"></param>
         /// <param name="lastUpdatedVersion"></param>
-        public Metadata(DateTimeT lastUpdated, long? lastUpdatedVersion)
+        public Metadata(DateTimeT? lastUpdated, long? lastUpdatedVersion)
         {
             LastUpdated = lastUpdated;
             LastUpdatedVersion = lastUpdatedVersion;
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Time when a property was last updated
         /// </summary>
-        public DateTimeT LastUpdated { get; set; }
+        public DateTimeT? LastUpdated { get; set; }
 
         /// <remarks>
         /// This SHOULD be null for Reported properties metadata and MUST not be null for Desired properties metadata.
