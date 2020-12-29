@@ -176,9 +176,9 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the LastUpdated time for this property
         /// </summary>
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
-        public DateTime? GetLastUpdated()
+        public DateTime GetLastUpdated()
         {
-            return (DateTime?)_metadata[LastUpdatedName];
+            return (DateTime)_metadata?[LastUpdatedName];
         }
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>LastUpdatdVersion if present, null otherwise</returns>
         public long? GetLastUpdatedVersion()
         {
-            return (long?)_metadata[LastUpdatedVersionName];
+            return (long?)_metadata?[LastUpdatedVersionName];
         }
 
         /// <summary>
