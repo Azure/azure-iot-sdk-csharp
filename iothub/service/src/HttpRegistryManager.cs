@@ -1120,6 +1120,7 @@ namespace Microsoft.Azure.Devices
 
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
             if (disposing && _httpClientHelper != null)
             {
                 _httpClientHelper.Dispose();

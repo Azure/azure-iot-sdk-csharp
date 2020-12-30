@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -24,8 +25,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private readonly Uri _baseAddress;
         private readonly IAuthorizationHeaderProvider _authenticationHeaderProvider;
 
-        private HttpClientHandler _httpClientHandler = null;
-        private HttpClient _httpClientObj = null;
+        private HttpClientHandler _httpClientHandler;
+        private HttpClient _httpClientObj;
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
@@ -105,7 +106,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
                 if (customHeaders != null)
                 {
-                    foreach (var header in customHeaders)
+                    foreach (KeyValuePair<string, string> header in customHeaders)
                     {
                         msg.Headers.Add(header.Key, header.Value);
                     }
@@ -114,24 +115,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                 try
                 {
-                    using (HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false))
+                    using HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
+                    if (httpResponse == null)
                     {
-                        if (httpResponse == null)
-                        {
-                            throw new ProvisioningServiceClientTransportException(
-                                $"The response message was null when executing operation {httpMethod}.");
-                        }
-
-                        response = new ContractApiResponse(
-                            await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false),
-                            httpResponse.StatusCode,
-                            httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
-                            httpResponse.ReasonPhrase);
+                        throw new ProvisioningServiceClientTransportException(
+                            $"The response message was null when executing operation {httpMethod}.");
                     }
+
+                    response = new ContractApiResponse(
+                        await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false),
+                        httpResponse.StatusCode,
+                        httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
+                        httpResponse.ReasonPhrase);
                 }
                 catch (AggregateException ex)
                 {
-                    var innerExceptions = ex.Flatten().InnerExceptions;
+                    ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
                     if (innerExceptions.Any(e => e is TimeoutException))
                     {
                         throw new ProvisioningServiceClientTransportException(ex.Message, ex);
@@ -192,14 +191,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (!ifMatch.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
-                quotedIfMatch.Append("\"");
+                quotedIfMatch.Append('"');
             }
 
             quotedIfMatch.Append(ifMatch);
 
             if (!ifMatch.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
-                quotedIfMatch.Append("\"");
+                quotedIfMatch.Append('"');
             }
 
             requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(quotedIfMatch.ToString()));

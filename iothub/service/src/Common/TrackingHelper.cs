@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Common
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
 
@@ -16,7 +17,9 @@ namespace Microsoft.Azure.Devices.Common
 
     public static class TrackingHelper
     {
+        [SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "This property may be used by others so it is not safe to modify it.")]
         public static string GatewayId;
+
         private const string GatewayPrefix = "-G:";
         private const string BackendPrefix = "-B:";
         private const string PartitionPrefix = "-P:";
@@ -112,7 +115,6 @@ namespace Microsoft.Azure.Devices.Common
 
         public static string CheckAndAddGatewayIdToTrackingId(string trackingId)
         {
-
             if (!string.IsNullOrEmpty(trackingId)
                 && !(trackingId.IndexOf(GatewayPrefix, StringComparison.InvariantCultureIgnoreCase) > 0)
                 && trackingId.IndexOf(BackendPrefix, StringComparison.InvariantCultureIgnoreCase) > 0
@@ -129,7 +131,6 @@ namespace Microsoft.Azure.Devices.Common
             {
                 return GenerateTrackingId(GatewayId, string.Empty, string.Empty);
             }
-
         }
 
         public static string GetTrackingId(this AmqpException amqpException)
@@ -155,6 +156,11 @@ namespace Microsoft.Azure.Devices.Common
 
         public static ErrorCode GetErrorCodeFromAmqpError(Error ex)
         {
+            if (ex == null)
+            {
+                throw new ArgumentNullException(nameof(ex), "The Error property of the AMQP exception is null.");
+            }
+
             if (ex.Condition.Equals(AmqpErrorCode.NotFound))
             {
                 return ErrorCode.DeviceNotFound;

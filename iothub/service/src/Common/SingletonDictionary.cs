@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Common
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Threading;
     using System.Threading.Tasks;
 
     abstract class SingletonDictionary<TKey, TValue> : IDisposable
@@ -95,7 +96,8 @@ namespace Microsoft.Azure.Devices.Common
 
                 // Prevents unobserved task exception from occurring in case no one is
                 // awaiting this particular task.
-                tcs.Task.ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted).Fork();
+                using var ct = new CancellationTokenSource(timeout);
+                tcs.Task.ContinueWith(_ => { }, ct.Token, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default).Fork();
             }
         }
     }

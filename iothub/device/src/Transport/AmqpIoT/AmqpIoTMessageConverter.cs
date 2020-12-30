@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
@@ -46,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return message;
         }
 
-        public static AmqpMessage MessageToAmqpMessage(Message message, bool setBodyCalled = true)
+        public static AmqpMessage MessageToAmqpMessage(Message message)
         {
             if (message == null)
             {
@@ -272,7 +273,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         #region AmqpMessage <--> Methods
 
-        public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal, bool setBodyCalled = true)
+        public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal)
         {
             methodResponseInternal.ThrowIfDisposed();
 
@@ -515,7 +516,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         internal static ArraySegment<byte> ReadStream(Stream stream)
         {
-            MemoryStream memoryStream = new MemoryStream();
+            using var memoryStream = new MemoryStream();
             int bytesRead;
             byte[] readBuffer = new byte[512];
             while ((bytesRead = stream.Read(readBuffer, 0, readBuffer.Length)) > 0)

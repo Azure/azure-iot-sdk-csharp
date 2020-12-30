@@ -23,14 +23,13 @@ namespace Microsoft.Azure.Devices.Api.Test.JobClient
         private readonly TimeSpan timeout = TimeSpan.FromMinutes(1);
 
         private Mock<IHttpClientHelper> httpClientHelperMock;
-        private readonly string iotHubName = "test";
         private HttpJobClient jobClient;
 
         [TestInitialize]
         public void Setup()
         {
             httpClientHelperMock = new Mock<IHttpClientHelper>();
-            jobClient = new HttpJobClient(httpClientHelperMock.Object, iotHubName);
+            jobClient = new HttpJobClient(httpClientHelperMock.Object);
         }
 
         private void NoExtraJobParamTestSetup(JobType jobType, CancellationToken cancellationToken)

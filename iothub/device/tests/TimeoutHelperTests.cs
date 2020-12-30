@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,13 +16,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
     /// This is useful with the AMQP library, as it does not offer cancellation tokens, rather time spans for timeout.
     /// </summary>
     [TestClass]
+    [TestCategory("Unit")]
     public class TimeoutHelperTests
     {
         [TestMethod]
         public async Task TimeoutHelper_Ctor_DoesNotStartTimeout()
         {
             // arrange
-
             var timeout = TimeSpan.FromSeconds(1);
 
             // act
@@ -32,15 +35,15 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // As timeout did not start, asking for it now should return the original time, and then set the deadline.
             var remainingTime = toh.GetRemainingTime();
             remainingTime.Should().Be(timeout);
-            
-            // Waiting a bit should show the 
+
+            // Waiting a bit should show the
             await Task.Delay(1).ConfigureAwait(false);
             remainingTime = toh.GetRemainingTime();
             remainingTime.Should().BeLessThan(timeout);
         }
 
         [TestMethod]
-        public void TimeoutHelper_Ctor_StartsTimeout()
+        public async Task TimeoutHelper_Ctor_StartsTimeout()
         {
             // arrange
 
@@ -49,6 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // act
 
             var toh = new TimeoutHelper(timeout, startTimeout: true);
+            await Task.Delay(1).ConfigureAwait(false);
 
             // assert
 
@@ -88,7 +92,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             TimeSpan remainingTime = toh.GetRemainingTime();
             remainingTime.Should().NotBe(TimeSpan.Zero);
 
-            await Task.Delay(timeout).ConfigureAwait(false);
+            // ensure we're over the time, because the test will sometimes fail with some microseconds remaining
+            var delay = timeout.Add(TimeSpan.FromMilliseconds(50));
+            await Task.Delay(delay).ConfigureAwait(false);
+
             remainingTime = toh.GetRemainingTime();
             remainingTime.Should().Be(TimeSpan.Zero);
         }

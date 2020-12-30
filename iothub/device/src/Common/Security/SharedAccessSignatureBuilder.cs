@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client
             return buffer.ToString();
         }
 
-        private string BuildExpiresOn(TimeSpan timeToLive)
+        private static string BuildExpiresOn(TimeSpan timeToLive)
         {
             DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
             TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);

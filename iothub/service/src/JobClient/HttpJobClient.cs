@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Azure.Devices
         }
 
         // internal test helper
-        internal HttpJobClient(IHttpClientHelper httpClientHelper, string iotHubName)
+        internal HttpJobClient(IHttpClientHelper httpClientHelper)
         {
             _httpClientHelper = httpClientHelper ?? throw new ArgumentNullException(nameof(httpClientHelper));
         }
@@ -55,6 +56,7 @@ namespace Microsoft.Azure.Devices
 
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
             if (disposing)
             {
                 if (_httpClientHelper != null)

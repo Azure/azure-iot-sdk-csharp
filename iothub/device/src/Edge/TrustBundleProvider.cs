@@ -14,24 +14,27 @@ namespace Microsoft.Azure.Devices.Client.Edge
 {
     internal class TrustBundleProvider : ITrustBundleProvider
     {
-        private static readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy = new ErrorDetectionStrategy();
+        private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy = new ErrorDetectionStrategy();
 
-        private static readonly RetryStrategy TransientRetryStrategy =
-            new TransientFaultHandling.ExponentialBackoff(retryCount: 3, minBackoff: TimeSpan.FromSeconds(2), maxBackoff: TimeSpan.FromSeconds(30), deltaBackoff: TimeSpan.FromSeconds(3));
+        private static readonly RetryStrategy s_transientRetryStrategy =
+            new TransientFaultHandling.ExponentialBackoff(
+                retryCount: 3,
+                minBackoff: TimeSpan.FromSeconds(2),
+                maxBackoff: TimeSpan.FromSeconds(30),
+                deltaBackoff: TimeSpan.FromSeconds(3));
 
         public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion)
         {
-            HttpClient httpClient = null;
             try
             {
-                httpClient = HttpClientHelper.GetHttpClient(providerUri);
+                using HttpClient httpClient = HttpClientHelper.GetHttpClient(providerUri);
                 var hsmHttpClient = new HttpHsmClient(httpClient)
                 {
                     BaseUrl = HttpClientHelper.GetBaseUrl(providerUri)
                 };
-                TrustBundleResponse response = await GetTrustBundleWithRetry(hsmHttpClient, apiVersion).ConfigureAwait(false);
+                TrustBundleResponse response = await GetTrustBundleWithRetryAsync(hsmHttpClient, apiVersion).ConfigureAwait(false);
 
-                var certs = ParseCertificates(response.Certificate);
+                IList<X509Certificate2> certs = ParseCertificates(response.Certificate);
                 return certs;
             }
             catch (Exception ex)
@@ -46,19 +49,15 @@ namespace Microsoft.Azure.Devices.Client.Edge
                         throw;
                 }
             }
-            finally
-            {
-                httpClient?.Dispose();
-            }
         }
 
-        private async Task<TrustBundleResponse> GetTrustBundleWithRetry(HttpHsmClient hsmHttpClient, string apiVersion)
+        private static async Task<TrustBundleResponse> GetTrustBundleWithRetryAsync(HttpHsmClient hsmHttpClient, string apiVersion)
         {
-            var transientRetryPolicy = new RetryPolicy(TransientErrorDetectionStrategy, TransientRetryStrategy);
+            var transientRetryPolicy = new RetryPolicy(s_transientErrorDetectionStrategy, s_transientRetryStrategy);
             return await transientRetryPolicy.ExecuteAsync(() => hsmHttpClient.TrustBundleAsync(apiVersion)).ConfigureAwait(false);
         }
 
-        internal IList<X509Certificate2> ParseCertificates(string pemCerts)
+        internal static IList<X509Certificate2> ParseCertificates(string pemCerts)
         {
             if (string.IsNullOrEmpty(pemCerts))
             {

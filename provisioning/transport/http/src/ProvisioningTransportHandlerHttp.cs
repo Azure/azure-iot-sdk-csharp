@@ -78,11 +78,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 Logging.Associate(authStrategy, this);
 
-                var httpClientHandler = new HttpClientHandler
+                using var httpClientHandler = new HttpClientHandler()
                 {
                     // Cannot specify a specific protocol here, as desired due to an error:
-                    //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
-                    // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
+                    //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.	
+                    // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.	
 
                     //SslProtocols = TlsVersions.Preferred,
                 };
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     Port = Port,
                 };
 
-                DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri, httpClientHandler);
+                using DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri, httpClientHandler);
                 client.HttpClient.DefaultRequestHeaders.Add("User-Agent", message.ProductInfo);
                 Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
 
@@ -117,7 +117,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     .RegisterDeviceAsync(
                         registrationId,
                         message.IdScope,
-                        deviceRegistration)
+                        deviceRegistration,
+                        cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
                 int attempts = 0;
@@ -147,10 +148,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     }
 
                     await Task
-                        .Delay(serviceRecommendedDelay ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingIntervalMilliseconds))
+                        .Delay(serviceRecommendedDelay ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingIntervalMilliseconds), cancellationToken)
                         .ConfigureAwait(false);
-
-                    cancellationToken.ThrowIfCancellationRequested();
 
                     try
                     {
@@ -158,7 +157,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                             .RuntimeRegistration.OperationStatusLookupAsync(
                                 registrationId,
                                 operationId,
-                                message.IdScope)
+                                message.IdScope,
+                                cancellationToken: cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch (HttpOperationException ex)

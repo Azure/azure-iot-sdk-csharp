@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                message = await _amqpUnit.ReceiveMessageAsync(TransportSettings.DefaultReceiveTimeout).ConfigureAwait(false);
+                message = await _amqpUnit.ReceiveMessageAsync(_transportSettings.DefaultReceiveTimeout).ConfigureAwait(false);
                 if (message != null)
                 {
                     break;
@@ -234,6 +234,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 Logging.Exit(this, cancellationToken, $"{nameof(EnableReceiveMessageAsync)}");
             }
+        }
+
+        // This method is added to ensure that over MQTT devices can receive messages that were sent when it was disconnected.
+        // This behavior is available by default over AMQP, so no additional implementation is required here.
+        public override Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
+        {
+            return TaskHelpers.CompletedTask;
         }
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
@@ -539,6 +546,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             lock (_lock)
             {
+                base.Dispose(disposing);
+
                 if (_disposed)
                 {
                     return;
@@ -549,7 +558,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (disposing)
                 {
                     _closed = true;
-                    OnTransportClosedGracefully();
                     AmqpUnitManager.GetInstance().RemoveAmqpUnit(_amqpUnit);
                     _disposed = true;
                 }

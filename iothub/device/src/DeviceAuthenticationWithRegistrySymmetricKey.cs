@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
@@ -37,6 +38,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets or sets the key associated with the device.
         /// </summary>
+        [SuppressMessage(
+            "Performance",
+            "CA1819:Properties should not return arrays",
+            Justification = "Cannot change property types on public classes.")]
         public byte[] Key
         {
             get => _key;

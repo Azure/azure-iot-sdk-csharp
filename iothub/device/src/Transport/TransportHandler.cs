@@ -8,13 +8,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal abstract class TransportHandler : DefaultDelegatingHandler
     {
-        protected ITransportSettings TransportSettings;
         private TaskCompletionSource<bool> _transportShouldRetry;
+        protected ITransportSettings _transportSettings;
 
         protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
             : base(context, innerHandler: null)
         {
-            TransportSettings = transportSettings;
+            _transportSettings = transportSettings;
         }
 
         public override Task WaitForTransportClosedAsync()
@@ -40,9 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected void OnTransportClosedGracefully()
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Info(this, $"{nameof(OnTransportClosedGracefully)}");
-            }
 
             _transportShouldRetry?.TrySetCanceled();
         }
@@ -50,9 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected void OnTransportDisconnected()
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Info(this, $"{nameof(OnTransportDisconnected)}");
-            }
 
             _transportShouldRetry?.TrySetResult(true);
         }

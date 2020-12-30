@@ -22,23 +22,24 @@ namespace Microsoft.Azure.Devices.Client
 
         public MethodRequest(string name, byte[] data, TimeSpan? responseTimeout, TimeSpan? connectionTimeout)
         {
-            this.Name = name;
-            this.Data = data;
-            this.ResponseTimeout = responseTimeout;
-            this.ConnectionTimeout = connectionTimeout;
+            Name = name;
+            Data = data;
+            ResponseTimeout = responseTimeout;
+            ConnectionTimeout = connectionTimeout;
         }
 
         public string Name { get; private set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Performance",
+            "CA1819:Properties should not return arrays",
+            Justification = "Cannot change property types on public classes.")]
         public byte[] Data { get; private set; }
 
         public TimeSpan? ResponseTimeout { get; private set; }
 
         public TimeSpan? ConnectionTimeout { get; private set; }
 
-        public string DataAsJson
-        {
-            get { return (Data == null || Data.Length == 0) ? null : Encoding.UTF8.GetString(Data); }
-        }
+        public string DataAsJson => (Data == null || Data.Length == 0) ? null : Encoding.UTF8.GetString(Data);
     }
 }

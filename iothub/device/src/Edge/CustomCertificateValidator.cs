@@ -13,13 +13,13 @@ namespace Microsoft.Azure.Devices.Client.Edge
 {
     internal class CustomCertificateValidator : ICertificateValidator
     {
-        private readonly IEnumerable<X509Certificate2> certs;
-        private readonly ITransportSettings[] transportSettings;
+        private readonly IEnumerable<X509Certificate2> _certs;
+        private readonly ITransportSettings[] _transportSettings;
 
         private CustomCertificateValidator(IList<X509Certificate2> certs, ITransportSettings[] transportSettings)
         {
-            this.certs = certs;
-            this.transportSettings = transportSettings;
+            _certs = certs;
+            _transportSettings = transportSettings;
         }
 
         public static CustomCertificateValidator Create(IList<X509Certificate2> certs,
@@ -35,14 +35,14 @@ namespace Microsoft.Azure.Devices.Client.Edge
             Debug.WriteLine("CustomCertificateValidator.GetCustomCertificateValidation()");
 
             return (sender, cert, chain, sslPolicyErrors) =>
-                ValidateCertificate(this.certs.First(), cert, chain, sslPolicyErrors);
+                ValidateCertificate(_certs.First(), cert, chain, sslPolicyErrors);
         }
 
         private void SetupCertificateValidation()
         {
             Debug.WriteLine("CustomCertificateValidator.SetupCertificateValidation()");
 
-            foreach (ITransportSettings transportSetting in this.transportSettings)
+            foreach (ITransportSettings transportSetting in _transportSettings)
             {
                 switch (transportSetting.GetTransportType())
                 {
@@ -52,7 +52,8 @@ namespace Microsoft.Azure.Devices.Client.Edge
                         {
                             if (amqpTransportSettings.RemoteCertificateValidationCallback == null)
                             {
-                                amqpTransportSettings.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(this.certs.First(), certificate, chain, sslPolicyErrors);
+                                amqpTransportSettings.RemoteCertificateValidationCallback =
+                                    (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
                             }
                         }
                         break;
@@ -68,7 +69,8 @@ namespace Microsoft.Azure.Devices.Client.Edge
                         {
                             if (mqttTransportSettings.RemoteCertificateValidationCallback == null)
                             {
-                                mqttTransportSettings.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(this.certs.First(), certificate, chain, sslPolicyErrors);
+                                mqttTransportSettings.RemoteCertificateValidationCallback =
+                                    (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
                             }
                         }
                         break;
@@ -79,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
             }
         }
 
-        private bool ValidateCertificate(X509Certificate2 trustedCertificate, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        private static bool ValidateCertificate(X509Certificate2 trustedCertificate, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             // Terminate on errors other than those caused by a chain failure
             SslPolicyErrors terminatingErrors = sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors;
@@ -93,7 +95,8 @@ namespace Microsoft.Azure.Devices.Client.Edge
             chain.ChainPolicy.ExtraStore.Add(trustedCertificate);
             chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
 #if !NET451
-            if (!chain.Build(new X509Certificate2(certificate)))
+            using var cert = new X509Certificate2(certificate);
+            if (!chain.Build(cert))
             {
                 Debug.WriteLine("Unable to build the chain using the expected root certificate.");
                 return false;

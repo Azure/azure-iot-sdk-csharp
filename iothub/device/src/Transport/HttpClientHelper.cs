@@ -14,10 +14,9 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
-using System.Globalization;
 
 #if NET451
-    using System.Net.Http.Formatting;
+using System.Net.Http.Formatting;
 #else
 
 using System.Text;
@@ -37,8 +36,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly Uri _baseAddress;
         private readonly IAuthorizationProvider _authenticationHeaderProvider;
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
-        private readonly bool _usingX509ClientCert = false;
+        private readonly bool _usingX509ClientCert;
         private HttpClient _httpClientObj;
+        private HttpClientHandler _httpClientHandler;
         private bool _isDisposed;
         private readonly ProductInfo _productInfo;
 
@@ -62,51 +62,50 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #if NET451
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
-            WebRequestHandler handler = httpClientHandler as WebRequestHandler;
+            _httpClientHandler = httpClientHandler;
+
             if (clientCert != null)
             {
-                if (handler == null)
+                if (_httpClientHandler == null)
                 {
-                    handler = new WebRequestHandler();
+                    _httpClientHandler = new WebRequestHandler();
                 }
 
-                handler.ClientCertificates.Add(clientCert);
+                (_httpClientHandler as WebRequestHandler).ClientCertificates.Add(clientCert);
                 _usingX509ClientCert = true;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
             {
-                if (handler == null)
+                if (_httpClientHandler == null)
                 {
-                    handler = new WebRequestHandler();
+                    _httpClientHandler = new WebRequestHandler();
                 }
 
-                handler.UseProxy = (proxy != null);
-                handler.Proxy = proxy;
+                _httpClientHandler.UseProxy = (proxy != null);
+                _httpClientHandler.Proxy = proxy;
             }
 
-            _httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
+            _httpClientObj = _httpClientHandler != null ? new HttpClient(_httpClientHandler) : new HttpClient();
 #else
-            if (httpClientHandler == null)
-            {
-                httpClientHandler = new HttpClientHandler();
-            }
-            httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+
+            _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
+            _httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
+            _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 
             if (clientCert != null)
             {
-                httpClientHandler.ClientCertificates.Add(clientCert);
+                _httpClientHandler.ClientCertificates.Add(clientCert);
                 _usingX509ClientCert = true;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
             {
-                httpClientHandler.UseProxy = proxy != null;
-                httpClientHandler.Proxy = proxy;
+                _httpClientHandler.UseProxy = proxy != null;
+                _httpClientHandler.Proxy = proxy;
             }
 
-            _httpClientObj = new HttpClient(httpClientHandler);
+            _httpClientObj = new HttpClient(_httpClientHandler);
 #endif
 
             _httpClientObj.BaseAddress = _baseAddress;
@@ -531,6 +530,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _httpClientObj = null;
                 }
 
+                // HttpClientHandler that is used to create HttpClient will automatically be disposed when HttpClient is disposed
+                // But in case the client handler didn't end up being used by the HttpClient, we explicitly dispose it here.
+                if (_httpClientHandler != null)
+                {
+                    _httpClientHandler?.Dispose();
+                    _httpClientHandler = null;
+                }
+
                 _isDisposed = true;
             }
         }
@@ -554,6 +561,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private static async Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
             using var reader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(reader);

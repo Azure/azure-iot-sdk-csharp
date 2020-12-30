@@ -39,10 +39,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string Registration = "registration";
 
         private readonly ProvisioningTransportRegisterMessage _message;
-        private TaskCompletionSource<RegistrationOperationStatus> _taskCompletionSource;
-        private CancellationToken _cancellationToken;
+        private readonly TaskCompletionSource<RegistrationOperationStatus> _taskCompletionSource;
+        private readonly CancellationToken _cancellationToken;
         private int _state;
-        private int _packetId = 0;
+        private int _packetId;
 
         internal enum State
         {
@@ -373,7 +373,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     if (statusCode >= HttpStatusCode.BadRequest)
                     {
-                        var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsMqtt>(jsonData);
+                        ProvisioningErrorDetailsMqtt errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsMqtt>(jsonData);
 
                         bool isTransient = statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
 
@@ -407,7 +407,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 await VerifyPublishPacketTopicAsync(context, packet.TopicName, jsonData).ConfigureAwait(true);
 
-                var operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonData);
+                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonData);
                 string operationId = operation.OperationId;
                 operation.RetryAfter = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(packet.TopicName, s_defaultOperationPoolingInterval);
 
@@ -482,7 +482,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Error(this, $"Failing with Exception: {ex.ToString()}", nameof(FailWithExceptionAsync));
+                    Logging.Error(this, $"Failing with Exception: {ex}", nameof(FailWithExceptionAsync));
                 }
 
                 ForceState(State.Failed);
@@ -494,7 +494,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Error(this, $"Ignoring Exception: {ex.ToString()}", nameof(FailWithExceptionAsync));
+                    Logging.Error(this, $"Ignoring Exception: {ex}", nameof(FailWithExceptionAsync));
                 }
             }
         }
@@ -565,7 +565,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Info(this, $"Exception trying to send disconnect packet: {e.ToString()}", nameof(DoneAsync));
+                    Logging.Info(this, $"Exception trying to send disconnect packet: {e}", nameof(DoneAsync));
                 }
 
                 await FailWithExceptionAsync(context, e).ConfigureAwait(true);
@@ -592,7 +592,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Info(this, $"Exception trying to close channel: {e.ToString()}", nameof(DoneAsync));
+                    Logging.Info(this, $"Exception trying to close channel: {e}", nameof(DoneAsync));
                 }
 
                 await FailWithExceptionAsync(context, e).ConfigureAwait(true);
@@ -612,12 +612,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 int newId = Interlocked.Increment(ref _packetId);
 
                 newIdShort = (ushort)newId;
-                if (newIdShort == 0)
-                {
-                    return GetNextPacketId();
-                }
-
-                return newIdShort;
+                return newIdShort == 0 ? GetNextPacketId() : newIdShort;
             }
         }
 

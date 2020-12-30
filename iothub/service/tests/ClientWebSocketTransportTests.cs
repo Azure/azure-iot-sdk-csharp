@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 {
     [TestClass]
     [TestCategory("Unit")]
+    [DoNotParallelize]
     public class ClientWebSocketTransportTests
     {
         private const string IotHubName = "localhost";
@@ -105,6 +106,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         // The following tests can only be run in Administrator mode
         [TestMethod]
         [Timeout(10000)] // if it is going to fail, fail fast. Otherwise it can go on for 4+ minutes. :(
+        [DoNotParallelize]
         public async Task ReadWriteTest()
         {
             var websocket = new ClientWebSocket();

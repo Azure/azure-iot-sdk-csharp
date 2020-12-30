@@ -6,13 +6,12 @@ using System;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// contains Amqp Connection Pool settings for DeviceClient
+    /// Contains AMQP Connection Pool settings for DeviceClient
     /// </summary>
     public sealed class AmqpConnectionPoolSettings
     {
-        private static readonly TimeSpan s_defaultConnectionIdleTimeout = TimeSpan.FromMinutes(2);
         private uint _maxPoolSize;
-        internal const uint MaxDevicesPerConnection = 995; // IotHub allows upto 999 tokens per connection. Setting the threshold just below that.
+        internal const uint MaxDevicesPerConnection = 995; // IotHub allows up to 999 tokens per connection. Setting the threshold just below that.
 
         /// <summary>
         /// The default size of the pool
@@ -43,12 +42,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => _maxPoolSize;
 
-            set
-            {
-                _maxPoolSize = value > 0 && value <= AbsoluteMaxPoolSize
+            set => _maxPoolSize = value > 0 && value <= AbsoluteMaxPoolSize
                     ? value
                     : throw new ArgumentOutOfRangeException(nameof(value));
-            }
         }
 
         /// <summary>

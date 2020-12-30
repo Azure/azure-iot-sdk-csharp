@@ -8,7 +8,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public interface IAuthenticationMethod
     {
-
         /// <summary>
         /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on the properties of the current instance.
         /// </summary>

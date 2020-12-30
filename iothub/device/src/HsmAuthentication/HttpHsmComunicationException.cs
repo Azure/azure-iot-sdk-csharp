@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
     /// <summary>
     /// The exception that is thrown when communication fails with HSM HTTP server.
     /// </summary>
+    [Serializable]
     public class HttpHsmComunicationException : Exception
     {
         /// <summary>
@@ -18,6 +20,16 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         public HttpHsmComunicationException(string message, int statusCode) : base($"{message}, StatusCode: {statusCode}")
         {
             StatusCode = statusCode;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpHsmComunicationException"/> class with the specified serialization and context information.
+        /// </summary>
+        /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">An object that contains contextual information about the source or destination.</param>
+        protected HttpHsmComunicationException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
         }
 
         internal HttpHsmComunicationException()

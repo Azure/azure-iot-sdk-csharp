@@ -16,19 +16,19 @@ namespace Microsoft.Azure.Devices.Client.Common
 
         internal static Task RunOnDefaultScheduler(this Func<Task> func)
         {
-            return MyTaskFactory.StartNew(func).Unwrap();
+            return MyTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
         }
 
         internal static Task<T> RunOnDefaultScheduler<T>(this Func<Task<T>> func)
         {
-            return MyTaskFactory.StartNew(func).Unwrap();
+            return MyTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
         }
 
         internal static Task RunOnDefaultScheduler(this Action func)
         {
-            return MyTaskFactory.StartNew(func);
+            return MyTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
         }
 
-        internal static Task<T> RunOnDefaultScheduler<T>(Func<T> func) => MyTaskFactory.StartNew(func);
+        internal static Task<T> RunOnDefaultScheduler<T>(Func<T> func) => MyTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
     }
 }

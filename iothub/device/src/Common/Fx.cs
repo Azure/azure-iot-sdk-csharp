@@ -14,9 +14,9 @@ using System.Threading;
 using Microsoft.Azure.Devices.Client.Exceptions;
 
 #if NET451
-    using System.Runtime.ConstrainedExecution;
-    using System.Transactions;
-    using Microsoft.Win32;
+using System.Runtime.ConstrainedExecution;
+using System.Transactions;
+using Microsoft.Win32;
 #endif
 
 namespace Microsoft.Azure.Devices.Client
@@ -28,9 +28,7 @@ namespace Microsoft.Azure.Devices.Client
 
 #if DEBUG
         private const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
-        private const string AssertsFailFastName = "AssertsFailFast";
         private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
-        private const string FastDebugName = "FastDebug";
 
         private static bool breakOnExceptionTypesRetrieved;
         private static Type[] breakOnExceptionTypesCache;
@@ -160,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (TransactionAbortedException)
             {
-                CommittableTransaction tempTransaction = new CommittableTransaction();
+                using var tempTransaction = new CommittableTransaction();
                 try
                 {
                     return new TransactionScope(tempTransaction.Clone());
@@ -229,6 +227,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of the DEBUG compilation flag.")]
         private static bool TryGetDebugSwitch(string name, out object value)
         {
 #if !NET451
@@ -260,27 +259,6 @@ namespace Microsoft.Azure.Devices.Client
 
         [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
-        [Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-#if NET451
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
-        private static void TraceExceptionNoThrow(Exception exception)
-        {
-            try
-            {
-                // This call exits the CER.  However, when still inside a catch, normal ThreadAbort is prevented.
-                // Rude ThreadAbort will still be allowed to terminate processing.
-                Fx.Exception.TraceUnhandled(exception);
-            }
-            catch
-            {
-                // This empty catch is only acceptable because we are a) in a CER and b) processing an exception
-                // which is about to crash the process anyway.
-            }
-        }
-
-        [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
-            Justification = "Don't want to hide the exception which is about to crash the process.")]
         [SuppressMessage(FxCop.Category.ReliabilityBasic, FxCop.Rule.IsFatalRule,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
         [Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
@@ -293,11 +271,7 @@ namespace Microsoft.Azure.Devices.Client
             if (exception == null)
             {
                 Fx.Assert("Null exception in HandleAtThreadBase.");
-                return false;
             }
-
-            TraceExceptionNoThrow(exception);
-
             return false;
         }
 

@@ -350,16 +350,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             return ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString, transportSettings);
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-        }
-
         /// <summary>
         /// Returns the registrationId compliant name for the provided attestation type
         /// </summary>

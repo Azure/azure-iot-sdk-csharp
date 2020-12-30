@@ -117,25 +117,28 @@ namespace Microsoft.Azure.Devices.Client
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
+
         private volatile Tuple<MessageHandler, object> _defaultEventCallback;
 
         // Stores methods supported by the client device and their associated delegate.
         private volatile Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods;
+
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
         private volatile ConnectionStatusChangesHandler _connectionStatusChangesHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
-        private int _currentMessageCount = 0;
-        private int _diagnosticSamplingPercentage = 0;
+        private int _currentMessageCount;
+
+        private int _diagnosticSamplingPercentage;
 
         private ConnectionStatus _lastConnectionStatus = ConnectionStatus.Disconnected;
         private ConnectionStatusChangeReason _lastConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close;
 
         private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
 
-        private bool _twinPatchSubscribedWithService = false;
-        private object _twinPatchCallbackContext = null;
+        private bool _twinPatchSubscribedWithService;
+        private object _twinPatchCallbackContext;
 
         // Callback to call whenever the twin's desired state is updated by the service.
         internal DesiredPropertyUpdateCallback _desiredPropertyUpdateCallback;
@@ -247,7 +250,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        internal IotHubConnectionString IotHubConnectionString { get; private set; } = null;
+        internal IotHubConnectionString IotHubConnectionString { get; private set; }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
@@ -959,7 +962,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         internal async Task OnMethodCalledAsync(MethodRequestInternal methodRequestInternal)
         {
-            Tuple<MethodCallback, object> m = null;
+            Tuple<MethodCallback, object> callbackContextPair = null;
 
             if (Logging.IsEnabled)
             {
@@ -972,17 +975,17 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            MethodResponseInternal methodResponseInternal;
+            MethodResponseInternal methodResponseInternal = null;
             byte[] requestData = methodRequestInternal.GetBytes();
 
             await _methodsDictionarySemaphore.WaitAsync().ConfigureAwait(false);
             try
             {
                 Utils.ValidateDataIsEmptyOrJson(requestData);
-                _deviceMethods?.TryGetValue(methodRequestInternal.Name, out m);
-                if (m == null)
+                _deviceMethods?.TryGetValue(methodRequestInternal.Name, out callbackContextPair);
+                if (callbackContextPair == null)
                 {
-                    m = _deviceDefaultMethodCallback;
+                    callbackContextPair = _deviceDefaultMethodCallback;
                 }
             }
             catch (Exception ex) when (!ex.IsFatal())
@@ -996,6 +999,7 @@ namespace Microsoft.Azure.Devices.Client
                 methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.BadRequest);
 
                 await SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
+
                 if (Logging.IsEnabled)
                 {
                     Logging.Error(this, ex, nameof(OnMethodCalledAsync));
@@ -1007,6 +1011,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
+                    methodResponseInternal?.Dispose();
                     _methodsDictionarySemaphore.Release();
                 }
                 catch (SemaphoreFullException)
@@ -1022,7 +1027,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            if (m == null)
+            if (callbackContextPair == null)
             {
                 // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) ]
                 methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.MethodNotImplemented);
@@ -1033,7 +1038,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
                     // codes_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
-                    MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2).ConfigureAwait(false);
+                    MethodResponse rv = await callbackContextPair.Item1(new MethodRequest(methodRequestInternal.Name, requestData), callbackContextPair.Item2).ConfigureAwait(false);
 
                     // codes_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
                     // codes_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
@@ -1053,7 +1058,14 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            await SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
+            try
+            {
+                await SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                methodResponseInternal?.Dispose();
+            }
 
             if (Logging.IsEnabled)
             {
@@ -1391,6 +1403,12 @@ namespace Microsoft.Azure.Devices.Client
                 try
                 {
                     _deviceReceiveMessageSemaphore.Release();
+
+                    if (_deviceReceiveMessageCallback != null)
+                    {
+                        // Any previously received C2D messages will also need to be delivered.
+                        await InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (SemaphoreFullException)
                 {
@@ -1455,7 +1473,8 @@ namespace Microsoft.Azure.Devices.Client
                 callbackContextTuple = _deviceReceiveMessageCallback;
                 _deviceReceiveMessageSemaphore.Release();
 
-                await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+                await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2)
+                    ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
             }
             finally
             {
@@ -1524,21 +1543,7 @@ namespace Microsoft.Azure.Devices.Client
                     throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
                 }
 
-                HttpTransportHandler httpTransport = null;
-                var context = new PipelineContext();
-                context.Set(_productInfo);
-
-                var transportSettings = new Http1TransportSettings();
-
-                //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
-                if (Certificate != null)
-                {
-                    transportSettings.ClientCertificate = Certificate;
-                }
-
-                httpTransport = new HttpTransportHandler(context, IotHubConnectionString, transportSettings);
-
-                return httpTransport.UploadToBlobAsync(blobName, source, cancellationToken);
+                return _fileUploadHttpTransportHandler.UploadToBlobAsync(blobName, source, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {

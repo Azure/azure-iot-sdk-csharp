@@ -198,16 +198,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-        }
-
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
         {
             private string _key;
@@ -245,7 +235,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 return _tokenRefreshSemaphore.WaitAsync(cancellationToken);
             }
 
-            protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            protected override Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive)
             {
                 _logger.Trace($"[{DateTime.UtcNow}] Refresher: Creating new token.");
 

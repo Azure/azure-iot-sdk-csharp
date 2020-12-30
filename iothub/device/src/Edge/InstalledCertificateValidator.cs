@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
         private InstalledCertificateValidator(IList<X509Certificate2> certs)
         {
-            this._certs = certs;
+            _certs = certs;
         }
 
         public static InstalledCertificateValidator Create(IList<X509Certificate2> certs)
@@ -32,10 +32,13 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private void SetupCertificateValidation()
         {
             Debug.WriteLine("InstalledCertificateValidator.SetupCertificateValidation()");
-
-            foreach (var cert in this._certs)
+#if NET451
+            var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+#else
+            using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+#endif
+            foreach (X509Certificate2 cert in _certs)
             {
-                var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
                 store.Open(OpenFlags.ReadWrite);
                 store.Add(cert);
             }

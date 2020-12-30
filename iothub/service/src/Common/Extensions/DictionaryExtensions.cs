@@ -6,23 +6,30 @@ namespace Microsoft.Azure.Devices.Common.Extensions
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
 
     public static class DictionaryExtensions
     {
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
         {
-            TValue value;
-            dictionary.TryGetValue(key, out value);
-            return value;
+            if (dictionary.TryGetValue(key, out TValue value))
+            {
+                return value;
+            }
+            return defaultValue;
         }
 
         public static TValue GetValueOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> valueProvider)
         {
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider), "The value provider function cannot be null.");
+            }
             TValue value;
             if (!dictionary.TryGetValue(key, out value))
             {
                 value = valueProvider(key);
-                dictionary.Add(key, value); 
+                dictionary.Add(key, value);
             }
             return value;
         }
@@ -43,6 +50,10 @@ namespace Microsoft.Azure.Devices.Common.Extensions
             Func<TKey, TValue> valueFactory)
             where TValue : class
         {
+            if (valueFactory == null)
+            {
+                throw new ArgumentNullException(nameof(valueFactory), "The value factory function cannot be null.");
+            }
             TValue value;
             if (dictionary.TryGetValue(key, out value))
             {

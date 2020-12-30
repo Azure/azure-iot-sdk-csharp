@@ -12,29 +12,15 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a shared access signature token and allows for token refresh.
     /// </summary>
-    public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod
+    public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod, IDisposable
     {
         private readonly int _suggestedTimeToLiveSeconds;
         private readonly int _timeBufferPercentage;
 
         private int _bufferSeconds;
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
-        private string _token = null;
-
-        /// <summary>
-        /// Gets a snapshot of the UTC token expiry time.
-        /// </summary>
-        public DateTime ExpiresOn { get; private set; }
-
-        /// <summary>
-        /// Gets a snapshot of the UTC token refresh time.
-        /// </summary>
-        public DateTime RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
-
-        /// <summary>
-        /// Gets a snapshot expiry state.
-        /// </summary>
-        public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
+        private string _token;
+        private bool _isDisposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
@@ -65,6 +51,21 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Gets a snapshot of the UTC token expiry time.
+        /// </summary>
+        public DateTime ExpiresOn { get; private set; }
+
+        /// <summary>
+        /// Gets a snapshot of the UTC token refresh time.
+        /// </summary>
+        public DateTime RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
+
+        /// <summary>
+        /// Gets a snapshot expiry state.
+        /// </summary>
+        public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
+
+        /// <summary>
         /// Gets a snapshot of the security token associated with the device. This call is thread-safe.
         /// </summary>
         public async Task<string> GetTokenAsync(string iotHub)
@@ -83,9 +84,9 @@ namespace Microsoft.Azure.Devices.Client
                     return _token;
                 }
 
-                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
+                _token = await SafeCreateNewTokenAsync(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
 
-                SharedAccessSignature sas = SharedAccessSignature.Parse(".", _token);
+                var sas = SharedAccessSignature.Parse(".", _token);
                 ExpiresOn = sas.ExpiresOn;
                 UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
 
@@ -128,11 +129,38 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="iotHub">The IoT Hub domain name.</param>
         /// <param name="suggestedTimeToLive">The suggested TTL.</param>
         /// <returns>The token string.</returns>
-        protected abstract Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive);
+        protected abstract Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive);
 
         private void UpdateTimeBufferSeconds(int ttl)
         {
             _bufferSeconds = (int)(ttl * ((float)_timeBufferPercentage / 100));
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _lock?.Dispose();
+                    _lock = null;
+                }
+
+                _isDisposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Dispose resources
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

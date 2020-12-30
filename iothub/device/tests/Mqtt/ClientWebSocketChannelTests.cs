@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 {
@@ -24,7 +24,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         const string IotHubName = "localhost";
         const int Port = 12346;
         static HttpListener listener;
-        static ClientWebSocketChannel clientWebSocketChannel;
         static ServerWebSocketChannel serverWebSocketChannel;
         static ReadListeningHandler serverListener;
         static volatile bool done;
@@ -62,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         public async Task ClientWebSocketChannelWriteWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
-            clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
+            using var clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
             var threadLoop = new SingleThreadEventLoop("MQTTExecutionThread", TimeSpan.FromSeconds(1));
             await threadLoop.RegisterAsync(clientWebSocketChannel).ConfigureAwait(false);
             await clientWebSocketChannel.WriteAndFlushAsync(new ConnectPacket()).ConfigureAwait(false);
@@ -73,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         public async Task ClientWebSocketChannelReadWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
-            clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
+            using var clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
             var threadLoop = new SingleThreadEventLoop("MQTTExecutionThread", TimeSpan.FromSeconds(1));
             await threadLoop.RegisterAsync(clientWebSocketChannel).ConfigureAwait(false);
             clientWebSocketChannel.Read();
@@ -90,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             await websocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
 
             var clientReadListener = new ReadListeningHandler();
-            var clientChannel = new ClientWebSocketChannel(null, websocket);
+            using var clientChannel = new ClientWebSocketChannel(null, websocket);
             clientChannel
                 .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
                 .Option(ChannelOption.AutoRead, true)
@@ -102,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var threadLoop = new SingleThreadEventLoop("MQTTExecutionThread", TimeSpan.FromSeconds(1));
             await threadLoop.RegisterAsync(clientChannel).ConfigureAwait(false);
             await clientChannel.CloseAsync().ConfigureAwait(false);
-                
+
             // Test Read API
             try
             {
@@ -125,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
             var uri = new Uri("ws://" + IotHubName + ":" + Port + WebSocketConstants.UriSuffix);
             await websocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
-            clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
+            using var clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
 
             var threadLoop = new SingleThreadEventLoop("MQTTExecutionThread", TimeSpan.FromSeconds(1));
             await threadLoop.RegisterAsync(clientWebSocketChannel).ConfigureAwait(false);
@@ -159,13 +158,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             await websocket.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
 
             var clientReadListener = new ReadListeningHandler();
-            var clientChannel = new ClientWebSocketChannel(null, websocket);
+            using var clientChannel = new ClientWebSocketChannel(null, websocket);
             clientChannel
                 .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
                 .Option(ChannelOption.AutoRead, true)
                 .Option(ChannelOption.RcvbufAllocator, new AdaptiveRecvByteBufAllocator())
                 .Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
-            
+
             clientChannel.Pipeline.AddLast(
                 MqttEncoder.Instance,
                 new MqttDecoder(false, 256 * 1024),
@@ -243,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 DisconnectPacket.Instance).ConfigureAwait(false);
         }
 
-       static async Task RunMqttServerScenarioAsync(IChannel channel, ReadListeningHandler readListener)
+        static async Task RunMqttServerScenarioAsync(IChannel channel, ReadListeningHandler readListener)
         {
             var connectPacket = await readListener.ReceiveAsync(DefaultTimeout).ConfigureAwait(false) as ConnectPacket;
             Assert.IsNotNull(connectPacket, "Must be a Connect pkt");
@@ -294,7 +293,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
         static int GetRandomPacketId() => Guid.NewGuid().GetHashCode() & ushort.MaxValue;
 
-       static async Task RunWebSocketServer()
+        static async Task RunWebSocketServer()
         {
             HttpListenerContext context = await listener.GetContextAsync().ConfigureAwait(false);
             if (!context.Request.IsWebSocketRequest)
@@ -320,15 +319,15 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var workerGroup = new MultithreadEventLoopGroup();
             await workerGroup.RegisterAsync(serverWebSocketChannel).ConfigureAwait(false);
 
-           while (true)
-           {
-               if (done)
-               {
-                   break;
-               }
+            while (true)
+            {
+                if (done)
+                {
+                    break;
+                }
 
-               await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
-           }
+                await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+            }
         }
     }
 }

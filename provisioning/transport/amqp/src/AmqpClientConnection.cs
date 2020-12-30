@@ -7,7 +7,6 @@ using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
@@ -17,10 +16,12 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
-    internal class AmqpClientConnection
+    internal class AmqpClientConnection : IDisposable
     {
         private readonly AmqpSettings _amqpSettings;
         private readonly Uri _uri;
+
+        private bool _isDisposed;
 
         internal AmqpClientConnection(Uri uri, AmqpSettings amqpSettings)
         {
@@ -42,11 +43,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public AmqpClientSession AmqpSession { get; private set; }
 
-        public bool IsConnectionClosed => _isConnectionClosed;
-
-        private bool _isConnectionClosed;
+        public bool IsConnectionClosed { get; private set; }
 
         private TaskCompletionSource<TransportBase> _tcs;
+
+        private TransportBase _transport;
 
         private ProtocolHeader _sentHeader;
 
@@ -57,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}");
             }
 
-            var hostName = _uri.Host;
+            string hostName = _uri.Host;
 
             var tcpSettings = new TcpTransportSettings { Host = hostName, Port = _uri.Port != -1 ? _uri.Port : AmqpConstants.DefaultSecurePort };
             TransportSettings = new TlsTransportSettings(tcpSettings)
@@ -67,11 +68,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 CertificateValidationCallback = remoteCerificateValidationCallback,
             };
 
-            TransportBase transport;
-
             if (useWebSocket)
             {
-                transport = await CreateClientWebSocketTransportAsync(timeout, proxy).ConfigureAwait(false);
+                _transport = await CreateClientWebSocketTransportAsync(timeout, proxy).ConfigureAwait(false);
                 SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
                 if (provider != null)
                 {
@@ -81,7 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     }
 
                     _sentHeader = new ProtocolHeader(provider.ProtocolId, provider.DefaultVersion);
-                    ByteBuffer buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
+                    using var buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
                     _sentHeader.Encode(buffer);
 
                     _tcs = new TaskCompletionSource<TransportBase>();
@@ -89,12 +88,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     var args = new TransportAsyncCallbackArgs();
                     args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
                     args.CompletedCallback = OnWriteHeaderComplete;
-                    args.Transport = transport;
-                    bool operationPending = transport.WriteAsync(args);
+                    args.Transport = _transport;
+                    bool operationPending = _transport.WriteAsync(args);
 
                     if (Logging.IsEnabled)
                     {
-                        Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
+                        Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
                     }
 
                     if (!operationPending)
@@ -102,25 +101,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         args.CompletedCallback(args);
                     }
 
-                    transport = await _tcs.Task.ConfigureAwait(false);
-                    await transport.OpenAsync(timeout).ConfigureAwait(false);
+                    _transport = await _tcs.Task.ConfigureAwait(false);
+                    await _transport.OpenAsync(timeout).ConfigureAwait(false);
                 }
             }
             else
             {
                 var tcpInitiator = new AmqpTransportInitiator(_amqpSettings, TransportSettings);
-                transport = await tcpInitiator.ConnectTaskAsync(timeout).ConfigureAwait(false);
+                _transport = await tcpInitiator.ConnectTaskAsync(timeout).ConfigureAwait(false);
             }
 
-            AmqpConnection = new AmqpConnection(transport, _amqpSettings, AmqpConnectionSettings);
+            AmqpConnection = new AmqpConnection(_transport, _amqpSettings, AmqpConnectionSettings);
             AmqpConnection.Closed += OnConnectionClosed;
             await AmqpConnection.OpenAsync(timeout).ConfigureAwait(false);
-            _isConnectionClosed = false;
+            IsConnectionClosed = false;
         }
 
         public async Task CloseAsync(TimeSpan timeout)
         {
-            var connection = AmqpConnection;
+            AmqpConnection connection = AmqpConnection;
             if (connection != null)
             {
                 await connection.CloseAsync(timeout).ConfigureAwait(false);
@@ -129,7 +128,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public void Close()
         {
-            var connection = AmqpConnection;
+            AmqpConnection connection = AmqpConnection;
             if (connection != null)
             {
                 connection.Close();
@@ -145,18 +144,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void OnConnectionClosed(object o, EventArgs args)
         {
-            _isConnectionClosed = true;
+            IsConnectionClosed = true;
         }
 
         private async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout, IWebProxy proxy)
         {
-            UriBuilder webSocketUriBuilder = new UriBuilder
+            var webSocketUriBuilder = new UriBuilder
             {
                 Scheme = WebSocketConstants.Scheme,
                 Host = _uri.Host,
                 Port = _uri.Port
             };
-            var websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, timeout, proxy).ConfigureAwait(false);
+            ClientWebSocket websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, timeout, proxy).ConfigureAwait(false);
             return new ClientWebSocketTransport(
                 websocket,
                 null,
@@ -209,7 +208,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
             }
 #endif
-
             using (var cancellationTokenSource = new CancellationTokenSource(timeout))
             {
                 await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
@@ -257,12 +255,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try
             {
-                ProtocolHeader receivedHeader = new ProtocolHeader();
-                receivedHeader.Decode(new ByteBuffer(args.Buffer, args.Offset, args.Count));
+                var receivedHeader = new ProtocolHeader();
+
+                using var byteBuffer = new ByteBuffer(args.Buffer, args.Offset, args.Count);
+                receivedHeader.Decode(byteBuffer);
 
                 if (Logging.IsEnabled)
                 {
-                    Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Received Protocol Header: {receivedHeader.ToString()}");
+                    Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Received Protocol Header: {receivedHeader}");
                 }
 
                 if (!receivedHeader.Equals(_sentHeader))
@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
 
                 SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
-                var transport = provider.CreateTransport(args.Transport, true);
+                TransportBase transport = provider.CreateTransport(args.Transport, true);
                 if (Logging.IsEnabled)
                 {
                     Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Created SaslTransportHandler ");
@@ -304,6 +304,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 args.Transport = null;
                 _tcs.TrySetException(args.Exception);
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public virtual void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // We don't know if the transport object is instantiated as a disposable or not
+                // We check and dispose if it is.
+                if (_transport is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+
+            _isDisposed = true;
         }
     }
 }
