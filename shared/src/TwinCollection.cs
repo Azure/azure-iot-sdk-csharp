@@ -187,8 +187,6 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the LastUpdatedVersion for this property
         /// </summary>
         /// <returns>LastUpdatdVersion if present, null otherwise</returns>
-        /// <exception cref="System.ArgumentNullException">Thrown when the TwinCollection metadata is null. 
-        /// An example would be when the TwinCollection class is created with the default constructor</exception>
         public long? GetLastUpdatedVersion()
         {
             return (long?)_metadata?[LastUpdatedVersionName];
