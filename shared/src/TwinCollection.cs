@@ -176,7 +176,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the LastUpdated time for this property
         /// </summary>
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
-        /// <exception cref="System.ArgumentNullException">Thrown when _metadata is null</exception>
+        /// <exception cref="System.ArgumentNullException">Thrown when the TwinCollection metadata is null. 
+        /// An example would be when the TwinCollection class is created with the default constructor</exception>
         public DateTime GetLastUpdated()
         {
             return (DateTime)_metadata?[LastUpdatedName];
@@ -186,7 +187,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the LastUpdatedVersion for this property
         /// </summary>
         /// <returns>LastUpdatdVersion if present, null otherwise</returns>
-        /// <exception cref="System.ArgumentNullException">Thrown when _metadata is null</exception>
+        /// <exception cref="System.ArgumentNullException">Thrown when the TwinCollection metadata is null. 
+        /// An example would be when the TwinCollection class is created with the default constructor</exception>
         public long? GetLastUpdatedVersion()
         {
             return (long?)_metadata?[LastUpdatedVersionName];
