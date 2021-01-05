@@ -30,6 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_SmallFile_Http()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
+            // UploadFileAsync is marked obsolete due to a call to UploadToBlobAsync being obsolete
+            // Added [Obsolete] attribute to this method to suppress CS0618 message
             await UploadFileAsync(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
         }
 
@@ -55,6 +57,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_BigFile_Http()
         {
             string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
+            // UploadFileAsync is marked obsolete due to a call to UploadToBlobAsync being obsolete
+            // Added [Obsolete] attribute to this method to suppress CS0618 message
             await UploadFileAsync(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
         }
 
@@ -64,6 +68,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_X509_SmallFile_Http()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
+            // UploadFileAsync is marked obsolete due to a call to UploadToBlobAsync being obsolete
+            // Added [Obsolete] attribute to this method to suppress CS0618 message
             await UploadFileAsync(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
         }
 
@@ -177,6 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
                 {
+                    // UploadToBlobAsync is obsolete, added [Obsolete] attribute to suppress CS0618 message
                     await deviceClient.UploadToBlobAsync(filename, fileStreamSource).ConfigureAwait(false);
                 }
 
