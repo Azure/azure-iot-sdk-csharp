@@ -13,11 +13,11 @@ using Microsoft.Win32.SafeHandles;
 namespace Microsoft.Azure.Devices.Client
 {
     [SecurityCritical]
-    sealed class SafeEventLogWriteHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal sealed class SafeEventLogWriteHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
         // Note: RegisterEventSource returns 0 on failure
         [SecurityCritical]
-        SafeEventLogWriteHandle() : base(true) { }
+        private SafeEventLogWriteHandle() : base(true) { }
 
         [ResourceConsumption(ResourceScope.Machine)]
         [SecurityCritical]
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
 
         [DllImport("advapi32", SetLastError = true)]
         [ResourceExposure(ResourceScope.None)]
-        static extern bool DeregisterEventSource(IntPtr hEventLog);
+        private static extern bool DeregisterEventSource(IntPtr hEventLog);
 
         [SecurityCritical]
         protected override bool ReleaseHandle()

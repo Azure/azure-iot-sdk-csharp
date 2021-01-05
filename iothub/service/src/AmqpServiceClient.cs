@@ -389,6 +389,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
             if (disposing)
             {
                 _faultTolerantSendingLink.Dispose();

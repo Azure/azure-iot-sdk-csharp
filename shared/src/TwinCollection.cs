@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Devices.Shared
 
         /// <summary>
         /// Creates instance of <see cref="TwinCollection"/>.
+        /// Shouldn't use this constructor since _metadata is null and calling GetLastUpdated can result in NullReferenceException
         /// </summary>
         public TwinCollection()
             : this((JObject)null)
@@ -176,6 +177,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the LastUpdated time for this property
         /// </summary>
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
+        /// <exception cref="System.NullReferenceException">Thrown when the TwinCollection metadata is null. 
+        /// An example would be when the TwinCollection class is created with the default constructor</exception>
         public DateTime GetLastUpdated()
         {
             return (DateTime)_metadata[LastUpdatedName];
@@ -187,7 +190,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>LastUpdatdVersion if present, null otherwise</returns>
         public long? GetLastUpdatedVersion()
         {
-            return (long?)_metadata[LastUpdatedVersionName];
+            return (long?)_metadata?[LastUpdatedVersionName];
         }
 
         /// <summary>

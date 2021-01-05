@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private readonly SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
         private bool _openCalled;
         private bool _opened;
         private bool _methodsEnabled;
@@ -625,13 +625,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 _handleDisconnectCts.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
-                Dispose(true);
             }
             finally
             {
                 Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
                 _handlerSemaphore.Release();
+                Dispose(true);
             }
         }
 
@@ -640,6 +640,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// </summary>
         private async Task EnsureOpenedAsync(CancellationToken cancellationToken)
         {
+            // If this object has already been disposed, we will throw an exception indicating that.
+            // This is the entry point for interacting with the client and this safety check should be done here.
+            // The current behavior does not support open->close->open
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
+            }
+
             if (Volatile.Read(ref _opened))
             {
                 return;
@@ -958,6 +966,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 _handleDisconnectCts?.Cancel();
                 _handleDisconnectCts?.Dispose();
+
+                _handlerSemaphore?.Dispose();
+                _handlerSemaphore = null;
             }
         }
     }

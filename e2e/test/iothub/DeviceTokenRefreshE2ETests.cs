@@ -198,16 +198,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-        }
-
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
         {
             private string _key;

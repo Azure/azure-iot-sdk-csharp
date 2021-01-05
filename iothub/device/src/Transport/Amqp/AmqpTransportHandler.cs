@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                message = await _amqpUnit.ReceiveMessageAsync(TransportSettings.DefaultReceiveTimeout).ConfigureAwait(false);
+                message = await _amqpUnit.ReceiveMessageAsync(_transportSettings.DefaultReceiveTimeout).ConfigureAwait(false);
                 if (message != null)
                 {
                     break;
@@ -324,7 +324,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _amqpUnit.EnableTwinLinksAsync(_operationTimeout).ConfigureAwait(false);
                 await _amqpUnit.SendTwinMessageAsync(AmqpTwinMessageType.Put, Guid.NewGuid().ToString(), null, _operationTimeout).ConfigureAwait(false);
             }
             finally
@@ -547,6 +546,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             lock (_lock)
             {
+                base.Dispose(disposing);
+
                 if (_disposed)
                 {
                     return;
@@ -557,7 +558,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (disposing)
                 {
                     _closed = true;
-                    OnTransportClosedGracefully();
                     AmqpUnitManager.GetInstance().RemoveAmqpUnit(_amqpUnit);
                     _disposed = true;
                 }
