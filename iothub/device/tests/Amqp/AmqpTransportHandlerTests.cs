@@ -67,7 +67,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var amqpTransportHandler1 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
             {
                 Pooling = true,
-                MaxPoolSize = 10,                
+                MaxPoolSize = 10,
+                ConnectionIdleTimeout = TimeSpan.FromMinutes(1)
             }));
 
             try
@@ -77,6 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 {
                     Pooling = true,
                     MaxPoolSize = 7, // different pool size
+                    ConnectionIdleTimeout = TimeSpan.FromMinutes(1)
                 }));
             }
             catch (ArgumentException ae)
