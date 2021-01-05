@@ -4,22 +4,23 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Azure.Devices.Client.Extensions;
+
+#if NET451
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Threading;
-using Microsoft.Azure.Devices.Client.Extensions;
+#endif
 
 namespace Microsoft.Azure.Devices.Client
 {
     internal class ExceptionTrace
     {
-        private const ushort FailFastEventLogCategory = 6;
-        private readonly string eventSourceName;
+        private readonly string _eventSourceName;
 
         public ExceptionTrace(string eventSourceName)
         {
-            this.eventSourceName = eventSourceName;
+            _eventSourceName = eventSourceName;
         }
 
         public Exception AsError(Exception exception)
@@ -59,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public ArgumentOutOfRangeException ArgumentOutOfRange(string paramName, object actualValue, string message)
         {
-            return TraceException<ArgumentOutOfRangeException>(new ArgumentOutOfRangeException(paramName, actualValue, message), TraceEventType.Error);
+            return TraceException(new ArgumentOutOfRangeException(paramName, actualValue, message), TraceEventType.Error);
         }
 
         // When throwing ObjectDisposedException, it is highly recommended that you use this ctor
@@ -97,10 +98,10 @@ namespace Microsoft.Azure.Devices.Client
         public TException TraceException<TException>(TException exception, TraceEventType level)
             where TException : Exception
         {
-            if (!exception.Data.Contains(this.eventSourceName))
+            if (!exception.Data.Contains(_eventSourceName))
             {
                 // Only trace if this is the first time an exception is thrown by this ExceptionTrace/EventSource.
-                exception.Data[this.eventSourceName] = this.eventSourceName;
+                exception.Data[_eventSourceName] = _eventSourceName;
 
                 switch (level)
                 {
@@ -201,53 +202,5 @@ namespace Microsoft.Azure.Devices.Client
             }
 #endif
         }
-
-        // Generate an event Log entry for failfast purposes
-        // To force a Watson on a dev machine, do the following:
-        // 1. Set \HKLM\SOFTWARE\Microsoft\PCHealth\ErrorReporting ForceQueueMode = 0
-        // 2. In the command environment, set COMPLUS_DbgJitDebugLaunchSetting=0
-        ////[SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
-        ////[MethodImpl(MethodImplOptions.NoInlining)]
-        ////internal void TraceFailFast(string message, EventLogger logger)
-        ////{
-        ////    if (logger != null)
-        ////    {
-        ////        try
-        ////        {
-        ////            string stackTrace = null;
-        ////            try
-        ////            {
-        ////                stackTrace = new StackTrace().ToString();
-        ////            }
-        ////            catch (Exception exception)
-        ////            {
-        ////                stackTrace = exception.Message;
-        ////                if (Fx.IsFatal(exception))
-        ////                {
-        ////                    throw;
-        ////                }
-        ////            }
-        ////            finally
-        ////            {
-        ////                logger.LogEvent(TraceEventType.Critical,
-        ////                    FailFastEventLogCategory,
-        ////                    (uint)EventLogEventId.FailFast,
-        ////                    message,
-        ////                    stackTrace);
-        ////            }
-        ////        }
-        ////        catch (Exception ex)
-        ////        {
-        ////            logger.LogEvent(TraceEventType.Critical,
-        ////                FailFastEventLogCategory,
-        ////                (uint)EventLogEventId.FailFastException,
-        ////                ex.ToString());
-        ////            if (Fx.IsFatal(ex))
-        ////            {
-        ////                throw;
-        ////            }
-        ////        }
-        ////    }
-        ////}
     }
 }

@@ -113,7 +113,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
 
-        private ClientWebSocketChannel _clientWebSocketChannel;
         private bool _isDeviceReceiveMessageCallbackSet;
         private Func<Task> _cleanupFunc;
         private IChannel _channel;
