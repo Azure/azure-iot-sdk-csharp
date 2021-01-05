@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -25,6 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
+        [Obsolete]
         public async Task FileUpload_SmallFile_Http()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -49,6 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
+        [Obsolete]
         public async Task FileUpload_BigFile_Http()
         {
             string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
@@ -57,6 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
+        [Obsolete]
         public async Task FileUpload_X509_SmallFile_Http()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -148,6 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
         }
 
+        [Obsolete]
         private async Task UploadFileAsync(Client.TransportType transport, string filename, bool x509auth = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
