@@ -1011,7 +1011,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 ScheduleCleanup(async () =>
                 {
-                    _disconnectAwaitersCancellationSource.Cancel();
+                    _disconnectAwaitersCancellationSource?.Cancel();
                     if (_channel == null)
                     {
                         return;
