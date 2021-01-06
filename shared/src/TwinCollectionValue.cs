@@ -17,10 +17,6 @@ namespace Microsoft.Azure.Devices.Shared
         Justification = "Uses default JValue comparison, equality and hashing implementations.")]
     public class TwinCollectionValue : JValue
     {
-        private const string metadataName = "$metadata";
-        private const string lastUpdatedName = "$lastUpdated";
-        private const string lastUpdatedVersionName = "$lastUpdatedVersion";
-
         private readonly JObject _metadata;
 
         internal TwinCollectionValue(JValue jValue, JObject metadata)
@@ -33,29 +29,29 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the value for the given property name
         /// </summary>
         /// <param name="propertyName">Property Name to lookup</param>
-        /// <returns>Value if present</returns>
+        /// <returns>Property value, if present</returns>
         [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
             Justification = "AppCompat. Changing the exception to ArgumentException might break existing applications.")]
         public dynamic this[string propertyName]
         {
             get
             {
-                if (propertyName == metadataName)
+                if (propertyName == TwinCollection.MetadataName)
                 {
                     return GetMetadata();
                 }
 
-                if (propertyName == lastUpdatedName)
+                if (propertyName == TwinCollection.LastUpdatedName)
                 {
                     return GetLastUpdated();
                 }
 
-                if (propertyName == lastUpdatedVersionName)
+                if (propertyName == TwinCollection.LastUpdatedVersionName)
                 {
                     return GetLastUpdatedVersion();
                 }
 
-                throw new RuntimeBinderException($"'Newtonsoft.Linq.JValue' does not contain a definition for '{propertyName}'.");
+                throw new RuntimeBinderException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'.");
             }
         }
 
@@ -74,7 +70,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
         public DateTime GetLastUpdated()
         {
-            return (DateTime)_metadata[lastUpdatedName];
+            return (DateTime)_metadata[TwinCollection.LastUpdatedName];
         }
 
         /// <summary>
@@ -83,7 +79,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>LastUpdatdVersion if present, null otherwise</returns>
         public long? GetLastUpdatedVersion()
         {
-            return (long?)_metadata[lastUpdatedVersionName];
+            return (long?)_metadata[TwinCollection.LastUpdatedVersionName];
         }
     }
 }

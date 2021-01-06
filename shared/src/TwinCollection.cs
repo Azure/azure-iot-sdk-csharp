@@ -20,10 +20,10 @@ namespace Microsoft.Azure.Devices.Shared
     [JsonConverter(typeof(TwinCollectionJsonConverter))]
     public class TwinCollection : IEnumerable
     {
-        private const string MetadataName = "$metadata";
-        private const string LastUpdatedName = "$lastUpdated";
-        private const string LastUpdatedVersionName = "$lastUpdatedVersion";
-        private const string VersionName = "$version";
+        internal const string MetadataName = "$metadata";
+        internal const string LastUpdatedName = "$lastUpdated";
+        internal const string LastUpdatedVersionName = "$lastUpdatedVersion";
+        internal const string VersionName = "$version";
         private readonly JObject _metadata;
 
         /// <summary>

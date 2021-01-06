@@ -11,10 +11,6 @@ namespace Microsoft.Azure.Devices.Shared
     /// </summary>
     public class TwinCollectionArray : JArray
     {
-        private const string MetadataName = "$metadata";
-        private const string LastUpdatedName = "$lastUpdated";
-        private const string LastUpdatedVersionName = "$lastUpdatedVersion";
-
         private readonly JObject _metadata;
 
         internal TwinCollectionArray(JArray jArray, JObject metadata)
@@ -27,27 +23,27 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the value for the given property name
         /// </summary>
         /// <param name="propertyName">Property Name to lookup</param>
-        /// <returns>Value if present</returns>
+        /// <returns>Property value, if present</returns>
         public dynamic this[string propertyName]
         {
             get
             {
-                if (propertyName == MetadataName)
+                if (propertyName == TwinCollection.MetadataName)
                 {
                     return GetMetadata();
                 }
 
-                if (propertyName == LastUpdatedName)
+                if (propertyName == TwinCollection.LastUpdatedName)
                 {
                     return GetLastUpdated();
                 }
 
-                if (propertyName == LastUpdatedVersionName)
+                if (propertyName == TwinCollection.LastUpdatedVersionName)
                 {
                     return GetLastUpdatedVersion();
                 }
 
-                throw new ArgumentException($"'Newtonsoft.Json.Linq.JArray' does not contain a definition for '{propertyName}'.");
+                throw new ArgumentException($"{nameof(TwinCollectionArray)} does not contain a definition for '{propertyName}'.");
             }
         }
 
@@ -66,7 +62,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
         public DateTime GetLastUpdated()
         {
-            return (DateTime)_metadata[LastUpdatedName];
+            return (DateTime)_metadata[TwinCollection.LastUpdatedName];
         }
 
         /// <summary>
@@ -75,7 +71,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>LastUpdatdVersion if present, null otherwise</returns>
         public long? GetLastUpdatedVersion()
         {
-            return (long?)_metadata[LastUpdatedVersionName];
+            return (long?)_metadata[TwinCollection.LastUpdatedVersionName];
         }
     }
 }
