@@ -80,13 +80,24 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
+        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
+        /// </summary>
+        /// <param name="twinJson">JSON fragment containing the twin data.</param>
+        /// <param name="metadataJson">JSON fragment containing the metadata.</param>
+        internal TwinCollection(JArray twinJson, JObject metadataJson)
+        {
+            JArray = twinJson ?? new JArray();
+            _metadata = metadataJson;
+        }
+
+        /// <summary>
         /// Gets the version of the <see cref="TwinCollection"/>
         /// </summary>
         public long Version
         {
             get
             {
-                if (!JObject.TryGetValue(VersionName, out JToken versionToken))
+                if (JObject == null || !JObject.TryGetValue(VersionName, out JToken versionToken))
                 {
                     return default(long);
                 }
@@ -102,8 +113,12 @@ namespace Microsoft.Azure.Devices.Shared
         {
             get
             {
-                int count = JObject.Count;
-                if (count > 0)
+                int count = JArray == null
+                    ? JObject.Count
+                    : JArray.Count;
+
+                // Metadata and Version are always returned as JObjects
+                if (count > 0 && JObject != null)
                 {
                     // Metadata and Version should not count towards this value
                     if (JObject.TryGetValue(MetadataName, out _))
@@ -122,6 +137,8 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         internal JObject JObject { get; private set; }
+
+        internal JArray JArray { get; private set; }
 
         /// <summary>
         /// Property Indexer
@@ -161,7 +178,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <inheritdoc />
         public override string ToString()
         {
-            return JObject.ToString();
+            return JArray == null ? JObject.ToString() : JArray.ToString();
         }
 
         /// <summary>
@@ -177,7 +194,11 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the LastUpdated time for this property
         /// </summary>
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
+<<<<<<< Updated upstream
         /// <exception cref="System.NullReferenceException">Thrown when the TwinCollection metadata is null. 
+=======
+        /// <exception cref="System.ArgumentNullException">Thrown when the TwinCollection metadata is null.
+>>>>>>> Stashed changes
         /// An example would be when the TwinCollection class is created with the default constructor</exception>
         public DateTime GetLastUpdated()
         {
@@ -200,7 +221,9 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>JSON string</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
-            return JsonConvert.SerializeObject(JObject, formatting);
+            return JArray == null
+                ? JsonConvert.SerializeObject(JObject, formatting)
+                : JsonConvert.SerializeObject(JArray, formatting);
         }
 
         /// <summary>
@@ -210,7 +233,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>true if the specified property is present; otherwise, false</returns>
         public bool Contains(string propertyName)
         {
-            return JObject.TryGetValue(propertyName, out JToken ignored);
+            return JObject != null && JObject.TryGetValue(propertyName, out JToken ignored);
         }
 
         /// <inheritdoc />
@@ -237,13 +260,24 @@ namespace Microsoft.Azure.Devices.Shared
 
             if (_metadata?[propertyName] is JObject)
             {
-                result = value is JValue
-                    ? new TwinCollectionValue((JValue)value, (JObject)_metadata[propertyName])
-                    : (object)new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
+                if (value is JValue)
+                {
+                    result = new TwinCollectionValue((JValue)value, (JObject)_metadata[propertyName]);
+                }
+                else if (value is JArray)
+                {
+                    result = new TwinCollection(value as JArray, (JObject)_metadata[propertyName]);
+                }
+                else
+                {
+                    result = (object)new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
+                }
             }
             else
             {
                 // No metadata for this property, return as-is.
+                // This is relevant for device client side operations.
+                // The DeviceClient.GetTwinAsync() call returns only the desired and reported properties (with their corresponding version no.), without any metadata information.
                 result = value;
             }
 

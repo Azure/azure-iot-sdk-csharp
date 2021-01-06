@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.CSharp.RuntimeBinder;
+using Newtonsoft.Json.Linq;
+
 namespace Microsoft.Azure.Devices.Shared
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using Microsoft.CSharp.RuntimeBinder;
-    using Newtonsoft.Json.Linq;
-
     /// <summary>
     /// Represents a property value in <see cref="TwinCollection"/>
     /// </summary>
@@ -17,9 +17,9 @@ namespace Microsoft.Azure.Devices.Shared
         Justification = "Uses default JValue comparison, equality and hashing implementations.")]
     public class TwinCollectionValue : JValue
     {
-        const string metadataName = "$metadata";
-        const string lastUpdatedName = "$lastUpdated";
-        const string lastUpdatedVersionName = "$lastUpdatedVersion";
+        private const string metadataName = "$metadata";
+        private const string lastUpdatedName = "$lastUpdated";
+        private const string lastUpdatedVersionName = "$lastUpdatedVersion";
 
         private readonly JObject _metadata;
 
