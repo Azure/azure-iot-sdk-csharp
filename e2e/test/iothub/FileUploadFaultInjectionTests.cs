@@ -27,6 +27,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
 
+            // UploadFileDisconnectTransport is marked obsolete due to a call to UploadToBlobAsync being obsolete
+            // Added [Obsolete] attribute to this method to suppress CS0618 message
             await UploadFileDisconnectTransport(
                     Client.TransportType.Amqp_Tcp_Only,
                     bigFile,
@@ -42,6 +44,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
 
+            // UploadFileDisconnectTransport is marked obsolete due to a call to UploadToBlobAsync being obsolete
+            // Added [Obsolete] attribute to this method to suppress CS0618 message
             await UploadFileDisconnectTransport(
                     Client.TransportType.Amqp_Tcp_Only,
                     smallFile,
@@ -59,6 +63,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
 
+            // UploadFileDisconnectTransport is marked obsolete due to a call to UploadToBlobAsync being obsolete
+            // Added [Obsolete] attribute to this method to suppress CS0618 message
             await UploadFileDisconnectTransport(
                     Client.TransportType.Amqp_Tcp_Only,
                     smallFile,
@@ -87,6 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
+                // UploadToBlobAsync is obsolete, added [Obsolete] attribute to suppress CS0618 message
                 Task fileUploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
                 Task errorInjectionTask = SendErrorInjectionMessageAsync(deviceClient, faultType, reason, delayInSec, durationInSec);
                 await Task.WhenAll(fileUploadTask, errorInjectionTask).ConfigureAwait(false);
