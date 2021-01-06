@@ -237,7 +237,10 @@ namespace Microsoft.Azure.Devices.Shared
         {
             if (JArray != null)
             {
-                yield return JArray.GetEnumerator();
+                foreach (JToken item in JArray)
+                {
+                    yield return item;
+                }
             }
             else
             {
