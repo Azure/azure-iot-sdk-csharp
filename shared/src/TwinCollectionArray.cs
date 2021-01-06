@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Shared
         internal TwinCollectionArray(JArray jArray, JObject metadata)
             : base(jArray)
         {
-            _metadata = metadata;
+            _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
 
         /// <summary>
