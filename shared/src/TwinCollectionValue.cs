@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// Represents a property value in <see cref="TwinCollection"/>
+    /// Represents a property value in a <see cref="TwinCollection"/>
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1710:IdentifiersShouldHaveCorrectSuffix",
         Justification = "Public API cannot change name.")]

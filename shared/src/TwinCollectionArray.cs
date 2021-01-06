@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// Represents a property array in <see cref="TwinCollection"/>
+    /// Represents a property array in a <see cref="TwinCollection"/>
     /// </summary>
     public class TwinCollectionArray : JArray
     {
