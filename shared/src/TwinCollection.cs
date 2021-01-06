@@ -266,17 +266,15 @@ namespace Microsoft.Azure.Devices.Shared
 
             if (_metadata?[propertyName] is JObject)
             {
-                if (value is JValue)
+                if (value is JValue jsonValue)
                 {
-                    result = new TwinCollectionValue((JValue)value, (JObject)_metadata[propertyName]);
-                }
-                else if (value is JArray)
-                {
-                    result = new TwinCollection(value as JArray, (JObject)_metadata[propertyName]);
+                    result = new TwinCollectionValue(jsonValue, (JObject)_metadata[propertyName]);
                 }
                 else
                 {
-                    result = (object)new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
+                    result = value is JArray
+                        ? new TwinCollection(value as JArray, (JObject)_metadata[propertyName])
+                        : new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
                 }
             }
             else
