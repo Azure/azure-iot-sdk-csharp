@@ -80,24 +80,13 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
-        /// </summary>
-        /// <param name="twinJson">JSON fragment containing the twin data.</param>
-        /// <param name="metadataJson">JSON fragment containing the metadata.</param>
-        internal TwinCollection(JArray twinJson, JObject metadataJson)
-        {
-            JArray = twinJson ?? new JArray();
-            _metadata = metadataJson;
-        }
-
-        /// <summary>
         /// Gets the version of the <see cref="TwinCollection"/>
         /// </summary>
         public long Version
         {
             get
             {
-                if (JObject == null || !JObject.TryGetValue(VersionName, out JToken versionToken))
+                if (!JObject.TryGetValue(VersionName, out JToken versionToken))
                 {
                     return default(long);
                 }
@@ -113,12 +102,8 @@ namespace Microsoft.Azure.Devices.Shared
         {
             get
             {
-                int count = JArray == null
-                    ? JObject.Count
-                    : JArray.Count;
-
-                // Metadata and Version are always returned as JObjects
-                if (count > 0 && JObject != null)
+                int count = JObject.Count;
+                if (count > 0)
                 {
                     // Metadata and Version should not count towards this value
                     if (JObject.TryGetValue(MetadataName, out _))
@@ -137,8 +122,6 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         internal JObject JObject { get; private set; }
-
-        internal JArray JArray { get; private set; }
 
         /// <summary>
         /// Property Indexer
@@ -178,7 +161,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <inheritdoc />
         public override string ToString()
         {
-            return JArray == null ? JObject.ToString() : JArray.ToString();
+            return JObject.ToString();
         }
 
         /// <summary>
@@ -217,9 +200,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>JSON string</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
-            return JArray == null
-                ? JsonConvert.SerializeObject(JObject, formatting)
-                : JsonConvert.SerializeObject(JArray, formatting);
+            return JsonConvert.SerializeObject(JObject, formatting);
         }
 
         /// <summary>
@@ -229,30 +210,20 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>true if the specified property is present; otherwise, false</returns>
         public bool Contains(string propertyName)
         {
-            return JObject != null && JObject.TryGetValue(propertyName, out JToken ignored);
+            return JObject.TryGetValue(propertyName, out JToken ignored);
         }
 
         /// <inheritdoc />
         public IEnumerator GetEnumerator()
         {
-            if (JArray != null)
+            foreach (KeyValuePair<string, JToken> kvp in JObject)
             {
-                foreach (JToken item in JArray)
+                if (kvp.Key == MetadataName || kvp.Key == VersionName)
                 {
-                    yield return item;
+                    continue;
                 }
-            }
-            else
-            {
-                foreach (KeyValuePair<string, JToken> kvp in JObject)
-                {
-                    if (kvp.Key == MetadataName || kvp.Key == VersionName)
-                    {
-                        continue;
-                    }
 
-                    yield return new KeyValuePair<string, dynamic>(kvp.Key, this[kvp.Key]);
-                }
+                yield return new KeyValuePair<string, dynamic>(kvp.Key, this[kvp.Key]);
             }
         }
 
@@ -270,11 +241,13 @@ namespace Microsoft.Azure.Devices.Shared
                 {
                     result = new TwinCollectionValue(jsonValue, (JObject)_metadata[propertyName]);
                 }
+                else if (value is JArray jsonArray)
+                {
+                    result = new TwinCollectionArray(jsonArray, (JObject)_metadata[propertyName]);
+                }
                 else
                 {
-                    result = value is JArray
-                        ? new TwinCollection(value as JArray, (JObject)_metadata[propertyName])
-                        : new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
+                    result = new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
                 }
             }
             else
@@ -305,7 +278,7 @@ namespace Microsoft.Azure.Devices.Shared
 
         private void TryClearMetadata(string propertyName)
         {
-            if (JObject != null && JObject.TryGetValue(propertyName, out _))
+            if (JObject.TryGetValue(propertyName, out _))
             {
                 JObject.Remove(propertyName);
             }
