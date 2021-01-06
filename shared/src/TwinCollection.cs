@@ -194,11 +194,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the LastUpdated time for this property
         /// </summary>
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
-<<<<<<< Updated upstream
-        /// <exception cref="System.NullReferenceException">Thrown when the TwinCollection metadata is null. 
-=======
-        /// <exception cref="System.ArgumentNullException">Thrown when the TwinCollection metadata is null.
->>>>>>> Stashed changes
+        /// <exception cref="System.NullReferenceException">Thrown when the TwinCollection metadata is null.
         /// An example would be when the TwinCollection class is created with the default constructor</exception>
         public DateTime GetLastUpdated()
         {
@@ -239,14 +235,21 @@ namespace Microsoft.Azure.Devices.Shared
         /// <inheritdoc />
         public IEnumerator GetEnumerator()
         {
-            foreach (KeyValuePair<string, JToken> kvp in JObject)
+            if (JArray != null)
             {
-                if (kvp.Key == MetadataName || kvp.Key == VersionName)
+                yield return JArray.GetEnumerator();
+            }
+            else
+            {
+                foreach (KeyValuePair<string, JToken> kvp in JObject)
                 {
-                    continue;
-                }
+                    if (kvp.Key == MetadataName || kvp.Key == VersionName)
+                    {
+                        continue;
+                    }
 
-                yield return new KeyValuePair<string, dynamic>(kvp.Key, this[kvp.Key]);
+                    yield return new KeyValuePair<string, dynamic>(kvp.Key, this[kvp.Key]);
+                }
             }
         }
 
@@ -301,7 +304,7 @@ namespace Microsoft.Azure.Devices.Shared
 
         private void TryClearMetadata(string propertyName)
         {
-            if (JObject.TryGetValue(propertyName, out _))
+            if (JObject != null && JObject.TryGetValue(propertyName, out _))
             {
                 JObject.Remove(propertyName);
             }
