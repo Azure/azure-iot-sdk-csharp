@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DotNetty.Common.Concurrency;
 using DotNetty.Common.Utilities;
@@ -15,21 +16,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     /// It is running work items if it is available; otherwise waits for new work item.
     /// Worker will resume work as soon as new work has arrived.
     /// </summary>
-    /// <typeparam name="TWork"></typeparam>
+    /// <typeparam name="TWork">The work to perform.</typeparam>
     internal class SimpleWorkQueue<TWork>
     {
-        private readonly Func<IChannelHandlerContext, TWork, Task> _worker;
-
+        private readonly Func<IChannelHandlerContext, TWork, Task> _workerAsync;
         private readonly Queue<TWork> _backlogQueue;
         private readonly TaskCompletionSource _completionSource;
-        protected States State { get; set; }
 
-        public SimpleWorkQueue(Func<IChannelHandlerContext, TWork, Task> worker)
+        public SimpleWorkQueue(Func<IChannelHandlerContext, TWork, Task> workerAsync)
         {
-            _worker = worker;
+            _workerAsync = workerAsync;
             _completionSource = new TaskCompletionSource();
             _backlogQueue = new Queue<TWork>();
         }
+
+        protected States State { get; set; }
 
         public Task Completion => _completionSource.Task;
 
@@ -41,8 +42,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <summary>
         /// Puts the new work to backlog queue and resume work if worker is idle.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="workItem"></param>
+        /// <param name="context">Context of the work for when performing it.</param>
+        /// <param name="workItem">The work to perform.</param>
         public virtual void Post(IChannelHandlerContext context, TWork workItem)
         {
             switch (State)
@@ -63,9 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     break;
 
                 default:
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly - should not change exception type now, even though it is the wrong type
                     throw new ArgumentOutOfRangeException(nameof(State), "Unexpected state.");
-#pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
         }
 
@@ -89,9 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     break;
 
                 default:
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly - should not change exception type now, even though it is the wrong type
                     throw new ArgumentOutOfRangeException(nameof(State), "Unexpected state.");
-#pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
         }
 
@@ -109,18 +106,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 case States.FinalProcessing:
                     State = States.Aborted;
 
-                    Queue<TWork> queue = _backlogQueue;
-                    while (queue.Count > 0)
+                    while (_backlogQueue.Any())
                     {
-                        TWork workItem = queue.Dequeue();
+                        TWork workItem = _backlogQueue.Dequeue();
                         ReferenceCountUtil.Release(workItem);
+
+                        var cancellableWorkItem = workItem as ICancellable;
                         if (exception == null)
                         {
-                            (workItem as ICancellable)?.Cancel();
+                            cancellableWorkItem?.Cancel();
                         }
                         else
                         {
-                            (workItem as ICancellable)?.Abort(exception);
+                            cancellableWorkItem?.Abort(exception);
                         }
                     }
                     break;
@@ -129,25 +127,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     break;
 
                 default:
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly - should not change exception type now, even though it is the wrong type
                     throw new ArgumentOutOfRangeException(nameof(State), "Unexpected state.");
-#pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
         }
 
         protected virtual Task DoWorkAsync(IChannelHandlerContext context, TWork work)
         {
-            return _worker(context, work);
+            return _workerAsync(context, work);
         }
 
         private async void StartWorkQueueProcessingAsync(IChannelHandlerContext context)
         {
             try
             {
-                Queue<TWork> queue = _backlogQueue;
-                while (queue.Count > 0 && State != States.Aborted)
+                while (_backlogQueue.Any()
+                    && State != States.Aborted)
                 {
-                    TWork workItem = queue.Dequeue();
+                    TWork workItem = _backlogQueue.Dequeue();
                     await DoWorkAsync(context, workItem).ConfigureAwait(false);
                 }
 
@@ -163,9 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         break;
 
                     default:
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly - should not change exception type now, even though it is the wrong type
                         throw new ArgumentOutOfRangeException(nameof(State), "Unexpected state.");
-#pragma warning restore CA2208 // Instantiate argument exceptions correctly
                 }
             }
             catch (Exception ex)
