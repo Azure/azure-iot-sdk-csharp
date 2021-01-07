@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -15,8 +16,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             public IncompleteWorkItem(TWorkId id, TWork workItem)
             {
-                this.WorkItem = workItem;
-                this.Id = id;
+                WorkItem = workItem ?? throw new ArgumentNullException(nameof(workItem));
+                Id = id ?? throw new ArgumentNullException(nameof(id));
             }
 
             public TWork WorkItem { get; }
@@ -24,29 +25,34 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             public TWorkId Id { get; }
         }
 
-        private readonly Func<TWork, TWorkId> getWorkId;
-        private readonly Func<IChannelHandlerContext, TWork, Task> completeWork;
-        private readonly Queue<IncompleteWorkItem> incompleteQueue = new Queue<IncompleteWorkItem>();
+        private readonly Func<TWork, TWorkId> _getWorkId;
+        private readonly Func<IChannelHandlerContext, TWork, Task> _completeWorkAsync;
+        private readonly Queue<IncompleteWorkItem> _incompleteQueue = new Queue<IncompleteWorkItem>();
 
-        public OrderedTwoPhaseWorkQueue(Func<IChannelHandlerContext, TWork, Task> worker, Func<TWork, TWorkId> getWorkId, Func<IChannelHandlerContext, TWork, Task> completeWork)
-            : base(worker)
+        public OrderedTwoPhaseWorkQueue(
+            Func<IChannelHandlerContext, TWork, Task> workerAsync,
+            Func<TWork, TWorkId> getWorkId,
+            Func<IChannelHandlerContext, TWork, Task> completeWorkAsync)
+            : base(workerAsync)
         {
-            this.getWorkId = getWorkId;
-            this.completeWork = completeWork;
+            _getWorkId = getWorkId ?? throw new ArgumentNullException(nameof(getWorkId));
+            _completeWorkAsync = completeWorkAsync ?? throw new ArgumentNullException(nameof(completeWorkAsync));
         }
 
         public Task CompleteWorkAsync(IChannelHandlerContext context, TWorkId workId)
         {
-            if (this.incompleteQueue.Count == 0)
+            if (!_incompleteQueue.Any())
             {
                 throw new IotHubException("Nothing to complete.", isTransient: false);
             }
-            IncompleteWorkItem incompleteWorkItem = this.incompleteQueue.Peek();
+
+            IncompleteWorkItem incompleteWorkItem = _incompleteQueue.Peek();
             if (incompleteWorkItem.Id.Equals(workId))
             {
-                this.incompleteQueue.Dequeue();
-                return this.completeWork(context, incompleteWorkItem.WorkItem);
+                _incompleteQueue.Dequeue();
+                return _completeWorkAsync(context, incompleteWorkItem.WorkItem);
             }
+
             throw new IotHubException(
                 $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
                 isTransient: false);
@@ -54,32 +60,34 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override async Task DoWorkAsync(IChannelHandlerContext context, TWork work)
         {
-            this.incompleteQueue.Enqueue(new IncompleteWorkItem(this.getWorkId(work), work));
+            _incompleteQueue.Enqueue(new IncompleteWorkItem(_getWorkId(work), work));
             await base.DoWorkAsync(context, work).ConfigureAwait(false);
         }
 
         public override void Abort()
         {
-            this.Abort(null);
+            Abort(null);
         }
 
         public override void Abort(Exception exception)
         {
-            States stateBefore = this.State;
+            States stateBefore = State;
             base.Abort(exception);
-            if (stateBefore != this.State && this.State == States.Aborted)
+
+            if (stateBefore != State
+                && State == States.Aborted)
             {
-                Queue<IncompleteWorkItem> queue = this.incompleteQueue;
-                while (queue.Count > 0)
+                while (_incompleteQueue.Any())
                 {
-                    TWork workItem = queue.Dequeue().WorkItem;
+                    var workItem = _incompleteQueue.Dequeue().WorkItem as ICancellable;
+
                     if (exception == null)
                     {
-                        (workItem as ICancellable)?.Cancel();
+                        workItem?.Cancel();
                     }
                     else
                     {
-                        (workItem as ICancellable)?.Abort(exception);
+                        workItem?.Abort(exception);
                     }
                 }
             }
