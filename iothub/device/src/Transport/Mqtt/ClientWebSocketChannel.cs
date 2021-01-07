@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _writeCancellationTokenSource = null;
         }
 
-        protected class WebSocketChannelUnsafe : AbstractUnsafe
+        private class WebSocketChannelUnsafe : AbstractUnsafe
         {
             public WebSocketChannelUnsafe(AbstractChannel channel)
                 : base(channel)
