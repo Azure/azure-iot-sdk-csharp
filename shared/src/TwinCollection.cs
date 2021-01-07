@@ -20,10 +20,10 @@ namespace Microsoft.Azure.Devices.Shared
     [JsonConverter(typeof(TwinCollectionJsonConverter))]
     public class TwinCollection : IEnumerable
     {
-        private const string MetadataName = "$metadata";
-        private const string LastUpdatedName = "$lastUpdated";
-        private const string LastUpdatedVersionName = "$lastUpdatedVersion";
-        private const string VersionName = "$version";
+        internal const string MetadataName = "$metadata";
+        internal const string LastUpdatedName = "$lastUpdated";
+        internal const string LastUpdatedVersionName = "$lastUpdatedVersion";
+        internal const string VersionName = "$version";
         private readonly JObject _metadata;
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the LastUpdated time for this property
         /// </summary>
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
-        /// <exception cref="System.NullReferenceException">Thrown when the TwinCollection metadata is null. 
+        /// <exception cref="System.NullReferenceException">Thrown when the TwinCollection metadata is null.
         /// An example would be when the TwinCollection class is created with the default constructor</exception>
         public DateTime GetLastUpdated()
         {
@@ -237,13 +237,24 @@ namespace Microsoft.Azure.Devices.Shared
 
             if (_metadata?[propertyName] is JObject)
             {
-                result = value is JValue
-                    ? new TwinCollectionValue((JValue)value, (JObject)_metadata[propertyName])
-                    : (object)new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
+                if (value is JValue jsonValue)
+                {
+                    result = new TwinCollectionValue(jsonValue, (JObject)_metadata[propertyName]);
+                }
+                else if (value is JArray jsonArray)
+                {
+                    result = new TwinCollectionArray(jsonArray, (JObject)_metadata[propertyName]);
+                }
+                else
+                {
+                    result = new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
+                }
             }
             else
             {
                 // No metadata for this property, return as-is.
+                // This is relevant for device client side operations.
+                // The DeviceClient.GetTwinAsync() call returns only the desired and reported properties (with their corresponding version no.), without any metadata information.
                 result = value;
             }
 

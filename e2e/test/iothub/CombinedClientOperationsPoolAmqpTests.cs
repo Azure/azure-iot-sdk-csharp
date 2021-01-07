@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Set reported twin properties
                 Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 4: Set reported property for device={testDevice.Id}");
-                Task setReportedProperties = TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, Guid.NewGuid().ToString(), Logger);
+                Task setReportedProperties = TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger);
                 clientOperations.Add(setReportedProperties);
 
                 // Receive set desired twin properties

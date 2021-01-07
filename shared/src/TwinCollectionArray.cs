@@ -2,27 +2,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// Represents a property value in a <see cref="TwinCollection"/>
+    /// Represents a property array in a <see cref="TwinCollection"/>
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1710:IdentifiersShouldHaveCorrectSuffix",
-        Justification = "Public API cannot change name.")]
-    [SuppressMessage("Microsoft.Design", "CA1036:OverrideMethodsOnComparableTypes",
-        Justification = "Uses default JValue comparison, equality and hashing implementations.")]
-    public class TwinCollectionValue : JValue
+    public class TwinCollectionArray : JArray
     {
         private readonly JObject _metadata;
 
-        internal TwinCollectionValue(JValue jValue, JObject metadata)
-            : base(jValue)
+        internal TwinCollectionArray(JArray jArray, JObject metadata)
+            : base(jArray)
         {
-            _metadata = metadata;
+            _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
 
         /// <summary>
@@ -30,8 +24,6 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="propertyName">Property Name to lookup</param>
         /// <returns>Property value, if present</returns>
-        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
-            Justification = "AppCompat. Changing the exception to ArgumentException might break existing applications.")]
         public dynamic this[string propertyName]
         {
             get
@@ -51,7 +43,7 @@ namespace Microsoft.Azure.Devices.Shared
                     return GetLastUpdatedVersion();
                 }
 
-                throw new RuntimeBinderException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'.");
+                throw new ArgumentException($"{nameof(TwinCollectionArray)} does not contain a definition for '{propertyName}'.");
             }
         }
 
