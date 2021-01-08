@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
         {
-            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName, 
+            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName,
                 new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey));
 
             IotHubConnectionString cs = csBuilder.ToIotHubConnectionString();
@@ -156,6 +156,12 @@ namespace Microsoft.Azure.Devices.Client.Test
                 }
 
                 return CreateToken(ttl);
+            }
+
+            [Obsolete("This method has been deprecated due to lack of the asynchronous suffix in the method name. Please use SafeCreateNewTokenAsync instead.")]
+            protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            {
+                return SafeCreateNewTokenAsync(iotHub, suggestedTimeToLive);
             }
         }
     }

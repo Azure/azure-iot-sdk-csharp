@@ -131,6 +131,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The token string.</returns>
         protected abstract Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive);
 
+        /// <summary>
+        /// Creates a new token with a suggested TTL. This method is thread-safe.
+        /// </summary>
+        /// <param name="iotHub">The IoT Hub domain name.</param>
+        /// <param name="suggestedTimeToLive">The suggested TTL.</param>
+        /// <remarks>This is an asynchronous method.</remarks>
+        /// <returns>The token string.</returns>
+        [Obsolete("This method has been deprecated due to lack of the asynchronous suffix in the method name. Please use SafeCreateNewTokenAsync instead.")]
+        protected abstract Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive);
+
         private void UpdateTimeBufferSeconds(int ttl)
         {
             _bufferSeconds = (int)(ttl * ((float)_timeBufferPercentage / 100));

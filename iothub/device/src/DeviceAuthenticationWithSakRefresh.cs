@@ -42,5 +42,11 @@ namespace Microsoft.Azure.Devices.Client
 
             return Task.FromResult(builder.ToSignature());
         }
+
+        [Obsolete("This method has been deprecated due to lack of the asynchronous suffix in the method name. Please use SafeCreateNewTokenAsync instead.")]
+        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+        {
+            return SafeCreateNewTokenAsync(iotHub, suggestedTimeToLive);
+        }
     }
 }

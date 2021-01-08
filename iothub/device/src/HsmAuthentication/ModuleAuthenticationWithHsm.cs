@@ -45,5 +45,16 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
             return SasTokenBuilder.BuildSasToken(audience, signature, expiresOn);
         }
+
+        /// <summary>
+        /// Creates a new token with the specified TTL.
+        /// </summary>
+        /// <param name="iotHub">IotHub hostname</param>
+        /// <param name="suggestedTimeToLive">Suggested time to live seconds</param>
+        [Obsolete("This method has been deprecated due to lack of the asynchronous suffix in the method name. Please use SafeCreateNewTokenAsync instead.")]
+        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+        {
+            return SafeCreateNewTokenAsync(iotHub, suggestedTimeToLive);
+        }
     }
 }
