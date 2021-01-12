@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
             _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }
 
-        protected override Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLiveSeconds)
+        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLiveSeconds)
         {
             var builder = new TpmSharedAccessSignatureBuilder(_securityProvider)
             {
@@ -45,12 +45,6 @@ namespace Microsoft.Azure.Devices.Client
             };
 
             return Task.FromResult(builder.ToSignature());
-        }
-
-        [Obsolete("This method has been deprecated due to lack of the asynchronous suffix in the method name. Please use SafeCreateNewTokenAsync instead.")]
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLiveSeconds)
-        {
-            return SafeCreateNewTokenAsync(iotHub, suggestedTimeToLiveSeconds);
         }
 
         private class TpmSharedAccessSignatureBuilder : SharedAccessSignatureBuilder

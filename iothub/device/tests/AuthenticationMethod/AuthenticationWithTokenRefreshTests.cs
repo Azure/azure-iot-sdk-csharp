@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
             }
 
-            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
             {
                 _callCount++;
 
@@ -195,12 +195,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                 }
 
                 return CreateToken(ttl);
-            }
-
-            [Obsolete("This method has been deprecated due to lack of the asynchronous suffix in the method name. Please use SafeCreateNewTokenAsync instead.")]
-            protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
-            {
-                return SafeCreateNewTokenAsync(iotHub, suggestedTimeToLive);
             }
         }
     }

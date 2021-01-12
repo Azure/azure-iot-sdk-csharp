@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client
                     return _token;
                 }
 
-                _token = await SafeCreateNewTokenAsync(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
+                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
 
                 var sas = SharedAccessSignature.Parse(".", _token);
                 ExpiresOn = sas.ExpiresOn;
@@ -129,16 +129,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="iotHub">The IoT Hub domain name.</param>
         /// <param name="suggestedTimeToLive">The suggested TTL.</param>
         /// <returns>The token string.</returns>
-        protected abstract Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive);
-
-        /// <summary>
-        /// Creates a new token with a suggested TTL. This method is thread-safe.
-        /// </summary>
-        /// <param name="iotHub">The IoT Hub domain name.</param>
-        /// <param name="suggestedTimeToLive">The suggested TTL.</param>
-        /// <remarks>This is an asynchronous method.</remarks>
-        /// <returns>The token string.</returns>
-        [Obsolete("This method has been deprecated due to lack of the asynchronous suffix in the method name. Please use SafeCreateNewTokenAsync instead.")]
+        /// <remarks>This is an asynchronous method and should be awaited.</remarks>
         protected abstract Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive);
 
         private void UpdateTimeBufferSeconds(int ttl)
