@@ -34,7 +34,8 @@ namespace Microsoft.Azure.Devices.Client
             _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }
 
-        protected override Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLiveSeconds)
+        ///<inheritdoc/>
+        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLiveSeconds)
         {
             var builder = new TpmSharedAccessSignatureBuilder(_securityProvider)
             {

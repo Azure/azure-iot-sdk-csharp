@@ -235,7 +235,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 return _tokenRefreshSemaphore.WaitAsync(cancellationToken);
             }
 
-            protected override Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive)
+            ///<inheritdoc/>
+            protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
             {
                 _logger.Trace($"[{DateTime.UtcNow}] Refresher: Creating new token.");
 

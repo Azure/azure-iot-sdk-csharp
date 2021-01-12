@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
         {
-            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName, 
+            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName,
                 new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey));
 
             IotHubConnectionString cs = csBuilder.ToIotHubConnectionString();
@@ -143,7 +143,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
             }
 
-            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive)
+            ///<inheritdoc/>
+            protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
             {
                 _callCount++;
 

@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client
                     return _token;
                 }
 
-                _token = await SafeCreateNewTokenAsync(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
+                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
 
                 var sas = SharedAccessSignature.Parse(".", _token);
                 ExpiresOn = sas.ExpiresOn;
@@ -129,7 +129,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="iotHub">The IoT Hub domain name.</param>
         /// <param name="suggestedTimeToLive">The suggested TTL.</param>
         /// <returns>The token string.</returns>
-        protected abstract Task<string> SafeCreateNewTokenAsync(string iotHub, int suggestedTimeToLive);
+        /// <remarks>This is an asynchronous method and should be awaited.</remarks>
+        protected abstract Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive);
 
         private void UpdateTimeBufferSeconds(int ttl)
         {

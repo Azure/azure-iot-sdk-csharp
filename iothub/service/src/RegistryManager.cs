@@ -12,6 +12,10 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Naming",
+        "CA1716:Identifiers should not match keywords",
+        Justification = "Cannot change parameter names as it is considered a breaking change.")]
     public abstract class RegistryManager : IDisposable
     {
         /// <summary>
@@ -80,20 +84,21 @@ namespace Microsoft.Azure.Devices
         /// <returns>The Device object with the generated keys and ETags.</returns>
         public abstract Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Register a new module with device in the system
-        /// </summary>
-        /// <param name="iotHubModule">The Module object being registered.</param>
-        /// <returns>The Module object with the generated keys and ETags.</returns>
-        public abstract Task<Module> AddModuleAsync(Module iotHubModule);
 
         /// <summary>
         /// Register a new module with device in the system
         /// </summary>
-        /// <param name="iotHubModule">The Module object being registered.</param>
+        /// <param name="module">The Module object being registered.</param>
+        /// <returns>The Module object with the generated keys and ETags.</returns>
+        public abstract Task<Module> AddModuleAsync(Module module);
+
+        /// <summary>
+        /// Register a new module with device in the system
+        /// </summary>
+        /// <param name="module">The Module object being registered.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Module object with the generated keys and ETags.</returns>
-        public abstract Task<Module> AddModuleAsync(Module iotHubModule, CancellationToken cancellationToken);
+        public abstract Task<Module> AddModuleAsync(Module module, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds a Device with Twin information
@@ -179,34 +184,34 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Update the mutable fields of the module registration
         /// </summary>
-        /// <param name="iotHubModule">The Module object with updated fields.</param>
+        /// <param name="module">The Module object with updated fields.</param>
         /// <returns>The Module object with updated ETags.</returns>
-        public abstract Task<Module> UpdateModuleAsync(Module iotHubModule);
+        public abstract Task<Module> UpdateModuleAsync(Module module);
 
         /// <summary>
         /// Update the mutable fields of the module registration
         /// </summary>
-        /// <param name="iotHubModule">The Module object with updated fields.</param>
+        /// <param name="module">The Module object with updated fields.</param>
         /// <param name="forceUpdate">Forces the device object to be replaced without regard for an ETag match.</param>
         /// <returns>The Module object with updated ETags.</returns>
-        public abstract Task<Module> UpdateModuleAsync(Module iotHubModule, bool forceUpdate);
+        public abstract Task<Module> UpdateModuleAsync(Module module, bool forceUpdate);
 
         /// <summary>
         /// Update the mutable fields of the module registration
         /// </summary>
-        /// <param name="iotHubModule">The Module object with updated fields.</param>
+        /// <param name="module">The Module object with updated fields.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Module object with updated ETags.</returns>
-        public abstract Task<Module> UpdateModuleAsync(Module iotHubModule, CancellationToken cancellationToken);
+        public abstract Task<Module> UpdateModuleAsync(Module module, CancellationToken cancellationToken);
 
         /// <summary>
         /// Update the mutable fields of the module registration
         /// </summary>
-        /// <param name="iotHubModule">The Module object with updated fields.</param>
+        /// <param name="module">The Module object with updated fields.</param>
         /// <param name="forceUpdate">Forces the module object to be replaced even if it was updated since it was retrieved last time.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Module object with updated ETags.</returns>
-        public abstract Task<Module> UpdateModuleAsync(Module iotHubModule, bool forceUpdate, CancellationToken cancellationToken);
+        public abstract Task<Module> UpdateModuleAsync(Module module, bool forceUpdate, CancellationToken cancellationToken);
 
         /// <summary>
         /// Update a list of devices with the system
@@ -286,15 +291,15 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Deletes a previously registered module from device in the system.
         /// </summary>
-        /// <param name="iotHubModule">The module being deleted.</param>
-        public abstract Task RemoveModuleAsync(Module iotHubModule);
+        /// <param name="module">The module being deleted.</param>
+        public abstract Task RemoveModuleAsync(Module module);
 
         /// <summary>
         /// Deletes a previously registered module from device in the system.
         /// </summary>
-        /// <param name="iotHubModule">The module being deleted.</param>
+        /// <param name="module">The module being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        public abstract Task RemoveModuleAsync(Module iotHubModule, CancellationToken cancellationToken);
+        public abstract Task RemoveModuleAsync(Module module, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes a list of previously registered devices from the system.
