@@ -11,6 +11,10 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Azure IoT Edge Configurations.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Naming",
+    "CA1724:Type names should not match namespaces",
+    Justification = "Cannot change type names as it is considered a breaking change.")]
     public class Configuration : IETagHolder
     {
         /// <summary>

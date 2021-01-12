@@ -12,6 +12,10 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Naming",
+        "CA1716:Identifiers should not match keywords",
+        Justification = "Cannot change parameter names as it is considered a breaking change.")]
     public abstract class RegistryManager : IDisposable
     {
         /// <summary>
@@ -79,6 +83,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Device object with the generated keys and ETags.</returns>
         public abstract Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken);
+
 
         /// <summary>
         /// Register a new module with device in the system
