@@ -182,6 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
             }
 
+            ///<inheritdoc/>
             protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
             {
                 _callCount++;

@@ -29,12 +29,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             _generationId = generationId ?? throw new ArgumentNullException(nameof(generationId));
         }
 
-        /// <summary>
-        /// Creates a new token with the specified TTL.
-        /// </summary>
-        /// <param name="iotHub">IotHub hostname</param>
-        /// <param name="suggestedTimeToLive">Suggested time to live seconds</param>
-        /// <returns></returns>
+        ///<inheritdoc/>
         protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
         {
             DateTime startTime = DateTime.UtcNow;

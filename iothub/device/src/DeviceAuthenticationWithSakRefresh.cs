@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Client
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
+        ///<inheritdoc/>
         protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
         {
             var builder = new SharedAccessSignatureBuilder
