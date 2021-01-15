@@ -54,6 +54,9 @@ namespace Microsoft.Azure.Devices.Client
             get => _result;
         }
 
+        /// <summary>
+        /// Property containing the entire result data, in Json format.
+        /// </summary>
         public string ResultAsJson => Result == null || Result.Length == 0 ? null : Encoding.UTF8.GetString(Result);
 
         /// <summary>
