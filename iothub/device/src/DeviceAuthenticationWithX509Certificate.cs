@@ -19,10 +19,12 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="certificate">X.509 Certificate.</param>
-        public DeviceAuthenticationWithX509Certificate(string deviceId, X509Certificate2 certificate)
+        /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
+        public DeviceAuthenticationWithX509Certificate(string deviceId, X509Certificate2 certificate, X509Certificate2Collection chainCertificates = null)
         {
             SetDeviceId(deviceId);
             Certificate = certificate;
+            ChainCertificates = chainCertificates;
         }
 
         /// <summary>
@@ -41,6 +43,12 @@ namespace Microsoft.Azure.Devices.Client
         public X509Certificate2 Certificate { get; set; }
 
         /// <summary>
+        /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the service. Private keys are not required for these certificates.
+        /// This is only supported on AMQP_Tcp_Only and Mqtt_Tcp_Only
+        /// </summary>
+        public X509Certificate2Collection ChainCertificates { get; }
+
+        /// <summary>
         /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
@@ -55,6 +63,7 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionStringBuilder.DeviceId = DeviceId;
             iotHubConnectionStringBuilder.UsingX509Cert = true;
             iotHubConnectionStringBuilder.Certificate = Certificate;
+            iotHubConnectionStringBuilder.ChainCertificates = ChainCertificates;
             iotHubConnectionStringBuilder.SharedAccessSignature = null;
             iotHubConnectionStringBuilder.SharedAccessKey = null;
             iotHubConnectionStringBuilder.SharedAccessKeyName = null;
