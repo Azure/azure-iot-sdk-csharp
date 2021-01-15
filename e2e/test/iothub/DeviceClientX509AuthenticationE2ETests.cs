@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Configuration.IoTHub.X509ChainDeviceName,
                 Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
                 chainCerts);
-            var deviceClient = DeviceClient.Create(
+            using var deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
                 DeviceTransportType.Mqtt_Tcp_Only);
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Configuration.IoTHub.X509ChainDeviceName,
                 Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
                 chainCerts);
-            var deviceClient = DeviceClient.Create(
+            using var deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
                 DeviceTransportType.Amqp_Tcp_Only);
