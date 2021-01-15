@@ -3,6 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Common.Security
 {
+    /// <summary>
+    /// Security related constants
+    /// </summary>
     public static class SecurityConstants
     {
         /// <summary>

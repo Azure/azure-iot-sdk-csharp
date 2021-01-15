@@ -1,16 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Common.Data;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Azure.Devices.Common.Data;
 
 namespace Microsoft.Azure.Devices.Common.Security
 {
+    /// <summary>
+    /// A shared access signature, which can be used for authorization to an IoT Hub
+    /// </summary>
     public sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
         private readonly string _encodedAudience;
@@ -54,12 +57,27 @@ namespace Microsoft.Azure.Devices.Common.Security
         /// </summary>
         public DateTime ExpiresOn { get; private set; }
 
+        /// <summary>
+        /// Name of the authorization rule
+        /// </summary>
         public string KeyName { get; private set; }
 
+        /// <summary>
+        /// The audience scope to which this signature applies
+        /// </summary>
         public string Audience { get; private set; }
 
+        /// <summary>
+        /// The value of the shared access signature
+        /// </summary>
         public string Signature { get; private set; }
 
+        /// <summary>
+        /// Parses a shared access signature string representation into a <see cref="SharedAccessSignature"/>/>
+        /// </summary>
+        /// <param name="iotHubName">The IoT Hub name</param>
+        /// <param name="rawToken">The string representation of the SAS token to parse</param>
+        /// <returns>The <see cref="SharedAccessSignature"/> instance that represents the passed in raw token</returns>
         public static SharedAccessSignature Parse(string iotHubName, string rawToken)
         {
             if (string.IsNullOrWhiteSpace(iotHubName))
@@ -110,6 +128,11 @@ namespace Microsoft.Azure.Devices.Common.Security
                 encodedAudience);
         }
 
+        /// <summary>
+        /// Helper function to validate whether a string token is a valid SAS token
+        /// </summary>
+        /// <param name="rawSignature">The string representation of the SAS token to parse</param>
+        /// <returns>True if the passed in raw signature is a valid SAS token. False otherwise</returns>
         public static bool IsSharedAccessSignature(string rawSignature)
         {
             if (string.IsNullOrWhiteSpace(rawSignature))
@@ -139,6 +162,10 @@ namespace Microsoft.Azure.Devices.Common.Security
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
         }
 
+        /// <summary>
+        /// Authenticate against the IoT Hub using an authorization rule
+        /// </summary>
+        /// <param name="sasAuthorizationRule">The properties that describe the keys to access the IotHub artifacts</param>
         public void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)
         {
             if (sasAuthorizationRule == null)
@@ -171,11 +198,19 @@ namespace Microsoft.Azure.Devices.Common.Security
             throw new UnauthorizedAccessException("The specified SAS token has an invalid signature. It does not match either the primary or secondary key.");
         }
 
+        /// <summary>
+        /// Authorize access to the IoT Hub
+        /// </summary>
+        /// <param name="iotHubHostName">IoT Hub host to authorize against</param>
         public void Authorize(string iotHubHostName)
         {
             SecurityHelper.ValidateIotHubHostName(iotHubHostName, IotHubName);
         }
 
+        /// <summary>
+        /// Authorize access to the provided target address
+        /// </summary>
+        /// <param name="targetAddress">Target address to authorize against</param>
         public void Authorize(Uri targetAddress)
         {
             if (targetAddress == null)
@@ -191,6 +226,11 @@ namespace Microsoft.Azure.Devices.Common.Security
             }
         }
 
+        /// <summary>
+        /// Compute the signature string using the SAS fields
+        /// </summary>
+        /// <param name="key">Key used for computing the signature</param>
+        /// <returns>The string representation of the signature</returns>
         public string ComputeSignature(byte[] key)
         {
             var fields = new List<string>
@@ -199,11 +239,9 @@ namespace Microsoft.Azure.Devices.Common.Security
                 _expiry,
             };
 
-            using (var hmac = new HMACSHA256(key))
-            {
-                string value = string.Join("\n", fields);
-                return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
-            }
+            using var hmac = new HMACSHA256(key);
+            string value = string.Join("\n", fields);
+            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
         }
 
         private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
