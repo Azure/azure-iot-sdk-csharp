@@ -181,7 +181,11 @@ namespace Microsoft.Azure.Devices.Client
 
         internal string IotHubName { get; private set; }
 
+        // Device certificate
         internal X509Certificate2 Certificate { get; set; }
+
+        /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the service.
+        internal X509Certificate2Collection ChainCertificates { get; set; }
 
         internal IotHubConnectionString ToIotHubConnectionString()
         {

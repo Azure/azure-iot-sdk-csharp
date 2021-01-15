@@ -112,6 +112,7 @@ if (-not $isAdmin)
 $Region = $Region.Replace(' ', '')
 $appRegistrationName = $ResourceGroup
 $uploadCertificateName = "group1-certificate"
+$hubUploadCertificateName = "rootCA"
 
 
 #################################################################################################
@@ -156,6 +157,7 @@ $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA"
 $groupCertCommonName = "xdevice1"
 $deviceCertCommonName = "iothubx509device1"
 $iotHubCertCommonName = "iothubx509device1"
+$iotHubCertChainDeviceCommonName = "iothubx509chaindevice1"
 
 $rootCertPath = "$PSScriptRoot/Root.cer"
 $individualDeviceCertPath = "$PSScriptRoot/Device.cer"
@@ -164,6 +166,9 @@ $verificationCertPath = "$PSScriptRoot/verification.cer"
 $groupPfxPath = "$PSScriptRoot/Group.pfx"
 $individualDevicePfxPath = "$PSScriptRoot/Device.pfx"
 $iotHubPfxPath = "$PSScriptRoot/IotHub.pfx"
+$iotHubChainDevicPfxPath = "$PSScriptRoot/IotHubChainDevice.pfx"
+$intermediateCert1CertPath = "$PSScriptRoot/intermediateCert1.cer"
+$intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer"
 
 $groupCertChainPath = "$PSScriptRoot/GroupCertChain.p7b"
 
@@ -205,6 +210,7 @@ $intermediateCert2 = New-SelfSignedCertificate `
 Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.contains("CN=$subjectPrefix") } | Export-Certificate -FilePath $groupCertChainPath -Type p7b | Out-Null
 
 Export-Certificate -cert $rootCACert -FilePath $rootCertPath -Type CERT | Out-Null
+$iothubX509RootCACertificate = [Convert]::ToBase64String((Get-Content $rootCertPath -AsByteStream))
 
 $certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -Force
 
@@ -243,9 +249,28 @@ $iotHubCert = New-SelfSignedCertificate `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
+# IoT hub certificate signed by intermediate certificate for authemtication.
+$iotHubChainDeviceCert = New-SelfSignedCertificate `
+    -DnsName "$iotHubCertChainDeviceCommonName" `
+    -KeySpec Signature `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2) `
+    -Signer $intermediateCert2
+
 $iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
 Export-PFXCertificate -cert $iotHubCert -filePath $iotHubPfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509PfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubPfxPath -AsByteStream))
+
+$iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
+Export-PFXCertificate -cert $iotHubChainDeviceCert -filePath $iotHubChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
+$iothubX509ChainDevicePfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubChainDevicPfxPath -AsByteStream))
+
+Export-Certificate -cert $intermediateCert1 -FilePath $intermediateCert1CertPath -Type CERT | Out-Null
+$iothubX509Intermediate1Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert1CertPath -AsByteStream))
+
+Export-Certificate -cert $intermediateCert2 -FilePath $intermediateCert2CertPath -Type CERT | Out-Null
+$iothubX509Intermediate2Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert2CertPath -AsByteStream))
 
 $dpsGroupX509CertificateChain = [Convert]::ToBase64String((Get-Content $groupCertChainPath -AsByteStream))
 $dpsX509PfxCertificatePassword = $GroupCertificatePassword
@@ -349,7 +374,7 @@ az deployment group create `
     --name $deploymentName `
     --output none `
     --only-show-errors `
-    --template-file "$PSScriptRoot\e2eTestsArmTemplate.json" `
+    --template-file "$PSScriptRoot\test-resources.json" `
     --parameters `
     UserObjectId=$userObjectId `
     StorageAccountName=$storageAccountName `
@@ -392,6 +417,51 @@ Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob D
 $systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.principalId --out tsv
 
 az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId
+
+##################################################################################################################################
+# Uploading ROOT CA certificate to IoTHub and verifying
+##################################################################################################################################
+
+$certExits = az iot hub certificate list -g $ResourceGroup --hub-name $iotHubName --query "value[?name=='$hubUploadCertificateName']" --output tsv
+if ($certExits)
+{
+    Write-Host "`nDeleting existing certificate from IotHub"
+    $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
+    az iot hub certificate delete -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --etag $etag
+}
+Write-Host "`nUploading new certificate to IotHub"
+az iot hub certificate create -g $ResourceGroup --path $rootCertPath --hub-name $iotHubName --name $hubUploadCertificateName --output none
+
+$isVerified = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'properties.isVerified' --output tsv
+if ($isVerified -eq 'false')
+{
+    Write-Host "`nVerifying certificate uploaded to IotHub"
+    $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
+    $requestedCommonName = az iot hub certificate generate-verification-code -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName -e $etag --query 'properties.verificationCode'
+    $verificationCertArgs = @{
+        "-DnsName"                       = $requestedCommonName;
+        "-CertStoreLocation"             = "cert:\LocalMachine\My";
+        "-NotAfter"                      = (get-date).AddYears(2);
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-Signer"                        = $rootCACert;
+    }
+    $verificationCert = New-SelfSignedCertificate @verificationCertArgs
+    Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
+    $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
+    az iot hub certificate verify -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName -e $etag --path $verificationCertPath --output none
+}
+
+##################################################################################################################################
+# Create device in IoTHub that uses a certificate signed by intermediate certificate
+##################################################################################################################################
+
+$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName-hub --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv 
+
+if (-not $iotHubCertChainDevice)
+{
+    Write-Host "`nCreating device $iotHubCertChainDeviceCommonName on IotHub"
+    az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubCertChainDeviceCommonName --am x509_ca
+}
 
 ##################################################################################################################################
 # Uploading certificate to DPS, verifying and creating enrollment groups
@@ -532,6 +602,11 @@ az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-CERT-BASE64" --value $fileContentB64String --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" --value "invalidcertgde1.westus.cloudapp.azure.com" --output none
 az keyvault secret set --vault-name $keyVaultName --name "PIPELINE-ENVIRONMENT" --value "prod" --output none
+az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-DEVICE-PFX-CERTIFICATE" --value $iothubX509ChainDevicePfxCertificate --output none
+az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-ROOT-CA-CERTIFICATE" --value $iothubX509RootCACertificate --output none
+az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-INTERMEDIATE1-CERTIFICATE" --value $iothubX509Intermediate1Certificate --output none
+az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-INTERMEDIATE2-CERTIFICATE" --value $iothubX509Intermediate2Certificate --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-X509-CHAIN-DEVICE-NAME" --value $iotHubCertChainDeviceCommonName --output none
 
 # Below Environment variables are only used in Java
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-CONNECTION-STRING" --value $farHubConnectionString --output none
