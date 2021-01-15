@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// Because Intermediate Authorities may have been issued by the uploaded CA, the application must present the full chain of
         /// certificates from the one used during authentication to the one uploaded to the service.
-        /// See <see href="TODO (Sample ref) - Sindhu"/>
         /// for more information.
         /// </remarks>
         /// <param name="certificates">The certificate chain to ensure is installed.</param>

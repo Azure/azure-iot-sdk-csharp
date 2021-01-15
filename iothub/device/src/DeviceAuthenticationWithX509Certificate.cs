@@ -45,7 +45,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the service. Private keys are not required for these certificates.
         /// This is only supported on AMQP_Tcp_Only and Mqtt_Tcp_Only
-        /// See <see href="TODO (Sample ref) - Sindhu"/>
         /// </summary>
         public X509Certificate2Collection ChainCertificates { get; }
 
