@@ -18,6 +18,12 @@ namespace Microsoft.Azure.Devices.Client
     {
         private SecurityProviderTpm _securityProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class with default
+        /// time to live of 1 hour and default buffer percentage value of 15.
+        /// </summary>
+        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
         public DeviceAuthenticationWithTpm(
             string deviceId,
             SecurityProviderTpm securityProvider) : base(deviceId)
@@ -25,6 +31,14 @@ namespace Microsoft.Azure.Devices.Client
             _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class.
+        /// </summary>
+        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
+        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value.</param>
+        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as percentage of
+        /// the time to live. EX: If you want a SAS token to live for 85% of life before proactive renewal, this value should be 15.</param>
         public DeviceAuthenticationWithTpm(
             string deviceId,
             SecurityProviderTpm securityProvider,
