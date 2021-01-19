@@ -27,7 +27,9 @@ namespace Microsoft.Azure.Devices.Client
         private const string DefaultEventSource = "Microsoft.IotHub";
 
 #if DEBUG
+#if NET451
         private const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
+#endif
         private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
 
         private static bool breakOnExceptionTypesRetrieved;
