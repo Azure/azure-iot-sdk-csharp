@@ -11,14 +11,14 @@ using System.Text;
 namespace Microsoft.Azure.Devices.Common.Security
 {
     /// <summary>
-    /// A helper class to build Shared Access Signature tokens
+    /// Builds Shared Access Signature (SAS) tokens.
     /// </summary>
     public sealed class SharedAccessSignatureBuilder
     {
         string key;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="SharedAccessSignatureBuilder"/> class
+        /// Initializes a new instance of <see cref="SharedAccessSignatureBuilder"/> class.
         /// </summary>
         public SharedAccessSignatureBuilder()
         {
@@ -26,12 +26,12 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// Name of the authorization rule
+        /// The shared access policy name.
         /// </summary>
         public string KeyName { get; set; }
 
         /// <summary>
-        /// The key used to sign the request string
+        /// The shared access key value.
         /// </summary>
         public string Key
         {
@@ -45,19 +45,19 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// The resource being accessed
+        /// The resource Id being accessed.
         /// </summary>
         public string Target { get; set; }
 
         /// <summary>
-        /// Token expiry instant
+        /// The time the token expires.
         /// </summary>
         public TimeSpan TimeToLive { get; set; }
 
         /// <summary>
-        /// Build a SAS token
+        /// Build a SAS token.
         /// </summary>
-        /// <returns>SAS token</returns>
+        /// <returns>SAS token.</returns>
         public string ToSignature()
         {
             return BuildSignature(KeyName, Key, Target, TimeToLive);

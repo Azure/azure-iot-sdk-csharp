@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.Common.Data;
 namespace Microsoft.Azure.Devices.Common.Security
 {
     /// <summary>
-    /// A shared access signature, which can be used for authorization to an IoT Hub
+    /// A shared access signature, which can be used for authorization to an IoT Hub.
     /// </summary>
     public sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
@@ -48,36 +48,36 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// The IoT hub name
+        /// The IoT hub name.
         /// </summary>
         public string IotHubName { get; private set; }
 
         /// <summary>
-        /// The date and time the SAS expires
+        /// The date and time the SAS expires.
         /// </summary>
         public DateTime ExpiresOn { get; private set; }
 
         /// <summary>
-        /// Name of the authorization rule
+        /// Name of the authorization rule.
         /// </summary>
         public string KeyName { get; private set; }
 
         /// <summary>
-        /// The audience scope to which this signature applies
+        /// The audience scope to which this signature applies.
         /// </summary>
         public string Audience { get; private set; }
 
         /// <summary>
-        /// The value of the shared access signature
+        /// The value of the shared access signature.
         /// </summary>
         public string Signature { get; private set; }
 
         /// <summary>
-        /// Parses a shared access signature string representation into a <see cref="SharedAccessSignature"/>/>
+        /// Parses a shared access signature string representation into a <see cref="SharedAccessSignature"/>./>
         /// </summary>
-        /// <param name="iotHubName">The IoT Hub name</param>
-        /// <param name="rawToken">The string representation of the SAS token to parse</param>
-        /// <returns>The <see cref="SharedAccessSignature"/> instance that represents the passed in raw token</returns>
+        /// <param name="iotHubName">The IoT Hub name.</param>
+        /// <param name="rawToken">The string representation of the SAS token to parse.</param>
+        /// <returns>The <see cref="SharedAccessSignature"/> instance that represents the passed in raw token.</returns>
         public static SharedAccessSignature Parse(string iotHubName, string rawToken)
         {
             if (string.IsNullOrWhiteSpace(iotHubName))
@@ -129,10 +129,10 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// Helper function to validate whether a string token is a valid SAS token
+        /// Validates whether a string token is a valid SAS token.
         /// </summary>
-        /// <param name="rawSignature">The string representation of the SAS token to parse</param>
-        /// <returns>True if the passed in raw signature is a valid SAS token. False otherwise</returns>
+        /// <param name="rawSignature">The string representation of the SAS token to parse.</param>
+        /// <returns>True if the passed in raw signature is a valid SAS token. False otherwise.</returns>
         public static bool IsSharedAccessSignature(string rawSignature)
         {
             if (string.IsNullOrWhiteSpace(rawSignature))
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// Indicates if the token has expired
+        /// Indicates if the token has expired.
         /// </summary>
         public bool IsExpired()
         {
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// The date and time of expiration
+        /// The date and time of expiration.
         /// </summary>
         public DateTime ExpiryTime()
         {
@@ -163,9 +163,9 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// Authenticate against the IoT Hub using an authorization rule
+        /// Authenticate against the IoT Hub using an authorization rule.
         /// </summary>
-        /// <param name="sasAuthorizationRule">The properties that describe the keys to access the IotHub artifacts</param>
+        /// <param name="sasAuthorizationRule">The properties that describe the keys to access the IotHub artifacts.</param>
         public void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)
         {
             if (sasAuthorizationRule == null)
@@ -199,18 +199,18 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// Authorize access to the IoT Hub
+        /// Authorize to the IoT Hub.
         /// </summary>
-        /// <param name="iotHubHostName">IoT Hub host to authorize against</param>
+        /// <param name="iotHubHostName">IoT Hub host to authorize against.</param>
         public void Authorize(string iotHubHostName)
         {
             SecurityHelper.ValidateIotHubHostName(iotHubHostName, IotHubName);
         }
 
         /// <summary>
-        /// Authorize access to the provided target address
+        /// Authorize access to the provided target address.
         /// </summary>
-        /// <param name="targetAddress">Target address to authorize against</param>
+        /// <param name="targetAddress">Target address to authorize against.</param>
         public void Authorize(Uri targetAddress)
         {
             if (targetAddress == null)
@@ -227,10 +227,10 @@ namespace Microsoft.Azure.Devices.Common.Security
         }
 
         /// <summary>
-        /// Compute the signature string using the SAS fields
+        /// Compute the signature string using the SAS fields.
         /// </summary>
-        /// <param name="key">Key used for computing the signature</param>
-        /// <returns>The string representation of the signature</returns>
+        /// <param name="key">Key used for computing the signature.</param>
+        /// <returns>The string representation of the signature.</returns>
         public string ComputeSignature(byte[] key)
         {
             var fields = new List<string>
