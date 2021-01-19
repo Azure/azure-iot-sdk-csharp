@@ -49,6 +49,12 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="IotHubSuspendedException"/> with the <see cref="SerializationInfo"/>
+        /// and <see cref="StreamingContext"/> associated with the exception.
+        /// </summary>
+        /// <param name="info">The serialized data about the exception being thrown.</param>
+        /// <param name="context">The contextual information about the source or destination.</param>
         protected IotHubSuspendedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
