@@ -25,18 +25,29 @@ namespace Microsoft.Azure.Devices
             SetKey(key);
         }
 
+        /// <summary>
+        /// The shared access policy name.
+        /// </summary>
         public string PolicyName
         {
             get => _policyName;
             set { SetPolicyName(value); }
         }
 
+        /// <summary>
+        /// The shared access key value.
+        /// </summary>
         public string Key
         {
             get => _key;
             set => SetKey(value);
         }
 
+        /// <summary>
+        /// Populates the builder with values needed to authenticate with shared access policy key.
+        /// </summary>
+        /// <param name="iotHubConnectionStringBuilder">The connection build object to populate.</param>
+        /// <returns>The populated connection string builder object.</returns>
         public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             if (iotHubConnectionStringBuilder == null)

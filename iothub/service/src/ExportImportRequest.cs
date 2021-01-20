@@ -8,7 +8,14 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class ExportImportRequest
     {
+        /// <summary>
+        /// Storage account connection string.
+        /// </summary>
         public string StorageConnectionString { get; set; }
+
+        /// <summary>
+        /// Container name in storage account to use for the export or import jobs.
+        /// </summary>
         public string ContainerName { get; set; }
     }
 }
