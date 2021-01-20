@@ -3,6 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Common.Security
 {
+    /// <summary>
+    /// Security-related constants.
+    /// </summary>
     public static class SecurityConstants
     {
         /// <summary>
@@ -11,7 +14,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         public const string BearerTokenScheme = "Bearer";
 
         /// <summary>
-        /// The scheme name to use for certificate authentication handler
+        /// The scheme name to use for certificate authentication handler.
         /// </summary>
         public const string CertificateScheme = "Certificate";
 
@@ -26,47 +29,47 @@ namespace Microsoft.Azure.Devices.Common.Security
         public const string ResourceProviderClientAccessRole = "ResourceProviderClientAccess";
 
         /// <summary>
-        /// The role capable of invoking ResourceProvider from ACIS
+        /// The role capable of invoking ResourceProvider from ACIS.
         /// </summary>
         public const string ResourceProviderAdminAccessRole = "ResourceProviderAdminAccess";
 
         /// <summary>
-        /// For use when giving permissions to both resource provider roles
+        /// For use when giving permissions to both resource provider roles.
         /// </summary>
         public const string ResourceProviderFullAccessRole = ResourceProviderAdminAccessRole + "," + ResourceProviderClientAccessRole;
 
         /// <summary>
-        /// Authentication failed message
+        /// Authentication failed message.
         /// </summary>
         public const string NonSecureConnection = "Connection does not use secure sockets (i.e. https)";
 
         /// <summary>
-        /// Authentication failed message
+        /// Authentication failed message.
         /// </summary>
         public const string AuthenticationFailed = "Authentication failed for the request";
 
         /// <summary>
-        /// Authorization failed message
+        /// Authorization failed message.
         /// </summary>
         public const string AuthorizationFailed = "Authorization failed for the request";
 
         /// <summary>
-        /// Missing certificate message
+        /// Missing certificate message.
         /// </summary>
         public const string MissingCertificate = "Missing client certificate";
 
         /// <summary>
-        /// Default size of device gateway and device keys
+        /// Default size of device gateway and device keys.
         /// </summary>
         public const int DefaultKeyLengthInBytes = 32;
 
         /// <summary>
-        /// Minimum size of device gateway and device keys
+        /// Minimum size of device gateway and device keys.
         /// </summary>
         public const int MinKeyLengthInBytes = 16;
 
         /// <summary>
-        /// Maximum size of device gateway and device keys
+        /// Maximum size of device gateway and device keys.
         /// </summary>
         public const int MaxKeyLengthInBytes = 64;
 
@@ -111,24 +114,24 @@ namespace Microsoft.Azure.Devices.Common.Security
         public const int SaSKeyLength = 32;
 
         /// <summary>
-        /// Maximum SaS Key Name Length
+        /// Maximum SaS Key Name Length.
         /// </summary>
         public const int SasKeyNameMaxLength = 64;
 
         // Shared Access Key Constants
 
         /// <summary>
-        /// Shared Access Key
+        /// Shared Access Key.
         /// </summary>
         public const string SharedAccessKey = "SharedAccessKey";
 
         /// <summary>
-        /// Shared Access Key Field Name
+        /// Shared Access Key Field Name.
         /// </summary>
         public const string SharedAccessKeyFieldName = "sk";
 
         /// <summary>
-        /// Shared Access Key Full Field Name
+        /// Shared Access Key Full Field Name.
         /// </summary>
         public const string SharedAccessKeyFullFieldName = SharedAccessKey + " " + SharedAccessKeyFieldName + "=";
     }

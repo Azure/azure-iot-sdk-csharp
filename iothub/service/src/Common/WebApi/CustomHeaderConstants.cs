@@ -3,6 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Common.WebApi
 {
+    /// <summary>
+    /// Constants that can be used in custom headers.
+    /// </summary>
     public static class CustomHeaderConstants
     {
         /// <summary>
@@ -89,12 +92,18 @@ namespace Microsoft.Azure.Devices.Common.WebApi
         public const string HttpAppPropertyPrefix = "iothub-app-";
 
         /// <summary>
-        /// Internal HTTP custom headers
+        /// The iothub-name custom header key.
         /// </summary>
         public const string HttpIotHubName = "iothub-name";
 
+        /// <summary>
+        /// The iothub-metadata custom header key.
+        /// </summary>
         public const string HttpIotHub = "iothub-metadata";
 
+        /// <summary>
+        /// The iothub-devicemetadata custom header key.
+        /// </summary>
         public const string HttpDevice = "iothub-devicemetadata";
 
         /// <summary>
@@ -183,6 +192,9 @@ namespace Microsoft.Azure.Devices.Common.WebApi
         /// </summary>
         public const string RequestId = "x-ms-request-id";
 
+        /// <summary>
+        /// The iothub-errorcode custom header key.
+        /// </summary>
         public const string HttpErrorCodeName = "iothub-errorcode";
     }
 }
