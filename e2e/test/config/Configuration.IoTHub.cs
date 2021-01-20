@@ -12,12 +12,45 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static partial class IoTHub
         {
             public static string ConnectionString => GetValue("IOTHUB_CONN_STRING_CSHARP");
+            public static string X509ChainDeviceName => GetValue("IOTHUB_X509_CHAIN_DEVICE_NAME");
 
             public static X509Certificate2 GetCertificateWithPrivateKey()
             {
                 const string hubPfxCert = "IOTHUB_X509_PFX_CERTIFICATE";
                 var cert = GetBase64EncodedCertificate(hubPfxCert, defaultValue: string.Empty);
                 Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubPfxCert} has expired.");
+                return cert;
+            }
+
+            public static X509Certificate2 GetChainDeviceCertificateWithPrivateKey()
+            {
+                const string hubPfxCert = "HUB_CHAIN_DEVICE_PFX_CERTIFICATE";
+                var cert = GetBase64EncodedCertificate(hubPfxCert, defaultValue: string.Empty);
+                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubPfxCert} has expired.");
+                return cert;
+            }
+
+            public static X509Certificate2 GetRootCACertificate()
+            {
+                const string hubCert = "HUB_CHAIN_ROOT_CA_CERTIFICATE";
+                var cert = GetBase64EncodedCertificate(hubCert);
+                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
+                return cert;
+            }
+
+            public static X509Certificate2 GetIntermediate1Certificate()
+            {
+                const string hubCert = "HUB_CHAIN_INTERMEDIATE1_CERTIFICATE";
+                var cert = GetBase64EncodedCertificate(hubCert);
+                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
+                return cert;
+            }
+
+            public static X509Certificate2 GetIntermediate2Certificate()
+            {
+                const string hubCert = "HUB_CHAIN_INTERMEDIATE2_CERTIFICATE";
+                var cert = GetBase64EncodedCertificate(hubCert);
+                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
                 return cert;
             }
 

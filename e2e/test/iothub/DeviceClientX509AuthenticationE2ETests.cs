@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -13,6 +14,8 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
+using DeviceTransportType = Microsoft.Azure.Devices.Client.TransportType;
+
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
@@ -21,7 +24,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class DeviceClientX509AuthenticationE2ETests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"{nameof(DeviceClientX509AuthenticationE2ETests)}_";
-
         private readonly string _hostName;
 
         public DeviceClientX509AuthenticationE2ETests()
@@ -139,6 +141,78 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             ITransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(Client.TransportType.Amqp_WebSocket_Only);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_Cert_Chain_Install_Test_MQTT_TCP()
+        {
+            // arrange
+            var chainCerts = new X509Certificate2Collection();
+            chainCerts.Add(Configuration.IoTHub.GetRootCACertificate());
+            chainCerts.Add(Configuration.IoTHub.GetIntermediate1Certificate());
+            chainCerts.Add(Configuration.IoTHub.GetIntermediate2Certificate());
+            var auth = new DeviceAuthenticationWithX509Certificate(
+                Configuration.IoTHub.X509ChainDeviceName,
+                Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
+                chainCerts);
+            using var deviceClient = DeviceClient.Create(
+                _hostName,
+                auth,
+                DeviceTransportType.Mqtt_Tcp_Only);
+
+            // act
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+
+            // assert
+            ValidateCertsAreInstalled(chainCerts);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_Cert_Chain_Install_Test_AMQP_TCP()
+        {
+            // arrange
+            var chainCerts = new X509Certificate2Collection();
+            chainCerts.Add(Configuration.IoTHub.GetRootCACertificate());
+            chainCerts.Add(Configuration.IoTHub.GetIntermediate1Certificate());
+            chainCerts.Add(Configuration.IoTHub.GetIntermediate2Certificate());
+            var auth = new DeviceAuthenticationWithX509Certificate(
+                Configuration.IoTHub.X509ChainDeviceName,
+                Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
+                chainCerts);
+            using var deviceClient = DeviceClient.Create(
+                _hostName,
+                auth,
+                DeviceTransportType.Amqp_Tcp_Only);
+
+            // act
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+
+            // assert
+            ValidateCertsAreInstalled(chainCerts);
+        }
+
+        private void ValidateCertsAreInstalled(X509Certificate2Collection certificates)
+        {
+            var store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadOnly);
+
+            foreach (X509Certificate2 certificate in certificates)
+            {
+                X509Certificate2Collection results = store.Certificates.Find(
+                    X509FindType.FindByThumbprint,
+                    certificate.Thumbprint,
+                    false);
+                if (results.Count == 0)
+                {
+                    Assert.Fail($"{certificate.SubjectName} was not found");
+                }
+            }
+
+#if !NET451
+            store?.Dispose();
+#endif
         }
 
         private async Task SendMessageTest(ITransportSettings transportSetting)

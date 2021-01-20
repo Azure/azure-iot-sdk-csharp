@@ -225,6 +225,10 @@ namespace Microsoft.Azure.Devices.Client
 
         #region IEnumerable<KeyValuePair<TKey, TValue>> Members
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the dictionary.
+        /// </summary>
+        /// <returns>An enumerator that can be used to iterate through the dictionary.</returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return Dictionary.GetEnumerator();

@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
@@ -79,6 +80,14 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(authenticationMethod));
             }
 
+            if (transportType != TransportType.Amqp_Tcp_Only
+                && transportType != TransportType.Mqtt_Tcp_Only
+                && authenticationMethod is DeviceAuthenticationWithX509Certificate
+                && ((DeviceAuthenticationWithX509Certificate)authenticationMethod).ChainCertificates != null)
+            {
+                throw new ArgumentException("Certificate chains are only supported on Amqp_Tcp_Only and Mqtt_Tcp_Only");
+            }
+
             IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 
             // Make sure client options is initialized with the correct transport setting.
@@ -93,6 +102,20 @@ namespace Microsoft.Azure.Devices.Client
 
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType), options);
                 dc.Certificate = connectionStringBuilder.Certificate;
+
+                // Install all the intermediate certificates in the chain if specified.
+                if (connectionStringBuilder.ChainCertificates != null)
+                {
+                    try
+                    {
+                        CertificateInstaller.EnsureChainIsInstalled(connectionStringBuilder.ChainCertificates);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Logging.IsEnabled) Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+                        throw new UnauthorizedException($"Failed to provide certificates in the chain - {ex.Message}", ex);
+                    }
+                }
 
                 return dc;
             }
