@@ -7,7 +7,7 @@ using System.Globalization;
 namespace Microsoft.Azure.Devices.Common.Security
 {
     /// <summary>
-    /// A helper class that performs security-related operations.
+    /// Performs security-related operations.
     /// </summary>
     public static class SecurityHelper
     {

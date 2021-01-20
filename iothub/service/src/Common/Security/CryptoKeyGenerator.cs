@@ -84,9 +84,9 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         /// <summary>
-        /// Generate a unique GUID.
+        /// Generate a GUID using random bytes from the framework's cryptograpically strong RNG (Random Number Generator).
         /// </summary>
-        /// <returns>A GUID generated using random bytes from the framework's cryptograpically strong RNG (Random Number Generator).</returns>
+        /// <returns>A cryptographically secure GUID.</returns>
         public static Guid GenerateGuid()
         {
             byte[] bytes = new byte[GuidLength];
