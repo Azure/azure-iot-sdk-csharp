@@ -13,7 +13,7 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    public sealed class ClientWebSocketChannel : AbstractChannel, IDisposable
+    internal class ClientWebSocketChannel : AbstractChannel, IDisposable
     {
         private ClientWebSocket _webSocket;
         private CancellationTokenSource _writeCancellationTokenSource;
