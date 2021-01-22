@@ -1049,7 +1049,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             finally
             {
-                // Fix race condition, cleanup processors to make sure no task hanging
+                // Fix race condition, cleanup processors to make sure no task is left unreconciled
                 try
                 {
                     _serviceBoundOneWayProcessor.Abort();

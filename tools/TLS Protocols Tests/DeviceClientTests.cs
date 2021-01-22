@@ -27,7 +27,7 @@ namespace TlsProtocolTests
 
                         Console.WriteLine($"Sending: {messageBody}");
 
-                        // If no time out is specified, the API will hang indefinitely
+                        // If no time out is specified, the API will attempt to run indefinitely
                         using (var cts = new CancellationTokenSource(5000))
                         {
                             await deviceClient
