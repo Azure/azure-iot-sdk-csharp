@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
                     stackTrace = stackTrace.Substring(0, MaxSizeInInfoMap);
                 }
 
-                // error.Info came from AmqpExcpetion then it contains StackTraceName already.
+                // error.Info came from AmqpException then it contains StackTraceName already.
                 if (!error.Info.TryGetValue(IotHubAmqpProperty.StackTraceName, out string _))
                 {
                     error.Info.Add(IotHubAmqpProperty.StackTraceName, stackTrace);
