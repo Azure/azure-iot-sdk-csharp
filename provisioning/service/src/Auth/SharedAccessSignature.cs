@@ -39,11 +39,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string ShareAccessSignatureName { get; private set; }
 
-        public DateTime ExpiresOn
-        {
-            get;
-            private set;
-        }
+        public DateTime ExpiresOn { get; private set; }
 
         public string KeyName { get; private set; }
 
