@@ -183,7 +183,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             }
 
             error.Info.TryGetValue(IotHubAmqpProperty.TrackingId, out string trackingId);
+#pragma warning disable CS0618 // Type or member is obsolete only for external dependency.
             trackingId = TrackingHelper.CheckAndAddGatewayIdToTrackingId(trackingId);
+#pragma warning restore CS0618 // Type or member is obsolete only for external dependency.
             error.Info[IotHubAmqpProperty.TrackingId] = trackingId;
 
             return error;

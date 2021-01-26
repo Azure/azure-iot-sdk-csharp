@@ -36,6 +36,10 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public const string To = "to";
 
+        /// <summary>
+        /// The number of times a message can transition between the Enqueued and Invisible states.
+        /// After the maximum number of transitions, the IoT hub sets the state of the message to dead-lettered.
+        /// For more information, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>
         /// </summary>
         public const string DeliveryCount = "iothub-deliverycount";
 
@@ -98,8 +102,14 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public const string ConnectionDeviceGenerationId = "iothub-connection-auth-generation-id";
 
+        /// <summary>
+        /// The connection authentication method value is ignored for cloud-to-device messages.
+        /// </summary>
         public const string ConnectionAuthMethod = "iothub-connection-auth-method";
 
+        /// <summary>
+        /// The message schema is set internally by IoTHub when it generates Twin Change notification message.
+        /// </summary>
         public const string MessageSchema = "iothub-message-schema";
 
         /// <summary>
