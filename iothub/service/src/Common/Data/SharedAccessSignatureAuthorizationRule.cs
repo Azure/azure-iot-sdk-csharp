@@ -53,11 +53,6 @@ namespace Microsoft.Azure.Devices.Common.Data
         [JsonProperty(PropertyName = "rights")]
         public AccessRights Rights { get; set; }
 
-        /// <summary>
-        /// Evaluates if two <see cref="SharedAccessSignatureAuthorizationRule"/> objects have the same shared access policies and keys.
-        /// </summary>
-        /// <param name="other">The <see cref="SharedAccessSignatureAuthorizationRule"/> object to compare the current <see cref="SharedAccessSignatureAuthorizationRule"/> to.</param>
-        /// <returns></returns>
         public bool Equals(SharedAccessSignatureAuthorizationRule other)
         {
             if (other == null)

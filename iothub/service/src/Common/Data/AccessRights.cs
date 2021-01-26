@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Common.Data
 
         /// <summary>
         /// Grants access to device facing endpoints.
-        /// It grants permission to send device-to-cloud messages and receive cloud-to-device, perform file upload from a device, receive device twin
+        /// It grants permission to send device-to-cloud messages, receive cloud-to-device messages, perform file upload from a device, receive device twin
         /// desired property notifications and update device twin reported properties.
         /// </summary>
         DeviceConnect = 8
