@@ -1,72 +1,61 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Common.Client;
+
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Amqp.Framing;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Client;
-
     internal static class AmqpErrorMapper
     {
         private const int MaxSizeInInfoMap = 32 * 1024;
 
         public static Tuple<string, string, string> GenerateError(Exception ex)
         {
-            if (ex is DeviceNotFoundException)
+            if (ex is DeviceNotFoundException deviceNotFoundException)
             {
-                var deviceNotFoundException = (DeviceNotFoundException)ex;
                 return Tuple.Create(AmqpErrorCode.NotFound.ToString(), deviceNotFoundException.Message, deviceNotFoundException.TrackingId);
             }
 
-            if (ex is DeviceAlreadyExistsException)
+            if (ex is DeviceAlreadyExistsException deviceAlreadyExistsException)
             {
-                var deviceAlreadyExistsException = (DeviceAlreadyExistsException)ex;
                 return Tuple.Create(IotHubAmqpErrorCode.DeviceAlreadyExists.ToString(), deviceAlreadyExistsException.Message, deviceAlreadyExistsException.TrackingId);
             }
 
-            if (ex is IotHubThrottledException)
+            if (ex is IotHubThrottledException deviceContainerThrottledException)
             {
-                var deviceContainerThrottledException = (IotHubThrottledException)ex;
                 return Tuple.Create(IotHubAmqpErrorCode.DeviceContainerThrottled.ToString(), deviceContainerThrottledException.Message, deviceContainerThrottledException.TrackingId);
             }
 
-            if (ex is QuotaExceededException)
+            if (ex is QuotaExceededException quotaExceededException)
             {
-                var quotaExceededException = (QuotaExceededException)ex;
                 return Tuple.Create(IotHubAmqpErrorCode.QuotaExceeded.ToString(), quotaExceededException.Message, quotaExceededException.TrackingId);
             }
 
-            if (ex is DeviceMessageLockLostException)
+            if (ex is DeviceMessageLockLostException messageLockLostException)
             {
-                var messageLockLostException = (DeviceMessageLockLostException)ex;
                 return Tuple.Create(IotHubAmqpErrorCode.MessageLockLostError.ToString(), messageLockLostException.Message, messageLockLostException.TrackingId);
             }
 
-            if (ex is MessageTooLargeException)
+            if (ex is MessageTooLargeException deviceMessageTooLargeException)
             {
-                var deviceMessageTooLargeException = (MessageTooLargeException)ex;
                 return Tuple.Create(AmqpErrorCode.MessageSizeExceeded.ToString(), deviceMessageTooLargeException.Message, deviceMessageTooLargeException.TrackingId);
             }
 
-            if (ex is DeviceMaximumQueueDepthExceededException)
+            if (ex is DeviceMaximumQueueDepthExceededException queueDepthExceededException)
             {
-                var queueDepthExceededException = (DeviceMaximumQueueDepthExceededException)ex;
                 return Tuple.Create(AmqpErrorCode.ResourceLimitExceeded.ToString(), queueDepthExceededException.Message, queueDepthExceededException.TrackingId);
             }
 
-            if (ex is PreconditionFailedException)
+            if (ex is PreconditionFailedException preconditionFailedException)
             {
-                var preconditionFailedException = (PreconditionFailedException)ex;
                 return Tuple.Create(IotHubAmqpErrorCode.PreconditionFailed.ToString(), preconditionFailedException.Message, preconditionFailedException.TrackingId);
             }
 
-            if (ex is IotHubSuspendedException)
+            if (ex is IotHubSuspendedException iotHubSuspendedException)
             {
-                var iotHubSuspendedException = (IotHubSuspendedException)ex;
                 return Tuple.Create(IotHubAmqpErrorCode.IotHubSuspended.ToString(), iotHubSuspendedException.Message, iotHubSuspendedException.TrackingId);
             }
 
@@ -96,12 +85,14 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
                 throw new ArgumentNullException(nameof(exception));
             }
 
-            Error error = new Error();
-            error.Description = exception.Message;
+            var error = new Error
+            {
+                Description = exception.Message
+            };
 
             if (exception is AmqpException)
             {
-                AmqpException amqpException = (AmqpException)exception;
+                var amqpException = (AmqpException)exception;
                 error.Condition = amqpException.Error.Condition;
                 error.Info = amqpException.Error.Info;
             }
@@ -185,15 +176,13 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
                 }
 
                 // error.Info came from AmqpExcpetion then it contains StackTraceName already.
-                string dummy;
-                if (!error.Info.TryGetValue(IotHubAmqpProperty.StackTraceName, out dummy))
+                if (!error.Info.TryGetValue(IotHubAmqpProperty.StackTraceName, out string _))
                 {
                     error.Info.Add(IotHubAmqpProperty.StackTraceName, stackTrace);
                 }
             }
 
-            string trackingId;
-            error.Info.TryGetValue(IotHubAmqpProperty.TrackingId, out trackingId);
+            error.Info.TryGetValue(IotHubAmqpProperty.TrackingId, out string trackingId);
             trackingId = TrackingHelper.CheckAndAddGatewayIdToTrackingId(trackingId);
             error.Info[IotHubAmqpProperty.TrackingId] = trackingId;
 
@@ -202,7 +191,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         public static Exception GetExceptionFromOutcome(Outcome outcome)
         {
-            Exception retException = null;
+            Exception retException;
             if (outcome == null)
             {
                 retException = new IotHubException("Unknown error.");
@@ -212,7 +201,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             if (outcome.DescriptorCode == Rejected.Code)
             {
                 var rejected = (Rejected)outcome;
-                retException = AmqpErrorMapper.ToIotHubClientContract(rejected.Error);
+                retException = ToIotHubClientContract(rejected.Error);
             }
             else if (outcome.DescriptorCode == Released.Code)
             {
@@ -308,9 +297,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
                 retException = new IotHubException(message);
             }
 
-            if (trackingId != null && retException is IotHubException)
+            if (trackingId != null && retException is IotHubException exception)
             {
-                IotHubException iotHubException = (IotHubException)retException;
+                IotHubException iotHubException = exception;
                 iotHubException.TrackingId = trackingId;
             }
             return retException;

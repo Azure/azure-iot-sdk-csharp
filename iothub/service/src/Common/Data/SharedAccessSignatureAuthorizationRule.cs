@@ -1,11 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Common.Data
 {
-    public sealed class SharedAccessSignatureAuthorizationRule : IEquatable<SharedAccessSignatureAuthorizationRule>
+    /// <summary>
+    /// A shared access signature based authorization rule for authenticating requests against an IoT Hub.
+    /// </summary>
+    internal sealed class SharedAccessSignatureAuthorizationRule : IEquatable<SharedAccessSignatureAuthorizationRule>
     {
         private string _primaryKey;
         private string _secondaryKey;
@@ -13,6 +17,9 @@ namespace Microsoft.Azure.Devices.Common.Data
         [JsonProperty(PropertyName = "keyName")]
         public string KeyName { get; set; }
 
+        /// <summary>
+        /// The primary key associated with the shared access policy.
+        /// </summary>
         [JsonProperty(PropertyName = "primaryKey")]
         public string PrimaryKey
         {
@@ -25,6 +32,9 @@ namespace Microsoft.Azure.Devices.Common.Data
             }
         }
 
+        /// <summary>
+        /// The secondary key associated with the shared access policy.
+        /// </summary>
         [JsonProperty(PropertyName = "secondaryKey")]
         public string SecondaryKey
         {
@@ -37,9 +47,17 @@ namespace Microsoft.Azure.Devices.Common.Data
             }
         }
 
+        /// <summary>
+        /// The name of the shared access policy that will be used to grant permission to IoT Hub endpoints.
+        /// </summary>
         [JsonProperty(PropertyName = "rights")]
         public AccessRights Rights { get; set; }
 
+        /// <summary>
+        /// Evaluates if two <see cref="SharedAccessSignatureAuthorizationRule"/> objects have the same shared access policies and keys.
+        /// </summary>
+        /// <param name="other">The <see cref="SharedAccessSignatureAuthorizationRule"/> object to compare the current <see cref="SharedAccessSignatureAuthorizationRule"/> to.</param>
+        /// <returns></returns>
         public bool Equals(SharedAccessSignatureAuthorizationRule other)
         {
             if (other == null)
@@ -55,6 +73,7 @@ namespace Microsoft.Azure.Devices.Common.Data
             return equals;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             return Equals(obj as SharedAccessSignatureAuthorizationRule);

@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Common.Security
     /// <summary>
     /// Credential interface used for authentication and authorization.
     /// </summary>
-    public interface ISharedAccessSignatureCredential
+    internal interface ISharedAccessSignatureCredential
     {
         /// <summary>
         /// Indicates if the token has expired.
