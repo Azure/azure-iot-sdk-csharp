@@ -13,17 +13,20 @@ namespace Microsoft.Azure.Devices
     [JsonConverter(typeof(StringEnumConverter))]
     public enum DeviceJobType
     {
+        /// <summary>
+        /// Unknown job type.
+        /// </summary>
         [EnumMember(Value = "unknown")]
         Unknown = 0,
 
         /// <summary>
-        /// Schedule direct request job type
+        /// Schedule direct method job type.
         /// </summary>
         [EnumMember(Value = "scheduleDeviceMethod")]
         ScheduleDeviceMethod = 1,
 
         /// <summary>
-        /// Schedule update twin job type
+        /// Schedule update twin job type.
         /// </summary>
         [EnumMember(Value = "scheduleUpdateTwin")]
         ScheduleUpdateTwin = 2

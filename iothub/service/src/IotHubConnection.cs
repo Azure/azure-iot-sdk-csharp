@@ -26,7 +26,9 @@ namespace Microsoft.Azure.Devices
 {
     internal sealed class IotHubConnection : IDisposable
     {
+#if NET451
         private const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
+#endif
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan s_refreshTokenRetryInterval = TimeSpan.FromSeconds(30);

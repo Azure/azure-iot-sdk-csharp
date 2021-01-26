@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         /// Updates the specified connection string builder with policy name and token
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">The connection string builder to update</param>
-        /// <returns>The updated connection string builder</returns>
+        /// <returns>The populated connection string builder object.</returns>
         public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             if (iotHubConnectionStringBuilder == null)
