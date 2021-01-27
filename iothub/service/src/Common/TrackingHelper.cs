@@ -13,10 +13,18 @@ namespace Microsoft.Azure.Devices.Common
     using Microsoft.Azure.Devices.Common.Client;
     using Microsoft.Azure.Devices.Common.Exceptions;
 
-    //TrackingId format is GUID[-G:<GatewayId>][-B:<BackendId>][-P:<PartitionId>]-TimeStamp:<Timestamp>
-
+    /// <summary>
+    /// Generates tracking Id with gateway, backend, partition and timestamp data.
+    /// </summary>
+    /// <remarks>
+    /// Tracking Id format is [GUID][-G:GatewayId][-B:BackendId][-P:PartitionId][-TimeStamp:Timestamp]
+    /// </remarks>
+    [Obsolete("This is for internal use only. SDK will not support this for external usage.")]
     public static class TrackingHelper
     {
+        /// <summary>
+        /// Gateway Id.
+        /// </summary>
         [SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible", Justification = "This property may be used by others so it is not safe to modify it.")]
         public static string GatewayId;
 
@@ -25,17 +33,32 @@ namespace Microsoft.Azure.Devices.Common
         private const string PartitionPrefix = "-P:";
         private const string TimeStampPrefix = "-TimeStamp:";
 
+        /// <summary>
+        /// Generates a tracking Id. Not used.
+        /// </summary>
+        /// <returns>A tracking Id.</returns>
         public static string GenerateTrackingId()
         {
             return GenerateTrackingId(string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Generates a tracking Id. Not used.
+        /// </summary>
+        /// <returns>A tracking Id.</returns>
         public static string GenerateTrackingId(string backendId, string partitionId)
         {
             string gatewayId = GatewayId;
             return GenerateTrackingId(gatewayId, backendId, partitionId);
         }
 
+        /// <summary>
+        /// Generates a unique tracking Id with gateway, backend, partition and timestamp information.
+        /// </summary>
+        /// <returns>A tracking Id.</returns>
+        /// <remarks>
+        /// Tracking Id format is [GUID][-G:GatewayId][-B:BackendId][-P:PartitionId][-TimeStamp:Timestamp]
+        /// </remarks>
         public static string GenerateTrackingId(string gatewayId, string backendId, string partitionId)
         {
             string trackingId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
@@ -73,16 +96,28 @@ namespace Microsoft.Azure.Devices.Common
             return trackingId;
         }
 
+        /// <summary>
+        /// Generates a tracking Id. Not used.
+        /// </summary>
+        /// <returns>A tracking Id.</returns>
         public static string GenerateTrackingId(this AmqpException exception)
         {
             return exception.GenerateTrackingId(TrackingHelper.GatewayId, string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Generates a tracking Id. Not used.
+        /// </summary>
+        /// <returns>A tracking Id.</returns>
         public static string GenerateTrackingId(this AmqpException exception, string backendId, string partitionId)
         {
             return exception.GenerateTrackingId(TrackingHelper.GatewayId, backendId, partitionId);
         }
 
+        /// <summary>
+        /// Generates a tracking Id. Not used.
+        /// </summary>
+        /// <returns>A tracking Id.</returns>
         public static string GenerateTrackingId(this AmqpException exception, string gatewayId, string backendId, string partitionId)
         {
             if (exception.Error.Info == null)
@@ -99,6 +134,9 @@ namespace Microsoft.Azure.Devices.Common
             return trackingId;
         }
 
+        /// <summary>
+        /// Sets error code from AMQP exception. Not used.
+        /// </summary>
         public static void SetErrorCode(this AmqpException exception)
         {
             if (exception.Error.Info == null)
@@ -113,6 +151,11 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
+        /// <summary>
+        /// Generates a tracking Id with gateway details if not already there in the tracking Id.
+        /// </summary>
+        /// <param name="trackingId">Tracking Id.</param>
+        /// <returns>A tracking Id with gateway details.</returns>
         public static string CheckAndAddGatewayIdToTrackingId(string trackingId)
         {
             if (!string.IsNullOrEmpty(trackingId)
@@ -133,6 +176,10 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
+        /// <summary>
+        /// Generates a tracking Id. Not used.
+        /// </summary>
+        /// <returns>A tracking Id.</returns>
         public static string GetTrackingId(this AmqpException amqpException)
         {
             Error errorObj = amqpException.Error;
@@ -144,6 +191,10 @@ namespace Microsoft.Azure.Devices.Common
             return trackingId;
         }
 
+        /// <summary>
+        /// Generates a tracking Id. Not used.
+        /// </summary>
+        /// <returns>A tracking Id.</returns>
         public static string GetGatewayId(this AmqpLink link)
         {
             string gatewayId = null;
@@ -154,6 +205,10 @@ namespace Microsoft.Azure.Devices.Common
             return gatewayId;
         }
 
+        /// <summary>
+        /// Gets AMQP error code. Not used.
+        /// </summary>
+        /// <returns>Error code.</returns>
         public static ErrorCode GetErrorCodeFromAmqpError(Error ex)
         {
             if (ex == null)

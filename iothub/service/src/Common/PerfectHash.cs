@@ -7,8 +7,16 @@ using System.Text;
 
 namespace Microsoft.Azure.Devices.Common
 {
+    /// <summary>
+    /// Generates hash values of a string.
+    /// </summary>
     public static class PerfectHash
     {
+        /// <summary>
+        /// Computes a long hash from the input data.
+        /// </summary>
+        /// <param name="data">Input data.</param>
+        /// <returns>Long hash computed from the input data.</returns>
         public static long HashToLong(string data)
         {
             if (data == null) { throw new ArgumentNullException(nameof(data), "The data string cannot be null."); }
@@ -17,12 +25,17 @@ namespace Microsoft.Azure.Devices.Common
 
             string upper = data.ToUpper(CultureInfo.InvariantCulture);
 
-            PerfectHash.ComputeHash(ASCIIEncoding.ASCII.GetBytes(upper), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
+            ComputeHash(Encoding.ASCII.GetBytes(upper), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
             long hashedValue = ((long)hash1 << 32) | (long)hash2;
 
             return hashedValue;
         }
 
+        /// <summary>
+        /// Computes a short hash from the input data.
+        /// </summary>
+        /// <param name="data">Input data.</param>
+        /// <returns>Short hash computed from the input data.</returns>
         public static short HashToShort(string data)
         {
             if (data == null) { throw new ArgumentNullException(nameof(data), "The data string cannot be null."); }
@@ -32,13 +45,13 @@ namespace Microsoft.Azure.Devices.Common
 
             string upper = data.ToUpper(CultureInfo.InvariantCulture);
 
-            PerfectHash.ComputeHash(ASCIIEncoding.ASCII.GetBytes(upper), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
+            ComputeHash(Encoding.ASCII.GetBytes(upper), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
             long hashedValue = hash1 ^ hash2;
 
             return (short)hashedValue;
         }
 
-        // Perfect hashing implementation. source: distributed cache team
+        // Perfect hashing implementation. Source: distributed cache team.
         private static void ComputeHash(byte[] data, uint seed1, uint seed2, out uint hash1, out uint hash2)
         {
             uint a, b, c;
