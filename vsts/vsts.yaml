@@ -251,6 +251,7 @@ jobs:
         inputs:
           EnableServices: true
           SignatureFreshness: OneDay
+          TreatStaleSignatureAs: Warning
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
         displayName: "Run AutoApplicability"
