@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Common.Security
     /// <summary>
     /// A shared access signature, which can be used for authorization to an IoT Hub.
     /// </summary>
-    public sealed class SharedAccessSignature : ISharedAccessSignatureCredential
+    internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
         private readonly string _encodedAudience;
         private readonly string _expiry;
