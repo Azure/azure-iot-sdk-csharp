@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Representation of a single Device Provisioning Service device registration operation error.
     /// </summary>
     /// <remarks>
-    /// This error is returned as a result of the 
+    /// This error is returned as a result of the
     ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, System.Collections.Generic.IEnumerable{IndividualEnrollment})"/>
     ///     as part of the <see cref="BulkEnrollmentOperationResult"/>.
     /// </remarks>
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_002: [The BulkEnrollmentOperationError shall store the provided information.] */
 
         /// <summary>
-        /// Registration ID.
+        /// Registration Id.
         /// </summary>
         /// <remarks>
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
@@ -45,11 +45,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             private set
             {
-                /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_001: [The BulkEnrollmentOperationError shall throws JsonSerializationException if the 
+                /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_001: [The BulkEnrollmentOperationError shall throws JsonSerializationException if the
                                                     provided registrationId is null, empty, or invalid.] */
                 _registrationId = value;
             }
         }
+
         private string _registrationId;
 
         /// <summary>

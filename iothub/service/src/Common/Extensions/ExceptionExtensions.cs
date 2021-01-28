@@ -163,10 +163,10 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         /// <summary>
-        /// Gets the exception ID from the given exception.
+        /// Gets the exception Id from the given exception.
         /// </summary>
         /// <param name="exception">The exception.</param>
-        /// <returns>The exception ID.</returns>
+        /// <returns>The exception Id.</returns>
         public static string GetReferenceCode(this Exception exception)
         {
             return exception.Data != null && exception.Data.Contains(ExceptionIdentifierName)

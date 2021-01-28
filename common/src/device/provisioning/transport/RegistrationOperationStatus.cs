@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// Initializes a new instance of the RegistrationOperationStatus
         /// class.
         /// </summary>
-        /// <param name="operationId">Operation ID.</param>
+        /// <param name="operationId">Operation Id.</param>
         /// <param name="status">Device enrollment status. Possible values
         /// include: 'unassigned', 'assigning', 'assigned', 'failed',
         /// 'disabled'</param>
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets operation ID.
+        /// Gets or sets operation Id.
         /// </summary>
         [JsonProperty(PropertyName = "operationId")]
         public string OperationId { get; set; }

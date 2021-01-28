@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Device ID
+        /// Device Id
         /// </summary>
         [JsonProperty(PropertyName = "deviceId")]
         public string Id { get; internal set; }

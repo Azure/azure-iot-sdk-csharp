@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         /// <param name="jobId">The Id of the job whose details are unavailable on IoT Hub.</param>
         public JobNotFoundException(string jobId)
-            : base($"Job with ID '{jobId}' not found")
+            : base($"Job with Id '{jobId}' not found")
         {
         }
 

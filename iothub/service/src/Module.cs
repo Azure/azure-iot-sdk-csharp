@@ -37,19 +37,19 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Module ID
+        /// Module Id
         /// </summary>
         [JsonProperty(PropertyName = "moduleId")]
         public string Id { get; internal set; }
 
         /// <summary>
-        /// Device ID
+        /// Device Id
         /// </summary>
         [JsonProperty(PropertyName = "deviceId")]
         public string DeviceId { get; internal set; }
 
         /// <summary>
-        /// Modules's Generation ID
+        /// Modules's Generation Id
         /// </summary>
         [JsonProperty(PropertyName = "generationId")]
         public string GenerationId { get; internal set; }

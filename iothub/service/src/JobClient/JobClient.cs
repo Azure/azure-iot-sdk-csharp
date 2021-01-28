@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing) {}
+        protected virtual void Dispose(bool disposing) { }
 
         /// <summary>
         /// Explicitly open the JobClient instance.
@@ -65,20 +65,19 @@ namespace Microsoft.Azure.Devices
         public abstract Task CloseAsync();
 
         /// <summary>
-        /// Gets the job with the specified ID.
+        /// Gets the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the Job to retrieve</param>
         /// <returns>The matching JobResponse object</returns>
         public abstract Task<JobResponse> GetJobAsync(string jobId);
 
         /// <summary>
-        /// Gets the job with the specified ID.
+        /// Gets the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the job to retrieve</param>
         /// <param name="cancellationToken">Task cancellation token</param>
         /// <returns>The matching JobResponse object</returns>
         public abstract Task<JobResponse> GetJobAsync(string jobId, CancellationToken cancellationToken);
-
 
         /// <summary>
         /// Get IQuery through which job responses for all job types and statuses are retrieved page by page
@@ -112,13 +111,13 @@ namespace Microsoft.Azure.Devices
         public abstract IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus, int? pageSize);
 
         /// <summary>
-        /// Cancels/Deletes the job with the specified ID.
+        /// Cancels/Deletes the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the Job to cancel</param>
         public abstract Task<JobResponse> CancelJobAsync(string jobId);
 
         /// <summary>
-        /// Cancels/Deletes the job with the specified ID.
+        /// Cancels/Deletes the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the job to cancel</param>
         /// <param name="cancellationToken">Task cancellation token</param>

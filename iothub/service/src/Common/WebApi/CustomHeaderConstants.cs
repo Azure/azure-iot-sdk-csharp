@@ -10,15 +10,15 @@ namespace Microsoft.Azure.Devices.Common.WebApi
     {
         /// <summary>
         /// Used in message responses and feedback
-        /// Specifies the tracing correlation Id for the request; the resource provider *must* log this 
-        /// so that end-to-end requests can be correlated across Azure. 
+        /// Specifies the tracing correlation Id for the request; the resource provider *must* log this
+        /// so that end-to-end requests can be correlated across Azure.
         /// </summary>
         public const string CorrelationId = "iothub-correlationid";
 
         /// <summary>
-        /// [Required for two way requests] Used to correlate two-way communication. 
+        /// [Required for two way requests] Used to correlate two-way communication.
         /// Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars
-        ///  + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}. 
+        ///  + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
         /// Non-alphanumeric characters are from URN RFC.
         /// </summary>
         public const string MessageId = "iothub-messageid";
@@ -55,29 +55,29 @@ namespace Microsoft.Azure.Devices.Common.WebApi
         public const string UserId = "iothub-userid";
 
         /// <summary>
-        /// [Optional] Used to specify the role of the message in the communication pattern. 
-        /// Possible values: 
-        ///     “d2c”: telemetry message (device to cloud) 
-        ///     “c2d”: notification 
-        ///     “d2creq”: inquiry request 
-        ///     “d2cres”: inquiry response 
-        ///     “c2dreq”: command request 
+        /// [Optional] Used to specify the role of the message in the communication pattern.
+        /// Possible values:
+        ///     “d2c”: telemetry message (device to cloud)
+        ///     “c2d”: notification
+        ///     “d2creq”: inquiry request
+        ///     “d2cres”: inquiry response
+        ///     “c2dreq”: command request
         ///     “c2dres”: command response
         /// </summary>
         public const string Operation = "iothub-operation";
 
         /// <summary>
-        /// [Optional] Used to specify the feedback required for the consumption of the message by the device. 
-        /// Possible values: 
-        ///     “none”: no feedback 
-        ///     “positive”: receive a feedback message if the message was consumed 
-        ///     “negative”: receive a feedback message if the message expired without being completed by the device 
+        /// [Optional] Used to specify the feedback required for the consumption of the message by the device.
+        /// Possible values:
+        ///     “none”: no feedback
+        ///     “positive”: receive a feedback message if the message was consumed
+        ///     “negative”: receive a feedback message if the message expired without being completed by the device
         ///     “full”: both positive and negative
         /// </summary>
         public const string Ack = "iothub-ack";
 
         /// <summary>
-        /// The lock token of the retrieved message 
+        /// The lock token of the retrieved message
         /// </summary>
         public const string MessageLockToken = "iothub-messagelocktoken";
 
@@ -108,26 +108,26 @@ namespace Microsoft.Azure.Devices.Common.WebApi
 
         /// <summary>
         /// x-ms-client-ip-address
-        /// Set to the client IP address used in the request; this is required since the resource provider 
+        /// Set to the client IP address used in the request; this is required since the resource provider
         /// will not have access to the client IP.
         /// </summary>
         public const string ClientIpAddress = "x-ms-client-ip-address";
 
         /// <summary>
         /// x-ms-client-principal-name
-        /// Set to the principal ID / UPN of the client JWT making the request.
+        /// Set to the principal Id / UPN of the client JWT making the request.
         /// </summary>
         public const string PrincipalName = "x-ms-client-principal-name";
 
         /// <summary>
         /// x-ms-client-tenant-id
-        /// Set to the tenant ID of the client JWT making the request.
+        /// Set to the tenant Id of the client JWT making the request.
         /// </summary>
         public const string ClientTenantId = "x-ms-client-tenant-id";
 
         /// <summary>
         /// x-ms-client-audience
-        /// Set to the tenant ID of the client JWT making the request.
+        /// Set to the tenant Id of the client JWT making the request.
         /// </summary>
         public const string ClientAudience = "x-ms-client-audience";
 
@@ -151,11 +151,11 @@ namespace Microsoft.Azure.Devices.Common.WebApi
 
         /// <summary>
         /// x-ms-client-request-id
-        /// Caller-specified request ID, in the form of a GUID with no decoration such as curly braces 
-        /// (e.g. client-request-id: 9C4D50EE-2D56-4CD3-8152-34347DC9F2B0). 
-        /// A caller-defined value that identifies the given request.   If specified, this will be 
-        /// included in response information as a way to map the request. 
-        /// If the caller provides this header – the resource provider *must* log this with their 
+        /// Caller-specified request Id, in the form of a GUID with no decoration such as curly braces
+        /// (e.g. client-request-id: 9C4D50EE-2D56-4CD3-8152-34347DC9F2B0).
+        /// A caller-defined value that identifies the given request.   If specified, this will be
+        /// included in response information as a way to map the request.
+        /// If the caller provides this header – the resource provider *must* log this with their
         /// traces to facilitate tracing a single request.
         /// </summary>
         public const string ClientRequestId = "x-ms-client-request-id";

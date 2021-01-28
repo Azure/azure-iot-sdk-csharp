@@ -34,13 +34,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <summary>
         /// Initializes a new instance of the SecurityProviderTpmHsm class using the system TPM.
         /// </summary>
-        /// <param name="registrationId">The Device Provisioning Service Registration ID.</param>
+        /// <param name="registrationId">The Device Provisioning Service Registration Id.</param>
         public SecurityProviderTpmHsm(string registrationId) : this(registrationId, CreateDefaultTpm2Device()) { }
 
         /// <summary>
         /// Initializes a new instance of the SecurityProviderTpmHsm class using the specified TPM module.
         /// </summary>
-        /// <param name="registrationId">The Device Provisioning Service Registration ID.</param>
+        /// <param name="registrationId">The Device Provisioning Service Registration Id.</param>
         /// <param name="tpm">The TPM device.</param>
         public SecurityProviderTpmHsm(string registrationId, Tpm2Device tpm) : base(registrationId)
         {

@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Common
         /// Format string to be displayed as an error.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="activityId">The activity ID.</param>
+        /// <param name="activityId">The activity Id.</param>
         /// <param name="errorCode">The error code.</param>
         /// <returns>A copy of format in which the format item or items have been replaced by the string representation of arg0.</returns>
         public static string FormatErrorForUser(this string message, string activityId, int errorCode)

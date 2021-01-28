@@ -1,6 +1,5 @@
-﻿// ---------------------------------------------------------------
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// ---------------------------------------------------------------
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
 
@@ -12,7 +11,7 @@ namespace Microsoft.Azure.Devices
     public sealed class PurgeMessageQueueResult
     {
         /// <summary>
-        /// The ID of the device whose messages are being purged.
+        /// The Id of the device whose messages are being purged.
         /// </summary>
         [JsonProperty(PropertyName = "deviceId", Required = Required.Always)]
         public string DeviceId { get; set; }

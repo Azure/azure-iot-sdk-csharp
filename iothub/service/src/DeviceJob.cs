@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+using System;
+
 namespace Microsoft.Azure.Devices
 {
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-
-    using System;
-
     /// <summary>
     /// Contains DeviceJob properties and their accessors.
     /// </summary>
     public class DeviceJob
     {
         /// <summary>
-        /// Device ID
+        /// Device Id
         /// </summary>
         [JsonProperty(PropertyName = "deviceId", NullValueHandling = NullValueHandling.Ignore)]
         public string DeviceId { get; set; }
