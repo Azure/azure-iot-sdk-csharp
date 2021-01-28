@@ -9,15 +9,27 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Common
 {
+    /// <summary>
+    /// URL encoded serializer for message properties.
+    /// </summary>
     public class UrlEncodedDictionarySerializer
     {
+        /// <summary>
+        /// The character that separates the name and value of a property.
+        /// </summary>
         public const char KeyValueSeparator = '=';
+
+        /// <summary>
+        /// The character that separates different properties.
+        /// </summary>
         public const char PropertySeparator = '&';
-        public const char NotAllowedCharacter = '/';
+
+        /// <summary>
+        /// The length of property separator string.
+        /// </summary>
         public const int PropertySeparatorLength = 1;
 
-        //We assume that in avarage 20% of string are the encoded characters.
-        //We can make a better estimation though.
+        // We assume that in average 20% of strings are the encoded characters.
         private const float EncodedSymbolsFactor = 1.2f;
 
         private readonly IDictionary<string, string> output;
@@ -29,14 +41,14 @@ namespace Microsoft.Azure.Devices.Client.Common
             int startIndex)
         {
             this.output = output;
-            this.tokenizer = new Tokenizer(value, startIndex);
+            tokenizer = new Tokenizer(value, startIndex);
         }
 
         private void Deserialize()
         {
             string key = null;
 
-            foreach (Token token in this.tokenizer.GetTokens())
+            foreach (Token token in tokenizer.GetTokens())
             {
                 if (token.Type == TokenType.Key)
                 {
@@ -44,11 +56,17 @@ namespace Microsoft.Azure.Devices.Client.Common
                 }
                 if (token.Type == TokenType.Value)
                 {
-                    this.output[key] = token.Value;
+                    output[key] = token.Value;
                 }
             }
         }
 
+        /// <summary>
+        /// Deserialize the string of properties to a dictionary.
+        /// </summary>
+        /// <param name="value">Value to deserialize.</param>
+        /// <param name="startIndex">Index in the value to deserialize from.</param>
+        /// <returns>Deserialized dictionary of properties.</returns>
         public static Dictionary<string, string> Deserialize(string value, int startIndex)
         {
             var properties = new Dictionary<string, string>();
@@ -56,6 +74,13 @@ namespace Microsoft.Azure.Devices.Client.Common
             return properties;
         }
 
+        /// <summary>
+        /// Deserialize the string of properties to a dictionary.
+        /// </summary>
+        /// <param name="value">Value to deserialize.</param>
+        /// <param name="startIndex">Index in the value to deserialize from.</param>
+        /// <param name="properties">The output dictionary.</param>
+        /// <returns>Deserialized dictionary of properties.</returns>
         public static void Deserialize(string value, int startIndex, IDictionary<string, string> properties)
         {
             if (value == null)
@@ -72,6 +97,11 @@ namespace Microsoft.Azure.Devices.Client.Common
             parser.Deserialize();
         }
 
+        /// <summary>
+        /// Serializes the dictionary to a string with URL encoding.
+        /// </summary>
+        /// <param name="properties">The dictionary to serialize.</param>
+        /// <returns>Serialized(URL encoded) string of properties.</returns>
         public static string Serialize(IEnumerable<KeyValuePair<string, string>> properties)
         {
             IList<KeyValuePair<string, string>> keyValuePairs = properties as IList<KeyValuePair<string, string>> ?? properties.ToList();
@@ -95,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                 propertiesCount++;
             }
 
-            //Optimization for most common case: only correlation ID is present
+            //Optimization for most common case: only correlation Id is present
             if (propertiesCount == 1 && firstProperty.HasValue)
             {
                 return firstProperty.Value.Value == null ?
@@ -119,9 +149,19 @@ namespace Microsoft.Azure.Devices.Client.Common
             return propertiesBuilder.Length == 0 ? string.Empty : propertiesBuilder.ToString(0, propertiesBuilder.Length - PropertySeparatorLength);
         }
 
+        /// <summary>
+        /// The token type.
+        /// </summary>
         public enum TokenType
         {
+            /// <summary>
+            /// Property name token.
+            /// </summary>
             Key,
+
+            /// <summary>
+            /// Property value token.
+            /// </summary>
             Value
         }
 
@@ -133,8 +173,8 @@ namespace Microsoft.Azure.Devices.Client.Common
 
             public Token(TokenType tokenType, string value)
             {
-                this.Type = tokenType;
-                this.Value = value == null ? null : Uri.UnescapeDataString(value);
+                Type = tokenType;
+                Value = value == null ? null : Uri.UnescapeDataString(value);
             }
         }
 
@@ -160,12 +200,12 @@ namespace Microsoft.Azure.Devices.Client.Common
             public Tokenizer(string value, int startIndex)
             {
                 this.value = value;
-                this.position = startIndex;
+                position = startIndex;
             }
 
             public IEnumerable<Token> GetTokens()
             {
-                if (this.position >= this.value.Length)
+                if (position >= value.Length)
                 {
                     yield break;
                 }
@@ -174,108 +214,106 @@ namespace Microsoft.Azure.Devices.Client.Common
                 string errorMessage = null;
                 while (!readCompleted)
                 {
-                    switch (this.currentState)
+                    switch (currentState)
                     {
                         case TokenizerState.ReadyToReadKey:
                             {
-                                if (this.position >= this.value.Length)
+                                if (position >= value.Length)
                                 {
-                                    errorMessage = "Unexpected string end in '{0}' state.".FormatInvariant(this.currentState);
-                                    this.currentState = TokenizerState.Error;
+                                    errorMessage = "Unexpected string end in '{0}' state.".FormatInvariant(currentState);
+                                    currentState = TokenizerState.Error;
                                     break;
                                 }
-                                char currentChar = this.value[this.position];
+                                char currentChar = value[position];
                                 switch (currentChar)
                                 {
                                     case '=':
                                     case '&':
-                                        errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, this.currentState);
-                                        this.currentState = TokenizerState.Error;
+                                        errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, currentState);
+                                        currentState = TokenizerState.Error;
                                         break;
 
                                     case '/':
-                                        this.currentState = TokenizerState.Finish;
+                                        currentState = TokenizerState.Finish;
                                         break;
 
                                     default:
                                         readCount++;
-                                        this.currentState = TokenizerState.ReadKey;
+                                        currentState = TokenizerState.ReadKey;
                                         break;
                                 }
                                 break;
                             }
                         case TokenizerState.ReadKey:
                             {
-                                if (this.position >= this.value.Length)
+                                if (position >= value.Length)
                                 {
-                                    yield return this.CreateToken(TokenType.Key, readCount);
-                                    yield return this.CreateToken(TokenType.Value, 0);
+                                    yield return CreateToken(TokenType.Key, readCount);
+                                    yield return CreateToken(TokenType.Value, 0);
                                     readCount = 0;
-                                    this.currentState = TokenizerState.Finish;
+                                    currentState = TokenizerState.Finish;
                                     break;
                                 }
-                                char currentChar = this.value[this.position];
+                                char currentChar = value[position];
                                 switch (currentChar)
                                 {
                                     case '=':
-                                        yield return this.CreateToken(TokenType.Key, readCount);
+                                        yield return CreateToken(TokenType.Key, readCount);
                                         readCount = 0;
-                                        this.currentState = TokenizerState.ReadValue;
+                                        currentState = TokenizerState.ReadValue;
                                         break;
 
                                     case '&':
-                                        yield return this.CreateToken(TokenType.Key, readCount);
-                                        yield return this.CreateToken(TokenType.Value, 0);
+                                        yield return CreateToken(TokenType.Key, readCount);
+                                        yield return CreateToken(TokenType.Value, 0);
                                         readCount = 0;
-                                        this.currentState = TokenizerState.ReadyToReadKey;
+                                        currentState = TokenizerState.ReadyToReadKey;
                                         break;
 
                                     case '/':
-                                        yield return this.CreateToken(TokenType.Key, readCount);
-                                        yield return this.CreateToken(TokenType.Value, 0);
+                                        yield return CreateToken(TokenType.Key, readCount);
+                                        yield return CreateToken(TokenType.Value, 0);
                                         readCount = 0;
-                                        this.currentState = TokenizerState.Finish;
+                                        currentState = TokenizerState.Finish;
                                         break;
 
                                     default:
                                         readCount++;
-                                        //this.currentState = TokenizerState.ReadKey;
                                         break;
                                 }
                                 break;
                             }
                         case TokenizerState.ReadValue:
                             {
-                                if (this.position >= this.value.Length)
+                                if (position >= value.Length)
                                 {
-                                    yield return this.CreateToken(TokenType.Value, readCount);
+                                    yield return CreateToken(TokenType.Value, readCount);
                                     readCount = 0;
-                                    this.currentState = TokenizerState.Finish;
+                                    currentState = TokenizerState.Finish;
                                     break;
                                 }
-                                char currentChar = this.value[this.position];
+                                char currentChar = value[position];
                                 switch (currentChar)
                                 {
                                     case '=':
-                                        errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, this.currentState);
-                                        this.currentState = TokenizerState.Error;
+                                        errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, currentState);
+                                        currentState = TokenizerState.Error;
                                         break;
 
                                     case '&':
-                                        yield return this.CreateToken(TokenType.Value, readCount);
+                                        yield return CreateToken(TokenType.Value, readCount);
                                         readCount = 0;
-                                        this.currentState = TokenizerState.ReadyToReadKey;
+                                        currentState = TokenizerState.ReadyToReadKey;
                                         break;
 
                                     case '/':
-                                        yield return this.CreateToken(TokenType.Value, readCount);
+                                        yield return CreateToken(TokenType.Value, readCount);
                                         readCount = 0;
-                                        this.currentState = TokenizerState.Finish;
+                                        currentState = TokenizerState.Finish;
                                         break;
 
                                     default:
                                         readCount++;
-                                        //this.currentState = TokenizerState.ReadValue;
                                         break;
                                 }
                                 break;
@@ -288,10 +326,10 @@ namespace Microsoft.Azure.Devices.Client.Common
                         default:
                             throw new NotSupportedException();
                     }
-                    this.position++;
+                    position++;
                 }
 
-                if (this.currentState == TokenizerState.Error)
+                if (currentState == TokenizerState.Error)
                 {
                     throw new FormatException(errorMessage);
                 }
@@ -299,7 +337,7 @@ namespace Microsoft.Azure.Devices.Client.Common
 
             private Token CreateToken(TokenType tokenType, int readCount)
             {
-                string tokenValue = readCount == 0 ? null : this.value.Substring(this.position - readCount, readCount);
+                string tokenValue = readCount == 0 ? null : value.Substring(position - readCount, readCount);
 
                 return new Token(tokenType, tokenValue);
             }

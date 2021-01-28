@@ -9,15 +9,11 @@ using System.Text;
 using System.Net;
 
 namespace Microsoft.Azure.Devices.Common.Service.Auth
-{    
+{
     internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
-        private readonly string _shareAccessSignatureName;
-        private readonly string _signature;
-        private readonly string _audience;
         private readonly string _encodedAudience;
         private readonly string _expiry;
-        private readonly string _keyName;
 
         private SharedAccessSignature(string shareAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
         {
@@ -33,51 +29,23 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new UnauthorizedAccessException("The specified SAS token is expired");
             }
 
-            _shareAccessSignatureName = shareAccessSignatureName;
-            _signature = signature;
-            _audience = WebUtility.UrlDecode(encodedAudience);
+            ShareAccessSignatureName = shareAccessSignatureName;
+            Signature = signature;
+            Audience = WebUtility.UrlDecode(encodedAudience);
             _encodedAudience = encodedAudience;
             _expiry = expiry;
-            _keyName = keyName ?? string.Empty;
+            KeyName = keyName ?? string.Empty;
         }
 
-        public string ShareAccessSignatureName
-        {
-            get
-            {
-                return _shareAccessSignatureName;
-            }
-        }
+        public string ShareAccessSignatureName { get; private set; }
 
-        public DateTime ExpiresOn
-        {
-            get;
-            private set;
-        }
+        public DateTime ExpiresOn { get; private set; }
 
-        public string KeyName
-        {
-            get
-            {
-                return _keyName;
-            }
-        }
+        public string KeyName { get; private set; }
 
-        public string Audience
-        {
-            get
-            {
-                return _audience;
-            }
-        }
+        public string Audience { get; private set; }
 
-        public string Signature
-        {
-            get
-            {
-                return _signature;
-            }
-        }
+        public string Signature { get; private set; }
 
         public static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
         {
@@ -116,8 +84,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             }
 
             return new SharedAccessSignature(
-                shareAccessSignatureName, 
-                SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)), 
+                shareAccessSignatureName,
+                SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
                 expiry, keyName, signature, encodedAudience);
         }
 
@@ -155,7 +123,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (sasAuthorizationRule.PrimaryKey != null)
             {
                 string primareyKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
-                if (string.Equals(_signature, primareyKeyComputedSignature, StringComparison.Ordinal))
+                if (string.Equals(Signature, primareyKeyComputedSignature, StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -164,7 +132,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (sasAuthorizationRule.SecondaryKey != null)
             {
                 string secondaryKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
-                if (string.Equals(_signature, secondaryKeyComputedSignature, StringComparison.Ordinal))
+                if (string.Equals(Signature, secondaryKeyComputedSignature, StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -184,10 +152,10 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             {
                 throw new ArgumentNullException(nameof(targetAddress));
             }
-            
+
             string target = targetAddress.Host + targetAddress.AbsolutePath;
 
-            if (!target.StartsWith(_audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
+            if (!target.StartsWith(Audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
             {
                 throw new UnauthorizedAccessException("Invalid target audience");
             }
@@ -222,7 +190,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             {
                 if (!string.IsNullOrEmpty(field))
                 {
-                    string[] fieldParts = field.Split(new string[]{ SharedAccessSignatureConstants.KeyValueSeparator }, StringSplitOptions.None);
+                    string[] fieldParts = field.Split(new string[] { SharedAccessSignatureConstants.KeyValueSeparator }, StringSplitOptions.None);
                     if (string.Equals(fieldParts[0], SharedAccessSignatureConstants.AudienceFieldName, StringComparison.OrdinalIgnoreCase))
                     {
                         // We need to preserve the casing of the escape characters in the audience,

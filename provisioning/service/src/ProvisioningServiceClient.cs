@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the individual enrollment object.
         /// </summary>
-        /// <param name="registrationId">The registration ID.</param>
+        /// <param name="registrationId">The registration Id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         public Task<IndividualEnrollment> GetIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken)

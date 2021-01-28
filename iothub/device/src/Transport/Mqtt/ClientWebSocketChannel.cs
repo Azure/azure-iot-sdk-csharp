@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     /// <summary>
     /// Client websocket channel operations.
     /// </summary>
-    public sealed class ClientWebSocketChannel : AbstractChannel, IDisposable
+    internal class ClientWebSocketChannel : AbstractChannel, IDisposable
     {
         private ClientWebSocket _webSocket;
         private CancellationTokenSource _writeCancellationTokenSource;

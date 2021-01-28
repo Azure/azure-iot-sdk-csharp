@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Registration ID.
+        /// Registration Id.
         /// </summary>
         /// <remarks>
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private string _registrationId;
 
         /// <summary>
-        /// Desired IoT Hub device ID (optional).
+        /// Desired IoT Hub device Id (optional).
         /// </summary>
         [JsonProperty(PropertyName = "deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string DeviceId

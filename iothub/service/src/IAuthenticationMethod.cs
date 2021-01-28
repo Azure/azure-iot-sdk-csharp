@@ -8,6 +8,11 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public interface IAuthenticationMethod
     {
+        /// <summary>
+        /// Populates the necessary data in the builder.
+        /// </summary>
+        /// <param name="iotHubConnectionStringBuilder">The builder object to populate.</param>
+        /// <returns>Populated builder object.</returns>
         IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder);
     }
 }

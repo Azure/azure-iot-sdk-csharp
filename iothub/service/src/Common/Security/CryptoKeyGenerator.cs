@@ -17,7 +17,7 @@ using System.Security.Cryptography;
 namespace Microsoft.Azure.Devices.Common
 {
     /// <summary>
-    /// Utility methods for generating cryptographically secure keys and passwords
+    /// Utility methods for generating cryptographically secure keys and passwords.
     /// </summary>
     static public class CryptoKeyGenerator
     {
@@ -27,10 +27,15 @@ namespace Microsoft.Azure.Devices.Common
 #endif
 
         /// <summary>
-        /// Size of the SHA 512 key
+        /// Size of the SHA 512 key.
         /// </summary>
         public const int Sha512KeySize = 64;
 
+        /// <summary>
+        /// Generate a key with a specified key size.
+        /// </summary>
+        /// <param name="keySize">The size of the key.</param>
+        /// <returns>Byte array representing the key.</returns>
         public static byte[] GenerateKeyBytes(int keySize)
         {
 #if !NET451
@@ -53,16 +58,21 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         /// <summary>
-        /// Generates a key of the specified size
+        /// Generates a key of the specified size.
         /// </summary>
-        /// <param name="keySize">Desired key size</param>
-        /// <returns>A generated key</returns>
+        /// <param name="keySize">Desired key size.</param>
+        /// <returns>A generated key.</returns>
         public static string GenerateKey(int keySize)
         {
             return Convert.ToBase64String(GenerateKeyBytes(keySize));
         }
 
 #if NET451
+        /// <summary>
+        /// Generate a hexadecimal key of the specified size.
+        /// </summary>
+        /// <param name="keySize">Desired key size.</param>
+        /// <returns>A generated hexadecimal key.</returns>        
         public static string GenerateKeyInHex(int keySize)
         {
             var keyBytes = new byte[keySize];
@@ -73,6 +83,10 @@ namespace Microsoft.Azure.Devices.Common
             return BitConverter.ToString(keyBytes).Replace("-", "");
         }
 
+        /// <summary>
+        /// Generate a GUID using random bytes from the framework's cryptograpically strong RNG (Random Number Generator).
+        /// </summary>
+        /// <returns>A cryptographically secure GUID.</returns>
         public static Guid GenerateGuid()
         {
             byte[] bytes = new byte[GuidLength];
@@ -92,11 +106,21 @@ namespace Microsoft.Azure.Devices.Common
                 bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
         }
 
+        /// <summary>
+        /// Generate a unique password with a default length and without converting it to Base64String.
+        /// </summary>
+        /// <returns>A unique password.</returns>
         public static string GeneratePassword()
         {
             return GeneratePassword(DefaultPasswordLength, false);
         }
 
+        /// <summary>
+        /// Generate a unique password with a specific length and a flag to indicate whether to encode the password.
+        /// </summary>
+        /// <param name="length">Desired length of the password.</param>
+        /// <param name="base64Encoding">Encode the password if set to True. False otherwise.</param>
+        /// <returns>A generated password.</returns>
         public static string GeneratePassword(int length, bool base64Encoding)
         {
             var password = Membership.GeneratePassword(length, length / 2);

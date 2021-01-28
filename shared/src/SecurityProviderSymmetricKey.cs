@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Initializes a new instance of the SecurityProviderSymmetricKey class.
         /// </summary>
-        /// <param name="registrationId">The Provisioning service Registration ID for this device.</param>
+        /// <param name="registrationId">The Provisioning service Registration Id for this device.</param>
         /// <param name="primaryKey">The primary key for this device.</param>
         /// <param name="secondaryKey">The secondary key for this device.</param>
         public SecurityProviderSymmetricKey(string registrationId, string primaryKey, string secondaryKey)
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Gets the Registration ID used during device enrollment.
+        /// Gets the Registration Id used during device enrollment.
         /// </summary>
         public override string GetRegistrationID()
         {

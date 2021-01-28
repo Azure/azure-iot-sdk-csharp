@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
         internal string Name { get; private set; }
 
         /// <summary>
-        /// the request ID for the transport layer
+        /// the request Id for the transport layer
         /// </summary>
         internal string RequestId { get; private set; }
 

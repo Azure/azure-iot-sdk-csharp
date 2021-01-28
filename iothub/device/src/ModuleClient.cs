@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (string.IsNullOrWhiteSpace(InternalClient.IotHubConnectionString?.ModuleId))
             {
-                throw new ArgumentException("A valid module ID should be specified to create a ModuleClient");
+                throw new ArgumentException("A valid module Id should be specified to create a ModuleClient");
             }
 
             if (Logging.IsEnabled)

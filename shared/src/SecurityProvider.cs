@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Shared
     public abstract class SecurityProvider : IDisposable
     {
         /// <summary>
-        /// Gets the Registration ID used during device enrollment.
+        /// Gets the Registration Id used during device enrollment.
         /// </summary>
         public abstract string GetRegistrationID();
 

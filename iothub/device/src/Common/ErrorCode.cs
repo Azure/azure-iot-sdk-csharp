@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information. 
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Microsoft.Azure.Devices.Client.Errors
 {
@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Errors
     /// </remarks>
     public enum ErrorCode
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         None = -1,
         OrchestrationStateInvalid = 100,
         OrchestrationRunningOnIotHub = 101,
@@ -23,15 +24,21 @@ namespace Microsoft.Azure.Devices.Client.Errors
         IotHubUpdateFailed = 108,
         InvalidEventHubAccessRight = 109,
 
-        // Bad Request
+        /// <summary>
+        /// Bad Request
+        /// </summary>
         AuthorizationRulesExceededQuota = 200,
+
         InvalidIotHubName = 201,
         InvalidOperationId = 202,
         IotHubNameNotAvailable = 203,
         SystemPropertiesNotAllowed = 204,
 
-        // Internal Error
+        /// <summary>
+        /// Internal Error
+        /// </summary>
         IotHubActivationFailed = 300,
+
         IotHubDeletionFailed = 301,
         IotHubExportFailed = 302,
         IotHubsExportFailed = 303,
@@ -43,10 +50,16 @@ namespace Microsoft.Azure.Devices.Client.Errors
         IotHubStateTransitionNotDefined = 309,
         IotHubInvalidProperties = 310,
 
-        // Not found
+        /// <summary>
+        /// Not found
+        /// </summary>
         KeyNameNotFound = 400,
 
-        //Internal Warning Range 1000-1299
+        /// <summary>
+        /// Internal Warning Range 1000-1299
+        /// </summary>
         WinFabApplicationCleanupNotAttempted = 1000
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

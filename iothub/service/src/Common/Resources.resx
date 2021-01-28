@@ -241,19 +241,19 @@
     <value>Total number of messages on IotHub '{0}' exceeded the allocated quota. Max allowed message count : '{1}', current message count : '{2}'. Send and Receive operations are blocked for this hub until the next UTC day. Consider increasing the units for this hub to increase the quota.</value>
   </data>
   <data name="DeviceNotRegistered" xml:space="preserve">
-    <value>A device with ID '{0}' is not registered.</value>
+    <value>A device with Id '{0}' is not registered.</value>
   </data>
   <data name="DeviceAlreadyExists" xml:space="preserve">
-    <value>A device with ID '{0}' is already registered.</value>
+    <value>A device with Id '{0}' is already registered.</value>
   </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Internal server error.</value>
   </data>
   <data name="DeviceImportError" xml:space="preserve">
-    <value>Import error for device ID '{0}': {1}</value>
+    <value>Import error for device Id '{0}': {1}</value>
   </data>
   <data name="ETagMismatch" xml:space="preserve">
-    <value>ETag mismatch for device ID '{0}'</value>
+    <value>ETag mismatch for device Id '{0}'</value>
   </data>
   <data name="InvalidDeviceLine" xml:space="preserve">
     <value>Invalid device format in line: {0}</value>

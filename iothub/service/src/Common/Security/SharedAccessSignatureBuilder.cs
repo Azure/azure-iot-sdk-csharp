@@ -1,56 +1,77 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+
 namespace Microsoft.Azure.Devices.Common.Security
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Net;
-    using System.Security.Cryptography;
-    using System.Text;
-
+    /// <summary>
+    /// Builds Shared Access Signature (SAS) tokens.
+    /// </summary>
     public sealed class SharedAccessSignatureBuilder
     {
         string key;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SharedAccessSignatureBuilder"/> class.
+        /// </summary>
         public SharedAccessSignatureBuilder()
         {
-            this.TimeToLive = TimeSpan.FromMinutes(20);
+            TimeToLive = TimeSpan.FromMinutes(20);
         }
 
+        /// <summary>
+        /// The shared access policy name.
+        /// </summary>
         public string KeyName { get; set; }
 
+        /// <summary>
+        /// The shared access key value.
+        /// </summary>
         public string Key
         {
-            get
-            {
-                return this.key;
-            }
+            get => key;
 
             set
             {
                 StringValidationHelper.EnsureBase64String(value, "Key");
-                this.key = value;
+                key = value;
             }
         }
 
+        /// <summary>
+        /// The resource Id being accessed.
+        /// </summary>
         public string Target { get; set; }
 
+        /// <summary>
+        /// The time the token expires.
+        /// </summary>
         public TimeSpan TimeToLive { get; set; }
 
+        /// <summary>
+        /// Build a SAS token.
+        /// </summary>
+        /// <returns>SAS token.</returns>
         public string ToSignature()
         {
-            return BuildSignature(this.KeyName, this.Key, this.Target, this.TimeToLive);
+            return BuildSignature(KeyName, Key, Target, TimeToLive);
         }
 
         static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
-            List<string> fields = new List<string>();
-            fields.Add(audience);
-            fields.Add(expiresOn);
+            var fields = new List<string>
+            {
+                audience,
+                expiresOn
+            };
 
             // Example string to be signed:
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
@@ -87,10 +108,8 @@ namespace Microsoft.Azure.Devices.Common.Security
 
         static string Sign(string requestString, string key)
         {
-            using (var hmac = new HMACSHA256(Convert.FromBase64String(key)))
-            {
-                return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
-            }
+            using var hmac = new HMACSHA256(Convert.FromBase64String(key));
+            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
         }
     }
 }

@@ -84,7 +84,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>The Device object with the generated keys and ETags.</returns>
         public abstract Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken);
 
-
         /// <summary>
         /// Register a new module with device in the system
         /// </summary>
@@ -546,14 +545,14 @@ namespace Microsoft.Azure.Devices
         public abstract Task<JobProperties> ImportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets the job with the specified ID.
+        /// Gets the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the Job object to retrieve.</param>
         /// <returns>JobProperties of the job specified by the provided jobId.</returns>
         public abstract Task<JobProperties> GetJobAsync(string jobId);
 
         /// <summary>
-        /// Gets the job with the specified ID.
+        /// Gets the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the Job object to retrieve.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
@@ -574,13 +573,13 @@ namespace Microsoft.Azure.Devices
         public abstract Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Cancels/Deletes the job with the specified ID.
+        /// Cancels/Deletes the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the job to cancel.</param>
         public abstract Task CancelJobAsync(string jobId);
 
         /// <summary>
-        /// Cancels/Deletes the job with the specified ID.
+        /// Cancels/Deletes the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the job to cancel.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
