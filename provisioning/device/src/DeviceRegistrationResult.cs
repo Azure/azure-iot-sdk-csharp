@@ -32,22 +32,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
         }
 
-            /// <summary>
-            /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
-            /// This constructor is exposed to allow serialization and unit testing of applications using this SDK.
-            /// </summary>
-            public DeviceRegistrationResult(
-            string registrationId,
-            DateTime? createdDateTimeUtc,
-            string assignedHub,
-            string deviceId,
-            ProvisioningRegistrationStatusType status,
-            ProvisioningRegistrationSubstatusType substatus,
-            string generationId,
-            DateTime? lastUpdatedDateTimeUtc,
-            int errorCode,
-            string errorMessage,
-            string etag)
+        /// <summary>
+        /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
+        /// This constructor is exposed to allow serialization and unit testing of applications using this SDK.
+        /// </summary>
+        public DeviceRegistrationResult(
+        string registrationId,
+        DateTime? createdDateTimeUtc,
+        string assignedHub,
+        string deviceId,
+        ProvisioningRegistrationStatusType status,
+        ProvisioningRegistrationSubstatusType substatus,
+        string generationId,
+        DateTime? lastUpdatedDateTimeUtc,
+        int errorCode,
+        string errorMessage,
+        string etag)
         {
             RegistrationId = registrationId;
             CreatedDateTimeUtc = createdDateTimeUtc;
@@ -62,22 +62,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             Etag = etag;
         }
 
-            /// <summary>
-			///. Constructor to allow return data
-            /// </summary>
-            public DeviceRegistrationResult(
-            string registrationId,
-            DateTime? createdDateTimeUtc,
-            string assignedHub,
-            string deviceId,
-            ProvisioningRegistrationStatusType status,
-            ProvisioningRegistrationSubstatusType substatus,
-            string generationId,
-            DateTime? lastUpdatedDateTimeUtc,
-            int errorCode,
-            string errorMessage,
-            string etag,
-			string returnData)
+        /// <summary>
+        ///. Constructor to allow return data
+        /// </summary>
+        public DeviceRegistrationResult(
+        string registrationId,
+        DateTime? createdDateTimeUtc,
+        string assignedHub,
+        string deviceId,
+        ProvisioningRegistrationStatusType status,
+        ProvisioningRegistrationSubstatusType substatus,
+        string generationId,
+        DateTime? lastUpdatedDateTimeUtc,
+        int errorCode,
+        string errorMessage,
+        string etag,
+        string returnData)
         {
             RegistrationId = registrationId;
             CreatedDateTimeUtc = createdDateTimeUtc;
@@ -92,6 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             Etag = etag;
             JsonPayload = returnData;
         }
+
         /// <summary>
         /// The registration id.
         /// </summary>
@@ -108,7 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public string AssignedHub { get; protected set; }
 
         /// <summary>
-        /// The Device ID.
+        /// The Device Id.
         /// </summary>
         public string DeviceId { get; protected set; }
 
@@ -123,7 +124,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningRegistrationSubstatusType Substatus { get; protected set; }
 
         /// <summary>
-        /// The generation ID.
+        /// The generation Id.
         /// </summary>
         public string GenerationId { get; protected set; }
 

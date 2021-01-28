@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public bool UpdateHubAssignment { get; set; }
 
         /// <summary>
-        /// When set to true (default), the Device Provisioning Service will migrate the device's data (twin, device capabilities, and device ID) from one IoT hub to another during an IoT hub assignment update.
+        /// When set to true (default), the Device Provisioning Service will migrate the device's data (twin, device capabilities, and device Id) from one IoT hub to another during an IoT hub assignment update.
         /// If set to false, the Device Provisioning Service will reset the device's data to the initial desired configuration stored in the provisioning service's enrollment list.
         /// </summary>
         [JsonProperty(PropertyName = "migrateDeviceData", DefaultValueHandling = DefaultValueHandling.Include)]

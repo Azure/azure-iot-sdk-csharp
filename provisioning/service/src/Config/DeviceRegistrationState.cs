@@ -15,14 +15,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Creates a new instance of <see cref="DeviceRegistrationState"/>
         /// </summary>
-        /// <param name="registrationId">Registration ID</param>
+        /// <param name="registrationId">Registration Id</param>
         public DeviceRegistrationState(string registrationId)
         {
             this.RegistrationId = registrationId;
         }
 
         /// <summary>
-        /// Registration ID.
+        /// Registration Id.
         /// </summary>
         [JsonProperty(PropertyName = "registrationId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string RegistrationId { get; internal set; }
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public string AssignedHub { get; internal set; }
 
         /// <summary>
-        /// Device ID.
+        /// Device Id.
         /// </summary>
         [JsonProperty(PropertyName = "deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string DeviceId { get; internal set; }
@@ -75,5 +75,4 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; internal set; }
     }
-
 }

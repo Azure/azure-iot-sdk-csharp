@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A device with ID &apos;{0}&apos; is already registered..
+        ///   Looks up a localized string similar to A device with Id &apos;{0}&apos; is already registered..
         /// </summary>
         internal static string DeviceAlreadyExists {
             get {
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Import error for device ID &apos;{0}&apos;: {1}.
+        ///   Looks up a localized string similar to Import error for device Id &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string DeviceImportError {
             get {
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A device with ID &apos;{0}&apos; is not registered..
+        ///   Looks up a localized string similar to A device with Id &apos;{0}&apos; is not registered..
         /// </summary>
         internal static string DeviceNotRegistered {
             get {
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ETag mismatch for device ID &apos;{0}&apos;.
+        ///   Looks up a localized string similar to ETag mismatch for device Id &apos;{0}&apos;.
         /// </summary>
         internal static string ETagMismatch {
             get {

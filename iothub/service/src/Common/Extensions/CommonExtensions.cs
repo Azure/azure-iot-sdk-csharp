@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Common
         /// <summary>
         /// Gets the value of the specified key, if present
         /// </summary>
-        /// <param name="map">The dictionary containing the specifed key</param>
+        /// <param name="map">The dictionary containing the specified key</param>
         /// <param name="keyName">The key of the desired value</param>
         /// <returns>The value, if present</returns>
         public static string GetValueOrDefault(this IDictionary<string, string> map, string keyName)
@@ -165,12 +165,10 @@ namespace Microsoft.Azure.Devices.Common
             // {IotHubname}.[env-specific-sub-domain.]IotHub[-int].net
 
             string[] hostNameParts = requestMessage.RequestUri.Host.Split('.');
-            if (hostNameParts.Length < 3)
-            {
-                throw new ArgumentException("Invalid request URI");
-            }
 
-            return hostNameParts[0];
+            return hostNameParts.Length < 3
+                ? throw new ArgumentException("Invalid request URI")
+                : hostNameParts[0];
         }
 
         /// <summary>
@@ -180,30 +178,29 @@ namespace Microsoft.Azure.Devices.Common
         /// <returns>The hub name</returns>
         public static string GetIotHubName(this HttpRequestMessage requestMessage)
         {
-            if (!TryGetIotHubName(requestMessage, out string iotHubName))
-            {
-                throw new ArgumentException("Invalid request URI");
-            }
-
-            return iotHubName;
+            return !TryGetIotHubName(requestMessage, out string iotHubName)
+                ? throw new ArgumentException("Invalid request URI")
+                : iotHubName;
         }
 
 #if NET451
+        /// <summary>
+        /// Get the masked client IP address
+        /// </summary>
+        /// <param name="requestMessage">The HTTP request message.</param>
+        /// <returns>The masked client IP address, if hosted as on OWIN application; otherwise returns null.</returns>
         public static string GetMaskedClientIpAddress(this HttpRequestMessage requestMessage)
         {
             // note that this only works if we are hosted as an OWIN app
             if (requestMessage.Properties.ContainsKey("MS_OwinContext"))
             {
-                OwinContext owinContext = requestMessage.Properties["MS_OwinContext"] as OwinContext;
-                if (owinContext != null)
+                if (requestMessage.Properties["MS_OwinContext"] is OwinContext owinContext)
                 {
                     string remoteIpAddress = owinContext.Request.RemoteIpAddress;
 
                     string maskedRemoteIpAddress = string.Empty;
 
-                    IPAddress remoteIp = null;
-
-                    if (IPAddress.TryParse(remoteIpAddress, out remoteIp))
+                    if (IPAddress.TryParse(remoteIpAddress, out IPAddress remoteIp))
                     {
                         byte[] addressBytes = remoteIp.GetAddressBytes();
                         if (remoteIp.AddressFamily == AddressFamily.InterNetwork)
@@ -230,6 +227,12 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif
 
+        /// <summary>
+        /// Append a key value pair to a non-null <see cref="StringBuilder"/>.
+        /// </summary>
+        /// <param name="builder">The StringBuilder to append the key value pair to.</param>
+        /// <param name="name">The key to be appended to the StringBuilder.</param>
+        /// <param name="value">The value to be appended to the StringBuilder.</param>
         public static void AppendKeyValuePairIfNotEmpty(this StringBuilder builder, string name, object value)
         {
             if (value != null)

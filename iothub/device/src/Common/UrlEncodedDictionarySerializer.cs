@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                 propertiesCount++;
             }
 
-            //Optimization for most common case: only correlation ID is present
+            //Optimization for most common case: only correlation Id is present
             if (propertiesCount == 1 && firstProperty.HasValue)
             {
                 return firstProperty.Value.Value == null ?

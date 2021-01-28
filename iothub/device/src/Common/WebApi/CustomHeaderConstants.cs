@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    static class CustomHeaderConstants
+    internal static class CustomHeaderConstants
     {
         /// <summary>
         /// Used in message responses and feedback
@@ -132,19 +132,19 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// x-ms-client-principal-name
-        /// Set to the principal ID / UPN of the client JWT making the request.
+        /// Set to the principal Id / UPN of the client JWT making the request.
         /// </summary>
         public const string PrincipalName = "x-ms-client-principal-name";
 
         /// <summary>
         /// x-ms-client-tenant-id
-        /// Set to the tenant ID of the client JWT making the request.
+        /// Set to the tenant Id of the client JWT making the request.
         /// </summary>
         public const string ClientTenantId = "x-ms-client-tenant-id";
 
         /// <summary>
         /// x-ms-client-audience
-        /// Set to the tenant ID of the client JWT making the request.
+        /// Set to the tenant Id of the client JWT making the request.
         /// </summary>
         public const string ClientAudience = "x-ms-client-audience";
 
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// x-ms-client-request-id
-        /// Caller-specified request ID, in the form of a GUID with no decoration such as curly braces
+        /// Caller-specified request Id, in the form of a GUID with no decoration such as curly braces
         /// (e.g. client-request-id: 9C4D50EE-2D56-4CD3-8152-34347DC9F2B0).
         /// A caller-defined value that identifies the given request.   If specified, this will be
         /// included in response information as a way to map the request.
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string RequestId = "x-ms-request-id";
 
         /// <summary>
-        /// Used to supply module ID of invoking module when used by module to invoke method on other modules/devices.
+        /// Used to supply module Id of invoking module when used by module to invoke method on other modules/devices.
         /// </summary>
         public const string ModuleId = "x-ms-edge-moduleId";
 

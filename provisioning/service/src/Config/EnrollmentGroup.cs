@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Enrollment Group ID.
+        /// Enrollment Group Id.
         /// </summary>
         /// <remarks>
         /// A valid enrollmentGroup Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.

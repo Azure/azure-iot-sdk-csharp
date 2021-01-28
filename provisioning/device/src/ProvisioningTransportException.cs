@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public bool IsTransient { get; private set; }
 
         /// <summary>
-        /// Service reported Tracking ID. Use this when reporting a Service issue.
+        /// Service reported Tracking Id. Use this when reporting a Service issue.
         /// </summary>
         public string TrackingId { get; set; }
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
-        /// <param name="trackingId">The service tracking ID.</param>
+        /// <param name="trackingId">The service tracking Id.</param>
         /// <param name="innerException">The inner exception.</param>
         public ProvisioningTransportException(string message, Exception innerException, bool isTransient, string trackingId)
             : base(message, innerException)

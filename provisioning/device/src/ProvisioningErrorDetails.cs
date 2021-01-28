@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public int ErrorCode { get; set; }
 
         /// <summary>
-        /// Correlation ID.
+        /// Correlation Id.
         /// </summary>
         [JsonProperty(PropertyName = "trackingId")]
         public string TrackingId { get; set; }
@@ -38,6 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         [JsonProperty(PropertyName = "info", NullValueHandling = NullValueHandling.Ignore)]
 #pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<string, string> Info { get; set; }
+
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
