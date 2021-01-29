@@ -17,11 +17,11 @@ namespace Microsoft.Azure.Devices.Test
         [TestMethod]
         public async Task GetExceptionCodeAsync_ContentAndHeadersMatch_ValidErrorCode()
         {
-            // setup
-            HttpResponseMessage httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
-            IoTHubExceptionResult exceptionResult = new IoTHubExceptionResult
+            // arrange
+            var httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
+            var exceptionResult = new IoTHubExceptionResult
             {
-                _message = "{\"errorCode\":404001}"
+                Message = "{\"errorCode\":404001}"
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
             httpResponseMessage.Headers.Add(CommonConstants.HttpErrorCodeName, "DeviceNotFound");
@@ -36,11 +36,11 @@ namespace Microsoft.Azure.Devices.Test
         [TestMethod]
         public async Task GetExceptionCodeAsync_ContentAndHeadersMisMatch_InvalidErrorCode()
         {
-            // setup
-            HttpResponseMessage httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
-            IoTHubExceptionResult exceptionResult = new IoTHubExceptionResult
+            // arrange
+            var httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
+            var exceptionResult = new IoTHubExceptionResult
             {
-                _message = "{\"errorCode\":404001}"
+                Message = "{\"errorCode\":404001}"
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
             httpResponseMessage.Headers.Add(CommonConstants.HttpErrorCodeName, "DummyErrorCode");
@@ -55,11 +55,11 @@ namespace Microsoft.Azure.Devices.Test
         [TestMethod]
         public async Task GetExceptionCodeAsync_NoContentErrorCode_InvalidErrorCode()
         {
-            // setup
-            HttpResponseMessage httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
-            IoTHubExceptionResult exceptionResult = new IoTHubExceptionResult
+            // arrange
+            var httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
+            var exceptionResult = new IoTHubExceptionResult
             {
-                _message = ""
+                Message = ""
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
             httpResponseMessage.Headers.Add(CommonConstants.HttpErrorCodeName, "DeviceNotFound");
@@ -74,11 +74,11 @@ namespace Microsoft.Azure.Devices.Test
         [TestMethod]
         public async Task GetExceptionCodeAsync_NoHeaderErrorCodeName_InvalidErrorCode()
         {
-            // setup
-            HttpResponseMessage httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
-            IoTHubExceptionResult exceptionResult = new IoTHubExceptionResult
+            // arrange
+            var httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
+            var exceptionResult = new IoTHubExceptionResult
             {
-                _message = "{\"errorCode\":404001}"
+                Message = "{\"errorCode\":404001}"
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
