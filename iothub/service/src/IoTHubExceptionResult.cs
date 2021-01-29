@@ -12,8 +12,5 @@ namespace Microsoft.Azure.Devices
     {
         [JsonProperty("Message")]
         internal string _message;
-
-        [JsonProperty("ExceptionMessage")]
-        internal string _exceptionMessage;
     }
 }
