@@ -13,6 +13,9 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
+    /// <summary>
+    /// Client websocket channel operations.
+    /// </summary>
     internal class ClientWebSocketChannel : AbstractChannel, IDisposable
     {
         private ClientWebSocket _webSocket;
@@ -21,6 +24,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private bool _isReadPending;
         private bool _isWriteInProgress;
 
+        /// <summary>
+        /// Creates a new instance of the client websocket channel.
+        /// </summary>
+        /// <param name="parent">The parent of this channel. Pass null if there's no parent.</param>
+        /// <param name="webSocket">The client websocket. Provides a client for connecting to WebSocket services.</param>
         public ClientWebSocketChannel(IChannel parent, ClientWebSocket webSocket)
             : base(parent)
         {
@@ -31,22 +39,54 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _writeCancellationTokenSource = new CancellationTokenSource();
         }
 
+        /// <summary>
+        /// Websocket channel configurations.
+        /// </summary>
         public override IChannelConfiguration Configuration { get; }
 
+        /// <summary>
+        /// Whether or not the websocket channel is open and active.
+        /// </summary>
         public override bool Open => _isActive && _webSocket?.State == WebSocketState.Open;
 
+        /// <summary>
+        /// Whether or not the websocket channel is active.
+        /// </summary>
         public override bool Active => _isActive;
 
+        /// <summary>
+        /// Represents the metadata properties of a DotNetty.Transport.Channels.IChannel implementation.
+        /// </summary>
         public override ChannelMetadata Metadata { get; }
 
+        /// <summary>
+        /// Identifies a local network address
+        /// </summary>
         protected override EndPoint LocalAddressInternal { get; }
 
+        /// <summary>
+        /// Identifies a remote network address
+        /// </summary>
         protected override EndPoint RemoteAddressInternal { get; }
 
+        /// <summary>
+        /// Creates a new UnsafeChannel off of this websocket channel.
+        /// </summary>
         protected override IChannelUnsafe NewUnsafe() => new WebSocketChannelUnsafe(this);
 
+        /// <summary>
+        /// Checks whether a given EventLoop is compatible with the Websocket channel.
+        /// </summary>
+        /// <param name="eventLoop">EventLoop to check compatibility.</param>
         protected override bool IsCompatible(IEventLoop eventLoop) => true;
 
+        /// <summary>
+        /// Set channel options fluently.
+        /// </summary>
+        /// <typeparam name="T">Generic Option type.</typeparam>
+        /// <param name="option">Channel option.</param>
+        /// <param name="value">Option value.</param>
+        /// <returns>ClientWebSocketChannel object itself.</returns>
         public ClientWebSocketChannel Option<T>(ChannelOption<T> option, T value)
         {
             Contract.Requires(option != null);
@@ -91,16 +131,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        protected override void DoBind(EndPoint localAddress)
+        /// <summary>
+        /// Binds the client websocket channel to the EndPoint.
+        /// </summary>
+        /// <param name="endpointAddress">The endpoint address to bind to.</param>
+        protected override void DoBind(EndPoint endpointAddress)
         {
             throw new NotSupportedException("ClientWebSocketChannel does not support DoBind()");
         }
 
+        /// <summary>
+        /// Disconnects this channel from its remote peer.
+        /// </summary>
         protected override void DoDisconnect()
         {
             throw new NotSupportedException("ClientWebSocketChannel does not support DoDisconnect()");
         }
 
+        /// <summary>
+        /// Closes the websocket channel.
+        /// </summary>
         protected override async void DoClose()
         {
             try
@@ -122,6 +172,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
+        /// <summary>
+        /// ScheduleAsync a read operation.
+        /// </summary>
         protected override async void DoBeginRead()
         {
             IByteBuffer byteBuffer = null;
@@ -179,6 +232,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
+        /// <summary>
+        /// Flush the content of the given buffer to the remote peer.
+        /// </summary>
+        /// <param name="channelOutboundBuffer">The buffer to write to the remote peer.</param>
         protected override async void DoWrite(ChannelOutboundBuffer channelOutboundBuffer)
         {
             if (channelOutboundBuffer == null)
