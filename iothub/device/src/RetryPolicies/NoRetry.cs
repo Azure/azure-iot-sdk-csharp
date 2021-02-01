@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -10,6 +11,16 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class NoRetry : IRetryPolicy
     {
+        /// <summary>
+        /// Create an instance of a retry policy that perfrms no retries.
+        /// </summary>
+        public NoRetry()
+        {
+            if (Logging.IsEnabled)
+                Logging.Info(this, $"NOTE: A no-retry retry policy has been enabled," +
+                    $" the device client will not perform any retries on disconnection.", nameof(NoRetry));
+        }
+
         /// <summary>
         /// A policy to never retry
         /// </summary>
