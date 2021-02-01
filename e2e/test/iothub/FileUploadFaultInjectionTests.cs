@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     bigFile,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     smallFile,
                     FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec,
-                    FaultInjection.DefaultDurationInSec)
+                    FaultInjection.DefaultFaultDelay,
+                    FaultInjection.DefaultFaultDuration)
                 .ConfigureAwait(false);
         }
 
@@ -70,8 +70,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     smallFile,
                     FaultInjection.FaultType_QuotaExceeded,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec,
-                    FaultInjection.DefaultDurationInSec)
+                    FaultInjection.DefaultFaultDelay,
+                    FaultInjection.DefaultFaultDuration)
                 .ConfigureAwait(false);
         }
 
@@ -81,15 +81,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             string filename,
             string faultType,
             string reason,
-            int delayInSec,
-            int durationInSec = 0,
-            int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
+            TimeSpan delayInSec,
+            TimeSpan durationInSec = default,
+            TimeSpan retryDurationInMilliSec = default)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
+            TimeSpan operationTimeout = retryDurationInMilliSec == TimeSpan.Zero ? FaultInjection.RecoveryTime : retryDurationInMilliSec;
+            deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
 
             using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
@@ -113,8 +114,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             DeviceClient deviceClient,
             string faultType,
             string reason,
-            int delayInSec,
-            int durationInSec)
+            TimeSpan delayInSec,
+            TimeSpan durationInSec)
         {
             try
             {

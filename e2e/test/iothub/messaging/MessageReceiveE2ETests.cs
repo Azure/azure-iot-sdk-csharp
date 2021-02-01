@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             sw.Start();
 
-            while (!received && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
+            while (!received && sw.Elapsed < FaultInjection.RecoveryTime)
             {
                 Client.Message receivedMessage = null;
 
@@ -470,7 +470,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             sw.Stop();
-            Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTimeMilliseconds}.");
+            Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTime}.");
         }
 
         public static async Task VerifyReceivedC2dMessageWithCancellationTokenAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value, MsTestLogger logger)
@@ -480,7 +480,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             sw.Start();
 
-            while (!received && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
+            while (!received && sw.Elapsed < FaultInjection.RecoveryTime)
             {
                 logger.Trace($"Receiving messages for device {deviceId}.");
 
@@ -515,7 +515,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             sw.Stop();
-            Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTimeMilliseconds}.");
+            Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTime}.");
         }
 
         private async Task ReceiveMessageInOperationTimeoutAsync(TestDeviceType type, Client.TransportType transport)

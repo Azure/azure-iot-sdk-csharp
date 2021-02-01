@@ -17,7 +17,10 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     {
         private const string HttpScheme = "http";
         private const string HttpsScheme = "https";
+
+#if !NET451
         private const string UnixScheme = "unix";
+#endif
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Reliability", "CA2000:Dispose objects before losing scope",
