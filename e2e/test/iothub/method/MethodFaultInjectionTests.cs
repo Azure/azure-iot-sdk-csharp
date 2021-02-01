@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Mqtt_WebSocket_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Mqtt_Tcp_Only,
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndRespondRecoveryAsync(Client.TransportType.Mqtt_Tcp_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Mqtt_WebSocket_Only,
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndRespondRecoveryAsync(Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_AmqpConn,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_AmqpConn,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_AmqpSess,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_AmqpSess,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_AmqpMethodReq,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_AmqpMethodReq,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_AmqpMethodResp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_AmqpMethodResp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             ExceptionDispatchInfo exceptionDispatchInfo = null;
             int attempt = 0;
 
-            while (!done && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
+            while (!done && sw.Elapsed < FaultInjection.RecoveryTime)
             {
                 attempt++;
                 try
@@ -247,10 +247,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
         }
 
-        private async Task SendMethodAndRespondRecoveryAsync(Client.TransportType transport, string faultType, string reason, int delayInSec, string proxyAddress = null)
+        private async Task SendMethodAndRespondRecoveryAsync(Client.TransportType transport, string faultType, string reason, TimeSpan delayInSec, string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
-            using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
+            using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             // Configure the callback and start accepting method calls.
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     faultType,
                     reason,
                     delayInSec,
-                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultFaultDelay,
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync,

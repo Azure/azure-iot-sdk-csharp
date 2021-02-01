@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled)
                 Logging.Info(this, $"NOTE: A no-retry retry policy has been enabled," +
-                    $" the device client will not perform any retries on disconnection.", nameof(NoRetry));
+                    $" the client will not perform any retries on disconnection.", nameof(NoRetry));
         }
 
         /// <summary>
