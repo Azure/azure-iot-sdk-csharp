@@ -889,8 +889,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             string faultType,
             string reason,
-            int delayInSec = FaultInjection.DefaultDelayInSec,
-            int durationInSec = FaultInjection.DefaultDurationInSec,
+            TimeSpan delayInSec = default,
+            TimeSpan durationInSec = default,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
@@ -932,8 +932,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     devicesCount,
                     faultType,
                     reason,
-                    delayInSec,
-                    durationInSec,
+                    delayInSec == TimeSpan.Zero ? FaultInjection.DefaultFaultDelay : delayInSec,
+                    durationInSec == TimeSpan.Zero ? FaultInjection.DefaultFaultDuration : durationInSec,
                     (d, t, h) => { return Task.FromResult(false); },
                     TestOperationAsync,
                     CleanupOperationAsync,
@@ -949,8 +949,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             string faultType,
             string reason,
-            int delayInSec = FaultInjection.DefaultDelayInSec,
-            int durationInSec = FaultInjection.DefaultDurationInSec,
+            TimeSpan delayInSec = default,
+            TimeSpan durationInSec = default,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
@@ -997,8 +997,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     devicesCount,
                     faultType,
                     reason,
-                    delayInSec,
-                    durationInSec,
+                    delayInSec == TimeSpan.Zero ? FaultInjection.DefaultFaultDelay : delayInSec,
+                    durationInSec == TimeSpan.Zero ? FaultInjection.DefaultFaultDuration : durationInSec,
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync,

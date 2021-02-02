@@ -39,17 +39,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public const string FaultCloseReason_Boom = "boom";
         public const string FaultCloseReason_Bye = "byebye";
 
-        public const int DefaultDelayInSec = 5; // Time in seconds after service initiates the fault.
-        public const int DefaultDurationInSec = 5; // Duration in seconds
-        public const int LatencyTimeBufferInSec = 10; // Buffer time waiting fault occurs or connection recover
+        public static readonly TimeSpan DefaultFaultDelay = TimeSpan.FromSeconds(5); // Time in seconds after service initiates the fault.
+        public static readonly TimeSpan DefaultFaultDuration = TimeSpan.FromSeconds(5); // Duration in seconds
+        public static readonly TimeSpan LatencyTimeBuffer = TimeSpan.FromSeconds(10); // Buffer time waiting fault occurs or connection recover
 
-        public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
-        public const int WaitForReconnectMilliseconds = 2 * DefaultDurationInSec * 1000;
-        public const int ShortRetryInMilliSec = (int)(DefaultDurationInSec / 2.0 * 1000);
+        public static readonly TimeSpan WaitForDisconnectDuration = TimeSpan.FromTicks(DefaultFaultDelay.Ticks * 3);
+        public static readonly TimeSpan WaitForReconnectDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks * 2);
+        public static readonly TimeSpan ShortRetryDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks / 2);
 
-        public const int RecoveryTimeMilliseconds = 5 * 60 * 1000;
+        public static readonly TimeSpan RecoveryTime = TimeSpan.FromMinutes(5);
 
-        public static Client.Message ComposeErrorInjectionProperties(string faultType, string reason, int delayInSecs, int durationInSecs)
+        public static Client.Message ComposeErrorInjectionProperties(string faultType, string reason, TimeSpan delayInSecs, TimeSpan durationInSecs)
         {
             string dataBuffer = Guid.NewGuid().ToString();
 
@@ -59,8 +59,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     ["AzIoTHub_FaultOperationType"] = faultType,
                     ["AzIoTHub_FaultOperationCloseReason"] = reason,
-                    ["AzIoTHub_FaultOperationDelayInSecs"] = delayInSecs.ToString(CultureInfo.InvariantCulture),
-                    ["AzIoTHub_FaultOperationDurationInSecs"] = durationInSecs.ToString(CultureInfo.InvariantCulture)
+                    ["AzIoTHub_FaultOperationDelayInSecs"] = delayInSecs.Seconds.ToString(CultureInfo.InvariantCulture),
+                    ["AzIoTHub_FaultOperationDurationInSecs"] = durationInSecs.Seconds.ToString(CultureInfo.InvariantCulture)
                 }
             };
         }
@@ -76,9 +76,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        public static async Task ActivateFaultInjectionAsync(Client.TransportType transport, string faultType, string reason, int delayInSec, int durationInSec, DeviceClient deviceClient, MsTestLogger logger)
+        public static async Task ActivateFaultInjectionAsync(Client.TransportType transport, string faultType, string reason, TimeSpan delayInSec, TimeSpan durationInSec, DeviceClient deviceClient, MsTestLogger logger)
         {
-            logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={FaultInjection.DefaultDurationInSec}s");
+            logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={DefaultFaultDuration}s");
 
             uint oldTimeout = deviceClient.OperationTimeoutInMilliseconds;
 
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     transport == Client.TransportType.Mqtt_Tcp_Only ||
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
-                    deviceClient.OperationTimeoutInMilliseconds = (uint)delayInSec * 1000;
+                    deviceClient.OperationTimeoutInMilliseconds = (uint)delayInSec.TotalMilliseconds;
                 }
 
                 await deviceClient
@@ -137,8 +137,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string proxyAddress,
             string faultType,
             string reason,
-            int delayInSec,
-            int durationInSec,
+            TimeSpan delayInSec,
+            TimeSpan durationInSec,
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<Task> cleanupOperation,
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($">>> {nameof(FaultInjection)} Testing fault handling");
                 await ActivateFaultInjectionAsync(transport, faultType, reason, delayInSec, durationInSec, deviceClient, logger).ConfigureAwait(false);
                 logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delayInSec} seconds.");
-                await Task.Delay(TimeSpan.FromSeconds(delayInSec)).ConfigureAwait(false);
+                await Task.Delay(delayInSec).ConfigureAwait(false);
 
                 // For disconnect type faults, the device should disconnect and recover.
                 if (FaultShouldDisconnect(faultType))
@@ -191,7 +191,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     logger.Trace($"{nameof(FaultInjection)}: Confirming fault injection has been activated.");
                     // Check that service issued the fault to the faulting device
                     bool isFaulted = false;
-                    for (int i = 0; i < LatencyTimeBufferInSec; i++)
+
+                    var sw = Stopwatch.StartNew();
+                    while (sw.Elapsed < LatencyTimeBuffer)
                     {
                         if (connectionStatusChangeCount > countBeforeFaultInjection)
                         {
@@ -201,16 +203,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
+                    sw.Reset();
 
                     Assert.IsTrue(isFaulted, $"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
                     logger.Trace($"{nameof(FaultInjection)}: Confirmed fault injection has been activated.");
 
                     // Check the device is back online
                     logger.Trace($"{nameof(FaultInjection)}: Confirming device back online.");
-                    for (int i = 0; lastConnectionStatus != ConnectionStatus.Connected && i < durationInSec + LatencyTimeBufferInSec; i++)
+
+                    sw.Start();
+                    while (lastConnectionStatus != ConnectionStatus.Connected && sw.Elapsed < durationInSec.Add(LatencyTimeBuffer))
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
+                    sw.Reset();
 
                     Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"{testDevice.Id} did not reconnect.");
                     logger.Trace($"{nameof(FaultInjection)}: Confirmed device back online.");
@@ -223,19 +229,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     logger.Trace($"{nameof(FaultInjection)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multi times.
-                    for (int i = 0; i < LatencyTimeBufferInSec; i++)
+                    int counter = 0;
+                    var sw = Stopwatch.StartNew();
+                    while (sw.Elapsed < LatencyTimeBuffer)
                     {
-                        logger.Trace($">>> {nameof(FaultInjection)}: Performing test operation for device - Run {i}.");
+                        logger.Trace($">>> {nameof(FaultInjection)}: Performing test operation for device - Run {counter++}.");
                         await testOperation(deviceClient, testDevice).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
+                    sw.Reset();
                 }
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
 
                 if (transport != Client.TransportType.Http1)
                 {
-                    if (FaultInjection.FaultShouldDisconnect(faultType))
+                    if (FaultShouldDisconnect(faultType))
                     {
                         // 4 is the minimum notification count: connect, fault, reconnect, disable.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise
@@ -261,8 +270,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 watch.Stop();
 
-                int timeToFinishFaultInjection = durationInSec * 1000 - (int)watch.ElapsedMilliseconds;
-                if (timeToFinishFaultInjection > 0)
+                TimeSpan timeToFinishFaultInjection = durationInSec.Subtract(watch.Elapsed);
+                if (timeToFinishFaultInjection > TimeSpan.Zero)
                 {
                     logger.Trace($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection}ms to ensure that FaultInjection duration passed.");
                     await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);

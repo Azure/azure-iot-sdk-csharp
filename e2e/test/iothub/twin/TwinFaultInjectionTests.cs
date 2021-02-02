@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Mqtt_Tcp_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Mqtt_WebSocket_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Mqtt_Tcp_Only,
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Mqtt_WebSocket_Only,
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Mqtt_Tcp_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Mqtt_WebSocket_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 Client.TransportType.Amqp_Tcp_Only,
                 FaultInjection.FaultType_Tcp,
                 FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec)
+                FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Mqtt_Tcp_Only,
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Mqtt_WebSocket_Only,
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultDelayInSec)
+                    FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Client.TransportType transport,
             string faultType,
             string reason,
-            int delayInSec,
+            TimeSpan delayInSec,
             string proxyAddress = null)
         {
             var propName = Guid.NewGuid().ToString();
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     faultType,
                     reason,
                     delayInSec,
-                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.DefaultFaultDuration,
                     (d, t) => { return Task.FromResult<bool>(false); },
                     testOperation,
                     () => { return Task.FromResult<bool>(false); },
@@ -269,12 +269,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Client.TransportType transport,
             string faultType,
             string reason,
-            int delayInSec,
+            TimeSpan delayInSec,
             string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
             var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            using var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
+            using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             var propName = Guid.NewGuid().ToString();
             var props = new TwinCollection();
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     faultType,
                     reason,
                     delayInSec,
-                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.DefaultFaultDuration,
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync,

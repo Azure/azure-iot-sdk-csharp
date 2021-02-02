@@ -11,6 +11,6 @@ namespace Microsoft.Azure.Devices
     internal class IoTHubExceptionResult
     {
         [JsonProperty("Message")]
-        internal string _message;
+        internal string Message { get; set; }
     }
 }
