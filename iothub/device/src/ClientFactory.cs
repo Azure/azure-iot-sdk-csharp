@@ -100,7 +100,9 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
+#pragma warning disable CA2000 // This is returned to client so cannot be disposed here.
                 InternalClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType), options);
+#pragma warning restore CA2000
                 dc.Certificate = connectionStringBuilder.Certificate;
 
                 // Install all the intermediate certificates in the chain if specified.
