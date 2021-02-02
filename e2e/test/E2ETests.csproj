@@ -3,7 +3,7 @@
     <TargetFrameworks>netcoreapp3.1;netcoreapp2.1.18;net472;net451</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp3.1;netcoreapp2.1.18</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>

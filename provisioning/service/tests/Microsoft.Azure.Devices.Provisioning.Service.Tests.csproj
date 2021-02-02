@@ -6,7 +6,7 @@
     <IsTestProject Condition="'$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'netcoreapp2.1.18'">False</IsTestProject>
     <LangVersion>8.0</LangVersion>
     <!-- FXCop TODO: #176 re-enable warnings as errors. -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
