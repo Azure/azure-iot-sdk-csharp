@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
     [TestCategory("Unit")]
     public class ServiceClientConnectionStringTests
     {
-        class TestAuthenticationMethod : IAuthenticationMethod
+        private class TestAuthenticationMethod : IAuthenticationMethod
         {
             public virtual IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
             // Hostname without DNS is acceptable for localhost testing.
             iotHubConnectionStringBuilder.HostName = "adshgfvyregferuehfiuehr";
-            
+
             try
             {
                 iotHubConnectionStringBuilder.HostName = "acme.azure-devices.net";
@@ -181,8 +181,8 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             string connectionString = "HostName=testhub.azure-devices-int.net;DeviceId=edgecapabledevice1;ModuleId=testModule;SharedAccessKey=dGVzdFN0cmluZzE=;GatewayHostName=edgehub1.ms.com";
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
 
-            Assert.IsNotNull(serviceClient.Connection);          
-            IotHubConnectionString iotHubConnectionString = serviceClient.Connection.ConnectionString;
+            Assert.IsNotNull(serviceClient.Connection);
+            IotHubConnectionString iotHubConnectionString = (IotHubConnectionString)serviceClient.Connection.Credential;
             Assert.IsNotNull(iotHubConnectionString);
             Assert.AreEqual("testhub.azure-devices-int.net", iotHubConnectionString.Audience);
             Assert.AreEqual("edgehub1.ms.com", iotHubConnectionString.HostName);

@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.SharedAccessKey = this.Key;
-            iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
+            iotHubConnectionStringBuilder.SharedAccessKey = Key;
+            iotHubConnectionStringBuilder.DeviceId = DeviceId;
             iotHubConnectionStringBuilder.SharedAccessSignature = null;
 
             return iotHubConnectionStringBuilder;

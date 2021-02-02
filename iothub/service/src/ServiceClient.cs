@@ -42,11 +42,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create ServiceClient from the specified connection string
+        /// Creates an instance of <see cref="ServiceClient"/> from the specified connection string.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub</param>
+        /// <param name="connectionString">Connection string for the IoT Hub.</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
-        /// <returns></returns>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, ServiceClientOptions options = default)
         {
             return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
@@ -66,25 +66,25 @@ namespace Microsoft.Azure.Devices
         protected virtual void Dispose(bool disposing) { }
 
         /// <summary>
-        /// Create ServiceClient from the specified connection string using specified Transport Type
+        /// Creates an instance of <see cref="ServiceClient"/> from the specified connection string using specified Transport Type.
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT Hub</param>
         /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
-        /// <returns></returns>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientOptions options = default)
         {
             return CreateFromConnectionString(connectionString, transportType, new ServiceClientTransportSettings(), options);
         }
 
         /// <summary>
-        /// Create ServiceClient from the specified connection string using specified Transport Type
+        ///Creates an instance of <see cref="ServiceClient"/> from the specified connection string using the specified Transport Type.
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT Hub</param>
         /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used</param>
         /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
-        /// <returns></returns>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings, ServiceClientOptions options = default)
         {
             if (transportSettings == null)

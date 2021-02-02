@@ -11,12 +11,15 @@ using Microsoft.Azure.Devices.Common.Security;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class IotHubConnectionString : IAuthorizationHeaderProvider, ICbsTokenProvider
+    /// <summary>
+    /// The IoT hub connection properties and methods required for authenticating using connection strings.
+    /// </summary>
+    internal sealed class IotHubConnectionString : IotHubCredential
     {
-        private static readonly TimeSpan s_defaultTokenTimeToLive = TimeSpan.FromHours(1);
         private const char UserSeparator = '@';
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
+            : base(builder.HostName)
         {
             if (builder == null)
             {
@@ -24,25 +27,13 @@ namespace Microsoft.Azure.Devices
             }
 
             Audience = builder.HostName;
-            HostName = string.IsNullOrEmpty(builder.GatewayHostName) ? builder.HostName : builder.GatewayHostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
             SharedAccessSignature = builder.SharedAccessSignature;
-            IotHubName = builder.IotHubName;
-            HttpsEndpoint = new UriBuilder("https", HostName).Uri;
-            AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, builder.HostName, AmqpConstants.DefaultSecurePort).Uri;
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
             GatewayHostName = builder.GatewayHostName;
         }
-
-        public string IotHubName { get; private set; }
-
-        public string HostName { get; private set; }
-
-        public Uri HttpsEndpoint { get; private set; }
-
-        public Uri AmqpEndpoint { get; private set; }
 
         public string Audience { get; private set; }
 
@@ -85,12 +76,12 @@ namespace Microsoft.Azure.Devices
             return password;
         }
 
-        public string GetAuthorizationHeader()
+        public override string GetAuthorizationHeader()
         {
             return GetPassword();
         }
 
-        Task<CbsToken> ICbsTokenProvider.GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
+        public override Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {
             string tokenValue;
             CbsToken token;
@@ -108,16 +99,6 @@ namespace Microsoft.Azure.Devices
             return Task.FromResult(token);
         }
 
-        public Uri BuildLinkAddress(string path)
-        {
-            var builder = new UriBuilder(AmqpEndpoint)
-            {
-                Path = path,
-            };
-
-            return builder.Uri;
-        }
-
         public static IotHubConnectionString Parse(string connectionString)
         {
             var builder = IotHubConnectionStringBuilder.Create(connectionString);
@@ -130,7 +111,7 @@ namespace Microsoft.Azure.Devices
             {
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,
-                TimeToLive = s_defaultTokenTimeToLive,
+                TimeToLive = _defaultTokenTimeToLive,
                 Target = Audience
             };
 
