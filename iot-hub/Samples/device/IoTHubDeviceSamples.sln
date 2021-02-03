@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PnpHelpers", "PnpDeviceSamp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorConsoleLogger", "..\..\..\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj", "{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X509DeviceCertWithChainSample", "X509DeviceCertWithChainSample\X509DeviceCertWithChainSample.csproj", "{AFB499F6-454F-4A61-AA28-94B3C97C3BC6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0819BE3F-DC5D-4E0E-B415-DEAFC10B1A90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFB499F6-454F-4A61-AA28-94B3C97C3BC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFB499F6-454F-4A61-AA28-94B3C97C3BC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFB499F6-454F-4A61-AA28-94B3C97C3BC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFB499F6-454F-4A61-AA28-94B3C97C3BC6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
