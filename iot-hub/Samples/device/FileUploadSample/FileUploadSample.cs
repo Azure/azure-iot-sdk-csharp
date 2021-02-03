@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Azure.Storage.Blobs;
 using Microsoft.Azure.Devices.Client.Transport;
-using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 // Note that other versions of the Azure Storage SDK can be used here. For the latest version, see
                 // https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/storage#azure-storage-libraries-for-net
-                var blob = new CloudBlockBlob(uploadUri);
-                await blob.UploadFromStreamAsync(fileStreamSource);
+                var blobClient = new BlobClient(uploadUri);
+                await blobClient.UploadAsync(fileStreamSource);
             }
             catch (Exception ex)
             {
