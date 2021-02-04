@@ -1974,11 +1974,17 @@ namespace Microsoft.Azure.Devices.Client
         public void Dispose()
         {
             InnerHandler?.Dispose();
+            InnerHandler = null;
             _methodsDictionarySemaphore?.Dispose();
             _moduleReceiveMessageSemaphore?.Dispose();
             _fileUploadHttpTransportHandler?.Dispose();
             _deviceReceiveMessageSemaphore?.Dispose();
             _twinDesiredPropertySemaphore?.Dispose();
+#if !NET451
+            Certificate?.Dispose();
+            Certificate = null;
+#endif
+            IotHubConnectionString?.TokenRefresher?.Dispose();
         }
 
         internal bool IsE2EDiagnosticSupportedProtocol()

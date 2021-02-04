@@ -102,6 +102,11 @@ Function CheckLocalPackagesAvailableForTesting()
     return (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
 }
 
+Function DidBuildFail($buildOutputFileName)
+{
+    return Select-String -Path $buildOutputFileName -Pattern 'Build FAILED' -Quiet
+}
+
 Function BuildProject($path, $message)
 {
     $label = "BUILD: --- $message $configuration ---"
@@ -120,9 +125,9 @@ Function BuildProject($path, $message)
         }
     }
 
-    & dotnet build $projectPath --verbosity $verbosity --configuration $configuration
+    & dotnet build $projectPath --verbosity $verbosity --configuration $configuration -warnAsError |  Tee-Object ./buildlog.txt
 
-    if ($LASTEXITCODE -ne 0)
+    if (DidBuildFail "./buildlog.txt" -or $LASTEXITCODE -ne 0)
     {
         throw "Build failed: $label"
     }
