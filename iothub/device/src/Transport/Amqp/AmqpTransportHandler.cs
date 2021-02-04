@@ -546,6 +546,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             lock (_lock)
             {
+
+                if (_disposed)
+                {
+                    return;
+                }
+
                 base.Dispose(disposing);
 
                 Logging.Info(this, $"{nameof(disposing)}");
