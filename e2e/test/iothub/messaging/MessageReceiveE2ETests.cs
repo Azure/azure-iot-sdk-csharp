@@ -383,8 +383,50 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_MqttWs()
         {
-            var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only) { CleanSession = true } };
+            var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only) { CleanSession = true } };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Amqp()
+        {
+            var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only) };
+            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceDoesNotReceivePendingMessageUsingCallback_AmqpWs()
+        {
+            var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only) };
+            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_DeviceDoesNotReceivePendingMessageUsingCallback_Mqtt()
+        {
+            var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only) { CleanSession = true } };
+            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_DeviceDoesNotReceivePendingMessageUsingCallback_MqttWs()
+        {
+            var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only) { CleanSession = true } };
+            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_DeviceDoesNotReceivePendingMessageUsingCallback_Amqp()
+        {
+            var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only) };
+            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task X509_DeviceDoesNotReceivePendingMessageUsingCallback_AmqpWs()
+        {
+            var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only) };
+            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
         }
 
         public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(MsTestLogger logger)
@@ -875,11 +917,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             testDeviceCallbackHandler.Dispose();
             testDeviceCallbackHandler = null;
 
-            // Create a device client instance over MQTT, with CleanSession flag set to true.
-            // This will ensure that messages sent before the device had subscribed to c2d topic are not delivered.
             deviceClient = testDevice.CreateDeviceClient(settings);
             testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
 
+            // Open the device client - for MQTT, this will connect the device with CleanSession flag set to true.
+            // This will ensure that messages sent before the device had subscribed to c2d topic are not delivered.
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Send the message from service.
