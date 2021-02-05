@@ -281,10 +281,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(true);
                     }
 
-                    bool hasMessage = await ReceiveMessageArrivalAsync(cancellationToken).ConfigureAwait(true);
-                    Message message = ProcessMessage(hasMessage);
-
-                    return message;
+                    await WaitUntilC2dMessageArrivesAsync(cancellationToken).ConfigureAwait(false);
+                    return ProcessMessage();
                 }
                 finally
                 {
@@ -321,10 +319,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 TimeSpan timeout = timeoutHelper.GetRemainingTime();
                 using var cts = new CancellationTokenSource(timeout);
-                bool hasMessage = await ReceiveMessageArrivalAsync(cts.Token).ConfigureAwait(true);
-                Message message = ProcessMessage(hasMessage);
 
-                return message;
+                await WaitUntilC2dMessageArrivesAsync(cts.Token).ConfigureAwait(false);
+                return ProcessMessage();
             }
             finally
             {
@@ -333,28 +330,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private Message ProcessMessage(bool hasMessage)
+        private Message ProcessMessage()
         {
             Message message = null;
 
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, message, $"hasMessage={hasMessage}", nameof(ProcessMessage));
+                    Logging.Enter(this, message, $"Will begin processing received C2D message", nameof(ProcessMessage));
 
-                if (hasMessage)
+                lock (_syncRoot)
                 {
-                    lock (_syncRoot)
+                    if (_messageQueue.TryDequeue(out message))
                     {
-                        if (_messageQueue.TryDequeue(out message))
+                        if (_qos == QualityOfService.AtLeastOnce)
                         {
-                            if (_qos == QualityOfService.AtLeastOnce)
-                            {
-                                _completionQueue.Enqueue(message.LockToken);
-                            }
-
-                            message.LockToken = _generationId + message.LockToken;
+                            _completionQueue.Enqueue(message.LockToken);
                         }
+
+                        message.LockToken = _generationId + message.LockToken;
                     }
                 }
 
@@ -363,11 +357,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, message, $"hasMessage={hasMessage}", nameof(ProcessMessage));
+                    Logging.Exit(this, message, $"Processed received C2D message with Id={message?.MessageId}", nameof(ProcessMessage));
             }
         }
 
-        private async Task<bool> ReceiveMessageArrivalAsync(CancellationToken cancellationToken)
+        private async Task WaitUntilC2dMessageArrivesAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             CancellationToken disconnectToken = _disconnectAwaitersCancellationSource.Token;
@@ -375,8 +369,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken);
 
-            // -1 millisecond represents for SemaphoreSlim to wait indefinitely until either of the linked cancellation tokens have been canceled.
-            return await _receivingSemaphore.WaitAsync(TimeSpan.FromMilliseconds(-1), linkedCts.Token).ConfigureAwait(true);
+            // Wait until either of the linked cancellation tokens have been canceled.
+            await _receivingSemaphore.WaitAsync(linkedCts.Token).ConfigureAwait(false);
         }
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
@@ -554,7 +548,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Process C2D message via callback", nameof(HandleIncomingMessagesAsync));
 
-            Message message = ProcessMessage(true);
+            Message message = ProcessMessage();
             await (_deviceMessageReceivedListener?.Invoke(message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
