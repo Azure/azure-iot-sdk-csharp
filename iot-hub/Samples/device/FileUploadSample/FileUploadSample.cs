@@ -38,10 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Note: GetFileUploadSasUriAsync and CompleteFileUploadAsync will use HTTPS as protocol regardless of the DeviceClient protocol selection.
             Console.WriteLine("Getting SAS URI from IoT Hub to use when uploading the file...");
             FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
-
-            // Pass URL encoded device name and blob name to support special characters
-            Uri uploadUri = new Uri(
-                $"https://{sasUri.HostName}/{sasUri.ContainerName}/{Uri.EscapeDataString(sasUri.BlobName)}{sasUri.SasToken}");
+            Uri uploadUri = sasUri.GetBlobUri();
 
             Console.WriteLine($"Successfully got SAS URI ({uploadUri}) from IoT Hub");
 
