@@ -15,10 +15,11 @@ This folder contains simple samples showing how to use the various features of M
 - [Plug and Play device samples][d-pnp-sample]
 - [Xamarin sample][d-xamarin-sample]
 
-### [Module samples][module-samples]
+### Module sample
 
 - [Message sample][m-message-sample]
-- [Twin sample][m-twin-sample]
+    - This sample illustrates how to write an IoT Hub module to handle connection issues, connection-related exceptions, and how to manage the lifetime of the `ModuleClient`
+    - Includes sending messages and symmetric key failover
 
 ### Prerequisites
 
@@ -41,12 +42,7 @@ You need to clone the repository or download the sample (the one you want to try
 
 #### Build and run the samples
 
-1. Preparing the sample application:
-   1. Set the following environment variables on the terminal from which you want to run the application.
-
-      - IOTHUB_DEVICE_CONNECTION_STRING
-
-1. Building the sample application:
+1. Building the sample application
 
     To build the sample application using dotnet, from terminal navigate to the sample folder (where the .csproj file lives). Then execute the following command and check for build errors:
 
@@ -54,9 +50,16 @@ You need to clone the repository or download the sample (the one you want to try
     dotnet build
     ```
 
+1. Preparing the sample application:
+   1. Many of these samples take parameters. To see the parameters required, type:
+
+      ```console
+      dotnet run --help
+      ```
+
 1. Running the sample application:
 
-    To run the sample application using dotnet, execute the following command.
+    To run the sample application using dotnet, execute the following command with any required parameters discovered in the previous step.
 
     ```console
     dotnet run
@@ -73,9 +76,7 @@ You need to clone the repository or download the sample (the one you want to try
 [d-pnp-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/PnpDeviceSamples
 [d-xamarin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/XamarinSample
 
-[module-samples]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/module
-[m-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/module/MessageSample
-[m-twin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/module/TwinSample
+[m-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/module/ModuleSample
 
 [lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
 [lnk-manage-iot-device]: https://github.com/Azure/azure-iot-device-ecosystem/blob/master/setup_iothub.md#create-new-device-in-the-iot-hub-device-identity-registry
