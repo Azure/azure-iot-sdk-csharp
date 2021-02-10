@@ -11,12 +11,14 @@ using Microsoft.Azure.Devices.Common.Security;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class IotHubConnectionString : IAuthorizationHeaderProvider, ICbsTokenProvider
+    /// <summary>
+    /// The properties required for authentication to IoT hub using a connection string.
+    /// </summary>
+    internal sealed class IotHubConnectionString : IotHubCredential
     {
-        private static readonly TimeSpan s_defaultTokenTimeToLive = TimeSpan.FromHours(1);
-        private const char UserSeparator = '@';
+        private static readonly TimeSpan _tokenTimeToLive = TimeSpan.FromHours(1);
 
-        public IotHubConnectionString(IotHubConnectionStringBuilder builder)
+        public IotHubConnectionString(IotHubConnectionStringBuilder builder) : base(builder.HostName)
         {
             if (builder == null)
             {
@@ -24,25 +26,13 @@ namespace Microsoft.Azure.Devices
             }
 
             Audience = builder.HostName;
-            HostName = string.IsNullOrEmpty(builder.GatewayHostName) ? builder.HostName : builder.GatewayHostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
             SharedAccessSignature = builder.SharedAccessSignature;
-            IotHubName = builder.IotHubName;
-            HttpsEndpoint = new UriBuilder("https", HostName).Uri;
-            AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, builder.HostName, AmqpConstants.DefaultSecurePort).Uri;
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
             GatewayHostName = builder.GatewayHostName;
         }
-
-        public string IotHubName { get; private set; }
-
-        public string HostName { get; private set; }
-
-        public Uri HttpsEndpoint { get; private set; }
-
-        public Uri AmqpEndpoint { get; private set; }
 
         public string Audience { get; private set; }
 
@@ -58,39 +48,17 @@ namespace Microsoft.Azure.Devices
 
         public string GatewayHostName { get; private set; }
 
-        public string GetUser()
-        {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.Append(SharedAccessKeyName);
-            stringBuilder.Append(UserSeparator);
-            stringBuilder.Append("sas.");
-            stringBuilder.Append("root.");
-            stringBuilder.Append(IotHubName);
-
-            return stringBuilder.ToString();
-        }
-
         public string GetPassword()
         {
-            string password;
-            if (string.IsNullOrWhiteSpace(SharedAccessSignature))
-            {
-                password = BuildToken(out _);
-            }
-            else
-            {
-                password = SharedAccessSignature;
-            }
-
-            return password;
+            return string.IsNullOrWhiteSpace(SharedAccessSignature) ? BuildToken(out _) : SharedAccessSignature;
         }
 
-        public string GetAuthorizationHeader()
+        public override string GetAuthorizationHeader()
         {
             return GetPassword();
         }
 
-        Task<CbsToken> ICbsTokenProvider.GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
+        public override Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {
             string tokenValue;
             CbsToken token;
@@ -108,16 +76,6 @@ namespace Microsoft.Azure.Devices
             return Task.FromResult(token);
         }
 
-        public Uri BuildLinkAddress(string path)
-        {
-            var builder = new UriBuilder(AmqpEndpoint)
-            {
-                Path = path,
-            };
-
-            return builder.Uri;
-        }
-
         public static IotHubConnectionString Parse(string connectionString)
         {
             var builder = IotHubConnectionStringBuilder.Create(connectionString);
@@ -130,7 +88,7 @@ namespace Microsoft.Azure.Devices
             {
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,
-                TimeToLive = s_defaultTokenTimeToLive,
+                TimeToLive = _tokenTimeToLive,
                 Target = Audience
             };
 
