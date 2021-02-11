@@ -6,6 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 
+#if !NET451
+
+using Azure;
+using Azure.Core;
+
+#endif
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -52,6 +59,82 @@ namespace Microsoft.Azure.Devices
         {
             return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
         }
+
+#if !NET451
+
+        /// <summary>
+        /// Creates a <see cref="ServiceClient"/> using Azure Active Directory credentials and the specified transport type.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
+        /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
+        public static ServiceClient Create(
+            string hostName,
+            TokenCredential credential,
+            TransportType transportType,
+            ServiceClientTransportSettings transportSettings = default,
+            ServiceClientOptions options = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null or empty");
+            }
+
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+
+            return new AmqpServiceClient(
+                tokenCredentialProperties,
+                useWebSocketOnly,
+                transportSettings ?? new ServiceClientTransportSettings(),
+                options);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ServiceClient"/> using SAS token and the specified transport type.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="IotHubSasCredential"/></param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
+        /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
+        public static ServiceClient Create(
+            string hostName,
+            IotHubSasCredential credential,
+            TransportType transportType,
+            ServiceClientTransportSettings transportSettings = default,
+            ServiceClientOptions options = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null or empty");
+            }
+
+            var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+
+            return new AmqpServiceClient(
+                sasCredentialProperties,
+                useWebSocketOnly,
+                transportSettings ?? new ServiceClientTransportSettings(),
+                options);
+        }
+
+#endif
 
         /// <inheritdoc />
         public void Dispose()
