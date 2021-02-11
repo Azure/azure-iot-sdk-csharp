@@ -69,12 +69,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException($"{nameof(hostName)} is null or empty");
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
             }
 
             if (credential == null)
             {
-                throw new ArgumentNullException($"{nameof(credential)} is null");
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null or empty");
             }
 
             var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of <see cref="RegistryManager"/>.
         /// </summary>
         /// <param name="hostName">IoT hub host name.</param>
-        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="IotHubSasCredential"/></param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="IotHubSasCredential"/>.</param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
         /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
         public static RegistryManager Create(
@@ -95,12 +95,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException($"{nameof(hostName)} is null or empty");
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
             }
 
             if (credential == null)
             {
-                throw new ArgumentNullException($"{nameof(credential)} is null");
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null or empty");
             }
 
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
