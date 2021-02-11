@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The properties required for authentication to IoT hub that are independent of the authentication type.
     /// </summary>
-    internal abstract class IotHubCredential
+    internal abstract class IotHubConnectionProperties
         : IAuthorizationHeaderProvider, ICbsTokenProvider
     {
         private const string HostNameSeparator = ".";
@@ -20,12 +20,17 @@ namespace Microsoft.Azure.Devices
 
         // Azure.Core (used in IotHubTokenCredential) is not available in NET451.
         // So we need this constructor for the build to pass.
-        protected IotHubCredential()
+        protected IotHubConnectionProperties()
         {
         }
 
-        protected IotHubCredential(string hostName)
+        protected IotHubConnectionProperties(string hostName)
         {
+            if (string.IsNullOrWhiteSpace(hostName))
+            {
+                throw new ArgumentNullException(nameof(hostName));
+            }
+
             HostName = hostName;
             IotHubName = GetIotHubName(hostName);
             AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
@@ -54,7 +59,7 @@ namespace Microsoft.Azure.Devices
             return builder.Uri;
         }
 
-        private static string GetIotHubName(string hostName)
+        internal static string GetIotHubName(string hostName)
         {
             if (string.IsNullOrWhiteSpace(hostName))
             {
