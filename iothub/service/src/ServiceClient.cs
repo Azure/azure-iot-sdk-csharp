@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices
         /// Creates a <see cref="ServiceClient"/> using SAS token and the specified transport type.
         /// </summary>
         /// <param name="hostName">IoT hub host name.</param>
-        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="IotHubSasCredential"/></param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="IotHubSasCredential"/>.</param>
         /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
         /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
