@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices
 
             if (credential == null)
             {
-                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null or empty");
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
             var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices
 
             if (credential == null)
             {
-                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null or empty");
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
