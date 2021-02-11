@@ -18,19 +18,23 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The properties required for authentication to IoT hub using a token credential.
     /// </summary>
-    internal class IotHubTokenCredential : IotHubCredential
+    internal class IotHubTokenCrendentialProperties
+        : IotHubConnectionProperties
     {
-#if NET451
-
-        public IotHubTokenCredential()
-        {
-            throw new InvalidOperationException("nameof(TokenCredential) is not supported in NET451");
-        }
-#else
+#if !NET451
         private const string _tokenType = "jwt";
         private readonly TokenCredential _credential;
+#endif
 
-        public IotHubTokenCredential(string hostName, TokenCredential credential) : base(hostName)
+#if NET451
+
+        public IotHubTokenCrendentialProperties()
+        {
+            throw new InvalidOperationException("TokenCredential is not supported on NET451");
+        }
+#else
+
+        public IotHubTokenCrendentialProperties(string hostName, TokenCredential credential) : base(hostName)
         {
             _credential = credential;
         }
@@ -40,7 +44,7 @@ namespace Microsoft.Azure.Devices
         public override string GetAuthorizationHeader()
         {
 #if NET451
-            throw new InvalidOperationException($"{nameof(GetAuthorizationHeader)} is not supported on NET451");
+            throw new InvalidOperationException($"TokenCredential is not supported on NET451");
 
 #else
             AccessToken token = _credential.GetToken(new TokenRequestContext(), new CancellationToken());
@@ -55,7 +59,7 @@ namespace Microsoft.Azure.Devices
         {
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 #if NET451
-            throw new InvalidOperationException($"{nameof(GetTokenAsync)} is not supported on NET451");
+            throw new InvalidOperationException($"TokenCredential is not supported on NET451");
 
 #else
             AccessToken token = await _credential.GetTokenAsync(new TokenRequestContext(), new CancellationToken()).ConfigureAwait(false);
