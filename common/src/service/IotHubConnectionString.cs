@@ -14,11 +14,12 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The properties required for authentication to IoT hub using a connection string.
     /// </summary>
-    internal sealed class IotHubConnectionString : IotHubCredential
+    internal sealed class IotHubConnectionString
+        : IotHubConnectionProperties
     {
         private static readonly TimeSpan _tokenTimeToLive = TimeSpan.FromHours(1);
 
-        public IotHubConnectionString(IotHubConnectionStringBuilder builder) : base(builder.HostName)
+        public IotHubConnectionString(IotHubConnectionStringBuilder builder) : base(builder?.HostName)
         {
             if (builder == null)
             {
@@ -29,9 +30,6 @@ namespace Microsoft.Azure.Devices
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
             SharedAccessSignature = builder.SharedAccessSignature;
-            DeviceId = builder.DeviceId;
-            ModuleId = builder.ModuleId;
-            GatewayHostName = builder.GatewayHostName;
         }
 
         public string Audience { get; private set; }
@@ -41,12 +39,6 @@ namespace Microsoft.Azure.Devices
         public string SharedAccessKey { get; private set; }
 
         public string SharedAccessSignature { get; private set; }
-
-        public string DeviceId { get; private set; }
-
-        public string ModuleId { get; private set; }
-
-        public string GatewayHostName { get; private set; }
 
         public string GetPassword()
         {
@@ -91,13 +83,6 @@ namespace Microsoft.Azure.Devices
                 TimeToLive = _tokenTimeToLive,
                 Target = Audience
             };
-
-            if (DeviceId != null)
-            {
-                builder.Target = string.IsNullOrEmpty(ModuleId)
-                    ? "{0}/devices/{1}".FormatInvariant(Audience, WebUtility.UrlEncode(DeviceId))
-                    : "{0}/devices/{1}/modules/{2}".FormatInvariant(Audience, WebUtility.UrlEncode(DeviceId), WebUtility.UrlEncode(ModuleId));
-            }
 
             ttl = builder.TimeToLive;
 
