@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices
         private IOThreadTimer _refreshTokenTimer;
 #endif
 
-        public IotHubConnection(IotHubCredential credential, AccessRights accessRights, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
+        public IotHubConnection(IotHubConnectionProperties credential, AccessRights accessRights, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
 #if !NET451
             _refreshTokenTimer = new IOThreadTimerSlim(s => ((IotHubConnection)s).OnRefreshTokenAsync(), this);
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices
             _faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(onCreate, onClose);
         }
 
-        internal IotHubCredential Credential { get; private set; }
+        internal IotHubConnectionProperties Credential { get; private set; }
 
         public Task OpenAsync(TimeSpan timeout)
         {
