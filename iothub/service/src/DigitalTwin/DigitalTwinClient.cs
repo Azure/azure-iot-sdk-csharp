@@ -10,6 +10,10 @@ using Microsoft.Azure.Devices.Extensions;
 using Microsoft.Azure.Devices.Generated;
 using Microsoft.Rest;
 using Newtonsoft.Json;
+using Microsoft.Azure.Devices.DigitalTwin.Authentication;
+using Azure;
+using Azure.Core;
+using PnpDigitalTwin = Microsoft.Azure.Devices.Generated.DigitalTwin;
 
 namespace Microsoft.Azure.Devices
 {
@@ -18,8 +22,16 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DigitalTwinClient : IDisposable
     {
+        private const string HttpsEndpointPrefix = "https";
         private readonly IotHubGatewayServiceAPIs _client;
-        private readonly DigitalTwin _protocolLayer;
+        private readonly PnpDigitalTwin _protocolLayer;
+
+        private DigitalTwinClient(string hostName, DigitalTwinServiceClientCredentials credentials, params DelegatingHandler[] handlers)
+        {
+            var httpsEndpoint = new UriBuilder(HttpsEndpointPrefix, hostName).Uri;
+            _client = new IotHubGatewayServiceAPIs(httpsEndpoint, credentials, handlers);
+            _protocolLayer = new PnpDigitalTwin(_client);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinClient"/> class.</summary>
@@ -30,14 +42,60 @@ namespace Microsoft.Azure.Devices
             connectionString.ThrowIfNullOrWhiteSpace(nameof(connectionString));
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            var sharedAccessKeyCredential = new SharedAccessKeyCredentials(connectionString);
-            return new DigitalTwinClient(iotHubConnectionString.HttpsEndpoint, sharedAccessKeyCredential, handlers);
+            var connectionStringCredential = new DigitalTwinConnectionStringCredential(iotHubConnectionString);
+            return new DigitalTwinClient(iotHubConnectionString.HostName, connectionStringCredential, handlers);
         }
 
-        private DigitalTwinClient(Uri uri, IotServiceClientCredentials credentials, params DelegatingHandler[] handlers)
+        /// <summary>
+        /// Creates an instance of <see cref="DigitalTwinClient"/>.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
+        /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
+        public static DigitalTwinClient Create(
+            string hostName,
+            TokenCredential credential,
+            params DelegatingHandler[] handlers)
         {
-            _client = new IotHubGatewayServiceAPIs(uri, credentials, handlers);
-            _protocolLayer = new DigitalTwin(_client);
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            var tokenCredential = new DigitalTwinTokenCredential(credential);
+            return new DigitalTwinClient(hostName, tokenCredential, handlers);
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="DigitalTwinClient"/>.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
+        /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
+        /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
+        public static DigitalTwinClient Create(
+            string hostName,
+            AzureSasCredential credential,
+            params DelegatingHandler[] handlers)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            var sasCredential = new DigitalTwinSasCredential(credential);
+            return new DigitalTwinClient(hostName, sasCredential, handlers);
         }
 
         /// <summary>
@@ -69,9 +127,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The http response.</returns>
         public Task<HttpOperationHeaderResponse<DigitalTwinUpdateHeaders>> UpdateDigitalTwinAsync(
-            string digitalTwinId, 
-            string digitalTwinUpdateOperations, 
-            DigitalTwinUpdateRequestOptions requestOptions = default, 
+            string digitalTwinId,
+            string digitalTwinUpdateOperations,
+            DigitalTwinUpdateRequestOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
             return _protocolLayer.UpdateDigitalTwinWithHttpMessagesAsync(digitalTwinId, digitalTwinUpdateOperations, requestOptions?.IfMatch, null, cancellationToken);
@@ -87,19 +145,19 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The application/json command invocation response and the http response. </returns>
         public async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeCommandAsync(
-            string digitalTwinId, 
-            string commandName, 
-            string payload = default, 
-            DigitalTwinInvokeCommandRequestOptions requestOptions = default, 
+            string digitalTwinId,
+            string commandName,
+            string payload = default,
+            DigitalTwinInvokeCommandRequestOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
             using HttpOperationResponse<string, DigitalTwinInvokeRootLevelCommandHeaders> response = await _protocolLayer.InvokeRootLevelCommandWithHttpMessagesAsync(
-                digitalTwinId, 
-                commandName, 
-                payload, 
-                requestOptions?.ConnectTimeoutInSeconds, 
-                requestOptions?.ResponseTimeoutInSeconds, 
-                null, 
+                digitalTwinId,
+                commandName,
+                payload,
+                requestOptions?.ConnectTimeoutInSeconds,
+                requestOptions?.ResponseTimeoutInSeconds,
+                null,
                 cancellationToken)
                 .ConfigureAwait(false);
             return new HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>
@@ -122,21 +180,21 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The application/json command invocation response and the http response. </returns>
         public async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(
-            string digitalTwinId, 
-            string componentName, 
-            string commandName, 
-            string payload = default, 
-            DigitalTwinInvokeCommandRequestOptions requestOptions = default, 
+            string digitalTwinId,
+            string componentName,
+            string commandName,
+            string payload = default,
+            DigitalTwinInvokeCommandRequestOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
             using HttpOperationResponse<string, DigitalTwinInvokeComponentCommandHeaders> response = await _protocolLayer.InvokeComponentCommandWithHttpMessagesAsync(
-                digitalTwinId, 
-                componentName, 
-                commandName, 
-                payload, 
-                requestOptions?.ConnectTimeoutInSeconds, 
-                requestOptions?.ResponseTimeoutInSeconds, 
-                null, 
+                digitalTwinId,
+                componentName,
+                commandName,
+                payload,
+                requestOptions?.ConnectTimeoutInSeconds,
+                requestOptions?.ResponseTimeoutInSeconds,
+                null,
                 cancellationToken)
                 .ConfigureAwait(false);
             return new HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>
