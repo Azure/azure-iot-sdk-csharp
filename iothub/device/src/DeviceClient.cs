@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
     /// <threadsafety static="true" instance="true" />
-    public sealed class DeviceClient : IDisposable
+    public class DeviceClient : IDisposable
     {
         /// <summary>
         /// Default operation timeout.
