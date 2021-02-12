@@ -14,33 +14,48 @@ namespace Microsoft.Azure.Devices
     /// Shared access signature credential used to authenticate with IoT hub.
     /// </summary>
     public class IotHubSasCredential
-        : AzureSasCredential
     {
         /// <summary>
         /// Creates an instance of <see cref="IotHubSasCredential"/>.
         /// </summary>
         /// <param name="signature">Shared access signature used to authenticate with IoT hub.</param>
-        /// <param name="expiresOnUtc">The shared access signature expiry in UTC.</param>
-        public IotHubSasCredential(string signature, DateTime expiresOnUtc) : base(signature)
+        /// <param name="expiresOn">The shared access signature expiry.</param>
+        public IotHubSasCredential(string signature, DateTimeOffset expiresOn)
         {
-            ExpiresOnUtc = expiresOnUtc;
+            if (string.IsNullOrWhiteSpace(signature))
+            {
+                throw new ArgumentNullException(nameof(signature), "Parameter cannot be null or empty");
+            }
+
+            if (expiresOn == null)
+            {
+                throw new ArgumentNullException(nameof(expiresOn), "Parameter cannot be null");
+            }
+
+            SasCredential = new AzureSasCredential(signature);
+            ExpiresOn = expiresOn;
         }
 
         /// <summary>
-        /// The shared access signature expiry in UTC.
+        /// The shared access signature expiry.
         /// </summary>
-        public DateTime ExpiresOnUtc { get; private set; }
+        public DateTimeOffset ExpiresOn { get; private set; }
+
+        /// <summary>
+        /// The shared access signature credential used to authenticate with IoT hub.
+        /// </summary>
+        public AzureSasCredential SasCredential { get; private set; }
 
         /// <summary>
         /// Updates the shared access signature. This is intended to be used when you've
         /// regenerated your shared access signature and want to update clients.
         /// </summary>
         /// <param name="signature">Shared access signature used to authenticate with IoT hub.</param>
-        /// <param name="expiresOnUtc">The shared access signature expiry in UTC.</param>
-        public void Update(string signature, DateTime expiresOnUtc)
+        /// <param name="expiresOn">The shared access signature expiry.</param>
+        public void Update(string signature, DateTimeOffset expiresOn)
         {
-            Update(signature);
-            ExpiresOnUtc = expiresOnUtc;
+            SasCredential.Update(signature);
+            ExpiresOn = expiresOn;
         }
     }
 }

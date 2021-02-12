@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
             throw new InvalidOperationException($"IotHubSasCredential is not supported on NET451");
 
 #else
-            return _credential.Signature;
+            return _credential.SasCredential.Signature;
 #endif
         }
 
@@ -49,9 +49,9 @@ namespace Microsoft.Azure.Devices
 
 #else
             var token = new CbsToken(
-                _credential.Signature,
+                _credential.SasCredential.Signature,
                 CbsConstants.IotHubSasTokenType,
-                _credential.ExpiresOnUtc);
+                _credential.ExpiresOn.UtcDateTime);
             return Task.FromResult(token);
 #endif
         }
