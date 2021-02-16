@@ -9,7 +9,7 @@ On Linux and OSX LTTNG and perfcollect can be used to collect traces. For more i
 ## Console logging
 Logging can be added to console. Note that this method will substantially slow down execution.
 
-  1. Add `e2e\test\CommonConsoleEventListener.cs` to your project.
+  1. Add `e2e\test\Helpers\ConsoleEventListener.cs` to your project.
   2. Instantiate the listener. Add one or more filters (e.g. `Microsoft-Azure-` or `DotNetty-`):
 
 ```C#
