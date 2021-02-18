@@ -324,7 +324,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _amqpUnit.SendTwinMessageAsync(AmqpTwinMessageType.Put, Guid.NewGuid().ToString(), null, _operationTimeout).ConfigureAwait(false);
+                string correlationId = AmqpTwinMessageType.Put + Guid.NewGuid().ToString();
+                await _amqpUnit.SendTwinMessageAsync(AmqpTwinMessageType.Put, correlationId, null, _operationTimeout).ConfigureAwait(false);
             }
             finally
             {
@@ -375,7 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                Twin twin = await RoundTripTwinMessage(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
+                await RoundTripTwinMessage(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -387,7 +388,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             Logging.Enter(this, cancellationToken, $"{nameof(RoundTripTwinMessage)}");
 
-            string correlationId = Guid.NewGuid().ToString();
+            string correlationId = amqpTwinMessageType + Guid.NewGuid().ToString();
             Twin response = null;
 
             try
@@ -522,19 +523,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection)
         {
-            if (correlationId != null)
+            if (correlationId == null)
             {
-                // It is a GET, just complete the task.
-                TaskCompletionSource<Twin> task;
-                if (_twinResponseCompletions.TryRemove(correlationId, out task))
-                {
-                    task.SetResult(twin);
-                }
+                // This is desired property updates, so call the callback with TwinCollection.
+                _onDesiredStatePatchListener(twinCollection);
             }
             else
             {
-                // It is a PATCH, just call the callback with the TwinCollection
-                _onDesiredStatePatchListener(twinCollection);
+                if(correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
+                    // It is a GET, just complete the task.
+                    TaskCompletionSource<Twin> task;
+                    if (_twinResponseCompletions.TryRemove(correlationId, out task))
+                    {
+                        task.SetResult(twin);
+                    }
+                }
+                else
+                {
+                    _twinResponseCompletions.TryRemove(correlationId, out _);
+                }
             }
         }
 
