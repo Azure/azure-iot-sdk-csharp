@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Threading;
@@ -36,8 +38,8 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 
     /// <summary>
-    /// Contains methods that services can use to send messages to devices/modules,
-    /// invoke a direct method on a device/module and deliver notifications for file upload and cloud-to-device operations.
+    /// Contains methods that services can use to send messages to devices
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
     public abstract class ServiceClient : IDisposable
     {
