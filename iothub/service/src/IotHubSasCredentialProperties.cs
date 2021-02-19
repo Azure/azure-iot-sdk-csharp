@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using System.Globalization;
+using System.Linq;
 
 #if !NET451
 
@@ -23,9 +25,9 @@ namespace Microsoft.Azure.Devices
             throw new InvalidOperationException("IotHubSasCredential is not supported on NET451");
         }
 #else
-        private readonly IotHubSasCredential _credential;
+        private readonly AzureSasCredential _credential;
 
-        public IotHubSasCredentialProperties(string hostName, IotHubSasCredential credential) : base(hostName)
+        public IotHubSasCredentialProperties(string hostName, AzureSasCredential credential) : base(hostName)
         {
             _credential = credential;
         }
@@ -48,10 +50,28 @@ namespace Microsoft.Azure.Devices
             throw new InvalidOperationException($"IotHubSasCredential is not supported on NET451");
 
 #else
+            // Parse the SAS token to find the expiration date and time.
+            // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
+            var tokenParts = _credential.Signature.Split('&').ToList();
+            var expiresAtTokenPart = tokenParts.Where(tokenPart => tokenPart.StartsWith("se=", StringComparison.OrdinalIgnoreCase));
+
+            if (!expiresAtTokenPart.Any())
+            {
+                throw new InvalidOperationException($"There is no expiration time on {nameof(AzureSasCredential)} signature.");
+            }
+
+            string expiresAtStr = expiresAtTokenPart.First().Split('=')[1];
+            bool isSuccess = DateTime.TryParse(expiresAtStr, out DateTime expiresAt);
+
+            if (!isSuccess)
+            {
+                throw new InvalidOperationException($"Invalid expiration time on {nameof(AzureSasCredential)} signature.");
+            }
+
             var token = new CbsToken(
                 _credential.Signature,
                 CbsConstants.IotHubSasTokenType,
-                _credential.ExpiresOnUtc);
+                expiresAt);
             return Task.FromResult(token);
 #endif
         }
