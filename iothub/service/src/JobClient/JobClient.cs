@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices
     {
         /// <summary>
         /// Creates a JobClient from the Iot Hub connection string.
+        /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
         /// </summary>
         /// <param name="connectionString"> The Iot Hub connection string.</param>
         /// <returns> A JobClient instance. </returns>
