@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The Digital Twins Service Client contains methods to retrieve and update digital twin information, and invoke commands on a digital twin device.
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
     public class DigitalTwinClient : IDisposable
     {
