@@ -3,6 +3,13 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+
+#if !NET451
+
+using Azure.Identity;
+
+#endif
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -13,6 +20,24 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             public static string ConnectionString => GetValue("IOTHUB_CONNECTION_STRING");
             public static string X509ChainDeviceName => GetValue("IOTHUB_X509_CHAIN_DEVICE_NAME");
+
+            public static string GetIotHubHostName()
+            {
+                ConnectionStringParser connectionString = new ConnectionStringParser(ConnectionString);
+                return connectionString.IotHubHostName;
+            }
+
+#if !NET451
+
+            public static ClientSecretCredential GetClientSecretCredential()
+            {
+                return new ClientSecretCredential(
+                    GetValue("IOTHUB_TENANT_ID"),
+                    GetValue("IOTHUB_CLIENT_ID"),
+                    GetValue("IOTHUB_CLIENT_SECRET"));
+            }
+
+#endif
 
             public static X509Certificate2 GetCertificateWithPrivateKey()
             {
@@ -65,9 +90,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             /// </summary>
             public const string InvalidProxyServerAddress = "127.0.0.1:1234";
 
-            public class DeviceConnectionStringParser
+            public class ConnectionStringParser
             {
-                public DeviceConnectionStringParser(string connectionString)
+                public ConnectionStringParser(string connectionString)
                 {
                     string[] parts = connectionString.Split(';');
                     foreach (string part in parts)
@@ -77,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         switch (tv[0].ToUpperInvariant())
                         {
                             case "HOSTNAME":
-                                IoTHub = part.Substring("HOSTNAME=".Length);
+                                IotHubHostName = part.Substring("HOSTNAME=".Length);
                                 break;
 
                             case "SHAREDACCESSKEY":
@@ -94,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                 }
 
-                public string IoTHub
+                public string IotHubHostName
                 {
                     get;
                     private set;
