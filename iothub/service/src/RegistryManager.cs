@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Naming",
