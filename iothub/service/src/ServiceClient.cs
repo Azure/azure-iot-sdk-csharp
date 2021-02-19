@@ -37,6 +37,7 @@ namespace Microsoft.Azure.Devices
 
     /// <summary>
     /// Contains methods that services can use to send messages to devices
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
     public abstract class ServiceClient : IDisposable
     {
