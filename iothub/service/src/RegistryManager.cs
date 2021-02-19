@@ -85,12 +85,12 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of <see cref="RegistryManager"/>.
         /// </summary>
         /// <param name="hostName">IoT hub host name.</param>
-        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="IotHubSasCredential"/>.</param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
         /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
         public static RegistryManager Create(
             string hostName,
-            IotHubSasCredential credential,
+            AzureSasCredential credential,
             HttpTransportSettings transportSettings = default)
         {
             if (string.IsNullOrEmpty(hostName))
