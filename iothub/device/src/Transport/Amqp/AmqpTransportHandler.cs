@@ -406,10 +406,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // Consider that the task may have faulted or been canceled.
                     // We re-await the task so that any exceptions/cancellation is rethrown.
                     response = await receivingTask.ConfigureAwait(false);
-                    if (response == null)
-                    {
-                        throw new InvalidOperationException("Service response is null");
-                    }
                 }
                 else
                 {
@@ -530,18 +526,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             else
             {
-                if(correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
+                if(correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase) ||
+                    correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    // It is a GET, just complete the task.
+                    // For Get and Patch, complete the task.
                     TaskCompletionSource<Twin> task;
                     if (_twinResponseCompletions.TryRemove(correlationId, out task))
                     {
                         task.SetResult(twin);
                     }
-                }
-                else
-                {
-                    _twinResponseCompletions.TryRemove(correlationId, out _);
                 }
             }
         }
