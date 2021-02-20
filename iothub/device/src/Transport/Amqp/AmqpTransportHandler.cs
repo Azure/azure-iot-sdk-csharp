@@ -325,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string correlationId = AmqpTwinMessageType.Put + Guid.NewGuid().ToString().Substring(AmqpTwinMessageType.Put.ToString().Length);
+                string correlationId = AmqpTwinMessageType.Put + Guid.NewGuid().ToString();
                 await _amqpUnit.SendTwinMessageAsync(AmqpTwinMessageType.Put, correlationId, null, _operationTimeout).ConfigureAwait(false);
             }
             finally
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             Logging.Enter(this, cancellationToken, $"{nameof(RoundTripTwinMessageAsync)}");
 
-            string correlationId = amqpTwinMessageType + Guid.NewGuid().ToString().Substring(amqpTwinMessageType.ToString().Length);
+            string correlationId = amqpTwinMessageType + Guid.NewGuid().ToString();
             Twin response = null;
 
             try
