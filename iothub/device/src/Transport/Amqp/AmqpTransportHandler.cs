@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
@@ -324,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string correlationId = AmqpTwinMessageType.Put + Guid.NewGuid().ToString();
+                string correlationId = AmqpTwinMessageType.Put + Guid.NewGuid().ToString().Substring(AmqpTwinMessageType.Put.ToString().Length);
                 await _amqpUnit.SendTwinMessageAsync(AmqpTwinMessageType.Put, correlationId, null, _operationTimeout).ConfigureAwait(false);
             }
             finally
@@ -356,7 +357,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                Twin twin = await RoundTripTwinMessage(AmqpTwinMessageType.Get, null, cancellationToken).ConfigureAwait(false);
+                Twin twin = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken).ConfigureAwait(false);
                 if (twin == null)
                 {
                     throw new InvalidOperationException("Service rejected the message");
@@ -376,7 +377,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                await RoundTripTwinMessage(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
+                await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -384,11 +385,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private async Task<Twin> RoundTripTwinMessage(AmqpTwinMessageType amqpTwinMessageType, TwinCollection reportedProperties, CancellationToken cancellationToken)
+        private async Task<Twin> RoundTripTwinMessageAsync(AmqpTwinMessageType amqpTwinMessageType, TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(RoundTripTwinMessage)}");
+            Logging.Enter(this, cancellationToken, $"{nameof(RoundTripTwinMessageAsync)}");
 
-            string correlationId = amqpTwinMessageType + Guid.NewGuid().ToString();
+            string correlationId = amqpTwinMessageType + Guid.NewGuid().ToString().Substring(amqpTwinMessageType.ToString().Length);
             Twin response = null;
 
             try
@@ -416,7 +417,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 _twinResponseCompletions.TryRemove(correlationId, out _);
-                Logging.Exit(this, cancellationToken, $"{nameof(RoundTripTwinMessage)}");
+                Logging.Exit(this, cancellationToken, $"{nameof(RoundTripTwinMessageAsync)}");
             }
 
             return response;
@@ -526,7 +527,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             else
             {
-                if(correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase) ||
+                if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase) ||
                     correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     // For Get and Patch, complete the task.
@@ -534,6 +535,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (_twinResponseCompletions.TryRemove(correlationId, out task))
                     {
                         task.SetResult(twin);
+                    }
+                    else
+                    {
+                        Logging.Info("Could not remove a correlation Id from a dictionary", $"{nameof(TwinMessageListener)}");
                     }
                 }
             }
