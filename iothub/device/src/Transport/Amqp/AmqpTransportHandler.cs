@@ -538,7 +538,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     }
                     else
                     {
-                        Logging.Info("Could not remove a correlation Id from a dictionary", $"{nameof(TwinMessageListener)}");
+                        Logging.Info("Could not remove a correlation Id from a dictionary", nameof(TwinMessageListener));
                     }
                 }
             }
