@@ -3,7 +3,7 @@
 These samples demonstrate how a [plug and play convention][pnp-convention] enabled device interacts with IoT hub, to:
 
 - Send telemetry.
-- Update read-only and read-write porperties.
+- Update read-only and read-write properties.
 - Respond to command invocation.
 
 The samples demonstrate two scenarios:
