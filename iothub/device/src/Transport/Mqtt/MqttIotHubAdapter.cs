@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     // EventLoop. To limit I/O to the EventLoopGroup and keep Netty semantics, we are going to ensure that the
     // task continuations are executed by this scheduler using ConfigureAwait(true).
     //
-    // All await calls that happen within dotnetty's pipeline should be ConfigureAwait(true).
+    // All awaited calls that happen within dotnetty's pipeline should be ConfigureAwait(true).
     //
     internal sealed class MqttIotHubAdapter : ChannelHandlerAdapter
     {
