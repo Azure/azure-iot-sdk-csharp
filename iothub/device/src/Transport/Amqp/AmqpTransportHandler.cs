@@ -537,7 +537,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     }
                     else
                     {
-                        Logging.Info("Could not remove a correlation Id from a dictionary", nameof(TwinMessageListener));
+                        // This can happen if we received a message from service with correlation Id that was not set by SDK or does not exist in dictionary.
+                        Logging.Info("Could not remove correlation id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
                     }
                 }
             }

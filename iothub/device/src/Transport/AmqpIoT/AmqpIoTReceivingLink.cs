@@ -279,18 +279,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
                 if (status >= 400)
                 {
+                    // Handle failures
                     _onTwinMessageReceived.Invoke(null, correlationId, null);
-                    if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
+                    string error = null;
+                    using (var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8))
                     {
-                        // Handle failures
-                        _onTwinMessageReceived.Invoke(null, correlationId, null);
-                        string error = null;
-                        var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
                         error = reader.ReadToEnd();
-                        reader.Dispose();
-                        // Retry for Http status code request timeout, Too many requests and server errors
-                        throw new IotHubException(error, status >= 500 || status == 429 || status == 408);
-                    }
+                    };
+                    // Retry for Http status code request timeout, Too many requests and server errors
+                    throw new IotHubException(error, status >= 500 || status == 429 || status == 408);
                 }
                 else
                 {
