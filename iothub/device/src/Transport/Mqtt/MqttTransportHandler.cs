@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, message, $"Will begin processing received C2D message", nameof(ProcessMessage));
+                    Logging.Enter(this, message, $"Will begin processing received C2D message, queue size={_messageQueue.Count}", nameof(ProcessMessage));
 
                 lock (_syncRoot)
                 {
@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     lockToken.Length != actualLockToken.Length + s_generationPrefixLength)
                 {
                     throw new IotHubException(
-                        $"Client must send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. Expected lock token: '{actualLockToken}'; actual lock token: '{lockToken}'.",
+                        $"Client must send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. Expected lock token to end with: '{actualLockToken}'; actual lock token: '{lockToken}'.",
                         isTransient: false);
                 }
 
@@ -555,8 +555,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Process C2D message via callback", nameof(HandleIncomingMessagesAsync));
 
-            Message message = ProcessMessage();
-            await (_deviceMessageReceivedListener?.Invoke(message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+            Message message = ProcessMessage(true);
+
+            // We are intentionally not awaiting _deviceMessageReceivedListener callback.
+            // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
+            _ = _deviceMessageReceivedListener?.Invoke(message);
+            await TaskHelpers.CompletedTask.ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, "Process C2D message via callback", nameof(HandleIncomingMessagesAsync));
@@ -759,6 +763,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // If the device connects with a CleanSession flag set to false, we will need to deliver the messages
             // that were sent before the client had subscribed to the C2D message receive topic.
             if (_retainMessagesAcrossSessions)
