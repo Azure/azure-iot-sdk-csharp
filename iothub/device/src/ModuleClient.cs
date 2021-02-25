@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
-    public sealed class ModuleClient : IDisposable
+    public class ModuleClient : IDisposable
     {
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
@@ -433,7 +433,25 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Releases the unmanaged resources used by the ModuleClient and optionally disposes of the managed resources.
         /// </summary>
-        public void Dispose() => InternalClient?.Dispose();
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by the ModuleClient and allows for any derived class to override and
+        /// provide custom implementation.
+        /// </summary>
+        /// <param name="disposing">Setting to true will release both managed and unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                InternalClient?.Dispose();
+                InternalClient = null;
+            }
+        }
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
