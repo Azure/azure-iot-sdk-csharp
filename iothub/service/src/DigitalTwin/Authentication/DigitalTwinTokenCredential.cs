@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Azure.Core;
 using Microsoft.Azure.Devices.Authentication;
+using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
 {
@@ -16,6 +17,8 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
     /// </summary>
     internal class DigitalTwinTokenCredential : DigitalTwinServiceClientCredentials
     {
+        private readonly object _tokenLock = new object();
+        private AccessToken? _cachedAccessToken;
         private TokenCredential _credential;
 
         public DigitalTwinTokenCredential(TokenCredential credential)
@@ -25,8 +28,19 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
 
         public override string GetAuthorizationHeader()
         {
-            AccessToken token = _credential.GetToken(new TokenRequestContext(), new CancellationToken());
-            return $"Bearer {token.Token}";
+            lock (_tokenLock)
+            {
+                // A new token is generated if it is the first time or the cached token is close to expiry.
+                if (!_cachedAccessToken.HasValue
+                    || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
+                {
+                    _cachedAccessToken = _credential.GetToken(
+                        new TokenRequestContext(),
+                        new CancellationToken());
+                }
+            }
+
+            return $"Bearer {_cachedAccessToken.Value.Token}";
         }
     }
 }
