@@ -30,22 +30,30 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task TestCbsTokenGeneration_Succeeds()
         {
             // arrange
-            DateTime expiresAtUtc = DateTime.UtcNow;
-            DateTime updatedExpiresAtUtc = DateTime.UtcNow.AddDays(1);
+            DateTime epochTime = new DateTime(1970, 1, 1);
+            DateTime expiresAt = DateTime.UtcNow.Add(TimeSpan.FromHours(1));
+            TimeSpan secondsFromEpochTime = expiresAt.Subtract(epochTime);
+            long seconds = Convert.ToInt64(secondsFromEpochTime.TotalSeconds, CultureInfo.InvariantCulture);
+            string expiry = Convert.ToString(seconds, CultureInfo.InvariantCulture);
+
+            DateTime updatedExpiresAt = DateTime.UtcNow.Add(TimeSpan.FromHours(2));
+            TimeSpan updatedSecondsFromEpochTime = updatedExpiresAt.Subtract(epochTime);
+            long updatedSeconds = Convert.ToInt64(updatedSecondsFromEpochTime.TotalSeconds, CultureInfo.InvariantCulture);
+            string updatedExpiry = Convert.ToString(updatedSeconds, CultureInfo.InvariantCulture);
 
             string token = string.Format(
                 CultureInfo.InvariantCulture,
                 "SharedAccessSignature sr={0}&sig={1}&se={2}",
                 WebUtility.UrlEncode(_hostName),
                 WebUtility.UrlEncode("signature"),
-                expiresAtUtc);
+                expiry);
 
             string updatedToken = string.Format(
                 CultureInfo.InvariantCulture,
                 "SharedAccessSignature sr={0}&sig={1}&se={2}",
                 WebUtility.UrlEncode(_hostName),
                 WebUtility.UrlEncode("signature"),
-                updatedExpiresAtUtc);
+                updatedExpiry);
 
             var azureSasCredential = new AzureSasCredential(token);
             var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
@@ -57,8 +65,8 @@ namespace Microsoft.Azure.Devices.Tests
             CbsToken updatedCbsToken = await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
 
             // assert
-            cbsToken.ExpiresAtUtc.ToString().Should().Be(expiresAtUtc.ToString());
-            updatedCbsToken.ExpiresAtUtc.ToString().Should().Be(updatedExpiresAtUtc.ToString());
+            Math.Abs(expiresAt.Subtract(cbsToken.ExpiresAtUtc).TotalSeconds).Should().BeLessThan(1);
+            Math.Abs(updatedExpiresAt.Subtract(updatedCbsToken.ExpiresAtUtc).TotalSeconds).Should().BeLessThan(1);
         }
 
         [TestMethod]
@@ -80,12 +88,12 @@ namespace Microsoft.Azure.Devices.Tests
                 // act
                 await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
 
-                Assert.Fail("The parsing of date time in invalid format on the SAS token should have caused an exception.");
+                Assert.Fail("The parsing of seconds from string to long should have caused an exception.");
             }
             catch (InvalidOperationException ex)
             {
                 // assert
-                ex.Message.Should().Be($"Invalid expiration time on {nameof(AzureSasCredential)} signature.");
+                ex.Message.Should().Be($"Invalid seconds from epoch time on {nameof(AzureSasCredential)} signature.");
             }
         }
 

@@ -3,10 +3,15 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Net;
+using System.Globalization;
+using System.Text;
+using System.Security.Cryptography;
 
 #if !NET451
 
 using Azure.Identity;
+using Azure;
 
 #endif
 
@@ -35,6 +40,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                     GetValue("IOTHUB_TENANT_ID"),
                     GetValue("IOTHUB_CLIENT_ID"),
                     GetValue("IOTHUB_CLIENT_SECRET"));
+            }
+
+            public static string GetIotHubSharedAccessSignature(TimeSpan timeToLive)
+            {
+                ConnectionStringParser connectionString = new ConnectionStringParser(ConnectionString);
+                return GenerateSasToken(
+                    connectionString.IotHubHostName,
+                    connectionString.SharedAccessKey,
+                    timeToLive,
+                    connectionString.SharedAccessKeyName);
             }
 
 #endif
@@ -90,6 +105,39 @@ namespace Microsoft.Azure.Devices.E2ETests
             /// </summary>
             public const string InvalidProxyServerAddress = "127.0.0.1:1234";
 
+#if !NET451
+
+            private static string GenerateSasToken(string resourceUri, string sharedAccessKey, TimeSpan timeToLive, string policyName = default)
+            {
+                DateTime epochTime = new DateTime(1970, 1, 1);
+                DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
+                TimeSpan secondsFromEpochTime = expiresOn.Subtract(epochTime);
+                long seconds = Convert.ToInt64(secondsFromEpochTime.TotalSeconds, CultureInfo.InvariantCulture);
+                string expiry = Convert.ToString(seconds, CultureInfo.InvariantCulture);
+
+                string stringToSign = WebUtility.UrlEncode(resourceUri) + "\n" + expiry;
+
+                HMACSHA256 hmac = new HMACSHA256(Convert.FromBase64String(sharedAccessKey));
+                string signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+
+                // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
+                string token = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "SharedAccessSignature sr={0}&sig={1}&se={2}",
+                    WebUtility.UrlEncode(resourceUri),
+                    WebUtility.UrlEncode(signature),
+                    expiry);
+
+                if (!string.IsNullOrWhiteSpace(policyName))
+                {
+                    token += "&skn=" + policyName;
+                }
+
+                return token;
+            }
+
+#endif
+
             public class ConnectionStringParser
             {
                 public ConnectionStringParser(string connectionString)
@@ -113,29 +161,23 @@ namespace Microsoft.Azure.Devices.E2ETests
                                 DeviceID = part.Substring("DEVICEID=".Length);
                                 break;
 
+                            case "SHAREDACCESSKEYNAME":
+                                SharedAccessKeyName = part.Substring("SHAREDACCESSKEYNAME=".Length);
+                                break;
+
                             default:
                                 throw new NotSupportedException("Unrecognized tag found in test ConnectionString.");
                         }
                     }
                 }
 
-                public string IotHubHostName
-                {
-                    get;
-                    private set;
-                }
+                public string IotHubHostName { get; private set; }
 
-                public string DeviceID
-                {
-                    get;
-                    private set;
-                }
+                public string DeviceID { get; private set; }
 
-                public string SharedAccessKey
-                {
-                    get;
-                    private set;
-                }
+                public string SharedAccessKey { get; private set; }
+
+                public string SharedAccessKeyName { get; private set; }
             }
         }
     }
