@@ -443,7 +443,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Releases the unmanaged resources used by the ModuleClient and allows for any derived class to override and
         /// provide custom implementation.
         /// </summary>
-        /// <param name="disposing">Setting to true will release both managed and unmanaged resources.</param>
+        /// <param name="disposing">Setting to true will release both managed and unmanaged resources. Setting to
+        /// false will only release the unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
