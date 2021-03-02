@@ -276,7 +276,7 @@ namespace Microsoft.Azure.Devices
         }
 
         // This call is executed over AMQP.
-        public override async Task SendAsync(string deviceId, string moduleId, Message message)
+        public override async Task SendAsync(string deviceId, string moduleId, Message message, TimeSpan? timeout = null)
         {
             Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
 
@@ -305,6 +305,8 @@ namespace Microsoft.Azure.Devices
                 message.ResetBody();
             }
 
+            timeout ??= OperationTimeout;
+
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
             try
@@ -315,7 +317,7 @@ namespace Microsoft.Azure.Devices
                         amqpMessage,
                         IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag),
                         AmqpConstants.NullBinary,
-                        OperationTimeout)
+                        timeout.Value)
                     .ConfigureAwait(false);
 
                 Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));

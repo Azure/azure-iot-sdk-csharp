@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud to device message.</param>
-        /// <param name="timeout">The operation timeout which defaults to 1 minute, if unspecified.</param>
+        /// <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
         public abstract Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null);
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices
         public abstract Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Interactively invokes a method on device.
+        /// Interactively invokes a method on a device.
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to the device).</param>
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices
         public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Interactively invokes a method on device.
+        /// Interactively invokes a method on a module.
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="moduleId">The module identifier for the target module.</param>
@@ -168,6 +168,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="moduleId">The module identifier for the target module.</param>
         /// <param name="message">The cloud to module message.</param>
-        public abstract Task SendAsync(string deviceId, string moduleId, Message message);
+        ///  <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
+        public abstract Task SendAsync(string deviceId, string moduleId, Message message, TimeSpan? timeout = null);
     }
 }
