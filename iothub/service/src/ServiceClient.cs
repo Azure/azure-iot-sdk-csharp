@@ -29,8 +29,8 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 
     /// <summary>
-    /// Contains methods that services can use to send messages to devices,
-    /// invoke a direct method on a device and receive file upload and cloud to device message delivery notifications.
+    /// Contains methods that services can use to send messages to devices/ modules,
+    /// invoke a direct method on a device/ module and receive file upload and cloud to device message delivery notifications.
     /// </summary>
     public abstract class ServiceClient : IDisposable
     {
