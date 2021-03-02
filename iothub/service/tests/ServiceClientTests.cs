@@ -20,23 +20,6 @@ namespace Microsoft.Azure.Devices.Api.Test
     public class ServiceClientTests
     {
         [TestMethod]
-        public async Task PurgeMessageQueueTest()
-        {
-            // Arrange Moq
-            Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> setupParameters = this.SetupPurgeMessageQueueTests();
-            Mock<IHttpClientHelper> restOpMock = setupParameters.Item1;
-            AmqpServiceClient serviceClient = setupParameters.Item2;
-            PurgeMessageQueueResult expectedResult = setupParameters.Item3;
-
-            // Execute method under test
-            PurgeMessageQueueResult result = await serviceClient.PurgeMessageQueueAsync("TestDevice").ConfigureAwait(false);
-
-            // Verify expected result
-            Assert.AreSame(expectedResult, result);
-            restOpMock.VerifyAll();
-        }
-
-        [TestMethod]
         public async Task PurgeMessageQueueWithCancellationTokenTest()
         {
             // Arrange Moq
