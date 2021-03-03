@@ -135,6 +135,8 @@ jobs:
           FRAMEWORK: net472
         .Net Framework 4.5.1:
           FRAMEWORK: net451
+        .Net 5.0:
+          FRAMEWORK: net5
 
     condition: succeeded()
     pool:
