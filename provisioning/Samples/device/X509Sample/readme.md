@@ -12,7 +12,7 @@ The sample code is set up to use X.509 certificates stored within a password-pro
 
 `powershell .\GenerateTestCertificate.ps1`
 
-You can optionally pass the DeviceID and generated certificate validity duration to the powershell script:
+You can optionally pass the DeviceId and generated certificate validity duration to the powershell script:
 
 `powershell .\GenerateTestCertificate.ps1 -deviceName "iothubx509device1" -certificateValidityInYears 10`
 
@@ -22,14 +22,13 @@ In your Device Provisioning Service go to "Manage enrollments" and select "Indiv
 Select "Add" then fill in the following:
 Mechanism: X.509
 Certificate: Select the public key 'certificate.cer' file.
-DeviceID: iothubx509device1
 
-To run the sample, in a developer command prompt enter:
-`dotnet run <IDScope>`
+To run the sample, in a developer command prompt enter: `dotnet run -s <IdScope>`
 
-replacing `IDScope` with the value found within the Device Provisioning Service Overview tab. E.g. `dotnet run 0ne1234ABCD`
+> Replace `IdScope` with the value found within the Device Provisioning Service Overview tab.
+> To see a full list of parameters, run `dotnet run -?`.
 
-Continue by following the instructions presented by the sample.
+Continue by following the instructions presented in the sample console window.
 
 ## Using your certificates
 
@@ -37,20 +36,20 @@ The SDK requires an [X509Certificate2](https://msdn.microsoft.com/en-us/library/
 
 This can be achieved by changing the following line:
 
-```C# 
-    using (var security = new SecurityProviderX509Certificate(certificate))
+```C#
+    using var security = new SecurityProviderX509Certificate(certificate);
 ```
 
-to 
+to
 
-```C# 
+```C#
     var myCertificate = new X509Certificate2("myCertificate.pfx", "mypassword");
     var myChain = new X509Certificate2Collection();
     
     // Comment out the below line if you do not have a .p7b file (e.g. if you generated certificates using the tool below)
     myChain.Import("myChain.p7b");
     
-    using (var security = new SecurityProviderX509Certificate(myCertificate, myChain))
+    using var security = new SecurityProviderX509Certificate(myCertificate, myChain);
 ```
 
 A tool for creating _test_ certificates is available at https://github.com/Azure/azure-iot-sdk-c/blob/master/tools/CACertificates/CACertificateOverview.md
@@ -59,4 +58,4 @@ If you generate _test_ certificates as an administrator using the above tool, pl
 
 If a Windows compatible Hardware Security Module is used, the certificate must be obtained by opening it from the Certificate Store using [X509Store](https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509store(v=vs.110).aspx).
 
-On Linux, .Net Core is using OpenSSL. Using [PInvoke](https://msdn.microsoft.com/en-us/library/55d3thsc.aspx) it is possible to configure the OpenSSL Engine to use a Hardware Security Module and create an X509Certificate2 object from the context.
+On Linux, .NET Core is using OpenSSL. Using [PInvoke](https://msdn.microsoft.com/en-us/library/55d3thsc.aspx) it is possible to configure the OpenSSL Engine to use a Hardware Security Module and create an X509Certificate2 object from the context.

@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using CommandLine;
+using Microsoft.Azure.Devices.Logging;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Diagnostics.Tracing;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -41,12 +42,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var logger = loggerFactory.CreateLogger<Program>();
 
             const string SdkEventProviderPrefix = "Microsoft-Azure-";
-            // Instantiating this seems to do all we need for outputing SDK events to our console log
+            // Instantiating this seems to do all we need for outputting SDK events to our console log
             _ = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
             // Run the sample
+            var runningTime = parameters.ApplicationRunningTime != null
+                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                : Timeout.InfiniteTimeSpan;
+
             var sample = new DeviceReconnectionSample(parameters.GetConnectionStrings(), parameters.TransportType, logger);
-            await sample.RunSampleAsync();
+            await sample.RunSampleAsync(runningTime);
 
             logger.LogInformation("Done.");
             return 0;

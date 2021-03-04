@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public static class Program
     {
-        // String containing Hostname, Device Id & Device Key in one of the following formats:
+        // String containing Host Name, Device Id & Device Key in one of the following formats:
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
 
@@ -32,10 +32,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static string s_port = Environment.GetEnvironmentVariable("REMOTE_PORT");
 
         // Select one of the following transports used by DeviceClient to connect to IoT Hub.
-        private static TransportType s_transportType = TransportType.Amqp;
-        //private static TransportType s_transportType = TransportType.Mqtt;
-        //private static TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
-        //private static TransportType s_transportType = TransportType.Mqtt_WebSocket_Only;
+        private static readonly TransportType s_transportType = TransportType.Amqp;
+        //private static readonly TransportType s_transportType = TransportType.Mqtt;
+        //private static readonly TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
+        //private static readonly TransportType s_transportType = TransportType.Mqtt_WebSocket_Only;
 
         public static int Main(string[] args)
         {

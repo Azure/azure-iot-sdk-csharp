@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Environment.Exit(1);
                 });
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(
+            using var deviceClient = DeviceClient.CreateFromConnectionString(
                 parameters.PrimaryConnectionString,
                 parameters.TransportType);
             var sample = new MethodSample(deviceClient);

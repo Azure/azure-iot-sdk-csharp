@@ -102,12 +102,9 @@ namespace Microsoft.Azure.Devices.Samples
                 foreach (var configuration in configurations)
                 {
                     string configurationId = configuration.Id;
-                    foreach (var prefix in ConfigurationIdPrefix)
+                    if (configurationId.StartsWith(ConfigurationIdPrefix))
                     {
-                        if (configurationId.StartsWith(prefix))
-                        {
-                            _configurationsToDelete.Add(new Configuration(configurationId));
-                        }
+                        _configurationsToDelete.Add(new Configuration(configurationId));
                     }
                 }
             }

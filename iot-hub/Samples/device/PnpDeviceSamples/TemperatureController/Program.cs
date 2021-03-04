@@ -15,8 +15,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class Program
     {
-        // DTDL interface used: https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/samples/TemperatureController.json
-        private const string ModelId = "dtmi:com:example:TemperatureController;1";
+        // DTDL interface used: https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/com/example/temperaturecontroller-2.json
+        // The TemperatureController model contains 2 Thermostat components that implement different versions of Thermostat models.
+        // Both Thermostat models are identical in definition but this is done to allow IoT Central to handle
+        // TemperatureController model correctly.
+        private const string ModelId = "dtmi:com:example:TemperatureController;2";
 
         private static ILogger s_logger;
 
@@ -40,8 +43,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 throw new ArgumentException("Required parameters are not set. Please recheck required variables by using \"--help\"");
             }
 
+            var runningTime = parameters.ApplicationRunningTime != null
+                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                : Timeout.InfiniteTimeSpan;
+
             s_logger.LogInformation("Press Control+C to quit the sample.");
-            using var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource(runningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;

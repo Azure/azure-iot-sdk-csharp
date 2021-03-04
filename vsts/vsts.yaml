@@ -13,6 +13,24 @@ jobs:
       vmImage: 'ubuntu-latest'
     timeoutInMinutes: 60
     steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core 5.0 SDK'
+        inputs:
+          version: 5.0.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core 2.1 SDK'
+        inputs:
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core 3.1 SDK'
+        inputs:
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
       - task: Docker@1
         displayName: 'Start TPM Simulator'
         inputs:
@@ -24,13 +42,13 @@ jobs:
             127.0.0.1:2321:2321
             127.0.0.1:2322:2322
           restartPolicy: unlessStopped
-
-      - powershell: ./build.ps1 -clean -configuration Release -run
+      - powershell: ./build.ps1 -clean -configuration Release -build -run
         displayName: build and run
         env:
           IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
-          IOTHUB_DEVICE_CONN_STRING2: $(IOTHUB-DEVICE-CONN-STRING2)
           IOTHUB_MODULE_CONN_STRING: $(IOTHUB-MODULE-CONN-STRING)
+          PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
+          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
           IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
           IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
           DPS_IDSCOPE: $(DPS-IDSCOPE)
@@ -48,12 +66,31 @@ jobs:
       vmImage: 'windows-latest'
     timeoutInMinutes: 60
     steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core 5.0 SDK'
+        inputs:
+          version: 5.0.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core 2.1 SDK'
+        inputs:
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core 3.1 SDK'
+        inputs:
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet          
       - powershell: ./build.ps1 -clean -configuration Release -run
         displayName: build and run
         env:
           IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
-          IOTHUB_DEVICE_CONN_STRING2: $(IOTHUB-DEVICE-CONN-STRING2)
           IOTHUB_MODULE_CONN_STRING: $(IOTHUB-MODULE-CONN-STRING)
+          PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
+          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
           IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
           IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
           DPS_IDSCOPE: $(DPS-IDSCOPE)
