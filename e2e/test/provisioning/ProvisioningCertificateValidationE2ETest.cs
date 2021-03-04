@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -96,9 +97,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private static async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
         {
-            using var security =
-                new SecurityProviderX509Certificate(Configuration.Provisioning.GetIndividualEnrollmentCertificate());
-            ProvisioningDeviceClient provisioningDeviceClient = ProvisioningDeviceClient.Create(
+            using X509Certificate2 cert = Configuration.Provisioning.GetIndividualEnrollmentCertificate();
+            using var security = new SecurityProviderX509Certificate(cert);
+            var provisioningDeviceClient = ProvisioningDeviceClient.Create(
                 Configuration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",
                 security,

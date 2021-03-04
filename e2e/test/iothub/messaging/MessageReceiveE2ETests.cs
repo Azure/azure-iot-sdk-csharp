@@ -796,8 +796,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType type, Client.TransportType transport)
         {
-            var firstHandlerSemaphore = new SemaphoreSlim(0, 1);
-            var secondHandlerSemaphore = new SemaphoreSlim(0, 1);
+            using var firstHandlerSemaphore = new SemaphoreSlim(0, 1);
+            using var secondHandlerSemaphore = new SemaphoreSlim(0, 1);
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);

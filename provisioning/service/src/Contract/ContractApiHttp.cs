@@ -122,11 +122,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                             $"The response message was null when executing operation {httpMethod}.");
                     }
 
+#if NET5_0
+                    response = new ContractApiResponse(
+                        await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false),
+                        httpResponse.StatusCode,
+                        httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
+                        httpResponse.ReasonPhrase);
+#else
                     response = new ContractApiResponse(
                         await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false),
                         httpResponse.StatusCode,
                         httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
                         httpResponse.ReasonPhrase);
+#endif
                 }
                 catch (AggregateException ex)
                 {

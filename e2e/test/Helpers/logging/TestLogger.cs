@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string intrumentationKey = Environment.GetEnvironmentVariable("E2E_IKEY");
             if (!string.IsNullOrWhiteSpace(intrumentationKey))
             {
-                var config = new TelemetryConfiguration
+                using var config = new TelemetryConfiguration
                 {
                     InstrumentationKey = intrumentationKey,
                 };

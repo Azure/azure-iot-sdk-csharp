@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
+            using Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
             await ValidateEventAsync(deviceId, eventId, logAnalticsTestClient).ConfigureAwait(false);
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out _, out _);
+            using Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out _, out _);
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
             await ValidateEventAsync(deviceId, eventId, logAnalticsTestClient).ConfigureAwait(false);

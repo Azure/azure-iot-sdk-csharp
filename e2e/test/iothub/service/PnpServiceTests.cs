@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 ModelId = TestModelId,
             };
             string hostName = HostNameHelper.GetHostName(Configuration.IoTHub.ConnectionString);
-            var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, Configuration.IoTHub.GetCertificateWithPrivateKey());
+            using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, Configuration.IoTHub.GetCertificateWithPrivateKey());
             using var deviceClient = DeviceClient.Create(hostName, auth, Client.TransportType.Mqtt_Tcp_Only, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 

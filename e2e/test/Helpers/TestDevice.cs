@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
         private static MsTestLogger _logger;
+        private bool _disposedValue;
 
         private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
         {

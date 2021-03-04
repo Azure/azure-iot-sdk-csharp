@@ -31,10 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
         private static string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private readonly string _devicePrefix = $"E2E_{nameof(ProvisioningE2ETests)}_";
-
-#pragma warning disable CA1823
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
-#pragma warning restore CA1823
 
         [LoggedTestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_MqttWs_SymmetricKey_RegisterOk_Individual()
@@ -259,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ICollection<string> iotHubsToReprovisionTo,
             string proxyServerAddress = null)
         {
-            ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
+            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
             string groupId = _devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             bool twinOperationsAllowed = transportProtocol != Client.TransportType.Http1;
@@ -276,12 +273,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
 
             //Check basic provisioning
-            if (ProvisioningE2ETests.ImplementsWebProxy(transportProtocol) && setCustomProxy)
+            if (ImplementsWebProxy(transportProtocol) && setCustomProxy)
             {
                 transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
-            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+            var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 Configuration.Provisioning.IdScope,
                 security,
@@ -300,7 +297,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
             {
-                await ProvisioningE2ETests.DeleteCreatedEnrollmentAsync(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
+                await DeleteCreatedEnrollmentAsync(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
             }
         }
 
@@ -315,8 +312,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 Logger.Trace("DeviceClient OpenAsync.");
                 await iotClient.OpenAsync().ConfigureAwait(false);
                 Logger.Trace("DeviceClient SendEventAsync.");
-                await iotClient.SendEventAsync(
-                    new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
+
+                using var message = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+                await iotClient.SendEventAsync(message).ConfigureAwait(false);
 
                 if (sendReportedPropertiesUpdate)
                 {
@@ -348,7 +346,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromName)}({attestationType})");
 
-            var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
 
             switch (attestationType)
             {
@@ -358,15 +356,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
 
-                    var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
-
-                    Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
-                    IndividualEnrollment individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
-                    IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
-                    var attestation = new TpmAttestation(base64Ek);
-                    enrollment.Attestation = attestation;
-                    Logger.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
-                    await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+                    using (var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString))
+                    {
+                        Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
+                        var individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
+                        IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                        var attestation = new TpmAttestation(base64Ek);
+                        enrollment.Attestation = attestation;
+                        Logger.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
+                        await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+                    }
 
                     return tpmSim;
 
@@ -518,8 +517,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 Logger.Trace("DeviceClient OpenAsync.");
                 await iotClient.OpenAsync().ConfigureAwait(false);
                 Logger.Trace("DeviceClient SendEventAsync.");
-                await iotClient.SendEventAsync(
-                    new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
+
+                using var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+                await iotClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 //twin can be configured to revert back to default twin when provisioned, or to keep twin
                 // from previous hub's records.

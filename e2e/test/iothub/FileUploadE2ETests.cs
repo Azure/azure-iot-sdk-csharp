@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
-                var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+                using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
 
                 // The X509 certificate being used for device authentication needs to be set into FileUploadTransportSettings as well,
                 // so that the HttpClient created for file upload operation has access to those certificates.
@@ -143,19 +143,22 @@ namespace Microsoft.Azure.Devices.E2ETests
                 BlobName = filename
             };
 
-            FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
-
-            var blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
-            Task uploadTask = blob.UploadFromStreamAsync(source);
-            await uploadTask.ConfigureAwait(false);
-
-            var notification = new FileUploadCompletionNotification
+            using (deviceClient)
             {
-                CorrelationId = fileUploadSasUriResponse.CorrelationId,
-                IsSuccess = uploadTask.IsCompleted
-            };
+                FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
 
-            await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
+                var blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
+                Task uploadTask = blob.UploadFromStreamAsync(source);
+                await uploadTask.ConfigureAwait(false);
+
+                var notification = new FileUploadCompletionNotification
+                {
+                    CorrelationId = fileUploadSasUriResponse.CorrelationId,
+                    IsSuccess = uploadTask.IsCompleted
+                };
+
+                await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
+            };
         }
 
         [Obsolete]
@@ -199,9 +202,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
             DeviceClient deviceClient;
+            X509Certificate2 cert = null;
             if (x509auth)
             {
-                X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
+                cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
                 var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
                 deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
@@ -216,6 +220,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FileUploadSasUriResponse sasUriResponse = await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest { BlobName = blobName });
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
+
+#if !NET451
+            cert?.Dispose();
+#endif
         }
 
         private static async Task<string> GetTestFileNameAsync(int fileSize)

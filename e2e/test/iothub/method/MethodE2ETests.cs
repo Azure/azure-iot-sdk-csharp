@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             catch (Exception ex)
             {
                 if (!(ex is DeviceNotFoundException))
-                    throw ex;
+                    throw;
             }
             finally
             {

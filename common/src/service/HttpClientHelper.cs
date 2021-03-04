@@ -363,6 +363,9 @@ namespace Microsoft.Azure.Devices
 
 #if NET451
             T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
+#elif NET5_0
+            string str = await message.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+            T entity = JsonConvert.DeserializeObject<T>(str);
 #else
             string str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
             T entity = JsonConvert.DeserializeObject<T>(str);

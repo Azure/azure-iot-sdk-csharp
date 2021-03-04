@@ -37,12 +37,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if(response.StatusCode == HttpStatusCode.Unauthorized)
             {
+#if NET5_0
+                if (request.Options.TryGetValue(new HttpRequestOptionsKey<object>(ProvisioningHeaderName), out object result))
+#else
                 if (request.Properties.TryGetValue(ProvisioningHeaderName, out object result))
+#endif
                 {
                     if (result is Action<string> setSasToken)
                     {
                         string target = GetTarget(request.RequestUri.LocalPath);
+#if NET5_0
+                        string responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#else
                         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+#endif
                         TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent);
 
                         string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(

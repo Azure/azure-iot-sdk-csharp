@@ -93,14 +93,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     deviceClient.OperationTimeoutInMilliseconds = (uint)delayInSec.TotalMilliseconds;
                 }
 
-                await deviceClient
-                    .SendEventAsync(
-                        ComposeErrorInjectionProperties(
-                            faultType,
-                            reason,
-                            delayInSec,
-                            durationInSec))
-                    .ConfigureAwait(false);
+                using Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
+                    faultType,
+                    reason,
+                    delayInSec,
+                    durationInSec);
+
+                await deviceClient.SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex)
             {

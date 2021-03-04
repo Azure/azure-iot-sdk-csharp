@@ -537,7 +537,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
             {
-                await DeleteCreatedEnrollmentAsync(enrollmentType, CreateProvisioningService(proxyServerAddress), security, groupId).ConfigureAwait(false);
+                using ProvisioningServiceClient dpsServiceClient = CreateProvisioningService(proxyServerAddress);
+                await DeleteCreatedEnrollmentAsync(enrollmentType, dpsServiceClient, security, groupId).ConfigureAwait(false);
             }
         }
 
@@ -550,7 +551,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string expectedDestinationHub,
             string proxyServerAddress = null)
         {
-            ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
+            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
             string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             var customAllocationDefinition = new CustomAllocationDefinition
@@ -856,15 +857,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <summary>
         /// Attempt to create device client instance from provided arguments, ensure that it can open a
         /// connection, ensure that it can send telemetry, and (optionally) send a reported property update
-        /// </summary>
+        /// </summary
         private async Task ConfirmRegisteredDeviceWorksAsync(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, Client.TransportType transportProtocol, bool sendReportedPropertiesUpdate)
         {
             using DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol);
             Logger.Trace("DeviceClient OpenAsync.");
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
-            await iotClient.SendEventAsync(
-                new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
+
+            using var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            await iotClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
             if (sendReportedPropertiesUpdate)
             {
@@ -882,9 +884,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (capabilities != null && capabilities.IotEdge)
             {
                 //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
-                Client.IotHubConnectionStringBuilder connectionStringBuilder = Client.IotHubConnectionStringBuilder.Create(result.AssignedHub, auth);
+                var connectionStringBuilder = Client.IotHubConnectionStringBuilder.Create(result.AssignedHub, auth);
                 string edgehubConnectionString = connectionStringBuilder.ToString() + ";ModuleId=$edgeHub";
-                ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(edgehubConnectionString);
+                using var moduleClient = ModuleClient.CreateFromConnectionString(edgehubConnectionString);
                 await moduleClient.OpenAsync().ConfigureAwait(false);
             }
         }
@@ -893,7 +895,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");
 
-            var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
 
             switch (attestationType)
             {
@@ -903,15 +905,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
 
-                    var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
-
-                    Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
-                    IndividualEnrollment individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
-                    IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
-                    var attestation = new TpmAttestation(base64Ek);
-                    enrollment.Attestation = attestation;
-                    Logger.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
-                    await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+                    using (var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString))
+                    {
+                        Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
+                        var individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
+                        IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                        var attestation = new TpmAttestation(base64Ek);
+                        enrollment.Attestation = attestation;
+                        Logger.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
+                        await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+                    };
 
                     return tpmSim;
 

@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             StorageContainer storageContainer = null;
             string deviceId = $"{nameof(RegistryManager_ExportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
-            var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Logger.Trace($"Using deviceId {deviceId}");
 

@@ -25,6 +25,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 5.0:
+          FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.18:
@@ -128,7 +130,7 @@ jobs:
       maxParallel: 100
       matrix:
         .Net 5.0:
-          FRAMEWORK: net5
+          FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.18:

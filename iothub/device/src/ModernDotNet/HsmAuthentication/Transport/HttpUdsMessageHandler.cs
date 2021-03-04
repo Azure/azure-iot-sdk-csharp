@@ -33,7 +33,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 #endif
             if (request.Content != null)
             {
+#if NET5_0
+                await request.Content.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+#else
                 await request.Content.CopyToAsync(stream).ConfigureAwait(false);
+#endif
             }
 
             HttpResponseMessage response = await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken).ConfigureAwait(false);
