@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     ? storageContainer.SasUri
                     : storageContainer.Uri;
 
-                Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(
+                using Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(
                     new List<ExportImportDevice>
                     {
                         new ExportImportDevice(

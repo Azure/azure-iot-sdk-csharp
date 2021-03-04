@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <returns>If the query succeeded, otherwise this method will throw</returns>
         private async Task ProvisioningServiceClient_IndividualEnrollments_Query_Ok(string proxyServerAddress)
         {
-            ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
+            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
             var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
             using (Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification))
             {

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
         {
             // Create a new test device instance.
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             try
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task DigitalTwinWithComponentOperationsAsync()
         {
             // Create a new test device instance.
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             try

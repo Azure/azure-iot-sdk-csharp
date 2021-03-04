@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<Task> cleanupOperation,
             MsTestLogger logger)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
 
             ITransportSettings transportSettings = CreateTransportSettingsFromName(transport, proxyAddress);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(new ITransportSettings[] { transportSettings });

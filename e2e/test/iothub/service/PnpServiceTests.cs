@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -31,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Setup
 
             // Create a device.
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
             var options = new ClientOptions
             {
@@ -59,14 +60,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Setup
 
             // Create a device.
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
             var options = new ClientOptions
             {
                 ModelId = TestModelId,
             };
             string hostName = HostNameHelper.GetHostName(Configuration.IoTHub.ConnectionString);
-            using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, Configuration.IoTHub.GetCertificateWithPrivateKey());
+            X509Certificate2 authCertificate = Configuration.IoTHub.GetCertificateWithPrivateKey();
+            using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, authCertificate);
             using var deviceClient = DeviceClient.Create(hostName, auth, Client.TransportType.Mqtt_Tcp_Only, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -81,6 +83,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             // Cleanup
             await registryManager.RemoveDeviceAsync(testDevice.Id).ConfigureAwait(false);
+
+#if !NET451
+            authCertificate?.Dispose();
+#endif
         }
 
         [TestMethod]

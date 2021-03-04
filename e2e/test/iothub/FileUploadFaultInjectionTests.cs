@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TimeSpan durationInSec = default,
             TimeSpan retryDurationInMilliSec = default)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 

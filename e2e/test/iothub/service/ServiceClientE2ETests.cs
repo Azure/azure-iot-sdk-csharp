@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private async Task TestTimeout(TimeSpan? timeout)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Stopwatch sw = new Stopwatch();
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task ServiceClient_SendsMessage(TransportType transportType)
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, transportType);
             string messageId = Guid.NewGuid().ToString();
 
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task MessageIdDefaultNotSet_SendEventDoesNotSetMessageId()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             string messageId = Guid.NewGuid().ToString();
 
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task MessageIdDefaultSetToNull_SendEventDoesNotSetMessageId()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             var options = new ServiceClientOptions
             {
                 SdkAssignsMessageId = Shared.SdkAssignsMessageId.Never,
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task MessageIdDefaultSetToGuid_SendEventSetMessageIdIfNotSet()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             var options = new ServiceClientOptions
             {
                 SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,

@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task UploadFileGranularAsync(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool x509auth = false)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
                 Logger,
                 _devicePrefix,
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
@@ -164,17 +164,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         [Obsolete]
         private async Task UploadFileAsync(Client.TransportType transport, string filename, bool x509auth = false)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
                 Logger,
                 _devicePrefix,
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
             DeviceClient deviceClient;
+            X509Certificate2 cert = null;
             if (x509auth)
             {
-                X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
+                cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
-                var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+                using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
                 deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
             }
             else
@@ -192,11 +193,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
+
+#if !NET451
+            cert?.Dispose();
+#endif
         }
 
         private async Task GetSasUriAsync(Client.TransportType transport, string blobName, bool x509auth = false)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
                 Logger,
                 _devicePrefix,
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
@@ -207,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
-                var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+                using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
                 deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
             }
             else
