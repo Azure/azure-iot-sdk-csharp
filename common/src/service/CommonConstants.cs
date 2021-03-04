@@ -5,13 +5,14 @@ namespace Microsoft.Azure.Devices.Common
 {
     using System;
 
-    static class CommonConstants
+    internal static class CommonConstants
     {
         // Custom HTTP response contents
         internal const string ErrorCode = "errorCode";
 
         // TODO: move these to ConfigProvider
         public const string DeviceAudienceFormat = "{0}/devices/{1}";
+
         public const string MediaTypeForDeviceManagementApis = "application/json";
         public const string AmqpsScheme = "amqps";
         public const string AmqpScheme = "amqp";
@@ -23,11 +24,13 @@ namespace Microsoft.Azure.Devices.Common
 
         // IotHub WindowsFabric Constants
         public const int WindowsFabricRetryLimit = 20;
+
         public const int WindowsFabricRetryWaitInMilliseconds = 3000;
         public const int WindowsFabricClientConnectionPort = 19000;
 
         // AzureStorage Constants
         public const int AzureStorageRetryLimit = 3;
+
         public const int AzureStorageRetryWaitInMilliseconds = 3000;
 
         public const string IotHubApplicationName = "fabric:/microsoft.azure.devices.container";
@@ -42,19 +45,23 @@ namespace Microsoft.Azure.Devices.Common
 
         // EventHub
         public const int EventHubEndpointPortNumber = 5671;
+
         public const string EventHubConnectionStringTemplate = "{0};PartitionCount={1}";
 
         // Namespace paths
         public const string ResourceProviderNamespace = "Microsoft.Devices";
+
         public const string ResourceProviderServiceResourceType = ResourceProviderNamespace + "/IotHubs";
         public const string ResourceProviderBasePathTemplate = "/subscriptions/{0}/resourceGroups/{1}/providers/" + ResourceProviderServiceResourceType + "/{2}";
 
         // Runtime Retry Constants
         public const int RuntimeRetryLimit = 3;
+
         public const int RuntimeRetryWaitInMilliseconds = 5000;
 
         // Device URI Templates
         public const string DeviceEventPathTemplate = "/devices/{0}/messages/events";
+
         public const string DeviceBoundPathTemplate = "/devices/{0}/messages/deviceBound";
         public const string DeviceBoundPathCompleteTemplate = DeviceBoundPathTemplate + "/{1}";
         public const string DeviceBoundPathAbandonTemplate = DeviceBoundPathCompleteTemplate + "/abandon";
@@ -65,6 +72,7 @@ namespace Microsoft.Azure.Devices.Common
 
         // IotHub provisioning terminal states (CSM/ARM)
         public const string ProvisioningStateSucceed = "Succeeded";
+
         public const string ProvisioningStateFailed = "Failed";
         public const string ProvisioningStateCanceled = "Canceled";
 
@@ -79,6 +87,7 @@ namespace Microsoft.Azure.Devices.Common
 
         // Service configurable parameters
         public const string PartitionCount = "PartitionCount";
+
         public const string TargetReplicaSetSize = "TargetReplicaSetSize";
         public const string MinReplicaSetSize = "MinReplicaSetSize";
         public const string SkuMaxUnitOverride = "SkuMaxUnitOverride";
@@ -118,7 +127,10 @@ namespace Microsoft.Azure.Devices.Common
 
         // Custom HTTP headers
         public const string IotHubErrorCode = "IotHubErrorCode";
+
         public const string HttpErrorCodeName = "iothub-errorcode";
+
+        public static readonly string[] IotHubAadTokenScopes = new string[] { "https://iothubs.azure.net/.default" };
 
         //Service Analytics related
         public static class ServiceAnalytics
