@@ -18,17 +18,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const int TemperatureThreshold = 30;
 
         private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan s_operationTimeout = TimeSpan.FromHours(1);
 
         private readonly object _initLock = new object();
         private readonly List<string> _deviceConnectionStrings;
         private readonly TransportType _transportType;
+        private readonly ClientOptions _clientOptions = new ClientOptions { SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset };
 
         private readonly ILogger _logger;
-        private static DeviceClient s_deviceClient;
 
-        private static ConnectionStatus s_connectionStatus;
-        private static bool s_wasEverConnected;
+        // Mark these fields as volatile so that their latest values are referenced.
+        private static volatile DeviceClient s_deviceClient;
+        private static volatile ConnectionStatus s_connectionStatus = ConnectionStatus.Disconnected;
 
         public DeviceReconnectionSample(List<string> deviceConnectionStrings, TransportType transportType, ILogger logger)
         {
@@ -49,14 +49,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             _transportType = transportType;
             _logger.LogInformation($"Using {_transportType} transport.");
-
-            InitializeClient();
         }
 
-        public async Task RunSampleAsync()
+        private bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;
+
+        public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
-            Console.WriteLine("Press Control+C to quit the sample.");
-            using var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource(sampleRunningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
@@ -64,8 +63,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogInformation("Sample execution cancellation requested; will exit.");
             };
 
+            _logger.LogInformation($"Sample execution started, press Control+C to quit the sample.");
+
             try
             {
+                await InitializeAndOpenClientAsync();
                 await Task.WhenAll(SendMessagesAsync(cts.Token), ReceiveMessagesAsync(cts.Token));
             }
             catch (Exception ex)
@@ -74,34 +76,36 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private void InitializeClient()
+        private async Task InitializeAndOpenClientAsync()
         {
-            // If the client reports Connected status, it is already in operational state.
-            if (s_connectionStatus != ConnectionStatus.Connected
-                && _deviceConnectionStrings.Any())
+            if (ShouldClientBeInitialized(s_connectionStatus))
             {
+                // Allow a single thread to dispose and initialize the client instance.
                 lock (_initLock)
                 {
-                    _logger.LogDebug($"Attempting to initialize the client instance, current status={s_connectionStatus}");
-
-                    // If the device client instance has been previously initialized, then dispose it.
-                    // The s_wasEverConnected variable is required to store if the client ever reported Connected status.
-                    if (s_wasEverConnected && s_connectionStatus == ConnectionStatus.Disconnected)
+                    if (ShouldClientBeInitialized(s_connectionStatus))
                     {
-                        s_deviceClient?.Dispose();
-                        s_wasEverConnected = false;
+                        _logger.LogDebug($"Attempting to initialize the client instance, current status={s_connectionStatus}");
+
+                        // If the device client instance has been previously initialized, then dispose it.
+                        if (s_deviceClient != null)
+                        {
+                            s_deviceClient.Dispose();
+                            s_deviceClient = null;
+                        }
                     }
 
-                    s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _transportType);
+                    s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _transportType, _clientOptions);
                     s_deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
-                    s_deviceClient.OperationTimeoutInMilliseconds = (uint)s_operationTimeout.TotalMilliseconds;
+                    _logger.LogDebug($"Initialized the client instance.");
                 }
 
                 try
                 {
-                    // Force connection now
-                    s_deviceClient.OpenAsync().GetAwaiter().GetResult();
-                    _logger.LogDebug($"Initialized the client instance.");
+                    // Force connection now.
+                    // OpenAsync() is an idempotent call, it has the same effect if called once or multiple times on the same client.
+                    await s_deviceClient.OpenAsync();
+                    _logger.LogDebug($"Opened the client instance.");
                 }
                 catch (UnauthorizedException)
                 {
@@ -110,17 +114,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        // It is not good practice to have async void methods, however, DeviceClient.SetConnectionStatusChangesHandler() event handler signature has a void return type.
+        // As a result, any operation within this block will be executed unmonitored on another thread.
+        // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock
+        // before attempting to initialize or dispose the device client instance.
+        private async void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
         {
             _logger.LogDebug($"Connection status changed: status={status}, reason={reason}");
-
             s_connectionStatus = status;
-            switch (s_connectionStatus)
+
+            switch (status)
             {
                 case ConnectionStatus.Connected:
                     _logger.LogDebug("### The DeviceClient is CONNECTED; all operations will be carried out as normal.");
-
-                    s_wasEverConnected = true;
                     break;
 
                 case ConnectionStatus.Disconnected_Retrying:
@@ -138,13 +144,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         case ConnectionStatusChangeReason.Bad_Credential:
                             // When getting this reason, the current connection string being used is not valid.
                             // If we had a backup, we can try using that.
-                            string badCs = _deviceConnectionStrings[0];
                             _deviceConnectionStrings.RemoveAt(0);
                             if (_deviceConnectionStrings.Any())
                             {
-                                // Not great to print out a connection string, but this is done for sample/demo purposes.
-                                _logger.LogWarning($"The current connection string {badCs} is invalid. Trying another.");
-                                InitializeClient();
+                                _logger.LogWarning($"The current connection string is invalid. Trying another.");
+                                await InitializeAndOpenClientAsync();
                                 break;
                             }
 
@@ -160,14 +164,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             _logger.LogWarning("### The DeviceClient has been disconnected because the retry policy expired." +
                                 "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
 
-                            InitializeClient();
+                            await InitializeAndOpenClientAsync();
                             break;
 
                         case ConnectionStatusChangeReason.Communication_Error:
                             _logger.LogWarning("### The DeviceClient has been disconnected due to a non-retry-able exception. Inspect the exception for details." +
                                 "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
 
-                            InitializeClient();
+                            await InitializeAndOpenClientAsync();
                             break;
 
                         default:
@@ -190,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (s_connectionStatus == ConnectionStatus.Connected)
+                if (IsDeviceConnected)
                 {
                     _logger.LogInformation($"Device sending message {++messageCount} to IoT Hub...");
 
@@ -231,13 +235,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (s_connectionStatus != ConnectionStatus.Connected)
+                if (!IsDeviceConnected)
                 {
                     await Task.Delay(s_sleepDuration);
                     continue;
                 }
 
-                _logger.LogInformation($"Device waiting for C2D messages from the hub - for {s_sleepDuration}...");
+                _logger.LogInformation($"Device waiting for C2D messages from the hub for {s_sleepDuration}...");
                 _logger.LogInformation("Use the IoT Hub Azure Portal or Azure IoT Explorer to send a message to this device.");
 
                 try
@@ -297,6 +301,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await s_deviceClient.CompleteAsync(receivedMessage);
             _logger.LogInformation($"Completed message [{messageData}].");
+        }
+
+        // If the client reports Connected status, it is already in operational state.
+        // If the client reports Disconnected_retrying status, it is trying to recover its connection.
+        // If the client reports Disconnected status, you will need to dispose and recreate the client.
+        // If the client reports Disabled status, you will need to dispose and recreate the client.
+        private bool ShouldClientBeInitialized(ConnectionStatus connectionStatus)
+        {
+            return (connectionStatus == ConnectionStatus.Disconnected || connectionStatus == ConnectionStatus.Disabled)
+                && _deviceConnectionStrings.Any();
         }
     }
 }

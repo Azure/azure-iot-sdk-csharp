@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "back-end-application", "back-end-application\back-end-application.csproj", "{F029ED62-3E01-429A-8E32-4862990A35E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvokeDeviceMethod", "InvokeDeviceMethod\InvokeDeviceMethod.csproj", "{F029ED62-3E01-429A-8E32-4862990A35E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "read-d2c-messages", "read-d2c-messages\read-d2c-messages.csproj", "{7701514F-DA48-4344-82FE-4C4A1E7577F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "ReadD2cMessages\ReadD2cMessages.csproj", "{7701514F-DA48-4344-82FE-4C4A1E7577F9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "simulated-device", "simulated-device\simulated-device.csproj", "{C22BD1F5-D8A7-452A-96C4-FF0C0553EBF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "SimulatedDevice\SimulatedDevice.csproj", "{C22BD1F5-D8A7-452A-96C4-FF0C0553EBF3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "simulated-device-2", "simulated-device-2\simulated-device-2.csproj", "{3B033BD3-38B4-4B92-8871-2787DD7C86CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDeviceWithCommand", "SimulatedDeviceWithCommand\SimulatedDeviceWithCommand.csproj", "{3B033BD3-38B4-4B92-8871-2787DD7C86CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

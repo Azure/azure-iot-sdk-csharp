@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Thermostat", "PnpServiceSam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemperatureController", "PnpServiceSamples\TemperatureController\TemperatureController.csproj", "{12AB3A83-687B-40D2-8780-5F4A9B58A210}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorConsoleLogger", "..\..\..\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj", "{DBABF65A-F2E7-4736-9B99-D760E664B9C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +173,18 @@ Global
 		{12AB3A83-687B-40D2-8780-5F4A9B58A210}.Release|x64.Build.0 = Release|Any CPU
 		{12AB3A83-687B-40D2-8780-5F4A9B58A210}.Release|x86.ActiveCfg = Release|Any CPU
 		{12AB3A83-687B-40D2-8780-5F4A9B58A210}.Release|x86.Build.0 = Release|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Debug|x64.Build.0 = Debug|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Debug|x86.Build.0 = Debug|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Release|x64.ActiveCfg = Release|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Release|x64.Build.0 = Release|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Release|x86.ActiveCfg = Release|Any CPU
+		{DBABF65A-F2E7-4736-9B99-D760E664B9C6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

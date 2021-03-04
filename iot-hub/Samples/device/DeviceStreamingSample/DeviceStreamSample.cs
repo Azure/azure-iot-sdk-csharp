@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await _deviceClient.AcceptDeviceStreamRequestAsync(streamRequest, cts.Token);
 
                     using ClientWebSocket webSocket = await DeviceStreamingCommon.GetStreamingClientAsync(
-                        streamRequest.Url,
+                        streamRequest.Uri,
                         streamRequest.AuthorizationToken,
                         cts.Token);
 
