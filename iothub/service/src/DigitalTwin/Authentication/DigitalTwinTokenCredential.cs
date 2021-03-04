@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(),
+                        new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
                         new CancellationToken());
                 }
             }
