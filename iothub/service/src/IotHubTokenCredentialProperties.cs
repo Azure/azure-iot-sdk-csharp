@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(),
+                        new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
                         new CancellationToken());
                 }
             }
@@ -78,7 +78,9 @@ namespace Microsoft.Azure.Devices
             throw new InvalidOperationException($"TokenCredential is not supported on NET451");
 
 #else
-            AccessToken token = await _credential.GetTokenAsync(new TokenRequestContext(), new CancellationToken()).ConfigureAwait(false);
+            AccessToken token = await _credential.GetTokenAsync(
+                new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                new CancellationToken()).ConfigureAwait(false);
             return new CbsToken(
                 token.Token,
                 _tokenType,
