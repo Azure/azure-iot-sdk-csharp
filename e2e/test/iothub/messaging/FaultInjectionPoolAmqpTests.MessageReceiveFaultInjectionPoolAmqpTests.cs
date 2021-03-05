@@ -895,7 +895,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyAddress = null)
         {
             // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
@@ -911,16 +911,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
             }
 
-            async Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
+            async Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
             {
                 await serviceClient.CloseAsync()
                 .ConfigureAwait(false);
                 serviceClient.Dispose();
 
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    deviceClient.Dispose();
-                }
+                deviceClients.ForEach(deviceClient => deviceClient.Dispose());
+                testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());
             }
 
             await FaultInjectionPoolingOverAmqp
@@ -977,15 +975,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 receivedMessage.Should().BeNull();
             }
 
-            async Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
+            async Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
             {
                 await serviceClient.CloseAsync().ConfigureAwait(false);
                 serviceClient.Dispose();
 
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    deviceClient.Dispose();
-                }
+                deviceClients.ForEach(deviceClient => deviceClient.Dispose());
+                testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());
             }
 
             await FaultInjectionPoolingOverAmqp

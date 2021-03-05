@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             TimeSpan durationInSec,
             Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
             Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
-            Func<IList<DeviceClient>, Task> cleanupOperation,
+            Func<List<DeviceClient>, List<TestDeviceCallbackHandler>, Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
@@ -43,11 +43,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 }
             };
 
-            IList<TestDevice> testDevices = new List<TestDevice>();
-            IList<DeviceClient> deviceClients = new List<DeviceClient>();
-            IList<TestDeviceCallbackHandler> testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
-            IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
-            IList<Task> operations = new List<Task>();
+            var testDevices = new List<TestDevice>();
+            var deviceClients = new List<DeviceClient>();
+            var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
+            var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
+            var operations = new List<Task>();
 
             // Arrange
             // Initialize the test device client instances
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             finally
             {
                 // Close the service-side components and dispose the device client instances.
-                await cleanupOperation(deviceClients).ConfigureAwait(false);
+                await cleanupOperation(deviceClients, testDeviceCallbackHandlers).ConfigureAwait(false);
 
                 watch.Stop();
 

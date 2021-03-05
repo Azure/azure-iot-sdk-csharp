@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ValidateDeviceRegistrationResult(result);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            // The certificate instance refereneced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
+            // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
             Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
@@ -308,13 +308,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 await DeleteCreatedEnrollmentAsync(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
             }
 
-            if (auth is DeviceAuthenticationWithX509Certificate x509Auth)
+            if (auth is IDisposable disposableAuth)
             {
-                x509Auth?.Dispose();
-            }
-            if (auth is AuthenticationWithTokenRefresh tokenRefreshAuth)
-            {
-                tokenRefreshAuth?.Dispose();
+                disposableAuth?.Dispose();
             }
         }
 
