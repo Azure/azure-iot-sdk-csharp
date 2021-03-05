@@ -280,8 +280,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (status >= 400)
                 {
                     // Handle failures
-                    if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase) ||
-                        correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase) 
+                    || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         string error = null;
                         using (var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8))

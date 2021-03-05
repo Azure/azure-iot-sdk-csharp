@@ -378,7 +378,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
                 await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
-                Logging.Info("Patch has completed successfully", nameof(SendTwinPatchAsync));
             }
             finally
             {
