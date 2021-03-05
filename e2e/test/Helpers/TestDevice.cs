@@ -186,7 +186,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
 #if !NET451
             // Ideally we wouldn't be disposing the X509 Certificates here, but rather delegate that to whoever was creating the TestDevice.
-            // For the design that our test suite follows, it is ok to dispose the X509 certificate here since it won't be referenced by anyone else within the scope of that test.
+            // For the design that our test suite follows, it is ok to dispose the X509 certificate here since it won't be referenced by anyone else
+            // within the scope of the test using this TestDevice.
             _authCertificate?.Dispose();
             _authCertificate = null;
 #endif

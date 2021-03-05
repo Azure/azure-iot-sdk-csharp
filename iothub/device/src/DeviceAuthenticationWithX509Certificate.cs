@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The <see cref="Certificate"/> managed resources should be disposed by the user.
+        /// The <see cref="Certificate"/> managed resource should be disposed by the user.
         /// </summary>
         public void Dispose()
         {
