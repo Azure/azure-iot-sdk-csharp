@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -366,10 +367,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        // These tests worked earlier for Amqp and AmqpWs since it was catching a wrong exception
-        // To Do: Fix Update reported properties method behavior (breaking change) to wait for response
-        // and we should be able to enable these tests then.
-        [Ignore]
         [LoggedTestMethod]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Amqp()
         {
@@ -378,7 +375,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [Ignore]
         [LoggedTestMethod]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_AmqpWs()
         {
@@ -713,12 +709,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         })
                     .ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (IotHubException)
             {
                 exceptionThrown = true;
             }
 
-            Assert.IsTrue(exceptionThrown, "Exception was expected, but not thrown.");
+            Assert.IsTrue(exceptionThrown, "IotHubException was expected for updating reported property with an invalid property name, but was not thrown.");
 
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
