@@ -83,6 +83,9 @@
     <Compile Include="$(Generated)\Models\DeviceRegistration.cs">
       <Link>Generated\Models\DeviceRegistration.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\HttpContentHelper.cs">
+      <LinkBase>Common</LinkBase>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

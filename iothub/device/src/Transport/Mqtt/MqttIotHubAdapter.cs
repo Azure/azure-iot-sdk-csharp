@@ -24,7 +24,7 @@ using Microsoft.Azure.Devices.Shared;
 #if NET5_0
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 #else
-using TaskCompletionSource = DotNetty.Common.Concurrency.TaskCompletionSource;
+using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
 #endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
@@ -644,11 +644,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_subscribeCompletions.TryRemove(packet.PacketId, out TaskCompletionSource task))
             {
-#if NET5_0
                 task.TrySetResult();
-#else
-                task.TryComplete();
-#endif
             }
 
             if (Logging.IsEnabled)
@@ -689,11 +685,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_unsubscribeCompletions.TryRemove(packet.PacketId, out TaskCompletionSource task))
             {
-#if NET5_0
                 task.TrySetResult();
-#else
-                task.TryComplete();
-#endif
             }
 
             if (Logging.IsEnabled)

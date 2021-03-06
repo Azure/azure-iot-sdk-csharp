@@ -1,16 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -46,11 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     if (result is Action<string> setSasToken)
                     {
                         string target = GetTarget(request.RequestUri.LocalPath);
-#if NET5_0
-                        string responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-                        string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-#endif
+                        string responseContent = await response.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
                         TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent);
 
                         string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(

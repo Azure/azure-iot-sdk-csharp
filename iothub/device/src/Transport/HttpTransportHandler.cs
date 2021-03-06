@@ -277,11 +277,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return null;
             }
 
-#if NET5_0
-            byte[] byteContent = await responseMessage.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-#else
-            byte[] byteContent = await responseMessage.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-#endif
+            byte[] byteContent = await responseMessage.Content.ReadHttpContentAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
 
             Message message = byteContent != null
                 ? new Message(byteContent)

@@ -11,7 +11,7 @@ using DotNetty.Transport.Channels;
 #if NET5_0
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 #else
-using TaskCompletionSource = DotNetty.Common.Concurrency.TaskCompletionSource;
+using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
 #endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
@@ -81,11 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             switch (State)
             {
                 case States.Idle:
-#if NET5_0
                     _completionSource.TrySetResult();
-#else
-                    _completionSource.TryComplete();
-#endif
                     break;
 
                 case States.Processing:
@@ -164,11 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     case States.FinalProcessing:
                     case States.Aborted:
-#if NET5_0
                         _completionSource.TrySetResult();
-#else
-                        _completionSource.TryComplete();
-#endif
                         break;
 
                     default:

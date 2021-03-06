@@ -35,7 +35,7 @@ using Newtonsoft.Json;
 #if NET5_0
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 #else
-using TaskCompletionSource = DotNetty.Common.Concurrency.TaskCompletionSource;
+using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
 #endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
@@ -514,11 +514,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (TryStateTransition(TransportState.Opening, TransportState.Open))
             {
-#if NET5_0
                 _connectCompletion.TrySetResult();
-#else
-                _connectCompletion.TryComplete();
-#endif
             }
         }
 
@@ -1088,15 +1084,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .WriteAsync(new SubscribePacket(0, new SubscriptionRequest(_deviceboundMessageFilter, QualityOfService.AtLeastOnce)))
                     .ConfigureAwait(true);
 
-                bool isSubscriptionCompleted;
-
-#if NET5_0
-                isSubscriptionCompleted = _subscribeCompletionSource.TrySetResult();
-#else
-                isSubscriptionCompleted = _subscribeCompletionSource.TryComplete();
-#endif
-
-                if (TryStateTransition(TransportState.Subscribing, TransportState.Receiving) && isSubscriptionCompleted)
+                if (TryStateTransition(TransportState.Subscribing, TransportState.Receiving)
+                    && _subscribeCompletionSource.TrySetResult())
                 {
                     return;
                 }

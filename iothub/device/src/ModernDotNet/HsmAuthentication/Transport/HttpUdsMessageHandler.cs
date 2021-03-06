@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 {
@@ -25,19 +26,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             using var stream = new HttpBufferedStream(new NetworkStream(socket, true));
 
             byte[] requestBytes = HttpRequestResponseSerializer.SerializeRequest(request);
+            await stream.WriteToStreamAsync(requestBytes, cancellationToken).ConfigureAwait(false);
 
-#if NET451 || NET472 || NETSTANDARD2_0
-            await stream.WriteAsync(requestBytes, 0, requestBytes.Length, cancellationToken).ConfigureAwait(false);
-#else
-            await stream.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false);
-#endif
             if (request.Content != null)
             {
-#if NET5_0
-                await request.Content.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-#else
-                await request.Content.CopyToAsync(stream).ConfigureAwait(false);
-#endif
+                await request.Content.CopyToStreamAsync(stream, cancellationToken).ConfigureAwait(false);
             }
 
             HttpResponseMessage response = await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken).ConfigureAwait(false);

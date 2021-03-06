@@ -60,6 +60,12 @@
     <Compile Include="$(Common)\DefaultWebProxySettings.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
+    <Compile Include="$(Common)\HttpContentHelper.cs">
+      <LinkBase>Common</LinkBase>
+    </Compile>
+    <Compile Include="$(Common)\TaskCompletionSource.cs">
+      <LinkBase>Common</LinkBase>
+    </Compile>
   </ItemGroup>
 
   <!-- All the "new" .NET targets -->
