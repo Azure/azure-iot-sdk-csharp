@@ -21,39 +21,39 @@ namespace Microsoft.Azure.Devices.Samples
 
         private readonly ServiceClient _serviceClient;
         private readonly RegistryManager _registryManager;
-        private readonly string _digitalTwinId;
+        private readonly string _deviceId;
         private readonly ILogger _logger;
 
-        public TemperatureControllerSample(ServiceClient serviceClient, RegistryManager registryManager, string digitalTwinId, ILogger logger)
+        public TemperatureControllerSample(ServiceClient serviceClient, RegistryManager registryManager, string deviceId, ILogger logger)
         {
             _serviceClient = serviceClient ?? throw new ArgumentNullException(nameof(serviceClient));
             _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
-            _digitalTwinId = digitalTwinId ?? throw new ArgumentNullException(nameof(digitalTwinId));
+            _deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
             _logger = logger ?? LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<TemperatureControllerSample>();
         }
 
         public async Task RunSampleAsync()
         {
-            // Get and print the digital twin
-            Twin twin = await GetAndPrintDigitalTwinAsync();
-            _logger.LogDebug($"Model Id of {_digitalTwinId} is: {twin.ModelId}");
+            // Get and print the device twin
+            Twin twin = await GetAndPrintDeviceTwinAsync();
+            _logger.LogDebug($"Model Id of {_deviceId} is: {twin.ModelId}");
 
             // Update the targetTemperature property on the thermostat1 component
-            await UpdateDigitalTwinComponentPropertyAsync();
+            await UpdateDeviceTwinComponentPropertyAsync();
 
-            // Invoke the component-level command getMaxMinReport on the thermostat1 component of the TemperatureController digital twin
+            // Invoke the component-level command getMaxMinReport on the thermostat1 component of the TemperatureController device twin
             await InvokeGetMaxMinReportCommandAsync();
 
-            // Invoke the root-level command reboot on the TemperatureController digital twin
+            // Invoke the root-level command reboot on the TemperatureController device twin
             await InvokeRebootCommandAsync();
         }
 
-        private async Task<Twin> GetAndPrintDigitalTwinAsync()
+        private async Task<Twin> GetAndPrintDeviceTwinAsync()
         {
-            _logger.LogDebug($"Get the {_digitalTwinId} digital twin.");
+            _logger.LogDebug($"Get the {_deviceId} device twin.");
 
-            Twin twin = await _registryManager.GetTwinAsync(_digitalTwinId);
-            _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonConvert.SerializeObject(twin, Formatting.Indented)}");
+            Twin twin = await _registryManager.GetTwinAsync(_deviceId);
+            _logger.LogDebug($"{_deviceId} twin: \n{JsonConvert.SerializeObject(twin, Formatting.Indented)}");
 
             return twin;
         }
@@ -72,11 +72,11 @@ namespace Microsoft.Azure.Devices.Samples
             commandInvocation.SetPayloadJson(componentCommandPayload);
 
             _logger.LogDebug($"Invoke the {getMaxMinReportCommandName} command on component {Thermostat1Component} " +
-                $"in the {_digitalTwinId} digital twin.");
+                $"in the {_deviceId} device twin.");
 
             try
             {
-                CloudToDeviceMethodResult result = await _serviceClient.InvokeDeviceMethodAsync(_digitalTwinId, commandInvocation);
+                CloudToDeviceMethodResult result = await _serviceClient.InvokeDeviceMethodAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on component {Thermostat1Component}." +
                     $"\nDevice returned status: {result.Status}. \nReport: {result.GetPayloadAsJson()}");
             }
@@ -97,13 +97,13 @@ namespace Microsoft.Azure.Devices.Samples
             string componentCommandPayload = JsonConvert.SerializeObject(3);
             commandInvocation.SetPayloadJson(componentCommandPayload);
 
-            _logger.LogDebug($"Invoke the {commandToInvoke} command on the {_digitalTwinId} digital twin." +
+            _logger.LogDebug($"Invoke the {commandToInvoke} command on the {_deviceId} device twin." +
                 $"\nThis will set the \"targetTemperature\" on \"Thermostat\" component to 0.");
 
             try
             {
-                CloudToDeviceMethodResult result = await _serviceClient.InvokeDeviceMethodAsync(_digitalTwinId, commandInvocation);
-                _logger.LogDebug($"Command {commandToInvoke} was invoked on the {_digitalTwinId} digital twin." +
+                CloudToDeviceMethodResult result = await _serviceClient.InvokeDeviceMethodAsync(_deviceId, commandInvocation);
+                _logger.LogDebug($"Command {commandToInvoke} was invoked on the {_deviceId} device twin." +
                     $"\nDevice returned status: {result.Status}.");
             }
             catch (DeviceNotFoundException)
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Samples
             }
         }
 
-        private async Task UpdateDigitalTwinComponentPropertyAsync()
+        private async Task UpdateDeviceTwinComponentPropertyAsync()
         {
             const string targetTemperaturePropertyName = "targetTemperature";
 
@@ -121,13 +121,13 @@ namespace Microsoft.Azure.Devices.Samples
             int desiredTargetTemperature = Random.Next(0, 100);
 
             var twinPatch = CreatePropertyPatch(targetTemperaturePropertyName, desiredTargetTemperature, Thermostat1Component);
-            _logger.LogDebug($"Updating the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_digitalTwinId} digital twin to { desiredTargetTemperature}.");
+            _logger.LogDebug($"Updating the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_deviceId} device twin to { desiredTargetTemperature}.");
 
-            Twin twin = await _registryManager.GetTwinAsync(_digitalTwinId);
-            await _registryManager.UpdateTwinAsync(_digitalTwinId, twinPatch, twin.ETag);
+            Twin twin = await _registryManager.GetTwinAsync(_deviceId);
+            await _registryManager.UpdateTwinAsync(_deviceId, twinPatch, twin.ETag);
 
-            // Print the TemperatureController digital twin
-            await GetAndPrintDigitalTwinAsync();
+            // Print the TemperatureController device twin
+            await GetAndPrintDeviceTwinAsync();
         }
 
         /* The property update patch (for a property within a component) needs to be in the following format:
