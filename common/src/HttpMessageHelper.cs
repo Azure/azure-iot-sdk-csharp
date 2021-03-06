@@ -14,7 +14,7 @@ using System.Net.Http.Formatting;
 
 namespace Microsoft.Azure.Devices.Shared
 {
-    internal static class HttpContentHelper
+    internal static class HttpMessageHelper
     {
 #if !NET451
         private const string ApplicationJson = "application/json";
@@ -57,46 +57,5 @@ namespace Microsoft.Azure.Devices.Shared
             await stream.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false);
 #endif
         }
-
-        internal static async Task CopyToStreamAsync(this HttpContent content, Stream stream, CancellationToken cancellationToken)
-        {
-#if NET5_0
-            await content.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-#else
-            _ = cancellationToken;
-            await content.CopyToAsync(stream).ConfigureAwait(false);
-#endif
-        }
-
-        internal static Task<Stream> ReadHttpContentAsStream(this HttpContent httpContent, CancellationToken cancellationToken)
-        {
-#if NET5_0
-            return httpContent.ReadAsStreamAsync(cancellationToken);
-#else
-            _ = cancellationToken;
-            return httpContent.ReadAsStreamAsync();
-#endif
-        }
-
-        internal static Task<byte[]> ReadHttpContentAsByteArrayAsync(this HttpContent content, CancellationToken cancellationToken)
-        {
-#if NET5_0
-            return content.ReadAsByteArrayAsync(cancellationToken);
-#else
-            _ = cancellationToken;
-            return content.ReadAsByteArrayAsync();
-#endif
-        }
-
-        internal static Task<string> ReadHttpContentAsStringAsync(this HttpContent content, CancellationToken cancellationToken)
-        {
-#if NET5_0
-            return content.ReadAsStringAsync(cancellationToken);
-#else
-            _ = cancellationToken;
-            return content.ReadAsStringAsync();
-#endif
-        }
-
     }
 }

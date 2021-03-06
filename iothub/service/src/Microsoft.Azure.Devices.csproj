@@ -116,7 +116,7 @@
       <Link>Common\Utils.cs</Link>
     </Compile>
     <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
-    <Compile Include="$(Common)\HttpContentHelper.cs" />
+    <Compile Include="$(Common)\HttpMessageHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>

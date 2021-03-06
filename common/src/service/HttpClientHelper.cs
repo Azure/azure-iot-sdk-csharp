@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
@@ -18,6 +17,8 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Common.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+
+using static Microsoft.Azure.Devices.Shared.HttpMessageHelper;
 
 namespace Microsoft.Azure.Devices
 {
@@ -193,7 +194,7 @@ namespace Microsoft.Azure.Devices
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
-                        HttpContentHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
+                        SetHttpRequestMessageContent(requestMsg, entity);
 
                         return Task.FromResult(0);
                     },
@@ -218,7 +219,7 @@ namespace Microsoft.Azure.Devices
                     new Uri(_baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
-                        HttpContentHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
+                        SetHttpRequestMessageContent<T>(requestMsg, entity);
                         return Task.FromResult(0);
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
@@ -242,7 +243,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, operationType);
-                    HttpContentHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
+                    SetHttpRequestMessageContent<T>(requestMsg, entity);
 
                     return Task.FromResult(0);
                 },
@@ -268,7 +269,7 @@ namespace Microsoft.Azure.Devices
                 {
                     // TODO: skintali: Use string etag when service side changes are ready
                     InsertEtag(requestMsg, etag, operationType);
-                    HttpContentHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
+                    SetHttpRequestMessageContent<T>(requestMsg, entity);
 
                     return Task.FromResult(0);
                 },
@@ -288,7 +289,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, PutOperationType.UpdateEntity);
-                    HttpContentHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
+                    SetHttpRequestMessageContent<T>(requestMsg, entity);
 
                     return Task.FromResult(0);
                 },
@@ -310,7 +311,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, putOperationType);
-                    HttpContentHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
+                    SetHttpRequestMessageContent<T>(requestMsg, entity);
 
                     return Task.FromResult(0);
                 },
@@ -328,7 +329,7 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-            T entity = await HttpContentHelper.ReadHttpResponseMessageContentAsync<T>(message, token).ConfigureAwait(false);
+            T entity = await ReadHttpResponseMessageContentAsync<T>(message, token).ConfigureAwait(false);
 
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;
