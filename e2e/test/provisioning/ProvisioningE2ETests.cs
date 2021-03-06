@@ -913,20 +913,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 case AttestationMechanismType.Tpm:
                     string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
                     var tpmSim = new SecurityProviderTpmSimulator(registrationId);
-
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
 
-                    using (var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString))
-                    {
-                        Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
-                        var individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
-                        IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
-                        var attestation = new TpmAttestation(base64Ek);
-                        enrollment.Attestation = attestation;
-                        Logger.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
-                        await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
-                    };
-
+                    Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
+                    var individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
+                    IndividualEnrollment enrollment = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                    var attestation = new TpmAttestation(base64Ek);
+                    enrollment.Attestation = attestation;
+                    Logger.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
+                    await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
                     return tpmSim;
 
                 case AttestationMechanismType.X509:
