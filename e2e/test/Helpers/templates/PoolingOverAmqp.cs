@@ -47,11 +47,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             int currentSuccessRate = 0;
             bool reRunTest = false;
 
-            IList<TestDevice> testDevices = new List<TestDevice>();
-            IList<DeviceClient> deviceClients = new List<DeviceClient>();
-            IList<TestDeviceCallbackHandler> testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
-            IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
-            IList<Task> operations = new List<Task>();
+            var testDevices = new List<TestDevice>();
+            var deviceClients = new List<DeviceClient>();
+            var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
+            var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
+            var operations = new List<Task>();
 
             do
             {
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     var amqpConnectionStatusChange = new AmqpConnectionStatusChange(logger);
                     deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
 
-                    using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
+                    var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
 
                     testDevices.Add(testDevice);
                     deviceClients.Add(deviceClient);
@@ -135,10 +135,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         await cleanupOperation().ConfigureAwait(false);
                     }
 
-                    foreach (DeviceClient deviceClient in deviceClients)
-                    {
-                        deviceClient.Dispose();
-                    }
+                    deviceClients.ForEach(deviceClient => deviceClient.Dispose());
+                    testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());
 
                     // Clean up the local lists
                     testDevices.Clear();
