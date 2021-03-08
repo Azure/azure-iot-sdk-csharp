@@ -1095,8 +1095,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static void CleanupCertificates()
         {
 #if !NET451
-            s_individualEnrollmentCertificate?.Dispose();
-            s_groupEnrollmentCertificate?.Dispose();
+            /*s_individualEnrollmentCertificate?.Dispose();
+            s_groupEnrollmentCertificate?.Dispose();*/
 #endif
         }
     }
