@@ -42,9 +42,14 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         private async Task<Socket> GetConnectedSocketAsync()
         {
-            var endpoint = new UnixDomainSocketEndPoint(_providerUri.LocalPath);
             Socket socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+#if NET451 || NET472 || NETSTANDARD2_0
+            var endpoint = new UnixDomainSocketEndPoint(_providerUri.LocalPath);
             await socket.ConnectAsync(endpoint).ConfigureAwait(false);
+#else
+            var endpoint = new System.Net.Sockets.UnixDomainSocketEndPoint(_providerUri.LocalPath);
+            await socket.ConnectAsync(endpoint).ConfigureAwait(false);
+#endif
 
             return socket;
         }
