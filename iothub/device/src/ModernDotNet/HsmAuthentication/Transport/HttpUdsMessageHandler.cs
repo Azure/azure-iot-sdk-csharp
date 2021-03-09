@@ -25,6 +25,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             using var stream = new HttpBufferedStream(new NetworkStream(socket, true));
 
             byte[] requestBytes = HttpRequestResponseSerializer.SerializeRequest(request);
+
 #if NET451 || NET472 || NETSTANDARD2_0
             await stream.WriteAsync(requestBytes, 0, requestBytes.Length, cancellationToken).ConfigureAwait(false);
 #else
@@ -42,10 +43,25 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         private async Task<Socket> GetConnectedSocketAsync()
         {
-            var endpoint = new UnixDomainSocketEndPoint(_providerUri.LocalPath);
             Socket socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
-            await socket.ConnectAsync(endpoint).ConfigureAwait(false);
 
+            // The Edge Agent uses unix sockets for communication with the modules deployed in docker for HSM.
+            // For netstandard 2.0 there was no implementation for a Unix Domain Socket (UDS) so we used a version
+            // that was part of a test that was reused in a number of libraries on the internet.
+            //
+            // https://github.com/dotnet/corefx/blob/12b51c6bf153cc237b251a4e264d5e7c0ee84a33/src/System.IO.Pipes/src/System/Net/Sockets/UnixDomainSocketEndPoint.cs
+            // https://github.com/dotnet/corefx/blob/12b51c6bf153cc237b251a4e264d5e7c0ee84a33/src/System.Net.Sockets/tests/FunctionalTests/UnixDomainSocketTest.cs#L248
+            //
+            // Since then the UnixDomainSocketEndpoint has been added to the dotnet framework and there has been considerable work
+            // around unix sockets in the BCL. For older versions of the framework we will continue to use the existing class since it works
+            // fine. For netcore 2.1 and greater as well as .NET 5.0 and greater we'll use the native framework version.
+
+#if NET451 || NET472 || NETSTANDARD2_0
+            var endpoint = new Microsoft.Azure.Devices.Client.HsmAuthentication.Transport.UnixDomainSocketEndPoint(_providerUri.LocalPath);
+#else
+            var endpoint = new System.Net.Sockets.UnixDomainSocketEndPoint(_providerUri.LocalPath);
+#endif
+            await socket.ConnectAsync(endpoint).ConfigureAwait(false);
             return socket;
         }
     }
