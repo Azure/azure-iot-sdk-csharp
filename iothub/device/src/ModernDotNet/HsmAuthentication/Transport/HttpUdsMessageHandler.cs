@@ -58,11 +58,10 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
              * fine. For netcore 2.1 and greater as well as .NET 5.0 and greater we'll use the native framework version.
             */
 
-            System.Net.EndPoint endpoint = null;
 #if NET451 || NET472 || NETSTANDARD2_0
-            endpoint = new UnixDomainSocketEndPoint(_providerUri.LocalPath);
+            var endpoint = new UnixDomainSocketEndPoint(_providerUri.LocalPath);
 #else
-            endpoint = new System.Net.Sockets.UnixDomainSocketEndPoint(_providerUri.LocalPath);
+            var endpoint = new System.Net.Sockets.UnixDomainSocketEndPoint(_providerUri.LocalPath);
 #endif
             await socket.ConnectAsync(endpoint).ConfigureAwait(false);
             return socket;
