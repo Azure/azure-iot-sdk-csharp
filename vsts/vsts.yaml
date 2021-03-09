@@ -294,6 +294,8 @@ jobs:
         displayName: "Run PoliCheck"
         inputs:
           targetType: F
+          optionsRulesDBPath: vsts/PolicheckExclusionsDB.mdb
+          optionsPE: 1
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
         displayName: "Run Vulnerability Assessment"
