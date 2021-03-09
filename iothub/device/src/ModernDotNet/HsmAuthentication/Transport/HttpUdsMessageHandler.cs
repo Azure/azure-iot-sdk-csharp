@@ -57,14 +57,14 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
              * around unix sockets in the BCL. For older versions of the framework we will continue to use the existing class since it works
              * fine. For netcore 2.1 and greater as well as .NET 5.0 and greater we'll use the native framework version.
             */
-#if NET451 || NET472 || NETSTANDARD2_0
-            var endpoint = new UnixDomainSocketEndPoint(_providerUri.LocalPath);
-            await socket.ConnectAsync(endpoint).ConfigureAwait(false);
-#else
-            var endpoint = new System.Net.Sockets.UnixDomainSocketEndPoint(_providerUri.LocalPath);
-            await socket.ConnectAsync(endpoint).ConfigureAwait(false);
-#endif
 
+            System.Net.EndPoint endpoint = null;
+#if NET451 || NET472 || NETSTANDARD2_0
+            endpoint = new UnixDomainSocketEndPoint(_providerUri.LocalPath);
+#else
+            endpoint = new System.Net.Sockets.UnixDomainSocketEndPoint(_providerUri.LocalPath);
+#endif
+            await socket.ConnectAsync(endpoint).ConfigureAwait(false);
             return socket;
         }
     }
