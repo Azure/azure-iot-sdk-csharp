@@ -984,8 +984,15 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                methodResponseInternal?.Dispose();
-                _methodsDictionarySemaphore.Release();
+                try
+                {
+                    methodResponseInternal?.Dispose();
+                }
+                finally
+                { 
+                    // Need to release this semaphore even if the above dispose call fails
+                    _methodsDictionarySemaphore.Release();
+                }
             }
 
             if (callbackContextPair == null)
