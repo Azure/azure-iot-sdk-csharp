@@ -20,7 +20,7 @@ jobs:
   ### Linux build ###
   - job: LINUX
     displayName: Linux
-    timeoutInMinutes: 75
+    timeoutInMinutes: 120
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
@@ -124,7 +124,7 @@ jobs:
   ### Windows build ###
   - job: WINDOWS
     displayName: Windows
-    timeoutInMinutes: 75
+    timeoutInMinutes: 120
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
