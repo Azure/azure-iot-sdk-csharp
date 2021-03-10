@@ -1402,7 +1402,9 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
+                await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
                 callbackContextTuple = _deviceReceiveMessageCallback;
+                _deviceReceiveMessageSemaphore.Release();
                 await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2)
                     ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
             }
