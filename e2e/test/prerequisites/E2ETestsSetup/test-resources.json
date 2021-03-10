@@ -176,7 +176,7 @@
           "name": "standard",
           "family": "A"
         },
-        "enableSoftDelete": false,
+        "enableSoftDelete": true,
         "networkAcls": {
           "defaultAction": "Allow",
           "bypass": "AzureServices",
@@ -342,7 +342,7 @@
       "properties": {}
     },
     {
-      "type": "Microsoft.Security/IoTSecuritySolutions",
+      "type": "Microsoft.Security/iotSecuritySolutions",
       "apiVersion": "2019-08-01",
       "name": "[parameters('SecuritySolutionName')]",
       "location": "[resourceGroup().location]",
@@ -484,7 +484,7 @@
     },
     "workspaceId": {
       "type": "string",
-      "value": "[format('{0}', reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId)]"
+      "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId]"
     },
     "customAllocationPolicyWebhook": {
       "type": "string",
