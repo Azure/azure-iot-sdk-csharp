@@ -1400,16 +1400,17 @@ namespace Microsoft.Azure.Devices.Client
 
             Tuple<ReceiveMessageCallback, object> callbackContextTuple = null;
 
+            await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
             try
             {
-                await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
                 callbackContextTuple = _deviceReceiveMessageCallback;
-                _deviceReceiveMessageSemaphore.Release();
                 await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2)
                     ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
             }
             finally
             {
+                _deviceReceiveMessageSemaphore.Release();
+             
                 if (Logging.IsEnabled)
                 {
                     Logging.Exit(this, message, nameof(OnDeviceMessageReceivedAsync));
