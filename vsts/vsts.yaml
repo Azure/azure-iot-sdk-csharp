@@ -34,7 +34,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted Ubuntu 1604
+      vmImage: ubuntu-latest
     steps:
       - task: Docker@1
         displayName: "Start TPM Simulator"
@@ -142,7 +142,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted VS2017
+      vmImage: windows-latest
     steps:
       - script: |
           call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
@@ -237,7 +237,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted VS2017
+      vmImage: windows-latest
     steps:
       - script: |
           rem Run dotnet first experience.
