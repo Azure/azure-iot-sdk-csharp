@@ -171,6 +171,7 @@ for($i = 0; $i -lt $filenames.length; $i++) {
     } else {
         Write-Host $oldsetNames[$i] "Does not exist. Skipping."
     }
+    Write-Host ""
 }
 
 Write-Host ""
