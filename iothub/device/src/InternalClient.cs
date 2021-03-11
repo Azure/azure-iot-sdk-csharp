@@ -1406,19 +1406,18 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
-            try
+            ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
+            object callbackContext = _deviceReceiveMessageCallback?.Item2;
+            _deviceReceiveMessageSemaphore.Release();
+
+            if (callback != null)
             {
-                await (_deviceReceiveMessageCallback?.Item1?.Invoke(message, _deviceReceiveMessageCallback.Item2)
-                    ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+                await (callback.Invoke(message, callbackContext) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
             }
-            finally
+
+            if (Logging.IsEnabled)
             {
-                _deviceReceiveMessageSemaphore.Release();
-             
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, message, nameof(OnDeviceMessageReceivedAsync));
-                }
+                Logging.Exit(this, message, nameof(OnDeviceMessageReceivedAsync));
             }
         }
 
