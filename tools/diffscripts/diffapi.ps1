@@ -69,3 +69,6 @@ for($i = 0; $i -lt $filenames.length; $i++) {
         Write-Host $oldsetNames[$i] "Does not exist!"
     }
 }
+
+Set-Location -Path $masterdirectory
+& git diff --numstat
