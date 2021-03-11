@@ -113,14 +113,6 @@ if ($diffoutput -eq $null) {
         $deleted = $deleted + $filedel
         Write-Host "There have been $filedel deletions and $fileadd additions to the $file file. We will need to evaluate the changes." 
     }
-
-    if ($deleted -gt 0) {
-        Write-Host "There have been $deleted deletions from the SDK suface. We will need to make a minor version change." 
-    } else {
-        if($added -gt 0) {
-        Write-Host "There have been $added additions to the SDK suface. We will need to make a `"dot version`" change." 
-        }
-    }
 }
 
 Set-Location -Path $olddir
