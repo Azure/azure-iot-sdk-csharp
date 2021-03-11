@@ -93,9 +93,11 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 }
 
                 ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
-#pragma warning disable CA2000 // This is disposed when the client is disposed.
-                var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId);
-#pragma warning restore CA2000
+
+                TimeSpan sasTokenTimeToLive = _options?.SasTokenTimeToLive ?? default;
+                int sasTokenRenewalBuffer = _options?.SasTokenRenewalBuffer ?? default;
+
+                var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId, sasTokenTimeToLive, sasTokenRenewalBuffer);
 
                 Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
 

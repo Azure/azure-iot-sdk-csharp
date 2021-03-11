@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">The Id of the device.</param>
         /// <param name="moduleId">The Id of the module.</param>
         public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId)
-            : this(deviceId, moduleId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
+            : this(deviceId, moduleId, 0, 0)
         {
         }
 
@@ -40,16 +40,20 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="moduleId">The module Id.</param>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
-        /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
-        /// a percentage of the time to live.</param>
+        /// <param name="suggestedTimeToLiveSeconds">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        ///</param>
         public ModuleAuthenticationWithTokenRefresh(
             string deviceId,
             string moduleId,
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
-            : base(suggestedTimeToLiveSeconds, timeBufferPercentage)
+            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage))
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
@@ -77,6 +81,20 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionStringBuilder.DeviceId = DeviceId;
             iotHubConnectionStringBuilder.ModuleId = ModuleId;
             return iotHubConnectionStringBuilder;
+        }
+
+        private static int SetSasTokenSuggestedTimeToLiveSeconds(int suggestedTimeToLiveSeconds)
+        {
+            return suggestedTimeToLiveSeconds == 0
+                ? DefaultTimeToLiveSeconds
+                : suggestedTimeToLiveSeconds;
+        }
+
+        private static int SetSasTokenRenewalBufferPercentage(int timeBufferPercentage)
+        {
+            return timeBufferPercentage == 0
+                ? DefaultBufferPercentage
+                : timeBufferPercentage;
         }
     }
 }

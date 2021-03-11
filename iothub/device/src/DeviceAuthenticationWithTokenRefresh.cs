@@ -11,8 +11,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public abstract class DeviceAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
-        private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
-        private const int DefaultBufferPercentage = 15;
+        internal const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
+        internal const int DefaultBufferPercentage = 15;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class using default
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         public DeviceAuthenticationWithTokenRefresh(string deviceId)
-            : this(deviceId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
+            : this(deviceId, 0, 0)
         {
         }
 
@@ -28,15 +28,19 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
-        /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
-        /// a percentage of the time to live.</param>
+        /// <param name="suggestedTimeToLiveSeconds">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        ///</param>
         public DeviceAuthenticationWithTokenRefresh(
             string deviceId,
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
-            : base(suggestedTimeToLiveSeconds, timeBufferPercentage)
+            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage))
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
@@ -62,6 +66,20 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionStringBuilder = base.Populate(iotHubConnectionStringBuilder);
             iotHubConnectionStringBuilder.DeviceId = DeviceId;
             return iotHubConnectionStringBuilder;
+        }
+
+        private static int SetSasTokenSuggestedTimeToLiveSeconds(int suggestedTimeToLiveSeconds)
+        {
+            return suggestedTimeToLiveSeconds == 0
+                ? DefaultTimeToLiveSeconds
+                : suggestedTimeToLiveSeconds;
+        }
+
+        private static int SetSasTokenRenewalBufferPercentage(int timeBufferPercentage)
+        {
+            return timeBufferPercentage == 0
+                ? DefaultBufferPercentage
+                : timeBufferPercentage;
         }
     }
 }
