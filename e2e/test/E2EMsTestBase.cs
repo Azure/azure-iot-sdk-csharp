@@ -23,7 +23,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class E2EMsTestBase : IDisposable
     {
-        private static readonly string[] s_eventProviders = new string[] { "DotNetty-Default", "Microsoft-Azure-", };
         private ConsoleEventListener _listener;
 
         // Test specific logger instance
@@ -41,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Note: Events take long and increase run time of the test suite, so only using trace.
             Logger.Trace($"Starting test - {TestContext.TestName}", SeverityLevel.Information);
 
-            _listener = new ConsoleEventListener(s_eventProviders);
+            _listener = new ConsoleEventListener();
         }
 
         [TestCleanup]
