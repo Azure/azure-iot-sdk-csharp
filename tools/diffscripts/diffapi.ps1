@@ -14,8 +14,6 @@ Parameters:
     -SDKInternalsPath: The path of the iot-sdk-internals repository (ex: c:\repo\iot-sdks-internals)
 	-Preview indicates you will compare the output to the last preview version
 
-Build will automatically detect if the machine is Windows vs Unix. On Windows development boxes, additional testing on .NET Framework will be performed.
-
 .EXAMPLE
 .\diffapi
 
