@@ -234,4 +234,4 @@ NVChip
 **/code-model-v1
 
 #Need this to run the compare tool
-!/tools/diffscripts/RemoveHeadersFromDiffFile.dll
+!/tools/diffscripts/RemoveHeadersFromDiffFile/exe/*
