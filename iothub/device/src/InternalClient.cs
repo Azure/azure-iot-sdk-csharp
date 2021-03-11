@@ -1405,13 +1405,10 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            Tuple<ReceiveMessageCallback, object> callbackContextTuple = null;
-
             await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
             try
             {
-                callbackContextTuple = _deviceReceiveMessageCallback;
-                await (callbackContextTuple?.Item1?.Invoke(message, callbackContextTuple.Item2)
+                await (_deviceReceiveMessageCallback?.Item1?.Invoke(message, _deviceReceiveMessageCallback.Item2)
                     ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
             }
             finally
