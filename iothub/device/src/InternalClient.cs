@@ -1414,7 +1414,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (callback != null)
             {
-                await (callback.Invoke(message, callbackContext) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+                await callback.Invoke(message, callbackContext).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled)
