@@ -6,9 +6,13 @@ $masterdirectory = Join-Path -Path $internalroot -Child "\sdk_design_docs\CSharp
 $previewdirectory = Join-Path -Path $internalroot -Child "\sdk_design_docs\CSharp\preview"
 
 if ((Test-Path $asmtool) -ne $TRUE) {
-    Write-Host "Please get the AsmDiff tool from the dotnet arcade https://github.com/dotnet/arcade/tree/master/src/Microsoft.DotNet.AsmDiff"
+    Write-Host "Please get the AsmDiff tool from the dotnet arcade https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.AsmDiff. Clone this to the directory containing the SDK repo."
+    Write-Host "For example, if this SDK is cloned to c:\repos you should clone https://github.com/dotnet/arcade.git to the c:\repos folder."
+    Write-Host ""
+    Write-Host "Once you clone the folder run dotnet build in the src/Microsoft.DotNet.AsmDiff folder."
 }
 
+# Hardcoded list of assembly names
 $filenames = @(
     "Microsoft.Azure.Devices.Shared",
     "Microsoft.Azure.Devices.Client",
@@ -59,9 +63,8 @@ for($i = 0; $i -lt $filenames.length; $i++) {
             $newbody
         } | Set-Content $markdownoutput[$i]
 
-        Write-Host 'Removing ``` headers for' $markdownoutput[$i]
-        $textToParse = Get-Content $markdownoutput[$i]
-        $textToParse = $textToParse -Replace '(?gm)```\s\s##.*\s\s``` diff\s', ''
+
+        & .\RemoveHeadersFromDiffFIle $markdownoutput[$i]
     } else {
         Write-Host $oldsetNames[$i] "Does not exist!"
     }
