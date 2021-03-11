@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -1167,10 +1169,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
                 }
 
-                int length = (int)streamLength;
-                IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
-                await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(true);
-                Contract.Assert(buffer.ReadableBytes == length);
+            int length = (int)streamLength;
+            IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
+            await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(true);
+            Contract.Assert(buffer.ReadableBytes == length);
 
                 packet.Payload = buffer;
                 return packet;
