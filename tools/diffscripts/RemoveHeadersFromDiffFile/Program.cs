@@ -9,7 +9,7 @@ namespace RemoveHeadersFromDiffFile
         public static void Main(string[] args)
         {
             // Take in the file name
-            string fileName = args[1];
+            string fileName = args[0];
 
             // Get the existing contents
             string fileContents = File.ReadAllText(fileName);
@@ -30,7 +30,7 @@ namespace RemoveHeadersFromDiffFile
 
             string diffReplacement = Regex.Replace(titleReplacement, diffHeaderReplaceRegex, string.Empty, RegexOptions.Multiline);
 
-            File.WriteAllText(fileName, string.Concat(diffReplacement, "```\r\n"));
+            File.WriteAllText(fileName, string.Concat(diffReplacement, "```\r\n\r\n"));
         }
     }
 }

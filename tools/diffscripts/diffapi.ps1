@@ -64,7 +64,7 @@ for($i = 0; $i -lt $filenames.length; $i++) {
         } | Set-Content $markdownoutput[$i]
 
 
-        & .\RemoveHeadersFromDiffFIle $markdownoutput[$i]
+        & .\RemoveHeadersFromDiffFile\exe\RemoveHeadersFromDiffFile $markdownoutput[$i]
     } else {
         Write-Host $oldsetNames[$i] "Does not exist!"
     }
