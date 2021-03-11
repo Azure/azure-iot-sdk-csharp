@@ -12,6 +12,11 @@ if ((Test-Path $asmtool) -ne $TRUE) {
     Write-Host "Once you clone the folder run dotnet build in the src/Microsoft.DotNet.AsmDiff folder."
 }
 
+git describe --tags --abbrev=0 | tee -Variable lasttag
+
+& git log --stat "$lasttag..HEAD" | Out-File releaselog_detailed.txt
+& git log --oneline "$lasttag..HEAD" | Out-File releaselog_short.txt
+
 # Hardcoded list of assembly names
 $filenames = @(
     "Microsoft.Azure.Devices.Shared",
@@ -70,5 +75,12 @@ for($i = 0; $i -lt $filenames.length; $i++) {
     }
 }
 
+$olddir = $pwd
 Set-Location -Path $masterdirectory
-& git diff --numstat
+& git diff --numstat | tee -Variable diffoutput
+
+if ($diffoutput -eq $null) {
+    Write-Host "There were no changes in the API Surface related to the comparison of the ASM Tool. Check to make sure there are no changes to any dependencies and decide if you want to make a dot release."
+}
+
+Set-Location -Path $olddir

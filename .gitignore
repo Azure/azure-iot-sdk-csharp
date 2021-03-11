@@ -235,3 +235,6 @@ NVChip
 
 #Need this to run the compare tool
 !/tools/diffscripts/RemoveHeadersFromDiffFile/exe/*
+#We don't need these to persist
+/tools/diffscripts/releaselog_detailed.txt
+/tools/diffscripts/releaselog_short.txt
