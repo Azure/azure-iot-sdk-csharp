@@ -2,50 +2,61 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 <#
-
 .SYNOPSIS
 Microsoft Azure IoT SDK Release comparison script
 
 .DESCRIPTION
-This script is used to compare the current candidate for release to the previous version that is in the iot-sdk-internals 
+This script is used to compare the current candidate for release to the previous version that is in the iot-sdk-internals repository
 
 Parameters:
-    -AsmToolPath: The path to the compiled AsmDiff tool found in the dotnet arcade (ex: c:\tools\asmdifftool)
+    -AsmToolExecutable: The path to the AsmDiff tool found in the dotnet arcade (ex: c:\tools\asmdifftool)
     -SDKInternalsPath: The path of the iot-sdk-internals repository (ex: c:\repo\iot-sdks-internals)
-	-Preview indicates you will compare the output to the last preview version
+	-IsPreview indicates you will compare the output to the last preview version
+
+Prereqisites:
+    AsmDiff - Used to create the markdown files we use
+    dotnet tool install Microsoft.Dotnet.AsmDiff -g --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version 6.0.0-beta.21161.15
+
+    SDK Internals repository - Place we store our markdown files
+    git clone https://github.com/Azure/iot-sdks-internals.git
 
 .EXAMPLE
 .\diffapi
 
-Executes the commands assuming everything is cloned relative to the SDK repo and the AsmDiff tool is compiled using the arcade instructions.
+Executes the commands assuming everything is cloned relative to the SDK repository and the AsmDiff tool is compiled using the arcade instructions.
 .EXAMPLE
-.\diffapi -AsmToolPath c:\tools\asmdifftool
+.\diffapi -AsmToolExecutable c:\tools\asmdifftool
 
 Specifies the location of the AsmDiff tool executable to run the diff commands.
 .EXAMPLE
 .\diffapi -SDKInternalsPath c:\repo\iot-sdks-internals
 
-Specifies the location of the SDK Internals repository if not cloned relative to the SDK repository.
+Specifies the location of the iot-sdk-internals repository if not cloned relative to the azure-iot-sdk-csharp repository.
 .EXAMPLE
-.\diffapi -Preview
+.\diffapi -IsPreview
 
-Executes the commands assuming everything is cloned relative to the SDK repo but will compare against the preview versions of the documents.
+Executes the commands assuming you have cloned the iot-sdk-internals repository to a directory relative to the azure-iot-sdk-csharp repository, and if you've installed the asmdiff tool.
 .LINK
 https://github.com/azure/azure-iot-sdk-csharp
-
 #>
 
 Param(
     [ValidateScript({
-            if (-Not ($_ | Test-Path -PathType Container)){
-                throw "Folder $_ does not exist."
+            if (-Not ($_ | Test-Path -PathType Leaf)) 
+            {
+                throw "File $_ does not exist."
+            } 
+            elseif ((Get-Command $_).Extension.ToLower() -ne '.exe') 
+            {
+                throw "File $_ is not an executable."
             }
             return $true
         })]
-    # The path to the compiled AsmDiff tool found in the dotnet arcade (ex: c:\tools\asmdifftool)
-    [System.IO.FileInfo] $AsmToolPath = $null,
+    # The executable path to the compiled AsmDiff tool found in the dotnet arcade (ex: c:\tools\asmdifftool\dotnet-asmdiff.exe)
+    [System.IO.FileInfo] $AsmToolExecutable = $null,
     [ValidateScript({
-            if (-Not ($_ | Test-Path -PathType Container)){
+            if (-Not ($_ | Test-Path -PathType Container)) 
+            {
                 throw "Folder $_ does not exist."
             }
             return $true
@@ -53,31 +64,120 @@ Param(
     # The path of the iot-sdk-internals repository (ex: c:\repo\iot-sdks-internals)
     [System.IO.FileInfo] $SDKInternalsPath = $null,
     # Indicates you will compare the output to the last preview version instead of master
-    [switch] $Preview
+    [switch] $IsPreview,
+    # Enable debug logging
+    [switch] $Debug
 )
+
+# Enable the debug loggin to console
+if ($Debug) 
+{
+    $DebugPreference = "Continue"
+}
 
 # Defaults for both the current repository and the repository parent directory
 $repoRootPath = (Get-Item $pwd).Parent.Parent.FullName
 $baseRootPath = (Get-Item $repoRootPath).Parent.FullName
 
-# Set the path to the AsmDiff tool, if we specify the path on the command line we will set it as such
-$asmToolRoot = (Join-Path -Path $baseRootPath -Child "\arcade\artifacts\bin\Microsoft.DotNet.AsmDiff\Debug\netcoreapp3.1\") 
-if ($AsmToolPath -ne $null) {
-    $asmToolRoot = $AsmToolPath
-}
-$asmToolExecutable = $asmToolRoot + "Microsoft.DotNet.AsmDiff.exe"
+Write-Debug "Repository root path: $repoRootPath"
+Write-Debug "Repository base path: $baseRootPath"
 
+# Release log file names
+$releaseLogDetailed = "releaselog_detailed.txt"
+$releaseLogShort = "releaselog_short.txt"
+
+# First check to see if we've followed the guide
+$asmToolExecutableCommand = Get-Command dotnet-asmdiff -ErrorAction SilentlyContinue
+if ($asmToolExecutableCommand -eq $null)
+{
+    Write-Debug "Unable to locate dotnet-asmdiff on the command line." 
+}
+
+if ($AsmToolExecutable -ne $null) 
+{
+    Write-Debug "Using user suppled Asm Diff tool executable." 
+    $asmToolExecutableCommand = $AsmToolExecutable
+}
+Write-Debug "AsmDiff executable: $asmToolExecutableCommand"
 
 # Set the path to the SDK Internals Repo, if we specify the path on the command line we will set it as such
-$internalRootPath = Join-Path -Path $baseRootPath -Child "\iot-sdks-internals"
-if ($SDKInternalsPath -ne $null) {
+
+$internalRootPath = ''
+if ($SDKInternalsPath -ne $null) 
+{
+    Write-Debug "Using user suppled iot-sdk-internals repository." 
     $internalRootPath = $SDKInternalsPath
+} else 
+{
+    $internalRootPath = Join-Path -Path $baseRootPath -Child "\iot-sdks-internals"
 }
+Write-Debug "Using $internalRootPath for the internals sdk repository base directory."
 
 # If we specify to use the preview directory on the command line we will set it as such
 $compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\master"
-if ($Preview) {
+if ($Preview) 
+{
     $compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\preview"
+}
+Write-Debug "Directory where the SDK markdown files will be generated: $compareDirectory"
+
+# If the compare directory is not found we should display a message that talks about how to clone the repository and specify the parameter
+$hasAFault = $false 
+
+if ((Test-Path $compareDirectory) -ne $TRUE) 
+{
+    Write-Host
+    Write-Host -ForegroundColor Red "The internals sdk repository cannot be found or the path specified is invalid."
+    Write-Host -ForegroundColor Red "Please clone the internals repository." 
+    Write-Host -ForegroundColor Cyan "NOTE: You can clone the folder to the relative common repository root and you will not need to specify the path location."
+    Write-Host
+    Write-Host -ForegroundColor Yellow "git clone https://github.com/Azure/iot-sdks-internals.git $baseRootPath\iot-sdks-internals"
+    Write-Host
+    Write-Host -ForegroundColor Cyan -NoNewline "NOTE: You can also specify a location that is not relative to this repository and use the "
+    Write-Host -ForegroundColor White -NoNewline "-SDKInternalsPath"
+    Write-Host -ForegroundColor Cyan " parameter when running this script."
+    Write-Host
+    Write-Host -ForegroundColor Yellow "git clone https://github.com/Azure/iot-sdks-internals.git c:\mycustomfolder\iot-sdks-internals"
+    Write-Host
+    Write-Host -ForegroundColor Yellow -NoNewline ".\" 
+    Write-Host -ForegroundColor Yellow $MyInvocation.MyCommand "-SDKInternalsPath c:\mycustomfolder\iot-sdks-internals"
+
+    $hasAFault = $true
+}
+
+# If the AsmDiff tool is not found we should explain how to get it and show how to specify the parameter
+if ($asmToolExecutableCommand -eq $null) {
+    Write-Host -ForegroundColor Red "You do not have the required tool to check for SDK differences."
+    Write-Host -ForegroundColor Red "Please get the AsmDiff tool from the dotnet arcade by installing it using the following command line:"
+    Write-Host
+    Write-Host -ForegroundColor Yellow "dotnet tool install Microsoft.Dotnet.AsmDiff -g --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version 6.0.0-beta.21161.15"
+    Write-Host
+    Write-Host -ForegroundColor Cyan -NoNewline "NOTE: The command above will install the AsmDiff tool " 
+    Write-Host -ForegroundColor Black -BackgroundColor Cyan -NoNewline "globally"
+    Write-Host -ForegroundColor Cyan " and will allow you to run the script without parameters." 
+    Write-Host -ForegroundColor Cyan -NoNewline "NOTE: If you don't want it to be installed globally remove the "
+    Write-Host -ForegroundColor White -NoNewline "-g " 
+    Write-Host -ForegroundColor Cyan  -NoNewline "flag from the above command and specify the tool location with " 
+    Write-Host -ForegroundColor White -NoNewline "-AsmToolExecutable" 
+    Write-Host -ForegroundColor Cyan " parameter when running this script."
+    Write-Host
+    Write-Host -ForegroundColor Yellow "dotnet tool install Microsoft.Dotnet.AsmDiff --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version 6.0.0-beta.21161.15 --tool-path c:\tools\asmdiff"
+    Write-Host -ForegroundColor Yellow -NoNewline ".\" 
+    Write-Host -ForegroundColor Yellow $MyInvocation.MyCommand "-AsmToolExecutable c:\tools\asmdiff\dotnet-asmdiff.exe"
+    Write-Host
+    Write-Host -ForegroundColor Cyan "NOTE: This requires .NET Core 2.1 SDK or higher, but it is recommended to use .NET Core 3.1"
+    Write-Host -ForegroundColor Cyan "NOTE: Install .NET Core 3.1 from here: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-3.1.407-windows-x64-installer"
+    Write-Host -ForegroundColor Cyan "NOTE: dotnet tool install help: https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install"
+
+    $hasAFault = $true
+}
+
+# We can have TWO faults so instead of bailing out after each one we can show both
+if ($hasAFault) 
+{
+    Write-Host
+    Write-Host -ForegroundColor Yellow "Please correct the above and rerun this tool."
+    exit 1
 }
 
 # Hardcoded list of assembly names
@@ -108,62 +208,57 @@ $assemblyFilePath = @(
 
 # Create a list of the markdown files so we can compare them to the API doc directory
 $markdownOutputFilePath = @(
-    ($compareDirectory+ "\" + ($assemblyRootNames[0]+".md")),
-    ($compareDirectory+ "\" + ($assemblyRootNames[1]+".md")),
-    ($compareDirectory+ "\" + ($assemblyRootNames[2]+".md")),
-    ($compareDirectory+ "\" + ($assemblyRootNames[3]+".md")),
-    ($compareDirectory+ "\" + ($assemblyRootNames[4]+".md")),
-    ($compareDirectory+ "\" + ($assemblyRootNames[5]+".md")),
-    ($compareDirectory+ "\" + ($assemblyRootNames[6]+".md")),
-    ($compareDirectory+ "\" + ($assemblyRootNames[7]+".md")),
-    ($compareDirectory+ "\" + ($assemblyRootNames[8]+".md"))
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[0]+".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[1]+".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[2]+".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[3]+".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[4]+".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[5]+".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[6]+".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[7]+".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[8]+".md"))
 )
 
-# Set this to exit after we've displayed one or more error messages
-$hasAFault = $false 
+# Get the last tag from the git repository and do the comparison
+$lastTag = git describe --tags --abbrev=0  | tee -Variable lastTag
 
-if ((Test-Path $compareDirectory) -ne $TRUE) {
-    Write-Host "You have not cloned the sdk internals repository. Or it is not in the same root repository collection location."
-    Write-Host "For example, if this SDK is cloned to c:\repos you should clone https://github.com/Azure/iot-sdks-internals.git to the c:\repos folder."
-    Write-Host
-    
-    $hasAFault = $true
+# Generate a couple of simple reports so we don't have to run these commands by hand
+$detailedLog = git log --stat "$lastTag..HEAD"
+$shortLog = git log --oneline "$lastTag..HEAD"
+
+Out-File -InputObject $detailedLog $releaseLogDetailed
+Out-File -InputObject $shortLog $releaseLogShort
+
+Write-Debug "Output from git describe --tags --abbrev=0"
+Write-Debug $lastTag
+
+Write-Debug "Output from git log --stat $lastTag..HEAD"
+foreach ($outLine in $detailedLog) 
+{
+    Write-Debug $outLine
 }
 
-if ((Test-Path $asmToolExecutable) -ne $TRUE) {
-    Write-Host "You do not have the required tool to check for SDK differences."
-    Write-Host "Please get the AsmDiff tool from the dotnet arcade https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.AsmDiff. Clone this to the directory containing the SDK repo."
-    Write-Host "For example, if this SDK is cloned to c:\repos you should clone https://github.com/dotnet/arcade.git to the c:\repos folder."
-    Write-Host
-    Write-Host "Once you clone the folder run dotnet build in the src/Microsoft.DotNet.AsmDiff folder and rerun this tool."
-    Write-Host
-    $hasAFault = $true
+Write-Debug "Output from git log --oneline $lastTag..HEAD" 
+foreach ($outLine in $shortLog) 
+{
+    Write-Debug $outLine
 }
 
-if ($hasAFault) {
-    Write-Host "Please correct the above and rerun this tool."
-    exit 1
-}
-
-# Get the last tag from the git repo and do the comparison
-$lasttag = git describe --tags --abbrev=0  | tee -Variable lasttag
-& git log --stat "$lasttag..HEAD" --output releaselog_detailed.txt
-& git log --oneline "$lasttag..HEAD" --output releaselog_short.txt
-
 Write-Host
-Write-Host "Generated release log from tag $lasttag to the current HEAD."
-Write-Host "The detailed log can be found by editing: releaselog_detailed.txt"
-Write-Host "The short log can be found by editing: releaselog_short.txt"
+Write-Host -ForegroundColor Magenta "Generated release log from tag $lastTag to the current HEAD."
+Write-Host -ForegroundColor White "The detailed log can be found by editing:" (Get-ChildItem $releaseLogDetailed).FullName
+Write-Host -ForegroundColor White "The short log can be found by editing:"  (Get-ChildItem $releaseLogShort).FullName
 Write-Host
-Write-Host "NOTE: If there is a tag that you want to compare to that is earlier than the most recent tag you can run:"
-Write-Host "git log --stat <tagversion>..HEAD --output releaselog_detailed.txt"
-Write-Host "git log --oneline <tagversion>..HEAD --output releaselog_short.txt"
+Write-Host -ForegroundColor Cyan "NOTE: If there is a tag that you want to compare to that is earlier than the most recent tag you can run:"
+Write-Host -ForegroundColor Yellow "git log --stat <tagversion>..HEAD --output releaselog_detailed.txt"
+Write-Host -ForegroundColor Yellow "git log --oneline <tagversion>..HEAD --output releaselog_short.txt"
 Write-Host
-
 
 # Create a list of the markdown files so we can compare them to the API doc directory
-for($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assemblyIndex++) { 
-    if (Test-Path $assemblyFilePath[$assemblyIndex]) {
+for ($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assemblyIndex++) 
+{ 
+    if (Test-Path $assemblyFilePath[$assemblyIndex]) 
+    {
         
         $assemblyFileToUse = $assemblyFilePath[$assemblyIndex]
         $markdownOutputFileToUse = $markdownOutputFilePath[$assemblyIndex]
@@ -176,7 +271,13 @@ for($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assemblyI
         #
         # ```C
         $originalMarkdownHeader = Get-Content $markdownOutputFilePath[$assemblyIndex] | select -First 5
+        Write-Debug "Original markdown header to replace in new file"
 
+        foreach ($outLine in $originalMarkdownHeader) 
+        {
+            Write-Debug $outLine
+        }
+        
         # Permalink for AsmDiff README is: https://github.com/dotnet/arcade/blob/3aea914072c2f8844d7cf74c41c759b497e59b16/src/Microsoft.DotNet.AsmDiff/README.md
         #
         # These asmToolSwitches do the following
@@ -184,9 +285,9 @@ for($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assemblyI
         # -w Markdown       Tells the tool to generate Markdown output
         # -o <filename>     Specifies the name of the markdown file to output
         # -gba              Flattens the name spaces and removes the namespace headers from the output (ex. ## Microsoft.Azure.Devices.Client)
-        Write-Host "Creating markdown for" $assemblyFileToUse
+        Write-Host -ForegroundColor Magenta "Creating markdown for $assemblyFileToUse"
         $asmToolSwitches = "-os", $assemblyFileToUse, "-w", "Markdown", "-o", $markdownOutputFileToUse, "-gba"
-        & $asmToolExecutable $asmToolSwitches
+        & $asmToolExecutableCommand $asmToolSwitches
         
         # Replace the header for this file using the original header
         $newMarkdownBodyContent = Get-Content $markdownOutputFileToUse | Select-Object -Skip 5
@@ -194,7 +295,9 @@ for($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assemblyI
             $originalMarkdownHeader
             $newMarkdownBodyContent
         } | Set-Content $markdownOutputFileToUse
-    } else {
+    } 
+    else 
+    {
         Write-Host $assemblyFileToUse "does not exist. Skipping."
     }
 }
@@ -206,6 +309,7 @@ Write-Host
 Push-Location
 
 # Nav to the docs directory to run the comparison
+Write-Debug "Changing from $pwd to $compareDirectory"
 Set-Location -Path $compareDirectory
  
 # git diff --ignore-all-space --numstat generates the following output that will be parsed below
@@ -226,23 +330,40 @@ Set-Location -Path $compareDirectory
 # 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Shared.md
 # 7       9       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.md
 $gitDiffOutput = git diff --ignore-all-space --numstat
+Write-Debug "Output off git diff --ignore-all-space --numstat"
+
+foreach ($outLine in $gitDiffOutput) 
+{
+    Write-Debug $outLine
+}
 
 # If there is no output then the git diff command is run then we 
-if ($gitDiffOutput -eq $null) {
-    Write-Host "There were no changes in the API surface related to the comparison of the AsmDiff tool. Check the solutions to make sure there were not other changes that would affect the release and require a version update."
-} else {
-    Write-Host "Changes have been detected. Verify each file listed below to be sure of the scope of changes." 
+if ($gitDiffOutput -eq $null) 
+{
+    Write-Host -ForegroundColor Green "There were no changes in the API surface related to the comparison of the AsmDiff tool. Check the solutions to make sure there were not other changes that would affect the release and require a version update."
+} else 
+{
+    Write-Host -ForegroundColor White "Changes have been detected. Verify each file listed below to be sure of the scope of changes." 
     $changesAddedToFile = 0
     $changesDeletedFromFile = 0
 
     # Loop through all files and match the format above to detect if changes are made.
-    foreach ($lineFromDiffOutput in $gitDiffOutput) {
+    foreach ($lineFromDiffOutput in $gitDiffOutput) 
+    {
         $_ = $lineFromDiffOutput -match "(?<changesAddedToFile>\d+)\s+(?<changesDeletedFromFile>\d+)\s+(?<fileName>.*)" 
-        Write-Host "There have been" $Matches.changesDeletedFromFile "deletions and" $Matches.changesAddedToFile "additions to" $Matches.fileName 
+        Write-Host -NoNewline "There have been " 
+        Write-Host -NoNewline -ForegroundColor Red $Matches.changesDeletedFromFile "deletions" 
+        Write-Host -NoNewline " and "
+        Write-Host -NoNewline -ForegroundColor Green $Matches.changesAddedToFile "additions"
+        Write-Host " to" $Matches.fileName 
     }
 }
+
+# Display ending message
 Write-Host
-Write-Host "Finished generating the markdown files for comparison. Review the output above for release notes and to determine if there are version changes."
+Write-Host -ForegroundColor Cyan "Finished generating the markdown files for comparison. Review the output above for release notes and to determine if there are version changes."
 
 # Return to the old folder path
 Pop-Location
+Write-Debug "Changed back to $pwd"
+Write-Host
