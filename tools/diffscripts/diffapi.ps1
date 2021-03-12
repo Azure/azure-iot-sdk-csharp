@@ -41,7 +41,7 @@ https://github.com/azure/azure-iot-sdk-csharp
 #>
 
 Param(
-    [ValidateScript({
+    [ValidateScript( {
             if (-Not ($_ | Test-Path -PathType Leaf)) 
             {
                 throw "File $_ does not exist."
@@ -54,7 +54,7 @@ Param(
         })]
     # The executable path to the compiled AsmDiff tool found in the dotnet arcade (ex: c:\tools\asmdifftool\dotnet-asmdiff.exe)
     [System.IO.FileInfo] $AsmToolExecutable = $null,
-    [ValidateScript({
+    [ValidateScript( {
             if (-Not ($_ | Test-Path -PathType Container)) 
             {
                 throw "Folder $_ does not exist."
@@ -88,7 +88,7 @@ $releaseLogShort = "releaselog_short.txt"
 
 # First check to see if we've followed the guide
 $asmToolExecutableCommand = Get-Command dotnet-asmdiff -ErrorAction SilentlyContinue
-if ($asmToolExecutableCommand -eq $null)
+if ($null -eq $asmToolExecutableCommand)
 {
     Write-Debug "Unable to locate dotnet-asmdiff on the command line." 
 }
@@ -107,7 +107,8 @@ if ($SDKInternalsPath -ne $null)
 {
     Write-Debug "Using user suppled iot-sdk-internals repository." 
     $internalRootPath = $SDKInternalsPath
-} else 
+} 
+else 
 {
     $internalRootPath = Join-Path -Path $baseRootPath -Child "\iot-sdks-internals"
 }
@@ -146,7 +147,8 @@ if ((Test-Path $compareDirectory) -ne $TRUE)
 }
 
 # If the AsmDiff tool is not found we should explain how to get it and show how to specify the parameter
-if ($asmToolExecutableCommand -eq $null) {
+if ($null -eq $asmToolExecutableCommand)
+{
     Write-Host -ForegroundColor Red "You do not have the required tool to check for SDK differences."
     Write-Host -ForegroundColor Red "Please get the AsmDiff tool from the dotnet arcade by installing it using the following command line:"
     Write-Host
@@ -195,32 +197,32 @@ $assemblyRootNames = @(
 
 # All of the files from the build
 $assemblyFilePath = @(
-    ((Join-Path -Path $repoRootPath -ChildPath "\shared\src\bin\Release\netstandard2.1\")+($assemblyRootNames[0]+".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\iothub\device\src\bin\Release\netstandard2.1\")+($assemblyRootNames[1]+".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\iothub\service\src\bin\Release\netstandard2.1\")+($assemblyRootNames[2]+".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\device\src\bin\Release\netstandard2.1\")+($assemblyRootNames[3]+".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\service\src\bin\Release\netstandard2.1\")+($assemblyRootNames[4]+".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\amqp\src\bin\Release\netstandard2.1\")+($assemblyRootNames[5]+".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\mqtt\src\bin\Release\netstandard2.1\")+($assemblyRootNames[6]+".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\http\src\bin\Release\netstandard2.1\")+($assemblyRootNames[7]+".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\security\tpm\src\bin\Release\netstandard2.1\")+($assemblyRootNames[8]+".dll"))
+    ((Join-Path -Path $repoRootPath -ChildPath "\shared\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[0] + ".dll")),
+    ((Join-Path -Path $repoRootPath -ChildPath "\iothub\device\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[1] + ".dll")),
+    ((Join-Path -Path $repoRootPath -ChildPath "\iothub\service\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[2] + ".dll")),
+    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\device\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[3] + ".dll")),
+    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\service\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[4] + ".dll")),
+    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\amqp\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[5] + ".dll")),
+    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\mqtt\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[6] + ".dll")),
+    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\http\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[7] + ".dll")),
+    ((Join-Path -Path $repoRootPath -ChildPath "\security\tpm\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[8] + ".dll"))
 )
 
 # Create a list of the markdown files so we can compare them to the API doc directory
 $markdownOutputFilePath = @(
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[0]+".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[1]+".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[2]+".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[3]+".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[4]+".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[5]+".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[6]+".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[7]+".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[8]+".md"))
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[0] + ".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[1] + ".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[2] + ".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[3] + ".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[4] + ".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[5] + ".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[6] + ".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[7] + ".md")),
+    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[8] + ".md"))
 )
 
 # Get the last tag from the git repository and do the comparison
-$lastTag = git describe --tags --abbrev=0  | tee -Variable lastTag
+$lastTag = git describe --tags --abbrev=0  | Tee-Object -Variable lastTag
 
 # Generate a couple of simple reports so we don't have to run these commands by hand
 $detailedLog = git log --stat "$lastTag..HEAD"
@@ -259,7 +261,6 @@ for ($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assembly
 { 
     if (Test-Path $assemblyFilePath[$assemblyIndex]) 
     {
-        
         $assemblyFileToUse = $assemblyFilePath[$assemblyIndex]
         $markdownOutputFileToUse = $markdownOutputFilePath[$assemblyIndex]
         
@@ -270,7 +271,7 @@ for ($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assembly
         # ## Microsoft.Azure.Devices.Client 1.35.*
         #
         # ```C
-        $originalMarkdownHeader = Get-Content $markdownOutputFilePath[$assemblyIndex] | select -First 5
+        $originalMarkdownHeader = Get-Content $markdownOutputFilePath[$assemblyIndex] | Select-Object -First 5
         Write-Debug "Original markdown header to replace in new file"
 
         foreach ($outLine in $originalMarkdownHeader) 
@@ -291,7 +292,7 @@ for ($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assembly
         
         # Replace the header for this file using the original header
         $newMarkdownBodyContent = Get-Content $markdownOutputFileToUse | Select-Object -Skip 5
-        .{
+        . {
             $originalMarkdownHeader
             $newMarkdownBodyContent
         } | Set-Content $markdownOutputFileToUse
@@ -338,14 +339,13 @@ foreach ($outLine in $gitDiffOutput)
 }
 
 # If there is no output then the git diff command is run then we 
-if ($gitDiffOutput -eq $null) 
+if ($null -eq $gitDiffOutput) 
 {
     Write-Host -ForegroundColor Green "There were no changes in the API surface related to the comparison of the AsmDiff tool. Check the solutions to make sure there were not other changes that would affect the release and require a version update."
-} else 
+} 
+else 
 {
     Write-Host -ForegroundColor White "Changes have been detected. Verify each file listed below to be sure of the scope of changes." 
-    $changesAddedToFile = 0
-    $changesDeletedFromFile = 0
 
     # Loop through all files and match the format above to detect if changes are made.
     foreach ($lineFromDiffOutput in $gitDiffOutput) 
