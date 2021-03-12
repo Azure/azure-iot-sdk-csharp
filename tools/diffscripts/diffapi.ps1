@@ -13,7 +13,7 @@ Parameters:
     -SDKInternalsPath: The path of the iot-sdk-internals repository (ex: c:\repo\iot-sdks-internals)
 	-IsPreview indicates you will compare the output to the last preview version
 
-Prereqisites:
+Prerequisites:
     AsmDiff - Used to create the markdown files we use
     dotnet tool install Microsoft.Dotnet.AsmDiff -g --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version 6.0.0-beta.21161.15
 
@@ -69,7 +69,7 @@ Param(
     [switch] $Debug
 )
 
-# Enable the debug loggin to console
+# Enable the debug logging to console
 if ($Debug) 
 {
     $DebugPreference = "Continue"
@@ -95,7 +95,7 @@ if ($null -eq $asmToolExecutableCommand)
 
 if ($AsmToolExecutable -ne $null) 
 {
-    Write-Debug "Using user suppled Asm Diff tool executable." 
+    Write-Debug "Using user supplied Asm Diff tool executable." 
     $asmToolExecutableCommand = $AsmToolExecutable
 }
 Write-Debug "AsmDiff executable: $asmToolExecutableCommand"
@@ -105,7 +105,7 @@ Write-Debug "AsmDiff executable: $asmToolExecutableCommand"
 $internalRootPath = ''
 if ($SDKInternalsPath -ne $null) 
 {
-    Write-Debug "Using user suppled iot-sdk-internals repository." 
+    Write-Debug "Using user supplied iot-sdk-internals repository." 
     $internalRootPath = $SDKInternalsPath
 } 
 else 
@@ -128,8 +128,8 @@ $hasAFault = $false
 if ((Test-Path $compareDirectory) -ne $TRUE) 
 {
     Write-Host
-    Write-Host -ForegroundColor Red "The internals sdk repository cannot be found or the path specified is invalid."
-    Write-Host -ForegroundColor Red "Please clone the internals repository." 
+    Write-Host -ForegroundColor Red "The internals sdk repository does not have the expected directories."
+    Write-Host -ForegroundColor Red "Please clone the internals repository or specify a location with the sdk_design_docs/CSharp/* path." 
     Write-Host -ForegroundColor Cyan "NOTE: You can clone the folder to the relative common repository root and you will not need to specify the path location."
     Write-Host
     Write-Host -ForegroundColor Yellow "git clone https://github.com/Azure/iot-sdks-internals.git $baseRootPath\iot-sdks-internals"
@@ -142,6 +142,7 @@ if ((Test-Path $compareDirectory) -ne $TRUE)
     Write-Host
     Write-Host -ForegroundColor Yellow -NoNewline ".\" 
     Write-Host -ForegroundColor Yellow $MyInvocation.MyCommand "-SDKInternalsPath c:\mycustomfolder\iot-sdks-internals"
+    Write-Host
 
     $hasAFault = $true
 }
@@ -170,6 +171,7 @@ if ($null -eq $asmToolExecutableCommand)
     Write-Host -ForegroundColor Cyan "NOTE: This requires .NET Core 2.1 SDK or higher, but it is recommended to use .NET Core 3.1"
     Write-Host -ForegroundColor Cyan "NOTE: Install .NET Core 3.1 from here: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-3.1.407-windows-x64-installer"
     Write-Host -ForegroundColor Cyan "NOTE: dotnet tool install help: https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install"
+    Write-Host
 
     $hasAFault = $true
 }
@@ -177,7 +179,6 @@ if ($null -eq $asmToolExecutableCommand)
 # We can have TWO faults so instead of bailing out after each one we can show both
 if ($hasAFault) 
 {
-    Write-Host
     Write-Host -ForegroundColor Yellow "Please correct the above and rerun this tool."
     exit 1
 }
