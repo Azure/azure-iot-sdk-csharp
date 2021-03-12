@@ -229,7 +229,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
     eventHubEndpoints: {
       events: {
         retentionTimeInDays: 1
-        partitionCount: 10
+        partitionCount: 4
       }
     }
     cloudToDevice: {

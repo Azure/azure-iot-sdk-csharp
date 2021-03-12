@@ -250,7 +250,7 @@
         "eventHubEndpoints": {
           "events": {
             "retentionTimeInDays": 1,
-            "partitionCount": 10
+            "partitionCount": 4
           }
         },
         "cloudToDevice": {
