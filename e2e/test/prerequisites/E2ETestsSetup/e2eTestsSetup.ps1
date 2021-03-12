@@ -13,7 +13,7 @@ param(
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
 
-    # Set this to true on the first execution to get everything installed in poweshell. Does not need to be run everytime.
+    # Set this to true on the first execution to get everything installed in powershell. Does not need to be run everytime.
     [Parameter()]
     [bool] $InstallDependencies = $true
 )
@@ -113,6 +113,7 @@ $Region = $Region.Replace(' ', '')
 $appRegistrationName = $ResourceGroup
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
+$certificateHashAlgorithm = "SHA256"
 
 
 #################################################################################################
@@ -186,6 +187,7 @@ $rootCACert = New-SelfSignedCertificate `
     -DnsName "$rootCommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -193,6 +195,7 @@ $intermediateCert1 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert1CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $rootCACert
@@ -201,6 +204,7 @@ $intermediateCert2 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert2CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert1
@@ -222,6 +226,7 @@ $groupDeviceCert = New-SelfSignedCertificate `
     -DnsName "$groupCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
@@ -234,6 +239,7 @@ $individualDeviceCert = New-SelfSignedCertificate `
     -DnsName "$deviceCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -246,6 +252,7 @@ $iotHubCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -254,6 +261,7 @@ $iotHubChainDeviceCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertChainDeviceCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
@@ -442,7 +450,8 @@ if ($isVerified -eq 'false')
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
@@ -488,7 +497,8 @@ if ($isVerified -eq 'false')
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
