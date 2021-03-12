@@ -234,4 +234,4 @@ NVChip
 
 #Need this to run the compare tool
 /tools/diffscripts/*
-!/tools/diffscripts/diffapi.ps1
+!/tools/diffscripts/*.ps1
