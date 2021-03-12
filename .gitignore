@@ -235,3 +235,4 @@ NVChip
 #Need this to run the compare tool
 /tools/diffscripts/*
 !/tools/diffscripts/*.ps1
+!/tools/diffscripts/README.md

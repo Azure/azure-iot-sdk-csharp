@@ -350,7 +350,7 @@ else
     # Loop through all files and match the format above to detect if changes are made.
     foreach ($lineFromDiffOutput in $gitDiffOutput) 
     {
-        $_ = $lineFromDiffOutput -match "(?<changesAddedToFile>\d+)\s+(?<changesDeletedFromFile>\d+)\s+(?<fileName>.*)" 
+        $lineFromDiffOutput -match "(?<changesAddedToFile>\d+)\s+(?<changesDeletedFromFile>\d+)\s+(?<fileName>.*)" > $null
         Write-Host -NoNewline "There have been " 
         Write-Host -NoNewline -ForegroundColor Red $Matches.changesDeletedFromFile "deletions" 
         Write-Host -NoNewline " and "
