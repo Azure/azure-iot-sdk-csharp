@@ -1,4 +1,3 @@
-
 # Compiled object files
 *.o
 *.opp
@@ -234,7 +233,5 @@ NVChip
 **/code-model-v1
 
 #Need this to run the compare tool
-!/tools/diffscripts/RemoveHeadersFromDiffFile/exe/*
-#We don't need these to persist
-/tools/diffscripts/releaselog_detailed.txt
-/tools/diffscripts/releaselog_short.txt
+/tools/diffscripts/*
+!/tools/diffscripts/diffapi.ps1
