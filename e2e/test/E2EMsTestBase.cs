@@ -10,7 +10,7 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 //Workers = 0 makes the test engine use one worker per available core. It does not mean to run serially.
-[assembly: Parallelize(Workers = 0, Scope = ExecutionScope.MethodLevel)]
+[assembly: Parallelize(Workers = 0, Scope = ExecutionScope.ClassLevel)]
 
 namespace Microsoft.Azure.Devices.E2ETests
 {

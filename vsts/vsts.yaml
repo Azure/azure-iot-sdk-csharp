@@ -34,7 +34,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      vmImage: ubuntu-latest
+      vmImage: ubuntu-16.04
     steps:
       - task: Docker@1
         displayName: "Start TPM Simulator"
@@ -142,7 +142,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      vmImage: windows-latest
+      vmImage: windows-2019
     steps:
       - script: |
           call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
