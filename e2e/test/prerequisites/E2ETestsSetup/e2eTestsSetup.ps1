@@ -110,7 +110,7 @@ if (-not $isAdmin)
 #################################################################################################
 
 $Region = $Region.Replace(' ', '')
-$appRegistrationName = $ResourceGroup
+$logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
 $certificateHashAlgorithm = "SHA256"
@@ -325,12 +325,12 @@ if ($InstallDependencies)
 # Configure an AAD app and create self signed certs and get the bytes to generate more content info.
 #################################################################################################################################################
 
-$appId = az ad app list --show-mine --query "[?displayName=='$appRegistrationName'].appId" --output tsv
+$appId = az ad app list --show-mine --query "[?displayName=='$logAnalyticsAppRegnName'].appId" --output tsv
 if (-not $appId)
 {
-    Write-Host "`nCreating App Registration $appRegistrationName"
-    $appId = az ad app create --display-name $appRegistrationName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
-    Write-Host "`nApplication $appRegistrationName with Id $appId was created successfully."
+    Write-Host "`nCreating App Registration $logAnalyticsAppRegnName"
+    $appId = az ad app create --display-name $logAnalyticsAppRegnName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
+    Write-Host "`nApplication $logAnalyticsAppRegnName with Id $appId was created successfully."
 }
 
 $spExists = az ad sp list --show-mine --query "[?appId=='$appId'].appId" --output tsv
@@ -567,7 +567,7 @@ while (++$tries -le 10)
 
 Write-Host "`nCreating a self-signed certificate and placing it in $ResourceGroup"
 az ad app credential reset --id $appId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
-Write-Host "`nSuccessfully created a self signed certificate for your application $appRegistrationName in $keyVaultName key vault with cert name $ResourceGroup";
+Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup";
 
 Write-Host "`nFetching the certificate binary"
 $selfSignedCerts = "$PSScriptRoot\selfSignedCerts"
