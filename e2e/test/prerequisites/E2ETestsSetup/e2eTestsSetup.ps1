@@ -464,7 +464,7 @@ if ($isVerified -eq 'false')
 # Create device in IoTHub that uses a certificate signed by intermediate certificate
 ##################################################################################################################################
 
-$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName-hub --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv 
+$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv
 
 if (-not $iotHubCertChainDevice)
 {
