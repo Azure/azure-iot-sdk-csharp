@@ -40,6 +40,7 @@ Executes the commands assuming you have cloned the iot-sdk-internals repository 
 https://github.com/azure/azure-iot-sdk-csharp
 #>
 
+[CmdletBinding()]
 Param(
     [ValidateScript( {
             if (-Not ($_ | Test-Path -PathType Leaf)) 
@@ -64,23 +65,15 @@ Param(
     # The path of the iot-sdk-internals repository (ex: c:\repo\iot-sdks-internals)
     [System.IO.FileInfo] $SDKInternalsPath = $null,
     # Indicates you will compare the output to the last preview version instead of master
-    [switch] $IsPreview,
-    # Enable debug logging
-    [switch] $Debug
+    [switch] $IsPreview
 )
-
-# Enable the debug logging to console
-if ($Debug) 
-{
-    $DebugPreference = "Continue"
-}
 
 # Defaults for both the current repository and the repository parent directory
 $repoRootPath = (Get-Item $pwd).Parent.Parent.FullName
 $baseRootPath = (Get-Item $repoRootPath).Parent.FullName
 
-Write-Debug "Repository root path: $repoRootPath"
-Write-Debug "Repository base path: $baseRootPath"
+Write-Verbose "Repository root path: $repoRootPath"
+Write-Verbose "Repository base path: $baseRootPath"
 
 # Release log file names
 $releaseLogDetailed = "releaselog_detailed.txt"
@@ -90,62 +83,16 @@ $releaseLogShort = "releaselog_short.txt"
 $asmToolExecutableCommand = Get-Command dotnet-asmdiff -ErrorAction SilentlyContinue
 if ($null -eq $asmToolExecutableCommand)
 {
-    Write-Debug "Unable to locate dotnet-asmdiff on the command line." 
+    Write-Verbose "Unable to locate dotnet-asmdiff on the command line." 
 }
 
-if ($AsmToolExecutable -ne $null) 
+if ($null -ne $AsmToolExecutable) 
 {
-    Write-Debug "Using user supplied Asm Diff tool executable." 
+    Write-Verbose "Using user supplied Asm Diff tool executable." 
     $asmToolExecutableCommand = $AsmToolExecutable
 }
-Write-Debug "AsmDiff executable: $asmToolExecutableCommand"
 
-# Set the path to the SDK Internals Repo, if we specify the path on the command line we will set it as such
-
-$internalRootPath = ''
-if ($SDKInternalsPath -ne $null) 
-{
-    Write-Debug "Using user supplied iot-sdk-internals repository." 
-    $internalRootPath = $SDKInternalsPath
-} 
-else 
-{
-    $internalRootPath = Join-Path -Path $baseRootPath -Child "\iot-sdks-internals"
-}
-Write-Debug "Using $internalRootPath for the internals sdk repository base directory."
-
-# If we specify to use the preview directory on the command line we will set it as such
-$compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\master"
-if ($Preview) 
-{
-    $compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\preview"
-}
-Write-Debug "Directory where the SDK markdown files will be generated: $compareDirectory"
-
-# If the compare directory is not found we should display a message that talks about how to clone the repository and specify the parameter
-$hasAFault = $false 
-
-if ((Test-Path $compareDirectory) -ne $TRUE) 
-{
-    Write-Host
-    Write-Host -ForegroundColor Red "The internals sdk repository does not have the expected directories."
-    Write-Host -ForegroundColor Red "Please clone the internals repository or specify a location with the sdk_design_docs/CSharp/* path." 
-    Write-Host -ForegroundColor Cyan "NOTE: You can clone the folder to the relative common repository root and you will not need to specify the path location."
-    Write-Host
-    Write-Host -ForegroundColor Yellow "git clone https://github.com/Azure/iot-sdks-internals.git $baseRootPath\iot-sdks-internals"
-    Write-Host
-    Write-Host -ForegroundColor Cyan -NoNewline "NOTE: You can also specify a location that is not relative to this repository and use the "
-    Write-Host -ForegroundColor White -NoNewline "-SDKInternalsPath"
-    Write-Host -ForegroundColor Cyan " parameter when running this script."
-    Write-Host
-    Write-Host -ForegroundColor Yellow "git clone https://github.com/Azure/iot-sdks-internals.git c:\mycustomfolder\iot-sdks-internals"
-    Write-Host
-    Write-Host -ForegroundColor Yellow -NoNewline ".\" 
-    Write-Host -ForegroundColor Yellow $MyInvocation.MyCommand "-SDKInternalsPath c:\mycustomfolder\iot-sdks-internals"
-    Write-Host
-
-    $hasAFault = $true
-}
+Write-Verbose "AsmDiff executable: $asmToolExecutableCommand"
 
 # If the AsmDiff tool is not found we should explain how to get it and show how to specify the parameter
 if ($null -eq $asmToolExecutableCommand)
@@ -172,8 +119,51 @@ if ($null -eq $asmToolExecutableCommand)
     Write-Host -ForegroundColor Cyan "NOTE: Install .NET Core 3.1 from here: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-3.1.407-windows-x64-installer"
     Write-Host -ForegroundColor Cyan "NOTE: dotnet tool install help: https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install"
     Write-Host
+    $hasAFault = $TRUE;
+}
 
-    $hasAFault = $true
+# Set the path to the SDK Internals Repo, if we specify the path on the command line we will set it as such
+$internalRootPath = ''
+if ($null -ne $SDKInternalsPath) 
+{
+    Write-Verbose "Using user supplied iot-sdk-internals repository." 
+    $internalRootPath = $SDKInternalsPath
+} 
+else 
+{
+    $internalRootPath = Join-Path -Path $baseRootPath -Child "\iot-sdks-internals"
+}
+
+Write-Verbose "Using $internalRootPath for the internals sdk repository base directory."
+
+# If we specify to use the preview directory on the command line we will set it as such
+$compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\master"
+if ($IsPreview) 
+{
+    $compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\preview"
+}
+
+Write-Verbose "Directory where the SDK markdown files will be generated: $compareDirectory"
+
+if ((Test-Path $compareDirectory) -ne $TRUE) 
+{
+    Write-Host
+    Write-Host -ForegroundColor Red "The internals sdk repository does not have the expected directories."
+    Write-Host -ForegroundColor Red "Please clone the internals repository or specify a location with the sdk_design_docs/CSharp/* path." 
+    Write-Host -ForegroundColor Cyan "NOTE: You can clone the folder to the relative common repository root and you will not need to specify the path location."
+    Write-Host
+    Write-Host -ForegroundColor Yellow "git clone https://github.com/Azure/iot-sdks-internals.git $baseRootPath\iot-sdks-internals"
+    Write-Host
+    Write-Host -ForegroundColor Cyan -NoNewline "NOTE: You can also specify a location that is not relative to this repository and use the "
+    Write-Host -ForegroundColor White -NoNewline "-SDKInternalsPath"
+    Write-Host -ForegroundColor Cyan " parameter when running this script."
+    Write-Host
+    Write-Host -ForegroundColor Yellow "git clone https://github.com/Azure/iot-sdks-internals.git c:\mycustomfolder\iot-sdks-internals"
+    Write-Host
+    Write-Host -ForegroundColor Yellow -NoNewline ".\" 
+    Write-Host -ForegroundColor Yellow $MyInvocation.MyCommand "-SDKInternalsPath c:\mycustomfolder\iot-sdks-internals"
+    Write-Host
+    $hasAFault = $TRUE;
 }
 
 # We can have TWO faults so instead of bailing out after each one we can show both
@@ -198,28 +188,15 @@ $assemblyRootNames = @(
 
 # All of the files from the build
 $assemblyFilePath = @(
-    ((Join-Path -Path $repoRootPath -ChildPath "\shared\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[0] + ".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\iothub\device\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[1] + ".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\iothub\service\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[2] + ".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\device\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[3] + ".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\service\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[4] + ".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\amqp\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[5] + ".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\mqtt\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[6] + ".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\provisioning\transport\http\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[7] + ".dll")),
-    ((Join-Path -Path $repoRootPath -ChildPath "\security\tpm\src\bin\Release\netstandard2.1\") + ($assemblyRootNames[8] + ".dll"))
-)
-
-# Create a list of the markdown files so we can compare them to the API doc directory
-$markdownOutputFilePath = @(
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[0] + ".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[1] + ".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[2] + ".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[3] + ".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[4] + ".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[5] + ".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[6] + ".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[7] + ".md")),
-    (Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[8] + ".md"))
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\shared\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[0] + ".dll"))),
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\iothub\device\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[1] + ".dll"))),
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\iothub\service\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[2] + ".dll"))),
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\provisioning\device\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[3] + ".dll"))),
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\provisioning\service\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[4] + ".dll"))),
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\provisioning\transport\amqp\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[5] + ".dll"))),
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\provisioning\transport\mqtt\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[6] + ".dll"))),
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\provisioning\transport\http\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[7] + ".dll"))),
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\security\tpm\src\bin\Release\netstandard2.1\" -ChildPath ($assemblyRootNames[8] + ".dll")))
 )
 
 # Get the last tag from the git repository and do the comparison
@@ -232,19 +209,19 @@ $shortLog = git log --oneline "$lastTag..HEAD"
 Out-File -InputObject $detailedLog $releaseLogDetailed
 Out-File -InputObject $shortLog $releaseLogShort
 
-Write-Debug "Output from git describe --tags --abbrev=0"
-Write-Debug $lastTag
+Write-Verbose "Output from git describe --tags --abbrev=0"
+Write-Verbose $lastTag
 
-Write-Debug "Output from git log --stat $lastTag..HEAD"
+Write-Verbose "Output from git log --stat $lastTag..HEAD"
 foreach ($outLine in $detailedLog) 
 {
-    Write-Debug $outLine
+    Write-Verbose $outLine
 }
 
-Write-Debug "Output from git log --oneline $lastTag..HEAD" 
+Write-Verbose "Output from git log --oneline $lastTag..HEAD" 
 foreach ($outLine in $shortLog) 
 {
-    Write-Debug $outLine
+    Write-Verbose $outLine
 }
 
 Write-Host
@@ -260,48 +237,51 @@ Write-Host
 # Create a list of the markdown files so we can compare them to the API doc directory
 for ($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assemblyIndex++) 
 { 
-    if (Test-Path $assemblyFilePath[$assemblyIndex]) 
-    {
-        $assemblyFileToUse = $assemblyFilePath[$assemblyIndex]
-        $markdownOutputFileToUse = $markdownOutputFilePath[$assemblyIndex]
-        
-        # Get the original header from the file so we can apply it to the newly generated file.
-        # Grabs the first 5 lines of the file which generally looks like this...
-        # Azure SDK .NET Public API
-        #
-        # ## Microsoft.Azure.Devices.Client 1.35.*
-        #
-        # ```C
-        $originalMarkdownHeader = Get-Content $markdownOutputFilePath[$assemblyIndex] | Select-Object -First 5
-        Write-Debug "Original markdown header to replace in new file"
-
-        foreach ($outLine in $originalMarkdownHeader) 
-        {
-            Write-Debug $outLine
-        }
-        
-        # Permalink for AsmDiff README is: https://github.com/dotnet/arcade/blob/3aea914072c2f8844d7cf74c41c759b497e59b16/src/Microsoft.DotNet.AsmDiff/README.md
-        #
-        # These asmToolSwitches do the following
-        # -os <filename>    Specifies the dll we want to generate the markdown for
-        # -w Markdown       Tells the tool to generate Markdown output
-        # -o <filename>     Specifies the name of the markdown file to output
-        # -gba              Flattens the name spaces and removes the namespace headers from the output (ex. ## Microsoft.Azure.Devices.Client)
-        Write-Host -ForegroundColor Magenta "Creating markdown for $assemblyFileToUse"
-        $asmToolSwitches = "-os", $assemblyFileToUse, "-w", "Markdown", "-o", $markdownOutputFileToUse, "-gba"
-        & $asmToolExecutableCommand $asmToolSwitches
-        
-        # Replace the header for this file using the original header
-        $newMarkdownBodyContent = Get-Content $markdownOutputFileToUse | Select-Object -Skip 5
-        . {
-            $originalMarkdownHeader
-            $newMarkdownBodyContent
-        } | Set-Content $markdownOutputFileToUse
-    } 
-    else 
-    {
+    # Get assembly file names from array above
+    $assemblyFileToUse = $assemblyFilePath[$assemblyIndex]
+    # Create a the markdown file path so we can compare them to the API doc directory
+    $markdownOutputFileToUse = Join-Path -Path $compareDirectory -ChildPath ($assemblyRootNames[$assemblyIndex] + ".md")
+    
+    if ((Test-Path $assemblyFileToUse) -eq $FALSE) 
+    { 
         Write-Host $assemblyFileToUse "does not exist. Skipping."
+        continue;
+    } 
+        
+    # Get the original header from the file so we can apply it to the newly generated file.
+    # Grabs the first 5 lines of the file which generally looks like this...
+    # Azure SDK .NET Public API
+    #
+    # ## Microsoft.Azure.Devices.Client 1.35.*
+    #
+    # ```C
+    $originalMarkdownHeader = Get-Content $markdownOutputFilePath[$assemblyIndex] | Select-Object -First 5
+    Write-Verbose "Original markdown header to replace in new file"
+
+    foreach ($outLine in $originalMarkdownHeader) 
+    {
+        Write-Verbose $outLine
     }
+        
+    # Permalink for AsmDiff README is: https://github.com/dotnet/arcade/blob/3aea914072c2f8844d7cf74c41c759b497e59b16/src/Microsoft.DotNet.AsmDiff/README.md
+    #
+    # These asmToolSwitches do the following
+    # -os <filename>    Specifies the dll we want to generate the markdown for
+    # -w Markdown       Tells the tool to generate Markdown output
+    # -o <filename>     Specifies the name of the markdown file to output
+    # -gba              Flattens the name spaces and removes the namespace headers from the output (ex. ## Microsoft.Azure.Devices.Client)
+    Write-Host -ForegroundColor Magenta "Creating markdown for $assemblyFileToUse"
+    
+    $asmToolSwitches = "-os", $assemblyFileToUse, "-w", "Markdown", "-o", $markdownOutputFileToUse, "-gba"
+    & $asmToolExecutableCommand $asmToolSwitches
+        
+    # Replace the header for this file using the original header
+    $newMarkdownBodyContent = Get-Content $markdownOutputFileToUse | Select-Object -Skip 5
+    . {
+        $originalMarkdownHeader
+        $newMarkdownBodyContent
+    } | Set-Content $markdownOutputFileToUse
+    
 }
 
 ## Add a blank line to make the output readable.
@@ -311,7 +291,7 @@ Write-Host
 Push-Location
 
 # Nav to the docs directory to run the comparison
-Write-Debug "Changing from $pwd to $compareDirectory"
+Write-Verbose "Changing from $pwd to $compareDirectory"
 Set-Location -Path $compareDirectory
  
 # git diff --ignore-all-space --numstat generates the following output that will be parsed below
@@ -332,11 +312,11 @@ Set-Location -Path $compareDirectory
 # 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Shared.md
 # 7       9       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.md
 $gitDiffOutput = git diff --ignore-all-space --numstat
-Write-Debug "Output off git diff --ignore-all-space --numstat"
+Write-Verbose "Output off git diff --ignore-all-space --numstat"
 
 foreach ($outLine in $gitDiffOutput) 
 {
-    Write-Debug $outLine
+    Write-Verbose $outLine
 }
 
 # If there is no output then the git diff command is run then we 
@@ -351,7 +331,7 @@ else
     # Loop through all files and match the format above to detect if changes are made.
     foreach ($lineFromDiffOutput in $gitDiffOutput) 
     {
-        $lineFromDiffOutput -match "(?<changesAddedToFile>\d+)\s+(?<changesDeletedFromFile>\d+)\s+(?<fileName>.*)" > $null
+        $lineFromDiffOutput -match "(?<changesAddedToFile>\d+)\s+(?<changesDeletedFromFile>\d+)\s+(?<fileName>.*)" | Out-Null
         Write-Host -NoNewline "There have been " 
         Write-Host -NoNewline -ForegroundColor Red $Matches.changesDeletedFromFile "deletions" 
         Write-Host -NoNewline " and "
@@ -366,5 +346,5 @@ Write-Host -ForegroundColor Cyan "Finished generating the markdown files for com
 
 # Return to the old folder path
 Pop-Location
-Write-Debug "Changed back to $pwd"
+Write-Verbose "Changed back to $pwd"
 Write-Host

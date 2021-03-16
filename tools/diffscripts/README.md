@@ -1,11 +1,11 @@
 # CSharp SDK Diff Automation
 
 ## Overview
-During the release process we need to examine the changes to the SDK surface to make sure we're not making too many changes, breaking or otherwise. This tool will automate the process of generating the mark down files so we do not need to use the GUI version which is time consuming.
+During the release process we need to examine the changes to the SDK surface to make sure we're not making breaking or unintended changes. This tool will automate the process of generating the mark down files so we do not need to use the GUI version which is time consuming.
 
 
 ## Quickstart
-This quickstart assumes that you clone your repositories to `c:\repos` and that you've already cloned the CSharp SDK to `c:\repos\azure-iot-sdk-csharp`
+This quickstart assumes that you clone your repositories to a central repository root folder `c:\repos` and that you've already cloned the CSharp SDK to `c:\repos\azure-iot-sdk-csharp`. You can change out `c:\repos` with whatever central repository root folder you prefer.
 
 ```ps
 cd c:\repos
@@ -98,18 +98,17 @@ cd c:\repos\azure-iot-sdk-csharp\tools\difftools
         - c:\repos\iot-sdks-internals
     - Use the `-SDKInternalsPath` option
 
-## Running the command with Debug output
+## Running the command with Verbose output
 Use this to explore the output of the script without debugging it. This will be very verbose but should help you understand where the tool is looking.
 
 ```
-.\diffapi.ps1 -Debug
-❯ .\diffapi.ps1 -SDKInternalsPath C:\adtexplorer\ -Debug
-DEBUG: Repository root path: C:\repos\azure-iot-sdk-csharp
-DEBUG: Repository base path: C:\repos
-DEBUG: AsmDiff executable: dotnet-asmdiff.exe
-DEBUG: Using user supplied iot-sdk-internals repository.
-DEBUG: Using C:\adtexplorer\ for the internals sdk repository base directory.
-DEBUG: Directory where the SDK markdown files will be generated: C:\adtexplorer\sdk_design_docs\CSharp\master
+❯ .\diffapi.ps1 -SDKInternalsPath C:\adtexplorer\ -Verbose
+VERBOSE: Repository root path: C:\repos\azure-iot-sdk-csharp
+VERBOSE: Repository base path: C:\repos
+VERBOSE: AsmDiff executable: dotnet-asmdiff.exe
+VERBOSE: Using user supplied iot-sdk-internals repository.
+VERBOSE: Using C:\adtexplorer\ for the internals sdk repository base directory.
+VERBOSE: Directory where the SDK markdown files will be generated: C:\adtexplorer\sdk_design_docs\CSharp\master
 ...
 ...
 ```
