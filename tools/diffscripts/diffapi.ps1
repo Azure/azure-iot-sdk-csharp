@@ -255,7 +255,7 @@ for ($assemblyIndex = 0; $assemblyIndex -lt $assemblyRootNames.length; $assembly
     # ## Microsoft.Azure.Devices.Client 1.35.*
     #
     # ```C
-    $originalMarkdownHeader = Get-Content $markdownOutputFilePath[$assemblyIndex] | Select-Object -First 5
+    $originalMarkdownHeader = Get-Content $markdownOutputFileToUse | Select-Object -First 5
     Write-Verbose "Original markdown header to replace in new file"
 
     foreach ($outLine in $originalMarkdownHeader) 
