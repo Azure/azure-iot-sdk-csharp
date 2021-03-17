@@ -115,24 +115,22 @@ namespace SimulatedDevice
                 // serialize the telemetry data and convert it to JSON.
                 var telemetryDataString = JsonConvert.SerializeObject(telemetryDataPoint);
 
-                // Encode the serialized object using UTF-32. When it writes this to a file, 
-                //   it encodes it as base64. If you read it back in, you have to decode it from base64 
-                //   and utf-32 to be able to read it.
-
-                // You can encode this as ASCII, but if you want it to be the body of the message, 
-                //  and to be able to search the body, it must be encoded in UTF with base64 encoding.
-
-                // Take the string (telemetryDataString) and turn it into a byte array 
-                //   that is encoded as UTF-32.
-                using var message = new Message(Encoding.UTF32.GetBytes(telemetryDataString));
-                //Add one property to the message.
+                // Encode the serialized object using UTF-8 so it can be parsed by IoT Hub when
+                // processing messaging rules.
+                using var message = new Message(Encoding.UTF8.GetBytes(telemetryDataString))
+                {
+                    ContentEncoding = "utf-8",
+                    ContentType = "application/json",
+                };
+  
+                // Add one property to the message.
                 message.Properties.Add("level", levelValue);
 
                 // Submit the message to the hub.
                 await s_deviceClient.SendEventAsync(message);
 
                 // Print out the message.
-                Console.WriteLine("{0} > Sent message: {1}", DateTime.Now, telemetryDataString);
+                Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, telemetryDataString);
 
                 await Task.Delay(1000);
             }
