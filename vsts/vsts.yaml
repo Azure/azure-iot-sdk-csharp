@@ -233,7 +233,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted VS2017
+      name: vs2017-win2016
     steps:
       - script: |
           rem Run dotnet first experience.
@@ -245,7 +245,14 @@ jobs:
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
-
+      
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+        displayName: "Run PoliCheck"
+        inputs:
+          targetType: F
+          optionsRulesDBPath: vsts/PolicheckExclusionsDB.mdb
+          optionsPE: 1
+      
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
         displayName: "Run MpCmdRun.exe"
         inputs:
@@ -289,13 +296,6 @@ jobs:
 
           # TODO #181 Samples / tests fail the test due to fake connection strings.
           debugMode: false
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
-        displayName: "Run PoliCheck"
-        inputs:
-          targetType: F
-          optionsRulesDBPath: vsts/PolicheckExclusionsDB.mdb
-          optionsPE: 1
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
         displayName: "Run Vulnerability Assessment"
