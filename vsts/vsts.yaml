@@ -233,7 +233,8 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: vs2017-win2016
+      name: Azure Pipelines
+      vmImage: vs2017-win2016
     steps:
       - script: |
           rem Run dotnet first experience.
