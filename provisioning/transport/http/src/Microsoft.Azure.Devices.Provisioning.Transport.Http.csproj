@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Transport</RootNamespace>
@@ -82,6 +82,9 @@
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="$(Generated)\Models\DeviceRegistration.cs">
       <Link>Generated\Models\DeviceRegistration.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\HttpContentExtensions.cs">
+      <LinkBase>Common</LinkBase>
     </Compile>
   </ItemGroup>
 

@@ -229,7 +229,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
     eventHubEndpoints: {
       events: {
         retentionTimeInDays: 1
-        partitionCount: 10
+        partitionCount: 4
       }
     }
     cloudToDevice: {
@@ -260,7 +260,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
   sku: {
     name: 'S1'
     tier: 'Standard'
-    capacity: 1
+    capacity: 3
   }
   dependsOn: [
     container
