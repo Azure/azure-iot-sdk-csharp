@@ -51,32 +51,6 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of <see cref="DigitalTwinClient"/>.
         /// </summary>
         /// <param name="hostName">IoT hub host name.</param>
-        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
-        /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
-        /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
-        public static DigitalTwinClient Create(
-            string hostName,
-            TokenCredential credential,
-            params DelegatingHandler[] handlers)
-        {
-            if (string.IsNullOrEmpty(hostName))
-            {
-                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
-            }
-
-            if (credential == null)
-            {
-                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
-            }
-
-            var tokenCredential = new DigitalTwinTokenCredential(credential);
-            return new DigitalTwinClient(hostName, tokenCredential, handlers);
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="DigitalTwinClient"/>.
-        /// </summary>
-        /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
         /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>

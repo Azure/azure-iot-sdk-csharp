@@ -90,41 +90,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
 
         [Ignore]
         [LoggedTestMethod]
-        public async Task DigitalTwinClient_Http_TokenCredentialAuth_Success()
-        {
-            // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            string thermostatModelId = "dtmi:com:example:TemperatureController;1";
-
-            // Create a device client instance initializing it with the "Thermostat" model.
-            var options = new ClientOptions
-            {
-                ModelId = thermostatModelId,
-            };
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt, options);
-
-            // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
-            using var digitalTwinClient = DigitalTwinClient.Create(
-                Configuration.IoTHub.GetIotHubHostName(),
-                Configuration.IoTHub.GetClientSecretCredential());
-
-            // act
-            HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response = await digitalTwinClient
-                .GetDigitalTwinAsync<ThermostatTwin>(testDevice.Id)
-                .ConfigureAwait(false);
-            ThermostatTwin twin = response.Body;
-
-            // assert
-            twin.Metadata.ModelId.Should().Be(thermostatModelId);
-
-            // cleanup
-            await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
-        }
-
-        [Ignore]
-        [LoggedTestMethod]
         public async Task Service_Amqp_TokenCredentialAuth_Success()
         {
             // arrange
