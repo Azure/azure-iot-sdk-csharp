@@ -13,7 +13,7 @@ param(
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
 
-    # Set this to true on the first execution to get everything installed in poweshell. Does not need to be run everytime.
+    # Set this to true on the first execution to get everything installed in powershell. Does not need to be run everytime.
     [Parameter()]
     [bool] $InstallDependencies = $true
 )
@@ -110,9 +110,10 @@ if (-not $isAdmin)
 #################################################################################################
 
 $Region = $Region.Replace(' ', '')
-$appRegistrationName = $ResourceGroup
+$logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
+$certificateHashAlgorithm = "SHA256"
 
 
 #################################################################################################
@@ -142,7 +143,7 @@ $keyVaultName = "env-$ResourceGroup-kv"
 $keyVaultName = [regex]::Replace($keyVaultName, "[^a-zA-Z0-9-]", "")
 if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 {
-    throw "Key vault name derrived from resource group has illegal characters: $storageAccountName"
+    throw "Key vault name derrived from resource group has illegal characters: $keyVaultName"
 }
 
 ########################################################################################################
@@ -186,6 +187,7 @@ $rootCACert = New-SelfSignedCertificate `
     -DnsName "$rootCommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -193,6 +195,7 @@ $intermediateCert1 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert1CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $rootCACert
@@ -201,6 +204,7 @@ $intermediateCert2 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert2CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert1
@@ -222,6 +226,7 @@ $groupDeviceCert = New-SelfSignedCertificate `
     -DnsName "$groupCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
@@ -234,6 +239,7 @@ $individualDeviceCert = New-SelfSignedCertificate `
     -DnsName "$deviceCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -246,6 +252,7 @@ $iotHubCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -254,6 +261,7 @@ $iotHubChainDeviceCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertChainDeviceCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
@@ -317,12 +325,12 @@ if ($InstallDependencies)
 # Configure an AAD app and create self signed certs and get the bytes to generate more content info.
 #################################################################################################################################################
 
-$appId = az ad app list --show-mine --query "[?displayName=='$appRegistrationName'].appId" --output tsv
+$appId = az ad app list --show-mine --query "[?displayName=='$logAnalyticsAppRegnName'].appId" --output tsv
 if (-not $appId)
 {
-    Write-Host "`nCreating App Registration $appRegistrationName"
-    $appId = az ad app create --display-name $appRegistrationName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
-    Write-Host "`nApplication $appRegistrationName with Id $appId was created successfully."
+    Write-Host "`nCreating App Registration $logAnalyticsAppRegnName"
+    $appId = az ad app create --display-name $logAnalyticsAppRegnName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
+    Write-Host "`nApplication $logAnalyticsAppRegnName with Id $appId was created successfully."
 }
 
 $spExists = az ad sp list --show-mine --query "[?appId=='$appId'].appId" --output tsv
@@ -442,7 +450,8 @@ if ($isVerified -eq 'false')
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
@@ -455,7 +464,7 @@ if ($isVerified -eq 'false')
 # Create device in IoTHub that uses a certificate signed by intermediate certificate
 ##################################################################################################################################
 
-$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName-hub --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv 
+$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv
 
 if (-not $iotHubCertChainDevice)
 {
@@ -488,7 +497,8 @@ if ($isVerified -eq 'false')
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
@@ -557,7 +567,7 @@ while (++$tries -le 10)
 
 Write-Host "`nCreating a self-signed certificate and placing it in $ResourceGroup"
 az ad app credential reset --id $appId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
-Write-Host "`nSuccessfully created a self signed certificate for your application $appRegistrationName in $keyVaultName key vault with cert name $ResourceGroup";
+Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup";
 
 Write-Host "`nFetching the certificate binary"
 $selfSignedCerts = "$PSScriptRoot\selfSignedCerts"
