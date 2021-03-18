@@ -45,6 +45,8 @@ namespace Microsoft.Azure.Devices
 
         public Uri AmqpEndpoint { get; protected set; }
 
+        public List<string> AmqpAudience { get; protected set; } = new List<string>();
+
         public abstract string GetAuthorizationHeader();
 
         public abstract Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims);
