@@ -562,12 +562,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private static async Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
+
+            using Stream stream = await content.ReadHttpContentAsStream(token).ConfigureAwait(false);
             using var reader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(reader);
             return new JsonSerializer().Deserialize<T>(jsonReader);
         }
 
 #endif
-    }
+        }
 }

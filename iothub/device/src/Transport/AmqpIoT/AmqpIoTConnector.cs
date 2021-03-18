@@ -49,13 +49,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
                 ContainerId = CommonResources.GetNewStringGuid(),
                 HostName = _hostName,
+                IdleTimeOut = Convert.ToUInt32(_amqpTransportSettings.IdleTimeout.TotalMilliseconds),
             };
-
-            TimeSpan idleTimeout = _amqpTransportSettings.IdleTimeout;
-            if (idleTimeout != null)
-            {
-                amqpConnectionSettings.IdleTimeOut = Convert.ToUInt32(idleTimeout.TotalMilliseconds);
-            }
 
             _amqpIotTransport = new AmqpIoTTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
