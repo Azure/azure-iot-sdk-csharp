@@ -18,9 +18,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task RegistryManager_QueryDevicesInvalidServiceCertificateHttp_Fails()
         {
-            var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionStringInvalidServiceCertificate);
+            using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionStringInvalidServiceCertificate);
             IQuery query = rm.CreateQuery("select * from devices");
-            var exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
+            IotHubCommunicationException exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
                 () => query.GetNextAsTwinAsync()).ConfigureAwait(false);
 
 #if NET451 || NET472
@@ -50,18 +50,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private static async Task TestServiceClientInvalidServiceCertificate(TransportType transport)
         {
-            var service = ServiceClient.CreateFromConnectionString(
+            using var service = ServiceClient.CreateFromConnectionString(
                 Configuration.IoTHub.ConnectionStringInvalidServiceCertificate,
                 transport);
-            await service.SendAsync("testDevice1", new Message()).ConfigureAwait(false);
+            using var testMessage = new Message();
+            await service.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task JobClient_ScheduleTwinUpdateInvalidServiceCertificateHttp_Fails()
         {
-            var job = JobClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionStringInvalidServiceCertificate);
+            using var jobClient = JobClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionStringInvalidServiceCertificate);
             var exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
-                () => job.ScheduleTwinUpdateAsync(
+                () => jobClient.ScheduleTwinUpdateAsync(
                     "testDevice",
                     "DeviceId IN ['testDevice']",
                     new Shared.Twin(),
@@ -132,7 +133,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     Configuration.IoTHub.DeviceConnectionStringInvalidServiceCertificate,
                     transport))
             {
-                await deviceClient.SendEventAsync(new Client.Message()).ConfigureAwait(false);
+                using var testMessage = new Client.Message();
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }

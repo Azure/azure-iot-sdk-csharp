@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -21,10 +22,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         Device
     }
 
-    public class TestDevice
+    public class TestDevice : IDisposable
     {
         private const int DelayAfterDeviceCreationSeconds = 0;
         private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
+
+        private X509Certificate2 _authCertificate;
 
         private static MsTestLogger _logger;
 
@@ -69,6 +72,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             Client.IAuthenticationMethod auth = null;
 
             var requestDevice = new Device(deviceName);
+            X509Certificate2 authCertificate = null;
+
             if (type == TestDeviceType.X509)
             {
                 requestDevice.Authentication = new AuthenticationMechanism
@@ -79,7 +84,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     }
                 };
 
-                auth = new DeviceAuthenticationWithX509Certificate(deviceName, Configuration.IoTHub.GetCertificateWithPrivateKey());
+                authCertificate = Configuration.IoTHub.GetCertificateWithPrivateKey();
+#pragma warning disable CA2000 // Dispose objects before losing scope - auth is disposed when TestDevice is disposed.
+                auth = new DeviceAuthenticationWithX509Certificate(deviceName, authCertificate);
+#pragma warning restore CA2000 // Dispose objects before losing scope - auth is disposed when TestDevice is disposed.
             }
 
             Device device = await rm.AddDeviceAsync(requestDevice).ConfigureAwait(false);
@@ -89,7 +97,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             await rm.CloseAsync().ConfigureAwait(false);
 
-            return new TestDevice(device, auth);
+            return new TestDevice(device, auth)
+            {
+                _authCertificate = authCertificate,
+            };
         }
 
         /// <summary>
@@ -169,6 +180,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             await rm.RemoveDeviceAsync(Id).ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+#if !NET451
+            // Ideally we wouldn't be disposing the X509 Certificates here, but rather delegate that to whoever was creating the TestDevice.
+            // For the design that our test suite follows, it is ok to dispose the X509 certificate here since it won't be referenced by anyone else
+            // within the scope of the test using this TestDevice.
+            _authCertificate?.Dispose();
+            _authCertificate = null;
+#endif
+
+            if (AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509Auth)
+            {
+                x509Auth?.Dispose();
+                x509Auth = null;
+            }
+
         }
     }
 }

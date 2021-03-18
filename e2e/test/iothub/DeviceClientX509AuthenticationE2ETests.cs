@@ -24,6 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class DeviceClientX509AuthenticationE2ETests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"{nameof(DeviceClientX509AuthenticationE2ETests)}_";
+        private static X509Certificate2 s_selfSignedCertificateWithPrivateKey = Configuration.IoTHub.GetCertificateWithPrivateKey();
+        private static X509Certificate2 s_chainCertificateWithPrivateKey = Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey();
         private readonly string _hostName;
 
         public DeviceClientX509AuthenticationE2ETests()
@@ -147,13 +149,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_Cert_Chain_Install_Test_MQTT_TCP()
         {
             // arrange
-            var chainCerts = new X509Certificate2Collection();
-            chainCerts.Add(Configuration.IoTHub.GetRootCACertificate());
-            chainCerts.Add(Configuration.IoTHub.GetIntermediate1Certificate());
-            chainCerts.Add(Configuration.IoTHub.GetIntermediate2Certificate());
-            var auth = new DeviceAuthenticationWithX509Certificate(
+            var chainCerts = new X509Certificate2Collection
+            {
+                Configuration.IoTHub.GetRootCACertificate(),
+                Configuration.IoTHub.GetIntermediate1Certificate(),
+                Configuration.IoTHub.GetIntermediate2Certificate()
+            };
+            using var auth = new DeviceAuthenticationWithX509Certificate(
                 Configuration.IoTHub.X509ChainDeviceName,
-                Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
+                s_chainCertificateWithPrivateKey,
                 chainCerts);
             using var deviceClient = DeviceClient.Create(
                 _hostName,
@@ -172,13 +176,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_Cert_Chain_Install_Test_AMQP_TCP()
         {
             // arrange
-            var chainCerts = new X509Certificate2Collection();
-            chainCerts.Add(Configuration.IoTHub.GetRootCACertificate());
-            chainCerts.Add(Configuration.IoTHub.GetIntermediate1Certificate());
-            chainCerts.Add(Configuration.IoTHub.GetIntermediate2Certificate());
-            var auth = new DeviceAuthenticationWithX509Certificate(
+            var chainCerts = new X509Certificate2Collection
+            {
+                Configuration.IoTHub.GetRootCACertificate(),
+                Configuration.IoTHub.GetIntermediate1Certificate(),
+                Configuration.IoTHub.GetIntermediate2Certificate()
+            };
+            using var auth = new DeviceAuthenticationWithX509Certificate(
                 Configuration.IoTHub.X509ChainDeviceName,
-                Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
+                s_chainCertificateWithPrivateKey,
                 chainCerts);
             using var deviceClient = DeviceClient.Create(
                 _hostName,
@@ -217,14 +223,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMessageTest(ITransportSettings transportSetting)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting }))
-            {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-                await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
-                await deviceClient.CloseAsync().ConfigureAwait(false);
-            }
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting });
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private ITransportSettings CreateHttpTransportSettingWithCertificateRevocationCheck()
@@ -247,8 +251,32 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task X509InvalidDeviceIdOpenAsyncTest(Client.TransportType transportType)
         {
-            var deviceClient = CreateDeviceClientWithInvalidId(transportType);
-            using (deviceClient)
+            string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
+            using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
+            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
+
+            try
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                Assert.Fail("Should throw UnauthorizedException but didn't.");
+            }
+            catch (UnauthorizedException)
+            {
+                // It should always throw UnauthorizedException
+            }
+
+            // Check TCP connection to verify there is no connection leak
+            // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
+            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+        }
+
+        private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType transportType)
+        {
+            string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
+            using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
+            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
+
+            for (int i = 0; i < 2; i++)
             {
                 try
                 {
@@ -259,42 +287,24 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     // It should always throw UnauthorizedException
                 }
-
-                // Check TCP connection to verify there is no connection leak
-                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
-                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
             }
+
+            // Check TCP connection to verify there is no connection leak
+            // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
+            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
         }
 
-        private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(Client.TransportType transportType)
+        [ClassCleanup]
+        public static void ClassCleanup()
         {
-            var deviceClient = CreateDeviceClientWithInvalidId(transportType);
-            using (deviceClient)
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    try
-                    {
-                        await deviceClient.OpenAsync().ConfigureAwait(false);
-                        Assert.Fail("Should throw UnauthorizedException but didn't.");
-                    }
-                    catch (UnauthorizedException)
-                    {
-                        // It should always throw UnauthorizedException
-                    }
-                }
+#if !NET451
+            s_selfSignedCertificateWithPrivateKey?.Dispose();
+            s_selfSignedCertificateWithPrivateKey = null;
 
-                // Check TCP connection to verify there is no connection leak
-                // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
-                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-            }
+            s_chainCertificateWithPrivateKey?.Dispose();
+            s_chainCertificateWithPrivateKey = null;
+#endif
         }
 
-        private DeviceClient CreateDeviceClientWithInvalidId(Client.TransportType transportType)
-        {
-            string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceName, Configuration.IoTHub.GetCertificateWithPrivateKey());
-            return DeviceClient.Create(_hostName, auth, transportType);
-        }
     }
 }
