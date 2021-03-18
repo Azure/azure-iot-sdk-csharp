@@ -36,8 +36,6 @@ namespace Microsoft.Azure.Devices
         internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
         internal static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
-        private readonly AccessRights _accessRights;
-
         private readonly bool _useWebSocketOnly;
         private readonly ServiceClientTransportSettings _transportSettings;
 
@@ -51,7 +49,7 @@ namespace Microsoft.Azure.Devices
         private IOThreadTimer _refreshTokenTimer;
 #endif
 
-        public IotHubConnection(IotHubConnectionProperties credential, AccessRights accessRights, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
+        public IotHubConnection(IotHubConnectionProperties credential, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
 #if !NET451
             _refreshTokenTimer = new IOThreadTimerSlim(s => ((IotHubConnection)s).OnRefreshTokenAsync(), this);
@@ -60,7 +58,6 @@ namespace Microsoft.Azure.Devices
 #endif
 
             Credential = credential;
-            _accessRights = accessRights;
             _faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(CreateSessionAsync, CloseConnection);
             _useWebSocketOnly = useWebSocketOnly;
             _transportSettings = transportSettings;
@@ -553,7 +550,7 @@ namespace Microsoft.Azure.Devices
                     Credential.AmqpEndpoint,
                     audience,
                     resource,
-                    AccessRightsHelper.AccessRightsToStringArray(_accessRights),
+                    Credential.AmqpAudience.ToArray(),
                     timeout)
                 .ConfigureAwait(false);
             ScheduleTokenRefresh(expiresAtUtc);
