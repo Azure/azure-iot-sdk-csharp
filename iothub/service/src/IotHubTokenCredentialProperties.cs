@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
         : IotHubConnectionProperties
     {
 #if !NET451
-        private const string _tokenType = "jwt";
+        private const string _tokenType = "Bearer";
         private readonly TokenCredential _credential;
         private readonly object _tokenLock = new object();
         private AccessToken? _cachedAccessToken;
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices
                 }
             }
 
-            return $"Bearer {_cachedAccessToken.Value.Token}";
+            return $"{_tokenType} {_cachedAccessToken.Value.Token}";
 
 #endif
         }
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices
                 new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
                 new CancellationToken()).ConfigureAwait(false);
             return new CbsToken(
-                token.Token,
+               $"{_tokenType} {token.Token}",
                 _tokenType,
                 token.ExpiresOn.UtcDateTime);
 #endif
