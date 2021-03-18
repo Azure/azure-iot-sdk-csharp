@@ -140,9 +140,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 _client?.Dispose();
 
-#if !NET451
-                _authCertificate?.Dispose();
-#endif
+                // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
+                if (_authCertificate is IDisposable disposableCert)
+                {
+                    disposableCert?.Dispose();
+                }
             }
         }
     }

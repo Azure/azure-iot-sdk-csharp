@@ -799,7 +799,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, publish?.Value, nameof(ProcessAckAsync));
 
-            publish.Completion.Complete();
+            publish.Completion.SetResult();
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, context.Name, publish?.Value, nameof(ProcessAckAsync));
@@ -863,7 +863,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             PublishPacket packet = await ComposePublishPacketAsync(context, message, qos, topicName).ConfigureAwait(true);
-            var publishCompletion = new DotNetty.Common.Concurrency.TaskCompletionSource();
+            var publishCompletion = new TaskCompletionSource();
             var workItem = new PublishWorkItem
             {
                 Completion = publishCompletion,
@@ -941,7 +941,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await WriteMessageAsync(context, publish.Value, s_shutdownOnWriteErrorHandler).ConfigureAwait(true);
                 if (publish.Value.QualityOfService == QualityOfService.AtMostOnce)
                 {
-                    publish.Completion.TryComplete();
+                    publish.Completion.TrySetResult();
                 }
             }
             catch (Exception ex)

@@ -20,9 +20,10 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class FileUploadE2ETests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(FileUploadE2ETests)}_";
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
+        private readonly string _devicePrefix = $"{nameof(FileUploadE2ETests)}_";
+        private static readonly X509Certificate2 s_selfSignedCertificate = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
@@ -126,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             DeviceAuthenticationWithX509Certificate x509Auth = null;
             if (useX509auth)
             {
-                cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
+                cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
 
                 // The X509 certificate being used for device authentication needs to be set into FileUploadTransportSettings as well,
@@ -159,13 +160,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 };
 
                 await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
-            };
+            }
 
             x509Auth?.Dispose();
-
-#if !NET451
-            cert?.Dispose();
-#endif
         }
 
         [Obsolete]
@@ -181,9 +178,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             DeviceAuthenticationWithX509Certificate x509Auth = null;
             if (useX509auth)
             {
-                cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
-
+                cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+
                 deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, x509Auth, transport);
             }
             else
@@ -193,20 +190,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using (deviceClient)
             {
-                using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
-                {
-                    // UploadToBlobAsync is obsolete, added [Obsolete] attribute to suppress CS0618 message
-                    await deviceClient.UploadToBlobAsync(filename, fileStreamSource).ConfigureAwait(false);
-                }
+                using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
+               
+                // UploadToBlobAsync is obsolete, added [Obsolete] attribute to suppress CS0618 message
+                await deviceClient.UploadToBlobAsync(filename, fileStreamSource).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
 
             x509Auth?.Dispose();
-
-#if !NET451
-            cert?.Dispose();
-#endif
         }
 
         private async Task GetSasUriAsync(Client.TransportType transport, string blobName, bool useX509auth = false)
@@ -221,8 +213,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             DeviceAuthenticationWithX509Certificate x509Auth = null;
             if (useX509auth)
             {
-                cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
+                cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+
                 deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, x509Auth, transport);
             }
             else
@@ -237,10 +230,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             x509Auth?.Dispose();
-
-#if !NET451
-            cert?.Dispose();
-#endif
         }
 
         private static async Task<string> GetTestFileNameAsync(int fileSize)
@@ -259,6 +248,16 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
 
             return filePath;
+        }
+
+        [ClassCleanup]
+        public static void CleanupCertificates()
+        {
+            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
+            if (s_selfSignedCertificate is IDisposable disposableCertificate)
+            {
+                disposableCertificate?.Dispose();
+            }
         }
     }
 }

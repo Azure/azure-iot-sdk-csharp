@@ -3,8 +3,6 @@
 
 using System.Net.Http;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 #if NET451
@@ -13,14 +11,15 @@ using System.Net.Http.Formatting;
 
 namespace Microsoft.Azure.Devices.Shared
 {
+    /// <summary>
+    /// A helper class to simplify operations with Http messages based on the .NET implementation used.
+    /// </summary>
     internal static class HttpMessageHelper
     {
-#if !NET451
-        private const string ApplicationJson = "application/json";
-#endif
-
 #if NET451
         private static readonly JsonMediaTypeFormatter s_jsonFormatter = new JsonMediaTypeFormatter();
+#else
+        private const string ApplicationJson = "application/json";
 #endif
 
         internal static void SetHttpRequestMessageContent<T>(HttpRequestMessage requestMessage, T entity)
@@ -31,21 +30,6 @@ namespace Microsoft.Azure.Devices.Shared
             string str = JsonConvert.SerializeObject(entity);
             requestMessage.Content = new StringContent(str, Encoding.UTF8, ApplicationJson);
 #endif
-        }
-
-        internal static async Task<T> ReadHttpResponseMessageContentAsync<T>(HttpResponseMessage message, CancellationToken token)
-        {
-#if NET451
-            T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
-#elif NET5_0
-            string str = await message.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            T entity = JsonConvert.DeserializeObject<T>(str);
-#else
-            _ = token;
-            string str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
-            T entity = JsonConvert.DeserializeObject<T>(str);
-#endif
-            return entity;
         }
     }
 }

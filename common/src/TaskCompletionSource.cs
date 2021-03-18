@@ -5,30 +5,23 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Shared
 {
-    internal sealed class TaskCompletionSource : TaskCompletionSource<int>
+    /// <summary>
+    /// A <see cref="TaskCompletionSource{boolean}"/> implementation that returns a <see cref="Task"/> when completed.
+    /// </summary>
+    /// <remarks>
+    /// Represents the producer side of a <see cref="Task"/> unbound to a delegate, providing access to the consumer side through the <see cref="Task"/> property.
+    /// This is used for .NET implementations lower than .NET 5.0, which lack a native implementation of the non-generic TaskCompletionSource.
+    /// </remarks>
+    internal sealed class TaskCompletionSource : TaskCompletionSource<bool>
     {
-        public static readonly TaskCompletionSource Void = CreateVoidTcs();
-
-        public TaskCompletionSource(object state)
-            : base(state)
-        {
-        }
-
         public TaskCompletionSource()
         {
         }
 
-        public bool TrySetResult() => TrySetResult(0);
+        public bool TrySetResult() => TrySetResult(true);
 
-        public void SetResult() => SetResult(0);
+        public void SetResult() => SetResult(true);
 
-        public override string ToString() => "TaskCompletionSource[status: " + Task.Status.ToString() + "]";
-
-        static TaskCompletionSource CreateVoidTcs()
-        {
-            var tcs = new TaskCompletionSource();
-            tcs.TrySetResult();
-            return tcs;
-        }
+        public override string ToString() => $"TaskCompletionSource[status: {Task.Status}]";
     }
 }

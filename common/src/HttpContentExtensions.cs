@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Shared
 {
+    /// <summary>
+    /// Extensions added to simplify the usage of <see cref="HttpContent"/> APIs based on the .NET implementation used.
+    /// </summary>
     internal static class HttpContentExtensions
     {
         internal static async Task CopyToStreamAsync(this HttpContent content, Stream stream, CancellationToken cancellationToken)
@@ -15,7 +18,9 @@ namespace Microsoft.Azure.Devices.Shared
 #if NET5_0
             await content.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
 #else
+            // .NET implementations < .NET 5.0 do not support CancellationTokens for HttpContent APIs, so we will discard it.
             _ = cancellationToken;
+
             await content.CopyToAsync(stream).ConfigureAwait(false);
 #endif
         }
@@ -25,7 +30,9 @@ namespace Microsoft.Azure.Devices.Shared
 #if NET5_0
             return httpContent.ReadAsStreamAsync(cancellationToken);
 #else
+            // .NET implementations < .NET 5.0 do not support CancellationTokens for HttpContent APIs, so we will discard it.
             _ = cancellationToken;
+
             return httpContent.ReadAsStreamAsync();
 #endif
         }
@@ -35,7 +42,9 @@ namespace Microsoft.Azure.Devices.Shared
 #if NET5_0
             return content.ReadAsByteArrayAsync(cancellationToken);
 #else
+            // .NET implementations < .NET 5.0 do not support CancellationTokens for HttpContent APIs, so we will discard it.
             _ = cancellationToken;
+
             return content.ReadAsByteArrayAsync();
 #endif
         }
@@ -45,7 +54,9 @@ namespace Microsoft.Azure.Devices.Shared
 #if NET5_0
             return content.ReadAsStringAsync(cancellationToken);
 #else
+            // .NET implementations < .NET 5.0 do not support CancellationTokens for HttpContent APIs, so we will discard it.
             _ = cancellationToken;
+
             return content.ReadAsStringAsync();
 #endif
         }

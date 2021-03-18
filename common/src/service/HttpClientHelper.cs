@@ -329,7 +329,12 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-            T entity = await ReadHttpResponseMessageContentAsync<T>(message, token).ConfigureAwait(false);
+#if NET451
+            T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
+#else
+            string str = await message.Content.ReadHttpContentAsStringAsync(token).ConfigureAwait(false);
+            T entity = JsonConvert.DeserializeObject<T>(str);
+#endif
 
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;

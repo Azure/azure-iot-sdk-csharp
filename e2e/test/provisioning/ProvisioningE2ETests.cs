@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var closeHostName = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString).HostName;
+            string closeHostName = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString).HostName;
 
             ICollection<string> iotHubsToProvisionTo = new List<string>() { closeHostName, Configuration.Provisioning.FarAwayIotHubHostName };
             string expectedDestinationHub = "";
@@ -501,7 +501,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
-            var provClient = ProvisioningDeviceClient.Create(
+            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 Configuration.Provisioning.IdScope,
                 security,
@@ -588,7 +588,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
-            var provClient = ProvisioningDeviceClient.Create(
+            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 Configuration.Provisioning.IdScope,
                 security,
@@ -655,7 +655,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
             using SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid");
-            var provClient = ProvisioningDeviceClient.Create(
+            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 Configuration.Provisioning.IdScope,
                 security,
@@ -895,9 +895,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (capabilities != null && capabilities.IotEdge)
             {
                 //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
-                var connectionStringBuilder = Client.IotHubConnectionStringBuilder.Create(result.AssignedHub, auth);
+                Client.IotHubConnectionStringBuilder connectionStringBuilder = Client.IotHubConnectionStringBuilder.Create(result.AssignedHub, auth);
                 string edgehubConnectionString = connectionStringBuilder.ToString() + ";ModuleId=$edgeHub";
-                using var moduleClient = ModuleClient.CreateFromConnectionString(edgehubConnectionString);
+                using ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(edgehubConnectionString);
                 await moduleClient.OpenAsync().ConfigureAwait(false);
             }
         }
@@ -906,7 +906,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");
 
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
 
             switch (attestationType)
             {
@@ -1094,10 +1094,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [ClassCleanup]
         public static void CleanupCertificates()
         {
-#if !NET451
             s_individualEnrollmentCertificate?.Dispose();
             s_groupEnrollmentCertificate?.Dispose();
-#endif
         }
     }
 }

@@ -117,6 +117,7 @@
     </Compile>
     <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
     <Compile Include="$(Common)\HttpMessageHelper.cs" />
+    <Compile Include="$(Common)\HttpContentExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
