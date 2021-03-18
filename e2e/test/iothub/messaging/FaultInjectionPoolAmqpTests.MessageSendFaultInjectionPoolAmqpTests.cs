@@ -892,13 +892,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             }
 
-            Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
+            Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> _)
             {
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    deviceClient.Dispose();
-                }
-
+                deviceClients.ForEach(deviceClient => deviceClient.Dispose());
                 return Task.FromResult(0);
             }
 

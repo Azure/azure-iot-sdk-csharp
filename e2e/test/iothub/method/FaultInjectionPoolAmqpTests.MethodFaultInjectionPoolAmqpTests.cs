@@ -735,22 +735,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
-            var testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
-
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
-                testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
-
                 Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method callback handler for device {testDevice.Id}");
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson)
                     .ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                TestDeviceCallbackHandler testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
                 Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
@@ -766,20 +760,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
 
-            async Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
+            async Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
             {
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    deviceClient.Dispose();
-                }
+                deviceClients.ForEach(deviceClient => deviceClient.Dispose());
+                testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());
 
-                foreach (KeyValuePair<string, TestDeviceCallbackHandler> entry in testDevicesWithCallbackHandler)
-                {
-                    TestDeviceCallbackHandler testDeviceCallbackHandler = entry.Value;
-                    testDeviceCallbackHandler?.Dispose();
-                }
-
-                testDevicesWithCallbackHandler.Clear();
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
             }
 
