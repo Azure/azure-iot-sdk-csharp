@@ -68,6 +68,7 @@ If you would like to build or change the SDK source code, please follow the [dev
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices, mainly modern versions Windows and Linux.
 
 The NuGet packages provide support for the following .NET flavors:
+- .NET 5.0
 - .NET Standard 2.1
 - .NET Standard 2.0
 - .NET Framework 4.7.2 (IoT Hub SDKs only)

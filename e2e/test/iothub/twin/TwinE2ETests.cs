@@ -392,7 +392,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // arrange
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportType);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportType);
 
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
 
@@ -418,7 +418,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(Client.TransportType transport)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
         }
@@ -426,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         private async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType transport)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, s_listOfPropertyValues, Logger).ConfigureAwait(false);
         }
@@ -523,7 +523,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         public static async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, object propValue)
         {
-            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
@@ -539,7 +539,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Logger.Trace($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             // Set a callback
             await deviceClient.
@@ -574,7 +574,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Logger.Trace($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue, Logger).ConfigureAwait(false);
 
@@ -602,8 +602,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var propValue = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
@@ -622,8 +622,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var propValue = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             var patch = new TwinCollection();
             patch[propName] = propValue;
@@ -643,8 +643,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var propEmptyValue = "{}";
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
@@ -694,8 +694,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var propName2 = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             var exceptionThrown = false;
             try

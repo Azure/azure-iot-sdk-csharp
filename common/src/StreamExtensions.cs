@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Shared
 {
+    /// <summary>
+    /// Extensions added to simplify the usage of <see cref="Stream"/> APIs based on the .NET implementation used.
+    /// </summary>
     internal static class StreamExtensions
     {
         internal static async Task WriteToStreamAsync(this Stream stream, byte[] requestBytes, CancellationToken cancellationToken)

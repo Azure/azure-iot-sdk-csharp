@@ -15,7 +15,12 @@ param(
 
     # Set this to true on the first execution to get everything installed in powershell. Does not need to be run everytime.
     [Parameter()]
-    [bool] $InstallDependencies = $true
+    [bool] $InstallDependencies = $true,
+
+    # Set this to true if you are generating resources for the DevOps test pipeline.
+    # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
+    [Parameter()]
+    [bool] $GenerateResourcesForDevOpsPipeline = $false
 )
 
 $startTime = (Get-Date)
@@ -113,7 +118,20 @@ $Region = $Region.Replace(' ', '')
 $logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
+$iothubUnitsToBeCreated = 1
+
+
+# OpenSSL has dropped support for SHA1 signed certificates in ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
+
+#################################################################################################
+# Make any special modifications required to generate resources for the DevOps test pipeline
+#################################################################################################
+
+if ($GenerateResourcesForDevOpsPipeline)
+{
+    $iothubUnitsToBeCreated = 3
+}
 
 
 #################################################################################################
@@ -388,7 +406,9 @@ az deployment group create `
     StorageAccountName=$storageAccountName `
     KeyVaultName=$keyVaultName `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
-    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent
+    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
+    HubUnitsCount=$iothubUnitsToBeCreated
+
 
 if ($LastExitCode -ne 0)
 {

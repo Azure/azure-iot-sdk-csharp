@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Configuration.IoTHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
-            using var deviceClient = DeviceClient.Create(
+            using DeviceClient deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
                 DeviceTransportType.Mqtt_Tcp_Only);
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Configuration.IoTHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
-            using var deviceClient = DeviceClient.Create(
+            using DeviceClient deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
                 DeviceTransportType.Amqp_Tcp_Only);
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
+            using DeviceClient deviceClient = DeviceClient.Create(_hostName, auth, transportType);
 
             try
             {
@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
+            using DeviceClient deviceClient = DeviceClient.Create(_hostName, auth, transportType);
 
             for (int i = 0; i < 2; i++)
             {
@@ -297,14 +297,20 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         public static void ClassCleanup()
         {
-#if !NET451
-            s_selfSignedCertificateWithPrivateKey?.Dispose();
+            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
+            if (s_selfSignedCertificateWithPrivateKey is IDisposable disposableSelfSignedCertificate)
+            {
+                disposableSelfSignedCertificate?.Dispose();
+            }
             s_selfSignedCertificateWithPrivateKey = null;
 
-            s_chainCertificateWithPrivateKey?.Dispose();
-            s_chainCertificateWithPrivateKey = null;
-#endif
-        }
+            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
+            if (s_chainCertificateWithPrivateKey is IDisposable disposableChainedCertificate)
+            {
+                disposableChainedCertificate?.Dispose();
 
+            }
+            s_chainCertificateWithPrivateKey = null;
+        }
     }
 }

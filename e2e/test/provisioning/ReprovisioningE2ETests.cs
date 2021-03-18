@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType transportProtocol, AttestationMechanismType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
+            IotHubConnectionStringBuilder connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType transportProtocol, AttestationMechanismType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
+            IotHubConnectionStringBuilder connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = true, UpdateHubAssignment = true }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType transportProtocol, AttestationMechanismType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
+            IotHubConnectionStringBuilder connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = false }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
-            var provClient = ProvisioningDeviceClient.Create(
+            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 Configuration.Provisioning.IdScope,
                 security,
@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
 
-                    using (var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString))
+                    using (ProvisioningServiceClient provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString))
                     {
                         Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
                         var individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
@@ -566,10 +566,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [ClassCleanup]
         public static void CleanupCertificates()
         {
-#if !NET451
             s_individualEnrollmentCertificate?.Dispose();
             s_groupEnrollmentCertificate?.Dispose();
-#endif
         }
     }
 }

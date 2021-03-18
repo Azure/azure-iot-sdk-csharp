@@ -50,6 +50,13 @@
       },
       "defaultValue": "[format('{0}-hub', resourceGroup().name)]"
     },
+    "HubUnitsCount": {
+      "type": "int",
+      "metadata": {
+        "description": "The number of IoT Hub units to be deployed."
+      },
+      "defaultValue": 1
+    },
     "ConsumerGroupName": {
       "type": "string",
       "metadata": {
@@ -281,7 +288,7 @@
       "sku": {
         "name": "S1",
         "tier": "Standard",
-        "capacity": 3
+        "capacity": "[parameters('HubUnitsCount')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[0], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[1], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[2])]",
@@ -503,7 +510,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.3.1.62928",
-      "templateHash": "5703369743693135956"
+      "templateHash": "7317588320467693544"
     }
   }
 }

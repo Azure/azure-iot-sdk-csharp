@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, transportType);
+            using ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, transportType);
             string messageId = Guid.NewGuid().ToString();
 
             // act and expect no exception
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 SdkAssignsMessageId = Shared.SdkAssignsMessageId.Never,
             };
-            using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, options);
+            using ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, options);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,
             };
-            using var sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, options);
+            using ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, options);
             string messageId = Guid.NewGuid().ToString();
 
             // act

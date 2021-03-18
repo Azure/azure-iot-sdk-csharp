@@ -44,6 +44,13 @@ param HubName string {
   }
 }
 
+param HubUnitsCount int {
+  default: 1
+  metadata: {
+    description: 'The number of IoT Hub units to be deployed.'
+  }
+}
+
 param ConsumerGroupName string {
   default: 'e2e-tests'
   metadata: {
@@ -260,7 +267,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
   sku: {
     name: 'S1'
     tier: 'Standard'
-    capacity: 3
+    capacity: HubUnitsCount
   }
   dependsOn: [
     container

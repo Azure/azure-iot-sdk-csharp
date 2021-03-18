@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
 
-            using var deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only);
+            using DeviceClient deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only);
             Logger.Trace($"{deviceId}: Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 transport,
                 Logger);
 
-            using var deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport);
+            using DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport);
             Logger.Trace($"Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             if (transport == Client.TransportType.Mqtt)
