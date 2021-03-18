@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Azure.Devices.Common.Data;
 
 #if !NET451
 
@@ -30,6 +31,7 @@ namespace Microsoft.Azure.Devices
         public IotHubSasCredentialProperties(string hostName, AzureSasCredential credential) : base(hostName)
         {
             _credential = credential;
+            AmqpAudience = new List<string> { AccessRights.ServiceConnect.ToString() };
         }
 
 #endif
