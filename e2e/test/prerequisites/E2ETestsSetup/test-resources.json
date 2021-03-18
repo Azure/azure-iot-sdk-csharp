@@ -281,7 +281,7 @@
       "sku": {
         "name": "S1",
         "tier": "Standard",
-        "capacity": 1
+        "capacity": 3
       },
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[0], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[1], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[2])]",
@@ -497,6 +497,13 @@
     "instrumentationKey": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName')), '2015-05-01').InstrumentationKey]"
+    }
+  },
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.3.1.62928",
+      "templateHash": "5703369743693135956"
     }
   }
 }

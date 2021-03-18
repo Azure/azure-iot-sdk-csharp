@@ -260,7 +260,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
   sku: {
     name: 'S1'
     tier: 'Standard'
-    capacity: 1
+    capacity: 3
   }
   dependsOn: [
     container
