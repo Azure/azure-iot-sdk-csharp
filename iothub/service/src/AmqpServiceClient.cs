@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices
             ServiceClientTransportSettings transportSettings,
             ServiceClientOptions options)
         {
-            var iotHubConnection = new IotHubConnection(connectionProperties, AccessRights.ServiceConnect, useWebSocketOnly, transportSettings);
+            var iotHubConnection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings);
             Connection = iotHubConnection;
             OpenTimeout = IotHubConnection.DefaultOpenTimeout;
             OperationTimeout = IotHubConnection.DefaultOperationTimeout;
