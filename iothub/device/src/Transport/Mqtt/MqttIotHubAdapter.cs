@@ -14,13 +14,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt.Packets;
-using DotNetty.Common.Concurrency;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
+
+#if NET5_0
+using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
+#else
+using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
+#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -639,7 +644,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_subscribeCompletions.TryRemove(packet.PacketId, out TaskCompletionSource task))
             {
-                task.TryComplete();
+                task.TrySetResult();
             }
 
             if (Logging.IsEnabled)
@@ -680,7 +685,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_unsubscribeCompletions.TryRemove(packet.PacketId, out TaskCompletionSource task))
             {
-                task.TryComplete();
+                task.TrySetResult();
             }
 
             if (Logging.IsEnabled)
@@ -858,7 +863,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             PublishPacket packet = await ComposePublishPacketAsync(context, message, qos, topicName).ConfigureAwait(true);
-            var publishCompletion = new TaskCompletionSource();
+            var publishCompletion = new DotNetty.Common.Concurrency.TaskCompletionSource();
             var workItem = new PublishWorkItem
             {
                 Completion = publishCompletion,
