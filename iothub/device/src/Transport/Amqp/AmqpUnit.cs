@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private readonly DeviceIdentity _deviceIdentity;
 
         private readonly Func<MethodRequestInternal, Task> _onMethodCallback;
-        private readonly Action<Twin, string, TwinCollection, IotHubException> _twinMessageListener;
+        private readonly Action<Twin, string, TwinCollection> _twinMessageListener;
         private readonly Func<string, Message, Task> _onModuleMessageReceivedCallback;
         private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             DeviceIdentity deviceIdentity,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
+            Action<Twin, string, TwinCollection> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
@@ -735,13 +735,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
-        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
+        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection)
         {
             Logging.Enter(this, twin, nameof(OnDesiredPropertyReceived));
 
             try
             {
-                _twinMessageListener?.Invoke(twin, correlationId, twinCollection, ex);
+                _twinMessageListener?.Invoke(twin, correlationId, twinCollection);
             }
             finally
             {

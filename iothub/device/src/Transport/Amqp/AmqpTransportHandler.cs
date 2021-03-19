@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 using Microsoft.Azure.Devices.Shared;
 
@@ -401,13 +400,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, _operationTimeout).ConfigureAwait(false);
 
                 var receivingTask = taskCompletionSource.Task;
-
                 if (await Task.WhenAny(receivingTask, Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds), cancellationToken)).ConfigureAwait(false) == receivingTask)
                 {
-                    if ((receivingTask.Exception != null) && (receivingTask.Exception.InnerException != null))
-                    {
-                        throw receivingTask.Exception.InnerException;
-                    }
                     // Task completed within timeout.
                     // Consider that the task may have faulted or been canceled.
                     // We re-await the task so that any exceptions/cancellation is rethrown.
@@ -523,7 +517,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Helpers
 
-        private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
+        private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection)
         {
             if (correlationId == null)
             {
@@ -539,14 +533,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     TaskCompletionSource<Twin> task;
                     if (_twinResponseCompletions.TryRemove(correlationId, out task))
                     {
-                        if(ex == default)
-                        {
-                            task.SetResult(twin);
-                        }
-                        else
-                        {
-                            task.SetException(ex);
-                        }
+                        task.SetResult(twin);
                     }
                     else
                     {

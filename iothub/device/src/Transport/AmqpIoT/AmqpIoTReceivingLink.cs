@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private Action<Message> _onEventsReceived;
         private Action<Message> _onDeviceMessageReceived;
         private Action<MethodRequestInternal> _onMethodReceived;
-        private Action<Twin, string, TwinCollection, IotHubException> _onTwinMessageReceived;
+        private Action<Twin, string, TwinCollection> _onTwinMessageReceived;
 
         public AmqpIoTReceivingLink(ReceivingAmqpLink receivingAmqpLink)
         {
@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         #region Twin handling
 
-        internal void RegisterTwinListener(Action<Twin, string, TwinCollection, IotHubException> onDesiredPropertyReceived)
+        internal void RegisterTwinListener(Action<Twin, string, TwinCollection> onDesiredPropertyReceived)
         {
             _onTwinMessageReceived = onDesiredPropertyReceived;
             _receivingAmqpLink.RegisterMessageListener(OnTwinChangesReceived);
@@ -280,18 +280,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (status >= 400)
                 {
                     // Handle failures
-                    if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase) 
-                    || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
+                    _onTwinMessageReceived.Invoke(null, correlationId, null);
+                    if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         string error = null;
                         using (var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8))
                         {
                             error = reader.ReadToEnd();
                         };
-
                         // Retry for Http status code request timeout, Too many requests and server errors
-                        var exception = new IotHubException(error, status >= 500 || status == 429 || status == 408);
-                        _onTwinMessageReceived.Invoke(null, correlationId, null, exception);
+                        throw new IotHubException(error, status >= 500 || status == 429 || status == 408);
                     }
                 }
                 else
@@ -327,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         // This shouldn't happen
                         Logging.Info("Received a correlation Id for Twin operation that does not match Get, Patch or Put request", nameof(OnTwinChangesReceived));
                     }
-                    _onTwinMessageReceived.Invoke(twin, correlationId, twinProperties, null);
+                    _onTwinMessageReceived.Invoke(twin, correlationId, twinProperties);
                 }
             }
             finally
