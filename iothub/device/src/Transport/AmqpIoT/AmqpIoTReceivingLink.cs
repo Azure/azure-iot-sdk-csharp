@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private Action<Message> _onEventsReceived;
         private Action<Message> _onDeviceMessageReceived;
         private Action<MethodRequestInternal> _onMethodReceived;
-        private Action<Twin, string, TwinCollection> _onTwinMessageReceived;
+        private Action<Twin, string, TwinCollection> _onDesiredPropertyReceived;
 
         public AmqpIoTReceivingLink(ReceivingAmqpLink receivingAmqpLink)
         {
@@ -257,98 +257,89 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         internal void RegisterTwinListener(Action<Twin, string, TwinCollection> onDesiredPropertyReceived)
         {
-            _onTwinMessageReceived = onDesiredPropertyReceived;
-            _receivingAmqpLink.RegisterMessageListener(OnTwinChangesReceived);
+            _onDesiredPropertyReceived = onDesiredPropertyReceived;
+            _receivingAmqpLink.RegisterMessageListener(OnDesiredPropertyReceived);
         }
 
-        private void OnTwinChangesReceived(AmqpMessage amqpMessage)
+        private void OnDesiredPropertyReceived(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, amqpMessage, $"{nameof(OnTwinChangesReceived)}");
+                Logging.Enter(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
             }
 
             try
             {
                 _receivingAmqpLink.DisposeDelivery(amqpMessage, true, AmqpIoTConstants.AcceptedOutcome);
                 string correlationId = amqpMessage.Properties?.CorrelationId?.ToString();
-                int status = GetStatus(amqpMessage);
+
+                if (!VerifyResponseMessage(amqpMessage))
+                {
+                    _onDesiredPropertyReceived.Invoke(null, correlationId, null);
+                }
 
                 Twin twin = null;
                 TwinCollection twinProperties = null;
 
-                if (status >= 400)
+                if (correlationId != null)
                 {
-                    // Handle failures
-                    _onTwinMessageReceived.Invoke(null, correlationId, null);
-                    if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (amqpMessage.BodyStream != null)
                     {
-                        string error = null;
-                        using (var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8))
+                        // This a result of a GET TWIN so return (set) the full twin
+                        using (StreamReader reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8))
                         {
-                            error = reader.ReadToEnd();
-                        };
-                        // Retry for Http status code request timeout, Too many requests and server errors
-                        throw new IotHubException(error, status >= 500 || status == 429 || status == 408);
+                            string body = reader.ReadToEnd();
+                            var properties = JsonConvert.DeserializeObject<TwinProperties>(body);
+                            twin = new Twin(properties);
+                        }
+                    }
+                    else
+                    {
+                        // This is a desired property ack from the service
+                        twin = new Twin();
                     }
                 }
                 else
                 {
-                    if (correlationId == null)
+                    // No correlationId, this is a PATCH sent by the sevice so return (set) the TwinCollection
+
+                    using (StreamReader reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8))
                     {
-                        // Here we are getting desired property update notifications and want to handle it first
-                        using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
                         string patch = reader.ReadToEnd();
                         twinProperties = JsonConvert.DeserializeObject<TwinCollection>(patch);
                     }
-                    else if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        // This a response of a GET TWIN so return (set) the full twin
-                        using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
-                        string body = reader.ReadToEnd();
-                        var properties = JsonConvert.DeserializeObject<TwinProperties>(body);
-                        twin = new Twin(properties);
-                    }
-                    else if (correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        // This can be used to coorelate success response with updating reported properties 
-                        // However currently we do not have it as request response style implementation
-                        Logging.Info("Updated twin reported properties successfully", nameof(OnTwinChangesReceived));
-                    }
-                    else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        // This is an acknowledgement received from service for subscribing to desired property updates
-                        Logging.Info("Subscribed for twin successfully", nameof(OnTwinChangesReceived));
-                    }
-                    else
-                    {
-                        // This shouldn't happen
-                        Logging.Info("Received a correlation Id for Twin operation that does not match Get, Patch or Put request", nameof(OnTwinChangesReceived));
-                    }
-                    _onTwinMessageReceived.Invoke(twin, correlationId, twinProperties);
                 }
+                _onDesiredPropertyReceived.Invoke(twin, correlationId, twinProperties);
             }
             finally
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, amqpMessage, $"{nameof(OnTwinChangesReceived)}");
+                    Logging.Exit(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
                 }
             }
         }
 
         #endregion Twin handling
 
-        internal static int GetStatus(AmqpMessage response)
+        internal static bool VerifyResponseMessage(AmqpMessage response)
         {
+            bool retVal = true;
             if (response != null)
             {
                 if (response.MessageAnnotations.Map.TryGetValue(AmqpIoTConstants.ResponseStatusName, out int status))
                 {
-                    return status;
+                    if (status >= 400)
+                    {
+                        retVal = false;
+                    }
                 }
             }
-            return -1;
+            else
+            {
+                retVal = false;
+            }
+            return retVal;
         }
     }
 }
