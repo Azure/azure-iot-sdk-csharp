@@ -1980,6 +1980,10 @@ namespace Microsoft.Azure.Devices.Client
             _fileUploadHttpTransportHandler?.Dispose();
             _deviceReceiveMessageSemaphore?.Dispose();
             _twinDesiredPropertySemaphore?.Dispose();
+#if !NET451
+            Certificate?.Dispose();
+            Certificate = null;
+#endif
             IotHubConnectionString?.TokenRefresher?.Dispose();
         }
 

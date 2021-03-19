@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a X.509 certificate
     /// </summary>
-    public sealed class DeviceAuthenticationWithX509Certificate : IAuthenticationMethod, IDisposable
+    public sealed class DeviceAuthenticationWithX509Certificate : IAuthenticationMethod
     {
         private string _deviceId;
 
@@ -79,17 +79,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             _deviceId = deviceId;
-        }
-
-        /// <summary>
-        /// Dispose the X509 certificate associated with this authentication method.
-        /// </summary>
-        public void Dispose()
-        {
-#if !NET451
-            Certificate?.Dispose();
-            Certificate = null;
-#endif
         }
     }
 }
