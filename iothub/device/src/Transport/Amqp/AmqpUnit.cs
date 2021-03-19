@@ -619,7 +619,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             finally
             {
                 Logging.Exit(this, timeout, nameof(DisableMethodsAsync));
-                _methodLinkSemaphore.Release();
             }
         }
 
