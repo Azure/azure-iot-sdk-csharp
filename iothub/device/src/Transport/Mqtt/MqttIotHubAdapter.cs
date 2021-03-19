@@ -1133,53 +1133,42 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public async Task<PublishPacket> ComposePublishPacketAsync(IChannelHandlerContext context, Message message, QualityOfService qos, string topicName)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, context.Name, topicName, nameof(ComposePublishPacketAsync));
-
-            try
+            var packet = new PublishPacket(qos, false, false)
             {
-                var packet = new PublishPacket(qos, false, false)
-                {
-                    TopicName = PopulateMessagePropertiesFromMessage(topicName, message)
-                };
-                if (qos > QualityOfService.AtMostOnce)
-                {
-                    int packetId = GetNextPacketId();
-                    switch (qos)
-                    {
-                        case QualityOfService.AtLeastOnce:
-                            packetId &= 0x7FFF; // clear 15th bit
-                            break;
-
-                        case QualityOfService.ExactlyOnce:
-                            packetId |= 0x8000; // set 15th bit
-                            break;
-
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(qos), qos, null);
-                    }
-                    packet.PacketId = packetId;
-                }
-                Stream payloadStream = message.GetBodyStream();
-                long streamLength = payloadStream.Length;
-                if (streamLength > MaxPayloadSize)
-                {
-                    throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
-                }
-
-                int length = (int)streamLength;
-                IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
-                await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(true);
-                Contract.Assert(buffer.ReadableBytes == length);
-
-                packet.Payload = buffer;
-                return packet;
-            }
-            finally
+                TopicName = PopulateMessagePropertiesFromMessage(topicName, message)
+            };
+            if (qos > QualityOfService.AtMostOnce)
             {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, context.Name, topicName, nameof(ComposePublishPacketAsync));
+                int packetId = GetNextPacketId();
+                switch (qos)
+                {
+                    case QualityOfService.AtLeastOnce:
+                        packetId &= 0x7FFF; // clear 15th bit
+                        break;
+
+                    case QualityOfService.ExactlyOnce:
+                        packetId |= 0x8000; // set 15th bit
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(qos), qos, null);
+                }
+                packet.PacketId = packetId;
             }
+            Stream payloadStream = message.GetBodyStream();
+            long streamLength = payloadStream.Length;
+            if (streamLength > MaxPayloadSize)
+            {
+                throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
+            }
+
+            int length = (int)streamLength;
+            IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
+            await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(true);
+            Contract.Assert(buffer.ReadableBytes == length);
+
+            packet.Payload = buffer;
+            return packet;
         }
 
         public static void PopulateMessagePropertiesFromPacket(Message message, PublishPacket publish)

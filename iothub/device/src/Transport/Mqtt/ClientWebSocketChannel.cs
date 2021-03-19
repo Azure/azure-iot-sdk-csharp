@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -154,9 +153,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </summary>
         protected override async void DoClose()
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(DoClose));
-
             try
             {
                 WebSocketState webSocketState = _webSocket.State;
@@ -174,11 +170,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 Abort();
             }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(DoClose));
-            }
         }
 
         /// <summary>
@@ -186,69 +177,58 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </summary>
         protected override async void DoBeginRead()
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(DoBeginRead));
-
+            IByteBuffer byteBuffer = null;
+            IRecvByteBufAllocatorHandle allocHandle = null;
+            bool close = false;
             try
             {
-                IByteBuffer byteBuffer = null;
-                IRecvByteBufAllocatorHandle allocHandle = null;
-                bool close = false;
-                try
+                if (!Open || _isReadPending)
                 {
-                    if (!Open || _isReadPending)
+                    return;
+                }
+
+                _isReadPending = true;
+                IByteBufferAllocator allocator = Configuration.Allocator;
+                allocHandle = Configuration.RecvByteBufAllocator.NewHandle();
+                allocHandle.Reset(Configuration);
+                do
+                {
+                    byteBuffer = allocHandle.Allocate(allocator);
+                    allocHandle.LastBytesRead = await DoReadBytesAsync(byteBuffer).ConfigureAwait(false);
+                    if (allocHandle.LastBytesRead <= 0)
                     {
-                        return;
+                        // nothing was read -> release the buffer.
+                        byteBuffer.Release();
+                        byteBuffer = null;
+                        close = allocHandle.LastBytesRead < 0;
+                        break;
                     }
 
-                    _isReadPending = true;
-                    IByteBufferAllocator allocator = Configuration.Allocator;
-                    allocHandle = Configuration.RecvByteBufAllocator.NewHandle();
-                    allocHandle.Reset(Configuration);
-                    do
-                    {
-                        byteBuffer = allocHandle.Allocate(allocator);
-                        allocHandle.LastBytesRead = await DoReadBytesAsync(byteBuffer).ConfigureAwait(false);
-                        if (allocHandle.LastBytesRead <= 0)
-                        {
-                            // nothing was read -> release the buffer.
-                            byteBuffer.Release();
-                            byteBuffer = null;
-                            close = allocHandle.LastBytesRead < 0;
-                            break;
-                        }
+                    Pipeline.FireChannelRead(byteBuffer);
+                    allocHandle.IncMessagesRead(1);
+                } while (allocHandle.ContinueReading());
 
-                        Pipeline.FireChannelRead(byteBuffer);
-                        allocHandle.IncMessagesRead(1);
-                    } while (allocHandle.ContinueReading());
-
-                    allocHandle.ReadComplete();
-                    _isReadPending = false;
-                    Pipeline.FireChannelReadComplete();
-                }
-                catch (Exception e) when (!e.IsFatal())
-                {
-                    // Since this method returns void, all exceptions must be handled here.
-                    byteBuffer?.Release();
-                    allocHandle?.ReadComplete();
-                    _isReadPending = false;
-                    Pipeline.FireChannelReadComplete();
-                    Pipeline.FireExceptionCaught(e);
-                    close = true;
-                }
-
-                if (close)
-                {
-                    if (Active)
-                    {
-                        await HandleCloseAsync().ConfigureAwait(false);
-                    }
-                }
+                allocHandle.ReadComplete();
+                _isReadPending = false;
+                Pipeline.FireChannelReadComplete();
             }
-            finally
+            catch (Exception e) when (!e.IsFatal())
             {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(DoBeginRead));
+                // Since this method returns void, all exceptions must be handled here.
+                byteBuffer?.Release();
+                allocHandle?.ReadComplete();
+                _isReadPending = false;
+                Pipeline.FireChannelReadComplete();
+                Pipeline.FireExceptionCaught(e);
+                close = true;
+            }
+
+            if (close)
+            {
+                if (Active)
+                {
+                    await HandleCloseAsync().ConfigureAwait(false);
+                }
             }
         }
 
@@ -258,9 +238,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <param name="channelOutboundBuffer">The buffer to write to the remote peer.</param>
         protected override async void DoWrite(ChannelOutboundBuffer channelOutboundBuffer)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(DoWrite));
-
             if (channelOutboundBuffer == null)
             {
                 throw new ArgumentNullException(nameof(channelOutboundBuffer), "The channel outbound buffer cannot be null.");
@@ -287,12 +264,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         continue;
                     }
 
-                    ArraySegment<byte> bytesToBeWritten = byteBuffer.GetIoBuffer();
-
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"Writing bytes of size {bytesToBeWritten.Count} to the websocket", nameof(DoWrite));
-
-                    await _webSocket.SendAsync(bytesToBeWritten, WebSocketMessageType.Binary, true, _writeCancellationTokenSource.Token).ConfigureAwait(false);
+                    await _webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, _writeCancellationTokenSource.Token).ConfigureAwait(false);
                     channelOutboundBuffer.Remove();
                 }
 
@@ -306,49 +278,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 Pipeline.FireExceptionCaught(e);
                 await HandleCloseAsync().ConfigureAwait(false);
             }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(DoWrite));
-            }
         }
 
         private async Task<int> DoReadBytesAsync(IByteBuffer byteBuffer)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(DoReadBytesAsync));
-
-            try
-            {
-                WebSocketReceiveResult receiveResult = await _webSocket
+            WebSocketReceiveResult receiveResult = await _webSocket
                 .ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None)
                 .ConfigureAwait(false);
-                if (receiveResult.MessageType == WebSocketMessageType.Text)
-                {
-                    throw new ProtocolViolationException("Mqtt over WS message cannot be in text");
-                }
-
-                // Check if client closed WebSocket
-                if (receiveResult.MessageType == WebSocketMessageType.Close)
-                {
-                    return -1;
-                }
-
-                byteBuffer.SetWriterIndex(byteBuffer.WriterIndex + receiveResult.Count);
-                return receiveResult.Count;
-            }
-            finally
+            if (receiveResult.MessageType == WebSocketMessageType.Text)
             {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(DoReadBytesAsync));
+                throw new ProtocolViolationException("Mqtt over WS message cannot be in text");
             }
+
+            // Check if client closed WebSocket
+            if (receiveResult.MessageType == WebSocketMessageType.Close)
+            {
+                return -1;
+            }
+
+            byteBuffer.SetWriterIndex(byteBuffer.WriterIndex + receiveResult.Count);
+            return receiveResult.Count;
         }
 
         private void CancelPendingWrite()
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(CancelPendingWrite));
-
             try
             {
                 _writeCancellationTokenSource.Cancel();
@@ -357,18 +310,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // ignore this error
             }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(CancelPendingWrite));
-            }
         }
 
         private async Task HandleCloseAsync()
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(HandleCloseAsync));
-
             try
             {
                 await CloseAsync().ConfigureAwait(false);
@@ -376,11 +321,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             catch (Exception ex) when (!ex.IsFatal())
             {
                 Abort();
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(HandleCloseAsync));
             }
         }
 
