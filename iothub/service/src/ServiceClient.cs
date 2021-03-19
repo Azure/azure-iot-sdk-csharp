@@ -29,8 +29,7 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 
     /// <summary>
-    /// Contains methods that services can use to send messages to devices/modules,
-    /// invoke a direct method on a device/module and deliver notifications for file upload and cloud-to-device operations.
+    /// Contains methods that services can use to send messages to devices
     /// </summary>
     public abstract class ServiceClient : IDisposable
     {
@@ -43,11 +42,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT Hub connection string.
+        /// Create ServiceClient from the specified connection string
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub.</param>
-        /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
-        /// <returns>An instance of ServiceClient.</returns>
+        /// <param name="connectionString">Connection string for the IoT Hub</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns></returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, ServiceClientOptions options = default)
         {
             return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
@@ -67,25 +66,25 @@ namespace Microsoft.Azure.Devices
         protected virtual void Dispose(bool disposing) { }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT Hub connection string using specified Transport Type.
+        /// Create ServiceClient from the specified connection string using specified Transport Type
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub.</param>
-        /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
-        /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
-        /// <returns>An instance of ServiceClient.</returns>
+        /// <param name="connectionString">Connection string for the IoT Hub</param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns></returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientOptions options = default)
         {
             return CreateFromConnectionString(connectionString, transportType, new ServiceClientTransportSettings(), options);
         }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT Hub connection string using specified Transport Type and transport settings.
+        /// Create ServiceClient from the specified connection string using specified Transport Type
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub.</param>
-        /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
-        /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client.</param>
-        /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
-        /// <returns>An instance of ServiceClient.</returns>
+        /// <param name="connectionString">Connection string for the IoT Hub</param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used</param>
+        /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns></returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings, ServiceClientOptions options = default)
         {
             if (transportSettings == null)
@@ -100,77 +99,111 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Open the ServiceClient instance.
+        /// Open the ServiceClient instance
         /// </summary>
+        /// <returns></returns>
         public abstract Task OpenAsync();
 
         /// <summary>
-        /// Close the ServiceClient instance.
+        /// Close the ServiceClient instance
         /// </summary>
+        /// <returns></returns>
         public abstract Task CloseAsync();
 
         /// <summary>
-        /// Send a cloud-to-device message to the specified device.
+        /// Send a one-way notification to the specified device
         /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="message">The cloud-to-device message.</param>
-        /// <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
+        /// <param name="deviceId">The device identifier for the target device</param>
+        /// <param name="message">The message containing the notification</param>
+        /// <param name="timeout">The operation timeout override. If not used uses OperationTimeout default</param>
+        /// <returns></returns>
         public abstract Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null);
 
         /// <summary>
-        /// Removes all cloud-to-device messages from a device's queue.
+        /// Removes all messages from a device's queue.
         /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public abstract Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken = default);
+        /// <param name="deviceId"></param>
+        /// <returns></returns>
+        public abstract Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId);
 
         /// <summary>
-        /// Get the <see cref="FeedbackReceiver{FeedbackBatch}"/> which can deliver acknowledgments for messages sent to a device/module from IoT Hub.
-        /// For more information see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
+        /// Removes all messages from a device's queue.
         /// </summary>
-        /// <returns>An instance of <see cref="FeedbackReceiver{FeedbackBatch}"/>.</returns>
+        /// <param name="deviceId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public abstract Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Get the FeedbackReceiver
+        /// </summary>
+        /// <returns>An instance of the FeedbackReceiver</returns>
         public abstract FeedbackReceiver<FeedbackBatch> GetFeedbackReceiver();
 
         /// <summary>
-        /// Get the <see cref="FileNotificationReceiver{FileNotification}"/> which can deliver notifications for file upload operations.
-        /// For more information see <see href = "https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload#file-upload-notifications"/>.
+        /// Get the FeedbackReceiver
         /// </summary>
-        /// <returns>An instance of <see cref="FileNotificationReceiver{FileNotification}"/>.</returns>
+        /// <returns>An instance of the FeedbackReceiver</returns>
         public abstract FileNotificationReceiver<FileNotification> GetFileNotificationReceiver();
 
         /// <summary>
-        /// Gets service statistics for the IoT Hub.
+        /// Gets service statistics for the Iot Hub.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The service statistics that can be retrieved from IoT Hub, eg. the number of devices connected to the hub.</returns>
-        public abstract Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default);
+        /// <returns>returns ServiceStatistics object containing current service statistics</returns>
+        public abstract Task<ServiceStatistics> GetServiceStatisticsAsync();
 
         /// <summary>
-        /// Interactively invokes a method on a device.
+        /// Gets service statistics for the Iot Hub.
         /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the device.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default);
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>returns ServiceStatistics object containing current service statistics</returns>
+        public abstract Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Interactively invokes a method on a module.
+        /// Interactively invokes a method on device
         /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="moduleId">The module identifier for the target module.</param>
-        /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the module.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default);
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to device)</param>
+        /// <returns>Method result</returns>
+        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod);
 
         /// <summary>
-        /// Send a cloud-to-device message to the specified module.
+        /// Interactively invokes a method on device
         /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="moduleId">The module identifier for the target module.</param>
-        /// <param name="message">The cloud-to-module message.</param>
-        ///  <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
-        public abstract Task SendAsync(string deviceId, string moduleId, Message message, TimeSpan? timeout = null);
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to device)</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Method result</returns>
+        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Interactively invokes a method on device
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to device)</param>
+        /// <returns>Method result</returns>
+        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod);
+
+        /// <summary>
+        /// Interactively invokes a method on device
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to device)</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Method result</returns>
+        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Send a one-way notification to the specified device module
+        /// </summary>
+        /// <param name="deviceId">The device identifier for the target device</param>
+        /// <param name="moduleId">The module identifier for the target device module</param>
+        /// <param name="message">The message containing the notification</param>
+        /// <returns></returns>
+        public abstract Task SendAsync(string deviceId, string moduleId, Message message);
     }
 }
