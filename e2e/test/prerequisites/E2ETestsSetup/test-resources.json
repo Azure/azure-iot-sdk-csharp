@@ -98,6 +98,13 @@
       },
       "defaultValue": "[format('{0}-oi', resourceGroup().name)]"
     },
+    "OperationInsightsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "The location for Microsoft.OperationalInsights/workspaces."
+      },
+      "defaultValue": "eastus"
+    },
     "SecuritySolutionName": {
       "type": "string",
       "metadata": {
@@ -345,7 +352,7 @@
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2017-03-15-preview",
       "name": "[parameters('OperationalInsightsName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('OperationInsightsLocation')]",
       "properties": {}
     },
     {
@@ -510,7 +517,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.3.1.62928",
-      "templateHash": "7317588320467693544"
+      "templateHash": "9993199802379393341"
     }
   }
 }
