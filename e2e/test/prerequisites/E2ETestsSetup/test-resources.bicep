@@ -1,7 +1,7 @@
 param ApplicationInsightsName string {
   default: '${resourceGroup().name}-ai'
   metadata: {
-      description: 'The name of application insights.'      
+      description: 'The name of application insights.'
   }
 }
 
@@ -89,6 +89,13 @@ param OperationalInsightsName string {
   default: '${resourceGroup().name}-oi'
   metadata: {
     description: 'The name of the operational insights instance.'
+  }
+}
+
+param OperationInsightsLocation string {
+  default: 'eastus'
+  metadata: {
+    description: 'The location for Microsoft.OperationalInsights/workspaces.'
   }
 }
 
@@ -314,7 +321,7 @@ resource provisioningService 'Microsoft.Devices/provisioningServices@2017-11-15'
 
 resource operationalInsightsWorkspaces 'Microsoft.OperationalInsights/workspaces@2017-03-15-preview' = {
   name: OperationalInsightsName
-  location: resourceGroup().location
+  location: OperationInsightsLocation
   properties: {
   }
 }
