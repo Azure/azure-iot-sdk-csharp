@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
     /// <threadsafety static="true" instance="true" />
-    public class DeviceClient : IDisposable
+    public sealed class DeviceClient : IDisposable
     {
         /// <summary>
         /// Default operation timeout.
@@ -608,26 +608,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Releases the unmanaged resources used by the DeviceClient and optionally disposes of the managed resources.
         /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the DeviceClient and allows for any derived class to override and
-        /// provide custom implementation.
-        /// </summary>
-        /// <param name="disposing">Setting to true will release both managed and unmanaged resources. Setting to
-        /// false will only release the unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                InternalClient?.Dispose();
-                InternalClient = null;
-            }
-        }
+        public void Dispose() => InternalClient?.Dispose();
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
