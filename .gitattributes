@@ -23,4 +23,4 @@
 *.xps binary
 
 # Added by git lfs track "*.mdb" for the policheck ignore
-*.mdb filter=lfs diff=lfs merge=lfs -text
+*.mdb binary
