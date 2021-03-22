@@ -13,13 +13,13 @@ namespace System.Diagnostics.Tracing
         // OnEventSourceCreated is triggered as soon as the EventListener is registered and an event source is created.
         // So trying to configure this value in the ConsoleEventListener constructor does not work.
         // The OnEventSourceCreated can be triggered sooner than the filter is initialized in the ConsoleEventListener constructor.
-        private static readonly string[] s_eventFilters = new string[] { "DotNetty-Default", "Microsoft-Azure-Devices", "Azure-Core", "Azure-Identity" };
+        private static string[] _eventFilters = new string[] { "DotNetty-Default", "Microsoft-Azure-Devices" };
 
         private readonly object _lock = new object();
 
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
-            if (s_eventFilters.Any(filter => eventSource.Name.StartsWith(filter, StringComparison.OrdinalIgnoreCase)))
+            if (_eventFilters.Any(filter => eventSource.Name.StartsWith(filter, StringComparison.OrdinalIgnoreCase)))
             {
                 base.OnEventSourceCreated(eventSource);
                 EnableEvents(
