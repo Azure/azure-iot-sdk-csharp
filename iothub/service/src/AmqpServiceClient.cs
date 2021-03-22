@@ -163,6 +163,12 @@ namespace Microsoft.Azure.Devices
         }
 
         // This call is executed over HTTP.
+        public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId)
+        {
+            return PurgeMessageQueueAsync(deviceId, CancellationToken.None);
+        }
+
+        // This call is executed over HTTP.
         public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken)
         {
             Logging.Enter(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
@@ -200,6 +206,12 @@ namespace Microsoft.Azure.Devices
         }
 
         // This call is executed over HTTP.
+        public override Task<ServiceStatistics> GetServiceStatisticsAsync()
+        {
+            return GetServiceStatisticsAsync(CancellationToken.None);
+        }
+
+        // This call is executed over HTTP.
         public override Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
@@ -222,6 +234,12 @@ namespace Microsoft.Azure.Devices
             {
                 Logging.Exit(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
             }
+        }
+
+        // This call is executed over HTTP.
+        public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod)
+        {
+            return InvokeDeviceMethodAsync(deviceId, cloudToDeviceMethod, CancellationToken.None);
         }
 
         // This call is executed over HTTP.
@@ -263,6 +281,12 @@ namespace Microsoft.Azure.Devices
         }
 
         // This call is executed over HTTP.
+        public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod)
+        {
+            return InvokeDeviceMethodAsync(deviceId, moduleId, cloudToDeviceMethod, CancellationToken.None);
+        }
+
+        // This call is executed over HTTP.
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(deviceId))
@@ -279,7 +303,7 @@ namespace Microsoft.Azure.Devices
         }
 
         // This call is executed over AMQP.
-        public override async Task SendAsync(string deviceId, string moduleId, Message message, TimeSpan? timeout = null)
+        public override async Task SendAsync(string deviceId, string moduleId, Message message)
         {
             Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
 
@@ -308,8 +332,6 @@ namespace Microsoft.Azure.Devices
                 message.ResetBody();
             }
 
-            timeout ??= OperationTimeout;
-
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
             try
@@ -320,7 +342,7 @@ namespace Microsoft.Azure.Devices
                         amqpMessage,
                         IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag),
                         AmqpConstants.NullBinary,
-                        timeout.Value)
+                        OperationTimeout)
                     .ConfigureAwait(false);
 
                 Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));

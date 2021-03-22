@@ -31,8 +31,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     // EventLoop. To limit I/O to the EventLoopGroup and keep Netty semantics, we are going to ensure that the
     // task continuations are executed by this scheduler using ConfigureAwait(true).
     //
-    // All awaited calls that happen within dotnetty's pipeline should be ConfigureAwait(true).
-    //
     internal sealed class MqttIotHubAdapter : ChannelHandlerAdapter
     {
         [Flags]
@@ -479,7 +477,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         Logging.Info(context, $"Idle time was {idleTime}, so ping request was sent.", nameof(PingServerAsync));
 
                     // Wait to capture the ping response semaphore, which is released when a PINGRESP packet is received.
-                    bool receivedPingResponse = await s_pingResponseSemaphore.WaitAsync(s_pingResponseTimeout).ConfigureAwait(true);
+                    bool receivedPingResponse = await s_pingResponseSemaphore.WaitAsync(s_pingResponseTimeout).ConfigureAwait(false);
                     if (!receivedPingResponse)
                     {
                         if (Logging.IsEnabled)
@@ -1171,7 +1169,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             int length = (int)streamLength;
             IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
-            await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(true);
+            await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(false);
             Contract.Assert(buffer.ReadableBytes == length);
 
                 packet.Payload = buffer;
@@ -1376,7 +1374,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await context.WriteAndFlushAsync(message).ConfigureAwait(true);
+                await context.WriteAndFlushAsync(message).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

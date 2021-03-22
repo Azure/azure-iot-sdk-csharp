@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
@@ -709,12 +709,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         })
                     .ConfigureAwait(false);
             }
-            catch (IotHubException)
+            catch (Exception)
             {
                 exceptionThrown = true;
             }
 
-            Assert.IsTrue(exceptionThrown, "IotHubException was expected for updating reported property with an invalid property name, but was not thrown.");
+            Assert.IsTrue(exceptionThrown, "Exception was expected, but not thrown.");
 
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
