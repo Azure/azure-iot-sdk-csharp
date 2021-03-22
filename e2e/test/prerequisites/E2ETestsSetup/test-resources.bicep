@@ -163,7 +163,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2018-02-14' = {
       name: 'standard'
       family: 'A'
     }
-    enableSoftDelete: true
+    enableSoftDelete: false
     networkAcls: {
       defaultAction: 'Allow'
       bypass: 'AzureServices'
