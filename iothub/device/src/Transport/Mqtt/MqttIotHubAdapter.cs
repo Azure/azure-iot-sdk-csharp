@@ -29,6 +29,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     // EventLoop. To limit I/O to the EventLoopGroup and keep Netty semantics, we are going to ensure that the
     // task continuations are executed by this scheduler using ConfigureAwait(true).
     //
+    // All awaited calls that happen within dotnetty's pipeline should be ConfigureAwait(true).
+    //
     internal sealed class MqttIotHubAdapter : ChannelHandlerAdapter
     {
         [Flags]
@@ -475,7 +477,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         Logging.Info(context, $"Idle time was {idleTime}, so ping request was sent.", nameof(PingServerAsync));
 
                     // Wait to capture the ping response semaphore, which is released when a PINGRESP packet is received.
-                    bool receivedPingResponse = await s_pingResponseSemaphore.WaitAsync(s_pingResponseTimeout).ConfigureAwait(false);
+                    bool receivedPingResponse = await s_pingResponseSemaphore.WaitAsync(s_pingResponseTimeout).ConfigureAwait(true);
                     if (!receivedPingResponse)
                     {
                         if (Logging.IsEnabled)
@@ -1131,42 +1133,53 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public async Task<PublishPacket> ComposePublishPacketAsync(IChannelHandlerContext context, Message message, QualityOfService qos, string topicName)
         {
-            var packet = new PublishPacket(qos, false, false)
+            if (Logging.IsEnabled)
+                Logging.Enter(this, context.Name, topicName, nameof(ComposePublishPacketAsync));
+
+            try
             {
-                TopicName = PopulateMessagePropertiesFromMessage(topicName, message)
-            };
-            if (qos > QualityOfService.AtMostOnce)
-            {
-                int packetId = GetNextPacketId();
-                switch (qos)
+                var packet = new PublishPacket(qos, false, false)
                 {
-                    case QualityOfService.AtLeastOnce:
-                        packetId &= 0x7FFF; // clear 15th bit
-                        break;
+                    TopicName = PopulateMessagePropertiesFromMessage(topicName, message)
+                };
+                if (qos > QualityOfService.AtMostOnce)
+                {
+                    int packetId = GetNextPacketId();
+                    switch (qos)
+                    {
+                        case QualityOfService.AtLeastOnce:
+                            packetId &= 0x7FFF; // clear 15th bit
+                            break;
 
-                    case QualityOfService.ExactlyOnce:
-                        packetId |= 0x8000; // set 15th bit
-                        break;
+                        case QualityOfService.ExactlyOnce:
+                            packetId |= 0x8000; // set 15th bit
+                            break;
 
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(qos), qos, null);
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(qos), qos, null);
+                    }
+                    packet.PacketId = packetId;
                 }
-                packet.PacketId = packetId;
+                Stream payloadStream = message.GetBodyStream();
+                long streamLength = payloadStream.Length;
+                if (streamLength > MaxPayloadSize)
+                {
+                    throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
+                }
+
+                int length = (int)streamLength;
+                IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
+                await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(true);
+                Contract.Assert(buffer.ReadableBytes == length);
+
+                packet.Payload = buffer;
+                return packet;
             }
-            Stream payloadStream = message.GetBodyStream();
-            long streamLength = payloadStream.Length;
-            if (streamLength > MaxPayloadSize)
+            finally
             {
-                throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, context.Name, topicName, nameof(ComposePublishPacketAsync));
             }
-
-            int length = (int)streamLength;
-            IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
-            await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(false);
-            Contract.Assert(buffer.ReadableBytes == length);
-
-            packet.Payload = buffer;
-            return packet;
         }
 
         public static void PopulateMessagePropertiesFromPacket(Message message, PublishPacket publish)
@@ -1361,7 +1374,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await context.WriteAndFlushAsync(message).ConfigureAwait(false);
+                await context.WriteAndFlushAsync(message).ConfigureAwait(true);
             }
             catch (Exception ex)
             {

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private readonly DeviceIdentity _deviceIdentity;
 
         private readonly Func<MethodRequestInternal, Task> _onMethodCallback;
-        private readonly Action<Twin, string, TwinCollection> _twinMessageListener;
+        private readonly Action<Twin, string, TwinCollection, IotHubException> _twinMessageListener;
         private readonly Func<string, Message, Task> _onModuleMessageReceivedCallback;
         private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             DeviceIdentity deviceIdentity,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection> twinMessageListener,
+            Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
@@ -619,6 +619,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             finally
             {
                 Logging.Exit(this, timeout, nameof(DisableMethodsAsync));
+                _methodLinkSemaphore.Release();
             }
         }
 
@@ -735,13 +736,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
-        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection)
+        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
         {
             Logging.Enter(this, twin, nameof(OnDesiredPropertyReceived));
 
             try
             {
-                _twinMessageListener?.Invoke(twin, correlationId, twinCollection);
+                _twinMessageListener?.Invoke(twin, correlationId, twinCollection, ex);
             }
             finally
             {
