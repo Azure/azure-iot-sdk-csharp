@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         public static partial class IoTHub
         {
-            public static string ConnectionString => GetValue("IOTHUB_CONN_STRING_CSHARP");
+            public static string ConnectionString => GetValue("IOTHUB_CONNECTION_STRING");
 
             public static X509Certificate2 GetCertificateWithPrivateKey()
             {
