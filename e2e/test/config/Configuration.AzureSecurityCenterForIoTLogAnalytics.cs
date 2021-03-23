@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static class AzureSecurityCenterForIoTLogAnalytics
         {
             // The Azure Active directory tenant (The subscription tenant)
-            public static string AadTenant => GetValue("LA_AAD_TENANT");
+            public static string AadTenant => GetValue("MSFT_TENANT_ID");
 
             // The Azure active directory used for authentication against log analytics
             public static string AadAppId => GetValue("LA_AAD_APP_ID");
