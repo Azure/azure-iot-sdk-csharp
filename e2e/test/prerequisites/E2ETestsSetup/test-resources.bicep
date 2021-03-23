@@ -1,7 +1,7 @@
 param ApplicationInsightsName string {
   default: '${resourceGroup().name}-ai'
   metadata: {
-      description: 'The name of application insights.'      
+      description: 'The name of application insights.'
   }
 }
 
@@ -44,6 +44,13 @@ param HubName string {
   }
 }
 
+param HubUnitsCount int {
+  default: 1
+  metadata: {
+    description: 'The number of IoT Hub units to be deployed.'
+  }
+}
+
 param ConsumerGroupName string {
   default: 'e2e-tests'
   metadata: {
@@ -82,6 +89,13 @@ param OperationalInsightsName string {
   default: '${resourceGroup().name}-oi'
   metadata: {
     description: 'The name of the operational insights instance.'
+  }
+}
+
+param OperationInsightsLocation string {
+  default: 'westus2'
+  metadata: {
+    description: 'The location for Microsoft.OperationalInsights/workspaces.'
   }
 }
 
@@ -229,7 +243,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
     eventHubEndpoints: {
       events: {
         retentionTimeInDays: 1
-        partitionCount: 10
+        partitionCount: 4
       }
     }
     cloudToDevice: {
@@ -260,7 +274,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
   sku: {
     name: 'S1'
     tier: 'Standard'
-    capacity: 1
+    capacity: HubUnitsCount
   }
   dependsOn: [
     container
@@ -307,7 +321,7 @@ resource provisioningService 'Microsoft.Devices/provisioningServices@2017-11-15'
 
 resource operationalInsightsWorkspaces 'Microsoft.OperationalInsights/workspaces@2017-03-15-preview' = {
   name: OperationalInsightsName
-  location: resourceGroup().location
+  location: OperationInsightsLocation
   properties: {
   }
 }
