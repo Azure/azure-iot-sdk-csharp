@@ -3,7 +3,7 @@
     "ServiceClientSample": {
       "commandName": "Project",
       "environmentVariables": {
-        "IOTHUB_CONN_STRING_CSHARP": "<yourIoTHubConnectionString>"
+        "IOTHUB_CONNECTION_STRING": "<yourIoTHubConnectionString>"
       }
     }
   }

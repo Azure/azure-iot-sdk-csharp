@@ -130,7 +130,7 @@ try {
 
         $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | where {$_ -like "DeviceId*"}).Split("=")[1]
         Write-Warning "Using device $deviceId for the ServiceClientSample."
-        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONN_STRING_CSHARP"" -d $deviceId -r $sampleRunningTime"
+        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -d $deviceId -r $sampleRunningTime"
         # DigitalTwinClientSamples and PnpServiceSamples are not added here since they require the device counterparts to be running as well.
 
         # TODO #11: Modify Provisioning\device samples to run unattended.
