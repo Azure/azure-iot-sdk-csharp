@@ -100,13 +100,13 @@ namespace ReadD2cMessages
                     Console.WriteLine("\tApplication properties (set by device):");
                     foreach (KeyValuePair<string, object> prop in partitionEvent.Data.Properties)
                     {
-                        Console.WriteLine($"\t\t{prop.Key}: {prop.Value}");
+                        PrintProperties(prop);
                     }
 
                     Console.WriteLine("\tSystem properties (set by IoT Hub):");
                     foreach (KeyValuePair<string, object> prop in partitionEvent.Data.SystemProperties)
                     {
-                        Console.WriteLine($"\t\t{prop.Key}: {prop.Value}");
+                        PrintProperties(prop);
                     }
                 }
             }
@@ -115,6 +115,15 @@ namespace ReadD2cMessages
                 // This is expected when the token is signaled; it should not be considered an
                 // error in this scenario.
             }
+        }
+
+        private static void PrintProperties(KeyValuePair<string, object> prop) 
+        {
+            string propValue = prop.Value is DateTime
+                ? ((DateTime)prop.Value).ToString("O") // using a built-in date format here that includes milliseconds
+                : prop.Value.ToString();
+
+            Console.WriteLine($"\t\t{prop.Key}: {propValue}");
         }
     }
 }
