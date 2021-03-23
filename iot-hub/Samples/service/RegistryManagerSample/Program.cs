@@ -12,10 +12,10 @@ namespace Microsoft.Azure.Devices.Samples
 
         // For this sample either:
         // - pass this value as a command-prompt argument
-        // - set the IOTHUB_CONN_STRING_CSHARP environment variable 
+        // - set the IOTHUB_CONNECTION_STRING environment variable 
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
 
-        private static string s_connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
+        private static string s_connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
 
         public static async Task<int> Main(string[] args)
         {

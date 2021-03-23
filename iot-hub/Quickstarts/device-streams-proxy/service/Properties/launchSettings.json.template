@@ -3,7 +3,7 @@
     "DeviceStreamSample": {
       "commandName": "Project",
         "environmentVariables": {
-            "IOTHUB_CONN_STRING_CSHARP": "<yourIoTHubConnectionString>",
+            "IOTHUB_CONNECTION_STRING": "<yourIoTHubConnectionString>",
             "DEVICE_ID": "<deviceId>",
             "LOCAL_PORT":  "<localPortOpenedByTheSample>"
         }
