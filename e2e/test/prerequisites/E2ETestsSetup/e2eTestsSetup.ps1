@@ -13,9 +13,14 @@ param(
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
 
-    # Set this to true on the first execution to get everything installed in poweshell. Does not need to be run everytime.
+    # Set this to true on the first execution to get everything installed in powershell. Does not need to be run everytime.
     [Parameter()]
-    [bool] $InstallDependencies = $true
+    [bool] $InstallDependencies = $true,
+
+    # Set this to true if you are generating resources for the DevOps test pipeline.
+    # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
+    [Parameter()]
+    [bool] $GenerateResourcesForDevOpsPipeline = $false
 )
 
 $startTime = (Get-Date)
@@ -110,9 +115,23 @@ if (-not $isAdmin)
 #################################################################################################
 
 $Region = $Region.Replace(' ', '')
-$logAnalyticsAppRegnName = $ResourceGroup
+$logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
+$iothubUnitsToBeCreated = 1
+
+
+# OpenSSL has dropped support for SHA1 signed certificates in ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
+$certificateHashAlgorithm = "SHA256"
+
+#################################################################################################
+# Make any special modifications required to generate resources for the DevOps test pipeline
+#################################################################################################
+
+if ($GenerateResourcesForDevOpsPipeline)
+{
+    $iothubUnitsToBeCreated = 3
+}
 
 
 #################################################################################################
@@ -142,7 +161,7 @@ $keyVaultName = "env-$ResourceGroup-kv"
 $keyVaultName = [regex]::Replace($keyVaultName, "[^a-zA-Z0-9-]", "")
 if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 {
-    throw "Key vault name derrived from resource group has illegal characters: $storageAccountName"
+    throw "Key vault name derrived from resource group has illegal characters: $keyVaultName"
 }
 
 ########################################################################################################
@@ -186,6 +205,7 @@ $rootCACert = New-SelfSignedCertificate `
     -DnsName "$rootCommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -193,6 +213,7 @@ $intermediateCert1 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert1CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $rootCACert
@@ -201,6 +222,7 @@ $intermediateCert2 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert2CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert1
@@ -222,6 +244,7 @@ $groupDeviceCert = New-SelfSignedCertificate `
     -DnsName "$groupCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
@@ -234,6 +257,7 @@ $individualDeviceCert = New-SelfSignedCertificate `
     -DnsName "$deviceCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -246,6 +270,7 @@ $iotHubCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -254,6 +279,7 @@ $iotHubChainDeviceCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertChainDeviceCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
@@ -380,7 +406,9 @@ az deployment group create `
     StorageAccountName=$storageAccountName `
     KeyVaultName=$keyVaultName `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
-    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent
+    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
+    HubUnitsCount=$iothubUnitsToBeCreated
+
 
 if ($LastExitCode -ne 0)
 {
@@ -442,7 +470,8 @@ if ($isVerified -eq 'false')
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
@@ -455,7 +484,7 @@ if ($isVerified -eq 'false')
 # Create device in IoTHub that uses a certificate signed by intermediate certificate
 ##################################################################################################################################
 
-$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName-hub --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv 
+$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv
 
 if (-not $iotHubCertChainDevice)
 {
@@ -488,7 +517,8 @@ if ($isVerified -eq 'false')
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
