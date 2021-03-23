@@ -16,6 +16,7 @@ using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
 using DeviceTransportType = Microsoft.Azure.Devices.Client.TransportType;
 
+// Trial
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
