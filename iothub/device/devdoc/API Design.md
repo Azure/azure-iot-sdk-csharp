@@ -105,6 +105,12 @@ public Task UpdatePropertyAsync(string propertyName, WritableProperty propertyVa
 /// <param name="propertyActionAsTwinCollection">The action to be taken when a writeable property event is received.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 public void SubscribeToWritablePropertyEvent(Action<TwinCollection> propertyActionAsTwinCollection, CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Retrieve the device properties.
+/// </summary>
+/// <returns>The device properties.</returns>
+public Task<Twin> GetPropertiesAsync(CancellationToken cancellationToken = default);
 ```
 
 <details>
@@ -135,7 +141,7 @@ public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersi
 /// The unserialized property value.
 /// </summary>
 [JsonProperty("value")]
-public dynamic PropertyValue { get; set; }
+public object PropertyValue { get; set; }
 
 /// <summary>
 /// The acknowledgement code, usually an HTTP Status Code e.g. 200, 400.
@@ -173,14 +179,14 @@ public Task SendTelemetryAsync(string telemetryName, dynamic telemetryValue, str
 /// <summary>
 /// Send a batched instance of telemetry.
 /// </summary>
-/// <param name="telemetryDictionary">The name and value telemetry pairs, as defined in the DTDL interface.</param>
+/// <param name="telemetryPairs">The name and value telemetry pairs, as defined in the DTDL interface.</param>
 /// <param name="componentName">The name of the component in which the telemetry is defined. Can be null for telemetry defined under the root interface.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SendTelemetryAsync(IDictionary<string, dynamic> telemetryDictionary, string componentName = default, CancellationToken cancellationToken = default);
+public Task SendTelemetryAsync(IDictionary<string, dynamic> telemetryPairs, string componentName = default, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Send a single instance of telemetry, formatted as per DTDL specifications:
-/// - the payload should be in the format: { "<telemetryName>" : "<telemetry_value>" }
+/// - the payload should be in the format: { "<telemetry_name>" : "<telemetry_value>" }
 /// - the property Message.ContentEncoding should be set to "utf-8".
 /// - the property Message.ContentType should be set to "application/json".
 /// - if the telemetry is defined under a component, the property Message.ComponentName should be set to "<component_name>".
@@ -224,7 +230,7 @@ public sealed class CommandRequest : MethodRequest
         ComponentName = componentName;
     }
 
-    public string ComponentName { get; private set; }
+    public readonly string ComponentName { get; private set; }
 
     private static byte[] ConvertToByteArray(object result)
     {
