@@ -13,9 +13,14 @@ param(
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
 
-    # Set this to true on the first execution to get everything installed in poweshell. Does not need to be run everytime.
+    # Set this to true on the first execution to get everything installed in powershell. Does not need to be run everytime.
     [Parameter()]
-    [bool] $InstallDependencies = $true
+    [bool] $InstallDependencies = $true,
+
+    # Set this to true if you are generating resources for the DevOps test pipeline.
+    # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
+    [Parameter()]
+    [bool] $GenerateResourcesForDevOpsPipeline = $false
 )
 
 $startTime = (Get-Date)
@@ -110,9 +115,23 @@ if (-not $isAdmin)
 #################################################################################################
 
 $Region = $Region.Replace(' ', '')
-$appRegistrationName = $ResourceGroup
+$logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
+$iothubUnitsToBeCreated = 1
+
+
+# OpenSSL has dropped support for SHA1 signed certificates in ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
+$certificateHashAlgorithm = "SHA256"
+
+#################################################################################################
+# Make any special modifications required to generate resources for the DevOps test pipeline
+#################################################################################################
+
+if ($GenerateResourcesForDevOpsPipeline)
+{
+    $iothubUnitsToBeCreated = 3
+}
 
 
 #################################################################################################
@@ -142,7 +161,7 @@ $keyVaultName = "env-$ResourceGroup-kv"
 $keyVaultName = [regex]::Replace($keyVaultName, "[^a-zA-Z0-9-]", "")
 if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 {
-    throw "Key vault name derrived from resource group has illegal characters: $storageAccountName"
+    throw "Key vault name derrived from resource group has illegal characters: $keyVaultName"
 }
 
 ########################################################################################################
@@ -186,6 +205,7 @@ $rootCACert = New-SelfSignedCertificate `
     -DnsName "$rootCommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -193,6 +213,7 @@ $intermediateCert1 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert1CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $rootCACert
@@ -201,6 +222,7 @@ $intermediateCert2 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert2CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert1
@@ -222,6 +244,7 @@ $groupDeviceCert = New-SelfSignedCertificate `
     -DnsName "$groupCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
@@ -234,6 +257,7 @@ $individualDeviceCert = New-SelfSignedCertificate `
     -DnsName "$deviceCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -246,6 +270,7 @@ $iotHubCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -254,6 +279,7 @@ $iotHubChainDeviceCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertChainDeviceCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
@@ -317,19 +343,19 @@ if ($InstallDependencies)
 # Configure an AAD app and create self signed certs and get the bytes to generate more content info.
 #################################################################################################################################################
 
-$appId = az ad app list --show-mine --query "[?displayName=='$appRegistrationName'].appId" --output tsv
-if (-not $appId)
+$logAnalyticsAppId = az ad app list --show-mine --query "[?displayName=='$logAnalyticsAppRegnName'].appId" --output tsv
+if (-not $logAnalyticsAppId)
 {
-    Write-Host "`nCreating App Registration $appRegistrationName"
-    $appId = az ad app create --display-name $appRegistrationName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
-    Write-Host "`nApplication $appRegistrationName with Id $appId was created successfully."
+    Write-Host "`nCreating App Registration $logAnalyticsAppRegnName"
+    $logAnalyticsAppId = az ad app create --display-name $logAnalyticsAppRegnName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
+    Write-Host "`nApplication $logAnalyticsAppRegnName with Id $logAnalyticsAppId was created successfully."
 }
 
-$spExists = az ad sp list --show-mine --query "[?appId=='$appId'].appId" --output tsv
+$spExists = az ad sp list --show-mine --query "[?appId=='$logAnalyticsAppId'].appId" --output tsv
 if (-not $spExists)
 {
     Write-Host "`nCreating the service principal for the app registration if it does not exist"
-    az ad sp create --id $appId --output none
+    az ad sp create --id $logAnalyticsAppId --output none
 }
 
 ######################################################################################################
@@ -380,7 +406,9 @@ az deployment group create `
     StorageAccountName=$storageAccountName `
     KeyVaultName=$keyVaultName `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
-    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent
+    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
+    HubUnitsCount=$iothubUnitsToBeCreated
+
 
 if ($LastExitCode -ne 0)
 {
@@ -442,7 +470,8 @@ if ($isVerified -eq 'false')
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
@@ -455,7 +484,7 @@ if ($isVerified -eq 'false')
 # Create device in IoTHub that uses a certificate signed by intermediate certificate
 ##################################################################################################################################
 
-$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName-hub --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv 
+$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv
 
 if (-not $iotHubCertChainDevice)
 {
@@ -488,7 +517,8 @@ if ($isVerified -eq 'false')
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
@@ -527,13 +557,13 @@ az iot dps enrollment create `
 
 # The Service Principal takes a while to get propogated and if a different endpoint is hit before that, trying to grant a permission will fail.
 # Adding retries so that we can grant the permissions successfully without re-running the script.
-Write-Host "`nGranting $appId Reader role assignment to the $ResourceGroup resource group."
+Write-Host "`nGranting $logAnalyticsAppId Reader role assignment to the $ResourceGroup resource group."
 $tries = 0;
 while (++$tries -le 10)
 {
     try
     {
-        az role assignment create --role Reader --assignee $appId --resource-group $ResourceGroup --output none
+        az role assignment create --role Reader --assignee $logAnalyticsAppId --resource-group $ResourceGroup --output none
 
         if ($LastExitCode -eq 0)
         {
@@ -556,8 +586,8 @@ while (++$tries -le 10)
 }
 
 Write-Host "`nCreating a self-signed certificate and placing it in $ResourceGroup"
-az ad app credential reset --id $appId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
-Write-Host "`nSuccessfully created a self signed certificate for your application $appRegistrationName in $keyVaultName key vault with cert name $ResourceGroup";
+az ad app credential reset --id $logAnalyticsAppId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
+Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup";
 
 Write-Host "`nFetching the certificate binary"
 $selfSignedCerts = "$PSScriptRoot\selfSignedCerts"
@@ -579,15 +609,12 @@ Remove-Item -r $selfSignedCerts
 
 Write-Host("`nWriting secrets to KeyVault $keyVaultName")
 az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id $userObjectId --secret-permissions delete get list set --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONN-STRING-CSHARP" --value $iotHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none # Iot Hub Connection string Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PROXY-SERVER-ADDRESS" --value $proxyServerAddress --output none
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value $farHubHostName --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-IDSCOPE" --value $dpsIdScope --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-ID-SCOPE" --value $dpsIdScope --output none # DPS ID Scope Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "PROVISIONING-CONNECTION-STRING" --value $dpsConnectionString --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $dpsConnectionString --output none # DPS Connection string Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "CUSTOM-ALLOCATION-POLICY-WEBHOOK" --value $customAllocationPolicyWebhook --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT" --value "global.azure-devices-provisioning.net" --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-X509-PFX-CERTIFICATE-PASSWORD" --value $dpsX509PfxCertificatePassword --output none
@@ -597,8 +624,8 @@ az keyvault secret set --vault-name $keyVaultName --name "DPS-GROUPX509-PFX-CERT
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GROUPX509-CERTIFICATE-CHAIN" --value $dpsGroupX509CertificateChain --output none
 az keyvault secret set --vault-name $keyVaultName --name "STORAGE-ACCOUNT-CONNECTION-STRING" --value $storageAccountConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "LA-WORKSPACE-ID" --value $workspaceId --output none
-az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-TENANT" --value "72f988bf-86f1-41af-91ab-2d7cd011db47" --output none
-az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value $appId --output none
+az keyvault secret set --vault-name $keyVaultName --name "MSFT-TENANT-ID" --value "72f988bf-86f1-41af-91ab-2d7cd011db47" --output none
+az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value $logAnalyticsAppId --output none
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-CERT-BASE64" --value $fileContentB64String --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" --value "invalidcertgde1.westus.cloudapp.azure.com" --output none
 az keyvault secret set --vault-name $keyVaultName --name "PIPELINE-ENVIRONMENT" --value "prod" --output none
@@ -609,6 +636,8 @@ az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-INTERMEDIATE
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-X509-CHAIN-DEVICE-NAME" --value $iotHubCertChainDeviceCommonName --output none
 
 # Below Environment variables are only used in Java
+az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $dpsConnectionString --output none # DPS Connection string Environment variable for Java
+az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-ID-SCOPE" --value $dpsIdScope --output none # DPS ID Scope Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-CONNECTION-STRING" --value $farHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IS-BASIC-TIER-HUB" --value "false" --output none
 
