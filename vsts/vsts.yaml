@@ -251,7 +251,8 @@ jobs:
         displayName: "Run PoliCheck"
         inputs:
           targetType: F
-          optionsRulesDBPath: vsts/PolicheckExclusionsDB.mdb
+          optionsRulesDBPath: 'vsts/PolicheckExclusionsDB.mdb'
+          optionsSEV: '1|2|3|4'
           optionsPE: 1
       
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
