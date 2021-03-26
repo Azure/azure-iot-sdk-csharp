@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static ClientSecretCredential GetClientSecretCredential()
             {
                 return new ClientSecretCredential(
-                    GetValue("IOTHUB_TENANT_ID"),
+                    GetValue("MSFT_TENANT_ID"),
                     GetValue("IOTHUB_CLIENT_ID"),
                     GetValue("IOTHUB_CLIENT_SECRET"));
             }

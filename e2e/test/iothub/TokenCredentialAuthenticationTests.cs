@@ -35,7 +35,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
 
 #if !NET451
 
-        [Ignore]
         [LoggedTestMethod]
         public async Task RegistryManager_Http_TokenCredentialAuth_Success()
         {
@@ -123,7 +122,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [Ignore]
         [LoggedTestMethod]
         public async Task Service_Amqp_TokenCredentialAuth_Success()
         {
