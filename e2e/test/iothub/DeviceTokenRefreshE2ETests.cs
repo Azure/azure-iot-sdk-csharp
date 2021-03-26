@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             var sasTokenTimeToLive = TimeSpan.FromSeconds(10);
             int sasTokenRenewalBuffer = 50;
-            var deviceDisconnected = new SemaphoreSlim(0);
+            using var deviceDisconnected = new SemaphoreSlim(0);
 
             int operationTimeoutInMilliseconds = (int)sasTokenTimeToLive.TotalMilliseconds * 2;
 
