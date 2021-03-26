@@ -343,19 +343,19 @@ if ($InstallDependencies)
 # Configure an AAD app and create self signed certs and get the bytes to generate more content info.
 #################################################################################################################################################
 
-$appId = az ad app list --show-mine --query "[?displayName=='$logAnalyticsAppRegnName'].appId" --output tsv
-if (-not $appId)
+$logAnalyticsAppId = az ad app list --show-mine --query "[?displayName=='$logAnalyticsAppRegnName'].appId" --output tsv
+if (-not $logAnalyticsAppId)
 {
     Write-Host "`nCreating App Registration $logAnalyticsAppRegnName"
-    $appId = az ad app create --display-name $logAnalyticsAppRegnName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
-    Write-Host "`nApplication $logAnalyticsAppRegnName with Id $appId was created successfully."
+    $logAnalyticsAppId = az ad app create --display-name $logAnalyticsAppRegnName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
+    Write-Host "`nApplication $logAnalyticsAppRegnName with Id $logAnalyticsAppId was created successfully."
 }
 
-$spExists = az ad sp list --show-mine --query "[?appId=='$appId'].appId" --output tsv
+$spExists = az ad sp list --show-mine --query "[?appId=='$logAnalyticsAppId'].appId" --output tsv
 if (-not $spExists)
 {
     Write-Host "`nCreating the service principal for the app registration if it does not exist"
-    az ad sp create --id $appId --output none
+    az ad sp create --id $logAnalyticsAppId --output none
 }
 
 ######################################################################################################
@@ -557,13 +557,13 @@ az iot dps enrollment create `
 
 # The Service Principal takes a while to get propogated and if a different endpoint is hit before that, trying to grant a permission will fail.
 # Adding retries so that we can grant the permissions successfully without re-running the script.
-Write-Host "`nGranting $appId Reader role assignment to the $ResourceGroup resource group."
+Write-Host "`nGranting $logAnalyticsAppId Reader role assignment to the $ResourceGroup resource group."
 $tries = 0;
 while (++$tries -le 10)
 {
     try
     {
-        az role assignment create --role Reader --assignee $appId --resource-group $ResourceGroup --output none
+        az role assignment create --role Reader --assignee $logAnalyticsAppId --resource-group $ResourceGroup --output none
 
         if ($LastExitCode -eq 0)
         {
@@ -586,7 +586,7 @@ while (++$tries -le 10)
 }
 
 Write-Host "`nCreating a self-signed certificate and placing it in $ResourceGroup"
-az ad app credential reset --id $appId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
+az ad app credential reset --id $logAnalyticsAppId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
 Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup";
 
 Write-Host "`nFetching the certificate binary"
@@ -609,15 +609,12 @@ Remove-Item -r $selfSignedCerts
 
 Write-Host("`nWriting secrets to KeyVault $keyVaultName")
 az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id $userObjectId --secret-permissions delete get list set --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONN-STRING-CSHARP" --value $iotHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none # Iot Hub Connection string Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PROXY-SERVER-ADDRESS" --value $proxyServerAddress --output none
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value $farHubHostName --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-IDSCOPE" --value $dpsIdScope --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-ID-SCOPE" --value $dpsIdScope --output none # DPS ID Scope Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "PROVISIONING-CONNECTION-STRING" --value $dpsConnectionString --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $dpsConnectionString --output none # DPS Connection string Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "CUSTOM-ALLOCATION-POLICY-WEBHOOK" --value $customAllocationPolicyWebhook --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT" --value "global.azure-devices-provisioning.net" --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-X509-PFX-CERTIFICATE-PASSWORD" --value $dpsX509PfxCertificatePassword --output none
@@ -627,8 +624,8 @@ az keyvault secret set --vault-name $keyVaultName --name "DPS-GROUPX509-PFX-CERT
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GROUPX509-CERTIFICATE-CHAIN" --value $dpsGroupX509CertificateChain --output none
 az keyvault secret set --vault-name $keyVaultName --name "STORAGE-ACCOUNT-CONNECTION-STRING" --value $storageAccountConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "LA-WORKSPACE-ID" --value $workspaceId --output none
-az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-TENANT" --value "72f988bf-86f1-41af-91ab-2d7cd011db47" --output none
-az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value $appId --output none
+az keyvault secret set --vault-name $keyVaultName --name "MSFT-TENANT-ID" --value "72f988bf-86f1-41af-91ab-2d7cd011db47" --output none
+az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value $logAnalyticsAppId --output none
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-CERT-BASE64" --value $fileContentB64String --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" --value "invalidcertgde1.westus.cloudapp.azure.com" --output none
 az keyvault secret set --vault-name $keyVaultName --name "PIPELINE-ENVIRONMENT" --value "prod" --output none
@@ -639,6 +636,8 @@ az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-INTERMEDIATE
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-X509-CHAIN-DEVICE-NAME" --value $iotHubCertChainDeviceCommonName --output none
 
 # Below Environment variables are only used in Java
+az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $dpsConnectionString --output none # DPS Connection string Environment variable for Java
+az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-ID-SCOPE" --value $dpsIdScope --output none # DPS ID Scope Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-CONNECTION-STRING" --value $farHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IS-BASIC-TIER-HUB" --value "false" --output none
 

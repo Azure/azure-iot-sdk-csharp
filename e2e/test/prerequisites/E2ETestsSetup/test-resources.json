@@ -103,7 +103,7 @@
       "metadata": {
         "description": "The location for Microsoft.OperationalInsights/workspaces."
       },
-      "defaultValue": "eastus"
+      "defaultValue": "westus2"
     },
     "SecuritySolutionName": {
       "type": "string",
@@ -517,7 +517,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.3.1.62928",
-      "templateHash": "9993199802379393341"
+      "templateHash": "14958319987448365850"
     }
   }
 }
