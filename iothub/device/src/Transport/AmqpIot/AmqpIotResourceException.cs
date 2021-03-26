@@ -4,36 +4,36 @@
 using Microsoft.Azure.Devices.Client.Exceptions;
 using System;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTResourceException : IotHubException
+    internal class AmqpIotResourceException : IotHubException
     {
-        internal AmqpIoTResourceException(bool isTransient = false)
+        internal AmqpIotResourceException(bool isTransient = false)
             : base(isTransient)
         {
         }
 
-        internal AmqpIoTResourceException(string message, bool isTransient = false)
+        internal AmqpIotResourceException(string message, bool isTransient = false)
             : base(message, isTransient)
         {
         }
 
-        internal AmqpIoTResourceException(string message, Exception cause, bool isTransient = false)
+        internal AmqpIotResourceException(string message, Exception cause, bool isTransient = false)
             : base(message, cause, isTransient)
         {
         }
 
-        internal AmqpIoTResourceException()
+        internal AmqpIotResourceException()
             : base()
         {
         }
 
-        internal AmqpIoTResourceException(string message)
+        internal AmqpIotResourceException(string message)
             : base(message)
         {
         }
 
-        internal AmqpIoTResourceException(string message, Exception innerException)
+        internal AmqpIotResourceException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
