@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ExponentialBackoff : IRetryPolicy
     {
-        private readonly TransientFaultHandling.ExponentialBackoff exponentialBackoffRetryStrategy;
+        private readonly TransientFaultHandling.ExponentialBackoff _exponentialBackoffRetryStrategy;
 
         /// <summary>
         /// Creates an instance of ExponentialBackoff.
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public ExponentialBackoff(int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
         {
-            this.exponentialBackoffRetryStrategy = new TransientFaultHandling.ExponentialBackoff(retryCount, minBackoff, maxBackoff, deltaBackoff);
+            _exponentialBackoffRetryStrategy = new TransientFaultHandling.ExponentialBackoff(retryCount, minBackoff, maxBackoff, deltaBackoff);
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>True if the operation should be retried, false otherwise.</returns>
         public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
-            return this.exponentialBackoffRetryStrategy.GetShouldRetry()(currentRetryCount, lastException, out retryInterval);
+            return _exponentialBackoffRetryStrategy.GetShouldRetry()(currentRetryCount, lastException, out retryInterval);
         }
     }
 }
