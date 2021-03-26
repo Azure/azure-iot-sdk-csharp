@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">The Id of the device.</param>
         /// <param name="moduleId">The Id of the module.</param>
         public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId)
-            : this(deviceId, moduleId, 0, 0)
+            : this(deviceId, moduleId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
         {
         }
 

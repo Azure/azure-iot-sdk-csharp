@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         public DeviceAuthenticationWithTokenRefresh(string deviceId)
-            : this(deviceId, 0, 0)
+            : this(deviceId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
         {
         }
 
