@@ -11,14 +11,24 @@ namespace Microsoft.Azure.Devices.Client
     // Implementing SAS Token refresh based on a SharedAccessKey (SAK).
     internal class ModuleAuthenticationWithSakRefresh : ModuleAuthenticationWithTokenRefresh
     {
-        private IotHubConnectionString _connectionString;
+        private readonly IotHubConnectionString _connectionString;
 
         public ModuleAuthenticationWithSakRefresh(
             string deviceId,
             string moduleId,
             IotHubConnectionString connectionString) : base(deviceId, moduleId)
         {
-            _connectionString = connectionString;
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+        }
+
+        internal ModuleAuthenticationWithSakRefresh(
+            string deviceId,
+            string moduleId,
+            IotHubConnectionString connectionString,
+            TimeSpan sasTokenTimeToLive,
+            int sasTokenRenewalBuffer) : base(deviceId, moduleId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer)
+        {
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
         ///<inheritdoc/>
