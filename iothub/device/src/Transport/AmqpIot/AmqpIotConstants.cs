@@ -6,7 +6,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal enum AmqpTwinMessageType
     {
@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         Put
     }
 
-    internal static class AmqpIoTConstants
+    internal static class AmqpIotConstants
     {
         internal const string Vendor = "com.microsoft";
 

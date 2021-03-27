@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +13,9 @@ using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTReceivingLink
+    internal class AmqpIotReceivingLink
     {
         public event EventHandler Closed;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private Action<MethodRequestInternal> _onMethodReceived;
         private Action<Twin, string, TwinCollection, IotHubException> _onTwinMessageReceived;
 
-        public AmqpIoTReceivingLink(ReceivingAmqpLink receivingAmqpLink)
+        public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink)
         {
             _receivingAmqpLink = receivingAmqpLink;
             _receivingAmqpLink.Closed += ReceivingAmqpLinkClosed;
@@ -35,13 +36,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(ReceivingAmqpLinkClosed)}");
+                Logging.Enter(this, nameof(ReceivingAmqpLinkClosed));
             }
 
             Closed?.Invoke(this, e);
+
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(ReceivingAmqpLinkClosed)}");
+                Logging.Exit(this, nameof(ReceivingAmqpLinkClosed));
             }
         }
 
@@ -66,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(ReceiveAmqpMessageAsync)}");
+                Logging.Enter(this, nameof(ReceiveAmqpMessageAsync));
             }
 
             try
@@ -75,21 +77,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Message message = null;
                 if (amqpMessage != null)
                 {
-                    message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
+                    message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
                     message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
                 }
                 return message;
             }
             catch (Exception e) when (!e.IsFatal())
             {
-                Exception ex = AmqpIoTExceptionAdapter.ConvertToIoTHubException(e, _receivingAmqpLink);
+                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _receivingAmqpLink);
                 if (ReferenceEquals(e, ex))
                 {
                     throw;
                 }
                 else
                 {
-                    if (ex is AmqpIoTResourceException)
+                    if (ex is AmqpIotResourceException)
                     {
                         _receivingAmqpLink.SafeClose();
                         throw new IotHubCommunicationException(ex.Message, ex);
@@ -101,16 +103,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"{nameof(ReceiveAmqpMessageAsync)}");
+                    Logging.Exit(this, nameof(ReceiveAmqpMessageAsync));
                 }
             }
         }
 
-        internal async Task<AmqpIoTOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, outcome, $"{nameof(DisposeMessageAsync)}");
+                Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
             }
 
             ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
@@ -123,10 +125,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
+                Logging.Exit(this, outcome, nameof(DisposeMessageAsync));
             }
 
-            return new AmqpIoTOutcome(disposeOutcome);
+            return new AmqpIotOutcome(disposeOutcome);
         }
 
         private static ArraySegment<byte> ConvertToDeliveryTag(string lockToken)
@@ -150,27 +152,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _receivingAmqpLink.RegisterMessageListener(OnDeviceMessageReceived);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "The callback that is invoked is responsible for disposing the message.")]
         private void OnDeviceMessageReceived(AmqpMessage amqpMessage)
         {
-            Logging.Enter(this, amqpMessage, $"{nameof(OnDeviceMessageReceived)}");
+            Logging.Enter(this, amqpMessage, nameof(OnDeviceMessageReceived));
 
             try
             {
                 Message message = null;
                 if (amqpMessage != null)
                 {
-                    message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
+                    message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
                     message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
                 }
                 _onDeviceMessageReceived?.Invoke(message);
             }
             finally
             {
-                Logging.Exit(this, amqpMessage, $"{nameof(OnDeviceMessageReceived)}");
+                Logging.Exit(this, amqpMessage, nameof(OnDeviceMessageReceived));
             }
         }
 
@@ -184,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _receivingAmqpLink.RegisterMessageListener(OnEventsReceived);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "The callback that is invoked is responsible for disposing the message.")]
@@ -192,12 +194,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, amqpMessage, $"{nameof(OnEventsReceived)}");
+                Logging.Enter(this, amqpMessage, nameof(OnEventsReceived));
             }
 
             try
             {
-                Message message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
+                Message message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
                 message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
                 _onEventsReceived?.Invoke(message);
             }
@@ -205,7 +207,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+                    Logging.Exit(this, amqpMessage, nameof(OnMethodReceived));
                 }
             }
         }
@@ -220,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _receivingAmqpLink.RegisterMessageListener(OnMethodReceived);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "The callback that is invoked is responsible for disposing the message.")]
@@ -228,12 +230,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+                Logging.Enter(this, amqpMessage, nameof(OnMethodReceived));
             }
 
             try
             {
-                MethodRequestInternal methodRequestInternal = AmqpIoTMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, new CancellationToken(false));
+                MethodRequestInternal methodRequestInternal = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(
+                    amqpMessage,
+                    new CancellationToken(false));
                 DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
                 _onMethodReceived?.Invoke(methodRequestInternal);
             }
@@ -241,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+                    Logging.Exit(this, amqpMessage, nameof(OnMethodReceived));
                 }
             }
         }
@@ -265,12 +269,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, amqpMessage, $"{nameof(OnTwinChangesReceived)}");
+                Logging.Enter(this, amqpMessage, nameof(OnTwinChangesReceived));
             }
 
             try
             {
-                _receivingAmqpLink.DisposeDelivery(amqpMessage, true, AmqpIoTConstants.AcceptedOutcome);
+                _receivingAmqpLink.DisposeDelivery(amqpMessage, true, AmqpIotConstants.AcceptedOutcome);
                 string correlationId = amqpMessage.Properties?.CorrelationId?.ToString();
                 int status = GetStatus(amqpMessage);
 
@@ -280,8 +284,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (status >= 400)
                 {
                     // Handle failures
-                    if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase) 
-                    || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase)
+                        || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         string error = null;
                         using (var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8))
@@ -308,12 +312,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         // This a response of a GET TWIN so return (set) the full twin
                         using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
                         string body = reader.ReadToEnd();
-                        var properties = JsonConvert.DeserializeObject<TwinProperties>(body);
+                        TwinProperties properties = JsonConvert.DeserializeObject<TwinProperties>(body);
                         twin = new Twin(properties);
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        // This can be used to coorelate success response with updating reported properties 
+                        // This can be used to coorelate success response with updating reported properties
                         // However currently we do not have it as request response style implementation
                         Logging.Info("Updated twin reported properties successfully", nameof(OnTwinChangesReceived));
                     }
@@ -334,7 +338,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, amqpMessage, $"{nameof(OnTwinChangesReceived)}");
+                    Logging.Exit(this, amqpMessage, nameof(OnTwinChangesReceived));
                 }
             }
         }
@@ -345,11 +349,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (response != null)
             {
-                if (response.MessageAnnotations.Map.TryGetValue(AmqpIoTConstants.ResponseStatusName, out int status))
+                if (response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status))
                 {
                     return status;
                 }
             }
+
             return -1;
         }
     }
