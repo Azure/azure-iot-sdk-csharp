@@ -93,7 +93,7 @@ param OperationalInsightsName string {
 }
 
 param OperationInsightsLocation string {
-  default: 'eastus'
+  default: 'westus2'
   metadata: {
     description: 'The location for Microsoft.OperationalInsights/workspaces.'
   }
