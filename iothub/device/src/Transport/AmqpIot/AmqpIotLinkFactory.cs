@@ -6,25 +6,25 @@ using System.Diagnostics;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTLinkFactory : ILinkFactory
+    internal class AmqpIotLinkFactory : ILinkFactory
     {
-        private static AmqpIoTLinkFactory s_instance = new AmqpIoTLinkFactory();
+        private static readonly AmqpIotLinkFactory s_instance = new AmqpIotLinkFactory();
 
-        private AmqpIoTLinkFactory()
+        private AmqpIotLinkFactory()
         {
             // Important: must not throw as it's used within the static ctor.
         }
 
-        public static AmqpIoTLinkFactory GetInstance()
+        public static AmqpIotLinkFactory GetInstance()
         {
             return s_instance;
         }
 
         public IAsyncResult BeginOpenLink(AmqpLink link, TimeSpan timeout, AsyncCallback callback, object state)
         {
-            Debug.Fail($"{nameof(AmqpIoTLinkFactory)} open link should not be used.");
+            Debug.Fail($"{nameof(AmqpIotLinkFactory)} open link should not be used.");
             throw new NotImplementedException();
         }
 
@@ -32,22 +32,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Info(this, session, $"{nameof(CreateLink)}");
+                Logging.Info(this, session, nameof(CreateLink));
             }
 
-            if (settings.IsReceiver())
-            {
-                return new ReceivingAmqpLink(session, settings);
-            }
-            else
-            {
-                return new SendingAmqpLink(session, settings);
-            }
+            return settings.IsReceiver()
+                ? new ReceivingAmqpLink(session, settings)
+                : (AmqpLink)new SendingAmqpLink(session, settings);
         }
 
         public void EndOpenLink(IAsyncResult result)
         {
-            Debug.Fail($"{nameof(AmqpIoTLinkFactory)} open link should not be used.");
+            Debug.Fail($"{nameof(AmqpIotLinkFactory)} open link should not be used.");
             throw new NotImplementedException();
         }
     }

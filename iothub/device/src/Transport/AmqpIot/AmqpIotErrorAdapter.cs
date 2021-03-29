@@ -8,30 +8,30 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal static class AmqpIoTErrorAdapter
+    internal static class AmqpIotErrorAdapter
     {
-        public static readonly AmqpSymbol TimeoutName = AmqpIoTConstants.Vendor + ":timeout";
-        public static readonly AmqpSymbol StackTraceName = AmqpIoTConstants.Vendor + ":stack-trace";
+        public static readonly AmqpSymbol TimeoutName = AmqpIotConstants.Vendor + ":timeout";
+        public static readonly AmqpSymbol StackTraceName = AmqpIotConstants.Vendor + ":stack-trace";
 
         // Error codes
-        public static readonly AmqpSymbol DeadLetterName = AmqpIoTConstants.Vendor + ":dead-letter";
+        public static readonly AmqpSymbol DeadLetterName = AmqpIotConstants.Vendor + ":dead-letter";
 
         public const string DeadLetterReasonHeader = "DeadLetterReason";
         public const string DeadLetterErrorDescriptionHeader = "DeadLetterErrorDescription";
-        public static readonly AmqpSymbol TimeoutError = AmqpIoTConstants.Vendor + ":timeout";
-        public static readonly AmqpSymbol MessageLockLostError = AmqpIoTConstants.Vendor + ":message-lock-lost";
-        public static readonly AmqpSymbol IotHubNotFoundError = AmqpIoTConstants.Vendor + ":iot-hub-not-found-error";
-        public static readonly AmqpSymbol ArgumentError = AmqpIoTConstants.Vendor + ":argument-error";
-        public static readonly AmqpSymbol ArgumentOutOfRangeError = AmqpIoTConstants.Vendor + ":argument-out-of-range";
-        public static readonly AmqpSymbol DeviceContainerThrottled = AmqpIoTConstants.Vendor + ":device-container-throttled";
-        public static readonly AmqpSymbol PartitionNotFound = AmqpIoTConstants.Vendor + ":partition-not-found";
-        public static readonly AmqpSymbol IotHubSuspended = AmqpIoTConstants.Vendor + ":iot-hub-suspended";
+        public static readonly AmqpSymbol TimeoutError = AmqpIotConstants.Vendor + ":timeout";
+        public static readonly AmqpSymbol MessageLockLostError = AmqpIotConstants.Vendor + ":message-lock-lost";
+        public static readonly AmqpSymbol IotHubNotFoundError = AmqpIotConstants.Vendor + ":iot-hub-not-found-error";
+        public static readonly AmqpSymbol ArgumentError = AmqpIotConstants.Vendor + ":argument-error";
+        public static readonly AmqpSymbol ArgumentOutOfRangeError = AmqpIotConstants.Vendor + ":argument-out-of-range";
+        public static readonly AmqpSymbol DeviceContainerThrottled = AmqpIotConstants.Vendor + ":device-container-throttled";
+        public static readonly AmqpSymbol PartitionNotFound = AmqpIotConstants.Vendor + ":partition-not-found";
+        public static readonly AmqpSymbol IotHubSuspended = AmqpIotConstants.Vendor + ":iot-hub-suspended";
 
         public static Exception GetExceptionFromOutcome(Outcome outcome)
         {
-            Exception retException = null;
+            Exception retException;
             if (outcome == null)
             {
                 retException = new IotHubException("Unknown error.");
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (outcome.DescriptorCode == Rejected.Code)
             {
                 var rejected = (Rejected)outcome;
-                retException = AmqpIoTErrorAdapter.ToIotHubClientContract(rejected.Error);
+                retException = ToIotHubClientContract(rejected.Error);
             }
             else if (outcome.DescriptorCode == Released.Code)
             {
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             else if (Equals(AmqpErrorCode.ResourceLocked, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.PreconditionFailed, amqpSymbol))
             {
@@ -117,41 +117,41 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             // AMQP Connection Error
             else if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.FramingError, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             // AMQP Session Error
             else if (Equals(AmqpErrorCode.WindowViolation, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.ErrantLink, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.HandleInUse, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             // AMQP Link Error
             else if (Equals(AmqpErrorCode.DetachForced, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol))
             {
@@ -159,11 +159,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             else if (Equals(AmqpErrorCode.LinkRedirect, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             else if (Equals(AmqpErrorCode.Stolen, amqpSymbol))
             {
-                return new AmqpIoTResourceException(message, amqpException, true);
+                return new AmqpIotResourceException(message, amqpException, true);
             }
             // AMQP Transaction Error
             else if (Equals(AmqpErrorCode.TransactionUnknownId, amqpSymbol))
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             string message = error.Description;
 
             string trackingId = null;
-            if (error.Info != null && error.Info.TryGetValue(AmqpIoTConstants.TrackingId, out trackingId))
+            if (error.Info != null && error.Info.TryGetValue(AmqpIotConstants.TrackingId, out trackingId))
             {
                 message = "{0}{1}{2}".FormatInvariant(message, Environment.NewLine, "Tracking Id:" + trackingId);
             }
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (trackingId != null && retException is IotHubException)
             {
-                IotHubException iotHubException = (IotHubException)retException;
+                var iotHubException = (IotHubException)retException;
                 iotHubException.TrackingId = trackingId;
             }
             return retException;

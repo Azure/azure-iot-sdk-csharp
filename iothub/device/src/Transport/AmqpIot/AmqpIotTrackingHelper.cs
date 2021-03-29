@@ -8,9 +8,9 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Extensions;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal static class AmqpIoTTrackingHelper
+    internal static class AmqpIotTrackingHelper
     {
         // TODO: GatewayId is not assigned to anywhere in this class. Likely a bug!
         private static readonly string s_gatewayId = string.Empty;
@@ -68,10 +68,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 exception.Error.Info = new Fields();
             }
 
-            if (!exception.Error.Info.Any() || !exception.Error.Info.TryGetValue(AmqpIoTConstants.TrackingId, out string trackingId))
+            if (!exception.Error.Info.Any() || !exception.Error.Info.TryGetValue(AmqpIotConstants.TrackingId, out string trackingId))
             {
                 trackingId = GenerateTrackingId(gatewayId, backendId, partitionId);
-                exception.Error.Info.Add(AmqpIoTConstants.TrackingId, trackingId);
+                exception.Error.Info.Add(AmqpIotConstants.TrackingId, trackingId);
             }
             return trackingId;
         }
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             string trackingId = null;
             if (errorObj.Info != null)
             {
-                errorObj.Info.TryGetValue(AmqpIoTConstants.TrackingId, out trackingId);
+                errorObj.Info.TryGetValue(AmqpIotConstants.TrackingId, out trackingId);
             }
             return trackingId;
         }
