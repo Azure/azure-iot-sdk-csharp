@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceClientSample", "Serv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceClientStreamingSample", "DeviceStreamingSample\ServiceClientStreamingSample.csproj", "{8F047127-FCB6-4D55-BDD1-DBBEFCF1F74A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanUpDevicesSample", "CleanUpDevicesSample\CleanUpDevicesSample.csproj", "{2C710192-E36A-4413-BE53-D1F4A00265BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanupDevicesSample", "CleanupDevicesSample\CleanupDevicesSample.csproj", "{2C710192-E36A-4413-BE53-D1F4A00265BC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImportExportDevicesSample", "ImportExportDevicesSample\ImportExportDevicesSample.csproj", "{2CF3FB18-E8EC-4919-AE58-C7BE7EB3B75E}"
 EndProject
