@@ -14,7 +14,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
     internal class Parameters
     {
         [Option(
-            's',
             "DeviceSecurityType",
             HelpText = "(Required) The flow that will be used for connecting the device for the sample. Possible case-insensitive values include: dps, connectionString." +
             "\nDefaults to environment variable \"IOTHUB_DEVICE_SECURITY_TYPE\".")]

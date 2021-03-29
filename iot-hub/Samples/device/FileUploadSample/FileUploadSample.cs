@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 // Note that other versions of the Azure Storage SDK can be used here. For the latest version, see
                 // https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/storage#azure-storage-libraries-for-net
                 var blobClient = new BlobClient(uploadUri);
-                await blobClient.UploadAsync(fileStreamSource);
+                await blobClient.UploadAsync(fileStreamSource, overwrite: true);
             }
             catch (Exception ex)
             {
