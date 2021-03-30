@@ -55,7 +55,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
-        [Ignore]
         [LoggedTestMethod]
         public async Task JobClient_Http_TokenCredentialAuth_Success()
         {
