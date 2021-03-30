@@ -93,6 +93,11 @@ namespace Microsoft.Azure.Devices.Samples
             IEnumerable<ExportImportDevice> exportedDevices = ImportExportDevicesHelpers.BuildExportImportDeviceFromStream(download.Content);
 
             // Step 3: Collect the devices that need to be deleted and update their ImportMode to be Delete.
+            // Thie step will create an ExportImportDevice identity for each device/ module identity registered on hub.
+            // If you hub instance has IoT Hub module or Edge module instances registered, then they will be counted as separate entities
+            // from the corresponding IoT Hub device/ Edge device that they are associated with.
+            // As a result, the count of ExportImportDevice identities to be deleted might be greater than the
+            // count of IoT hub devices retrieved in PrintDeviceCountAsync().
             var devicesToBeDeleted = new List<ExportImportDevice>();
             foreach (var device in exportedDevices)
             {
