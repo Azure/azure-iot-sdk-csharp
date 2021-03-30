@@ -104,24 +104,24 @@ try {
 
     if ($run)
     {
-        $sampleRunningTime = 60
+        $sampleRunningTimeInSeconds = 60
 
         # Run cleanup first so the samples don't get overloaded with old devices
         RunApp provisioning\Samples\service\CleanupEnrollmentsSample "Provisioning\Service\CleanupEnrollmentsSample"
         RunApp iot-hub\Samples\service\CleanupDevicesSample "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"" --PathToDevicePrefixForDeletion ""$env:PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE"""
 
-        RunApp iot-hub\Samples\device\DeviceReconnectionSample "IoTHub\Device\DeviceReconnectionSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTime"
+        RunApp iot-hub\Samples\device\DeviceReconnectionSample "IoTHub\Device\DeviceReconnectionSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
         RunApp iot-hub\Samples\device\FileUploadSample "IoTHub\Device\FileUploadSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
         RunApp iot-hub\Samples\device\MessageReceiveSample "IoTHub\Device\MessageReceiveSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
-        RunApp iot-hub\Samples\device\MethodSample "IoTHub\Device\MethodSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
-        RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
+        RunApp iot-hub\Samples\device\MethodSample "IoTHub\Device\MethodSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
+        RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
 
         $pnpDeviceSecurityType = "connectionString"
-        RunApp iot-hub\Samples\device\PnpDeviceSamples\TemperatureController "IoTHub\Device\PnpDeviceSamples\TemperatureController" "--DeviceSecurityType $pnpDeviceSecurityType -p ""$env:PNP_TC_DEVICE_CONN_STRING"" -r $sampleRunningTime"
-        RunApp iot-hub\Samples\device\PnpDeviceSamples\Thermostat "IoTHub\Device\PnpDeviceSamples\Thermostat" "--DeviceSecurityType $pnpDeviceSecurityType -p ""$env:PNP_THERMOSTAT_DEVICE_CONN_STRING"" -r $sampleRunningTime"
+        RunApp iot-hub\Samples\device\PnpDeviceSamples\TemperatureController "IoTHub\Device\PnpDeviceSamples\TemperatureController" "--DeviceSecurityType $pnpDeviceSecurityType -p ""$env:PNP_TC_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
+        RunApp iot-hub\Samples\device\PnpDeviceSamples\Thermostat "IoTHub\Device\PnpDeviceSamples\Thermostat" "--DeviceSecurityType $pnpDeviceSecurityType -p ""$env:PNP_THERMOSTAT_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
         # DeviceStreaming sample is not added since it is not available in all regions.
 
-        RunApp iot-hub\Samples\module\ModuleSample "IoTHub\Module\ModuleSample" "-p ""$env:IOTHUB_MODULE_CONN_STRING"" -r $sampleRunningTime"
+        RunApp iot-hub\Samples\module\ModuleSample "IoTHub\Module\ModuleSample" "-p ""$env:IOTHUB_MODULE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
 
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
         RunApp iot-hub\Samples\service\EdgeDeploymentSample "IoTHub\Service\EdgeDeploymentSample"
@@ -130,7 +130,7 @@ try {
 
         $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | where {$_ -like "DeviceId*"}).Split("=")[1]
         Write-Warning "Using device $deviceId for the ServiceClientSample."
-        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -d $deviceId -r $sampleRunningTime"
+        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -d $deviceId -r $sampleRunningTimeInSeconds"
         # DigitalTwinClientSamples and PnpServiceSamples are not added here since they require the device counterparts to be running as well.
 
         # TODO #11: Modify Provisioning\device samples to run unattended.

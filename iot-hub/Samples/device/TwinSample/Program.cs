@@ -3,6 +3,7 @@
 
 using CommandLine;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -29,11 +30,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Environment.Exit(1);
                 });
 
+            var runningTime = parameters.ApplicationRunningTime != null
+                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                : Timeout.InfiniteTimeSpan;
+
             using var deviceClient = DeviceClient.CreateFromConnectionString(
                 parameters.PrimaryConnectionString,
                 parameters.TransportType);
             var sample = new TwinSample(deviceClient);
-            await sample.RunSampleAsync();
+            await sample.RunSampleAsync(runningTime);
 
             Console.WriteLine("Done.");
             return 0;

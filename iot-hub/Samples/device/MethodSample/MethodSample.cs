@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
         }
 
-        public async Task RunSampleAsync()
+        public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
             _deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
 
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 new DeviceData { Name = "DeviceClientMethodSample" });
 
             Console.WriteLine("Press Control+C to quit the sample.");
-            using var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource(sampleRunningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
@@ -49,13 +49,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
-            var waitTime = TimeSpan.FromMinutes(5);
             var timer = Stopwatch.StartNew();
             Console.WriteLine($"Use the IoT Hub Azure Portal to call methods GetDeviceName or WriteToConsole within this time.");
 
-            Console.WriteLine($"Waiting up to {waitTime} for IoT Hub method calls ...");
+            Console.WriteLine($"Waiting up to {sampleRunningTime} for IoT Hub method calls ...");
             while (!cts.IsCancellationRequested
-                && timer.Elapsed < waitTime)
+                && timer.Elapsed < sampleRunningTime)
             {
                 await Task.Delay(1000);
             }
