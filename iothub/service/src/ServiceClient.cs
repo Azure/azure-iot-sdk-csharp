@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices
         public static ServiceClient Create(
             string hostName,
             TokenCredential credential,
-            TransportType transportType,
+            TransportType transportType = TransportType.Amqp,
             ServiceClientTransportSettings transportSettings = default,
             ServiceClientOptions options = default)
         {
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices
         public static ServiceClient Create(
             string hostName,
             AzureSasCredential credential,
-            TransportType transportType,
+            TransportType transportType = TransportType.Amqp,
             ServiceClientTransportSettings transportSettings = default,
             ServiceClientOptions options = default)
         {
