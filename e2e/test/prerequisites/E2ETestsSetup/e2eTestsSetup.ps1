@@ -13,9 +13,14 @@ param(
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
 
-    # Set this to true on the first execution to get everything installed in poweshell. Does not need to be run everytime.
+    # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
-    [bool] $InstallDependencies = $true
+    [switch] $InstallDependencies,
+
+    # Set this to true if you are generating resources for the DevOps test pipeline.
+    # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
+    [Parameter()]
+    [switch] $GenerateResourcesForDevOpsPipeline
 )
 
 $startTime = (Get-Date)
@@ -46,7 +51,7 @@ Function Connect-AzureSubscription()
 
     if (-not $azureContext)
     {
-        Write-Host "`nPlease login to Azure..."
+        Write-Host "`nPlease login to Azure."
         az login
         $azureContext = az account show
     }
@@ -64,32 +69,32 @@ Function Connect-AzureSubscription()
 
 Function CleanUp-Certs()
 {
-    Write-Host("`nCleaning up old certs and files that may cause conflicts.")
+    Write-Host "`nCleaning up old certs and files that may cause conflicts."
     $certsToDelete1 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
     $certsToDelete2 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$groupCertCommonName") } 
     $certsToDelete3 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$deviceCertCommonName") }
 
     $certsToDelete = $certsToDelete1 + $certsToDelete2 + $certsToDelete3
     
-    $title = "Clenaing up certs"
+    $title = "Cleaning up certs."
     $certsToDeleteSubjectNames = $certsToDelete | foreach-object  {$_.Subject} 
     $certsToDeleteSubjectNames = $certsToDeleteSubjectNames -join "`n"
     $question = "Are you sure you want to delete the following certs?`n`n$certsToDeleteSubjectNames"
     $choices  = '&Yes', '&No'
     $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
 
-    if($certsToDelete.Count -ne 0)
+    if ($certsToDelete.Count -ne 0)
     {
         if($decision -eq 0)
         {
             #Remove
-            Write-Host 'confirmed'
+            Write-Host '`tConfirmed.'
             $certsToDelete | Remove-Item
         }
         else
         {
             #Don't remove certs and exit
-            Write-Host 'cancelled'
+            Write-Host '`tCancelled.'
             exit
         }
     }
@@ -110,9 +115,23 @@ if (-not $isAdmin)
 #################################################################################################
 
 $Region = $Region.Replace(' ', '')
-$logAnalyticsAppRegnName = $ResourceGroup
+$logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
+$iothubUnitsToBeCreated = 1
+
+
+# OpenSSL has dropped support for SHA1 signed certificates in ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
+$certificateHashAlgorithm = "SHA256"
+
+#################################################################################################
+# Make any special modifications required to generate resources for the DevOps test pipeline
+#################################################################################################
+
+if ($GenerateResourcesForDevOpsPipeline)
+{
+    $iothubUnitsToBeCreated = 3;
+}
 
 
 #################################################################################################
@@ -138,11 +157,11 @@ if (-not ($storageAccountName -match "^[a-z0-9][a-z0-9]{1,22}[a-z0-9]$"))
     throw "Storage account name derrived from resource group has illegal characters: $storageAccountName"
 }
 
-$keyVaultName = "env-$ResourceGroup-kv"
+$keyVaultName = "env-$ResourceGroup-kv";
 $keyVaultName = [regex]::Replace($keyVaultName, "[^a-zA-Z0-9-]", "")
 if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 {
-    throw "Key vault name derrived from resource group has illegal characters: $storageAccountName"
+    throw "Key vault name derrived from resource group has illegal characters: $keyVaultName";
 }
 
 ########################################################################################################
@@ -150,27 +169,27 @@ if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 # New certs will be generated each time you run the script as the script cleans up in the end
 ########################################################################################################
 
-$subjectPrefix = "IoT Test"
-$rootCommonName = "$subjectPrefix Test Root CA"
-$intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA"
-$intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA"
-$groupCertCommonName = "xdevice1"
-$deviceCertCommonName = "iothubx509device1"
-$iotHubCertCommonName = "iothubx509device1"
-$iotHubCertChainDeviceCommonName = "iothubx509chaindevice1"
+$subjectPrefix = "IoT Test";
+$rootCommonName = "$subjectPrefix Test Root CA";
+$intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA";
+$intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA";
+$groupCertCommonName = "xdevice1";
+$deviceCertCommonName = "iothubx509device1";
+$iotHubCertCommonName = "iothubx509device1";
+$iotHubCertChainDeviceCommonName = "iothubx509chaindevice1";
 
-$rootCertPath = "$PSScriptRoot/Root.cer"
-$individualDeviceCertPath = "$PSScriptRoot/Device.cer"
-$verificationCertPath = "$PSScriptRoot/verification.cer"
+$rootCertPath = "$PSScriptRoot/Root.cer";
+$individualDeviceCertPath = "$PSScriptRoot/Device.cer";
+$verificationCertPath = "$PSScriptRoot/verification.cer";
 
-$groupPfxPath = "$PSScriptRoot/Group.pfx"
-$individualDevicePfxPath = "$PSScriptRoot/Device.pfx"
-$iotHubPfxPath = "$PSScriptRoot/IotHub.pfx"
-$iotHubChainDevicPfxPath = "$PSScriptRoot/IotHubChainDevice.pfx"
-$intermediateCert1CertPath = "$PSScriptRoot/intermediateCert1.cer"
-$intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer"
+$groupPfxPath = "$PSScriptRoot/Group.pfx";
+$individualDevicePfxPath = "$PSScriptRoot/Device.pfx";
+$iotHubPfxPath = "$PSScriptRoot/IotHub.pfx";
+$iotHubChainDevicPfxPath = "$PSScriptRoot/IotHubChainDevice.pfx";
+$intermediateCert1CertPath = "$PSScriptRoot/intermediateCert1.cer";
+$intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
 
-$groupCertChainPath = "$PSScriptRoot/GroupCertChain.p7b"
+$groupCertChainPath = "$PSScriptRoot/GroupCertChain.p7b";
 
 ############################################################################################################################
 # Cleanup old certs and files that can cause a conflict
@@ -180,12 +199,13 @@ CleanUp-Certs
 # Generate self signed Root and Intermediate CA cert, expiring in 2 years
 # These certs are used for signing so ensure to have the correct KeyUsage - CertSign and TestExtension - ca=TRUE&pathlength=12
 
-Write-Host "`nGenerating self signed certs"
+Write-Host "`nGenerating self signed certs."
 
 $rootCACert = New-SelfSignedCertificate `
     -DnsName "$rootCommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -193,6 +213,7 @@ $intermediateCert1 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert1CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $rootCACert
@@ -201,6 +222,7 @@ $intermediateCert2 = New-SelfSignedCertificate `
     -DnsName "$intermediateCert2CommonName" `
     -KeyUsage CertSign `
     -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert1
@@ -222,30 +244,33 @@ $groupDeviceCert = New-SelfSignedCertificate `
     -DnsName "$groupCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
 
 Export-PFXCertificate -cert $groupDeviceCert -filePath $groupPfxPath -password $certPassword | Out-Null
-$dpsGroupX509PfxCertificate = [Convert]::ToBase64String((Get-Content $groupPfxPath -AsByteStream))
+$dpsGroupX509PfxCertificate = [Convert]::ToBase64String((Get-Content $groupPfxPath -AsByteStream));
 
 # Certificate for enrollment of a device using individual enrollment.
 $individualDeviceCert = New-SelfSignedCertificate `
     -DnsName "$deviceCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
 Export-Certificate -cert $individualDeviceCert -FilePath $individualDeviceCertPath -Type CERT | Out-Null
 Export-PFXCertificate -cert $individualDeviceCert -filePath $individualDevicePfxPath -password $certPassword | Out-Null
-$dpsIndividualX509PfxCertificate = [Convert]::ToBase64String((Get-Content $individualDevicePfxPath -AsByteStream))
+$dpsIndividualX509PfxCertificate = [Convert]::ToBase64String((Get-Content $individualDevicePfxPath -AsByteStream));
 
 # IoT hub certificate for authemtication. The tests are not setup to use a password for the certificate so create the certificate is created with no password.
 $iotHubCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -254,26 +279,27 @@ $iotHubChainDeviceCert = New-SelfSignedCertificate `
     -DnsName "$iotHubCertChainDeviceCommonName" `
     -KeySpec Signature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
 
 $iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
 Export-PFXCertificate -cert $iotHubCert -filePath $iotHubPfxPath -password $iotHubCredentials.Password | Out-Null
-$iothubX509PfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubPfxPath -AsByteStream))
+$iothubX509PfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubPfxPath -AsByteStream));
 
 $iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
 Export-PFXCertificate -cert $iotHubChainDeviceCert -filePath $iotHubChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
-$iothubX509ChainDevicePfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubChainDevicPfxPath -AsByteStream))
+$iothubX509ChainDevicePfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubChainDevicPfxPath -AsByteStream));
 
 Export-Certificate -cert $intermediateCert1 -FilePath $intermediateCert1CertPath -Type CERT | Out-Null
-$iothubX509Intermediate1Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert1CertPath -AsByteStream))
+$iothubX509Intermediate1Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert1CertPath -AsByteStream));
 
 Export-Certificate -cert $intermediateCert2 -FilePath $intermediateCert2CertPath -Type CERT | Out-Null
-$iothubX509Intermediate2Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert2CertPath -AsByteStream))
+$iothubX509Intermediate2Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert2CertPath -AsByteStream));
 
-$dpsGroupX509CertificateChain = [Convert]::ToBase64String((Get-Content $groupCertChainPath -AsByteStream))
-$dpsX509PfxCertificatePassword = $GroupCertificatePassword
+$dpsGroupX509CertificateChain = [Convert]::ToBase64String((Get-Content $groupCertChainPath -AsByteStream));
+$dpsX509PfxCertificatePassword = $GroupCertificatePassword;
 
 ########################################################################################################
 # Install latest version of az cli
@@ -281,7 +307,7 @@ $dpsX509PfxCertificatePassword = $GroupCertificatePassword
 
 if ($InstallDependencies)
 {
-    Write-Host "`nInstalling and updating AZ CLI"
+    Write-Host "`nInstalling and updating AZ CLI."
     Install-Module -Name Az -AllowClobber -Force
     Update-Module -Name Az
 }
@@ -292,10 +318,10 @@ if ($InstallDependencies)
 
 if ($InstallDependencies)
 {
-    Write-Host "`nSetting up docker"
+    Write-Host "`nSetting up docker."
     Set-ExecutionPolicy Bypass -Scope Process -Force
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'));
     choco install docker-desktop -y
     # Refresh paths after installation of choco
     refreshenv
@@ -309,7 +335,7 @@ if ($InstallDependencies)
 
 if ($InstallDependencies)
 {
-    Write-Host "`nInstalling azure iot cli extensions"
+    Write-Host "`nInstalling azure iot cli extensions."
     az extension add --name azure-iot
 }
 
@@ -320,7 +346,7 @@ if ($InstallDependencies)
 $logAnalyticsAppId = az ad app list --show-mine --query "[?displayName=='$logAnalyticsAppRegnName'].appId" --output tsv
 if (-not $logAnalyticsAppId)
 {
-    Write-Host "`nCreating App Registration $logAnalyticsAppRegnName"
+    Write-Host "`nCreating App Registration $logAnalyticsAppRegnName."
     $logAnalyticsAppId = az ad app create --display-name $logAnalyticsAppRegnName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
     Write-Host "`nApplication $logAnalyticsAppRegnName with Id $logAnalyticsAppId was created successfully."
 }
@@ -328,7 +354,7 @@ if (-not $logAnalyticsAppId)
 $spExists = az ad sp list --show-mine --query "[?appId=='$logAnalyticsAppId'].appId" --output tsv
 if (-not $spExists)
 {
-    Write-Host "`nCreating the service principal for the app registration if it does not exist"
+    Write-Host "`nCreating the service principal for the app registration, if it does not exist."
     az ad sp create --id $logAnalyticsAppId --output none
 }
 
@@ -347,7 +373,7 @@ $userObjectId = az ad signed-in-user show --query objectId --output tsv
 $rgExists = az group exists --name $ResourceGroup
 if ($rgExists -eq "False")
 {
-    Write-Host "`nCreating Resource Group $ResourceGroup in $Region"
+    Write-Host "`nCreating resource group $ResourceGroup in $Region"
     az group create --name $ResourceGroup --location $Region --output none
 }
 
@@ -364,9 +390,9 @@ $deploymentName = "IotE2eInfra-$randomSuffix"
 
 # Deploy
 Write-Host @"
-    `nStarting deployment which may take a while
-    1.Progress can be monitored from the Azure Portal (http://portal.azure.com)
-    2.Deployment name ($deploymentName), Resource group ($ResourceGroup), Subscription ($SubscriptionId)
+    `nStarting deployment which may take a while.
+    1. Progress can be monitored from the Azure Portal (http://portal.azure.com); go to resource group | deployments | deployment name.
+    2. Info to track: subscription ($SubscriptionId), resource group ($ResourceGroup), deployment name ($deploymentName).
 "@
 
 az deployment group create `
@@ -380,14 +406,15 @@ az deployment group create `
     StorageAccountName=$storageAccountName `
     KeyVaultName=$keyVaultName `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
-    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent
+    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
+    HubUnitsCount=$iothubUnitsToBeCreated
 
 if ($LastExitCode -ne 0)
 {
     throw "Error running resource group deployment."
 }
 
-Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), resource group ($ResourceGroup)"
+Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), resource group ($ResourceGroup)."
 
 #########################################################################################################
 # Get propreties to setup the config file for Environment variables
@@ -396,7 +423,7 @@ Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), re
 $iotHubThumbprint = "CADB8E398FA9C7DD382E2ED092258BB3D916652C"
 $proxyServerAddress = "127.0.0.1:8888"
 
-Write-Host "`nGetting generated names and secrets from ARM template output"
+Write-Host "`nGetting generated names and secrets from ARM template output."
 $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
 $farHubHostName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubHostName.value' --output tsv
 $farHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubConnectionString.value' --output tsv
@@ -412,7 +439,7 @@ $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --qu
 ##################################################################################################################################
 # Granting the iot hub system idenitty Storage blob contributor access on the resoruce group
 ##################################################################################################################################
-Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $resoruceGroupId"
+Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
 
 $systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.principalId --out tsv
 
@@ -425,24 +452,25 @@ az role assignment create --assignee $systemIdentityPrincipal --role "Storage Bl
 $certExits = az iot hub certificate list -g $ResourceGroup --hub-name $iotHubName --query "value[?name=='$hubUploadCertificateName']" --output tsv
 if ($certExits)
 {
-    Write-Host "`nDeleting existing certificate from IotHub"
+    Write-Host "`nDeleting existing certificate from IoT Hub."
     $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
     az iot hub certificate delete -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --etag $etag
 }
-Write-Host "`nUploading new certificate to IotHub"
+Write-Host "`nUploading new certificate to IoT Hub."
 az iot hub certificate create -g $ResourceGroup --path $rootCertPath --hub-name $iotHubName --name $hubUploadCertificateName --output none
 
 $isVerified = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'properties.isVerified' --output tsv
 if ($isVerified -eq 'false')
 {
-    Write-Host "`nVerifying certificate uploaded to IotHub"
+    Write-Host "`nVerifying certificate uploaded to IotHub."
     $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
     $requestedCommonName = az iot hub certificate generate-verification-code -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
@@ -455,11 +483,11 @@ if ($isVerified -eq 'false')
 # Create device in IoTHub that uses a certificate signed by intermediate certificate
 ##################################################################################################################################
 
-$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName-hub --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv 
+$iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubCertChainDeviceCommonName'].deviceId" --output tsv
 
 if (-not $iotHubCertChainDevice)
 {
-    Write-Host "`nCreating device $iotHubCertChainDeviceCommonName on IotHub"
+    Write-Host "`nCreating device $iotHubCertChainDeviceCommonName on IoT Hub."
     az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubCertChainDeviceCommonName --am x509_ca
 }
 
@@ -471,24 +499,25 @@ $dpsIdScope = az iot dps show -g $ResourceGroup --name $dpsName --query 'propert
 $certExits = az iot dps certificate list -g $ResourceGroup --dps-name $dpsName --query "value[?name=='$uploadCertificateName']" --output tsv
 if ($certExits)
 {
-    Write-Host "`nDeleting existing certificate from DPS"
+    Write-Host "`nDeleting existing certificate from DPS."
     $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'etag'
     az iot dps certificate delete -g $ResourceGroup --dps-name $dpsName --name $uploadCertificateName --etag $etag
 }
-Write-Host "`nUploading new certificate to DPS"
+Write-Host "`nUploading new certificate to DPS."
 az iot dps certificate create -g $ResourceGroup --path $rootCertPath --dps-name $dpsName --certificate-name $uploadCertificateName --output none
 
 $isVerified = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'properties.isVerified' --output tsv
 if ($isVerified -eq 'false')
 {
-    Write-Host "`nVerifying certificate uploaded to DPS"
+    Write-Host "`nVerifying certificate uploaded to DPS."
     $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'etag'
     $requestedCommonName = az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
         "-DnsName"                       = $requestedCommonName;
         "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
         "-Signer"                        = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
@@ -501,10 +530,10 @@ $groupEnrollmentId = "Group1"
 $groupEnrollmentExists = az iot dps enrollment-group list -g $ResourceGroup --dps-name $dpsName --query "[?enrollmentGroupId=='$groupEnrollmentId'].enrollmentGroupId" --output tsv
 if ($groupEnrollmentExists)
 {
-    Write-Host "`nDeleting existing group enrollment $groupEnrollmentId"
+    Write-Host "`nDeleting existing group enrollment $groupEnrollmentId."
     az iot dps enrollment-group delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId
 }
-Write-Host "`nAdding group enrollment $groupEnrollmentId"
+Write-Host "`nAdding group enrollment $groupEnrollmentId."
 az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $uploadCertificateName --output none
 
 $individualEnrollmentId = "iothubx509device1"
@@ -512,10 +541,10 @@ $individualDeviceId = "provisionedx509device1"
 $individualEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $dpsName --query "[?deviceId=='$individualDeviceId'].deviceId" --output tsv
 if ($individualEnrollmentExists)
 {
-    Write-Host "`nDeleting existing individual enrollment $individualEnrollmentId for device $individualDeviceId"
+    Write-Host "`nDeleting existing individual enrollment $individualEnrollmentId for device $individualDeviceId."
     az iot dps enrollment delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $individualEnrollmentId
 }
-Write-Host "`nAdding individual enrollment $individualEnrollmentId for device $individualDeviceId"
+Write-Host "`nAdding individual enrollment $individualEnrollmentId for device $individualDeviceId."
 az iot dps enrollment create `
     -g $ResourceGroup `
     --dps-name $dpsName `
@@ -538,7 +567,7 @@ while (++$tries -le 10)
         if ($LastExitCode -eq 0)
         {
             Write-Host "`tSucceeded"
-            break
+            break;
         }
     }
     catch
@@ -548,18 +577,18 @@ while (++$tries -le 10)
     if ($tries -ge 10)
     {
         Write-Error "Max retries reached for granting service principal permissions."
-        throw
+        throw;
     }
 
-    Write-Host "`tGranting service principal permission failed. Waiting 5 seconds before retry..."
-    Start-Sleep -s 5;
+    Write-Host "`tGranting service principal permission failed. Waiting 5 seconds before retry."
+    Start-Sleep -s 5
 }
 
-Write-Host "`nCreating a self-signed certificate and placing it in $ResourceGroup"
+Write-Host "`nCreating a self-signed certificate and placing it in $ResourceGroup."
 az ad app credential reset --id $logAnalyticsAppId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
-Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup";
+Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup."
 
-Write-Host "`nFetching the certificate binary"
+Write-Host "`nFetching the certificate binary."
 $selfSignedCerts = "$PSScriptRoot\selfSignedCerts"
 if (Test-Path $selfSignedCerts -PathType Leaf)
 {
@@ -570,16 +599,16 @@ az keyvault secret download --file $selfSignedCerts --vault-name $keyVaultName -
 $fileContent = Get-Content $selfSignedCerts -AsByteStream
 $fileContentB64String = [System.Convert]::ToBase64String($fileContent);
 
-Write-Host "`nSuccessfully fetched the certificate bytes ... removing the cert file from the disk"
+Write-Host "`nSuccessfully fetched the certificate bytes. Removing the cert file from the disk."
 Remove-Item -r $selfSignedCerts
 
 ###################################################################################################################################
 # Store all secrets in a KeyVault - Values will be pulled down from here to configure environment variables
 ###################################################################################################################################
 
-Write-Host("`nWriting secrets to KeyVault $keyVaultName")
+Write-Host "`nWriting secrets to KeyVault $keyVaultName."
 az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id $userObjectId --secret-permissions delete get list set --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none # Iot Hub Connection string Environment variable for Java
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none # IoT Hub Connection string Environment variable for Java
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PROXY-SERVER-ADDRESS" --value $proxyServerAddress --output none
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value $farHubHostName --output none
@@ -626,13 +655,13 @@ az keyvault secret set --vault-name $keyVaultName --name "E2E-IKEY" --value $ins
 
 if (-not (docker images -q aziotbld/testtpm))
 {
-    Write-Host "Setting up docker container for TPM simulator"
+    Write-Host "Setting up docker container for TPM simulator."
     docker run -d --restart unless-stopped --name azure-iot-tpmsim -p 127.0.0.1:2321:2321 -p 127.0.0.1:2322:2322 aziotbld/testtpm
 }
 
 if (-not (docker images -q aziotbld/testproxy))
 {
-    Write-Host "Setting up docker container for Proxy"
+    Write-Host "Setting up docker container for proxy."
     docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
 }
 
@@ -643,8 +672,8 @@ CleanUp-Certs
 
 # Creating a file to run to load environment variables
 $loadScriptDir = Join-Path $PSScriptRoot "..\..\..\..\.." -Resolve
-$loadScriptName = "Load-$keyVaultName.ps1"
-Write-Host "`nWriting environment loading file to $loadScriptDir\$loadScriptName"
+$loadScriptName = "Load-$keyVaultName.ps1";
+Write-Host "`nWriting environment loading file to $loadScriptDir\$loadScriptName.`n"
 $file = New-Item -Path $loadScriptDir -Name $loadScriptName -ItemType "file" -Force
 Add-Content -Path $file.PSPath -Value "$PSScriptRoot\LoadEnvironmentVariablesFromKeyVault.ps1 -SubscriptionId $SubscriptionId -KeyVaultName $keyVaultName"
 
@@ -654,5 +683,5 @@ Add-Content -Path $file.PSPath -Value "$PSScriptRoot\LoadEnvironmentVariablesFro
 Invoke-Expression "$loadScriptDir\$loadScriptName"
 
 $endTime = (Get-Date)
-$ElapsedTime = (($endTime - $startTime).TotalMinutes)
-Write-Host "`n`nCompleted in $ElapsedTime minutes. Run the generated file $loadScriptDir\$loadScriptName to load environment variables for future runs. Values will be overwritten whenever you run e2eTestsSetup.ps1 with a same resource group name.`n"
+$elapsedTime = (($endTime - $startTime).TotalMinutes).ToString("N1")
+Write-Host "`n`nCompleted in $elapsedTime minutes.`n`t- For future sessions, run the generated file $loadScriptDir\$loadScriptName to load environment variables.`n`t- Values will be overwritten if you run e2eTestsSetup.ps1 with a same resource group name.`n"

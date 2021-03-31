@@ -14,9 +14,9 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTTransport : IDisposable
+    internal class AmqpIotTransport : IDisposable
     {
         private readonly bool _disableServerCertificateValidation;
         private readonly string _hostName;
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private ClientWebSocketTransport _clientWebSocketTransport;
 
-        public AmqpIoTTransport(
+        public AmqpIotTransport(
             AmqpSettings amqpSettings,
             AmqpTransportSettings amqpTransportSettings,
             string hostName,
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         internal async Task<TransportBase> InitializeAsync(TimeSpan timeout)
         {
-            Logging.Enter(this, timeout, $"{nameof(InitializeAsync)}");
+            Logging.Enter(this, timeout, nameof(InitializeAsync));
 
             TransportBase transport;
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
-            Logging.Exit(this, timeout, $"{nameof(InitializeAsync)}");
+            Logging.Exit(this, timeout, nameof(InitializeAsync));
 
             return transport;
         }
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             try
             {
-                Logging.Enter(this, timeout, $"{nameof(CreateClientWebSocketTransportAsync)}");
+                Logging.Enter(this, timeout, nameof(CreateClientWebSocketTransportAsync));
 
                 string additionalQueryParams = "";
                 var websocketUri = new Uri($"{WebSocketConstants.Scheme}{_hostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             try
             {
-                Logging.Enter(this, timeout, $"{nameof(CreateClientWebSocketAsync)}");
+                Logging.Enter(this, timeout, nameof(CreateClientWebSocketAsync));
 
                 var websocket = new ClientWebSocket();
 
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
-                Logging.Exit(this, timeout, $"{nameof(CreateClientWebSocketAsync)}");
+                Logging.Exit(this, timeout, nameof(CreateClientWebSocketAsync));
             }
         }
 

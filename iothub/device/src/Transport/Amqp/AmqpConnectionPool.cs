@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
-using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class AmqpConnectionPool : IAmqpUnitManager
     {
         private AmqpConnectionHolder[] _amqpSasIndividualPool;
-        private IDictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new Dictionary<string, AmqpConnectionHolder[]>();
+        private readonly IDictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new Dictionary<string, AmqpConnectionHolder[]>();
         private readonly object _lock = new object();
 
         public AmqpUnit CreateAmqpUnit(
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
+                Logging.Enter(this, deviceIdentity, nameof(CreateAmqpUnit));
             }
 
             if (deviceIdentity.IsPooling())
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
+                    Logging.Exit(this, deviceIdentity, nameof(CreateAmqpUnit));
                 }
 
                 return amqpConnectionHolder.CreateAmqpUnit(
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
+                    Logging.Exit(this, deviceIdentity, nameof(CreateAmqpUnit));
                 }
 
                 return new AmqpConnectionHolder(deviceIdentity)
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
+                Logging.Enter(this, amqpUnit, nameof(RemoveAmqpUnit));
             }
 
             DeviceIdentity deviceIdentity = amqpUnit.GetDeviceIdentity();
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
+                Logging.Exit(this, amqpUnit, nameof(RemoveAmqpUnit));
             }
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, deviceIdentity, $"{nameof(ResolveConnectionByHashing)}");
+                Logging.Enter(this, deviceIdentity, nameof(ResolveConnectionByHashing));
             }
 
             int index = Math.Abs(deviceIdentity.GetHashCode()) % pool.Length;
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, deviceIdentity, $"{nameof(ResolveConnectionByHashing)}");
+                Logging.Exit(this, deviceIdentity, nameof(ResolveConnectionByHashing));
             }
 
             return pool[index];
