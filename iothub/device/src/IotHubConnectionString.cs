@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (ModuleId.IsNullOrWhiteSpace())
                 {
-                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this) as AuthenticationWithTokenRefresh;
+                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer);
                     if (Logging.IsEnabled)
                     {
                         Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this) as AuthenticationWithTokenRefresh;
+                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer);
                     if (Logging.IsEnabled)
                     {
                         Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
