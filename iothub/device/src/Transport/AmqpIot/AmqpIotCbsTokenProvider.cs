@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTCbsTokenProvider : ICbsTokenProvider
+    internal class AmqpIotCbsTokenProvider : ICbsTokenProvider
     {
         private readonly IotHubConnectionString _connectionString;
 
-        public AmqpIoTCbsTokenProvider(IotHubConnectionString connectionString)
+        public AmqpIotCbsTokenProvider(IotHubConnectionString connectionString)
         {
             _connectionString = connectionString;
         }
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Enter(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIoTCbsTokenProvider.GetTokenAsync)}");
+                    Logging.Enter(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
                 }
 
                 string tokenValue;
@@ -37,9 +37,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 }
                 else
                 {
-                    if (Logging.IsEnabled && (_connectionString.TokenRefresher == null))
+                    if (Logging.IsEnabled && _connectionString.TokenRefresher == null)
                     {
-                        Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(AmqpIoTCbsTokenProvider.GetTokenAsync));
+                        Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(AmqpIotCbsTokenProvider.GetTokenAsync));
                     }
 
                     Debug.Assert(_connectionString.TokenRefresher != null);
@@ -47,13 +47,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     expiresOn = _connectionString.TokenRefresher.RefreshesOn;
                 }
 
-                return new CbsToken(tokenValue, AmqpIoTConstants.IotHubSasTokenType, expiresOn);
+                return new CbsToken(tokenValue, AmqpIotConstants.IotHubSasTokenType, expiresOn);
             }
             finally
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIoTCbsTokenProvider.GetTokenAsync)}");
+                    Logging.Exit(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
                 }
             }
         }

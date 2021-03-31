@@ -184,8 +184,15 @@ namespace Microsoft.Azure.Devices.Client
         // Device certificate
         internal X509Certificate2 Certificate { get; set; }
 
-        /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the service.
+        // Full chain of certificates from the one used to sign the device certificate to the one uploaded to the service.
         internal X509Certificate2Collection ChainCertificates { get; set; }
+
+        // The suggested time to live value for tokens generated for SAS authenticated clients.
+        internal TimeSpan SasTokenTimeToLive { get; set; }
+
+        // The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        // This setting is valid only for SAS authenticated clients.
+        internal int SasTokenRenewalBuffer { get; set; }
 
         internal IotHubConnectionString ToIotHubConnectionString()
         {

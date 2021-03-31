@@ -5,11 +5,11 @@ using System;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Amqp;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTExceptionAdapter
+    internal class AmqpIotExceptionAdapter
     {
-        internal static Exception ConvertToIoTHubException(Exception exception)
+        internal static Exception ConvertToIotHubException(Exception exception)
         {
             if (exception is TimeoutException)
             {
@@ -22,18 +22,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             else
             {
                 var amqpException = exception as AmqpException;
-                if (amqpException != null)
-                {
-                    return AmqpIoTErrorAdapter.ToIotHubClientContract(amqpException);
-                }
-
-                return exception;
+                return amqpException == null
+                    ? exception
+                    : AmqpIotErrorAdapter.ToIotHubClientContract(amqpException);
             }
         }
 
-        internal static Exception ConvertToIoTHubException(Exception exception, AmqpObject source)
+        internal static Exception ConvertToIotHubException(Exception exception, AmqpObject source)
         {
-            Exception e = ConvertToIoTHubException(exception);
+            Exception e = ConvertToIotHubException(exception);
             if (source.IsClosing() && (e is InvalidOperationException || e is OperationCanceledException))
             {
                 return new IotHubCommunicationException("Amqp resource is disconnected.");
@@ -44,5 +41,4 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
     }
-
 }
