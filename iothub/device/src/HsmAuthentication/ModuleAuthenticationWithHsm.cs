@@ -29,6 +29,18 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             _generationId = generationId ?? throw new ArgumentNullException(nameof(generationId));
         }
 
+        internal ModuleAuthenticationWithHsm(
+            ISignatureProvider signatureProvider,
+            string deviceId,
+            string moduleId,
+            string generationId,
+            TimeSpan sasTokenTimeToLive,
+            int sasTokenRenewalBuffer) : base(deviceId, moduleId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer)
+        {
+            _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
+            _generationId = generationId ?? throw new ArgumentNullException(nameof(generationId));
+        }
+
         ///<inheritdoc/>
         protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
         {

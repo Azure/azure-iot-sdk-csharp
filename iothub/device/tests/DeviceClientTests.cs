@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NSubstitute;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -1564,6 +1564,138 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
             messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        [TestMethod]
+        public void DeviceClient_CreateFromConnectionString_InvalidSasTimeToLive_ThrowsException()
+        {
+            // arrange
+            var options = new ClientOptions
+            {
+                SasTokenTimeToLive = TimeSpan.FromSeconds(-60),
+            };
+
+            // act
+            Action createDeviceClient = () => { DeviceClient.CreateFromConnectionString(fakeConnectionString, options); };
+
+            // assert
+            createDeviceClient.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_CreateFromConnectionString_InvalidSasRenewalBuffer_ThrowsException()
+        {
+            // arrange
+            var options = new ClientOptions
+            {
+                SasTokenRenewalBuffer = 200,
+            };
+
+            // act
+            Action createDeviceClient = () => { DeviceClient.CreateFromConnectionString(fakeConnectionString, options); };
+
+            // assert
+            createDeviceClient.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_CreateFromConnectionString_SasTokenTimeToLiveRenewalConfigurable()
+        {
+            // arrange
+            var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
+            int sasTokenRenewalBuffer = 50;
+            var options = new ClientOptions
+            {
+                SasTokenTimeToLive = sasTokenTimeToLive,
+                SasTokenRenewalBuffer = sasTokenRenewalBuffer,
+            };
+            var pipelineBuilderSubstitute = Substitute.For<IDeviceClientPipelineBuilder>();
+
+            // act
+            DateTime startTime = DateTime.UtcNow;
+            InternalClient internalClient = ClientFactory.CreateFromConnectionString(fakeConnectionString, null, TransportType.Mqtt, pipelineBuilderSubstitute, options);
+
+            // assert
+            var authMethod = internalClient.IotHubConnectionString.TokenRefresher;
+            authMethod.Should().BeAssignableTo<DeviceAuthenticationWithSakRefresh>();
+
+            // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
+            // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
+            var buffer = TimeSpan.FromSeconds(2);
+
+            // The initial expiration time calculated is (current utc time - sas ttl supplied).
+            // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas ttl supplied.
+            var expectedExpirationTime = startTime.Add(-sasTokenTimeToLive);
+            authMethod.ExpiresOn.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
+
+            int expectedBufferSeconds = (int)(sasTokenTimeToLive.TotalSeconds * ((float)sasTokenRenewalBuffer / 100));
+            var expectedRefreshTime = expectedExpirationTime.AddSeconds(-expectedBufferSeconds);
+            authMethod.RefreshesOn.Should().BeCloseTo(expectedRefreshTime, (int)buffer.TotalMilliseconds);
+        }
+
+        [TestMethod]
+        public void DeviceClient_CreateFromAuthenticationMethod_SasTokenTimeToLiveRenewalConfigurable()
+        {
+            // arrange
+            var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
+            int sasTokenRenewalBuffer = 50;
+            var options = new ClientOptions
+            {
+                SasTokenTimeToLive = sasTokenTimeToLive,
+                SasTokenRenewalBuffer = sasTokenRenewalBuffer,
+            };
+            var pipelineBuilderSubstitute = Substitute.For<IDeviceClientPipelineBuilder>();
+
+            // This authentication method relies on the default sas token time to live and renewal buffer set by the sdk.
+            // These values are 1 hour for sas token expiration and renewed when 15% or less of its lifespan is left.
+            var authMethod1 = new TestDeviceAuthenticationWithTokenRefresh();
+            int sasExpirationTimeInSecondsSdkDefault = DeviceAuthenticationWithTokenRefresh.DefaultTimeToLiveSeconds;
+            int sasRenewalBufferSdkDefault = DeviceAuthenticationWithTokenRefresh.DefaultBufferPercentage;
+
+            // act
+            DateTime startTime = DateTime.UtcNow;
+            InternalClient internalClient = ClientFactory.CreateFromConnectionString(fakeConnectionString, authMethod1, TransportType.Mqtt, pipelineBuilderSubstitute, options);
+
+            // assert
+            // Clients created with their own specific AuthenticationWithTokenRefresh IAuthenticationMethod will ignore the sas token renewal options specified in ClientOptions.
+            // Those options are configurable from the AuthenticationWithTokenRefresh implementation directly.
+            var authMethod = internalClient.IotHubConnectionString.TokenRefresher;
+
+            // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
+            // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
+            var buffer = TimeSpan.FromSeconds(2);
+
+            // The initial expiration time calculated is (current utc time - sas ttl supplied).
+            // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas ttl supplied.
+
+            var sasExpirationTimeFromClientOptions = startTime.Add(-sasTokenTimeToLive);
+            authMethod.ExpiresOn.Should().NotBeCloseTo(sasExpirationTimeFromClientOptions, (int)buffer.TotalMilliseconds);
+
+            var sasExpirationTimeFromSdkDefault = startTime.AddSeconds(-sasExpirationTimeInSecondsSdkDefault);
+            authMethod.ExpiresOn.Should().BeCloseTo(sasExpirationTimeFromSdkDefault, (int)buffer.TotalMilliseconds);
+
+            // Validate the sas token renewal buffer
+            int expectedRenewalBufferSecondsFromClientOptions = (int)(sasExpirationTimeInSecondsSdkDefault * ((float)sasTokenRenewalBuffer / 100));
+            var expectedRefreshTimeFromClientOptions = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromClientOptions);
+            authMethod.RefreshesOn.Should().NotBeCloseTo(expectedRefreshTimeFromClientOptions, (int)buffer.TotalMilliseconds);
+
+            int expectedRenewalBufferSecondsFromSdkDefault = (int)(sasExpirationTimeInSecondsSdkDefault * ((float)sasRenewalBufferSdkDefault / 100));
+            var expectedRefreshTimeFromSdkDefault = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromSdkDefault);
+            authMethod.RefreshesOn.Should().BeCloseTo(expectedRefreshTimeFromSdkDefault, (int)buffer.TotalMilliseconds);
+        }
+
+        private class TestDeviceAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh
+        {
+            // This authentication method relies on the default sas token time to live and renewal buffer set by the sdk.
+            public TestDeviceAuthenticationWithTokenRefresh() : base("someTestDevice")
+            {
+            }
+
+            ///<inheritdoc/>
+            protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            {
+                return Task.FromResult<string>("someToken");
+            }
         }
     }
 }

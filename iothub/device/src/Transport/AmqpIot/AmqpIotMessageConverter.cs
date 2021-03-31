@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
@@ -16,9 +15,9 @@ using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Common.Api;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTMessageConverter
+    internal class AmqpIotMessageConverter
     {
         private const string LockTokenName = "x-opt-lock-token";
         private const string SequenceNumberName = "x-opt-sequence-number";
@@ -96,9 +95,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     message.ContentEncoding = amqpMessage.Properties.ContentEncoding.Value;
                 }
 
-                message.UserId = amqpMessage.Properties.UserId.Array != null
-                    ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length)
-                    : null;
+                message.UserId = amqpMessage.Properties.UserId.Array == null
+                    ? null
+                    : Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0, amqpMessage.Properties.UserId.Array.Length);
             }
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
@@ -223,7 +222,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.CreationTimeUtc, out propertyValue))
             {
-                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o", CultureInfo.InvariantCulture);    // Convert to string that complies with ISO 8601
+                // Convert to string that complies with ISO 8601
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o", CultureInfo.InvariantCulture);
             }
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out propertyValue))
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 }
             }
 
-            if (IoTHubClientDiagnostic.HasDiagnosticProperties(data))
+            if (IotHubClientDiagnostic.HasDiagnosticProperties(data))
             {
                 amqpMessage.MessageAnnotations.Map[AmqpDiagIdKey] = data.SystemProperties[MessageSystemPropertyNames.DiagId];
                 amqpMessage.MessageAnnotations.Map[AmqpDiagCorrelationContextKey] = data.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext];
@@ -305,12 +305,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 methodRequestId = amqpMessage.Properties.CorrelationId?.ToString();
             }
 
-            if ((sections & SectionFlag.ApplicationProperties) != 0)
+            if ((sections & SectionFlag.ApplicationProperties) != 0
+                && !(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName) ?? false))
             {
-                if (!(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName) ?? false))
-                {
-                    Fx.Exception.TraceHandled(new InvalidDataException("Method name is missing"), "MethodConverter.ConstructMethodRequestFromAmqpMessage");
-                }
+                Fx.Exception.TraceHandled(new InvalidDataException("Method name is missing"), "MethodConverter.ConstructMethodRequestFromAmqpMessage");
             }
 
             return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream, cancellationToken);
@@ -365,13 +363,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     break;
 
                 case PropertyValueType.Unknown:
-                    if (amqpObject is AmqpSymbol)
+                    if (amqpObject is AmqpSymbol amqpSymbol)
                     {
-                        netObject = ((AmqpSymbol)amqpObject).Value;
+                        netObject = amqpSymbol.Value;
                     }
                     else if (amqpObject is ArraySegment<byte>)
                     {
-                        ArraySegment<byte> binValue = (ArraySegment<byte>)amqpObject;
+                        var binValue = (ArraySegment<byte>)amqpObject;
                         if (binValue.Count == binValue.Array.Length)
                         {
                             netObject = binValue.Array;
@@ -383,21 +381,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                             netObject = buffer;
                         }
                     }
-                    else if (amqpObject is DescribedType)
+                    else if (amqpObject is DescribedType describedType)
                     {
-                        DescribedType describedType = (DescribedType)amqpObject;
-                        if (describedType.Descriptor is AmqpSymbol)
+                        if (describedType.Descriptor is AmqpSymbol descriptorAmqpSymbol)
                         {
-                            AmqpSymbol symbol = (AmqpSymbol)describedType.Descriptor;
-                            if (symbol.Equals(UriName))
+                            if (descriptorAmqpSymbol.Equals(UriName))
                             {
                                 netObject = new Uri((string)describedType.Value);
                             }
-                            else if (symbol.Equals(TimeSpanName))
+                            else if (descriptorAmqpSymbol.Equals(TimeSpanName))
                             {
                                 netObject = new TimeSpan((long)describedType.Value);
                             }
-                            else if (symbol.Equals(DateTimeOffsetName))
+                            else if (descriptorAmqpSymbol.Equals(DateTimeOffsetName))
                             {
                                 netObject = new DateTimeOffset(new DateTime((long)describedType.Value, DateTimeKind.Utc));
                             }
@@ -410,7 +406,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     }
                     else if (amqpObject is AmqpMap)
                     {
-                        AmqpMap map = (AmqpMap)amqpObject;
+                        var map = (AmqpMap)amqpObject;
                         var dictionary = new Dictionary<string, object>();
                         foreach (KeyValuePair<MapKey, object> pair in map)
                         {
@@ -423,9 +419,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     {
                         netObject = amqpObject;
                     }
-                    break;
-
-                default:
                     break;
             }
 
@@ -490,20 +483,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(new SerializationException(IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
+                        throw FxTrace.Exception.AsError(
+                            new SerializationException(
+                                IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
                     }
-                    else if (netObject is byte[])
+                    else if (netObject is byte[] netObjectBytes)
                     {
-                        amqpObject = new ArraySegment<byte>((byte[])netObject);
+                        amqpObject = new ArraySegment<byte>(netObjectBytes);
                     }
                     else if (netObject is IList)
                     {
                         // Array is also an IList
                         amqpObject = netObject;
                     }
-                    else if (netObject is IDictionary)
+                    else if (netObject is IDictionary netObjectDictionary)
                     {
-                        amqpObject = new AmqpMap((IDictionary)netObject);
+                        amqpObject = new AmqpMap(netObjectDictionary);
                     }
                     break;
 

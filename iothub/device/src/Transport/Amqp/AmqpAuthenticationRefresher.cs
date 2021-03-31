@@ -7,38 +7,38 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher, IDisposable
     {
-        private static readonly string[] AccessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
-        private readonly AmqpIoTCbsLink _amqpIoTCbsLink;
+        private static readonly string[] s_accessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
+        private readonly AmqpIotCbsLink _amqpIotCbsLink;
         private readonly IotHubConnectionString _connectionString;
-        private readonly AmqpIoTCbsTokenProvider _amqpIoTCbsTokenProvider;
+        private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
         private CancellationTokenSource _cancellationTokenSource;
-        private TimeSpan _operationTimeout;
+        private readonly TimeSpan _operationTimeout;
         private Task _refreshLoop;
         private bool _disposed;
 
-        internal AmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpIoTCbsLink amqpCbsLink)
+        internal AmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpIotCbsLink amqpCbsLink)
         {
-            _amqpIoTCbsLink = amqpCbsLink;
+            _amqpIotCbsLink = amqpCbsLink;
             _connectionString = deviceIdentity.IotHubConnectionString;
             _operationTimeout = deviceIdentity.AmqpTransportSettings.OperationTimeout;
             _audience = deviceIdentity.Audience;
-            _amqpIoTCbsTokenProvider = new AmqpIoTCbsTokenProvider(_connectionString);
+            _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_connectionString);
 
             if (Logging.IsEnabled)
             {
-                Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
+                Logging.Associate(this, deviceIdentity, nameof(DeviceIdentity));
             }
 
             if (Logging.IsEnabled)
             {
-                Logging.Associate(this, amqpCbsLink, $"{nameof(_amqpIoTCbsLink)}");
+                Logging.Associate(this, amqpCbsLink, nameof(_amqpIotCbsLink));
             }
         }
 
@@ -46,21 +46,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, timeout, $"{nameof(InitLoopAsync)}");
+                Logging.Enter(this, timeout, nameof(InitLoopAsync));
             }
 
             CancellationTokenSource oldTokenSource = _cancellationTokenSource;
             _cancellationTokenSource = new CancellationTokenSource();
             CancellationToken newToken = _cancellationTokenSource.Token;
             oldTokenSource?.Cancel();
+            oldTokenSource?.Dispose();
 
-            DateTime refreshOn = await _amqpIoTCbsLink
+            DateTime refreshOn = await _amqpIotCbsLink
                 .SendTokenAsync(
-                    _amqpIoTCbsTokenProvider,
+                    _amqpIotCbsTokenProvider,
                     _connectionString.AmqpEndpoint,
                     _audience,
                     _audience,
-                    AccessRightsStringArray,
+                    s_accessRightsStringArray,
                     timeout)
                 .ConfigureAwait(false);
 
@@ -71,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
+                Logging.Exit(this, timeout, nameof(InitLoopAsync));
             }
         }
 
@@ -79,13 +80,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, refreshOn, $"{nameof(StartLoop)}");
+                Logging.Enter(this, refreshOn, nameof(StartLoop));
             }
 
             _refreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
+
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, refreshOn, $"{nameof(StartLoop)}");
+                Logging.Exit(this, refreshOn, nameof(StartLoop));
             }
         }
 
@@ -110,13 +112,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     try
                     {
-                        refreshesOn = await _amqpIoTCbsLink
+                        refreshesOn = await _amqpIotCbsLink
                             .SendTokenAsync(
-                                _amqpIoTCbsTokenProvider,
+                                _amqpIotCbsTokenProvider,
                                 _connectionString.AmqpEndpoint,
                                 _audience,
                                 _audience,
-                                AccessRightsStringArray,
+                                s_accessRightsStringArray,
                                 _operationTimeout)
                             .ConfigureAwait(false);
                     }
@@ -144,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled)
             {
-                Logging.Info(this, $"{nameof(StopLoop)}");
+                Logging.Info(this, nameof(StopLoop));
             }
 
             _cancellationTokenSource?.Cancel();
@@ -165,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (Logging.IsEnabled)
             {
-                Logging.Info(this, disposing, $"{nameof(Dispose)}");
+                Logging.Info(this, disposing, nameof(Dispose));
             }
 
             if (disposing)
