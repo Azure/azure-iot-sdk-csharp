@@ -4,114 +4,133 @@
 
 ```csharp
 /// <summary>
-/// Update a single property.
-/// 
-/// Property under the root component:
-/// "reported": {
-///     "temperature": 21.3
-/// }
-/// 
-/// Property under a specified component:
-/// "reported": {
-///     "thermostat1": {
-///         "__t": "c",
-///         "temperature": 21.3
-///     }
-/// }
-/// </summary>
-/// <param name="propertyName">The name of the twin property to update.</param>
-/// <param name="propertyValue">The value of the twin property to update.</param>
-/// <param name="componentName">The name of the component in which the property is defined. Can be null for property defined under the root interface.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertyAsync(string propertyName, dynamic propertyValue, string componentName = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Update a batch of properties.
-/// 
-/// Properties under the root component:
-/// "reported": {
-///     "temperature": 21.3,
-///     "humudity": 60
-/// }
-/// 
-/// Properties under a specified component:
-/// "reported": {
-///     "thermostat1": {
-///         "__t": "c",
-///         "temperature": 21.3,
-///         "humudity": 60
-///     }
-/// }
-/// </summary>
-/// <param name="properties">The twin properties and values to update.</param>
-/// <param name="componentName">The name of the component in which the properties are defined. Can be null for properties defined under the root interface.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertiesAsync(IDictionary<string, dynamic> properties, string componentName = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Respond to a writable property request received from the service.
-/// 
-/// Property under the root component:
-/// "reported": {
-///     "targetTemperature": {
-///         "value": 21.3,
-///         "ac": 200,
-///         "av": 3,
-///         "ad": "complete"
-///     }
-/// }
-/// 
-/// Property under a specified component:
-/// "reported": {
-///   "thermostat1": {
-///     "__t": "c",
-///     "targetTemperature": {
-///       "value": 23,
-///       "ac": 200,
-///       "av": 3,
-///       "ad": "complete"
-///     }
-///   }
-/// }
-/// </summary>
-/// <param name="propertyName">The name of the twin property to update.</param>
-/// <param name="propertyValue">The value of the twin property to update.</param>
-/// <param name="componentName">The name of the component in which the property is defined. Can be null for property defined under the root interface.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertyAsync(string propertyName, WritableProperty propertyValue, string componentName = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Subscribe to writable property event for all properties under any component.
-///
-/// Payload received for the root component:
-/// "desired" :
-/// {
-///   "targetTemperature" : 21.3,
-///   "targetHumidity" : 80
-/// },
-/// "$version" : 3
-///
-/// Payload received for a specific component:
-/// "desired": {
-///   "thermostat1": {
-///     "__t": "c",
-///     "targetTemperature": 21.3,
-///     "targetHumidity": 80
-///   }
-/// },
-/// "$version" : 3
-/// 
-/// </summary>
-/// <param name="propertyActionAsTwinCollection">The action to be taken when a writeable property event is received.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public void SubscribeToWritablePropertyEvent(Action<TwinCollection> propertyActionAsTwinCollection, CancellationToken cancellationToken = default);
-
-/// <summary>
 /// Retrieve the device properties.
 /// </summary>
 /// <returns>The device properties.</returns>
-public Task<Twin> GetPropertiesAsync(CancellationToken cancellationToken = default);
+public Task<Properties> GetPropertiesAsync(CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Update a single property.
+/// </summary>
+/// <param name="propertyName">Property name.</param>
+/// <param name="propertyValue">Property value.</param>
+/// <param name="componentName">The component name this property belongs to.</param>
+/// <param name="conventionHandler">A convention handler that defines the content encoding and serializer to use for the properties.</param>
+/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+public Task UpdatePropertyAsync(string propertyName, object propertyValue, string componentName = default, IConventionHandler conventionHandler = default, CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Update a collection of properties.
+/// </summary>
+/// <param name="properties">Reported properties to push.</param>
+/// <param name="componentName">The component name these properties belong to.</param>
+/// <param name="conventionHandler">A convention handler that defines the content encoding and serializer to use for the properties.</param>
+/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+public Task UpdatePropertiesAsync(IDictionary<string, object> properties, string componentName = default, IConventionHandler conventionHandler = default, CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Sets the global listener for Writable properties
+/// </summary>
+/// <param name="callback">The global call back to handle all writable property updates.</param>
+/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="cancellationToken">A cancellation token.</param>
+public Task SubscribeToWritablePropertyEvent(Action<Properties, object> callback, object userContext, CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Sets the global listener for Writable properties
+/// </summary>
+/// <param name="callback">The global call back to handle all writable property updates.</param>
+/// <param name="componentName">The component name this writable property belongs to.</param>
+/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="cancellationToken">A cancellation token.</param>
+public Task SubscribeToWritablePropertyEvent(Action<Properties, object> callback, string componentName = default, object userContext = default, CancellationToken cancellationToken = default);
 ```
+
+<details>
+<summary>Properties</summary>
+
+```csharp
+/// <summary>
+/// A container for properties for your device
+/// </summary>
+public class Properties
+{
+    private PropertyCollection _readOnlyProperties;
+    /// <summary>
+    /// Initializes a new instance of <see cref="Properties"/>
+    /// </summary>
+    public Properties()
+    {
+        Writable = new PropertyCollection();
+        _readOnlyProperties = new PropertyCollection();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="Properties"/> with the specified collections
+    /// </summary>
+    /// <param name="writablePropertyCollection">A collection of writable properties returned from IoT Hub</param>
+    /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub</param>
+    public Properties(PropertyCollection writablePropertyCollection, PropertyCollection readOnlyPropertyCollection)
+    {
+        Writable = writablePropertyCollection;
+        _readOnlyProperties = readOnlyPropertyCollection;
+    }
+
+    /// <summary>
+    /// Gets and sets the writable properties.
+    /// </summary>
+    [JsonProperty(PropertyName = "desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public PropertyCollection Writable { get; private set; }
+
+    /// <summary>
+    /// Get the property from the propeties collection
+    /// </summary>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
+    public dynamic this[string propertyName]
+    {
+        get
+        {
+            return _readOnlyProperties[propertyName];
+        }
+    }
+
+    /// <summary>
+    /// Converts a <see cref="TwinProperties"/> collection to a properties collection
+    /// </summary>
+    /// <param name="twinProperties">The TwinProperties object to convert</param>
+    /// <returns></returns>
+    public static Properties FromTwinProperties(TwinProperties twinProperties)
+    {
+        if (twinProperties == null)
+        {
+            throw new ArgumentNullException(nameof(twinProperties));
+        }
+
+        return new Properties()
+        {
+            _readOnlyProperties = (PropertyCollection)twinProperties.Reported,
+            Writable = (PropertyCollection)twinProperties.Desired
+        };
+    }
+}
+```
+</details>
+
+<details>
+<summary>PropertyCollection</summary>
+
+```csharp
+/// <summary>
+/// A collection of properties for the device
+/// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "<Pending>")]
+public class PropertyCollection : TwinCollection
+{
+}
+```
+</details>
+
 
 <details>
 <summary>WritableProperty</summary>
@@ -168,46 +187,68 @@ public string AckDescription { get; set; }
 
 ```csharp
 /// <summary>
-/// Send a single instance of telemetry.
+/// Sends a single instance of telemetry.
 /// </summary>
-/// <param name="telemetryName">The name of the telemetry, as defined in the DTDL interface.</param>
-/// <param name="telemetryValue">The telemetry payload, in the format defined in the DTDL interface.</param>
-/// <param name="componentName">The name of the component in which the telemetry is defined. Can be null for telemetry defined under the root interface.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SendTelemetryAsync(string telemetryName, dynamic telemetryValue, string componentName = default, CancellationToken cancellationToken = default);
+/// <param name="telemetryName">The name of the telemetry to send.</param>
+/// <param name="telemetryValue">The value of the telemetry to send.</param>
+/// <param name="conventionHandler">A convention handler that defines the content encoding and serializer to use for the telemetry message.</param>
+/// <param name="componentName">The component name this telemetry belongs to.</param>
+/// <param name="cancellationToken">A cancellation token.</param>
+/// <remarks>
+/// This will create a single telemetry message and will not combine multiple calls into one message. Use <seealso cref="SendTelemetryAsync(IDictionary{string, dynamic}, string, IConventionHandler, CancellationToken)"/>. Refer to the documentation for <see cref="IConventionHandler"/> if you want to use a custom serializer.
+/// </remarks>
+public Task SendTelemetryAsync(string telemetryName, object telemetryValue, string componentName = default, IConventionHandler conventionHandler = default, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Send a batched instance of telemetry.
+/// Sends a collection of telemetry.
 /// </summary>
-/// <param name="telemetryPairs">The name and value telemetry pairs, as defined in the DTDL interface.</param>
-/// <param name="componentName">The name of the component in which the telemetry is defined. Can be null for telemetry defined under the root interface.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SendTelemetryAsync(IDictionary<string, dynamic> telemetryPairs, string componentName = default, CancellationToken cancellationToken = default);
+/// <param name="telemetryDictionary">A dictionary of dynamic objects </param>
+/// <param name="componentName">The component name this telemetry belongs to.</param>
+/// <param name="conventionHandler">A convention handler that defines the content encoding and serializer to use for the telemetry message.</param>
+/// <param name="cancellationToken">A cancellation token.</param>
+/// /// <remarks>
+/// This will either use the <see cref="DefaultConvention"/> to define the encoding and use the default Json serailzier. Refer to the documentation for <see cref="IConventionHandler"/> if you want to use a custom serializer.
+/// </remarks>
+public Task SendTelemetryAsync(IDictionary<string, object> telemetryDictionary, string componentName = default, IConventionHandler conventionHandler = default, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Send a single instance of telemetry, formatted as per DTDL specifications:
-/// - the payload should be in the format: { "<telemetry_name>" : "<telemetry_value>" }
-/// - the property Message.ContentEncoding should be set to "utf-8".
-/// - the property Message.ContentType should be set to "application/json".
-/// - if the telemetry is defined under a component, the property Message.ComponentName should be set to "<component_name>".
+/// Send telemetry using the specified message.
 /// </summary>
-/// <param name="telemetryMessage">The telemetry message to be sent.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SendTelemetryAsync(Message telemetryMessage, CancellationToken cancellationToken = default);
+/// <remarks>
+/// Use this method when you need to define custom properties for the message.
+/// </remarks>
+/// <param name="telemetryMessage">The custom implemented telemetry message</param>
+/// <param name="componentName">The component name this telemetry belongs to.</param>
+/// <param name="cancellationToken">A cancellation token.</param>
+public Task SendTelemetryAsync(Message telemetryMessage, string componentName = default, CancellationToken cancellationToken = default);
 ```
 
 ### Commands
 
 ```csharp
 /// <summary>
-/// Subscribe to command event.
+/// Set command callback handler.
 /// </summary>
-/// <param name="commandName">The name of the command, as defined in the DTDL interface.</param>
-/// <param name="commandCallback">The action to be taken when a command request is received.</param>
-/// <param name="userContext">Context object that is passed to the event callback.</param>
-/// <param name="componentName">The name of the component in which the command is defined. Can be null for command defined under the root interface.</param>
+/// <param name="commandName">The name of the command this handler will be used for.</param>
+/// <param name="commandCallback">The callback for this command.</param>
+/// <param name="componentName">The component name this command belongs to.</param>
+/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="cancellationToken"></param>
+/// <remarks>
+/// The .NET SDK has a built in dispatcher that handles per command name routing. The SDK will first attempt to find the command by name. If it is found it will execute the callback for that specific command. If there is no entry found in the dispatcher the SDK will fall back to the global command handler <see cref="SetCommandCallbackHandlerAsync(Func{CommandRequest, object, Task{CommandResponse}}, object, CancellationToken)"/>.
+/// </remarks>
+public Task SetCommandCallbackHandlerAsync(string commandName, Func<CommandRequest, object, Task<CommandResponse>> commandCallback, string componentName = default, object userContext = default, CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Set the global command callback handler. This handler will be called when no named handler was found for the command.
+/// </summary>
+/// <param name="commandCallback">A method implementation that will handle the incoming command.</param>
+/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToCommandEvent(string commandName, Func<CommandRequest, object, Task<CommandResponse>> commandCallback, object userContext = default, string componentName = default, CancellationToken cancellationToken = default);
+/// <remarks>
+/// The global command handler will be the fallback handler in the event there is nothing specified in the dispatcher. See the remarks in <see cref="SetCommandCallbackHandlerAsync(Func{CommandRequest, object, Task{CommandResponse}}, object, CancellationToken)"/> for more information.
+/// </remarks>
+public Task SetCommandCallbackHandlerAsync(Func<CommandRequest, object, Task<CommandResponse>> commandCallback, object userContext = default, CancellationToken cancellationToken = default);
 ```
 
 <details>
