@@ -75,6 +75,7 @@ namespace Microsoft.Azure.Devices.Client
                 return _token;
             }
 
+            Debug.Assert(_lock != null);
             await _lock.WaitAsync().ConfigureAwait(false);
 
             try
