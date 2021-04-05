@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices
             _connectionLeaseTimeoutHandler = new ConnectionLeaseTimeoutHandler(HttpTransportSettings.DefaultConnectionLeaseTimeoutMilliseconds);
 
             DelegatingHandler[] handlersWithConnectionLeaseTimeoutHandler = new DelegatingHandler[handlers.Length + 1];
-            handlersWithConnectionLeaseTimeoutHandler[handlers.Length + 1] = _connectionLeaseTimeoutHandler;
+            handlersWithConnectionLeaseTimeoutHandler[handlers.Length] = _connectionLeaseTimeoutHandler;
 
             _client = new IotHubGatewayServiceAPIs(uri, credentials, handlersWithConnectionLeaseTimeoutHandler);
             _protocolLayer = new DigitalTwin(_client);
