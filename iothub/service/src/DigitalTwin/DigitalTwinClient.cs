@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Extensions;
 using Microsoft.Azure.Devices.Generated;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 
@@ -20,6 +21,7 @@ namespace Microsoft.Azure.Devices
     {
         private readonly IotHubGatewayServiceAPIs _client;
         private readonly DigitalTwin _protocolLayer;
+        private readonly DelegatingHandler _connectionLeaseTimeoutHandler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinClient"/> class.</summary>
@@ -36,7 +38,13 @@ namespace Microsoft.Azure.Devices
 
         private DigitalTwinClient(Uri uri, IotServiceClientCredentials credentials, params DelegatingHandler[] handlers)
         {
-            _client = new IotHubGatewayServiceAPIs(uri, credentials, handlers);
+            // ConnectionLeaseTimeoutHandler is IDisposable, so save it as a field so it can be disposed later.
+            _connectionLeaseTimeoutHandler = new ConnectionLeaseTimeoutHandler(HttpTransportSettings.DefaultConnectionLeaseTimeoutMilliseconds);
+
+            DelegatingHandler[] handlersWithConnectionLeaseTimeoutHandler = new DelegatingHandler[handlers.Length + 1];
+            handlersWithConnectionLeaseTimeoutHandler[handlers.Length + 1] = _connectionLeaseTimeoutHandler;
+
+            _client = new IotHubGatewayServiceAPIs(uri, credentials, handlersWithConnectionLeaseTimeoutHandler);
             _protocolLayer = new DigitalTwin(_client);
         }
 
@@ -162,6 +170,7 @@ namespace Microsoft.Azure.Devices
         protected virtual void Dispose(bool disposing)
         {
             _client?.Dispose();
+            _connectionLeaseTimeoutHandler?.Dispose();
         }
     }
 }

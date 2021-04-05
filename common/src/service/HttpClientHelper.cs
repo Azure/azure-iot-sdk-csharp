@@ -43,13 +43,15 @@ namespace Microsoft.Azure.Devices
 
         private readonly HttpClient _httpClientWithNoTimeout;
         private readonly HttpClientHandler _httpClientHandler;
+        private readonly DelegatingHandler _connectionLeaseTimeoutHandler;
 
         public HttpClientHelper(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            IWebProxy customHttpProxy)
+            IWebProxy customHttpProxy,
+            int connectionLeaseTimeout)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
@@ -71,10 +73,12 @@ namespace Microsoft.Azure.Devices
                 _httpClientHandler.Proxy = customHttpProxy;
             }
 
+            _connectionLeaseTimeoutHandler = new ConnectionLeaseTimeoutHandler(connectionLeaseTimeout);
+            _connectionLeaseTimeoutHandler.InnerHandler = _httpClientHandler;
+
             // We need two types of HttpClients, one with our default operation timeout, and one without. The one without will rely on
             // a cancellation token.
-
-            _httpClientWithDefaultTimeout = new HttpClient(_httpClientHandler, false)
+            _httpClientWithDefaultTimeout = new HttpClient(_connectionLeaseTimeoutHandler, false)
             {
                 BaseAddress = _baseAddress,
                 Timeout = _defaultOperationTimeout,
@@ -82,7 +86,7 @@ namespace Microsoft.Azure.Devices
             _httpClientWithDefaultTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientWithDefaultTimeout.DefaultRequestHeaders.ExpectContinue = false;
 
-            _httpClientWithNoTimeout = new HttpClient(_httpClientHandler, false)
+            _httpClientWithNoTimeout = new HttpClient(_connectionLeaseTimeoutHandler, false)
             {
                 BaseAddress = _baseAddress,
                 Timeout = Timeout.InfiniteTimeSpan,
@@ -788,6 +792,8 @@ namespace Microsoft.Azure.Devices
         {
             _httpClientWithDefaultTimeout.Dispose();
             _httpClientWithNoTimeout.Dispose();
+
+            _connectionLeaseTimeoutHandler.Dispose();
 
             // Since HttpClientHandler was passed to the 2 HttpClients above, but told them not to dispose it, we want to dispose this after
             _httpClientHandler.Dispose();
