@@ -3,7 +3,7 @@
 These samples demonstrate how a [plug and play convention][pnp-convention] enabled device interacts with IoT hub, to:
 
 - Send telemetry.
-- Update read-only and read-write porperties.
+- Update read-only and read-write properties.
 - Respond to command invocation.
 
 The samples demonstrate two scenarios:
@@ -28,4 +28,4 @@ The file is committed as `launch.template.json`, you must rename it to `launch.j
 [d-thermostat]: /iot-hub/Samples/device/PnpDeviceSamples/Thermostat
 [d-temperature-controller]: /iot-hub/Samples/device/PnpDeviceSamples/TemperatureController
 [thermostat-model]: /iot-hub/Samples/device/PnpDeviceSamples/Thermostat/Models/Thermostat.json
-[d-device-info]: https://devicemodels.azureiotsolutions.com/models/public/dtmi:azure:DeviceManagement:DeviceInformation;1?codeView=true
+[d-device-info]: https://devicemodels.azure.com/dtmi/azure/devicemanagement/deviceinformation-1.json
