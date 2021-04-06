@@ -30,6 +30,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const string SerialNumber = "SR-123456";
 
         private static readonly Random s_random = new Random();
+        private static readonly Stopwatch s_stopwatch = Stopwatch.StartNew();
+        private static DateTimeOffset s_applicationStartTime;
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
@@ -55,7 +57,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public TemperatureControllerSample(DeviceClient deviceClient, ILogger logger)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException($"{nameof(deviceClient)} cannot be null.");
-            _logger = logger ?? LoggerFactory.Create(builer => builer.AddConsole()).CreateLogger<TemperatureControllerSample>();
+
+            if (logger == null)
+            {
+                using ILoggerFactory loggerFactory = LoggerFactory.Create(builer => builer.AddConsole());
+                _logger = loggerFactory.CreateLogger<TemperatureControllerSample>();
+            }
+            else
+            {
+                _logger = logger;
+            }
         }
 
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
@@ -68,6 +79,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // -> Send initial device info - "workingSet" over telemetry, "serialNumber" over reported property update - root interface.
             // -> Periodically send "temperature" over telemetry - on "Thermostat" components.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set - on "Thermostat" components.
+
+            s_applicationStartTime = DateTimeOffset.Now;
 
             _logger.LogDebug("Set handler for 'reboot' command.");
             await _deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, _deviceClient, cancellationToken);
@@ -101,10 +114,36 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await SendTemperatureAsync(Thermostat1, cancellationToken);
                 await SendTemperatureAsync(Thermostat2, cancellationToken);
                 await SendDeviceMemoryAsync(cancellationToken);
+                await SendDeviceHealthTelemetryAsync(Thermostat1, cancellationToken);
 
                 temperatureReset = _temperature[Thermostat1] == 0 && _temperature[Thermostat2] == 0;
-                await Task.Delay(5 * 1000);
+                await Task.Delay(5 * 1000, cancellationToken);
             }
+        }
+
+        // Send the device health status over telemetry.
+        private async Task SendDeviceHealthTelemetryAsync(string componentName, CancellationToken cancellationToken)
+        {
+            string deviceHealthName = "deviceHealth";
+            var deviceHealth = new DeviceHealth
+            {
+                Status = "Running",
+                RunningTimeInSeconds = s_stopwatch.Elapsed.TotalSeconds,
+                IsStopRequested = false,
+                StartTime = s_applicationStartTime,
+            };
+
+            IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(deviceHealthName, deviceHealth);
+
+            TelemetryConvention telemetryConvention = new CustomTelemetryConvention();
+            using var message = new Message(telemetryPayload, telemetryConvention)
+            {
+                Properties = { ["property1"] = "myValue" },
+                ComponentName = componentName,
+            };
+
+            await _deviceClient.SendTelemetryAsync(message, cancellationToken);
+            _logger.LogDebug($"Telemetry: Sent - {telemetryConvention.SerializeToString(telemetryPayload)}.");
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
@@ -286,15 +325,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
 
-            var telemetry = new Dictionary<string, object>
-            {
-                { workingSetName, workingSet },
-            };
+            IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(workingSetName, workingSet);
 
-            using Message msg = PnpConvention.CreateMessage(telemetry);
+            TelemetryConvention telemetryConvention = TelemetryConvention.Instance;
+            using var message = new Message(telemetryPayload, telemetryConvention);
 
-            await _deviceClient.SendEventAsync(msg, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
+            await _deviceClient.SendTelemetryAsync(message, cancellationToken);
+            _logger.LogDebug($"Telemetry: Sent - {telemetryConvention.SerializeToString(telemetryPayload)} in KB.");
         }
 
         // Send device serial number over property update.
@@ -321,12 +358,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task SendTemperatureTelemetryAsync(string componentName, CancellationToken cancellationToken)
         {
-            const string telemetryName = "temperature";
+            const string temperatureName = "temperature";
             double currentTemperature = _temperature[componentName];
-            using Message msg = PnpConvention.CreateMessage(telemetryName, currentTemperature, componentName);
 
-            await _deviceClient.SendEventAsync(msg, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature} }} in °C.");
+            IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(temperatureName, currentTemperature);
+
+            TelemetryConvention telemetryConvention = TelemetryConvention.Instance;
+            using var message = new Message(telemetryPayload, telemetryConvention);
+
+            await _deviceClient.SendTelemetryAsync(message, cancellationToken);
+            _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{temperatureName}\": {currentTemperature} }} in °C.");
 
             if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))
             {

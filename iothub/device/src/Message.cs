@@ -64,6 +64,26 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        ///
+        /// </summary>
+        /// <param name="messagePayload"></param>
+        /// <param name="telemetryConvention"></param>
+        public Message(object messagePayload, TelemetryConvention telemetryConvention)
+            : this(new MemoryStream(telemetryConvention?.GetObjectBytes(messagePayload)))
+        {
+            if (telemetryConvention == null)
+            {
+                throw new ArgumentNullException(nameof(telemetryConvention));
+            }
+
+            ContentEncoding = telemetryConvention.ContentEncoding.WebName;
+            ContentType = telemetryConvention.ContentType;
+
+            // Reset the owning of the stream
+            _streamDisposalResponsibility = StreamDisposalResponsibility.Sdk;
+        }
+
+        /// <summary>
         /// This constructor is only used on the Gateway HTTP path so that we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
@@ -254,7 +274,6 @@ namespace Microsoft.Azure.Devices.Client
         internal IDictionary<string, object> SystemProperties { get; private set; }
 
         bool IReadOnlyIndicator.IsReadOnly => Interlocked.Read(ref _sizeInBytesCalled) == 1;
-
 
         /// <summary>
         /// The body stream of the current event data instance

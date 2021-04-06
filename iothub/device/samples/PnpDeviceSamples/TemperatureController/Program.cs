@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static ILogger InitializeConsoleDebugLogger()
         {
-            ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder
                 .AddFilter(level => level >= LogLevel.Debug)
@@ -104,8 +104,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Provision a device via DPS, by sending the PnP model Id as DPS payload.
         private static async Task<DeviceRegistrationResult> ProvisionDeviceAsync(Parameters parameters, CancellationToken cancellationToken)
         {
-            SecurityProvider symmetricKeyProvider = new SecurityProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
-            ProvisioningTransportHandler mqttTransportHandler = new ProvisioningTransportHandlerMqtt();
+            using SecurityProvider symmetricKeyProvider = new SecurityProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
+            using ProvisioningTransportHandler mqttTransportHandler = new ProvisioningTransportHandlerMqtt();
             ProvisioningDeviceClient pdc = ProvisioningDeviceClient.Create(parameters.DpsEndpoint, parameters.DpsIdScope, symmetricKeyProvider, mqttTransportHandler);
 
             var pnpPayload = new ProvisioningRegistrationAdditionalData

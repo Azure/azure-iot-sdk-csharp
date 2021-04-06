@@ -699,5 +699,22 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
+
+        #region Convention driven operations
+
+        #region Telemetry
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="telemetryMessage"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task SendTelemetryAsync(Message telemetryMessage, CancellationToken cancellationToken = default)
+            => InnerHandler.SendEventAsync(telemetryMessage, cancellationToken);
+
+        #endregion Telemetry
+
+        #endregion Convention driven operations
     }
 }

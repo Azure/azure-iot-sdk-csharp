@@ -14,11 +14,6 @@ namespace PnpHelpers
     public class PnpConvention
     {
         /// <summary>
-        /// The content type for a plug and play compatible telemetry message.
-        /// </summary>
-        public const string ContentApplicationJson = "application/json";
-
-        /// <summary>
         /// The key for a component identifier within a property update patch. Corresponding value is <see cref="PropertyComponentIdentifierValue"/>.
         /// </summary>
         public const string PropertyComponentIdentifierKey = "__t";
@@ -27,60 +22,6 @@ namespace PnpHelpers
         /// The value for a component identifier within a property update patch. Corresponding key is <see cref="PropertyComponentIdentifierKey"/>.
         /// </summary>
         public const string PropertyComponentIdentifierValue = "c";
-
-        /// <summary>
-        /// Create a plug and play compatible telemetry message.
-        /// </summary>
-        /// <param name="telemetryName">The name of the telemetry, as defined in the DTDL interface. Must be 64 characters or less. For more details see
-        /// <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#telemetry"/>.</param>
-        /// <param name="telemetryValue">The unserialized telemetry payload, in the format defined in the DTDL interface.</param>
-        /// <param name="componentName">The name of the component in which the telemetry is defined. Can be null for telemetry defined under the root interface.</param>
-        /// <param name="encoding">The character encoding to be used when encoding the message body to bytes. This defaults to utf-8.</param>
-        /// <returns>A plug and play compatible telemetry message, which can be sent to IoT Hub. The caller must dispose this object when finished.</returns>
-        public static Message CreateMessage(string telemetryName, object telemetryValue, string componentName = default, Encoding encoding = default)
-        {
-            if (string.IsNullOrWhiteSpace(telemetryName))
-            {
-                throw new ArgumentNullException(nameof(telemetryName));
-            }
-            if (telemetryValue == null)
-            {
-                throw new ArgumentNullException(nameof(telemetryValue));
-            }
-
-            return CreateMessage(new Dictionary<string, object> { { telemetryName, telemetryValue } }, componentName, encoding);
-        }
-
-        /// <summary>
-        /// Create a plug and play compatible telemetry message.
-        /// </summary>
-        /// <param name="componentName">The name of the component in which the telemetry is defined. Can be null for telemetry defined under the root interface.</param>
-        /// <param name="telemetryPairs">The unserialized name and value telemetry pairs, as defined in the DTDL interface. Names must be 64 characters or less. For more details see
-        /// <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#telemetry"/>.</param>
-        /// <param name="encoding">The character encoding to be used when encoding the message body to bytes. This defaults to utf-8.</param>
-        /// <returns>A plug and play compatible telemetry message, which can be sent to IoT Hub. The caller must dispose this object when finished.</returns>
-        public static Message CreateMessage(IDictionary<string, object> telemetryPairs, string componentName = default, Encoding encoding = default)
-        {
-            if (telemetryPairs == null)
-            {
-                throw new ArgumentNullException(nameof(telemetryPairs));
-            }
-
-            Encoding messageEncoding = encoding ?? Encoding.UTF8;
-            string payload = JsonConvert.SerializeObject(telemetryPairs);
-            var message = new Message(messageEncoding.GetBytes(payload))
-            {
-                ContentEncoding = messageEncoding.WebName,
-                ContentType = ContentApplicationJson,
-            };
-
-            if (!string.IsNullOrWhiteSpace(componentName))
-            {
-                message.ComponentName = componentName;
-            }
-
-            return message;
-        }
 
         /// <summary>
         /// Creates a batch property update payload for the specified property key/value pairs.
