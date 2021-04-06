@@ -29,6 +29,13 @@ namespace Microsoft.Azure.Devices
 
         private IHttpClientHelper _httpClientHelper;
 
+        /// <summary>
+        /// Creates an instance of <see cref="JobClient"/>.
+        /// </summary>
+        public JobClient()
+        {
+        }
+
         internal JobClient(IHttpClientHelper httpClientHelper)
         {
             _httpClientHelper = httpClientHelper;
