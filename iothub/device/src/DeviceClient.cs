@@ -702,13 +702,74 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
+        #region Properties
+
+        /// <summary>
+        /// Retrieve the device properties.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <returns>The device properties.</returns>
+        public Task<Properties> GetPropertiesAsync(CancellationToken cancellationToken)
+            => InternalClient.GetPropertiesAsync(cancellationToken);
+
+        /// <summary>
+        /// Update a single property.
+        /// </summary>
+        /// <param name="propertyName">Property name.</param>
+        /// <param name="propertyValue">Property value.</param>
+        /// <param name="propertyConvention">A convention handler that defines serializer to use for the properties.</param>
+        /// <param name="componentName">The component name this property belongs to.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        public Task UpdatePropertyAsync(
+            string propertyName,
+            object propertyValue,
+            PropertyConvention propertyConvention,
+            string componentName = default,
+            CancellationToken cancellationToken = default)
+            => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, propertyValue } }, propertyConvention, componentName, cancellationToken);
+
+        /// <summary>
+        /// Update a collection of properties.
+        /// </summary>
+        /// <param name="properties">Reported properties to push.</param>
+        /// <param name="propertyConvention">A convention handler that defines serializer to use for the properties.</param>
+        /// <param name="componentName">The component name this property belongs to.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        public Task UpdatePropertiesAsync(
+            IDictionary<string, object> properties,
+            PropertyConvention propertyConvention,
+            string componentName = default,
+            CancellationToken cancellationToken = default)
+            => InternalClient.UpdatePropertiesAsync(properties, propertyConvention, componentName, cancellationToken);
+
+        /// <summary>
+        /// Update a writable property.
+        /// </summary>
+        /// <param name="propertyName">Property name.</param>
+        /// <param name="writablePropertyResponse">The writable properyt response to push.</param>
+        /// <param name="componentName">The component name this property belongs to.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        public Task UpdateWritablePropertyAsync(
+            string propertyName,
+            WritablePropertyResponse writablePropertyResponse,
+            string componentName = default,
+            CancellationToken cancellationToken = default)
+            => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, writablePropertyResponse } }, PropertyConvention.Instance, componentName, cancellationToken);
+
+        #endregion Properties
+
         #region Telemetry
 
         /// <summary>
-        ///
+        /// Send telemetry using the specified message.
         /// </summary>
-        /// <param name="telemetryMessage"></param>
-        /// <param name="cancellationToken"></param>
+        /// <remarks>
+        /// Use the <see cref="Message.Message(object, TelemetryConvention)"/> constructor to pass in the formatted telemetry payload and the <see cref="TelemetryConvention"/>.
+        /// If your telemetry payload does not have any specific serialization requirements you can pass in <see cref="TelemetryConvention.Instance"/>.
+        /// If the telemetry is originating from a component, set the component name to <see cref="Message.ComponentName"/>.
+        /// </remarks>
+        /// <param name="telemetryMessage">The telemetry message.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns></returns>
         public Task SendTelemetryAsync(Message telemetryMessage, CancellationToken cancellationToken = default)
             => InnerHandler.SendEventAsync(telemetryMessage, cancellationToken);

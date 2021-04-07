@@ -66,5 +66,8 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
+
+        // Convention driven operations.
+        Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
     }
 }

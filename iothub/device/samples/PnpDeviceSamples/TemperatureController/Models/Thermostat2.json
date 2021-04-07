@@ -11,8 +11,8 @@
         "Temperature"
       ],
       "name": "temperature",
-      "displayName" : "Temperature",
-      "description" : "Temperature in degrees Celsius.",
+      "displayName": "Temperature",
+      "description": "Temperature in degrees Celsius.",
       "schema": "double",
       "unit": "degreeCelsius"
     },
@@ -25,8 +25,58 @@
       "schema": "double",
       "displayName": "Target Temperature",
       "description": "Allows to remotely specify the desired target temperature.",
-      "unit" : "degreeCelsius",
+      "unit": "degreeCelsius",
       "writable": true
+    },
+    {
+      "@type": [
+        "Property",
+        "InitialValue"
+      ],
+      "name": "initialValue",
+      "displayName": "Initial Value",
+      "description": "Send the initial value for temperature and humidity.",
+      "writable": false,
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "temp",
+            "displayName": "Initial reported temperature",
+            "schema": "double"
+          },
+          {
+            "name": "humidity",
+            "displayName": "Initial reported humidity value",
+            "schema": "double"
+          }
+        ]
+      }
+    },
+    {
+      "@type": [
+        "Property",
+        "TemperatureRange"
+      ],
+      "name": "temperatureRange",
+      "displayName": "Temperature Range",
+      "description": "Allows to remotely update the thermostat's min and max temperature.",
+      "writable": true,
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "maxTemp",
+            "displayName": "Max temperature",
+            "schema": "double"
+          },
+          {
+            "name": "minTemp",
+            "displayName": "Min temperature",
+            "schema": "double"
+          }
+        ]
+      }
     },
     {
       "@type": [
@@ -35,7 +85,7 @@
       ],
       "name": "maxTempSinceLastReboot",
       "schema": "double",
-      "unit" : "degreeCelsius",
+      "unit": "degreeCelsius",
       "displayName": "Max temperature since last reboot.",
       "description": "Returns the max temperature since last device reboot."
     },
@@ -51,7 +101,7 @@
         "schema": "dateTime"
       },
       "response": {
-        "name" : "tempReport",
+        "name": "tempReport",
         "displayName": "Temperature Report",
         "schema": {
           "@type": "Object",
@@ -67,17 +117,17 @@
               "schema": "double"
             },
             {
-              "name" : "avgTemp",
+              "name": "avgTemp",
               "displayName": "Average Temperature",
               "schema": "double"
             },
             {
-              "name" : "startTime",
+              "name": "startTime",
               "displayName": "Start Time",
               "schema": "dateTime"
             },
             {
-              "name" : "endTime",
+              "name": "endTime",
               "displayName": "End Time",
               "schema": "dateTime"
             }

@@ -33,6 +33,18 @@ namespace Microsoft.Azure.Devices.Client
         public string ContentType { get; set; } = ApplicationJson;
 
         /// <summary>
+        /// Format a plug and play compatible telemetry message payload.
+        /// </summary>
+        /// <param name="telemetryName">The name of the telemetry, as defined in the DTDL interface. Must be 64 characters or less. For more details see
+        /// <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#telemetry"/>.</param>
+        /// <param name="telemetryValue">The unserialized telemetry payload, in the format defined in the DTDL interface.</param>
+        /// <returns>A plug and play compatible telemetry message payload, which can be sent to IoT Hub.</returns>
+        public static IDictionary<string, object> FormatTelemetryPayload(string telemetryName, object telemetryValue)
+        {
+            return new Dictionary<string, object> { { telemetryName, telemetryValue } };
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="objectToSerialize"></param>
@@ -60,18 +72,6 @@ namespace Microsoft.Azure.Devices.Client
         public virtual byte[] GetObjectBytes(object objectToSendWithConvention)
         {
             return EncodeStringToByteArray(SerializeToString(objectToSendWithConvention));
-        }
-
-        /// <summary>
-        /// Format a plug and play compatible telemetry message payload.
-        /// </summary>
-        /// <param name="telemetryName">The name of the telemetry, as defined in the DTDL interface. Must be 64 characters or less. For more details see
-        /// <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#telemetry"/>.</param>
-        /// <param name="telemetryValue">The unserialized telemetry payload, in the format defined in the DTDL interface.</param>
-        /// <returns>A plug and play compatible telemetry message payload, which can be sent to IoT Hub.</returns>
-        public static IDictionary<string, object> FormatTelemetryPayload(string telemetryName, object telemetryValue)
-        {
-            return new Dictionary<string, object> { { telemetryName, telemetryValue } };
         }
     }
 }

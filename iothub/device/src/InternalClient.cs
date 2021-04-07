@@ -989,7 +989,7 @@ namespace Microsoft.Azure.Devices.Client
                     methodResponseInternal?.Dispose();
                 }
                 finally
-                { 
+                {
                     // Need to release this semaphore even if the above dispose call fails
                     _methodsDictionarySemaphore.Release();
                 }
@@ -1405,7 +1405,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the 
+            // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the
             // item1 and the read of the item2
             await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
             ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
@@ -1884,6 +1884,77 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         #endregion Module Specific API
+
+        #region Convention driven operations
+
+        internal async Task<Properties> GetPropertiesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                Twin hubTwin = await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
+                return Properties.FromTwinProperties(hubTwin.Properties);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <param name="propertyConvention"></param>
+        /// <param name="componentName"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        internal Task UpdatePropertiesAsync(
+            IDictionary<string, object> properties,
+            PropertyConvention propertyConvention,
+            string componentName,
+            CancellationToken cancellationToken)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            if (propertyConvention == null)
+            {
+                throw new ArgumentNullException(nameof(propertyConvention));
+            }
+
+            string serializedPropertyPatch;
+            if (!string.IsNullOrWhiteSpace(componentName))
+            {
+                properties.Add(PropertyConvention.ComponentIdentifierKey, PropertyConvention.ComponentIdentifierValue);
+                var componentDictionary = new Dictionary<string, object>
+                {
+                    { componentName, properties }
+                };
+
+                serializedPropertyPatch = propertyConvention.SerializeToString(componentDictionary);
+            }
+            else
+            {
+                serializedPropertyPatch = propertyConvention.SerializeToString(properties);
+            }
+
+            var propertyPatch = new PropertyCollection(serializedPropertyPatch);
+
+            try
+            {
+                return InnerHandler.SendPropertyPatchAsync(propertyPatch, cancellationToken);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+        }
+
+        #endregion Convention driven operations
 
         public void Dispose()
         {

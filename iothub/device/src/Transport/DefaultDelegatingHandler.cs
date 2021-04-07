@@ -202,6 +202,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
+        public virtual Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.SendPropertyPatchAsync(reportedProperties, cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
         public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;
 
         protected void ThrowIfDisposed()

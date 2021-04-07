@@ -972,6 +972,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
         }
 
+        public override async Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            string body = reportedProperties.GetPropertyJson();
+            using var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
+
+            using var request = new Message(bodyStream);
+
+            string rid = Guid.NewGuid().ToString();
+            request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);
+
+            await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+        }
+
         private async Task OpenInternalAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
