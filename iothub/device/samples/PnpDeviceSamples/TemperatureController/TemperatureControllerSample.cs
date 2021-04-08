@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using PnpHelpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -29,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const string Thermostat2 = "thermostat2";
         private const string SerialNumber = "SR-123456";
 
-        private static readonly Random s_random = new Random();
+        private static readonly Random s_random = new();
         private static readonly Stopwatch s_stopwatch = Stopwatch.StartNew();
         private static DateTimeOffset s_applicationStartTime;
 
@@ -41,22 +40,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // information and perform computation.
         // See https://docs.microsoft.com/en-us/azure/event-grid/compare-messaging-services for more details.
         private readonly Dictionary<string, Dictionary<DateTimeOffset, double>> _temperatureReadingsDateTimeOffset =
-            new Dictionary<string, Dictionary<DateTimeOffset, double>>();
+            new();
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
-        // The key for this dictionary is the componentName.
-        private readonly IDictionary<string, DesiredPropertyUpdateCallback> _desiredPropertyUpdateCallbacks =
-            new Dictionary<string, DesiredPropertyUpdateCallback>();
+        // The key for this dictionary is the componentName/ root-level property name.
+        private readonly IDictionary<string, Func<PropertyCollection, object, Task>> _desiredPropertyUpdateCallbacks =
+            new Dictionary<string, Func<PropertyCollection, object, Task>>();
 
         // Dictionary to hold the current temperature for each "Thermostat" component.
-        private readonly Dictionary<string, double> _temperature = new Dictionary<string, double>();
+        private readonly Dictionary<string, double> _temperature = new();
 
         // Dictionary to hold the max temperature since last reboot, for each "Thermostat" component.
-        private readonly Dictionary<string, double> _maxTemp = new Dictionary<string, double>();
+        private readonly Dictionary<string, double> _maxTemp = new();
 
         public TemperatureControllerSample(DeviceClient deviceClient, ILogger logger)
         {
-            _deviceClient = deviceClient ?? throw new ArgumentNullException($"{nameof(deviceClient)} cannot be null.");
+            _deviceClient = deviceClient
+                            ?? throw new ArgumentNullException(nameof(deviceClient), $"{nameof(deviceClient)} cannot be null.");
 
             if (logger == null)
             {
@@ -86,17 +86,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // see if we have a writable property request for "serialNumber"
             string writablePropertyName = "serialNumber";
-            foreach (KeyValuePair<string, object> property in properties.Writable)
+            if (properties.Writable.Contains(writablePropertyName))
             {
-                if (property.Key == writablePropertyName)
-                {
-                    _logger.LogDebug($"Found writable property request \"{writablePropertyName}\": {property.Value}");
-                }
+                _logger.LogDebug($"Found writable property request \"{writablePropertyName}\": {properties.Writable[writablePropertyName]}");
             }
 
             // see if we have a device reported value for "serialNumber" and Thermostat2."initialValue".
-            var serialNumberReported = properties["serialNumber"];
-            var initialStateThermostat2 = properties[Thermostat2]["initialValue"];
+            if (properties.Contains("serialNumber"))
+            {
+                var serialNumberReported = properties["serialNumber"];
+            }
+
+            if (properties.Contains(Thermostat2) && properties[Thermostat2].ContainsKey("initialValue"))
+            {
+                var initialStateThermostat2 = properties[Thermostat2]["initialValue"];
+            }
 
             s_applicationStartTime = DateTimeOffset.Now;
 
@@ -108,10 +112,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetMethodHandlerAsync("thermostat1*getMaxMinReport", HandleMaxMinReportCommand, Thermostat1, cancellationToken);
             await _deviceClient.SetMethodHandlerAsync("thermostat2*getMaxMinReport", HandleMaxMinReportCommand, Thermostat2, cancellationToken);
 
+            // SetDesiredPropertyUpdateCallback is a dispatcher that we provide to dispatch the individual component/ root-level property level callbacks.
+            // Alternatively, you can also have an uber callback that implements a dispatcher internally.
+            // The important thing to note here is that you can only set a single callback for subscribing to property updates.
+            // If you set multiple callbacks to this API, the latest one will be invoked.
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, null, cancellationToken);
             _desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
             _desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
+            await _deviceClient.SubscribeToWritablePropertyEventAsync(SetDesiredPropertyUpdateCallback, null, cancellationToken);
 
             await UpdateDeviceInformationAsync(cancellationToken);
             await SendDeviceSerialNumberAsync(cancellationToken);
@@ -236,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         $"report since {sinceInDateTimeOffset.LocalDateTime}.");
 
                     Dictionary<DateTimeOffset, double> allReadings = _temperatureReadingsDateTimeOffset[componentName];
-                    Dictionary<DateTimeOffset, double> filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset)
+                    var filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset)
                         .ToDictionary(i => i.Key, i => i.Value);
 
                     if (filteredReadings != null && filteredReadings.Any())
@@ -273,7 +281,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private Task SetDesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext)
+        private Task SetDesiredPropertyUpdateCallback(PropertyCollection desiredProperties, object userContext)
         {
             bool callbackNotInvoked = true;
 
@@ -297,22 +305,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and property update.
-        private async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
+        private async Task TargetTemperatureUpdateCallbackAsync(PropertyCollection desiredProperties, object userContext)
         {
             const string propertyName = "targetTemperature";
             string componentName = (string)userContext;
 
-            bool targetTempUpdateReceived = PnpConvention.TryGetPropertyFromTwin(
-                desiredProperties,
-                propertyName,
-                out double targetTemperature,
-                componentName);
+            // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection.
+            // This implementation detail will need to be addressed.
+            bool targetTempUpdateReceived = desiredProperties.Contains(componentName)
+                && ((JObject)desiredProperties[componentName]).ContainsKey(propertyName);
+
             if (!targetTempUpdateReceived)
             {
                 _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.\n{desiredProperties.ToJson()}");
                 return;
             }
 
+            double targetTemperature = desiredProperties[componentName][propertyName];
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
             var pendingReportedProperty = new WritablePropertyResponse(targetTemperature, PropertyConvention.Instance)

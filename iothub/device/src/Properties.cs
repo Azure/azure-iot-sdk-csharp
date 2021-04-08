@@ -12,15 +12,15 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class Properties
     {
-        private PropertyCollection _readOnlyProperties;
+        private const string VersionName = "$version";
+        private readonly IDictionary<string, object> _readOnlyProperties = new Dictionary<string, object>();
 
         /// <summary>
         /// Initializes a new instance of <see cref="Properties"/>
         /// </summary>
-        public Properties()
+        internal Properties()
         {
             Writable = new PropertyCollection();
-            _readOnlyProperties = new PropertyCollection();
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="writablePropertyCollection">A collection of writable properties returned from IoT Hub</param>
         /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub</param>
-        public Properties(PropertyCollection writablePropertyCollection, PropertyCollection readOnlyPropertyCollection)
+        internal Properties(PropertyCollection writablePropertyCollection, IDictionary<string, object> readOnlyPropertyCollection)
         {
             Writable = writablePropertyCollection;
             _readOnlyProperties = readOnlyPropertyCollection;
@@ -53,11 +53,28 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Determines whether the specified property is present
+        /// </summary>
+        /// <param name="propertyName">The property to locate</param>
+        /// <returns>true if the specified property is present; otherwise, false</returns>
+        public bool Contains(string propertyName)
+        {
+            return _readOnlyProperties.TryGetValue(propertyName, out _);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public long Version => _readOnlyProperties.TryGetValue(VersionName, out object version)
+            ? (long)version
+            : default;
+
+        /// <summary>
         /// Converts a <see cref="TwinProperties"/> collection to a properties collection
         /// </summary>
         /// <param name="twinProperties">The TwinProperties object to convert</param>
         /// <returns></returns>
-        public static Properties FromTwinProperties(TwinProperties twinProperties)
+        internal static Properties FromTwinProperties(TwinProperties twinProperties)
         {
             if (twinProperties == null)
             {
@@ -69,12 +86,16 @@ namespace Microsoft.Azure.Devices.Client
             {
                 writablePropertyCollection.AddPropertyToCollection(property.Key, property.Value);
             }
+            // The version information is not accessible via the enumerator, so assign it separately.
+            writablePropertyCollection.AddPropertyToCollection(VersionName, twinProperties.Desired.Version);
 
-            var propertyCollection = new PropertyCollection();
+            var propertyCollection = new Dictionary<string, object>();
             foreach (KeyValuePair<string, object> property in twinProperties.Reported)
             {
-                propertyCollection.AddPropertyToCollection(property.Key, property.Value);
+                propertyCollection.Add(property.Key, property.Value);
             }
+            // The version information is not accessible via the enumerator, so assign it separately.
+            propertyCollection.Add(VersionName, twinProperties.Reported.Version);
 
             return new Properties(writablePropertyCollection, propertyCollection);
         }

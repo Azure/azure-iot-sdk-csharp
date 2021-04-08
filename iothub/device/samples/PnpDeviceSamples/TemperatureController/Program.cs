@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using CommandLine;
+using Microsoft.Azure.Devices.Logging;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.PlugAndPlay;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -21,7 +22,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // TemperatureController model correctly.
         private const string ModelId = "dtmi:com:example:TemperatureController;2";
 
+        private const string SdkEventProviderPrefix = "Microsoft-Azure-";
+
         private static ILogger s_logger;
+        private static ConsoleEventListener s_consoleEventListener;
 
         public static async Task Main(string[] args)
         {
@@ -43,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 throw new ArgumentException("Required parameters are not set. Please recheck required variables by using \"--help\"");
             }
 
-            var runningTime = parameters.ApplicationRunningTime != null
+            TimeSpan runningTime = parameters.ApplicationRunningTime != null
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
@@ -54,6 +58,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 eventArgs.Cancel = true;
                 cts.Cancel();
                 s_logger.LogInformation("Sample execution cancellation requested; will exit.");
+
+                s_consoleEventListener.Dispose();
             };
 
             s_logger.LogDebug($"Set up the device client.");
@@ -64,17 +70,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static ILogger InitializeConsoleDebugLogger()
         {
-            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder
-                .AddFilter(level => level >= LogLevel.Debug)
-                .AddConsole(options =>
+            using ILoggerFactory loggerFactory = new LoggerFactory();
+            loggerFactory.AddColorConsoleLogger(
+                new ColorConsoleLoggerConfiguration
                 {
-                    options.TimestampFormat = "[MM/dd/yyyy HH:mm:ss]";
+                    MinLogLevel = LogLevel.Debug,
                 });
-            });
+            ILogger<TemperatureControllerSample> logger = loggerFactory.CreateLogger<TemperatureControllerSample>();
 
-            return loggerFactory.CreateLogger<TemperatureControllerSample>();
+            // Instantiating this seems to do all we need for outputting SDK events to our console log
+            s_consoleEventListener = new ConsoleEventListener(SdkEventProviderPrefix, logger);
+
+            return logger;
         }
 
         private static async Task<DeviceClient> SetupDeviceClientAsync(Parameters parameters, CancellationToken cancellationToken)

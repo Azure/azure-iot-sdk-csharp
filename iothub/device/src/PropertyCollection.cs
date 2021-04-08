@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -11,12 +13,10 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class PropertyCollection : IEnumerable<object>
     {
-        private readonly string _propertyJson;
-        private readonly IDictionary<string, dynamic> _propertiesList = new Dictionary<string, dynamic>();
+        private const string VersionName = "$version";
 
-        internal PropertyCollection()
-        {
-        }
+        private readonly string _propertyJson;
+        private readonly IDictionary<string, object> _propertiesList = new Dictionary<string, object>();
 
         /// <summary>
         ///
@@ -26,6 +26,32 @@ namespace Microsoft.Azure.Devices.Client
         {
             _propertyJson = propertyJson;
         }
+
+        internal PropertyCollection()
+        {
+        }
+
+        internal PropertyCollection(IDictionary<string, object> propertiesList)
+        {
+            _propertiesList = propertiesList;
+        }
+
+        /// <summary>
+        /// Determines whether the specified property is present
+        /// </summary>
+        /// <param name="propertyName">The property to locate</param>
+        /// <returns>true if the specified property is present; otherwise, false</returns>
+        public bool Contains(string propertyName)
+        {
+            return _propertiesList.TryGetValue(propertyName, out _);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public long Version => _propertiesList.TryGetValue(VersionName, out object version)
+            ? (long)version
+            : default;
 
         /// <summary>
         ///
@@ -38,6 +64,15 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return _propertiesList[propertyName];
             }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public string ToJson()
+        {
+            return _propertiesList.ToString();
         }
 
         /// <summary>
@@ -65,6 +100,29 @@ namespace Microsoft.Azure.Devices.Client
         internal void AddPropertyToCollection(string propertyKey, object propertyValue)
         {
             _propertiesList.Add(propertyKey, propertyValue);
+        }
+
+        /// <summary>
+        /// Converts a <see cref="TwinCollection"/> collection to a properties collection
+        /// </summary>
+        /// <param name="twinCollection">The TwinCollection object to convert</param>
+        /// <returns></returns>
+        internal static PropertyCollection FromTwinCollection(TwinCollection twinCollection)
+        {
+            if (twinCollection == null)
+            {
+                throw new ArgumentNullException(nameof(twinCollection));
+            }
+
+            var writablePropertyCollection = new PropertyCollection();
+            foreach (KeyValuePair<string, object> property in twinCollection)
+            {
+                writablePropertyCollection.AddPropertyToCollection(property.Key, property.Value);
+            }
+            // The version information is not accessible via the enumerator, so assign it separately.
+            writablePropertyCollection.AddPropertyToCollection(VersionName, twinCollection.Version);
+
+            return writablePropertyCollection;
         }
     }
 }

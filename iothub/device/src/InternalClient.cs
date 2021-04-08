@@ -1954,6 +1954,55 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
+        {
+            // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
+            var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
+            {
+                // convert a TwinCollection to PropertyCollection
+                var propertyCollection = PropertyCollection.FromTwinCollection(twinCollection);
+                callback.Invoke(propertyCollection, userContext);
+
+                return TaskHelpers.CompletedTask;
+            });
+
+            return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
+        }
+
+        internal Task SubscribeToComponentWritablePropertyEventAsync(Func<PropertyCollection, string, object, Task> callback, string componentName, object userContext, CancellationToken cancellationToken)
+        {
+            // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
+            var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
+            {
+                // convert a TwinCollection to PropertyCollection
+                var propertyCollection = PropertyCollection.FromTwinCollection(twinCollection);
+
+                // if the received PropertyCollection belongs to the specified component, then invoke the user supplied callback.
+                if (propertyCollection.Contains(componentName))
+                {
+                    object properties = propertyCollection[componentName];
+
+                    // TODO: this check can be removed if a device cannot have the same name for a component and a property.
+                    // if this PropertyCollection is of type IDictionary<string, object> and contains an entry {"__t": "c"}, then it is the requested component.
+                    if (properties.GetType() == typeof(Dictionary<string, object>))
+                    {
+                        var componentProperties = (Dictionary<string, object>)properties;
+                        if (componentProperties.ContainsKey(PropertyConvention.ComponentIdentifierKey))
+                        {
+                            componentProperties.Remove(PropertyConvention.ComponentIdentifierKey);
+
+                            var collection = new PropertyCollection(componentProperties);
+                            callback.Invoke(collection, componentName, userContext);
+                        }
+                    }
+                }
+
+                return TaskHelpers.CompletedTask;
+            });
+
+            return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
+        }
+
         #endregion Convention driven operations
 
         public void Dispose()

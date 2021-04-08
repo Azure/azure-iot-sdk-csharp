@@ -756,6 +756,15 @@ namespace Microsoft.Azure.Devices.Client
             CancellationToken cancellationToken = default)
             => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, writablePropertyResponse } }, PropertyConvention.Instance, componentName, cancellationToken);
 
+        /// <summary>
+        /// Sets the global listener for Writable properties
+        /// </summary>
+        /// <param name="callback">The global call back to handle all writable property updates.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToWritablePropertyEventAsync(callback, userContext, cancellationToken);
+
         #endregion Properties
 
         #region Telemetry
