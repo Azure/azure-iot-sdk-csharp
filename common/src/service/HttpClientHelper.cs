@@ -40,53 +40,31 @@ namespace Microsoft.Azure.Devices
         // IDisposables
 
         private readonly HttpClient _httpClientWithDefaultTimeout;
-
         private readonly HttpClient _httpClientWithNoTimeout;
-        private readonly HttpClientHandler _httpClientHandler;
 
         public HttpClientHelper(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            IWebProxy customHttpProxy)
+            IWebProxy customHttpProxy,
+            int connectionLeaseTimeoutMilliseconds)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             _defaultOperationTimeout = timeout;
 
-            // HttpClientHandler is IDisposable, so save onto it for disposing.
-            _httpClientHandler = new HttpClientHandler
-            {
-#if !NET451
-                SslProtocols = TlsVersions.Instance.Preferred,
-                CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck,
-#endif
-            };
-
-            if (customHttpProxy != DefaultWebProxySettings.Instance)
-            {
-                _httpClientHandler.UseProxy = customHttpProxy != null;
-                _httpClientHandler.Proxy = customHttpProxy;
-            }
-
             // We need two types of HttpClients, one with our default operation timeout, and one without. The one without will rely on
             // a cancellation token.
 
-            _httpClientWithDefaultTimeout = new HttpClient(_httpClientHandler, false)
-            {
-                BaseAddress = _baseAddress,
-                Timeout = _defaultOperationTimeout,
-            };
+            _httpClientWithDefaultTimeout = CreateDefaultClient(customHttpProxy, _baseAddress, connectionLeaseTimeoutMilliseconds);
+            _httpClientWithDefaultTimeout.Timeout = _defaultOperationTimeout;
             _httpClientWithDefaultTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientWithDefaultTimeout.DefaultRequestHeaders.ExpectContinue = false;
 
-            _httpClientWithNoTimeout = new HttpClient(_httpClientHandler, false)
-            {
-                BaseAddress = _baseAddress,
-                Timeout = Timeout.InfiniteTimeSpan,
-            };
+            _httpClientWithNoTimeout = CreateDefaultClient(customHttpProxy, _baseAddress, connectionLeaseTimeoutMilliseconds);
+            _httpClientWithNoTimeout.Timeout = Timeout.InfiniteTimeSpan;
             _httpClientWithNoTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientWithNoTimeout.DefaultRequestHeaders.ExpectContinue = false;
 
@@ -788,9 +766,6 @@ namespace Microsoft.Azure.Devices
         {
             _httpClientWithDefaultTimeout.Dispose();
             _httpClientWithNoTimeout.Dispose();
-
-            // Since HttpClientHandler was passed to the 2 HttpClients above, but told them not to dispose it, we want to dispose this after
-            _httpClientHandler.Dispose();
         }
 
         private async Task ExecuteAsync(
@@ -918,6 +893,40 @@ namespace Microsoft.Azure.Devices
             Func<HttpResponseMessage, Task<Exception>> mapToExceptionFunc = errorMapping[response.StatusCode];
             Task<Exception> exception = mapToExceptionFunc(response);
             return await exception.ConfigureAwait(false);
+        }
+
+        internal static HttpClient CreateDefaultClient(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
+        {
+#pragma warning disable CA2000 // Dispose objects before losing scope (object is returned by this method, so the caller is responsible for disposing it)
+#if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
+            // SocketsHttpHandler is only available in netcoreapp2.1 and onwards
+            SocketsHttpHandler httpMessageHandler = new SocketsHttpHandler();
+            httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
+#else
+            HttpClientHandler httpMessageHandler = new HttpClientHandler();
+#endif
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+#if !NET451 && !NETCOREAPP
+            httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
+            httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+#endif
+
+            if (webProxy != DefaultWebProxySettings.Instance)
+            {
+                httpMessageHandler.UseProxy = webProxy != null;
+                httpMessageHandler.Proxy = webProxy;
+            }
+
+            ServicePointHelpers.SetLimits(httpMessageHandler, baseUri, connectionLeaseTimeoutMilliseconds);
+
+            // This http client will dispose of this httpMessageHandler when the http client is disposed, so no need to save a local copy
+            return new HttpClient(httpMessageHandler)
+            {
+                // Timeouts are handled by the pipeline
+                Timeout = Timeout.InfiniteTimeSpan,
+                BaseAddress = baseUri
+            };
         }
     }
 }

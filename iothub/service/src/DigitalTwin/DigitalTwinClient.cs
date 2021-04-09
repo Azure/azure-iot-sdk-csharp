@@ -34,10 +34,64 @@ namespace Microsoft.Azure.Devices
             return new DigitalTwinClient(iotHubConnectionString.HttpsEndpoint, sharedAccessKeyCredential, handlers);
         }
 
+
         private DigitalTwinClient(Uri uri, IotServiceClientCredentials credentials, params DelegatingHandler[] handlers)
         {
-            _client = new IotHubGatewayServiceAPIs(uri, credentials, handlers);
+#pragma warning disable CA2000 // Dispose objects before losing scope (objects are disposed of when this client is disposed)
+#if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
+            // SocketsHttpHandler is only available in netcoreapp2.1 and onwards.
+            HttpMessageHandler httpMessageHandler = new SocketsHttpHandler();
+#else
+            HttpMessageHandler httpMessageHandler = new HttpClientHandler();
+#endif
+            // Currently, the connection lease timeout isn't configurable in this client. This may be worth adding later though
+            ServicePointHelpers.SetLimits(httpMessageHandler, uri, ServicePointHelpers.DefaultConnectionLeaseTimeout);
+
+            HttpMessageHandler httpMessageHandlerWithDelegatingHandlers = CreateHttpHandlerPipeline(httpMessageHandler, handlers);
+
+            var httpClient = new HttpClient(httpMessageHandlerWithDelegatingHandlers, true)
+            {
+                BaseAddress = uri
+            };
+
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            // When this client is disposed, all the http message handlers and delegating handlers will be disposed automatically
+            _client = new IotHubGatewayServiceAPIs(credentials, httpClient, true);
             _protocolLayer = new DigitalTwin(_client);
+        }
+
+        // Creates a single HttpMessageHandler to construct a HttpClient with from a base httpMessageHandler and some number of custom delegating handlers
+        // This is almost a copy of the Microsoft.Rest.ClientRuntime library's implementation, but with the return and parameter type HttpClientHandler replaced
+        // with the more abstract HttpMessageHandler in order for us to set the base handler as either a SocketsHttpHandler for .net core or an HttpClientHandler otherwise
+        // https://github.com/Azure/azure-sdk-for-net/blob/99f4da88ab0aa01c79aa291c6c101ab94c4ac940/sdk/mgmtcommon/ClientRuntime/ClientRuntime/ServiceClient.cs#L376
+        private static HttpMessageHandler CreateHttpHandlerPipeline(HttpMessageHandler httpMessageHandler, params DelegatingHandler[] handlers)
+        {
+            // The RetryAfterDelegatingHandler should be the absoulte outermost handler
+            // because it's extremely lightweight and non-interfering
+            HttpMessageHandler currentHandler =
+#pragma warning disable CA2000 // Dispose objects before losing scope (delegating handler is disposed when the http client that uses it is disposed)
+                new RetryDelegatingHandler(new RetryAfterDelegatingHandler { InnerHandler = httpMessageHandler });
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            if (handlers != null)
+            {
+                for (int i = handlers.Length - 1; i >= 0; --i)
+                {
+                    DelegatingHandler handler = handlers[i];
+                    // Non-delegating handlers are ignored since we always
+                    // have RetryDelegatingHandler as the outer-most handler
+                    while (handler.InnerHandler is DelegatingHandler)
+                    {
+                        handler = handler.InnerHandler as DelegatingHandler;
+                    }
+
+                    handler.InnerHandler = currentHandler;
+                    currentHandler = handlers[i];
+                }
+            }
+
+            return currentHandler;
         }
 
         /// <summary>
