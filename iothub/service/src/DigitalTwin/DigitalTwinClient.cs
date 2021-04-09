@@ -37,22 +37,17 @@ namespace Microsoft.Azure.Devices
 
         private DigitalTwinClient(Uri uri, IotServiceClientCredentials credentials, params DelegatingHandler[] handlers)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope (objects are disposed of when this client is disposed)
-#if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
-            // SocketsHttpHandler is only available in netcoreapp2.1 and onwards.
-            HttpMessageHandler httpMessageHandler = new SocketsHttpHandler();
-#else
-            HttpMessageHandler httpMessageHandler = new HttpClientHandler();
-#endif
-            // Currently, the connection lease timeout isn't configurable in this client. This may be worth adding later though
-            ServicePointHelpers.SetLimits(httpMessageHandler, uri, ServicePointHelpers.DefaultConnectionLeaseTimeout);
-
+            var httpMessageHandler = HttpClientHelper.CreateDefaultHttpMessageHandler(null, uri, ServicePointHelpers.DefaultConnectionLeaseTimeout);
+#pragma warning disable CA2000 // Dispose objects before losing scope (httpMessageHandlerWithDelegatingHandlers is disposed when the http client owning it is disposed)
             HttpMessageHandler httpMessageHandlerWithDelegatingHandlers = CreateHttpHandlerPipeline(httpMessageHandler, handlers);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
+#pragma warning disable CA2000 // Dispose objects before losing scope (httpClient is disposed when the protocol layer client owning it is disposed)
             var httpClient = new HttpClient(httpMessageHandlerWithDelegatingHandlers, true)
             {
                 BaseAddress = uri
             };
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
 #pragma warning restore CA2000 // Dispose objects before losing scope
 

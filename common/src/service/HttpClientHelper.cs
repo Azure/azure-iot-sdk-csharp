@@ -897,6 +897,19 @@ namespace Microsoft.Azure.Devices
 
         internal static HttpClient CreateDefaultClient(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
         {
+            // This http client will dispose of this httpMessageHandler when the http client is disposed, so no need to save a local copy
+#pragma warning disable CA2000 // Dispose objects before losing scope (httpClient and messageHandler are disposed outside of this scope)
+            return new HttpClient(CreateDefaultHttpMessageHandler(webProxy, baseUri, connectionLeaseTimeoutMilliseconds))
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            {
+                // Timeouts are handled by the pipeline
+                Timeout = Timeout.InfiniteTimeSpan,
+                BaseAddress = baseUri
+            };
+        }
+
+        internal static HttpMessageHandler CreateDefaultHttpMessageHandler(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
+        {
 #pragma warning disable CA2000 // Dispose objects before losing scope (object is returned by this method, so the caller is responsible for disposing it)
 #if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
             // SocketsHttpHandler is only available in netcoreapp2.1 and onwards
@@ -904,13 +917,13 @@ namespace Microsoft.Azure.Devices
             httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
 #else
             HttpClientHandler httpMessageHandler = new HttpClientHandler();
-#endif
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
-#if !NET451 && !NETCOREAPP
+#if !NET451
             httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 #endif
+#endif
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
 
             if (webProxy != DefaultWebProxySettings.Instance)
             {
@@ -920,13 +933,7 @@ namespace Microsoft.Azure.Devices
 
             ServicePointHelpers.SetLimits(httpMessageHandler, baseUri, connectionLeaseTimeoutMilliseconds);
 
-            // This http client will dispose of this httpMessageHandler when the http client is disposed, so no need to save a local copy
-            return new HttpClient(httpMessageHandler)
-            {
-                // Timeouts are handled by the pipeline
-                Timeout = Timeout.InfiniteTimeSpan,
-                BaseAddress = baseUri
-            };
+            return httpMessageHandler;
         }
     }
 }
