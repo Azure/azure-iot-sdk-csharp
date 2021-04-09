@@ -3,14 +3,13 @@
 
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     ///
     /// </summary>
-    public class TelemetryConvention
+    public class TelemetryConvention : ObjectSerializer
     {
         /// <summary>
         /// The content type for a plug and play compatible telemetry message.
@@ -42,16 +41,6 @@ namespace Microsoft.Azure.Devices.Client
         public static IDictionary<string, object> FormatTelemetryPayload(string telemetryName, object telemetryValue)
         {
             return new Dictionary<string, object> { { telemetryName, telemetryValue } };
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="objectToSerialize"></param>
-        /// <returns></returns>
-        public virtual string SerializeToString(object objectToSerialize)
-        {
-            return JsonConvert.SerializeObject(objectToSerialize);
         }
 
         /// <summary>

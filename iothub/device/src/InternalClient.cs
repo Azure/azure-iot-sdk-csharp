@@ -1972,7 +1972,7 @@ namespace Microsoft.Azure.Devices.Client
             return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
         }
 
-        internal Task SubscribeToComponentWritablePropertyEventAsync(Func<PropertyCollection, string, object, Task> callback, string componentName, object userContext, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, string, object, Task> callback, string componentName, object userContext, CancellationToken cancellationToken)
         {
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
@@ -2004,6 +2004,36 @@ namespace Microsoft.Azure.Devices.Client
             });
 
             return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
+        }
+
+        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken)
+        {
+            const char ComponentLevelCommandIdentifier = '*';
+
+            // Sunscribe to methods default handler internally and use the callback received internally to invoke the user supplied command callback.
+            var methodDefaultCallback = new MethodCallback(async (methodRequest, userContext) =>
+            {
+                CommandRequest commandRequest;
+                if (methodRequest.Name.Contains(ComponentLevelCommandIdentifier))
+                {
+                    string[] split = methodRequest.Name.Split(ComponentLevelCommandIdentifier);
+                    string componentName = split[0];
+                    string commandName = split[1];
+                    commandRequest = new CommandRequest(commandName, componentName, methodRequest.Data);
+                }
+                else
+                {
+                    commandRequest = new CommandRequest(methodRequest.Name, data: methodRequest.Data);
+                }
+
+                CommandResponse commandResponse = await callback.Invoke(commandRequest, userContext).ConfigureAwait(false);
+
+                return commandResponse.ResultAsBytes != null
+                    ? new MethodResponse(commandResponse.ResultAsBytes, commandResponse.Status)
+                    : new MethodResponse(commandResponse.Status);
+            });
+
+            return SetMethodDefaultHandlerAsync(methodDefaultCallback, userContext, cancellationToken);
         }
 
         #endregion Convention driven operations

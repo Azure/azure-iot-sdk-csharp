@@ -98,14 +98,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (data.Length != 0)
             {
-                var stream = new MemoryStream(data);
-                var streamReader = new StreamReader(stream, Encoding.UTF8, false, Math.Min(1024, data.Length));
+                using var stream = new MemoryStream(data);
+                using var streamReader = new StreamReader(stream, Encoding.UTF8, false, Math.Min(1024, data.Length));
 
-                using (var reader = new JsonTextReader(streamReader))
+                using var reader = new JsonTextReader(streamReader);
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                    }
                 }
             }
         }

@@ -44,8 +44,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the componentName/ root-level property name.
-        private readonly IDictionary<string, Func<PropertyCollection, object, Task>> _desiredPropertyUpdateCallbacks =
-            new Dictionary<string, Func<PropertyCollection, object, Task>>();
+        private readonly Dictionary<string, Func<PropertyCollection, object, Task>> _writablePropertyEventCallbacks =
+            new();
+
+        // A dictionary to hold all command callbacks that this pnp device should be able to handle.
+        // The key for this dictionary is the root-level command name/ {<componentName>*<commandName>}.
+        private readonly Dictionary<string, Func<CommandRequest, object, Task<CommandResponse>>> _commandEventCallbacks =
+            new();
 
         // Dictionary to hold the current temperature for each "Thermostat" component.
         private readonly Dictionary<string, double> _temperature = new();
@@ -55,8 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public TemperatureControllerSample(DeviceClient deviceClient, ILogger logger)
         {
-            _deviceClient = deviceClient
-                            ?? throw new ArgumentNullException(nameof(deviceClient), $"{nameof(deviceClient)} cannot be null.");
+            _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient), $"{nameof(deviceClient)} cannot be null.");
 
             if (logger == null)
             {
@@ -104,22 +108,24 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             s_applicationStartTime = DateTimeOffset.Now;
 
+            // CommandEventDispatcherAsync is a dispatcher that we provide to dispatch the individual component/ root-level command callbacks.
+            // Alternatively, you can also have an uber callback that implements a dispatcher internally.
+            // The important thing to note here is that you can only set a single callback for subscribing to command events.
+            // If you set multiple callbacks to this API, the latest one will be invoked.
             _logger.LogDebug("Set handler for 'reboot' command.");
-            await _deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, _deviceClient, cancellationToken);
-
-            // For a component-level command, the command name is in the format "<component-name>*<command-name>".
             _logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
-            await _deviceClient.SetMethodHandlerAsync("thermostat1*getMaxMinReport", HandleMaxMinReportCommand, Thermostat1, cancellationToken);
-            await _deviceClient.SetMethodHandlerAsync("thermostat2*getMaxMinReport", HandleMaxMinReportCommand, Thermostat2, cancellationToken);
+            _commandEventCallbacks.Add("reboot", HandleRebootCommandAsync);
+            _commandEventCallbacks.Add("getMaxMinReport", HandleMaxMinReportCommandAsync);
+            await _deviceClient.SubscribeToCommandsAsync(CommandEventDispatcherAsync, null, cancellationToken);
 
-            // SetDesiredPropertyUpdateCallback is a dispatcher that we provide to dispatch the individual component/ root-level property level callbacks.
+            // SetDesiredPropertyUpdateCallback is a dispatcher that we provide to dispatch the individual component/ root-level property callbacks.
             // Alternatively, you can also have an uber callback that implements a dispatcher internally.
             // The important thing to note here is that you can only set a single callback for subscribing to property updates.
             // If you set multiple callbacks to this API, the latest one will be invoked.
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
-            _desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
-            _desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
-            await _deviceClient.SubscribeToWritablePropertyEventAsync(SetDesiredPropertyUpdateCallback, null, cancellationToken);
+            _writablePropertyEventCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
+            _writablePropertyEventCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
+            await _deviceClient.SubscribeToWritablePropertyEventAsync(WritablePropertyEventDispatcherAsync, null, cancellationToken);
 
             await UpdateDeviceInformationAsync(cancellationToken);
             await SendDeviceSerialNumberAsync(cancellationToken);
@@ -205,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
-        private async Task<MethodResponse> HandleRebootCommandAsync(MethodRequest request, object userContext)
+        private async Task<CommandResponse> HandleRebootCommandAsync(CommandRequest request, object userContext)
         {
             try
             {
@@ -222,19 +228,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return new MethodResponse((int)StatusCode.BadRequest);
+                return new CommandResponse((int)StatusCode.BadRequest);
             }
 
-            return new MethodResponse((int)StatusCode.Completed);
+            return new CommandResponse((int)StatusCode.Completed);
         }
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the
         // specified time to the current time.
-        private Task<MethodResponse> HandleMaxMinReportCommand(MethodRequest request, object userContext)
+        private Task<CommandResponse> HandleMaxMinReportCommandAsync(CommandRequest request, object userContext)
         {
             try
             {
-                string componentName = (string)userContext;
+                string componentName = request.ComponentName;
                 DateTime sinceInUtc = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
                 var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
 
@@ -249,57 +255,63 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     if (filteredReadings != null && filteredReadings.Any())
                     {
-                        var report = new
+                        var report = new TemperatureReport
                         {
-                            maxTemp = filteredReadings.Values.Max<double>(),
-                            minTemp = filteredReadings.Values.Min<double>(),
-                            avgTemp = filteredReadings.Values.Average(),
-                            startTime = filteredReadings.Keys.Min(),
-                            endTime = filteredReadings.Keys.Max(),
+                            MaximumTemperature = filteredReadings.Values.Max<double>(),
+                            MinimumTemperature = filteredReadings.Values.Min<double>(),
+                            AverageTemperature = filteredReadings.Values.Average(),
+                            StartTime = filteredReadings.Keys.Min(),
+                            EndTime = filteredReadings.Keys.Max(),
                         };
 
                         _logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
-                            $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime.LocalDateTime}, " +
-                            $"endTime={report.endTime.LocalDateTime}");
+                            $" maxTemp={report.MaximumTemperature}, minTemp={report.MinimumTemperature}, avgTemp={report.AverageTemperature}," +
+                            $" startTime={report.StartTime.LocalDateTime}, endTime={report.EndTime.LocalDateTime}");
 
-                        byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-                        return Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+                        return Task.FromResult(new CommandResponse(report, (int)StatusCode.Completed, new CustomObjectSerializer()));
                     }
 
                     _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
                         $"cannot generate any report.");
-                    return Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
+                    return Task.FromResult(new CommandResponse((int)StatusCode.NotFound));
                 }
 
                 _logger.LogDebug($"Command: component=\"{componentName}\", no temperature readings sent yet, cannot generate any report.");
-                return Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
+                return Task.FromResult(new CommandResponse((int)StatusCode.NotFound));
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return Task.FromResult(new MethodResponse((int)StatusCode.BadRequest));
+                return Task.FromResult(new CommandResponse((int)StatusCode.BadRequest));
             }
         }
 
-        private Task SetDesiredPropertyUpdateCallback(PropertyCollection desiredProperties, object userContext)
+        private Task<CommandResponse> CommandEventDispatcherAsync(CommandRequest commandRequest, object userContext)
         {
-            bool callbackNotInvoked = true;
+            // Ideally you'd need to use the combination of command name and component name to identify the command event,
+            // but for the purpose of this sample we can use the command name by itself since we know that all command names are unique.
+            string dispatcherKey = commandRequest.Name;
+            if (_commandEventCallbacks.ContainsKey(dispatcherKey))
+            {
+                return _commandEventCallbacks[dispatcherKey]?.Invoke(commandRequest, userContext);
+            }
 
+            _logger.LogDebug($"Command: Received a command request that is not implemented.");
+            return Task.FromResult(new CommandResponse((int)StatusCode.NotFound));
+        }
+
+        private Task WritablePropertyEventDispatcherAsync(PropertyCollection desiredProperties, object userContext)
+        {
             foreach (KeyValuePair<string, object> propertyUpdate in desiredProperties)
             {
                 string componentName = propertyUpdate.Key;
-                if (_desiredPropertyUpdateCallbacks.ContainsKey(componentName))
+                if (_writablePropertyEventCallbacks.ContainsKey(componentName))
                 {
-                    _desiredPropertyUpdateCallbacks[componentName]?.Invoke(desiredProperties, componentName);
-                    callbackNotInvoked = false;
+                    return _writablePropertyEventCallbacks[componentName]?.Invoke(desiredProperties, componentName);
                 }
             }
 
-            if (callbackNotInvoked)
-            {
-                _logger.LogDebug($"Property: Received a property update that is not implemented by any associated component.");
-            }
-
+            _logger.LogDebug($"Property: Received a property update that is not implemented.");
             return Task.CompletedTask;
         }
 

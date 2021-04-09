@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     ///
     /// </summary>
-    public class PropertyConvention
+    public class PropertyConvention : ObjectSerializer
     {
         /// <summary>
         ///
@@ -26,27 +25,6 @@ namespace Microsoft.Azure.Devices.Client
         ///
         /// </summary>
         public static string ComponentIdentifierValue => "c";
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="objectToSerialize"></param>
-        /// <returns></returns>
-        public virtual string SerializeToString(object objectToSerialize)
-        {
-            return JsonConvert.SerializeObject(objectToSerialize);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="stringToDeserialize"></param>
-        /// <returns></returns>
-        public virtual T DeserializeToType<T>(string stringToDeserialize)
-        {
-            return JsonConvert.DeserializeObject<T>(stringToDeserialize);
-        }
 
         /// <summary>
         /// Format a plug and play compatible property payload.

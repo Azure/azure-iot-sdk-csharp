@@ -781,7 +781,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Send telemetry using the specified message.
         /// </summary>
         /// <remarks>
-        /// Use the <see cref="Message.Message(object, TelemetryConvention)"/> constructor to pass in the formatted telemetry payload and the <see cref="TelemetryConvention"/>.
+        /// Use the <see cref="Message(object, TelemetryConvention)"/> constructor to pass in the formatted telemetry payload and the <see cref="TelemetryConvention"/>.
         /// If your telemetry payload does not have any specific serialization requirements you can pass in <see cref="TelemetryConvention.Instance"/>.
         /// If the telemetry is originating from a component, set the component name to <see cref="Message.ComponentName"/>.
         /// </remarks>
@@ -792,6 +792,19 @@ namespace Microsoft.Azure.Devices.Client
             => InnerHandler.SendEventAsync(telemetryMessage, cancellationToken);
 
         #endregion Telemetry
+
+        #region Commands
+
+        /// <summary>
+        /// Set the global command callback handler.
+        /// </summary>
+        /// <param name="callback">A method implementation that will handle the incoming command.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToCommandsAsync(callback, userContext, cancellationToken);
+
+        #endregion Commands
 
         #endregion Convention driven operations
     }

@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class CustomTelemetryConvention : TelemetryConvention
+    internal class CustomObjectSerializer : ObjectSerializer
     {
         public override string SerializeToString(object objectToSerialize)
         {

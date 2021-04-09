@@ -490,55 +490,53 @@ public class TelemetryConvention
 
 ```csharp
 /// <summary>
-/// Set command callback handler.
+/// Set the global command callback handler.
 /// </summary>
-/// <param name="commandName">The name of the command this handler will be used for.</param>
-/// <param name="commandCallback">The callback for this command.</param>
-/// <param name="componentName">The component name this command belongs to.</param>
-/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-/// <param name="cancellationToken"></param>
-/// <remarks>
-/// The .NET SDK has a built in dispatcher that handles per command name routing. The SDK will first attempt to find the command by name. If it is found it will execute the callback for that specific command. If there is no entry found in the dispatcher the SDK will fall back to the global command handler <see cref="SetCommandCallbackHandlerAsync(Func{CommandRequest, object, Task{CommandResponse}}, object, CancellationToken)"/>.
-/// </remarks>
-public Task SetCommandCallbackHandlerAsync(string commandName, Func<CommandRequest, object, Task<CommandResponse>> commandCallback, string componentName = default, object userContext = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Set the global command callback handler. This handler will be called when no named handler was found for the command.
-/// </summary>
-/// <param name="commandCallback">A method implementation that will handle the incoming command.</param>
+/// <param name="callback">A method implementation that will handle the incoming command.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-/// <remarks>
-/// The global command handler will be the fallback handler in the event there is nothing specified in the dispatcher. See the remarks in <see cref="SetCommandCallbackHandlerAsync(Func{CommandRequest, object, Task{CommandResponse}}, object, CancellationToken)"/> for more information.
-/// </remarks>
-public Task SetCommandCallbackHandlerAsync(Func<CommandRequest, object, Task<CommandResponse>> commandCallback, object userContext = default, CancellationToken cancellationToken = default);
+public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken = default)
 ```
 
 <details>
 <summary>CommandRequest</summary>
 
 ```csharp
-public sealed class CommandRequest : MethodRequest
+public sealed class CommandRequest
 {
-    internal CommandRequest(string commandName) : this (commandName, null)
-    {
-    }
+    private readonly byte[] _data;
 
-    internal CommandRequest(string commandName, string componentName) : this (commandName, componentName, null)
+    internal CommandRequest(string commandName, string componentName = default, byte[] data = default)
     {
-
-    }
-
-    internal CommandRequest(string commandName, string componentName, object data) : base (commandName, ConvertToByteArray(data))
-    {
+        Name = commandName;
         ComponentName = componentName;
+        _data = data;
     }
 
-    public readonly string ComponentName { get; private set; }
+    /// <summary>
+    ///
+    /// </summary>
+    public string ComponentName { get; private set; }
 
-    private static byte[] ConvertToByteArray(object result)
+    /// <summary>
+    /// The method name.
+    /// </summary>
+    public string Name { get; private set; }
+
+    /// <summary>
+    /// The method data.
+    /// </summary>
+    public byte[] GetData()
     {
+        // Need to return a clone of the array so that consumers
+        // of this library cannot change its contents
+        return (byte[])_data.Clone();
     }
+
+    /// <summary>
+    /// The method data in Json format.
+    /// </summary>
+    public string DataAsJson => (_data == null || _data.Length == 0) ? null : Encoding.UTF8.GetString(_data);
 }
 ```
 </details>
@@ -547,19 +545,48 @@ public sealed class CommandRequest : MethodRequest
 <summary>CommandResponse</summary>
 
 ```c#
-public class CommandResponse : MethodResponse
+public sealed class CommandResponse
 {
-    public CommandResponse(object result, int status) : base (ConvertToByteArray(result), status)
+    private readonly object _result;
+    private readonly ObjectSerializer _objectSerializer;
+
+    /// <summary>
+    /// Make a new instance of the return class and validates that the payload is correct JSON.
+    /// </summary>
+    /// <param name="result">data returned by the method call.</param>
+    /// <param name="status">status indicating success or failure.</param>
+    /// <param name="serializer"></param>
+    /// <returns></returns>
+    public CommandResponse(object result, int status, ObjectSerializer serializer)
     {
+        _result = result;
+        Status = status;
+        _objectSerializer = serializer;
     }
 
-    public CommandResponse(int status) : base (status)
+    /// <summary>
+    /// Constructor which uses the input byte array as the body
+    /// </summary>
+    /// <param name="status">an integer code containing a method call status.</param>
+    public CommandResponse(int status)
     {
+        Status = status;
     }
 
-    private static byte[] ConvertToByteArray(object result)
+    /// <summary>
+    /// contains the response of the device client application method handler.
+    /// </summary>
+    public int Status
     {
+        get; private set;
     }
+
+    /// <summary>
+    /// Property containing the entire result data, in Json format.
+    /// </summary>
+    public string ResultAsJson => _result == null ? null : _objectSerializer.SerializeToString(_result);
+
+    internal byte[] ResultAsBytes => _result == null ? null : Encoding.UTF8.GetBytes(ResultAsJson);
 }
 ```
 </details>
