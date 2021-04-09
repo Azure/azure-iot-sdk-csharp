@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _writablePropertyEventCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
             _writablePropertyEventCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
             _writablePropertyEventCallbacks.Add("temperatureRange", SendTemperatureRangeAsync);
-            await _deviceClient.SubscribeToWritablePropertyEventAsync(WritablePropertyEventDispatcherAsync, userContext: cancellationToken, cancellationToken);
+            await _deviceClient.SubscribeToWritablePropertyEventAsync(WritablePropertyEventDispatcherAsync, userContext: cancellationToken, cancellationToken: cancellationToken);
 
             await UpdateDeviceInformationAsync(cancellationToken);
             await SendDeviceSerialNumberAsync(cancellationToken);
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var writablePropertyResponse = new WritablePropertyResponse(temeratureRangeDesired, s_customPropertyConvention)
             {
                 AckCode = (int)StatusCode.Completed,
-                AckVersion = 1,
+                AckVersion = desiredProperties.Version,
                 AckDescription = "The operation completed successfully."
             };
 
