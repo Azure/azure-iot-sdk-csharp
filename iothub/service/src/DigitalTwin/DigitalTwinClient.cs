@@ -58,6 +58,7 @@ namespace Microsoft.Azure.Devices
 
             // When this client is disposed, all the http message handlers and delegating handlers will be disposed automatically
             _client = new IotHubGatewayServiceAPIs(credentials, httpClient, true);
+            _client.BaseUri = uri;
             _protocolLayer = new DigitalTwin(_client);
         }
 
