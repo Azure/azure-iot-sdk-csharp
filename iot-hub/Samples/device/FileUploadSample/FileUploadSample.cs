@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using Microsoft.Azure.Devices.Client.Transport;
 using System;
 using System.Diagnostics;
@@ -48,8 +49,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 // Note that other versions of the Azure Storage SDK can be used here. For the latest version, see
                 // https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/storage#azure-storage-libraries-for-net
-                var blobClient = new BlobClient(uploadUri);
-                await blobClient.UploadAsync(fileStreamSource, overwrite: true);
+                // NOTE: The UploadAsync operation overwrites the contents of the blob, creating a new block blob if none exists.
+                // Overwriting an existing block blob replaces any existing metadata on the blob.
+                // Set <see href="https://docs.microsoft.com/en-us/rest/api/storageservices/specifying-conditional-headers-for-blob-service-operations">
+                // access conditions through BlobRequestConditions to avoid overwriting existing data.
+                // See https://github.com/Azure/azure-sdk-for-net/blob/66d8ab97081a35ebc50c98278110dcac0e4d763e/sdk/storage/Azure.Storage.Blobs/src/BlockBlobClient.cs#L570 for more details.
+                var blockBlobClient = new BlockBlobClient(uploadUri);
+                await blockBlobClient.UploadAsync(fileStreamSource, new BlobUploadOptions());
             }
             catch (Exception ex)
             {
