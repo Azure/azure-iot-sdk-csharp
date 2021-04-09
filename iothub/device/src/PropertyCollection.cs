@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal PropertyCollection()
         {
+            _propertyConvention = PropertyConvention.Instance;
         }
 
         internal PropertyCollection(IDictionary<string, object> properties, PropertyConvention propertyConvention)

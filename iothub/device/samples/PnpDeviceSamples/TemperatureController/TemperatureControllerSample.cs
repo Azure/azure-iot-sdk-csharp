@@ -30,10 +30,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static readonly Random s_random = new();
         private static readonly Stopwatch s_stopwatch = Stopwatch.StartNew();
-        private static DateTimeOffset s_applicationStartTime;
+
+        private static readonly ObjectSerializer s_objectSerializer = new CustomObjectSerializer();
+        private static readonly TelemetryConvention s_customTelemetryConvention = new CustomTelemetryConvention();
+        private static readonly PropertyConvention s_customPropertyConvention = new CustomPropertyConvention();
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
+
+        private static DateTimeOffset s_applicationStartTime;
 
         // Dictionary to hold the temperature updates sent over each "Thermostat" component.
         // NOTE: Memory constrained devices should leverage storage capabilities of an external service to store this
@@ -44,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the componentName/ root-level property name.
-        private readonly Dictionary<string, Func<PropertyCollection, object, Task>> _writablePropertyEventCallbacks =
+        private readonly Dictionary<string, Func<PropertyCollection, object, string, Task>> _writablePropertyEventCallbacks =
             new();
 
         // A dictionary to hold all command callbacks that this pnp device should be able to handle.
@@ -112,20 +117,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Alternatively, you can also have an uber callback that implements a dispatcher internally.
             // The important thing to note here is that you can only set a single callback for subscribing to command events.
             // If you set multiple callbacks to this API, the latest one will be invoked.
-            _logger.LogDebug("Set handler for 'reboot' command.");
-            _logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
+            _logger.LogDebug("Set handler for 'reboot' and 'getMaxMinReport' commands.");
             _commandEventCallbacks.Add("reboot", HandleRebootCommandAsync);
             _commandEventCallbacks.Add("getMaxMinReport", HandleMaxMinReportCommandAsync);
             await _deviceClient.SubscribeToCommandsAsync(CommandEventDispatcherAsync, null, cancellationToken);
 
-            // SetDesiredPropertyUpdateCallback is a dispatcher that we provide to dispatch the individual component/ root-level property callbacks.
+            // WritablePropertyEventDispatcherAsync is a dispatcher that we provide to dispatch the individual component/ root-level property callbacks.
             // Alternatively, you can also have an uber callback that implements a dispatcher internally.
             // The important thing to note here is that you can only set a single callback for subscribing to property updates.
             // If you set multiple callbacks to this API, the latest one will be invoked.
-            _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
+            _logger.LogDebug("Set handler to receive 'targetTemperature' and 'temperatureRange' updates.");
             _writablePropertyEventCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
             _writablePropertyEventCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
-            await _deviceClient.SubscribeToWritablePropertyEventAsync(WritablePropertyEventDispatcherAsync, null, cancellationToken);
+            _writablePropertyEventCallbacks.Add("temperatureRange", SendTemperatureRangeAsync);
+            await _deviceClient.SubscribeToWritablePropertyEventAsync(WritablePropertyEventDispatcherAsync, userContext: cancellationToken, cancellationToken);
 
             await UpdateDeviceInformationAsync(cancellationToken);
             await SendDeviceSerialNumberAsync(cancellationToken);
@@ -164,25 +169,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Humidity = 68
             };
 
-            await _deviceClient.UpdatePropertyAsync(initialValueName, readonlyPropertyPatch, new CustomPropertyConvention(), componentName, cancellationToken);
+            await _deviceClient.UpdatePropertyAsync(initialValueName, readonlyPropertyPatch, s_customPropertyConvention, componentName, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{initialValueName}\" is complete.");
-
-            const string temperatureRangeName = "temperatureRange";
-            var temperatureRange = new TemperatureRange
-            {
-                MaxTemperature = 50,
-                MinTemperature = 5
-            };
-
-            var writablePropertyResponse = new WritablePropertyResponse(temperatureRange, new CustomPropertyConvention())
-            {
-                AckCode = (int)StatusCode.Completed,
-                AckVersion = 1,
-                AckDescription = "The operation completed successfully."
-            };
-
-            await _deviceClient.UpdateWritablePropertyAsync(temperatureRangeName, writablePropertyResponse, componentName, cancellationToken);
-            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{temperatureRangeName}\" is complete.");
         }
 
         // Send the device health status over telemetry.
@@ -199,15 +187,28 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(deviceHealthName, deviceHealth);
 
-            TelemetryConvention telemetryConvention = new CustomTelemetryConvention();
-            using var message = new Message(telemetryPayload, telemetryConvention)
+            using var message = new Message(telemetryPayload, s_customTelemetryConvention)
             {
                 Properties = { ["property1"] = "myValue" },
                 ComponentName = componentName,
             };
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {telemetryConvention.SerializeToString(telemetryPayload)}.");
+            _logger.LogDebug($"Telemetry: Sent - {s_customTelemetryConvention.SerializeToString(telemetryPayload)}.");
+        }
+
+        private Task<CommandResponse> CommandEventDispatcherAsync(CommandRequest commandRequest, object userContext)
+        {
+            // Ideally you'd need to use the combination of command name and component name to identify the command event,
+            // but for the purpose of this sample we can use the command name by itself since we know that all command names are unique.
+            string dispatcherKey = commandRequest.Name;
+            if (_commandEventCallbacks.ContainsKey(dispatcherKey))
+            {
+                return _commandEventCallbacks[dispatcherKey]?.Invoke(commandRequest, userContext);
+            }
+
+            _logger.LogDebug($"Command: Received a command request that is not implemented.");
+            return Task.FromResult(new CommandResponse((int)StatusCode.NotFound));
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
@@ -268,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $" maxTemp={report.MaximumTemperature}, minTemp={report.MinimumTemperature}, avgTemp={report.AverageTemperature}," +
                             $" startTime={report.StartTime.LocalDateTime}, endTime={report.EndTime.LocalDateTime}");
 
-                        return Task.FromResult(new CommandResponse(report, (int)StatusCode.Completed, new CustomObjectSerializer()));
+                        return Task.FromResult(new CommandResponse(report, (int)StatusCode.Completed, s_objectSerializer));
                     }
 
                     _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
@@ -286,28 +287,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private Task<CommandResponse> CommandEventDispatcherAsync(CommandRequest commandRequest, object userContext)
-        {
-            // Ideally you'd need to use the combination of command name and component name to identify the command event,
-            // but for the purpose of this sample we can use the command name by itself since we know that all command names are unique.
-            string dispatcherKey = commandRequest.Name;
-            if (_commandEventCallbacks.ContainsKey(dispatcherKey))
-            {
-                return _commandEventCallbacks[dispatcherKey]?.Invoke(commandRequest, userContext);
-            }
-
-            _logger.LogDebug($"Command: Received a command request that is not implemented.");
-            return Task.FromResult(new CommandResponse((int)StatusCode.NotFound));
-        }
-
-        private Task WritablePropertyEventDispatcherAsync(PropertyCollection desiredProperties, object userContext)
+        private Task WritablePropertyEventDispatcherAsync(PropertyCollection desiredProperties, object cancellationToken)
         {
             foreach (KeyValuePair<string, object> propertyUpdate in desiredProperties)
             {
-                string componentName = propertyUpdate.Key;
-                if (_writablePropertyEventCallbacks.ContainsKey(componentName))
+                // The dispatcher key will be either the root-level property name or the component name.
+                string dispatcherKey = propertyUpdate.Key;
+                if (_writablePropertyEventCallbacks.ContainsKey(dispatcherKey))
                 {
-                    return _writablePropertyEventCallbacks[componentName]?.Invoke(desiredProperties, componentName);
+                    return _writablePropertyEventCallbacks[dispatcherKey]?.Invoke(desiredProperties, cancellationToken, dispatcherKey);
                 }
             }
 
@@ -315,17 +303,42 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.CompletedTask;
         }
 
+        private async Task SendTemperatureRangeAsync(PropertyCollection desiredProperties, object userContext, string dispatcherKey)
+        {
+            string propertyName = dispatcherKey;
+            var cancellationToken = (CancellationToken)userContext;
+
+            // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection).
+            // This implementation detail will need to be addressed.
+            string serializedProperties = ((JObject)desiredProperties[propertyName]).ToString();
+            TemperatureRange temeratureRangeDesired = s_customPropertyConvention.DeserializeToType<TemperatureRange>(serializedProperties);
+
+            var writablePropertyResponse = new WritablePropertyResponse(temeratureRangeDesired, s_customPropertyConvention)
+            {
+                AckCode = (int)StatusCode.Completed,
+                AckVersion = 1,
+                AckDescription = "The operation completed successfully."
+            };
+
+            await _deviceClient.UpdateWritablePropertyAsync(propertyName, writablePropertyResponse, cancellationToken: cancellationToken);
+            _logger.LogDebug($"Property: Update - {{\"{propertyName}\" is complete.");
+        }
+
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and property update.
-        private async Task TargetTemperatureUpdateCallbackAsync(PropertyCollection desiredProperties, object userContext)
+        // This callback is invoked for all updates received for the two associated components.
+        private async Task TargetTemperatureUpdateCallbackAsync(PropertyCollection desiredProperties, object userContext, string dispatcherKey)
         {
-            const string propertyName = "targetTemperature";
-            string componentName = (string)userContext;
+            string componentName = dispatcherKey;
+            var cancellationToken = (CancellationToken)userContext;
 
-            // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection.
+            // The component has a single writable property, so the property name is a const here.
+            // Otherwise this would have been a switch-case.
+            const string propertyName = "targetTemperature";
+
+            // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection).
             // This implementation detail will need to be addressed.
-            bool targetTempUpdateReceived = desiredProperties.Contains(componentName)
-                && ((JObject)desiredProperties[componentName]).ContainsKey(propertyName);
+            bool targetTempUpdateReceived = ((JObject)desiredProperties[componentName]).ContainsKey(propertyName);
 
             if (!targetTempUpdateReceived)
             {
@@ -342,7 +355,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 AckVersion = desiredProperties.Version
             };
 
-            await _deviceClient.UpdateWritablePropertyAsync(propertyName, pendingReportedProperty, componentName);
+            await _deviceClient.UpdateWritablePropertyAsync(propertyName, pendingReportedProperty, componentName, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {targetTemperature} }} in °C is {StatusCode.InProgress}.");
 
             // Update Temperature in 2 steps
@@ -360,7 +373,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 AckDescription = "Successfully updated target temperature"
             };
 
-            await _deviceClient.UpdateWritablePropertyAsync(propertyName, completedReportedProperty, componentName);
+            await _deviceClient.UpdateWritablePropertyAsync(propertyName, completedReportedProperty, componentName, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {_temperature[componentName]} }} in °C is {StatusCode.Completed}");
         }
 

@@ -1918,7 +1918,11 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             PropertyCollection propertyPatch;
-            if (!string.IsNullOrWhiteSpace(componentName))
+            if (string.IsNullOrWhiteSpace(componentName))
+            {
+                propertyPatch = new PropertyCollection(properties, propertyConvention);
+            }
+            else
             {
                 properties.Add(PropertyConvention.ComponentIdentifierKey, PropertyConvention.ComponentIdentifierValue);
                 var componentProperties = new Dictionary<string, object>
@@ -1927,10 +1931,6 @@ namespace Microsoft.Azure.Devices.Client
                 };
 
                 propertyPatch = new PropertyCollection(componentProperties, propertyConvention);
-            }
-            else
-            {
-                propertyPatch = new PropertyCollection(properties, propertyConvention);
             }
 
             try

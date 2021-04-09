@@ -9,5 +9,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             return CustomSerializer.SerializeToString(objectToSerialize);
         }
+
+        public override T DeserializeToType<T>(string stringToDeserialize)
+        {
+            return CustomSerializer.DeserializeToType<T>(stringToDeserialize);
+        }
     }
 }

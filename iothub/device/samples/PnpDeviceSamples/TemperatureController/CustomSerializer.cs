@@ -17,5 +17,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             return JsonSerializer.Serialize(objectToSerialize, s_options);
         }
+
+        internal static T DeserializeToType<T>(string stringToDeserialize)
+        {
+            return JsonSerializer.Deserialize<T>(stringToDeserialize);
+        }
     }
 }

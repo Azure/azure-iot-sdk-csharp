@@ -56,31 +56,6 @@
     {
       "@type": [
         "Property",
-        "TemperatureRange"
-      ],
-      "name": "temperatureRange",
-      "displayName": "Temperature Range",
-      "description": "Allows to remotely update the thermostat's min and max temperature.",
-      "writable": true,
-      "schema": {
-        "@type": "Object",
-        "fields": [
-          {
-            "name": "maxTemp",
-            "displayName": "Max temperature",
-            "schema": "double"
-          },
-          {
-            "name": "minTemp",
-            "displayName": "Min temperature",
-            "schema": "double"
-          }
-        ]
-      }
-    },
-    {
-      "@type": [
-        "Property",
         "Temperature"
       ],
       "name": "maxTempSinceLastReboot",
