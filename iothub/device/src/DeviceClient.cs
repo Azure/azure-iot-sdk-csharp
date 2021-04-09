@@ -757,6 +757,14 @@ namespace Microsoft.Azure.Devices.Client
             => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, writablePropertyResponse } }, PropertyConvention.Instance, componentName, cancellationToken);
 
         /// <summary>
+        /// Update properties.
+        /// </summary>
+        /// <param name="propertyPatch">Reported properties to push.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        public Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken = default)
+            => InternalClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
+
+        /// <summary>
         /// Sets the global listener for Writable properties
         /// </summary>
         /// <param name="callback">The global call back to handle all writable property updates.</param>

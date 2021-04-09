@@ -1901,14 +1901,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <param name="propertyConvention"></param>
-        /// <param name="componentName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
         internal Task UpdatePropertiesAsync(
             IDictionary<string, object> properties,
             PropertyConvention propertyConvention,
@@ -1925,24 +1917,35 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(propertyConvention));
             }
 
-            string serializedPropertyPatch;
+            PropertyCollection propertyPatch;
             if (!string.IsNullOrWhiteSpace(componentName))
             {
                 properties.Add(PropertyConvention.ComponentIdentifierKey, PropertyConvention.ComponentIdentifierValue);
-                var componentDictionary = new Dictionary<string, object>
+                var componentProperties = new Dictionary<string, object>
                 {
                     { componentName, properties }
                 };
 
-                serializedPropertyPatch = propertyConvention.SerializeToString(componentDictionary);
+                propertyPatch = new PropertyCollection(componentProperties, propertyConvention);
             }
             else
             {
-                serializedPropertyPatch = propertyConvention.SerializeToString(properties);
+                propertyPatch = new PropertyCollection(properties, propertyConvention);
             }
 
-            var propertyPatch = new PropertyCollection(serializedPropertyPatch);
+            try
+            {
+                return InnerHandler.SendPropertyPatchAsync(propertyPatch, cancellationToken);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+        }
 
+        internal Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken)
+        {
             try
             {
                 return InnerHandler.SendPropertyPatchAsync(propertyPatch, cancellationToken);
@@ -1991,7 +1994,7 @@ namespace Microsoft.Azure.Devices.Client
                         {
                             componentProperties.Remove(PropertyConvention.ComponentIdentifierKey);
 
-                            var collection = new PropertyCollection(componentProperties);
+                            var collection = new PropertyCollection(componentProperties, PropertyConvention.Instance);
                             callback.Invoke(collection, componentName, userContext);
                         }
                     }

@@ -39,6 +39,13 @@ public Task UpdatePropertiesAsync(IDictionary<string, object> properties, Proper
 public Task UpdateWritablePropertyAsync(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName = default, CancellationToken cancellationToken = default);
 
 /// <summary>
+/// Update properties.
+/// </summary>
+/// <param name="propertyPatch">Reported properties to push.</param>
+/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+public Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken = default);
+
+/// <summary>
 /// Sets the global listener for Writable properties
 /// </summary>
 /// <param name="callback">The global call back to handle all writable property updates.</param>

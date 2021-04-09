@@ -15,25 +15,17 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string VersionName = "$version";
 
-        private readonly string _propertyJson;
-        private readonly IDictionary<string, object> _propertiesList = new Dictionary<string, object>();
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="propertyJson"></param>
-        public PropertyCollection(string propertyJson)
-        {
-            _propertyJson = propertyJson;
-        }
+        private readonly IDictionary<string, object> _properties = new Dictionary<string, object>();
+        private readonly PropertyConvention _propertyConvention;
 
         internal PropertyCollection()
         {
         }
 
-        internal PropertyCollection(IDictionary<string, object> propertiesList)
+        internal PropertyCollection(IDictionary<string, object> properties, PropertyConvention propertyConvention)
         {
-            _propertiesList = propertiesList;
+            _properties = properties;
+            _propertyConvention = propertyConvention;
         }
 
         /// <summary>
@@ -43,13 +35,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>true if the specified property is present; otherwise, false</returns>
         public bool Contains(string propertyName)
         {
-            return _propertiesList.TryGetValue(propertyName, out _);
+            return _properties.TryGetValue(propertyName, out _);
         }
 
         /// <summary>
         ///
         /// </summary>
-        public long Version => _propertiesList.TryGetValue(VersionName, out object version)
+        public long Version => _properties.TryGetValue(VersionName, out object version)
             ? (long)version
             : default;
 
@@ -62,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             get
             {
-                return _propertiesList[propertyName];
+                return _properties[propertyName];
             }
         }
 
@@ -72,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public string ToJson()
         {
-            return _propertiesList.ToString();
+            return _propertyConvention?.SerializeToString(_properties);
         }
 
         /// <summary>
@@ -81,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public IEnumerator<object> GetEnumerator()
         {
-            foreach (object property in _propertiesList)
+            foreach (object property in _properties)
             {
                 yield return property;
             }
@@ -92,14 +84,9 @@ namespace Microsoft.Azure.Devices.Client
             return GetEnumerator();
         }
 
-        internal string GetPropertyJson()
-        {
-            return _propertyJson;
-        }
-
         internal void AddPropertyToCollection(string propertyKey, object propertyValue)
         {
-            _propertiesList.Add(propertyKey, propertyValue);
+            _properties.Add(propertyKey, propertyValue);
         }
 
         /// <summary>

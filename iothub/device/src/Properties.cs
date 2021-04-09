@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 
@@ -10,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// A container for properties.
     /// </summary>
-    public class Properties
+    public class Properties : IEnumerable<object>
     {
         private const string VersionName = "$version";
         private readonly IDictionary<string, object> _readOnlyProperties = new Dictionary<string, object>();
@@ -68,6 +69,23 @@ namespace Microsoft.Azure.Devices.Client
         public long Version => _readOnlyProperties.TryGetValue(VersionName, out object version)
             ? (long)version
             : default;
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<object> GetEnumerator()
+        {
+            foreach (object property in _readOnlyProperties)
+            {
+                yield return property;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
         /// <summary>
         /// Converts a <see cref="TwinProperties"/> collection to a properties collection
