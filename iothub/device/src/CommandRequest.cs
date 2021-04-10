@@ -11,12 +11,14 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class CommandRequest
     {
         private readonly byte[] _data;
+        private readonly ObjectSerializer _objectSerializer;
 
-        internal CommandRequest(string commandName, string componentName = default, byte[] data = default)
+        internal CommandRequest(string commandName, string componentName = default, byte[] data = default, ObjectSerializer objectSerializer = default)
         {
             Name = commandName;
             ComponentName = componentName;
             _data = data;
+            _objectSerializer = objectSerializer ?? new ObjectSerializer();
         }
 
         /// <summary>
@@ -30,13 +32,13 @@ namespace Microsoft.Azure.Devices.Client
         public string Name { get; private set; }
 
         /// <summary>
-        /// The method data.
+        ///
         /// </summary>
-        public byte[] GetData()
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T GetData<T>()
         {
-            // Need to return a clone of the array so that consumers
-            // of this library cannot change its contents
-            return (byte[])_data.Clone();
+            return _objectSerializer.DeserializeToType<T>(DataAsJson);
         }
 
         /// <summary>

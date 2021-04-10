@@ -66,6 +66,52 @@
     },
     {
       "@type": "Command",
+      "name": "updateTemperatureWithDelay",
+      "displayName": "Update the temperature after observing the supplied delay.",
+      "description": "This command updates the temperature after observing the supplied delay.",
+      "request": {
+        "@type": "CommandPayload",
+        "name": "tempUpdateRequest",
+        "displayName": "Temperature update request",
+        "description": "The temerature value that is to be updated to.",
+        "schema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "targetTemp",
+              "displayName": "The target temperature",
+              "schema": "double"
+            },
+            {
+              "name": "delay",
+              "displayName": "Number of seconds to wait before updating the temperature.",
+              "schema": "int"
+            }
+          ]
+        }
+      },
+      "response": {
+        "name": "tempUpdateResponse",
+        "displayName": "Temperature update response",
+        "schema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "targetTemp",
+              "displayName": "The target temperature",
+              "schema": "double"
+            },
+            {
+              "name": "status",
+              "displayName": "Status of the command.",
+              "schema": "int"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "@type": "Command",
       "name": "getMaxMinReport",
       "displayName": "Get Max-Min report.",
       "description": "This command returns the max, min and average temperature from the specified time to the current time.",

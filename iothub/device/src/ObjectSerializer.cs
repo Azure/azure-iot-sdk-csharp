@@ -13,6 +13,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
+        public static readonly ObjectSerializer Instance = new ObjectSerializer();
+
+        /// <summary>
+        ///
+        /// </summary>
         /// <param name="objectToSerialize"></param>
         /// <returns></returns>
         public virtual string SerializeToString(object objectToSerialize)

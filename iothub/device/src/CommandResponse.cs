@@ -18,13 +18,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="result">data returned by the method call.</param>
         /// <param name="status">status indicating success or failure.</param>
-        /// <param name="serializer"></param>
+        /// <param name="objectSerializer"></param>
         /// <returns></returns>
-        public CommandResponse(object result, int status, ObjectSerializer serializer)
+        public CommandResponse(object result, int status, ObjectSerializer objectSerializer = default)
         {
             _result = result;
             Status = status;
-            _objectSerializer = serializer;
+            _objectSerializer = objectSerializer ?? new ObjectSerializer();
         }
 
         /// <summary>

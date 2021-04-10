@@ -717,30 +717,30 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="propertyName">Property name.</param>
         /// <param name="propertyValue">Property value.</param>
-        /// <param name="propertyConvention">A convention handler that defines serializer to use for the properties.</param>
         /// <param name="componentName">The component name this property belongs to.</param>
+        /// <param name="objectSerializer">A serializer to use for the properties.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         public Task UpdatePropertyAsync(
             string propertyName,
             object propertyValue,
-            PropertyConvention propertyConvention,
             string componentName = default,
+            ObjectSerializer objectSerializer = default,
             CancellationToken cancellationToken = default)
-            => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, propertyValue } }, propertyConvention, componentName, cancellationToken);
+            => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, objectSerializer, cancellationToken);
 
         /// <summary>
         /// Update a collection of properties.
         /// </summary>
         /// <param name="properties">Reported properties to push.</param>
-        /// <param name="propertyConvention">A convention handler that defines serializer to use for the properties.</param>
         /// <param name="componentName">The component name this property belongs to.</param>
+        /// <param name="objectSerializer">A serializer to use for the properties.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         public Task UpdatePropertiesAsync(
             IDictionary<string, object> properties,
-            PropertyConvention propertyConvention,
             string componentName = default,
+            ObjectSerializer objectSerializer = default,
             CancellationToken cancellationToken = default)
-            => InternalClient.UpdatePropertiesAsync(properties, propertyConvention, componentName, cancellationToken);
+            => InternalClient.UpdatePropertiesAsync(properties, componentName, objectSerializer, cancellationToken);
 
         /// <summary>
         /// Update a writable property.
@@ -754,7 +754,7 @@ namespace Microsoft.Azure.Devices.Client
             WritablePropertyResponse writablePropertyResponse,
             string componentName = default,
             CancellationToken cancellationToken = default)
-            => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, writablePropertyResponse } }, PropertyConvention.Instance, componentName, cancellationToken);
+            => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, writablePropertyResponse } }, componentName, ObjectSerializer.Instance, cancellationToken);
 
         /// <summary>
         /// Update properties.
@@ -781,8 +781,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Send telemetry using the specified message.
         /// </summary>
         /// <remarks>
-        /// Use the <see cref="Message(object, TelemetryConvention)"/> constructor to pass in the formatted telemetry payload and the <see cref="TelemetryConvention"/>.
-        /// If your telemetry payload does not have any specific serialization requirements you can pass in <see cref="TelemetryConvention.Instance"/>.
+        /// Use the <see cref="Message(object, TelemetryConvention)"/> constructor to pass in the formatted telemetry payload and an optional
+        /// <see cref="TelemetryConvention"/> that specifies your payload serialization and encoding rules.
         /// If the telemetry is originating from a component, set the component name to <see cref="Message.ComponentName"/>.
         /// </remarks>
         /// <param name="telemetryMessage">The telemetry message.</param>
@@ -800,9 +800,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="callback">A method implementation that will handle the incoming command.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="objectSerializer">The serializer to be used to deserializer the <see cref="CommandRequest"/> and serialize the <see cref="CommandResponse"/>.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToCommandsAsync(callback, userContext, cancellationToken);
+        public Task SubscribeToCommandsAsync(
+            Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext,
+            ObjectSerializer objectSerializer = default,
+            CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToCommandsAsync(callback, userContext, objectSerializer, cancellationToken);
 
         #endregion Commands
 

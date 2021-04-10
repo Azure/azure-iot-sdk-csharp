@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        public static readonly TelemetryConvention Instance = new TelemetryConvention();
+        public static new readonly TelemetryConvention Instance = new TelemetryConvention();
 
         /// <summary>
         ///

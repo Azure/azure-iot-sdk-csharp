@@ -33,7 +33,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static readonly ObjectSerializer s_objectSerializer = new CustomObjectSerializer();
         private static readonly TelemetryConvention s_customTelemetryConvention = new CustomTelemetryConvention();
-        private static readonly PropertyConvention s_customPropertyConvention = new CustomPropertyConvention();
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
@@ -117,10 +116,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Alternatively, you can also have an uber callback that implements a dispatcher internally.
             // The important thing to note here is that you can only set a single callback for subscribing to command events.
             // If you set multiple callbacks to this API, the latest one will be invoked.
-            _logger.LogDebug("Set handler for 'reboot' and 'getMaxMinReport' commands.");
+            _logger.LogDebug("Set handler for 'reboot', 'getMaxMinReport' and 'updateTemperatureWithDelay' commands.");
             _commandEventCallbacks.Add("reboot", HandleRebootCommandAsync);
             _commandEventCallbacks.Add("getMaxMinReport", HandleMaxMinReportCommandAsync);
-            await _deviceClient.SubscribeToCommandsAsync(CommandEventDispatcherAsync, null, cancellationToken);
+            _commandEventCallbacks.Add("updateTemperatureWithDelay", HandleTemperatureUpdateCommandAsync);
+            await _deviceClient.SubscribeToCommandsAsync(CommandEventDispatcherAsync, null, objectSerializer: s_objectSerializer, cancellationToken: cancellationToken);
 
             // WritablePropertyEventDispatcherAsync is a dispatcher that we provide to dispatch the individual component/ root-level property callbacks.
             // Alternatively, you can also have an uber callback that implements a dispatcher internally.
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Humidity = 68
             };
 
-            await _deviceClient.UpdatePropertyAsync(initialValueName, readonlyPropertyPatch, s_customPropertyConvention, componentName, cancellationToken);
+            await _deviceClient.UpdatePropertyAsync(initialValueName, readonlyPropertyPatch, componentName, s_objectSerializer, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{initialValueName}\" is complete.");
         }
 
@@ -216,10 +216,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             try
             {
-                int delay = JsonConvert.DeserializeObject<int>(request.DataAsJson);
+                int delay = request.GetData<int>();
 
                 _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
-                await Task.Delay(delay * 1000);
+                await Task.Delay(TimeSpan.FromSeconds(delay));
 
                 _temperature[Thermostat1] = _maxTemp[Thermostat1] = 0;
                 _temperature[Thermostat2] = _maxTemp[Thermostat2] = 0;
@@ -235,6 +235,36 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return new CommandResponse((int)StatusCode.Completed);
         }
 
+        private async Task<CommandResponse> HandleTemperatureUpdateCommandAsync(CommandRequest request, object userContext)
+        {
+            try
+            {
+                UpdateTemperatureRequest updateTemperatureRequest = request.GetData<UpdateTemperatureRequest>();
+
+                _logger.LogDebug($"Command: Received - component=\"{request.ComponentName}\"," +
+                    $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
+                await Task.Delay(TimeSpan.FromSeconds(updateTemperatureRequest.Delay));
+
+                _temperature[request.ComponentName] = updateTemperatureRequest.TargetTemperature;
+
+                var updateTemperatureResponse = new UpdateTemperatureResponse
+                {
+                    TargetTemperature = updateTemperatureRequest.TargetTemperature,
+                    Status = (int)StatusCode.Completed
+                };
+
+                _logger.LogDebug($"Command: component=\"{request.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
+                            $" has {StatusCode.Completed}.");
+
+                return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed, s_objectSerializer);
+            }
+            catch (JsonReaderException ex)
+            {
+                _logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                return new CommandResponse((int)StatusCode.BadRequest);
+            }
+        }
+
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the
         // specified time to the current time.
         private Task<CommandResponse> HandleMaxMinReportCommandAsync(CommandRequest request, object userContext)
@@ -242,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             try
             {
                 string componentName = request.ComponentName;
-                DateTime sinceInUtc = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
+                DateTime sinceInUtc = request.GetData<DateTime>();
                 var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
 
                 if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))
@@ -266,7 +296,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         };
 
                         _logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
-                            $" maxTemp={report.MaximumTemperature}, minTemp={report.MinimumTemperature}, avgTemp={report.AverageTemperature}," +
+                            $" maxTemp={report.MaximumTemperature}°C, minTemp={report.MinimumTemperature}°C, avgTemp={report.AverageTemperature}°C," +
                             $" startTime={report.StartTime.LocalDateTime}, endTime={report.EndTime.LocalDateTime}");
 
                         return Task.FromResult(new CommandResponse(report, (int)StatusCode.Completed, s_objectSerializer));
@@ -311,9 +341,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection).
             // This implementation detail will need to be addressed.
             string serializedProperties = ((JObject)desiredProperties[propertyName]).ToString();
-            TemperatureRange temeratureRangeDesired = s_customPropertyConvention.DeserializeToType<TemperatureRange>(serializedProperties);
+            TemperatureRange temeratureRangeDesired = s_objectSerializer.DeserializeToType<TemperatureRange>(serializedProperties);
 
-            var writablePropertyResponse = new WritablePropertyResponse(temeratureRangeDesired, s_customPropertyConvention)
+            var writablePropertyResponse = new WritablePropertyResponse(temeratureRangeDesired, s_objectSerializer)
             {
                 AckCode = (int)StatusCode.Completed,
                 AckVersion = desiredProperties.Version,
@@ -349,7 +379,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             double targetTemperature = desiredProperties[componentName][propertyName];
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
-            var pendingReportedProperty = new WritablePropertyResponse(targetTemperature, PropertyConvention.Instance)
+            var pendingReportedProperty = new WritablePropertyResponse(targetTemperature)
             {
                 AckCode = (int)StatusCode.InProgress,
                 AckVersion = desiredProperties.Version
@@ -366,7 +396,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await Task.Delay(6 * 1000);
             }
 
-            var completedReportedProperty = new WritablePropertyResponse(_temperature[componentName], PropertyConvention.Instance)
+            var completedReportedProperty = new WritablePropertyResponse(_temperature[componentName])
             {
                 AckCode = (int)StatusCode.Completed,
                 AckVersion = desiredProperties.Version,
@@ -394,7 +424,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     { "totalMemory", 1024 },
                 };
 
-            await _deviceClient.UpdatePropertiesAsync(deviceInformation, PropertyConvention.Instance, componentName, cancellationToken);
+            await _deviceClient.UpdatePropertiesAsync(deviceInformation, componentName, cancellationToken: cancellationToken);
             _logger.LogDebug($"Property: Update - component = '{componentName}', properties update is complete.");
         }
 
@@ -404,21 +434,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string workingSetName = "workingSet";
 
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
-
             IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(workingSetName, workingSet);
-
-            TelemetryConvention telemetryConvention = TelemetryConvention.Instance;
-            using var message = new Message(telemetryPayload, telemetryConvention);
+            using var message = new Message(telemetryPayload);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {telemetryConvention.SerializeToString(telemetryPayload)} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {TelemetryConvention.Instance.SerializeToString(telemetryPayload)} in KB.");
         }
 
         // Send device serial number over property update.
         private async Task SendDeviceSerialNumberAsync(CancellationToken cancellationToken)
         {
             const string propertyName = "serialNumber";
-            await _deviceClient.UpdatePropertyAsync(propertyName, SerialNumber, PropertyConvention.Instance, cancellationToken: cancellationToken);
+            await _deviceClient.UpdatePropertyAsync(propertyName, SerialNumber, cancellationToken: cancellationToken);
             _logger.LogDebug($"Property: Update - {{ \"{propertyName}\": \"{SerialNumber}\" }} is complete.");
         }
 
@@ -440,9 +467,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             double currentTemperature = _temperature[componentName];
 
             IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(temperatureName, currentTemperature);
-
-            TelemetryConvention telemetryConvention = TelemetryConvention.Instance;
-            using var message = new Message(telemetryPayload, telemetryConvention);
+            using var message = new Message(telemetryPayload);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{temperatureName}\": {currentTemperature} }} in °C.");
@@ -467,7 +492,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string propertyName = "maxTempSinceLastReboot";
             double maxTemp = _maxTemp[componentName];
 
-            await _deviceClient.UpdatePropertyAsync(propertyName, maxTemp, PropertyConvention.Instance, componentName, cancellationToken);
+            await _deviceClient.UpdatePropertyAsync(propertyName, maxTemp, componentName, cancellationToken: cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ \"{propertyName}\": {maxTemp} }} in °C is complete.");
         }
     }

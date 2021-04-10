@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         public override string SerializeToString(object objectToSerialize)
         {
-            return CustomSerializer.SerializeToString(objectToSerialize);
+            return new CustomObjectSerializer().SerializeToString(objectToSerialize);
         }
     }
 }

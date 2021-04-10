@@ -9,13 +9,8 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     ///
     /// </summary>
-    public class PropertyConvention : ObjectSerializer
+    public static class PropertyConvention
     {
-        /// <summary>
-        ///
-        /// </summary>
-        public static readonly PropertyConvention Instance = new PropertyConvention();
-
         /// <summary>
         ///
         /// </summary>
@@ -82,21 +77,21 @@ namespace Microsoft.Azure.Devices.Client
         /// <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property"/>.</param>
         /// <param name="propertyValue">The unserialized property value, in the format defined in the DTDL interface.</param>
         /// <param name="componentName">The component name this property belongs to.</param>
-        /// <param name="propertyConvention">A convention handler that defines serializer to use for the properties.</param>
+        /// <param name="objectSerializer">A serializer to use for the properties.</param>
         /// <returns>A plug and play compatible property payload, which can be sent to IoT Hub.</returns>
-        public static PropertyCollection CreatePropertyCollection(string propertyName, object propertyValue, string componentName = default, PropertyConvention propertyConvention = default)
-            => CreatePropertyCollection(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, propertyConvention);
+        public static PropertyCollection CreatePropertyCollection(string propertyName, object propertyValue, string componentName = default, ObjectSerializer objectSerializer = default)
+            => CreatePropertyCollection(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, objectSerializer);
 
         /// <summary>
         /// Create a property collection.
         /// </summary>
         /// <param name="properties">Reported properties to push.</param>
         /// <param name="componentName">The component name this property belongs to.</param>
-        /// <param name="propertyConvention">A convention handler that defines serializer to use for the properties.</param>
+        /// <param name="objectSerializer">A serializer to use for the properties.</param>
         /// <returns>A plug and play compatible property payload, which can be sent to IoT Hub.</returns>
-        public static PropertyCollection CreatePropertyCollection(IDictionary<string, object> properties, string componentName = default, PropertyConvention propertyConvention = default)
+        public static PropertyCollection CreatePropertyCollection(IDictionary<string, object> properties, string componentName = default, ObjectSerializer objectSerializer = default)
         {
-            propertyConvention ??= Instance;
+            objectSerializer ??= ObjectSerializer.Instance;
 
             if (properties == null)
             {
@@ -105,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (componentName == null)
             {
-                return new PropertyCollection(properties, propertyConvention);
+                return new PropertyCollection(properties, objectSerializer);
             }
 
             properties.Add(ComponentIdentifierKey, ComponentIdentifierValue);
@@ -114,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client
                     { componentName, properties }
                 };
 
-            return new PropertyCollection(componentProperties, propertyConvention);
+            return new PropertyCollection(componentProperties, objectSerializer);
         }
 
         /// <summary>
@@ -126,6 +121,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component name this property belongs to.</param>
         /// <returns>A plug and play compatible writable property payload, which can be sent to IoT Hub.</returns>
         public static PropertyCollection CreateWritablePropertyCollection(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName = default)
-            => CreatePropertyCollection(new Dictionary<string, object> { { propertyName, writablePropertyResponse } }, componentName, Instance);
+            => CreatePropertyCollection(new Dictionary<string, object> { { propertyName, writablePropertyResponse } }, componentName, ObjectSerializer.Instance);
     }
 }
