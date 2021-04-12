@@ -968,7 +968,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _handleDisconnectCts?.Dispose();
 
                 _handlerSemaphore?.Dispose();
-                _handlerSemaphore = null;
             }
         }
     }
