@@ -11,34 +11,6 @@
 public Task<Properties> GetPropertiesAsync(CancellationToken cancellationToken);
 
 /// <summary>
-/// Update a single property.
-/// </summary>
-/// <param name="propertyName">Property name.</param>
-/// <param name="propertyValue">Property value.</param>
-/// <param name="componentName">The component name this property belongs to.</param>
-/// <param name="objectSerializer">A serializer to use for the properties.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertyAsync(string propertyName, object propertyValue, string componentName = default, ObjectSerializer objectSerializer = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Update a collection of properties.
-/// </summary>
-/// <param name="properties">Reported properties to push.</param>
-/// <param name="componentName">The component name this property belongs to.</param>
-/// <param name="objectSerializer">A serializer to use for the properties.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertiesAsync(IDictionary<string, object> properties, string componentName = default, ObjectSerializer objectSerializer = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Update a writable property.
-/// </summary>
-/// <param name="propertyName">Property name.</param>
-/// <param name="writablePropertyResponse">The writable properyt response to push.</param>
-/// <param name="componentName">The component name this property belongs to.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdateWritablePropertyAsync(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName = default, CancellationToken cancellationToken = default);
-
-/// <summary>
 /// Update properties.
 /// </summary>
 /// <param name="propertyPatch">Reported properties to push.</param>
@@ -75,8 +47,8 @@ public class PropertyCollection : IEnumerable, IEnumerable<object> {
 }
 
 public class WritablePropertyResponse {
-    public WritablePropertyResponse(object propertyValue, ObjectSerializer objectSerializer=null);
-    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription=null, ObjectSerializer objectSerializer=null);
+    public WritablePropertyResponse(object propertyValue, PropertyConvention propertyConvention=null);
+    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription=null, PropertyConvention propertyConvention=null);
     public int AckCode { get; set; }
     public string AckDescription { get; set; }
     public long AckVersion { get; set; }
@@ -87,19 +59,20 @@ public class WritablePropertyResponse {
 public class ObjectSerializer {
     public static readonly ObjectSerializer Instance;
     public ObjectSerializer();
+    public string ContentType { get; set; }
     public virtual T DeserializeToType<T>(string stringToDeserialize);
     public virtual string SerializeToString(object objectToSerialize);
 }
 
-public static class PropertyConvention {
-    public static string ComponentIdentifierKey { get; }
-    public static string ComponentIdentifierValue { get; }
-    public static PropertyCollection CreatePropertyCollection(IDictionary<string, object> properties, string componentName=null, ObjectSerializer objectSerializer=null);
-    public static PropertyCollection CreatePropertyCollection(string propertyName, object propertyValue, string componentName=null, ObjectSerializer objectSerializer=null);
-    public static PropertyCollection CreateWritablePropertyCollection(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName=null);
-    public static IDictionary<string, object> FormatPropertyPayload(IDictionary<string, object> properties, string componentName=null);
-    public static IDictionary<string, object> FormatPropertyPayload(string propertyName, object propertyValue, string componentName=null);
-    public static IDictionary<string, object> FormatWritablePropertyResponsePayload(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName=null);
+public class PropertyConvention {
+    public static readonly PropertyConvention Instance;
+    public PropertyConvention();
+    public Encoding ContentEncoding { get; }
+    public string ContentType { get; }
+    public ObjectSerializer PayloadSerializer { get; set; }
+    public static PropertyCollection CreatePropertiesPatch(IDictionary<string, object> properties, string componentName=null, PropertyConvention propertyConvention=null);
+    public static PropertyCollection CreatePropertyPatch(string propertyName, object propertyValue, string componentName=null, PropertyConvention propertyConvention=null);
+    public static PropertyCollection CreateWritablePropertyPatch(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName=null);
 }
 ```
 
@@ -124,11 +97,11 @@ public Task SendTelemetryAsync(Message telemetryMessage, CancellationToken cance
 ```csharp
 public Message(object messagePayload, TelemetryConvention telemetryConvention=null);
 
-public class TelemetryConvention : ObjectSerializer {
-    public static readonly new TelemetryConvention Instance;
+public class TelemetryConvention {
+    public static readonly TelemetryConvention Instance;
     public TelemetryConvention();
     public Encoding ContentEncoding { get; set; }
-    public string ContentType { get; set; }
+    public ObjectSerializer PayloadSerializer { get; set; }
     public virtual byte[] EncodeStringToByteArray(string contentPayload);
     public static IDictionary<string, object> FormatTelemetryPayload(string telemetryName, object telemetryValue);
     public virtual byte[] GetObjectBytes(object objectToSendWithConvention);
@@ -143,14 +116,14 @@ public class TelemetryConvention : ObjectSerializer {
 /// </summary>
 /// <param name="callback">A method implementation that will handle the incoming command.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-/// <param name="objectSerializer">The serializer to be used to deserializer the <see cref="CommandRequest"/> and serialize the <see cref="CommandResponse"/>.</param>
+/// <param name="commandConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, ObjectSerializer objectSerializer = default, CancellationToken cancellationToken = default);
+public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CommandConvention commandConvention = default, CancellationToken cancellationToken = default);
 ```
 #### All related types
 
 ```csharp
- public sealed class CommandRequest {
+public sealed class CommandRequest {
     public string ComponentName { get; private set; }
     public string DataAsJson { get; }
     public string Name { get; private set; }
@@ -159,7 +132,16 @@ public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandRe
 
 public sealed class CommandResponse {
     public CommandResponse(int status);
-    public CommandResponse(object result, int status, ObjectSerializer objectSerializer = null);
+    public CommandResponse(object result, int status, CommandConvention commandConvention=null);
     public string ResultAsJson { get; }
     public int Status { get; private set; }
+}
+
+public class CommandConvention {
+    public static readonly CommandConvention Instance;
+    public CommandConvention();
+    public Encoding ContentEncoding { get; }
+    public string ContentType { get; }
+    public ObjectSerializer PayloadSerializer { get; set; }
+}
 ```

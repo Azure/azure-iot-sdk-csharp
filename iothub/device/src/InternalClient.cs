@@ -1904,7 +1904,7 @@ namespace Microsoft.Azure.Devices.Client
         internal Task UpdatePropertiesAsync(
             IDictionary<string, object> properties,
             string componentName,
-            ObjectSerializer objectSerializer,
+            PropertyConvention propertyConvention,
             CancellationToken cancellationToken)
         {
             if (properties == null)
@@ -1912,12 +1912,12 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(properties));
             }
 
-            objectSerializer ??= ObjectSerializer.Instance;
+            propertyConvention ??= PropertyConvention.Instance;
 
             PropertyCollection propertyPatch;
             if (string.IsNullOrWhiteSpace(componentName))
             {
-                propertyPatch = new PropertyCollection(properties, objectSerializer);
+                propertyPatch = new PropertyCollection(properties, propertyConvention);
             }
             else
             {
@@ -1927,7 +1927,7 @@ namespace Microsoft.Azure.Devices.Client
                     { componentName, properties }
                 };
 
-                propertyPatch = new PropertyCollection(componentProperties, objectSerializer);
+                propertyPatch = new PropertyCollection(componentProperties, propertyConvention);
             }
 
             try
@@ -1991,7 +1991,7 @@ namespace Microsoft.Azure.Devices.Client
                         {
                             componentProperties.Remove(PropertyConvention.ComponentIdentifierKey);
 
-                            var collection = new PropertyCollection(componentProperties, ObjectSerializer.Instance);
+                            var collection = new PropertyCollection(componentProperties, PropertyConvention.Instance);
                             callback.Invoke(collection, componentName, userContext);
                         }
                     }
@@ -2003,7 +2003,7 @@ namespace Microsoft.Azure.Devices.Client
             return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
         }
 
-        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, ObjectSerializer objectSerializer, CancellationToken cancellationToken)
+        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CommandConvention commandConvention, CancellationToken cancellationToken)
         {
             const char ComponentLevelCommandIdentifier = '*';
 
@@ -2016,11 +2016,11 @@ namespace Microsoft.Azure.Devices.Client
                     string[] split = methodRequest.Name.Split(ComponentLevelCommandIdentifier);
                     string componentName = split[0];
                     string commandName = split[1];
-                    commandRequest = new CommandRequest(commandName, componentName, methodRequest.Data, objectSerializer);
+                    commandRequest = new CommandRequest(commandName, componentName, methodRequest.Data, commandConvention);
                 }
                 else
                 {
-                    commandRequest = new CommandRequest(methodRequest.Name, data: methodRequest.Data, objectSerializer: objectSerializer);
+                    commandRequest = new CommandRequest(methodRequest.Name, data: methodRequest.Data, commandConvention: commandConvention);
                 }
 
                 CommandResponse commandResponse = await callback.Invoke(commandRequest, userContext).ConfigureAwait(false);

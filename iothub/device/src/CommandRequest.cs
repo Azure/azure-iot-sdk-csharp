@@ -11,14 +11,14 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class CommandRequest
     {
         private readonly byte[] _data;
-        private readonly ObjectSerializer _objectSerializer;
+        private readonly CommandConvention _commandConvention;
 
-        internal CommandRequest(string commandName, string componentName = default, byte[] data = default, ObjectSerializer objectSerializer = default)
+        internal CommandRequest(string commandName, string componentName = default, byte[] data = default, CommandConvention commandConvention = default)
         {
             Name = commandName;
             ComponentName = componentName;
             _data = data;
-            _objectSerializer = objectSerializer ?? new ObjectSerializer();
+            _commandConvention = commandConvention ?? CommandConvention.Instance;
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public T GetData<T>()
         {
-            return _objectSerializer.DeserializeToType<T>(DataAsJson);
+            return _commandConvention.PayloadSerializer.DeserializeToType<T>(DataAsJson);
         }
 
         /// <summary>

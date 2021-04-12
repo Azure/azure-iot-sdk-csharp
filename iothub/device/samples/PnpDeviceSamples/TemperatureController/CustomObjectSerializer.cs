@@ -8,6 +8,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     internal class CustomObjectSerializer : ObjectSerializer
     {
+        internal new static readonly CustomObjectSerializer Instance = new();
+
         private static readonly JsonSerializerOptions s_options = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault

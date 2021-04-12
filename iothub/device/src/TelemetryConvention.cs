@@ -9,17 +9,12 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     ///
     /// </summary>
-    public class TelemetryConvention : ObjectSerializer
+    public class TelemetryConvention
     {
-        /// <summary>
-        /// The content type for a plug and play compatible telemetry message.
-        /// </summary>
-        private const string ApplicationJson = "application/json";
-
         /// <summary>
         ///
         /// </summary>
-        public static new readonly TelemetryConvention Instance = new TelemetryConvention();
+        public static readonly TelemetryConvention Instance = new TelemetryConvention();
 
         /// <summary>
         ///
@@ -29,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        public string ContentType { get; set; } = ApplicationJson;
+        public ObjectSerializer PayloadSerializer { get; set; } = ObjectSerializer.Instance;
 
         /// <summary>
         /// Format a plug and play compatible telemetry message payload.
@@ -60,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public virtual byte[] GetObjectBytes(object objectToSendWithConvention)
         {
-            return EncodeStringToByteArray(SerializeToString(objectToSendWithConvention));
+            return EncodeStringToByteArray(PayloadSerializer.SerializeToString(objectToSendWithConvention));
         }
     }
 }

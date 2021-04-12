@@ -11,19 +11,19 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class WritablePropertyResponse
     {
-        private readonly ObjectSerializer _objectSerializer;
+        private readonly PropertyConvention _propertyConvention;
 
         /// <summary>
         /// Convenience constructor for specifying only the property value.
         /// </summary>
         /// <param name="propertyValue">The unserialized property value.</param>
-        /// <param name="objectSerializer"></param>
-        public WritablePropertyResponse(object propertyValue, ObjectSerializer objectSerializer = default)
+        /// <param name="propertyConvention"></param>
+        public WritablePropertyResponse(object propertyValue, PropertyConvention propertyConvention = default)
         {
             // null checks
 
             Value = propertyValue;
-            _objectSerializer = objectSerializer ?? ObjectSerializer.Instance;
+            _propertyConvention = propertyConvention ?? PropertyConvention.Instance;
         }
 
         /// <summary>
@@ -33,9 +33,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="ackCode">The acknowledgement code, usually an HTTP Status Code e.g. 200, 400.</param>
         /// <param name="ackVersion">The acknowledgement version, as supplied in the property update request.</param>
         /// <param name="ackDescription">The acknowledgement description, an optional, human-readable message about the result of the property update.</param>
-        /// <param name="objectSerializer"></param>
-        public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default, ObjectSerializer objectSerializer = default)
-            : this(propertyValue, objectSerializer)
+        /// <param name="propertyConvention"></param>
+        public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default, PropertyConvention propertyConvention = default)
+            : this(propertyValue, propertyConvention)
         {
             // null checks
 
@@ -72,6 +72,6 @@ namespace Microsoft.Azure.Devices.Client
         /// The serialized property value.
         /// </summary>
         [JsonProperty("value")]
-        public JRaw ValueAsJson => new JRaw(_objectSerializer.SerializeToString(Value));
+        public JRaw ValueAsJson => new JRaw(_propertyConvention.PayloadSerializer.SerializeToString(Value));
     }
 }

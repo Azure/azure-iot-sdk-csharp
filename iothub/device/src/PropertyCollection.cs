@@ -16,15 +16,15 @@ namespace Microsoft.Azure.Devices.Client
         private const string VersionName = "$version";
 
         private readonly IDictionary<string, object> _properties = new Dictionary<string, object>();
-        private readonly ObjectSerializer _objectSerializer;
+        private readonly PropertyConvention _propertyConvention;
 
-        internal PropertyCollection(ObjectSerializer objectSerializer = default)
+        internal PropertyCollection(PropertyConvention propertyConvention = default)
         {
-            _objectSerializer = objectSerializer ?? ObjectSerializer.Instance;
+            _propertyConvention = propertyConvention ?? PropertyConvention.Instance;
         }
 
-        internal PropertyCollection(IDictionary<string, object> properties, ObjectSerializer objectSerializer = default)
-            : this(objectSerializer)
+        internal PropertyCollection(IDictionary<string, object> properties, PropertyConvention propertyConvention = default)
+            : this(propertyConvention)
         {
             _properties = properties;
         }
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public string ToJson()
         {
-            return _objectSerializer?.SerializeToString(_properties);
+            return _propertyConvention?.PayloadSerializer?.SerializeToString(_properties);
         }
 
         /// <summary>

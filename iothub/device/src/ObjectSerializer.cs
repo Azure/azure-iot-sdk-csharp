@@ -13,7 +13,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
+        internal const string ApplicationJson = "application/json";
+
+        /// <summary>
+        ///
+        /// </summary>
         public static readonly ObjectSerializer Instance = new ObjectSerializer();
+
+        /// <summary>
+        ///
+        /// </summary>
+        public string ContentType { get; set; } = ApplicationJson;
 
         /// <summary>
         ///

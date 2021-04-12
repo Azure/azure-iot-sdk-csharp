@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             TelemetryConvention convention = GetTelemetryConventionInstance(telemetryConvention);
             ContentEncoding = convention.ContentEncoding.WebName;
-            ContentType = convention.ContentType;
+            ContentType = convention.PayloadSerializer.ContentType;
 
             // Reset the owning of the stream
             _streamDisposalResponsibility = StreamDisposalResponsibility.Sdk;

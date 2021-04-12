@@ -713,50 +713,6 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.GetPropertiesAsync(cancellationToken);
 
         /// <summary>
-        /// Update a single property.
-        /// </summary>
-        /// <param name="propertyName">Property name.</param>
-        /// <param name="propertyValue">Property value.</param>
-        /// <param name="componentName">The component name this property belongs to.</param>
-        /// <param name="objectSerializer">A serializer to use for the properties.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdatePropertyAsync(
-            string propertyName,
-            object propertyValue,
-            string componentName = default,
-            ObjectSerializer objectSerializer = default,
-            CancellationToken cancellationToken = default)
-            => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, objectSerializer, cancellationToken);
-
-        /// <summary>
-        /// Update a collection of properties.
-        /// </summary>
-        /// <param name="properties">Reported properties to push.</param>
-        /// <param name="componentName">The component name this property belongs to.</param>
-        /// <param name="objectSerializer">A serializer to use for the properties.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdatePropertiesAsync(
-            IDictionary<string, object> properties,
-            string componentName = default,
-            ObjectSerializer objectSerializer = default,
-            CancellationToken cancellationToken = default)
-            => InternalClient.UpdatePropertiesAsync(properties, componentName, objectSerializer, cancellationToken);
-
-        /// <summary>
-        /// Update a writable property.
-        /// </summary>
-        /// <param name="propertyName">Property name.</param>
-        /// <param name="writablePropertyResponse">The writable properyt response to push.</param>
-        /// <param name="componentName">The component name this property belongs to.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdateWritablePropertyAsync(
-            string propertyName,
-            WritablePropertyResponse writablePropertyResponse,
-            string componentName = default,
-            CancellationToken cancellationToken = default)
-            => UpdatePropertiesAsync(new Dictionary<string, object> { { propertyName, writablePropertyResponse } }, componentName, ObjectSerializer.Instance, cancellationToken);
-
-        /// <summary>
         /// Update properties.
         /// </summary>
         /// <param name="propertyPatch">Reported properties to push.</param>
@@ -800,13 +756,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="callback">A method implementation that will handle the incoming command.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        /// <param name="objectSerializer">The serializer to be used to deserializer the <see cref="CommandRequest"/> and serialize the <see cref="CommandResponse"/>.</param>
+        /// <param name="commandConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         public Task SubscribeToCommandsAsync(
             Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext,
-            ObjectSerializer objectSerializer = default,
+            CommandConvention commandConvention = default,
             CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToCommandsAsync(callback, userContext, objectSerializer, cancellationToken);
+            => InternalClient.SubscribeToCommandsAsync(callback, userContext, commandConvention, cancellationToken);
 
         #endregion Commands
 
