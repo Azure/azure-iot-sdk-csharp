@@ -1,5 +1,49 @@
 ## Plug and Play convention compatible APIs
 
+#### Common
+
+```csharp
+public interface ISerializer {
+    string ContentType { get; }
+    T DeserializeToType<T>(string stringToDeserialize);
+    string SerializeToString(object objectToSerialize);
+}
+
+public interface IContentEncoder {
+    Encoding ContentEncoding { get; }
+    byte[] EncodeStringToByteArray(string contentPayload);
+}
+
+public interface IPayloadConvention {
+    IContentEncoder PayloadEncoder { get; }
+    ISerializer PayloadSerializer { get; }
+    byte[] GetObjectBytes(object objectToSendWithConvention);
+}
+
+public class JsonContentSerializer : ISerializer {
+    public static readonly JsonContentSerializer Instance;
+    public JsonContentSerializer();
+    public string ContentType { get; }
+    public T DeserializeToType<T>(string stringToDeserialize);
+    public string SerializeToString(object objectToSerialize);
+}
+
+public class Utf8ContentEncoder : IContentEncoder {
+    public static readonly Utf8ContentEncoder Instance;
+    public Utf8ContentEncoder();
+    public Encoding ContentEncoding { get; }
+    public byte[] EncodeStringToByteArray(string contentPayload);
+}
+
+public class DefaultPayloadConvention : IPayloadConvention {
+    public static readonly DefaultPayloadConvention Instance;
+    public DefaultPayloadConvention();
+    public IContentEncoder PayloadEncoder { get; }
+    public ISerializer PayloadSerializer { get; }
+    public byte[] GetObjectBytes(object objectToSendWithConvention);
+}
+```
+
 ### Properties
 
 ```csharp
@@ -47,8 +91,8 @@ public class PropertyCollection : IEnumerable, IEnumerable<object> {
 }
 
 public class WritablePropertyResponse {
-    public WritablePropertyResponse(object propertyValue, PropertyConvention propertyConvention=null);
-    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription=null, PropertyConvention propertyConvention=null);
+    public WritablePropertyResponse(object propertyValue, IPayloadConvention payloadConvention=null);
+    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription=null, IPayloadConvention payloadConvention=null);
     public int AckCode { get; set; }
     public string AckDescription { get; set; }
     public long AckVersion { get; set; }
@@ -56,22 +100,14 @@ public class WritablePropertyResponse {
     public JRaw ValueAsJson { get; }
 }
 
-public class ObjectSerializer {
-    public static readonly ObjectSerializer Instance;
-    public ObjectSerializer();
-    public string ContentType { get; set; }
-    public virtual T DeserializeToType<T>(string stringToDeserialize);
-    public virtual string SerializeToString(object objectToSerialize);
+public class PropertyConvention : DefaultPayloadConvention {
+    public static readonly new PropertyConvention Instance;
+    public PropertyConvention();
 }
 
-public class PropertyConvention {
-    public static readonly PropertyConvention Instance;
-    public PropertyConvention();
-    public Encoding ContentEncoding { get; }
-    public string ContentType { get; }
-    public ObjectSerializer PayloadSerializer { get; set; }
-    public static PropertyCollection CreatePropertiesPatch(IDictionary<string, object> properties, string componentName=null, PropertyConvention propertyConvention=null);
-    public static PropertyCollection CreatePropertyPatch(string propertyName, object propertyValue, string componentName=null, PropertyConvention propertyConvention=null);
+public static class PropertyConventionHelper {
+    public static PropertyCollection CreatePropertiesPatch(IDictionary<string, object> properties, string componentName=null, IPayloadConvention payloadConvention=null);
+    public static PropertyCollection CreatePropertyPatch(string propertyName, object propertyValue, string componentName=null, IPayloadConvention payloadConvention=null);
     public static PropertyCollection CreateWritablePropertyPatch(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName=null);
 }
 ```
@@ -95,16 +131,10 @@ public Task SendTelemetryAsync(Message telemetryMessage, CancellationToken cance
 #### All related types
 
 ```csharp
-public Message(object messagePayload, TelemetryConvention telemetryConvention=null);
+public Message(object messagePayload, IPayloadConvention payloadConvention=null);
 
-public class TelemetryConvention {
-    public static readonly TelemetryConvention Instance;
-    public TelemetryConvention();
-    public Encoding ContentEncoding { get; set; }
-    public ObjectSerializer PayloadSerializer { get; set; }
-    public virtual byte[] EncodeStringToByteArray(string contentPayload);
+public static class TelemetryConventionHelper {
     public static IDictionary<string, object> FormatTelemetryPayload(string telemetryName, object telemetryValue);
-    public virtual byte[] GetObjectBytes(object objectToSendWithConvention);
 }
 ```
 
@@ -116,9 +146,9 @@ public class TelemetryConvention {
 /// </summary>
 /// <param name="callback">A method implementation that will handle the incoming command.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-/// <param name="commandConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
+/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CommandConvention commandConvention = default, CancellationToken cancellationToken = default);
+public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default);
 ```
 #### All related types
 
@@ -132,16 +162,8 @@ public sealed class CommandRequest {
 
 public sealed class CommandResponse {
     public CommandResponse(int status);
-    public CommandResponse(object result, int status, CommandConvention commandConvention=null);
+    public CommandResponse(object result, int status, IPayloadConvention payloadConvention=null);
     public string ResultAsJson { get; }
     public int Status { get; private set; }
-}
-
-public class CommandConvention {
-    public static readonly CommandConvention Instance;
-    public CommandConvention();
-    public Encoding ContentEncoding { get; }
-    public string ContentType { get; }
-    public ObjectSerializer PayloadSerializer { get; set; }
 }
 ```

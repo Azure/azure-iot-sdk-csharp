@@ -6,9 +6,9 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Default serialization and deserialization settings
+    ///
     /// </summary>
-    public class ObjectSerializer
+    public class JsonContentSerializer : ISerializer
     {
         /// <summary>
         ///
@@ -18,19 +18,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        public static readonly ObjectSerializer Instance = new ObjectSerializer();
+        public static readonly JsonContentSerializer Instance = new JsonContentSerializer();
 
         /// <summary>
         ///
         /// </summary>
-        public string ContentType { get; set; } = ApplicationJson;
+        public string ContentType => ApplicationJson;
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="objectToSerialize"></param>
         /// <returns></returns>
-        public virtual string SerializeToString(object objectToSerialize)
+        public string SerializeToString(object objectToSerialize)
         {
             return JsonConvert.SerializeObject(objectToSerialize);
         }
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T"></typeparam>
         /// <param name="stringToDeserialize"></param>
         /// <returns></returns>
-        public virtual T DeserializeToType<T>(string stringToDeserialize)
+        public T DeserializeToType<T>(string stringToDeserialize)
         {
             return JsonConvert.DeserializeObject<T>(stringToDeserialize);
         }

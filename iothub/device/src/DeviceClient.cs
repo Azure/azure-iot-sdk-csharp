@@ -737,8 +737,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Send telemetry using the specified message.
         /// </summary>
         /// <remarks>
-        /// Use the <see cref="Message(object, TelemetryConvention)"/> constructor to pass in the formatted telemetry payload and an optional
-        /// <see cref="TelemetryConvention"/> that specifies your payload serialization and encoding rules.
+        /// Use the <see cref="Message(object, IPayloadConvention)"/> constructor to pass in the formatted telemetry payload and an optional
+        /// <see cref="IPayloadConvention"/> that specifies your payload serialization and encoding rules.
         /// If the telemetry is originating from a component, set the component name to <see cref="Message.ComponentName"/>.
         /// </remarks>
         /// <param name="telemetryMessage">The telemetry message.</param>
@@ -756,13 +756,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="callback">A method implementation that will handle the incoming command.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        /// <param name="commandConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
+        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         public Task SubscribeToCommandsAsync(
             Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext,
-            CommandConvention commandConvention = default,
+            IPayloadConvention payloadConvention = default,
             CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToCommandsAsync(callback, userContext, commandConvention, cancellationToken);
+            => InternalClient.SubscribeToCommandsAsync(callback, userContext, payloadConvention, cancellationToken);
 
         #endregion Commands
 

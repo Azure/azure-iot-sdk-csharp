@@ -31,20 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static readonly Random s_random = new();
         private static readonly Stopwatch s_stopwatch = Stopwatch.StartNew();
 
-        private static readonly TelemetryConvention s_telemetryConvention = new()
-        {
-            PayloadSerializer = CustomObjectSerializer.Instance
-        };
-
-        private static readonly PropertyConvention s_propertyConvention = new()
-        {
-            PayloadSerializer = CustomObjectSerializer.Instance
-        };
-
-        private static readonly CommandConvention s_commandConvention = new()
-        {
-            PayloadSerializer = CustomObjectSerializer.Instance
-        };
+        private static readonly IPayloadConvention s_payloadConvention = new CustomPayloadConvention();
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
@@ -132,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _commandEventCallbacks.Add("reboot", HandleRebootCommandAsync);
             _commandEventCallbacks.Add("getMaxMinReport", HandleMaxMinReportCommandAsync);
             _commandEventCallbacks.Add("updateTemperatureWithDelay", HandleTemperatureUpdateCommandAsync);
-            await _deviceClient.SubscribeToCommandsAsync(CommandEventDispatcherAsync, null, s_commandConvention, cancellationToken);
+            await _deviceClient.SubscribeToCommandsAsync(CommandEventDispatcherAsync, null, s_payloadConvention, cancellationToken);
 
             // WritablePropertyEventDispatcherAsync is a dispatcher that we provide to dispatch the individual component/ root-level property callbacks.
             // Alternatively, you can also have an uber callback that implements a dispatcher internally.
@@ -181,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Humidity = 68
             };
 
-            PropertyCollection propertyPatch = PropertyConvention.CreatePropertyPatch(initialValueName, initialValue, componentName, s_propertyConvention);
+            PropertyCollection propertyPatch = PropertyConventionHelper.CreatePropertyPatch(initialValueName, initialValue, componentName, s_payloadConvention);
 
             await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{initialValueName}\" is complete.");
@@ -199,16 +186,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 StartTime = s_applicationStartTime,
             };
 
-            IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(deviceHealthName, deviceHealth);
+            IDictionary<string, object> telemetryPayload = TelemetryConventionHelper.FormatTelemetryPayload(deviceHealthName, deviceHealth);
 
-            using var message = new Message(telemetryPayload, s_telemetryConvention)
+            using var message = new Message(telemetryPayload, s_payloadConvention)
             {
                 Properties = { ["property1"] = "myValue" },
                 ComponentName = componentName,
             };
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {s_telemetryConvention.PayloadSerializer.SerializeToString(telemetryPayload)}.");
+            _logger.LogDebug($"Telemetry: Sent - {s_payloadConvention.PayloadSerializer.SerializeToString(telemetryPayload)}.");
         }
 
         private Task<CommandResponse> CommandEventDispatcherAsync(CommandRequest commandRequest, object userContext)
@@ -270,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug($"Command: component=\"{request.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
                             $" has {StatusCode.Completed}.");
 
-                return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed, s_commandConvention);
+                return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed, s_payloadConvention);
             }
             catch (JsonReaderException ex)
             {
@@ -313,7 +300,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $" maxTemp={report.MaximumTemperature}°C, minTemp={report.MinimumTemperature}°C, avgTemp={report.AverageTemperature}°C," +
                             $" startTime={report.StartTime.LocalDateTime}, endTime={report.EndTime.LocalDateTime}");
 
-                        return Task.FromResult(new CommandResponse(report, (int)StatusCode.Completed, s_commandConvention));
+                        return Task.FromResult(new CommandResponse(report, (int)StatusCode.Completed, s_payloadConvention));
                     }
 
                     _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
@@ -355,16 +342,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection).
             // This implementation detail will need to be addressed.
             string serializedProperties = ((JObject)desiredProperties[propertyName]).ToString();
-            TemperatureRange temeratureRangeDesired = s_propertyConvention.PayloadSerializer.DeserializeToType<TemperatureRange>(serializedProperties);
+            TemperatureRange temeratureRangeDesired = s_payloadConvention.PayloadSerializer.DeserializeToType<TemperatureRange>(serializedProperties);
 
-            var temperatureUpdateResponse = new WritablePropertyResponse(temeratureRangeDesired, s_propertyConvention)
+            var temperatureUpdateResponse = new WritablePropertyResponse(temeratureRangeDesired, s_payloadConvention)
             {
                 AckCode = (int)StatusCode.Completed,
                 AckVersion = desiredProperties.Version,
                 AckDescription = "The operation completed successfully."
             };
 
-            PropertyCollection propertyPatch = PropertyConvention.CreateWritablePropertyPatch(propertyName, temperatureUpdateResponse);
+            PropertyCollection propertyPatch = PropertyConventionHelper.CreateWritablePropertyPatch(propertyName, temperatureUpdateResponse);
 
             await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken: cancellationToken);
             _logger.LogDebug($"Property: Update - {{\"{propertyName}\" is complete.");
@@ -401,7 +388,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 AckVersion = desiredProperties.Version
             };
 
-            PropertyCollection pendingPropertyPatch = PropertyConvention.CreatePropertyPatch(propertyName, pendingReportedProperty, componentName);
+            PropertyCollection pendingPropertyPatch = PropertyConventionHelper.CreatePropertyPatch(propertyName, pendingReportedProperty, componentName);
 
             await _deviceClient.UpdatePropertiesAsync(pendingPropertyPatch, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {targetTemperature} }} in °C is {StatusCode.InProgress}.");
@@ -421,7 +408,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 AckDescription = "Successfully updated target temperature"
             };
 
-            PropertyCollection completePropertyPatch = PropertyConvention.CreatePropertyPatch(propertyName, completedReportedProperty, componentName);
+            PropertyCollection completePropertyPatch = PropertyConventionHelper.CreatePropertyPatch(propertyName, completedReportedProperty, componentName);
 
             await _deviceClient.UpdatePropertiesAsync(completePropertyPatch, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {_temperature[componentName]} }} in °C is {StatusCode.Completed}");
@@ -444,7 +431,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     { "totalMemory", 1024 },
                 };
 
-            PropertyCollection propertyPatch = PropertyConvention.CreatePropertiesPatch(deviceInformation, componentName);
+            PropertyCollection propertyPatch = PropertyConventionHelper.CreatePropertiesPatch(deviceInformation, componentName);
 
             await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
             _logger.LogDebug($"Property: Update - component = '{componentName}', properties update is complete.");
@@ -456,18 +443,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string workingSetName = "workingSet";
 
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
-            IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(workingSetName, workingSet);
+            IDictionary<string, object> telemetryPayload = TelemetryConventionHelper.FormatTelemetryPayload(workingSetName, workingSet);
             using var message = new Message(telemetryPayload);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {TelemetryConvention.Instance.PayloadSerializer.SerializeToString(telemetryPayload)} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {DefaultPayloadConvention.Instance.PayloadSerializer.SerializeToString(telemetryPayload)} in KB.");
         }
 
         // Send device serial number over property update.
         private async Task SendDeviceSerialNumberAsync(CancellationToken cancellationToken)
         {
             const string propertyName = "serialNumber";
-            PropertyCollection propertyPatch = PropertyConvention.CreatePropertyPatch(propertyName, SerialNumber);
+            PropertyCollection propertyPatch = PropertyConventionHelper.CreatePropertyPatch(propertyName, SerialNumber);
             await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
             _logger.LogDebug($"Property: Update - {{ \"{propertyName}\": \"{SerialNumber}\" }} is complete.");
         }
@@ -489,7 +476,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string temperatureName = "temperature";
             double currentTemperature = _temperature[componentName];
 
-            IDictionary<string, object> telemetryPayload = TelemetryConvention.FormatTelemetryPayload(temperatureName, currentTemperature);
+            IDictionary<string, object> telemetryPayload = TelemetryConventionHelper.FormatTelemetryPayload(temperatureName, currentTemperature);
             using var message = new Message(telemetryPayload);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
@@ -515,7 +502,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string propertyName = "maxTempSinceLastReboot";
             double maxTemp = _maxTemp[componentName];
 
-            PropertyCollection propertyPatch = PropertyConvention.CreatePropertyPatch(propertyName, maxTemp, componentName);
+            PropertyCollection propertyPatch = PropertyConventionHelper.CreatePropertyPatch(propertyName, maxTemp, componentName);
             await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ \"{propertyName}\": {maxTemp} }} in °C is complete.");
         }

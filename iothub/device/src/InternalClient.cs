@@ -2003,7 +2003,7 @@ namespace Microsoft.Azure.Devices.Client
             return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
         }
 
-        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CommandConvention commandConvention, CancellationToken cancellationToken)
+        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             const char ComponentLevelCommandIdentifier = '*';
 
@@ -2016,11 +2016,11 @@ namespace Microsoft.Azure.Devices.Client
                     string[] split = methodRequest.Name.Split(ComponentLevelCommandIdentifier);
                     string componentName = split[0];
                     string commandName = split[1];
-                    commandRequest = new CommandRequest(commandName, componentName, methodRequest.Data, commandConvention);
+                    commandRequest = new CommandRequest(commandName, componentName, methodRequest.Data, payloadConvention);
                 }
                 else
                 {
-                    commandRequest = new CommandRequest(methodRequest.Name, data: methodRequest.Data, commandConvention: commandConvention);
+                    commandRequest = new CommandRequest(methodRequest.Name, data: methodRequest.Data, payloadConvention: payloadConvention);
                 }
 
                 CommandResponse commandResponse = await callback.Invoke(commandRequest, userContext).ConfigureAwait(false);

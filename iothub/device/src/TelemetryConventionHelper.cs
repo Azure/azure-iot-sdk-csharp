@@ -2,30 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     ///
     /// </summary>
-    public class TelemetryConvention
+    public static class TelemetryConventionHelper
     {
-        /// <summary>
-        ///
-        /// </summary>
-        public static readonly TelemetryConvention Instance = new TelemetryConvention();
-
-        /// <summary>
-        ///
-        /// </summary>
-        public Encoding ContentEncoding { get; set; } = Encoding.UTF8;
-
-        /// <summary>
-        ///
-        /// </summary>
-        public ObjectSerializer PayloadSerializer { get; set; } = ObjectSerializer.Instance;
-
         /// <summary>
         /// Format a plug and play compatible telemetry message payload.
         /// </summary>
@@ -36,26 +20,6 @@ namespace Microsoft.Azure.Devices.Client
         public static IDictionary<string, object> FormatTelemetryPayload(string telemetryName, object telemetryValue)
         {
             return new Dictionary<string, object> { { telemetryName, telemetryValue } };
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="contentPayload"></param>
-        /// <returns></returns>
-        public virtual byte[] EncodeStringToByteArray(string contentPayload)
-        {
-            return ContentEncoding.GetBytes(contentPayload);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="objectToSendWithConvention"></param>
-        /// <returns></returns>
-        public virtual byte[] GetObjectBytes(object objectToSendWithConvention)
-        {
-            return EncodeStringToByteArray(PayloadSerializer.SerializeToString(objectToSendWithConvention));
         }
     }
 }

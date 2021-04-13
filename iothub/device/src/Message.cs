@@ -67,12 +67,12 @@ namespace Microsoft.Azure.Devices.Client
         ///
         /// </summary>
         /// <param name="messagePayload"></param>
-        /// <param name="telemetryConvention"></param>
-        public Message(object messagePayload, TelemetryConvention telemetryConvention = default)
-            : this(new MemoryStream(GetTelemetryConventionInstance(telemetryConvention).GetObjectBytes(messagePayload)))
+        /// <param name="payloadConvention"></param>
+        public Message(object messagePayload, IPayloadConvention payloadConvention = default)
+            : this(new MemoryStream(GetTelemetryConventionInstance(payloadConvention).GetObjectBytes(messagePayload)))
         {
-            TelemetryConvention convention = GetTelemetryConventionInstance(telemetryConvention);
-            ContentEncoding = convention.ContentEncoding.WebName;
+            IPayloadConvention convention = GetTelemetryConventionInstance(payloadConvention);
+            ContentEncoding = convention.PayloadEncoder.ContentEncoding.WebName;
             ContentType = convention.PayloadSerializer.ContentType;
 
             // Reset the owning of the stream
@@ -417,9 +417,9 @@ namespace Microsoft.Azure.Devices.Client
                 : default;
         }
 
-        private static TelemetryConvention GetTelemetryConventionInstance(TelemetryConvention telemetryConvention)
+        private static IPayloadConvention GetTelemetryConventionInstance(IPayloadConvention payloadConvention)
         {
-            return telemetryConvention ?? TelemetryConvention.Instance;
+            return payloadConvention ?? DefaultPayloadConvention.Instance;
         }
 
         internal void ThrowIfDisposed()

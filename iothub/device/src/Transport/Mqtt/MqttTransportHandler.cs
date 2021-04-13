@@ -977,8 +977,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            string body = reportedProperties.ToJson();
-            using var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
+            byte[] body = reportedProperties.ToBytes();
+            using var bodyStream = new MemoryStream(body);
 
             using var request = new Message(bodyStream);
 

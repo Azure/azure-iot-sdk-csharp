@@ -11,20 +11,20 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class CommandResponse
     {
         private readonly object _result;
-        private readonly CommandConvention _commandConvention;
+        private readonly IPayloadConvention _payloadConvention;
 
         /// <summary>
         /// Make a new instance of the return class and validates that the payload is correct JSON.
         /// </summary>
         /// <param name="result">data returned by the method call.</param>
         /// <param name="status">status indicating success or failure.</param>
-        /// <param name="commandConvention"></param>
+        /// <param name="payloadConvention"></param>
         /// <returns></returns>
-        public CommandResponse(object result, int status, CommandConvention commandConvention = default)
+        public CommandResponse(object result, int status, IPayloadConvention payloadConvention = default)
         {
             _result = result;
             Status = status;
-            _commandConvention = commandConvention ?? CommandConvention.Instance;
+            _payloadConvention = payloadConvention ?? DefaultPayloadConvention.Instance;
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Property containing the entire result data, in Json format.
         /// </summary>
-        public string ResultAsJson => _result == null ? null : _commandConvention.PayloadSerializer.SerializeToString(_result);
+        public string ResultAsJson => _result == null ? null : _payloadConvention.PayloadSerializer.SerializeToString(_result);
 
         internal byte[] ResultAsBytes => _result == null ? null : Encoding.UTF8.GetBytes(ResultAsJson);
     }

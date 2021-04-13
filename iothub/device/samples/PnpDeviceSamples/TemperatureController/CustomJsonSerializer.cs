@@ -6,23 +6,25 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class CustomObjectSerializer : ObjectSerializer
+    internal class CustomJsonSerializer : ISerializer
     {
-        internal new static readonly CustomObjectSerializer Instance = new();
+        private const string ApplicationJson = "application/json";
 
         private static readonly JsonSerializerOptions s_options = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
         };
 
-        public override string SerializeToString(object objectToSerialize)
+        public string ContentType => ApplicationJson;
+
+        public string SerializeToString(object objectToSerialize)
         {
             return JsonSerializer.Serialize(objectToSerialize, s_options);
         }
 
-        public override T DeserializeToType<T>(string stringToDeserialize)
+        public T DeserializeToType<T>(string stringToDeserialize)
         {
-            return JsonSerializer.Deserialize<T>(stringToDeserialize);
+            return JsonSerializer.Deserialize<T>(stringToDeserialize, s_options);
         }
     }
 }

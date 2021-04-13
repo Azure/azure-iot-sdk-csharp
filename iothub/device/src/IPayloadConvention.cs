@@ -6,21 +6,23 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     ///
     /// </summary>
-    public class PropertyConvention : DefaultPayloadConvention
+    public interface IPayloadConvention
     {
         /// <summary>
         ///
         /// </summary>
-        internal static string ComponentIdentifierKey => "__t";
+        public ISerializer PayloadSerializer { get; }
 
         /// <summary>
         ///
         /// </summary>
-        internal static string ComponentIdentifierValue => "c";
+        public IContentEncoder PayloadEncoder { get; }
 
         /// <summary>
-        ///
+        /// Returns the byte array for the convention based message
         /// </summary>
-        public new static readonly PropertyConvention Instance = new PropertyConvention();
+        /// <param name="objectToSendWithConvention"></param>
+        /// <returns></returns>
+        public byte[] GetObjectBytes(object objectToSendWithConvention);
     }
 }

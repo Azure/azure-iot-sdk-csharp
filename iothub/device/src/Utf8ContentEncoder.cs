@@ -8,26 +8,26 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     ///
     /// </summary>
-    public class CommandConvention
+    public class Utf8ContentEncoder : IContentEncoder
     {
         /// <summary>
         ///
         /// </summary>
-        public static readonly CommandConvention Instance = new CommandConvention();
+        public static readonly Utf8ContentEncoder Instance = new Utf8ContentEncoder();
 
         /// <summary>
         ///
         /// </summary>
-        public string ContentType { get; } = ObjectSerializer.ApplicationJson;
+        public Encoding ContentEncoding => Encoding.UTF8;
 
         /// <summary>
         ///
         /// </summary>
-        public Encoding ContentEncoding { get; } = Encoding.UTF8;
-
-        /// <summary>
-        ///
-        /// </summary>
-        public ObjectSerializer PayloadSerializer { get; set; } = ObjectSerializer.Instance;
+        /// <param name="contentPayload"></param>
+        /// <returns></returns>
+        public byte[] EncodeStringToByteArray(string contentPayload)
+        {
+            return ContentEncoding.GetBytes(contentPayload);
+        }
     }
 }
