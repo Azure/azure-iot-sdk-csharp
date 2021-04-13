@@ -102,10 +102,10 @@ namespace Microsoft.Azure.Devices.Client
             var writablePropertyCollection = new PropertyCollection();
             foreach (KeyValuePair<string, object> property in twinProperties.Desired)
             {
-                writablePropertyCollection.AddPropertyToCollection(property.Key, property.Value);
+                writablePropertyCollection.Add(property.Key, property.Value);
             }
             // The version information is not accessible via the enumerator, so assign it separately.
-            writablePropertyCollection.AddPropertyToCollection(VersionName, twinProperties.Desired.Version);
+            writablePropertyCollection.Add(VersionName, twinProperties.Desired.Version);
 
             var propertyCollection = new Dictionary<string, object>();
             foreach (KeyValuePair<string, object> property in twinProperties.Reported)

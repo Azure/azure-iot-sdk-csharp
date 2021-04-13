@@ -2,11 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Common.Api;
-using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
@@ -14,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
-    public sealed class Message : IReadOnlyIndicator, IDisposable
+    public class Message : IReadOnlyIndicator, IDisposable
     {
         private volatile Stream _bodyStream;
         private bool _disposed;
@@ -66,14 +65,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        /// <param name="messagePayload"></param>
-        /// <param name="payloadConvention"></param>
-        public Message(object messagePayload, IPayloadConvention payloadConvention = default)
-            : this(new MemoryStream(GetTelemetryConventionInstance(payloadConvention).GetObjectBytes(messagePayload)))
+        /// <param name="payloadCollection"></param>
+        internal Message(PayloadCollection payloadCollection)
+            : this(new MemoryStream(payloadCollection?.GetPayloadObjectBytes()))
         {
-            IPayloadConvention convention = GetTelemetryConventionInstance(payloadConvention);
-            ContentEncoding = convention.PayloadEncoder.ContentEncoding.WebName;
-            ContentType = convention.PayloadSerializer.ContentType;
+            ComponentName = payloadCollection?.ComponentName;
+            ContentEncoding = payloadCollection?.Convention?.PayloadEncoder?.ContentEncoding?.WebName;
+            ContentType = payloadCollection?.Convention?.PayloadSerializer?.ContentType;
 
             // Reset the owning of the stream
             _streamDisposalResponsibility = StreamDisposalResponsibility.Sdk;
@@ -291,6 +289,7 @@ namespace Microsoft.Azure.Devices.Client
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         internal bool HasBodyStream()
@@ -417,11 +416,6 @@ namespace Microsoft.Azure.Devices.Client
                 : default;
         }
 
-        private static IPayloadConvention GetTelemetryConventionInstance(IPayloadConvention payloadConvention)
-        {
-            return payloadConvention ?? DefaultPayloadConvention.Instance;
-        }
-
         internal void ThrowIfDisposed()
         {
             if (_disposed)
@@ -430,7 +424,11 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private void Dispose(bool disposing)
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {

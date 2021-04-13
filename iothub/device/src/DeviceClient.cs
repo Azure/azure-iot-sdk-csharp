@@ -737,14 +737,13 @@ namespace Microsoft.Azure.Devices.Client
         /// Send telemetry using the specified message.
         /// </summary>
         /// <remarks>
-        /// Use the <see cref="Message(object, IPayloadConvention)"/> constructor to pass in the formatted telemetry payload and an optional
+        /// Use the <see cref="TelemetryMessage(TelemetryCollection)"/> constructor to pass in the formatted telemetry payload and an optional
         /// <see cref="IPayloadConvention"/> that specifies your payload serialization and encoding rules.
-        /// If the telemetry is originating from a component, set the component name to <see cref="Message.ComponentName"/>.
         /// </remarks>
         /// <param name="telemetryMessage">The telemetry message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns></returns>
-        public Task SendTelemetryAsync(Message telemetryMessage, CancellationToken cancellationToken = default)
+        public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default)
             => InnerHandler.SendEventAsync(telemetryMessage, cancellationToken);
 
         #endregion Telemetry

@@ -81,9 +81,12 @@ public class Properties : IEnumerable, IEnumerable<object> {
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
-public class PropertyCollection : IEnumerable, IEnumerable<object> {
+public class PropertyCollection : PayloadCollection, IEnumerable, IEnumerable<object> {
+    public PropertyCollection(IPayloadConvention payloadConvention=null);
     public object this[string propertyName] { get; }
     public long Version { get; }
+    public void Add(IDictionary<string, object> properties, string componentName=null);
+    public void Add(string propertyName, object propertyValue, string componentName=null);
     public bool Contains(string propertyName);
     public IEnumerator<object> GetEnumerator();
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
@@ -104,12 +107,6 @@ public class PropertyConvention : DefaultPayloadConvention {
     public static readonly new PropertyConvention Instance;
     public PropertyConvention();
 }
-
-public static class PropertyConventionHelper {
-    public static PropertyCollection CreatePropertiesPatch(IDictionary<string, object> properties, string componentName=null, IPayloadConvention payloadConvention=null);
-    public static PropertyCollection CreatePropertyPatch(string propertyName, object propertyValue, string componentName=null, IPayloadConvention payloadConvention=null);
-    public static PropertyCollection CreateWritablePropertyPatch(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName=null);
-}
 ```
 
 ### Telemetry
@@ -119,22 +116,25 @@ public static class PropertyConventionHelper {
 /// Send telemetry using the specified message.
 /// </summary>
 /// <remarks>
-/// Use the <see cref="Message(object, TelemetryConvention)"/> constructor to pass in the formatted telemetry payload and an optional
-/// <see cref="TelemetryConvention"/> that specifies your payload serialization and encoding rules.
-/// If the telemetry is originating from a component, set the component name to <see cref="Message.ComponentName"/>.
+/// Use the <see cref="TelemetryMessage(TelemetryCollection)"/> constructor to pass in the formatted telemetry payload and an optional
+/// <see cref="IPayloadConvention"/> that specifies your payload serialization and encoding rules.
 /// </remarks>
 /// <param name="telemetryMessage">The telemetry message.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 /// <returns></returns>
-public Task SendTelemetryAsync(Message telemetryMessage, CancellationToken cancellationToken = default);
+public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default)
 ```
 #### All related types
 
 ```csharp
-public Message(object messagePayload, IPayloadConvention payloadConvention=null);
+public class TelemetryMessage : Message {
+    public TelemetryMessage(TelemetryCollection telemetryCollection);
+}
 
-public static class TelemetryConventionHelper {
-    public static IDictionary<string, object> FormatTelemetryPayload(string telemetryName, object telemetryValue);
+public class TelemetryCollection : PayloadCollection {
+    public TelemetryCollection(string componentName=null, IPayloadConvention convention=null);
+    public void Add(string telemetryName, object telemetryValue);
+    public string ToJson();
 }
 ```
 

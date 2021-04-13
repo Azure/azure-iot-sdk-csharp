@@ -11,22 +11,72 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     ///
     /// </summary>
-    public class PropertyCollection : IEnumerable<object>
+    public class PropertyCollection : PayloadCollection, IEnumerable<object>
     {
         private const string VersionName = "$version";
 
-        private readonly IDictionary<string, object> _properties = new Dictionary<string, object>();
-        private readonly IPayloadConvention _payloadConvention;
-
-        internal PropertyCollection(IPayloadConvention payloadConvention = default)
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="payloadConvention"></param>
+        public PropertyCollection(IPayloadConvention payloadConvention = default)
         {
-            _payloadConvention = payloadConvention ?? PropertyConvention.Instance;
+            Convention = payloadConvention ?? PropertyConvention.Instance;
         }
 
-        internal PropertyCollection(IDictionary<string, object> properties, IPayloadConvention payloadConvention = default)
-            : this(payloadConvention)
+        /// <summary>
+        /// highlight both "readonly" and "writable property response" propertyValue patches
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="propertyValue"></param>
+        /// <param name="componentName"></param>
+        public void Add(string propertyName, object propertyValue, string componentName = default)
+            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <param name="componentName"></param>
+        public void Add(IDictionary<string, object> properties, string componentName = default)
         {
-            _properties = properties;
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            // If the componentName is null then simply add the key-value pair to Collection dictionary.
+            // this will either insert a property or overwrite it if it already exists.
+            if (componentName == null)
+            {
+                foreach (KeyValuePair<string, object> entry in properties)
+                {
+                    Collection[entry.Key] = entry.Value;
+                }
+            }
+            else
+            {
+                // If the component name already exists within the dictionary, then the value is a dictionary containing the component level property key and values.
+                // Append this property dictionary to the existing property value dictionary (overwrite entries if they already exist).
+                // Otherwise, add this as a new entry.
+                var componentProperties = new Dictionary<string, object>();
+                if (Collection.ContainsKey(componentName))
+                {
+                    componentProperties = (Dictionary<string, object>)Collection[componentName];
+                }
+                foreach (KeyValuePair<string, object> entry in properties)
+                {
+                    componentProperties[entry.Key] = entry.Value;
+                }
+
+                // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
+                if (!componentProperties.ContainsKey(PropertyConvention.ComponentIdentifierKey))
+                {
+                    componentProperties[PropertyConvention.ComponentIdentifierKey] = PropertyConvention.ComponentIdentifierValue;
+                }
+
+                Collection.Add(componentName, componentProperties);
+            }
         }
 
         /// <summary>
@@ -36,13 +86,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>true if the specified property is present; otherwise, false</returns>
         public bool Contains(string propertyName)
         {
-            return _properties.TryGetValue(propertyName, out _);
+            return Collection.TryGetValue(propertyName, out _);
         }
 
         /// <summary>
         ///
         /// </summary>
-        public long Version => _properties.TryGetValue(VersionName, out object version)
+        public long Version => Collection.TryGetValue(VersionName, out object version)
             ? (long)version
             : default;
 
@@ -55,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             get
             {
-                return _properties[propertyName];
+                return Collection[propertyName];
             }
         }
 
@@ -65,12 +115,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public string ToJson()
         {
-            return _payloadConvention?.PayloadSerializer?.SerializeToString(_properties);
-        }
-
-        internal byte[] ToBytes()
-        {
-            return _payloadConvention?.GetObjectBytes(_properties);
+            return Convention?.PayloadSerializer?.SerializeToString(Collection);
         }
 
         /// <summary>
@@ -79,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public IEnumerator<object> GetEnumerator()
         {
-            foreach (object property in _properties)
+            foreach (object property in Collection)
             {
                 yield return property;
             }
@@ -88,11 +133,6 @@ namespace Microsoft.Azure.Devices.Client
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        internal void AddPropertyToCollection(string propertyKey, object propertyValue)
-        {
-            _properties.Add(propertyKey, propertyValue);
         }
 
         /// <summary>
@@ -110,10 +150,10 @@ namespace Microsoft.Azure.Devices.Client
             var writablePropertyCollection = new PropertyCollection();
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
-                writablePropertyCollection.AddPropertyToCollection(property.Key, property.Value);
+                writablePropertyCollection.Add(property.Key, property.Value);
             }
             // The version information is not accessible via the enumerator, so assign it separately.
-            writablePropertyCollection.AddPropertyToCollection(VersionName, twinCollection.Version);
+            writablePropertyCollection.Add(VersionName, twinCollection.Version);
 
             return writablePropertyCollection;
         }

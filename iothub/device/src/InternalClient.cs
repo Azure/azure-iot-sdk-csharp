@@ -1901,46 +1901,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task UpdatePropertiesAsync(
-            IDictionary<string, object> properties,
-            string componentName,
-            PropertyConvention propertyConvention,
-            CancellationToken cancellationToken)
-        {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            propertyConvention ??= PropertyConvention.Instance;
-
-            PropertyCollection propertyPatch;
-            if (string.IsNullOrWhiteSpace(componentName))
-            {
-                propertyPatch = new PropertyCollection(properties, propertyConvention);
-            }
-            else
-            {
-                properties.Add(PropertyConvention.ComponentIdentifierKey, PropertyConvention.ComponentIdentifierValue);
-                var componentProperties = new Dictionary<string, object>
-                {
-                    { componentName, properties }
-                };
-
-                propertyPatch = new PropertyCollection(componentProperties, propertyConvention);
-            }
-
-            try
-            {
-                return InnerHandler.SendPropertyPatchAsync(propertyPatch, cancellationToken);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-        }
-
         internal Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken)
         {
             try
@@ -1962,40 +1922,6 @@ namespace Microsoft.Azure.Devices.Client
                 // convert a TwinCollection to PropertyCollection
                 var propertyCollection = PropertyCollection.FromTwinCollection(twinCollection);
                 callback.Invoke(propertyCollection, userContext);
-
-                return TaskHelpers.CompletedTask;
-            });
-
-            return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
-        }
-
-        internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, string, object, Task> callback, string componentName, object userContext, CancellationToken cancellationToken)
-        {
-            // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
-            var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
-            {
-                // convert a TwinCollection to PropertyCollection
-                var propertyCollection = PropertyCollection.FromTwinCollection(twinCollection);
-
-                // if the received PropertyCollection belongs to the specified component, then invoke the user supplied callback.
-                if (propertyCollection.Contains(componentName))
-                {
-                    object properties = propertyCollection[componentName];
-
-                    // TODO: this check can be removed if a device cannot have the same name for a component and a property.
-                    // if this PropertyCollection is of type IDictionary<string, object> and contains an entry {"__t": "c"}, then it is the requested component.
-                    if (properties.GetType() == typeof(Dictionary<string, object>))
-                    {
-                        var componentProperties = (Dictionary<string, object>)properties;
-                        if (componentProperties.ContainsKey(PropertyConvention.ComponentIdentifierKey))
-                        {
-                            componentProperties.Remove(PropertyConvention.ComponentIdentifierKey);
-
-                            var collection = new PropertyCollection(componentProperties, PropertyConvention.Instance);
-                            callback.Invoke(collection, componentName, userContext);
-                        }
-                    }
-                }
 
                 return TaskHelpers.CompletedTask;
             });
