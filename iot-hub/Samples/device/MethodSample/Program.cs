@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 parameters.TransportType);
             var sample = new MethodSample(deviceClient);
             await sample.RunSampleAsync(runningTime);
+            await deviceClient.CloseAsync();
 
             Console.WriteLine("Done.");
             return 0;

@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 parameters.TransportType);
             var sample = new MessageReceiveSample(deviceClient);
             await sample.RunSampleAsync();
+            await deviceClient.CloseAsync();
 
             Console.WriteLine("Done.");
             return 0;
