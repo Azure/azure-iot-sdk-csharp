@@ -389,12 +389,7 @@ namespace Microsoft.Azure.Devices.Client
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="streamDisposalResponsibility"></param>
-        internal void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
+        private void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
