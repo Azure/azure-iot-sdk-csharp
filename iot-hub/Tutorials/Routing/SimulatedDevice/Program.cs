@@ -63,6 +63,7 @@ namespace SimulatedDevice
                 var messages = SendDeviceToCloudMessagesAsync(cts.Token);
                 Console.WriteLine("Press the Enter key to stop.");
                 Console.ReadLine();
+                await s_deviceClient.CloseAsync(cts.Token);
                 cts.Cancel();
                 await messages;
 

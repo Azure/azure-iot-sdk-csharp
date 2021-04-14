@@ -60,6 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             using DeviceClient deviceClient = await SetupDeviceClientAsync(parameters, cts.Token);
             var sample = new TemperatureControllerSample(deviceClient, s_logger);
             await sample.PerformOperationsAsync(cts.Token);
+            await deviceClient.CloseAsync(cts.Token);
         }
 
         private static ILogger InitializeConsoleDebugLogger()

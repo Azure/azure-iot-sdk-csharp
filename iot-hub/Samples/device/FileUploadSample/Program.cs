@@ -40,6 +40,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var sample = new FileUploadSample(deviceClient);
             await sample.RunSampleAsync();
 
+            await deviceClient.CloseAsync();
+
             Console.WriteLine("Done.");
             return 0;
         }

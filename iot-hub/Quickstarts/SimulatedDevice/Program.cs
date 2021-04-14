@@ -51,6 +51,8 @@ namespace SimulatedDevice
             // Run the telemetry loop
             await SendDeviceToCloudMessagesAsync(cts.Token);
 
+            await s_deviceClient.CloseAsync(cts.Token);
+
             s_deviceClient.Dispose();
             Console.WriteLine("Device simulator finished.");
         }

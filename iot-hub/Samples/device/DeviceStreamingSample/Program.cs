@@ -35,6 +35,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var sample = new DeviceStreamSample(deviceClient);
             await sample.RunSampleAsync();
 
+            await deviceClient.CloseAsync();
+
             Console.WriteLine("Done.");
             return 0;
         }
