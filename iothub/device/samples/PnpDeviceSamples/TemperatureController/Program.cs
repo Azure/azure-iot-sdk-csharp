@@ -9,7 +9,6 @@ using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +16,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class Program
     {
-
         // DTDL interface used: https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/com/example/temperaturecontroller-2.json
         // The TemperatureController model contains 2 Thermostat components that implement different versions of Thermostat models.
         // Both Thermostat models are identical in definition but this is done to allow IoT Central to handle
