@@ -715,10 +715,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Update properties.
         /// </summary>
-        /// <param name="propertyPatch">Reported properties to push.</param>
+        /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken = default)
-            => InternalClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
+        public Task UpdatePropertiesAsync(PropertyCollection propertyCollection, CancellationToken cancellationToken = default)
+            => InternalClient.UpdatePropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
         /// Sets the global listener for Writable properties
@@ -732,6 +732,17 @@ namespace Microsoft.Azure.Devices.Client
         #endregion Properties
 
         #region Telemetry
+
+        /// <summary>
+        /// Send telemetry using the specified collection.
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="telemetryCollection">The telemetry message.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <returns></returns>
+        public Task SendTelemetryAsync(TelemetryCollection telemetryCollection, CancellationToken cancellationToken = default)
+        { using var tm = new TelemetryMessage(telemetryCollection); return InnerHandler.SendEventAsync(tm, cancellationToken); }
 
         /// <summary>
         /// Send telemetry using the specified message.

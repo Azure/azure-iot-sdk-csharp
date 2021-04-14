@@ -187,16 +187,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 StartTime = s_applicationStartTime,
             };
 
-            var telemetryCollection = new TelemetryCollection(componentName, s_payloadConvention);
-            telemetryCollection.Add(deviceHealthName, deviceHealth);
-
-            using var message = new TelemetryMessage(telemetryCollection)
+            using var message = new TelemetryMessage()
             {
+                ComponentName = componentName,
                 Properties = { ["property1"] = "myValue" },
+                Telemetry = { 
+                    ["something"] = "empty",
+                    [deviceHealthName] = deviceHealth
+                }
             };
 
+            // Something ...
+
+            message.Telemetry.Add("another value", 56.2);
+
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {telemetryCollection.ToJson()}.");
+            _logger.LogDebug($"Telemetry: Sent - {DefaultPayloadConvention.Instance.PayloadSerializer.SerializeToString(message.Telemetry)}.");
         }
 
         private Task<CommandResponse> CommandEventDispatcherAsync(CommandRequest commandRequest, object userContext)

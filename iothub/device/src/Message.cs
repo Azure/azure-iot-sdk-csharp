@@ -276,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client
             "Naming",
             "CA1721:Property names should not match get methods",
             Justification = "Cannot remove public property on a public facing type")]
-        public Stream BodyStream => _bodyStream;
+        public Stream BodyStream { get { return _bodyStream; } protected set { _bodyStream = value; } }
 
         /// <summary>
         /// Gets or sets the deliveryTag which is used for server side check-pointing.
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
         /// <exception cref="ObjectDisposedException">throws if the event data has already been disposed.</exception>
         /// <remarks>This method can only be called once and afterwards method will throw <see cref="InvalidOperationException"/>.</remarks>
-        public Stream GetBodyStream()
+        public virtual Stream GetBodyStream()
         {
             ThrowIfDisposed();
             SetGetBodyCalled();
@@ -389,7 +389,12 @@ namespace Microsoft.Azure.Devices.Client
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
-        private void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="streamDisposalResponsibility"></param>
+        internal void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
         {
             // This method should only be used in constructor because
             // this has no locking on the bodyStream.
