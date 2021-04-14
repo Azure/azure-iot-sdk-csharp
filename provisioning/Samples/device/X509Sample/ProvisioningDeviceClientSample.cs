@@ -74,11 +74,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             return _parameters.TransportType switch
             {
                 TransportType.Mqtt => new ProvisioningTransportHandlerMqtt(),
-                TransportType.Mqtt_Tcp_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly),
-                TransportType.Mqtt_WebSocket_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly),
+                TransportType.Mqtt_Tcp_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly),
+                TransportType.Mqtt_WebSocket_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly),
                 TransportType.Amqp => new ProvisioningTransportHandlerAmqp(),
-                TransportType.Amqp_Tcp_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
-                TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly),
+                TransportType.Amqp_Tcp_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly),
+                TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
                 TransportType.Http1 => new ProvisioningTransportHandlerHttp(),
                 _ => throw new NotSupportedException($"Unsupported transport type {_parameters.TransportType}"),
             };
