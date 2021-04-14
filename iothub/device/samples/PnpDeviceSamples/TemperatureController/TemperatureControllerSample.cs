@@ -187,9 +187,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 StartTime = s_applicationStartTime,
             };
 
-            using var message = new TelemetryMessage()
+            using var message = new TelemetryMessage(componentName)
             {
-                ComponentName = componentName,
                 Properties = { ["property1"] = "myValue" },
                 Telemetry = {
                     ["something"] = "empty",
@@ -459,7 +458,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             using var message = new TelemetryMessage
             {
-                Telemetry = { [workingSetName] = workingSet }
+                Telemetry = { [workingSetName] = workingSet },
             };
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
@@ -494,11 +493,27 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string temperatureName = "temperature";
             double currentTemperature = _temperature[componentName];
 
-            using var message = new TelemetryMessage
+            // We can do a direct initialization like this...
+            using var message = new TelemetryMessage(componentName)
             {
-                ComponentName = componentName,
                 Telemetry = { [temperatureName] = currentTemperature }
             };
+
+            // Or set the property this way
+
+            var customCollection = new TelemetryCollection(componentName, s_payloadConvention)
+            {
+                [temperatureName] = currentTemperature,
+            };
+
+
+            using var messageCustom = new TelemetryMessage
+            {
+                Telemetry = customCollection
+            };
+
+            // Or set the property this way
+            using var messageCustomConstructor = new TelemetryMessage(customCollection);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{temperatureName}\": {currentTemperature} }} in °C.");

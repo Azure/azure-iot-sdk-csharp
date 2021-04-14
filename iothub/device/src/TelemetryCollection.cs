@@ -8,6 +8,35 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class TelemetryCollection : PayloadCollection
     {
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public object this[string propertyName]
+        {
+            get
+            {
+                if (Collection != null)
+                {
+                    if (Collection.TryGetValue(propertyName, out object returnValue))
+                    {
+                        return returnValue;
+                    }
+                    
+                }
+                return null;
+            }
+            set
+            {
+                if (Collection != null)
+                {
+                    Collection.Add(propertyName, value);
+                }
+            }
+        }
+
         /// <summary>
         ///
         /// </summary>

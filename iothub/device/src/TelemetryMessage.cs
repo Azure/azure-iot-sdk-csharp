@@ -13,43 +13,74 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class TelemetryMessage : Message
     {
-        private IPayloadConvention _convention;
-
-        /// <inheritdoc/>
-        public override string ContentType
-        {
-            get => base.ContentType;
-            set { }
-        }
-
-        /// <inheritdoc/>
-        public override string ContentEncoding 
-        { 
-            get => base.ContentEncoding;
-            set { } 
-        }
+        private TelemetryCollection _telemtryCollection;
 
         /// <summary>
         /// 
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "<Pending>")]
-        public IDictionary<string, object> Telemetry { get; set; }
+        public TelemetryCollection Telemetry
+        {
+            get => _telemtryCollection;
+            set 
+            {
+                if (value != null)
+                {
+                    base.ContentType = value.Convention.PayloadEncoder.ContentEncoding.WebName;
+                    base.ContentEncoding = value.Convention.PayloadSerializer.ContentType;
+                    base.ComponentName = value.ComponentName;
+                } else
+                {
+                    base.ContentType = string.Empty;
+                    base.ContentEncoding = string.Empty;
+                    base.ComponentName = string.Empty;
+                }
+                
+            }
+        }
+
+        /// <inheritdoc/>
+        new public string ComponentName
+        {
+            get => base.ContentType;
+        }
+
+        /// <inheritdoc/>
+        new public string ContentType
+        {
+            get => base.ContentType;
+        }
+
+        /// <inheritdoc/>
+        new public string ContentEncoding
+        {
+            get => base.ContentEncoding;
+        }
 
         /// <summary>
         ///
         /// </summary>
-        /// <param name="convention"></param>
-        public TelemetryMessage(IPayloadConvention convention = default)
+        public TelemetryMessage(string componentName)
             : base()
         {
-            _convention = convention ?? DefaultPayloadConvention.Instance;
-            base.ContentEncoding = _convention.PayloadEncoder.ContentEncoding.WebName;
-            base.ContentType = _convention.PayloadSerializer.ContentType;
+            Telemetry = new TelemetryCollection();
+            base.ComponentName = componentName;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="telemetryCollection"></param>
+        public TelemetryMessage(TelemetryCollection telemetryCollection = default)
+            : base(telemetryCollection)
+        {
+            Telemetry = telemetryCollection ?? new TelemetryCollection();
+        }
+
         /// <inheritdoc/>
         public override Stream GetBodyStream()
         {
-            BodyStream = new MemoryStream(_convention.GetObjectBytes(this.Telemetry));
+            DisposeBodyStream();
+            BodyStream = new MemoryStream(_telemtryCollection.GetPayloadObjectBytes());
             return base.GetBodyStream();
         }
     }

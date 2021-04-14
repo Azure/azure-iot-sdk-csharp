@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The DTDL component name from where the telemetry message has originated.
         /// This is relevant only for plug and play certified devices.
         /// </summary>
-        public string ComponentName
+        public virtual string ComponentName
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ComponentName);
             set => SystemProperties[MessageSystemPropertyNames.ComponentName] = value;
@@ -425,7 +425,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        ///
+        /// Dispose the Message object.
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
@@ -434,15 +434,23 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-                    if (_bodyStream != null && _streamDisposalResponsibility == StreamDisposalResponsibility.Sdk)
-                    {
-                        _bodyStream.Dispose();
-                        _bodyStream = null;
-                    }
+                    DisposeBodyStream();
                 }
             }
 
             _disposed = true;
+        }
+
+        /// <summary>
+        /// Disposes the body stream.
+        /// </summary>
+        protected void DisposeBodyStream()
+        {
+            if (_bodyStream != null && _streamDisposalResponsibility == StreamDisposalResponsibility.Sdk)
+            {
+                _bodyStream.Dispose();
+                _bodyStream = null;
+            }
         }
     }
 }
