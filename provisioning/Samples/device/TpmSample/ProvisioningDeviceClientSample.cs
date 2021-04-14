@@ -94,8 +94,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             return _parameters.TransportType switch
             {
                 TransportType.Amqp => new ProvisioningTransportHandlerAmqp(),
-                TransportType.Amqp_Tcp_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
-                TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly),
+                TransportType.Amqp_Tcp_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly),
+                TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
                 TransportType.Http1 => new ProvisioningTransportHandlerHttp(),
                 TransportType.Mqtt => throw new NotSupportedException("MQTT is not supported for TPM"),
                 TransportType.Mqtt_Tcp_Only => throw new NotSupportedException("MQTT is not supported for TPM"),
