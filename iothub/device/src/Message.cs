@@ -409,13 +409,7 @@ namespace Microsoft.Azure.Devices.Client
             return ms.ToArray();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        protected T GetSystemProperty<T>(string key)
+        private T GetSystemProperty<T>(string key)
         {
             return SystemProperties.ContainsKey(key)
                 ? (T)SystemProperties[key]
