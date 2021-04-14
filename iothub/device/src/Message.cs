@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Used to specify the content type of the message.
         /// </summary>
-        public string ContentType
+        public virtual string ContentType
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
             set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Used to specify the content encoding type of the message.
         /// </summary>
-        public string ContentEncoding
+        public virtual string ContentEncoding
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
             set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
@@ -414,7 +414,13 @@ namespace Microsoft.Azure.Devices.Client
             return ms.ToArray();
         }
 
-        private T GetSystemProperty<T>(string key)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected T GetSystemProperty<T>(string key)
         {
             return SystemProperties.ContainsKey(key)
                 ? (T)SystemProperties[key]

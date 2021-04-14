@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 ComponentName = componentName,
                 Properties = { ["property1"] = "myValue" },
-                Telemetry = { 
+                Telemetry = {
                     ["something"] = "empty",
                     [deviceHealthName] = deviceHealth
                 }
@@ -457,12 +457,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
 
-            var telemetryCollection = new TelemetryCollection();
-            telemetryCollection.Add(workingSetName, workingSet);
-            using var message = new TelemetryMessage(telemetryCollection);
+            using var message = new TelemetryMessage
+            {
+                Telemetry = { [workingSetName] = workingSet }
+            };
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {telemetryCollection.ToJson()} in KB.");
+            //_logger.LogDebug($"Telemetry: Sent - {telemetryCollection.ToJson()} in KB.");
         }
 
         // Send device serial number over property update.
@@ -493,9 +494,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string temperatureName = "temperature";
             double currentTemperature = _temperature[componentName];
 
-            var telemetryCollection = new TelemetryCollection();
-            telemetryCollection.Add(temperatureName, currentTemperature);
-            using var message = new TelemetryMessage(telemetryCollection);
+            using var message = new TelemetryMessage
+            {
+                ComponentName = componentName,
+                Telemetry = { [temperatureName] = currentTemperature }
+            };
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{temperatureName}\": {currentTemperature} }} in °C.");
