@@ -156,7 +156,8 @@ namespace Microsoft.Azure.Devices
                iotHubConnectionString,
                ExceptionHandlingHelper.GetDefaultErrorMapping(),
                s_defaultOperationTimeout,
-               transportSettings.HttpProxy);
+               transportSettings.HttpProxy,
+               transportSettings.ConnectionLeaseTimeoutMilliseconds);
             var serviceClient = new ServiceClient(iotHubConnection, iotHubConnectionString.IotHubName, httpClientHelper, options);
             return serviceClient;
         }

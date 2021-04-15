@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Transport.Channels;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -242,36 +243,72 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override async void DoWrite(ChannelOutboundBuffer channelOutboundBuffer)
         {
+            if (channelOutboundBuffer == null)
+            {
+                throw new ArgumentNullException(nameof(channelOutboundBuffer), "The channel outbound buffer cannot be null.");
+            }
+
             try
             {
+                // The ChannelOutboundBuffer might have more than one message per MQTT packet that needs to be written to the websocket as a single frame.
+                // One example of this is a PUBLISH packet, which encodes the payload and topic information as separate messages.
+                // In order to reduce the number of frames sent to the websocket, we will consolidate the individual messages per MQTT packet into a single byte buffer.
+                IByteBufferAllocator allocator = Configuration.Allocator;
+
+                // The parameter "direct" is used to indicate if operations carried out in the CompositeByteBuffer should be treated as "unsafe".
+                var compositeByteBuffer = new CompositeByteBuffer(allocator, direct: false, maxNumComponents: int.MaxValue);
+
+                var bytesToBeWritten = new ArraySegment<byte>();
                 _isWriteInProgress = true;
+
                 while (true)
                 {
                     object currentMessage = channelOutboundBuffer.Current;
+
+                    // Once there are no more messages pending in ChannelOutboundBuffer, the "Current" property is returned as "null".
+                    // This indicates that all pending messages have been dequeued from the ChannelOutboundBuffer and are ready to be written to the websocket.
                     if (currentMessage == null)
                     {
-                        // Wrote all messages.
+                        // This indicates that the ChannelOutboundBuffer had readable bytes and they have been added to the CompositeByteBuffer.
+                        if (compositeByteBuffer.NumComponents > 0)
+                        {
+                            // All messages have been added to the CompositeByteBuffer and are now ready to be written to the socket.
+                            bytesToBeWritten = compositeByteBuffer.GetIoBuffer();
+                        }
                         break;
                     }
 
                     var byteBuffer = currentMessage as IByteBuffer;
                     Debug.Assert(byteBuffer != null, "channelOutBoundBuffer contents must be of type IByteBuffer");
 
-                    if (byteBuffer.ReadableBytes == 0)
+                    // If the byte buffer has readable bytes then add them to the CompositeByteBuffer.
+                    if (byteBuffer.ReadableBytes != 0)
                     {
-                        channelOutboundBuffer.Remove();
-                        continue;
+                        // There are two operations carried out while adding a byte buffer component to a CompositeByteBuffer:
+                        // - Increase WriterIndex of the CompositeByteBuffer
+                        //      - increases the count of readable bytes added to the CompositeByteBuffer.
+                        // - Call the method Retain() on the byte buffer being added
+                        //      - The property ReferenceCount of a byte buffer implementation maintains a counter of the no of messages available for dequeuing.
+                        //        A ReferenceCount of 0 indicates that all messages have been flushed and the buffer can be deallocated.
+                        //        By calling the method Retain() on each byte buffer component added to the CompositeByteBuffer,
+                        //        we increase the ReferenceCount by 1 and mark them as ready for dequeuing.
+                        compositeByteBuffer
+                            .AddComponent(
+                                increaseWriterIndex: true,
+                                buffer: (IByteBuffer)byteBuffer.Retain());
                     }
 
-                    await _webSocket
-                        .SendAsync(
-                            byteBuffer.GetIoBuffer(),
-                            WebSocketMessageType.Binary,
-                            true,
-                            _writeCancellationTokenSource.Token)
-                        .ConfigureAwait(false);
-
+                    // Once the readable bytes are added to the CompositeByteBuffer they can be removed from the ChannelOutboundBuffer
+                    // and the next message, if any, can be processed.
                     channelOutboundBuffer.Remove();
+                }
+
+                if (bytesToBeWritten.Count > 0)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Info(compositeByteBuffer, $"Writing bytes of size {bytesToBeWritten.Count} to the websocket", nameof(DoWrite));
+
+                    await _webSocket.SendAsync(bytesToBeWritten, WebSocketMessageType.Binary, true, _writeCancellationTokenSource.Token).ConfigureAwait(false);
                 }
 
                 _isWriteInProgress = false;
