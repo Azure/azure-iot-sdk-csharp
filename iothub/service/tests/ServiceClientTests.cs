@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task PurgeMessageQueueWithCancellationTokenTest()
         {
             // Arrange Moq
-            Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> setupParameters = this.SetupPurgeMessageQueueTests();
+            Tuple<Mock<IHttpClientHelper>, ServiceClient, PurgeMessageQueueResult> setupParameters = this.SetupPurgeMessageQueueTests();
             Mock<IHttpClientHelper> restOpMock = setupParameters.Item1;
-            AmqpServiceClient serviceClient = setupParameters.Item2;
+            ServiceClient serviceClient = setupParameters.Item2;
             PurgeMessageQueueResult expectedResult = setupParameters.Item3;
 
             // Execute method under test
@@ -50,13 +50,17 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
-            var serviceClient = new AmqpServiceClient(restOpMock.Object);
+            Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
+            Action<AmqpSession> onClose = _ => { };
+            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+            var connection = new IotHubConnection(onCreate, onClose);
+            var serviceClient = new ServiceClient(connection, null, restOpMock.Object, null);
 
             // Execute method under test
             PurgeMessageQueueResult result = await serviceClient.PurgeMessageQueueAsync("TestDevice", CancellationToken.None).ConfigureAwait(false);
         }
 
-        Tuple<Mock<IHttpClientHelper>, AmqpServiceClient, PurgeMessageQueueResult> SetupPurgeMessageQueueTests()
+        private Tuple<Mock<IHttpClientHelper>, ServiceClient, PurgeMessageQueueResult> SetupPurgeMessageQueueTests()
         {
             // Create expected return object
             var deviceId = "TestDevice";
@@ -76,7 +80,11 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
-            var serviceClient = new AmqpServiceClient(restOpMock.Object);
+            Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
+            Action<AmqpSession> onClose = _ => { };
+            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+            var connection = new IotHubConnection(onCreate, onClose);
+            var serviceClient = new ServiceClient(connection, null, restOpMock.Object, null);
 
             return Tuple.Create(restOpMock, serviceClient, expectedResult);
         }
@@ -91,7 +99,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             Action<AmqpSession> onClose = _ => { connectionClosed = true; };
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
-            var serviceClient = new AmqpServiceClient(connection, restOpMock.Object);
+            var serviceClient = new ServiceClient(connection, null, restOpMock.Object, null);
             // This is required to cause onClose callback invocation.
             await connection.OpenAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             serviceClient.Dispose();
@@ -110,7 +118,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
-            var serviceClient = new AmqpServiceClient(connection, restOpMock.Object);
+            var serviceClient = new ServiceClient(connection, null, restOpMock.Object, null);
             // This is required to cause onClose callback invocation.
             await connection.OpenAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             await serviceClient.CloseAsync().ConfigureAwait(false);
