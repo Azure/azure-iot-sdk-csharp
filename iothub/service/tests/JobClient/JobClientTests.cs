@@ -3,7 +3,7 @@
 
 using System.Linq;
 
-namespace Microsoft.Azure.Devices.Api.Test.JobClient
+namespace Microsoft.Azure.Devices.Api.Test
 {
     using System;
     using System.Collections.Generic;
@@ -16,20 +16,20 @@ namespace Microsoft.Azure.Devices.Api.Test.JobClient
 
     [TestClass]
     [TestCategory("Unit")]
-    public class HttpJobClientTests
+    public class JobClientTests
     {
         private readonly string jobId = "testJobId";
         private readonly JobResponse expectedJobResponse = new JobResponse();
         private readonly TimeSpan timeout = TimeSpan.FromMinutes(1);
 
         private Mock<IHttpClientHelper> httpClientHelperMock;
-        private HttpJobClient jobClient;
+        private JobClient jobClient;
 
         [TestInitialize]
         public void Setup()
         {
             httpClientHelperMock = new Mock<IHttpClientHelper>();
-            jobClient = new HttpJobClient(httpClientHelperMock.Object);
+            jobClient = new JobClient(httpClientHelperMock.Object);
         }
 
         private void NoExtraJobParamTestSetup(JobType jobType, CancellationToken cancellationToken)

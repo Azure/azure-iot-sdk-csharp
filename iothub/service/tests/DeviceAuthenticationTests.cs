@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceGoodAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceGoodAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceGoodAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceGoodAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceGoodAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -300,7 +300,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -332,7 +332,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -392,7 +392,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -420,7 +420,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -448,7 +448,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -476,7 +476,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -504,7 +504,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -532,7 +532,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -560,7 +560,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -588,7 +588,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -616,7 +616,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -644,7 +644,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -668,7 +668,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
                         It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
     }
