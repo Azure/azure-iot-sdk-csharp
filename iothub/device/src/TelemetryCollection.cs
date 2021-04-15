@@ -40,15 +40,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        /// <param name="componentName"></param>
         /// <param name="convention"></param>
-        public TelemetryCollection(string componentName = default, IPayloadConvention convention = default)
+        public TelemetryCollection(IPayloadConvention convention = default)
             : base(convention)
         {
-            if (componentName != null)
-            {
-                ComponentName = componentName;
-            }
         }
 
         /// <summary>

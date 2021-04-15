@@ -494,26 +494,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
             double currentTemperature = _temperature[componentName];
 
             // We can do a direct initialization like this...
-            using var message = new TelemetryMessage(componentName)
+            using var message = new TelemetryMessage()
             {
-                Telemetry = { [temperatureName] = currentTemperature }
+                ComponentName = componentName,
+                Telemetry = { [temperatureName] = currentTemperature },
             };
 
             // Or set the property this way
-
-            var customCollection = new TelemetryCollection(componentName, s_payloadConvention)
-            {
-                [temperatureName] = currentTemperature,
-            };
-
 
             using var messageCustom = new TelemetryMessage
             {
-                Telemetry = customCollection
+                ComponentName = componentName,
+                Telemetry = new TelemetryCollection(s_payloadConvention)
+                {
+                    [temperatureName] = currentTemperature,
+                }
             };
-
-            // Or set the property this way
-            using var messageCustomConstructor = new TelemetryMessage(customCollection);
+            messageCustom.Telemetry.Add("anotherName", 42);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{temperatureName}\": {currentTemperature} }} in °C.");

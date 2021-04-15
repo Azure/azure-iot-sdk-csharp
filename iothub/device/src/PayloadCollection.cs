@@ -14,8 +14,6 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IPayloadConvention Convention { get; set; }
 
-        internal string ComponentName { get; set; }
-
         internal PayloadCollection(IPayloadConvention payloadConvention = default)
         {
             Convention = payloadConvention ?? DefaultPayloadConvention.Instance;

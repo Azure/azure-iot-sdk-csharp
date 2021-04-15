@@ -69,7 +69,6 @@ namespace Microsoft.Azure.Devices.Client
         internal Message(PayloadCollection payloadCollection)
             : this(new MemoryStream(payloadCollection?.GetPayloadObjectBytes()))
         {
-            ComponentName = payloadCollection?.ComponentName;
             ContentEncoding = payloadCollection?.Convention?.PayloadEncoder?.ContentEncoding?.WebName;
             ContentType = payloadCollection?.Convention?.PayloadSerializer?.ContentType;
 

@@ -13,35 +13,30 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class TelemetryMessage : Message
     {
-        private TelemetryCollection _telemtryCollection;
-
+        private TelemetryCollection _telemtryCollection = new TelemetryCollection();
         /// <summary>
-        /// 
+        /// Gets or sets the <see cref="TelemetryCollection"/> for this TelemetryMessage
         /// </summary>
+        /// <remarks>
+        /// Setting this value with a new instance ofd 
+        /// </remarks>
         public TelemetryCollection Telemetry
         {
             get => _telemtryCollection;
             set 
             {
+                _telemtryCollection = value;
                 if (value != null)
                 {
                     base.ContentType = value.Convention.PayloadEncoder.ContentEncoding.WebName;
                     base.ContentEncoding = value.Convention.PayloadSerializer.ContentType;
-                    base.ComponentName = value.ComponentName;
                 } else
                 {
                     base.ContentType = string.Empty;
                     base.ContentEncoding = string.Empty;
-                    base.ComponentName = string.Empty;
                 }
                 
             }
-        }
-
-        /// <inheritdoc/>
-        new public string ComponentName
-        {
-            get => base.ContentType;
         }
 
         /// <inheritdoc/>
@@ -59,21 +54,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        public TelemetryMessage(string componentName)
-            : base()
-        {
-            Telemetry = new TelemetryCollection();
-            base.ComponentName = componentName;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
+        /// <param name="componentName"></param>
         /// <param name="telemetryCollection"></param>
-        public TelemetryMessage(TelemetryCollection telemetryCollection = default)
+        public TelemetryMessage(string componentName = default, TelemetryCollection telemetryCollection = default)
             : base(telemetryCollection)
         {
             Telemetry = telemetryCollection ?? new TelemetryCollection();
+            ComponentName = componentName ?? string.Empty;
         }
 
         /// <inheritdoc/>
