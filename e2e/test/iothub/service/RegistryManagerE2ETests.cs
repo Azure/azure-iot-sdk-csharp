@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -42,24 +41,53 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task RegistryManager_AddAndRemoveDeviceWithScope()
         {
-            var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            // arrange
 
+            string edgeId1 = _devicePrefix + Guid.NewGuid();
+            string edgeId2 = _devicePrefix + Guid.NewGuid();
             string deviceId = _devicePrefix + Guid.NewGuid();
 
-            var edgeDevice = new Device(deviceId)
+            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+            try
             {
-                Capabilities = new DeviceCapabilities { IotEdge = true }
-            };
-            edgeDevice = await registryManager.AddDeviceAsync(edgeDevice).ConfigureAwait(false);
+                // act
 
-            var leafDevice = new Device(Guid.NewGuid().ToString()) { Scope = edgeDevice.Scope };
-            Device receivedDevice = await registryManager.AddDeviceAsync(leafDevice).ConfigureAwait(false);
+                // Create a top-level edge device.
+                var edgeDevice1 = new Device(edgeId1)
+                {
+                    Capabilities = new DeviceCapabilities { IotEdge = true }
+                };
+                edgeDevice1 = await registryManager.AddDeviceAsync(edgeDevice1).ConfigureAwait(false);
 
-            Assert.IsNotNull(receivedDevice);
-            Assert.AreEqual(leafDevice.Id, receivedDevice.Id, $"Expected Device ID={leafDevice.Id}; Actual Device ID={receivedDevice.Id}");
-            Assert.AreEqual(leafDevice.Scope, receivedDevice.Scope, $"Expected Device Scope={leafDevice.Scope}; Actual Device Scope={receivedDevice.Scope}");
-            await registryManager.RemoveDeviceAsync(leafDevice.Id).ConfigureAwait(false);
-            await registryManager.RemoveDeviceAsync(edgeDevice.Id).ConfigureAwait(false);
+                // Create a second-level edge device with edge 1 as the parent.
+                var edgeDevice2 = new Device(edgeId2)
+                {
+                    Capabilities = new DeviceCapabilities { IotEdge = true },
+                    ParentScopes = { edgeDevice1.Scope },
+                };
+                edgeDevice2 = await registryManager.AddDeviceAsync(edgeDevice2).ConfigureAwait(false);
+
+                // Create a leaf device with edge 2 as the parent.
+                var leafDevice = new Device(deviceId) { Scope = edgeDevice2.Scope };
+                leafDevice = await registryManager.AddDeviceAsync(leafDevice).ConfigureAwait(false);
+
+                // assert
+
+                edgeDevice2.ParentScopes.FirstOrDefault().Should().Be(edgeDevice1.Scope, "The parent scope should be respected as set.");
+
+                leafDevice.Id.Should().Be(deviceId, "The device Id should be respected as set.");
+                leafDevice.Scope.Should().Be(edgeDevice2.Scope, "The device scope should be respected as set.");
+                leafDevice.ParentScopes.FirstOrDefault().Should().Be(edgeDevice2.Scope, "The service should have copied the edge's scope to the leaf device's parent scope array.");
+            }
+            finally
+            {
+                // clean up
+
+                await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                await registryManager.RemoveDeviceAsync(edgeId1).ConfigureAwait(false);
+                await registryManager.RemoveDeviceAsync(edgeId2).ConfigureAwait(false);
+            }
         }
 
         [LoggedTestMethod]
@@ -243,7 +271,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
             finally
             {
-                await Cleanup(client, testDeviceId).ConfigureAwait(false);
+                await CleanupAsync(client, testDeviceId).ConfigureAwait(false);
             }
         }
 
@@ -290,7 +318,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
             finally
             {
-                await Cleanup(client, testDeviceId).ConfigureAwait(false);
+                await CleanupAsync(client, testDeviceId).ConfigureAwait(false);
             }
         }
 
@@ -325,11 +353,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
             finally
             {
-                await Cleanup(client, module.DeviceId).ConfigureAwait(false);
+                await CleanupAsync(client, module.DeviceId).ConfigureAwait(false);
             }
         }
 
-        private async Task Cleanup(RegistryManager client, string deviceId)
+        private async Task CleanupAsync(RegistryManager client, string deviceId)
         {
             // cleanup
             try

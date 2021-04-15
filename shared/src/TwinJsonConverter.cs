@@ -1,20 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+
 namespace Microsoft.Azure.Devices.Shared
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using System.Reflection;
-    using System.Runtime.Serialization;
-    using Microsoft.Azure.Devices.Common;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-    using Newtonsoft.Json.Linq;
-    using Newtonsoft.Json.Serialization;
-
     /// <summary>
     /// Converts <see cref="Twin"/> to Json
     /// </summary>
@@ -40,6 +37,8 @@ namespace Microsoft.Azure.Devices.Shared
         private const string AuthenticationTypeTag = "authenticationType";
         private const string X509ThumbprintTag = "x509Thumbprint";
         private const string ModelId = "modelId";
+        private const string DeviceScope = "deviceScope";
+        private const string ParentScopes = "parentScopes";
 
         /// <summary>
         /// Converts <see cref="Twin"/> to its equivalent Json representation.
@@ -173,6 +172,18 @@ namespace Microsoft.Azure.Devices.Shared
                 writer.WriteEndObject();
             }
 
+            if (twin.DeviceScope != null)
+            {
+                writer.WritePropertyName(DeviceScope);
+                serializer.Serialize(writer, twin.DeviceScope, typeof(string));
+            }
+
+            if (twin.ParentScopes != null && twin.ParentScopes.Any())
+            {
+                writer.WritePropertyName(ParentScopes);
+                serializer.Serialize(writer, twin.ParentScopes, typeof(IList<string>));
+            }
+
             writer.WriteEndObject();
         }
 
@@ -301,6 +312,14 @@ namespace Microsoft.Azure.Devices.Shared
 
                     case X509ThumbprintTag:
                         twin.X509Thumbprint = serializer.Deserialize<X509Thumbprint>(reader);
+                        break;
+
+                    case DeviceScope:
+                        twin.DeviceScope = serializer.Deserialize<string>(reader);
+                        break;
+
+                    case ParentScopes:
+                        twin.ParentScopes = serializer.Deserialize<IReadOnlyList<string>>(reader);
                         break;
 
                     default:
