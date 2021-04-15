@@ -35,7 +35,8 @@ namespace Microsoft.Azure.Devices
                 connectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                transportSettings.Proxy);
+                transportSettings.Proxy,
+                transportSettings.ConnectionLeaseTimeoutMilliseconds);
         }
 
         // internal test helper
