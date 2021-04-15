@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -11,7 +9,7 @@ namespace Microsoft.Azure.Devices
     internal class ClientApiVersionHelper
     {
         private const string ApiVersionQueryPrefix = "api-version=";
-        private const string ApiVersionDefault = "2020-09-30";
+        private const string ApiVersionDefault = "2021-04-12";
 
         /// <summary>
         /// The default API version to use for all data-plane service calls

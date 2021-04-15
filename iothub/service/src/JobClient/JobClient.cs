@@ -73,7 +73,8 @@ namespace Microsoft.Azure.Devices
                  iotHubConnectionString,
                  ExceptionHandlingHelper.GetDefaultErrorMapping(),
                  s_defaultOperationTimeout,
-                 transportSettings.Proxy);
+                 transportSettings.Proxy,
+                 transportSettings.ConnectionLeaseTimeoutMilliseconds);
 
             return new JobClient(httpClientHelper);
         }
