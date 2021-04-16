@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyValue"></param>
         /// <param name="componentName"></param>
         public void Add(string propertyName, object propertyValue, string componentName = default)
-            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName);
+            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, false, componentName);
 
         /// <summary>
         ///
@@ -39,6 +39,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="properties"></param>
         /// <param name="componentName"></param>
         public void Add(IDictionary<string, object> properties, string componentName = default)
+        => Add(properties, false, componentName);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <param name="componentName"></param>
+        public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
+            => Add(properties, true, componentName);
+
+        /// <summary>
+        /// highlight both "readonly" and "writable property response" propertyValue patches
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="propertyValue"></param>
+        /// <param name="componentName"></param>
+        public void AddOrUpdate(string propertyName, object propertyValue, string componentName = default)
+            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, true, componentName);
+
+        private void Add(IDictionary<string, object> properties, bool update = false, string componentName = default)
         {
             if (properties == null)
             {
@@ -51,7 +71,15 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    Collection[entry.Key] = entry.Value;
+                    if (update)
+                    {
+                        Collection[entry.Key] = entry.Value;
+                    }
+                    else
+                    {
+                        Collection.Add(entry.Key, entry.Value);
+                    }
+
                 }
             }
             else
@@ -66,7 +94,15 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    componentProperties[entry.Key] = entry.Value;
+                    if (update)
+                    {
+                        componentProperties[entry.Key] = entry.Value;
+                    }
+                    else
+                    {
+                        componentProperties.Add(entry.Key, entry.Value);
+                    }
+
                 }
 
                 // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
@@ -75,7 +111,14 @@ namespace Microsoft.Azure.Devices.Client
                     componentProperties[PropertyConvention.ComponentIdentifierKey] = PropertyConvention.ComponentIdentifierValue;
                 }
 
-                Collection.Add(componentName, componentProperties);
+                if (update)
+                {
+                    Collection[componentName] = componentProperties;
+                }
+                else
+                {
+                    Collection.Add(componentName, componentProperties);
+                }
             }
         }
 

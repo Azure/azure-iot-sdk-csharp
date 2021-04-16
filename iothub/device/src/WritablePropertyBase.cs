@@ -32,17 +32,6 @@ namespace Microsoft.Azure.Devices.Client
         protected const string AckDescriptionPropertyName = "ad";
 
         /// <summary>
-        /// Convenience constructor for specifying only the property value.
-        /// </summary>
-        /// <param name="propertyValue">The unserialized property value.</param>
-        public WritablePropertyBase(object propertyValue)
-        {
-            // null checks
-
-            Value = propertyValue;
-        }
-
-        /// <summary>
         /// Convenience constructor for specifying the properties.
         /// </summary>
         /// <param name="propertyValue">The unserialized property value.</param>
@@ -50,9 +39,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="ackVersion">The acknowledgement version, as supplied in the property update request.</param>
         /// <param name="ackDescription">The acknowledgement description, an optional, human-readable message about the result of the property update.</param>
         public WritablePropertyBase(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
-            : this(propertyValue)
         {
             // null checks
+            Value = propertyValue;
             AckCode = ackCode;
             AckVersion = ackVersion;
             AckDescription = ackDescription;

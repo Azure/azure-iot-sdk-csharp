@@ -31,6 +31,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
+        /// <param name="telemetryName"></param>
+        /// <param name="telemetryValue"></param>
+        public void AddOrUpdate(string telemetryName, object telemetryValue)
+        {
+            Collection[telemetryName] =  telemetryValue;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         /// <returns></returns>
         public string ToJson()
         {

@@ -11,11 +11,6 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class WritablePropertyResponse : WritablePropertyBase
     {
         /// <inheritdoc />
-        public WritablePropertyResponse(object propertyValue) : base(propertyValue)
-        {
-        }
-
-        /// <inheritdoc />
         public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)            
             : base(propertyValue, ackCode, ackVersion, ackDescription)
         {

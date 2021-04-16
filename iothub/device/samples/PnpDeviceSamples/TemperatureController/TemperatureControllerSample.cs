@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the componentName/ root-level property name.
-        private readonly Dictionary<string, Func<PropertyCollection, object, string, Task>> _writablePropertyEventCallbacks =
+        private readonly Dictionary<string, Func<KeyValuePair<string, object>, long, object, string, Task>> _writablePropertyEventCallbacks =
             new();
 
         // A dictionary to hold all command callbacks that this pnp device should be able to handle.
@@ -103,9 +103,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 var serialNumberReported = properties["serialNumber"];
             }
 
-            if (properties.Contains(Thermostat2) && properties[Thermostat2].ContainsKey("initialValue"))
+            if (properties.Contains(Thermostat2) && (properties[Thermostat2] as Dictionary<string, object>).ContainsKey("initialValue"))
             {
-                var initialStateThermostat2 = properties[Thermostat2]["initialValue"];
+                var initialStateThermostat2 = (properties[Thermostat2] as Dictionary<string, object>)["initialValue"];
             }
 
             s_applicationStartTime = DateTimeOffset.Now;
@@ -332,7 +332,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 string dispatcherKey = propertyUpdate.Key;
                 if (_writablePropertyEventCallbacks.ContainsKey(dispatcherKey))
                 {
-                    return _writablePropertyEventCallbacks[dispatcherKey]?.Invoke(desiredProperties, cancellationToken, dispatcherKey);
+                    return _writablePropertyEventCallbacks[dispatcherKey]?.Invoke(propertyUpdate, desiredProperties.Version, cancellationToken, dispatcherKey);
                 }
             }
 
@@ -340,22 +340,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.CompletedTask;
         }
 
-        private async Task SendTemperatureRangeAsync(PropertyCollection desiredProperties, object userContext, string dispatcherKey)
+        private async Task SendTemperatureRangeAsync(KeyValuePair<string, object> desiredProperties, long version, object userContext, string dispatcherKey)
         {
             string propertyName = dispatcherKey;
             var cancellationToken = (CancellationToken)userContext;
 
             // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection).
             // This implementation detail will need to be addressed.
-            string serializedProperties = ((JObject)desiredProperties[propertyName]).ToString();
+            string serializedProperties = ((JObject)desiredProperties.Value).ToString();
             TemperatureRange temeratureRangeDesired = s_payloadConvention.PayloadSerializer.DeserializeToType<TemperatureRange>(serializedProperties);
 
-            var temperatureUpdateResponse = new WritablePropertyResponse(temeratureRangeDesired)
-            {
-                AckCode = (int)StatusCode.Completed,
-                AckVersion = desiredProperties.Version,
-                AckDescription = "The operation completed successfully."
-            };
+            var temperatureUpdateResponse = new WritablePropertyResponse(
+                temeratureRangeDesired,
+                (int)StatusCode.Completed,
+                version,
+                "The operation completed successfully.");
 
             // A property collection with WritablePropertyResponse needs to be always vserialized with NewtonSoft
             // => we cannot merge it with user defined serialization settings.
@@ -369,7 +368,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and property update.
         // This callback is invoked for all updates received for the two associated components.
-        private async Task TargetTemperatureUpdateCallbackAsync(PropertyCollection desiredProperties, object userContext, string dispatcherKey)
+        private async Task TargetTemperatureUpdateCallbackAsync(KeyValuePair<string, object> desiredProperties, long version, object userContext, string dispatcherKey)
         {
             string componentName = dispatcherKey;
             var cancellationToken = (CancellationToken)userContext;
@@ -380,22 +379,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection).
             // This implementation detail will need to be addressed.
-            bool targetTempUpdateReceived = ((JObject)desiredProperties[componentName]).ContainsKey(propertyName);
+            bool targetTempUpdateReceived = ((Dictionary<string, object>)desiredProperties.Value).ContainsKey(propertyName);
 
             if (!targetTempUpdateReceived)
             {
-                _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.\n{desiredProperties.ToJson()}");
+                _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.\n{desiredProperties.Value}");
                 return;
             }
 
-            double targetTemperature = (desiredProperties[componentName] as Dictionary<string, dynamic>)[propertyName];
+            double targetTemperature = (desiredProperties.Value as Dictionary<string, dynamic>)[propertyName];
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
-            var pendingReportedProperty = new WritablePropertyResponse(targetTemperature)
-            {
-                AckCode = (int)StatusCode.InProgress,
-                AckVersion = desiredProperties.Version
-            };
+            var pendingReportedProperty = new WritablePropertyResponse(
+                targetTemperature, 
+                (int)StatusCode.InProgress, 
+                version);
 
             var pendingPropertyPatch = new PropertyCollection();
             pendingPropertyPatch.Add(propertyName, pendingReportedProperty, componentName);
@@ -411,12 +409,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await Task.Delay(6 * 1000);
             }
 
-            var completedReportedProperty = new WritablePropertyResponse(_temperature[componentName])
-            {
-                AckCode = (int)StatusCode.Completed,
-                AckVersion = desiredProperties.Version,
-                AckDescription = "Successfully updated target temperature"
-            };
+            var completedReportedProperty = new WritablePropertyResponse(
+                _temperature[componentName],
+                (int)StatusCode.Completed,
+                version,
+                "Successfully updated target temperature");
 
             var completePropertyPatch = new PropertyCollection();
             completePropertyPatch.Add(propertyName, completedReportedProperty, componentName);
@@ -499,7 +496,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // We can do a direct initialization like this...
             using var message = new TelemetryMessage()
             {
-               
+
                 ComponentName = componentName,
                 Telemetry = {
                     [temperatureName] = currentTemperature,

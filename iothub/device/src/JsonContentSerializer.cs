@@ -23,14 +23,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        public string ContentType => ApplicationJson;
+        public override string ContentType => ApplicationJson;
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="objectToSerialize"></param>
         /// <returns></returns>
-        public string SerializeToString(object objectToSerialize)
+        public override string SerializeToString(object objectToSerialize)
         {
             return JsonConvert.SerializeObject(objectToSerialize);
         }
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T"></typeparam>
         /// <param name="stringToDeserialize"></param>
         /// <returns></returns>
-        public T DeserializeToType<T>(string stringToDeserialize)
+        public override T DeserializeToType<T>(string stringToDeserialize)
         {
             return JsonConvert.DeserializeObject<T>(stringToDeserialize);
         }

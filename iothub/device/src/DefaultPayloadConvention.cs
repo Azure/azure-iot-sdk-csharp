@@ -16,19 +16,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        public ISerializer PayloadSerializer => JsonContentSerializer.Instance;
+        public override ISerializer PayloadSerializer => JsonContentSerializer.Instance;
 
         /// <summary>
         ///
         /// </summary>
-        public IContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
+        public override IContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="objectToSendWithConvention"></param>
         /// <returns></returns>
-        public byte[] GetObjectBytes(object objectToSendWithConvention)
+        public override byte[] GetObjectBytes(object objectToSendWithConvention)
         {
             string serializedString = PayloadSerializer.SerializeToString(objectToSendWithConvention);
             return PayloadEncoder.EncodeStringToByteArray(serializedString);

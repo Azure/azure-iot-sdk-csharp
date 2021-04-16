@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     public class Properties : IEnumerable<object>
     {
         private const string VersionName = "$version";
-        private readonly IDictionary<string, object> _readOnlyProperties = new Dictionary<string, object>();
+        private readonly IDictionary<string, object> _reportedPropertyCollection = new Dictionary<string, object>();
 
         /// <summary>
         /// Initializes a new instance of <see cref="Properties"/>
@@ -27,12 +27,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of <see cref="Properties"/> with the specified collections
         /// </summary>
-        /// <param name="writablePropertyCollection">A collection of writable properties returned from IoT Hub</param>
+        /// <param name="requestedPropertyCollection">A collection of writable properties returned from IoT Hub</param>
         /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub</param>
-        internal Properties(PropertyCollection writablePropertyCollection, IDictionary<string, object> readOnlyPropertyCollection)
+        internal Properties(PropertyCollection requestedPropertyCollection, IDictionary<string, object> readOnlyPropertyCollection)
         {
-            Writable = writablePropertyCollection;
-            _readOnlyProperties = readOnlyPropertyCollection;
+            Writable = requestedPropertyCollection;
+            _reportedPropertyCollection = readOnlyPropertyCollection;
         }
 
         /// <summary>
@@ -45,11 +45,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="propertyName"></param>
         /// <returns></returns>
-        public dynamic this[string propertyName]
+        public object this[string propertyName]
         {
             get
             {
-                return _readOnlyProperties[propertyName];
+                return _reportedPropertyCollection[propertyName];
             }
         }
 
@@ -60,13 +60,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>true if the specified property is present; otherwise, false</returns>
         public bool Contains(string propertyName)
         {
-            return _readOnlyProperties.TryGetValue(propertyName, out _);
+            return _reportedPropertyCollection.TryGetValue(propertyName, out _);
         }
 
         /// <summary>
         ///
         /// </summary>
-        public long Version => _readOnlyProperties.TryGetValue(VersionName, out object version)
+        public long Version => _reportedPropertyCollection.TryGetValue(VersionName, out object version)
             ? (long)version
             : default;
 
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public IEnumerator<object> GetEnumerator()
         {
-            foreach (object property in _readOnlyProperties)
+            foreach (object property in _reportedPropertyCollection)
             {
                 yield return property;
             }

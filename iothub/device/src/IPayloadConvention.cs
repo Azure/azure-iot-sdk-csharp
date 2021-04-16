@@ -6,23 +6,23 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     ///
     /// </summary>
-    public interface IPayloadConvention
+    public abstract class IPayloadConvention
     {
         /// <summary>
         ///
         /// </summary>
-        public ISerializer PayloadSerializer { get; }
+        public abstract ISerializer PayloadSerializer { get; }
 
         /// <summary>
         ///
         /// </summary>
-        public IContentEncoder PayloadEncoder { get; }
+        public abstract IContentEncoder PayloadEncoder { get; }
 
         /// <summary>
         /// Returns the byte array for the convention based message
         /// </summary>
         /// <param name="objectToSendWithConvention"></param>
         /// <returns></returns>
-        public byte[] GetObjectBytes(object objectToSendWithConvention);
+        public abstract byte[] GetObjectBytes(object objectToSendWithConvention);
     }
 }

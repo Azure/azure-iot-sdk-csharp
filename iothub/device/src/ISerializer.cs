@@ -6,19 +6,19 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Provides the serialzation for a specified convention
     /// </summary>
-    public interface ISerializer
+    public abstract class ISerializer
     {
         /// <summary>
         /// Used to specify what type of content to expect
         /// </summary>
-        public string ContentType { get; }
+        public abstract string ContentType { get; }
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="objectToSerialize"></param>
         /// <returns></returns>
-        public string SerializeToString(object objectToSerialize);
+        public abstract string SerializeToString(object objectToSerialize);
 
         /// <summary>
         ///
@@ -26,6 +26,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T"></typeparam>
         /// <param name="stringToDeserialize"></param>
         /// <returns></returns>
-        public T DeserializeToType<T>(string stringToDeserialize);
+        public abstract T DeserializeToType<T>(string stringToDeserialize);
     }
 }
