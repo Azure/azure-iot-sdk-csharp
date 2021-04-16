@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
         public void AddOrUpdate(string propertyName, object propertyValue, string componentName = default)
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, true, componentName);
 
-        private void Add(IDictionary<string, object> properties, bool update = false, string componentName = default)
+        private void Add(IDictionary<string, object> properties, bool forceUpdate = false, string componentName = default)
         {
 
             if (properties == null)
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
                     }
-                    if (update)
+                    if (forceUpdate)
                     {
                         Collection[entry.Key] = entry.Value;
                     }
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
                         throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
                     }
 
-                    if (update)
+                    if (forceUpdate)
                     {
                         componentProperties[entry.Key] = entry.Value;
                     }
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.Client
                     componentProperties[PropertyConvention.ComponentIdentifierKey] = PropertyConvention.ComponentIdentifierValue;
                 }
 
-                if (update)
+                if (forceUpdate)
                 {
                     Collection[componentName] = componentProperties;
                 }
