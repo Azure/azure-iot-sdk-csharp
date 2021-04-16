@@ -21,16 +21,30 @@ namespace Microsoft.Azure.Devices.Client
             set => Collection[key] = value;
         }
 
-        internal IDictionary<string, object> Collection { get; set; } = new Dictionary<string, object>();
+        /// <summary>
+        /// 
+        /// </summary>
+        public IDictionary<string, object> Collection { get; private set; } = new Dictionary<string, object>();
 
-        internal IPayloadConvention Convention { get; set; }
-
-        internal PayloadCollection(IPayloadConvention payloadConvention = default)
+        /// <summary>
+        /// 
+        /// </summary>
+        public IPayloadConvention Convention { get; private set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="payloadConvention"></param>
+        protected PayloadCollection(IPayloadConvention payloadConvention = default)
         {
             Convention = payloadConvention ?? DefaultPayloadConvention.Instance;
         }
 
-        internal byte[] GetPayloadObjectBytes()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public virtual byte[] GetPayloadObjectBytes()
         {
             return Convention.GetObjectBytes(Collection);
         }

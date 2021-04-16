@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="payloadConvention"></param>
         public PropertyCollection(IPayloadConvention payloadConvention = default)
+            : base(payloadConvention)
         {
-            Convention = payloadConvention ?? PropertyConvention.Instance;
         }
 
         /// <summary>
@@ -60,6 +60,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void Add(IDictionary<string, object> properties, bool update = false, string componentName = default)
         {
+
             if (properties == null)
             {
                 throw new ArgumentNullException(nameof(properties));
@@ -71,6 +72,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
+                    var checkType = entry.Value is WritablePropertyBase;
+                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckType(entry.Value))
+                    {
+                        throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
+                    }
                     if (update)
                     {
                         Collection[entry.Key] = entry.Value;
@@ -94,6 +100,12 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
+                    var checkType = entry.Value is WritablePropertyBase;
+                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckType(entry.Value))
+                    {
+                        throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
+                    }
+
                     if (update)
                     {
                         componentProperties[entry.Key] = entry.Value;

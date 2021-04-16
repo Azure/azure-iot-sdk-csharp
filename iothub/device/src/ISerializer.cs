@@ -27,5 +27,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="stringToDeserialize"></param>
         /// <returns></returns>
         public abstract T DeserializeToType<T>(string stringToDeserialize);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="typeToCheck"></param>
+        /// <returns></returns>object
+        public abstract bool CheckType(object typeToCheck);
     }
 }

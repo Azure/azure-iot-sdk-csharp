@@ -45,5 +45,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             return JsonConvert.DeserializeObject<T>(stringToDeserialize);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="typeToCheck"></param>
+        /// <returns></returns>
+        public override bool CheckType(object typeToCheck)
+        {
+            return typeToCheck is WritablePropertyResponse;
+        }
     }
 }
