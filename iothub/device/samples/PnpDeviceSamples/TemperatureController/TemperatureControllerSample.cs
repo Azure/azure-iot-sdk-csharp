@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             string serializedProperties = ((JObject)desiredProperties[propertyName]).ToString();
             TemperatureRange temeratureRangeDesired = s_payloadConvention.PayloadSerializer.DeserializeToType<TemperatureRange>(serializedProperties);
 
-            var temperatureUpdateResponse = new WritablePropertyResponse(temeratureRangeDesired, s_payloadConvention)
+            var temperatureUpdateResponse = new WritablePropertyResponse(temeratureRangeDesired)
             {
                 AckCode = (int)StatusCode.Completed,
                 AckVersion = desiredProperties.Version,
@@ -388,7 +388,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 return;
             }
 
-            double targetTemperature = desiredProperties[componentName][propertyName];
+            double targetTemperature = (desiredProperties[componentName] as Dictionary<string, dynamic>)[propertyName];
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
             var pendingReportedProperty = new WritablePropertyResponse(targetTemperature)
@@ -470,9 +470,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string propertyName = "serialNumber";
 
-            var propertyPatch = new PropertyCollection();
-            propertyPatch.Add(propertyName, SerialNumber);
-            await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
+            var propertyCollection = new PropertyCollection
+            {
+                [propertyName] = SerialNumber
+            };
+
+            await _deviceClient.UpdatePropertiesAsync(propertyCollection, cancellationToken);
             _logger.LogDebug($"Property: Update - {{ \"{propertyName}\": \"{SerialNumber}\" }} is complete.");
         }
 
@@ -496,12 +499,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // We can do a direct initialization like this...
             using var message = new TelemetryMessage()
             {
+               
                 ComponentName = componentName,
-                Telemetry = { [temperatureName] = currentTemperature },
+                Telemetry = {
+                    [temperatureName] = currentTemperature,
+                },
+                Properties = { ["myCustomProperty"] = "A custom property" }
             };
 
             // Or set the property this way
-
             using var messageCustom = new TelemetryMessage
             {
                 ComponentName = componentName,
@@ -510,6 +516,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     [temperatureName] = currentTemperature,
                 }
             };
+            messageCustom.Telemetry["somethingElse"] = 4;
             messageCustom.Telemetry.Add("anotherName", 42);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);

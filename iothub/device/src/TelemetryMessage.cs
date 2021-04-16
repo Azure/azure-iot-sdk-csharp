@@ -9,8 +9,11 @@ namespace Microsoft.Azure.Devices.Client
 {
 
     /// <summary>
-    ///
+    /// A class used to send Telmetry to IoT Hub
     /// </summary>
+    /// <remarks>
+    /// This is a sub class of <see cref="Message"/> designed to accept a <see cref="TelemetryCollection"/> to utilize the <see cref="IPayloadConvention"/> to adhere to a well defined convention. The convention defines the <see cref="ContentType"/> and <see cref="ContentEncoding"/> for this message.
+    /// </remarks>
     public class TelemetryMessage : Message
     {
         private TelemetryCollection _telemtryCollection = new TelemetryCollection();
@@ -40,27 +43,36 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// The ability to set this property has been hidden by this class to only allow you to set the ContentType via the <see cref="TelemetryCollection"/> class.
+        /// </remarks>
         new public string ContentType
         {
             get => base.ContentType;
         }
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// The ability to set this property has been hidden by this class to only allow you to set the ContentEncoding via the <see cref="TelemetryCollection"/> class.
+        /// </remarks>
         new public string ContentEncoding
         {
             get => base.ContentEncoding;
         }
 
         /// <summary>
-        ///
+        /// A conveneince constructor that allows you to set the <see cref="TelemetryCollection"/> and <see cref="Message.ComponentName"/> of this <see cref="TelemetryMessage"/>
         /// </summary>
-        /// <param name="componentName"></param>
-        /// <param name="telemetryCollection"></param>
+        /// <param name="componentName">The name of the component.</param>
+        /// <param name="telemetryCollection">A collection of telemetry for this message.</param>
         public TelemetryMessage(string componentName = default, TelemetryCollection telemetryCollection = default)
             : base(telemetryCollection)
         {
             Telemetry = telemetryCollection ?? new TelemetryCollection();
-            ComponentName = componentName ?? string.Empty;
+            if (!string.IsNullOrEmpty(componentName))
+            {
+                ComponentName = componentName;
+            }
         }
 
         /// <inheritdoc/>

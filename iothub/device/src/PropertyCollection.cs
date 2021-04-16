@@ -99,19 +99,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        public dynamic this[string propertyName]
-        {
-            get
-            {
-                return Collection[propertyName];
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
         /// <returns></returns>
         public string ToJson()
         {

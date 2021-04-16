@@ -8,8 +8,19 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     ///
     /// </summary>
-    public class PayloadCollection
+    public abstract class PayloadCollection
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object this[string key]
+        {
+            get => Collection[key];
+            set => Collection[key] = value;
+        }
+
         internal IDictionary<string, object> Collection { get; set; } = new Dictionary<string, object>();
 
         internal IPayloadConvention Convention { get; set; }
