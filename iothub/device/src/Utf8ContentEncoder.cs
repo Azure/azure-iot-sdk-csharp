@@ -18,14 +18,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        public Encoding ContentEncoding => Encoding.UTF8;
+        public override Encoding ContentEncoding => Encoding.UTF8;
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="contentPayload"></param>
         /// <returns></returns>
-        public byte[] EncodeStringToByteArray(string contentPayload)
+        public override byte[] EncodeStringToByteArray(string contentPayload)
         {
             return ContentEncoding.GetBytes(contentPayload);
         }

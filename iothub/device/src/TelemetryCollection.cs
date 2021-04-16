@@ -8,18 +8,14 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class TelemetryCollection : PayloadCollection
     {
+
         /// <summary>
         ///
         /// </summary>
-        /// <param name="componentName"></param>
         /// <param name="convention"></param>
-        public TelemetryCollection(string componentName = default, IPayloadConvention convention = default)
+        public TelemetryCollection(IPayloadConvention convention = default)
             : base(convention)
         {
-            if (componentName != null)
-            {
-                ComponentName = componentName;
-            }
         }
 
         /// <summary>
@@ -30,6 +26,16 @@ namespace Microsoft.Azure.Devices.Client
         public void Add(string telemetryName, object telemetryValue)
         {
             Collection.Add(telemetryName, telemetryValue);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="telemetryName"></param>
+        /// <param name="telemetryValue"></param>
+        public void AddOrUpdate(string telemetryName, object telemetryValue)
+        {
+            Collection[telemetryName] =  telemetryValue;
         }
 
         /// <summary>

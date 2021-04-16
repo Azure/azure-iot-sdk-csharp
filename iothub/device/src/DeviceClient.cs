@@ -715,10 +715,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Update properties.
         /// </summary>
-        /// <param name="propertyPatch">Reported properties to push.</param>
+        /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken = default)
-            => InternalClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
+        public Task UpdatePropertiesAsync(PropertyCollection propertyCollection, CancellationToken cancellationToken = default)
+            => InternalClient.UpdatePropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
         /// Sets the global listener for Writable properties
@@ -737,8 +737,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Send telemetry using the specified message.
         /// </summary>
         /// <remarks>
-        /// Use the <see cref="TelemetryMessage(TelemetryCollection)"/> constructor to pass in the formatted telemetry payload and an optional
-        /// <see cref="IPayloadConvention"/> that specifies your payload serialization and encoding rules.
+        /// Use the <see cref="TelemetryMessage(TelemetryCollection)"/> constructor to pass in the optional
+        /// <see cref="TelemetryCollection"/> that specifies your payload and serialization and encoding rules.
         /// </remarks>
         /// <param name="telemetryMessage">The telemetry message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>

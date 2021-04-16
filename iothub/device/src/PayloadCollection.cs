@@ -8,20 +8,43 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     ///
     /// </summary>
-    public class PayloadCollection
+    public abstract class PayloadCollection
     {
-        internal IDictionary<string, object> Collection { get; set; } = new Dictionary<string, object>();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object this[string key]
+        {
+            get => Collection[key];
+            set => Collection[key] = value;
+        }
 
-        internal IPayloadConvention Convention { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public IDictionary<string, object> Collection { get; private set; } = new Dictionary<string, object>();
 
-        internal string ComponentName { get; set; }
-
-        internal PayloadCollection(IPayloadConvention payloadConvention = default)
+        /// <summary>
+        /// 
+        /// </summary>
+        public IPayloadConvention Convention { get; private set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="payloadConvention"></param>
+        protected PayloadCollection(IPayloadConvention payloadConvention = default)
         {
             Convention = payloadConvention ?? DefaultPayloadConvention.Instance;
         }
 
-        internal byte[] GetPayloadObjectBytes()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public virtual byte[] GetPayloadObjectBytes()
         {
             return Convention.GetObjectBytes(Collection);
         }

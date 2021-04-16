@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="payloadConvention"></param>
         public PropertyCollection(IPayloadConvention payloadConvention = default)
+            : base(payloadConvention)
         {
-            Convention = payloadConvention ?? PropertyConvention.Instance;
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyValue"></param>
         /// <param name="componentName"></param>
         public void Add(string propertyName, object propertyValue, string componentName = default)
-            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName);
+            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
 
         /// <summary>
         ///
@@ -39,7 +39,28 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="properties"></param>
         /// <param name="componentName"></param>
         public void Add(IDictionary<string, object> properties, string componentName = default)
+        => Add(properties, componentName, false);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <param name="componentName"></param>
+        public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
+            => Add(properties, componentName, true);
+
+        /// <summary>
+        /// highlight both "readonly" and "writable property response" propertyValue patches
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="propertyValue"></param>
+        /// <param name="componentName"></param>
+        public void AddOrUpdate(string propertyName, object propertyValue, string componentName = default)
+            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
+
+        private void Add(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
+
             if (properties == null)
             {
                 throw new ArgumentNullException(nameof(properties));
@@ -51,7 +72,20 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    Collection[entry.Key] = entry.Value;
+                    var checkType = entry.Value is WritablePropertyBase;
+                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckType(entry.Value))
+                    {
+                        throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
+                    }
+                    if (forceUpdate)
+                    {
+                        Collection[entry.Key] = entry.Value;
+                    }
+                    else
+                    {
+                        Collection.Add(entry.Key, entry.Value);
+                    }
+
                 }
             }
             else
@@ -66,7 +100,21 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    componentProperties[entry.Key] = entry.Value;
+                    var checkType = entry.Value is WritablePropertyBase;
+                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckType(entry.Value))
+                    {
+                        throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
+                    }
+
+                    if (forceUpdate)
+                    {
+                        componentProperties[entry.Key] = entry.Value;
+                    }
+                    else
+                    {
+                        componentProperties.Add(entry.Key, entry.Value);
+                    }
+
                 }
 
                 // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
@@ -75,7 +123,14 @@ namespace Microsoft.Azure.Devices.Client
                     componentProperties[PropertyConvention.ComponentIdentifierKey] = PropertyConvention.ComponentIdentifierValue;
                 }
 
-                Collection.Add(componentName, componentProperties);
+                if (forceUpdate)
+                {
+                    Collection[componentName] = componentProperties;
+                }
+                else
+                {
+                    Collection.Add(componentName, componentProperties);
+                }
             }
         }
 
@@ -95,19 +150,6 @@ namespace Microsoft.Azure.Devices.Client
         public long Version => Collection.TryGetValue(VersionName, out object version)
             ? (long)version
             : default;
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        public dynamic this[string propertyName]
-        {
-            get
-            {
-                return Collection[propertyName];
-            }
-        }
 
         /// <summary>
         ///

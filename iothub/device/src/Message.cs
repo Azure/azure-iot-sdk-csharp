@@ -67,9 +67,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="payloadCollection"></param>
         internal Message(PayloadCollection payloadCollection)
-            : this(new MemoryStream(payloadCollection?.GetPayloadObjectBytes()))
+            : this()
         {
-            ComponentName = payloadCollection?.ComponentName;
             ContentEncoding = payloadCollection?.Convention?.PayloadEncoder?.ContentEncoding?.WebName;
             ContentType = payloadCollection?.Convention?.PayloadSerializer?.ContentType;
 
@@ -97,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
         public string MessageId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId);
-            set => SystemProperties[MessageSystemPropertyNames.MessageId] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.MessageId, value);
         }
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client
         public string To
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.To);
-            set => SystemProperties[MessageSystemPropertyNames.To] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.To, value);
         }
 
         /// <summary>
@@ -115,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime ExpiryTimeUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
-            internal set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
+            internal set => SetSystemProperty(MessageSystemPropertyNames.ExpiryTimeUtc, value);
         }
 
         /// <summary>
@@ -124,7 +123,7 @@ namespace Microsoft.Azure.Devices.Client
         public string CorrelationId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.CorrelationId);
-            set => SystemProperties[MessageSystemPropertyNames.CorrelationId] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.CorrelationId, value);
         }
 
         /// <summary>
@@ -133,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client
         public ulong SequenceNumber
         {
             get => GetSystemProperty<ulong>(MessageSystemPropertyNames.SequenceNumber);
-            internal set => SystemProperties[MessageSystemPropertyNames.SequenceNumber] = value;
+            internal set => SetSystemProperty(MessageSystemPropertyNames.SequenceNumber, value);
         }
 
         /// <summary>
@@ -142,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client
         public string LockToken
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.LockToken);
-            internal set => SystemProperties[MessageSystemPropertyNames.LockToken] = value;
+            internal set => SetSystemProperty(MessageSystemPropertyNames.LockToken, value);
         }
 
         /// <summary>
@@ -151,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime EnqueuedTimeUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
-            internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
+            internal set => SetSystemProperty(MessageSystemPropertyNames.EnqueuedTime, value);
         }
 
         /// <summary>
@@ -170,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client
         public string UserId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.UserId);
-            set => SystemProperties[MessageSystemPropertyNames.UserId] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.UserId, value);
         }
 
         /// <summary>
@@ -185,7 +184,7 @@ namespace Microsoft.Azure.Devices.Client
         public string MessageSchema
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageSchema);
-            set => SystemProperties[MessageSystemPropertyNames.MessageSchema] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.MessageSchema, value);
         }
 
         /// <summary>
@@ -194,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime CreationTimeUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
-            set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.CreationTimeUtc, value);
         }
 
         /// <summary>
@@ -205,10 +204,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Used to specify the content type of the message.
         /// </summary>
-        public string ContentType
+        public virtual string ContentType
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
-            set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.ContentType, value);
         }
 
         /// <summary>
@@ -217,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client
         public string InputName
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.InputName);
-            internal set => SystemProperties[MessageSystemPropertyNames.InputName] = value;
+            internal set => SetSystemProperty(MessageSystemPropertyNames.InputName, value);
         }
 
         /// <summary>
@@ -226,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ConnectionDeviceId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionDeviceId);
-            internal set => SystemProperties[MessageSystemPropertyNames.ConnectionDeviceId] = value;
+            internal set => SetSystemProperty(MessageSystemPropertyNames.ConnectionDeviceId, value);
         }
 
         /// <summary>
@@ -235,26 +234,26 @@ namespace Microsoft.Azure.Devices.Client
         public string ConnectionModuleId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionModuleId);
-            internal set => SystemProperties[MessageSystemPropertyNames.ConnectionModuleId] = value;
+            internal set => SetSystemProperty(MessageSystemPropertyNames.ConnectionModuleId, value);
         }
 
         /// <summary>
         /// Used to specify the content encoding type of the message.
         /// </summary>
-        public string ContentEncoding
+        public virtual string ContentEncoding
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
-            set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.ContentEncoding, value);
         }
 
         /// <summary>
         /// The DTDL component name from where the telemetry message has originated.
         /// This is relevant only for plug and play certified devices.
         /// </summary>
-        public string ComponentName
+        public virtual string ComponentName
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ComponentName);
-            set => SystemProperties[MessageSystemPropertyNames.ComponentName] = value;
+            set => SetSystemProperty(MessageSystemPropertyNames.ComponentName, value);
         }
 
         /// <summary>
@@ -276,7 +275,7 @@ namespace Microsoft.Azure.Devices.Client
             "Naming",
             "CA1721:Property names should not match get methods",
             Justification = "Cannot remove public property on a public facing type")]
-        public Stream BodyStream => _bodyStream;
+        public Stream BodyStream { get { return _bodyStream; } protected set { _bodyStream = value; } }
 
         /// <summary>
         /// Gets or sets the deliveryTag which is used for server side check-pointing.
@@ -304,7 +303,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
         /// <exception cref="ObjectDisposedException">throws if the event data has already been disposed.</exception>
         /// <remarks>This method can only be called once and afterwards method will throw <see cref="InvalidOperationException"/>.</remarks>
-        public Stream GetBodyStream()
+        public virtual Stream GetBodyStream()
         {
             ThrowIfDisposed();
             SetGetBodyCalled();
@@ -425,7 +424,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        ///
+        /// Dispose the Message object.
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
@@ -434,15 +433,40 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-                    if (_bodyStream != null && _streamDisposalResponsibility == StreamDisposalResponsibility.Sdk)
-                    {
-                        _bodyStream.Dispose();
-                        _bodyStream = null;
-                    }
+                    DisposeBodyStream();
                 }
             }
 
             _disposed = true;
+        }
+
+        /// <summary>
+        /// Disposes the body stream.
+        /// </summary>
+        protected void DisposeBodyStream()
+        {
+            if (_bodyStream != null && _streamDisposalResponsibility == StreamDisposalResponsibility.Sdk)
+            {
+                _bodyStream.Dispose();
+                _bodyStream = null;
+            }
+        }
+
+        /// <summary>
+        /// Sets or removes the specified key from the SystemProperties dictionary.
+        /// </summary>
+        /// <remarks>
+        /// If the value is null, it will remove the specified key from the dictionary.
+        /// </remarks>
+        /// <param name="key">The key to set or remove.</param>
+        /// <param name="value">The value to set for the key. If null, key will be removed.</param>
+        private void SetSystemProperty(string key, object value)
+        {
+            if (value == null)
+            {
+                SystemProperties.Remove(key);
+            }
+            SystemProperties[key] = value;
         }
     }
 }
