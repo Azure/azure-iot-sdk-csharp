@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             message.Telemetry.Add("another value", 56.2);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {DefaultPayloadConvention.Instance.PayloadSerializer.SerializeToString(message.Telemetry)}.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.ToJson()}.");
         }
 
         private Task<CommandResponse> CommandEventDispatcherAsync(CommandRequest commandRequest, object userContext)
@@ -459,7 +459,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            //_logger.LogDebug($"Telemetry: Sent - {telemetryCollection.ToJson()} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.ToJson()} in KB.");
         }
 
         // Send device serial number over property update.
