@@ -84,7 +84,7 @@ jobs:
         inputs:
           version: 3.1.x
           performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet          
+          installationPath: $(Agent.ToolsDirectory)/dotnet
       - powershell: ./build.ps1 -clean -configuration Release -run
         displayName: build and run
         env:
