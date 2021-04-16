@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyValue"></param>
         /// <param name="componentName"></param>
         public void Add(string propertyName, object propertyValue, string componentName = default)
-            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, false, componentName);
+            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
 
         /// <summary>
         ///
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="properties"></param>
         /// <param name="componentName"></param>
         public void Add(IDictionary<string, object> properties, string componentName = default)
-        => Add(properties, false, componentName);
+        => Add(properties, componentName, false);
 
         /// <summary>
         ///
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="properties"></param>
         /// <param name="componentName"></param>
         public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
-            => Add(properties, true, componentName);
+            => Add(properties, componentName, true);
 
         /// <summary>
         /// highlight both "readonly" and "writable property response" propertyValue patches
@@ -56,9 +56,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyValue"></param>
         /// <param name="componentName"></param>
         public void AddOrUpdate(string propertyName, object propertyValue, string componentName = default)
-            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, true, componentName);
+            => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
 
-        private void Add(IDictionary<string, object> properties, bool forceUpdate = false, string componentName = default)
+        private void Add(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
 
             if (properties == null)
