@@ -57,7 +57,14 @@ namespace SimulatedDevice
             // Run the telemetry loop
             await SendDeviceToCloudMessagesAsync(cts.Token);
 
-            await s_deviceClient.CloseAsync(cts.Token);
+            // SendDeviceToCloudMessagesAsync is designed to run until cancellation has been explicitly requested by Console.CancelKeyPress.
+            // As a result, by the time the control reaches the call to close the device client, the cancellation token source would
+            // have already had cancellation requested.
+            // Hence, if you want to pass a cancellation token to any subsequent calls, a new token needs to be generated.
+            // For device client APIs, you can also call them without a cancellation token, which will set a default
+            // cancellation timeout of 4 minutes: https://github.com/Azure/azure-iot-sdk-csharp/blob/64f6e9f24371bc40ab3ec7a8b8accbfb537f0fe1/iothub/device/src/InternalClient.cs#L1922
+            await s_deviceClient.CloseAsync();
+
             s_deviceClient.Dispose();
             Console.WriteLine("Device simulator finished.");
         }
