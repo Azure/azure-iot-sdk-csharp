@@ -35,8 +35,8 @@ namespace Microsoft.Azure.Devices.Client
                     base.ContentEncoding = value.Convention.PayloadSerializer.ContentType;
                 } else
                 {
-                    base.ContentType = string.Empty;
-                    base.ContentEncoding = string.Empty;
+                    base.ContentType = null;
+                    base.ContentEncoding = null;
                 }
                 
             }

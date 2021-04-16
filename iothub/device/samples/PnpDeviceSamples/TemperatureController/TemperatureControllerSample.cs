@@ -391,8 +391,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
             var pendingReportedProperty = new WritablePropertyResponse(
-                targetTemperature, 
-                (int)StatusCode.InProgress, 
+                targetTemperature,
+                (int)StatusCode.InProgress,
                 version);
 
             var pendingPropertyPatch = new PropertyCollection();
@@ -496,7 +496,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // We can do a direct initialization like this...
             using var message = new TelemetryMessage()
             {
-
                 ComponentName = componentName,
                 Telemetry = {
                     [temperatureName] = currentTemperature,
