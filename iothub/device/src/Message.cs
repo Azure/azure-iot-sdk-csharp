@@ -453,11 +453,13 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Removes the specified key from the SystemProperties dictionary.
+        /// Sets or removes the specified key from the SystemProperties dictionary.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <remarks>
+        /// If the value is null, it will remove the specified key from the dictionary.
+        /// </remarks>
+        /// <param name="key">The key to set or remove.</param>
+        /// <param name="value">The value to set for the key. If null, key will be removed.</param>
         private void SetSystemProperty(string key, object value)
         {
             if (value == null)
