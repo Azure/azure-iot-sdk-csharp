@@ -30,7 +30,8 @@ namespace Microsoft.Azure.Devices
         private IHttpClientHelper _httpClientHelper;
 
         /// <summary>
-        /// Creates an instance of <see cref="JobClient"/>.
+        /// Creates an instance of <see cref="JobClient"/>, provided for unit testing purposes only.
+        /// Use the CreateFromConnectionString method to create an instance to use the client.
         /// </summary>
         public JobClient()
         {

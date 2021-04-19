@@ -62,7 +62,8 @@ namespace Microsoft.Azure.Devices
         private IHttpClientHelper _httpClientHelper;
 
         /// <summary>
-        /// Creates an instance of <see cref="RegistryManager"/>.
+        /// Creates an instance of <see cref="RegistryManager"/>, provided for unit testing purposes only.
+        /// Use the CreateFromConnectionString method to create an instance to use the client.
         /// </summary>
         public RegistryManager()
         {

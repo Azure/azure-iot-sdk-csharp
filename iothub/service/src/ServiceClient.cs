@@ -64,7 +64,8 @@ namespace Microsoft.Azure.Devices
         internal readonly IotHubConnection Connection;
 
         /// <summary>
-        /// Creates an instance of <see cref="ServiceClient"/>.
+        /// Creates an instance of <see cref="ServiceClient"/>, provided for unit testing purposes only.
+        /// Use the CreateFromConnectionString method to create an instance to use the client.
         /// </summary>
         public ServiceClient()
         {
