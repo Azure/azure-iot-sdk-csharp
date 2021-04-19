@@ -12,19 +12,24 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static readonly JsonSerializerOptions s_options = new()
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        public string ContentType => ApplicationJson;
+        public override string ContentType => ApplicationJson;
 
-        public string SerializeToString(object objectToSerialize)
+        public override string SerializeToString(object objectToSerialize)
         {
             return JsonSerializer.Serialize(objectToSerialize, s_options);
         }
 
-        public T DeserializeToType<T>(string stringToDeserialize)
+        public override T DeserializeToType<T>(string stringToDeserialize)
         {
             return JsonSerializer.Deserialize<T>(stringToDeserialize, s_options);
+        }
+
+        public override bool CheckType(object typeToCheck)
+        {
+            return typeToCheck is CustomWritablePropertyResponse;
         }
     }
 }
