@@ -86,7 +86,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
             }
         }
 
-        [Ignore]
         [LoggedTestMethod]
         public async Task DigitalTwinClient_Http_TokenCredentialAuth_Success()
         {
