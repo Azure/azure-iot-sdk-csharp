@@ -3,9 +3,9 @@
 
 using Microsoft.Azure.Amqp;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal static class AmqpIoTTrace
+    internal static class AmqpIotTrace
     {
         internal static void SetProvider(AmqpTrace amqpTrace)
         {

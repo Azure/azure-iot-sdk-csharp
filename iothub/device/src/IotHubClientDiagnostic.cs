@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class IoTHubClientDiagnostic
+    internal class IotHubClientDiagnostic
     {
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         private const string DiagnosticCreationTimeUtcKey = "creationtimeutc";
