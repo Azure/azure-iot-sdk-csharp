@@ -189,15 +189,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             using var message = new TelemetryMessage(componentName)
             {
-                Properties = { ["property1"] = "myValue" },
-                Telemetry = {
-                    ["something"] = "empty",
-                    [deviceHealthName] = deviceHealth
-                }
+                Telemetry = new TelemetryCollection(s_payloadConvention)
+                {
+                    [deviceHealthName] = deviceHealth,
+                },
             };
 
-            // Something ...
-
+            // Something ...(just for demonstartion; this isn't a part of the model).
             message.Telemetry.Add("another value", 56.2);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
@@ -350,7 +348,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             string serializedProperties = ((JObject)desiredProperties.Value).ToString();
             TemperatureRange temeratureRangeDesired = s_payloadConvention.PayloadSerializer.DeserializeToType<TemperatureRange>(serializedProperties);
 
-            var temperatureUpdateResponse = new WritablePropertyResponse(
+            var temperatureUpdateResponse = new CustomWritablePropertyResponse(
                 temeratureRangeDesired,
                 (int)StatusCode.Completed,
                 version,
