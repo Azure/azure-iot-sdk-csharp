@@ -20,6 +20,15 @@ namespace Microsoft.Azure.Devices.Client
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
+        internal DeviceAuthenticationWithSakRefresh(
+            string deviceId,
+            IotHubConnectionString connectionString,
+            TimeSpan sasTokenTimeToLive,
+            int sasTokenRenewalBuffer) : base(deviceId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer)
+        {
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+        }
+
         ///<inheritdoc/>
         protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
         {

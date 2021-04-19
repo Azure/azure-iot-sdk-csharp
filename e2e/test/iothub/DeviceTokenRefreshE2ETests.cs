@@ -110,6 +110,63 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
+        // The easiest way to test that sas tokens expire with custom expiration time via the CreateFromConnectionString flow is
+        // by initializing a DeviceClient instance over Mqtt (since sas token expiration over Mqtt is accompanied by a disconnect).
+        [LoggedTestMethod]
+        [TestCategory("LongRunning")]
+        public async Task DeviceClient_CreateFromConnectionString_TokenIsRefreshed_Mqtt()
+        {
+            var sasTokenTimeToLive = TimeSpan.FromSeconds(10);
+            int sasTokenRenewalBuffer = 50;
+            using var deviceDisconnected = new SemaphoreSlim(0);
+
+            int operationTimeoutInMilliseconds = (int)sasTokenTimeToLive.TotalMilliseconds * 2;
+
+            // Service allows a buffer time of upto 10mins before dropping connections that are authenticated with an expired sas tokens.
+            using var tokenRefreshCts = new CancellationTokenSource((int)(sasTokenTimeToLive.TotalMilliseconds * 2 + TimeSpan.FromMinutes(10).TotalMilliseconds));
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+
+            var options = new ClientOptions
+            {
+                SasTokenTimeToLive = sasTokenTimeToLive,
+                SasTokenRenewalBuffer = sasTokenRenewalBuffer,
+            };
+
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt, options);
+            Logger.Trace($"Created {nameof(DeviceClient)} instance for {testDevice.Id}.");
+
+            deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
+            {
+                Logger.Trace($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
+                if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected)
+                {
+                    deviceDisconnected.Release();
+                }
+            });
+            deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeoutInMilliseconds;
+
+            using var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+
+            Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
+            await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+
+            // Wait for the Token to expire.
+            Logger.Trace($"[{testDevice.Id}]: Waiting for device disconnect.");
+            await deviceDisconnected.WaitAsync(tokenRefreshCts.Token).ConfigureAwait(false);
+
+            try
+            {
+                Logger.Trace($"[{testDevice.Id}]: SendEventAsync (2)");
+                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                Assert.Fail($"{testDevice.Id} did not refresh token after expected ttl of {sasTokenTimeToLive}: {ex}");
+                throw;
+            }
+        }
+
         private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 20)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
