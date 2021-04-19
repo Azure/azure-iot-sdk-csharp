@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        // The easiest way to test that sas tokens expire with custom expiration time via the CreateFromConnectionString flow is 
+        // The easiest way to test that sas tokens expire with custom expiration time via the CreateFromConnectionString flow is
         // by initializing a DeviceClient instance over Mqtt (since sas token expiration over Mqtt is accompanied by a disconnect).
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             });
             deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeoutInMilliseconds;
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+            using var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
 
             Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
             await deviceClient.SendEventAsync(message).ConfigureAwait(false);
