@@ -366,9 +366,17 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(connectionString), "Must specify at least one TransportSettings instance");
             }
 
-            var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(
+            IotHubConnectionStringBuilder builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(
                 connectionString,
                 authenticationMethod);
+
+            // Clients that derive their authentication method from AuthenticationWithTokenRefresh will need to specify
+            // the token time to live and renewal buffer values through the corresponding AuthenticationWithTokenRefresh implementation constructors instead.
+            if (!(builder.AuthenticationMethod is AuthenticationWithTokenRefresh))
+            {
+                builder.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
+                builder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
+            }
 
             IotHubConnectionString iotHubConnectionString = builder.ToIotHubConnectionString();
 

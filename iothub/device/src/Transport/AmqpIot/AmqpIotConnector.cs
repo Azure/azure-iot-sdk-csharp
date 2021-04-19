@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Shared;
 
 #if NET451
@@ -15,7 +15,7 @@ using System.Configuration;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpIoTConnector : IDisposable
+    internal class AmqpIotConnector : IDisposable
     {
 #if NET451
         private const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
@@ -26,17 +26,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly string _hostName;
 
-        private AmqpIoTTransport _amqpIotTransport;
+        private AmqpIotTransport _amqpIotTransport;
 
-        internal AmqpIoTConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
+        internal AmqpIotConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
         {
             _amqpTransportSettings = amqpTransportSettings;
             _hostName = hostName;
         }
 
-        public async Task<AmqpIoTConnection> OpenConnectionAsync(TimeSpan timeout)
+        public async Task<AmqpIotConnection> OpenConnectionAsync(TimeSpan timeout)
         {
-            Logging.Enter(this, timeout, $"{nameof(OpenConnectionAsync)}");
+            Logging.Enter(this, timeout, nameof(OpenConnectionAsync));
 
             var amqpTransportProvider = new AmqpTransportProvider();
             amqpTransportProvider.Versions.Add(s_amqpVersion_1_0_0);
@@ -58,13 +58,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 var amqpConnection = new AmqpConnection(transportBase, amqpSettings, amqpConnectionSettings);
-                var amqpIoTConnection = new AmqpIoTConnection(amqpConnection);
-                amqpConnection.Closed += amqpIoTConnection.AmqpConnectionClosed;
+                var amqpIotConnection = new AmqpIotConnection(amqpConnection);
+                amqpConnection.Closed += amqpIotConnection.AmqpConnectionClosed;
                 await amqpConnection.OpenAsync(timeout).ConfigureAwait(false);
 
                 Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
 
-                return amqpIoTConnection;
+                return amqpIotConnection;
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
+                Logging.Exit(this, nameof(OpenConnectionAsync));
             }
         }
 

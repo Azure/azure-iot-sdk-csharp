@@ -10,68 +10,70 @@ using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTConnection
+    internal class AmqpIotConnection
     {
         public event EventHandler Closed;
-        private readonly AmqpConnection _amqpConnection;
-        private readonly AmqpIoTCbsLink _amqpIoTCbsLink;
 
-        internal AmqpIoTConnection(AmqpConnection amqpConnection)
+        private readonly AmqpConnection _amqpConnection;
+        private readonly AmqpIotCbsLink _amqpIotCbsLink;
+
+        internal AmqpIotConnection(AmqpConnection amqpConnection)
         {
             _amqpConnection = amqpConnection;
-            _amqpIoTCbsLink = new AmqpIoTCbsLink(new AmqpCbsLink(amqpConnection));
+            _amqpIotCbsLink = new AmqpIotCbsLink(new AmqpCbsLink(amqpConnection));
         }
 
-        internal AmqpIoTCbsLink GetCbsLink()
+        internal AmqpIotCbsLink GetCbsLink()
         {
-            return _amqpIoTCbsLink;
+            return _amqpIotCbsLink;
         }
 
         internal void AmqpConnectionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(AmqpConnectionClosed)}");
+                Logging.Enter(this, nameof(AmqpConnectionClosed));
             }
 
             Closed?.Invoke(this, e);
+
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(AmqpConnectionClosed)}");
+                Logging.Exit(this, nameof(AmqpConnectionClosed));
             }
         }
 
-        internal async Task<AmqpIoTSession> OpenSessionAsync(TimeSpan timeout)
+        internal async Task<AmqpIotSession> OpenSessionAsync(TimeSpan timeout)
         {
             if (_amqpConnection.IsClosing())
             {
                 throw new IotHubCommunicationException("Amqp connection is disconnected.");
             }
 
-            AmqpSessionSettings amqpSessionSettings = new AmqpSessionSettings()
+            var amqpSessionSettings = new AmqpSessionSettings
             {
-                Properties = new Fields()
+                Properties = new Fields(),
             };
 
             try
             {
-                var amqpSession = new AmqpSession(_amqpConnection, amqpSessionSettings, AmqpIoTLinkFactory.GetInstance());
+                var amqpSession = new AmqpSession(_amqpConnection, amqpSessionSettings, AmqpIotLinkFactory.GetInstance());
                 _amqpConnection.AddSession(amqpSession, new ushort?());
                 await amqpSession.OpenAsync(timeout).ConfigureAwait(false);
-                return new AmqpIoTSession(amqpSession);
+                return new AmqpIotSession(amqpSession);
             }
-            catch(Exception e) when (!e.IsFatal())
+            catch (Exception e) when (!e.IsFatal())
             {
-                Exception ex = AmqpIoTExceptionAdapter.ConvertToIoTHubException(e, _amqpConnection);
+                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _amqpConnection);
                 if (ReferenceEquals(e, ex))
                 {
                     throw;
                 }
                 else
                 {
-                    if (ex is AmqpIoTResourceException)
+                    if (ex is AmqpIotResourceException)
                     {
                         _amqpConnection.SafeClose();
                         throw new IotHubCommunicationException(ex.Message, ex);
@@ -89,13 +91,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             try
             {
-                IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, _amqpIoTCbsLink);
+                IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, _amqpIotCbsLink);
                 await amqpAuthenticator.InitLoopAsync(timeout).ConfigureAwait(false);
                 return amqpAuthenticator;
             }
             catch (Exception e) when (!e.IsFatal())
             {
-                Exception ex = AmqpIoTExceptionAdapter.ConvertToIoTHubException(e, _amqpConnection);
+                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _amqpConnection);
                 if (ReferenceEquals(e, ex))
                 {
                     throw;
@@ -105,7 +107,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     throw ex;
                 }
             }
-
         }
 
         internal void SafeClose()

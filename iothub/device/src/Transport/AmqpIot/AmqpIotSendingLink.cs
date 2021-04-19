@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
@@ -13,15 +13,15 @@ using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIoTSendingLink
+    internal class AmqpIotSendingLink
     {
         public event EventHandler Closed;
 
         private readonly SendingAmqpLink _sendingAmqpLink;
 
-        public AmqpIoTSendingLink(SendingAmqpLink sendingAmqpLink)
+        public AmqpIotSendingLink(SendingAmqpLink sendingAmqpLink)
         {
             _sendingAmqpLink = sendingAmqpLink;
             _sendingAmqpLink.Closed += SendingAmqpLinkClosed;
@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(SendingAmqpLinkClosed)}");
+                Logging.Enter(this, nameof(SendingAmqpLinkClosed));
             }
 
             Closed?.Invoke(this, e);
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(SendingAmqpLinkClosed)}");
+                Logging.Exit(this, nameof(SendingAmqpLinkClosed));
             }
         }
 
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(CloseAsync)}");
+                Logging.Enter(this, nameof(CloseAsync));
             }
 
             return _sendingAmqpLink.CloseAsync(timeout);
@@ -55,13 +55,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(SafeClose)}");
+                Logging.Enter(this, nameof(SafeClose));
             }
 
             _sendingAmqpLink.SafeClose();
+
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(SafeClose)}");
+                Logging.Exit(this, nameof(SafeClose));
             }
         }
 
@@ -72,31 +73,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         #region Telemetry handling
 
-        internal async Task<AmqpIoTOutcome> SendMessageAsync(Message message, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendMessageAsync(Message message, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, message, $"{nameof(SendMessageAsync)}");
+                Logging.Enter(this, message, nameof(SendMessageAsync));
             }
 
             // After this message is sent, we will return the outcome that has no references to the message
             // So it can safely be disposed.
-            using AmqpMessage amqpMessage = AmqpIoTMessageConverter.MessageToAmqpMessage(message);
+            using AmqpMessage amqpMessage = AmqpIotMessageConverter.MessageToAmqpMessage(message);
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, message, $"{nameof(SendMessageAsync)}");
+                Logging.Exit(this, message, nameof(SendMessageAsync));
             }
 
-            return new AmqpIoTOutcome(outcome);
+            return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIoTOutcome> SendMessagesAsync(IEnumerable<Message> messages, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<Message> messages, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(SendMessagesAsync)}");
+                Logging.Enter(this, nameof(SendMessagesAsync));
             }
 
             // List to hold messages in AMQP friendly format
@@ -104,14 +105,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             foreach (Message message in messages)
             {
-                using (AmqpMessage amqpMessage = AmqpIoTMessageConverter.MessageToAmqpMessage(message))
+                using AmqpMessage amqpMessage = AmqpIotMessageConverter.MessageToAmqpMessage(message);
+                var data = new Data
                 {
-                    var data = new Data()
-                    {
-                        Value = AmqpIoTMessageConverter.ReadStream(amqpMessage.ToStream())
-                    };
-                    messageList.Add(data);
-                }
+                    Value = AmqpIotMessageConverter.ReadStream(amqpMessage.ToStream()),
+                };
+                messageList.Add(data);
             }
 
             Outcome outcome;
@@ -121,45 +120,44 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
             }
 
-            AmqpIoTOutcome amqpIoTOutcome = new AmqpIoTOutcome(outcome);
-            if (amqpIoTOutcome != null)
-            {
-                amqpIoTOutcome.ThrowIfNotAccepted();
-            }
+            var amqpIotOutcome = new AmqpIotOutcome(outcome);
+            amqpIotOutcome.ThrowIfNotAccepted();
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(SendMessagesAsync)}");
+                Logging.Exit(this, nameof(SendMessagesAsync));
             }
 
-            return amqpIoTOutcome;
+            return amqpIotOutcome;
         }
 
         private async Task<Outcome> SendAmqpMessageAsync(AmqpMessage amqpMessage, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(SendAmqpMessageAsync)}");
+                Logging.Enter(this, nameof(SendAmqpMessageAsync));
             }
 
             try
             {
-                return await _sendingAmqpLink.SendMessageAsync(
-                    amqpMessage,
-                    new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
-                    AmqpConstants.NullBinary,
-                    timeout).ConfigureAwait(false);
+                return await _sendingAmqpLink
+                    .SendMessageAsync(
+                        amqpMessage,
+                        new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
+                        AmqpConstants.NullBinary,
+                        timeout)
+                    .ConfigureAwait(false);
             }
             catch (Exception e) when (!e.IsFatal())
             {
-                Exception ex = AmqpIoTExceptionAdapter.ConvertToIoTHubException(e, _sendingAmqpLink);
+                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _sendingAmqpLink);
                 if (ReferenceEquals(e, ex))
                 {
                     throw;
                 }
                 else
                 {
-                    if (ex is AmqpIoTResourceException)
+                    if (ex is AmqpIotResourceException)
                     {
                         _sendingAmqpLink.SafeClose();
                         throw new IotHubCommunicationException(ex.Message, ex);
@@ -171,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"{nameof(SendAmqpMessageAsync)}");
+                    Logging.Exit(this, nameof(SendAmqpMessageAsync));
                 }
             }
         }
@@ -180,35 +178,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         #region Method handling
 
-        internal async Task<AmqpIoTOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, methodResponse, $"{nameof(SendMethodResponseAsync)}");
+                Logging.Enter(this, methodResponse, nameof(SendMethodResponseAsync));
             }
 
-            using AmqpMessage amqpMessage = AmqpIoTMessageConverter.ConvertMethodResponseInternalToAmqpMessage(methodResponse);
-            AmqpIoTMessageConverter.PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponse);
+            using AmqpMessage amqpMessage = AmqpIotMessageConverter.ConvertMethodResponseInternalToAmqpMessage(methodResponse);
+            AmqpIotMessageConverter.PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponse);
 
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(SendMethodResponseAsync)}");
+                Logging.Exit(this, nameof(SendMethodResponseAsync));
             }
 
-            return new AmqpIoTOutcome(outcome);
+            return new AmqpIotOutcome(outcome);
         }
 
         #endregion Method handling
 
         #region Twin handling
 
-        internal async Task<AmqpIoTOutcome> SendTwinGetMessageAsync(string correlationId, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendTwinGetMessageAsync(string correlationId, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(SendTwinGetMessageAsync)}");
+                Logging.Enter(this, nameof(SendTwinGetMessageAsync));
             }
 
             using var amqpMessage = AmqpMessage.Create();
@@ -219,21 +217,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(SendTwinGetMessageAsync)}");
+                Logging.Exit(this, nameof(SendTwinGetMessageAsync));
             }
 
-            return new AmqpIoTOutcome(outcome);
+            return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIoTOutcome> SendTwinPatchMessageAsync(string correlationId, TwinCollection reportedProperties, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(string correlationId, TwinCollection reportedProperties, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(SendTwinPatchMessageAsync)}");
+                Logging.Enter(this, nameof(SendTwinPatchMessageAsync));
             }
 
             string body = JsonConvert.SerializeObject(reportedProperties);
-            var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
+            var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
             using var amqpMessage = AmqpMessage.Create(bodyStream, true);
             amqpMessage.Properties.CorrelationId = correlationId;
@@ -245,17 +243,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(SendTwinPatchMessageAsync)}");
+                Logging.Exit(this, nameof(SendTwinPatchMessageAsync));
             }
 
-            return new AmqpIoTOutcome(outcome);
+            return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIoTOutcome> SubscribeToDesiredPropertiesAsync(string correlationId, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SubscribeToDesiredPropertiesAsync(string correlationId, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, $"{nameof(SubscribeToDesiredPropertiesAsync)}");
+                Logging.Enter(this, nameof(SubscribeToDesiredPropertiesAsync));
             }
 
             using var amqpMessage = AmqpMessage.Create();
@@ -268,10 +266,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, $"{nameof(SubscribeToDesiredPropertiesAsync)}");
+                Logging.Exit(this, nameof(SubscribeToDesiredPropertiesAsync));
             }
 
-            return new AmqpIoTOutcome(outcome);
+            return new AmqpIotOutcome(outcome);
         }
 
         #endregion Twin handling

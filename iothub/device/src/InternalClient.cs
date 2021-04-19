@@ -671,7 +671,7 @@ namespace Microsoft.Azure.Devices.Client
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
-            IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
+            IotHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
             // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             try
             {

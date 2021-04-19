@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
-using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -14,8 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         private static readonly AmqpUnitManager s_instance = new AmqpUnitManager();
 
-        private IDictionary<string, IAmqpUnitManager> _amqpConnectionPools;
-        private readonly object _lock = new object();
+        private readonly IDictionary<string, IAmqpUnitManager> _amqpConnectionPools;
+        private readonly object _connectionPoolLock = new object();
 
         internal AmqpUnitManager()
         {
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private IAmqpUnitManager ResolveConnectionPool(string host)
         {
-            lock (_lock)
+            lock (_connectionPoolLock)
             {
                 _amqpConnectionPools.TryGetValue(host, out IAmqpUnitManager amqpConnectionPool);
                 if (amqpConnectionPool == null)

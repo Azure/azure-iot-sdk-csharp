@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -23,14 +23,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly object _lock = new object();
         private ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
         private bool _closed;
-#pragma warning disable CA1810 // Initialize reference type static fields inline: We use the static ctor to have init-once semantics.
 
         static AmqpTransportHandler()
-#pragma warning restore CA1810 // Initialize reference type static fields inline
         {
             try
             {
-                AmqpIoTTrace.SetProvider(new AmqpIoTTransportLog());
+                AmqpIotTrace.SetProvider(new AmqpIotTransportLog());
             }
             catch (Exception ex)
             {
@@ -58,10 +56,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 TwinMessageListener,
                 onModuleMessageReceivedCallback,
                 onDeviceMessageReceivedCallback,
-                OnDisconnected
-            );
+                OnDisconnected);
 
-            Logging.Associate(this, _amqpUnit, $"{nameof(_amqpUnit)}");
+            Logging.Associate(this, _amqpUnit, nameof(_amqpUnit));
         }
 
         private void OnDisconnected()
@@ -83,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task OpenAsync(TimeoutHelper timeoutHelper)
         {
-            Logging.Enter(this, timeoutHelper, $"{nameof(OpenAsync)}");
+            Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
 
             lock (_lock)
             {
@@ -101,13 +98,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, timeoutHelper, $"{nameof(OpenAsync)}");
+                Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
             }
         }
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(OpenAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
             lock (_lock)
@@ -126,13 +123,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(OpenAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(OpenAsync));
             }
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, $"{nameof(CloseAsync)}");
+            Logging.Enter(this, nameof(CloseAsync));
 
             lock (_lock)
             {
@@ -147,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 OnTransportClosedGracefully();
-                Logging.Exit(this, $"{nameof(CloseAsync)}");
+                Logging.Exit(this, nameof(CloseAsync));
             }
         }
 
@@ -157,27 +154,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, message, cancellationToken, $"{nameof(SendEventAsync)}");
+            Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                AmqpIoTOutcome amqpIoTOutcome = await _amqpUnit.SendEventAsync(message, _operationTimeout).ConfigureAwait(false);
-
-                if (amqpIoTOutcome != null)
-                {
-                    amqpIoTOutcome.ThrowIfNotAccepted();
-                }
+                AmqpIotOutcome amqpIotOutcome = await _amqpUnit.SendEventAsync(message, _operationTimeout).ConfigureAwait(false);
+                amqpIotOutcome?.ThrowIfNotAccepted();
             }
             finally
             {
-                Logging.Exit(this, message, cancellationToken, $"{nameof(SendEventAsync)}");
+                Logging.Exit(this, message, cancellationToken, nameof(SendEventAsync));
             }
         }
 
         public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, messages, cancellationToken, $"{nameof(SendEventAsync)}");
+            Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
 
             try
             {
@@ -187,24 +180,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, messages, cancellationToken, $"{nameof(SendEventAsync)}");
+                Logging.Exit(this, messages, cancellationToken, nameof(SendEventAsync));
             }
         }
 
         public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            Logging.Enter(this, timeoutHelper, timeoutHelper.GetRemainingTime(), $"{nameof(ReceiveAsync)}");
+            Logging.Enter(this, timeoutHelper, timeoutHelper.GetRemainingTime(), nameof(ReceiveAsync));
 
             Message message = await _amqpUnit.ReceiveMessageAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
 
-            Logging.Exit(this, timeoutHelper, timeoutHelper.GetRemainingTime(), $"{nameof(ReceiveAsync)}");
+            Logging.Exit(this, timeoutHelper, timeoutHelper.GetRemainingTime(), nameof(ReceiveAsync));
 
             return message;
         }
 
         public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(ReceiveAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
 
             Message message;
             while (true)
@@ -217,14 +210,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
             }
 
-            Logging.Exit(this, cancellationToken, cancellationToken, $"{nameof(ReceiveAsync)}");
+            Logging.Exit(this, cancellationToken, cancellationToken, nameof(ReceiveAsync));
 
             return message;
         }
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(EnableReceiveMessageAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
 
             try
             {
@@ -233,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(EnableReceiveMessageAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
             }
         }
 
@@ -246,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(DisableReceiveMessageAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
 
             try
             {
@@ -255,7 +248,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(DisableReceiveMessageAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
             }
         }
 
@@ -265,7 +258,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(EnableMethodsAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
 
             try
             {
@@ -275,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(EnableMethodsAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(EnableMethodsAsync));
             }
         }
 
@@ -283,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             try
             {
-                Logging.Enter(this, cancellationToken, $"{nameof(DisableMethodsAsync)}");
+                Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -291,26 +284,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(DisableMethodsAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(DisableMethodsAsync));
             }
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, methodResponse, cancellationToken, $"{nameof(SendMethodResponseAsync)}");
+            Logging.Enter(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                AmqpIoTOutcome amqpIoTOutcome = await _amqpUnit.SendMethodResponseAsync(methodResponse, _operationTimeout).ConfigureAwait(false);
-                if (amqpIoTOutcome != null)
+                AmqpIotOutcome amqpIotOutcome = await _amqpUnit
+                    .SendMethodResponseAsync(methodResponse, _operationTimeout)
+                    .ConfigureAwait(false);
+                if (amqpIotOutcome != null)
                 {
-                    amqpIoTOutcome.ThrowIfNotAccepted();
+                    amqpIotOutcome.ThrowIfNotAccepted();
                 }
             }
             finally
             {
-                Logging.Exit(this, methodResponse, cancellationToken, $"{nameof(SendMethodResponseAsync)}");
+                Logging.Exit(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
             }
         }
 
@@ -320,17 +315,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(EnableTwinPatchAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 string correlationId = AmqpTwinMessageType.Put + Guid.NewGuid().ToString();
-                await _amqpUnit.SendTwinMessageAsync(AmqpTwinMessageType.Put, correlationId, null, _operationTimeout).ConfigureAwait(false);
+                await _amqpUnit
+                    .SendTwinMessageAsync(AmqpTwinMessageType.Put, correlationId, null, _operationTimeout)
+                    .ConfigureAwait(false);
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(EnableTwinPatchAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(EnableTwinPatchAsync));
             }
         }
 
@@ -338,7 +335,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             try
             {
-                Logging.Enter(this, cancellationToken, $"{nameof(DisableTwinPatchAsync)}");
+                Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -346,33 +343,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(DisableTwinPatchAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
             }
         }
 
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(SendTwinGetAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
 
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                Twin twin = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken).ConfigureAwait(false);
-                if (twin == null)
-                {
-                    throw new InvalidOperationException("Service rejected the message");
-                }
-                return twin;
+                Twin twin = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken)
+                    .ConfigureAwait(false);
+                return twin ?? throw new InvalidOperationException("Service rejected the message");
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(SendTwinGetAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(SendTwinGetAsync));
             }
         }
 
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, reportedProperties, cancellationToken, $"{nameof(SendTwinPatchAsync)}");
+            Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
 
             try
             {
@@ -381,13 +375,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, reportedProperties, cancellationToken, $"{nameof(SendTwinPatchAsync)}");
+                Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
             }
         }
 
-        private async Task<Twin> RoundTripTwinMessageAsync(AmqpTwinMessageType amqpTwinMessageType, TwinCollection reportedProperties, CancellationToken cancellationToken)
+        private async Task<Twin> RoundTripTwinMessageAsync(
+            AmqpTwinMessageType amqpTwinMessageType,
+            TwinCollection reportedProperties,
+            CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(RoundTripTwinMessageAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
 
             string correlationId = amqpTwinMessageType + Guid.NewGuid().ToString();
             Twin response = null;
@@ -402,12 +399,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 var receivingTask = taskCompletionSource.Task;
 
-                if (await Task.WhenAny(receivingTask, Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds), cancellationToken)).ConfigureAwait(false) == receivingTask)
+                if (await Task.WhenAny(
+                    receivingTask,
+                    Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds), cancellationToken)).ConfigureAwait(false) == receivingTask)
                 {
-                    if ((receivingTask.Exception != null) && (receivingTask.Exception.InnerException != null))
+                    if (receivingTask.Exception?.InnerException != null)
                     {
                         throw receivingTask.Exception.InnerException;
                     }
+
                     // Task completed within timeout.
                     // Consider that the task may have faulted or been canceled.
                     // We re-await the task so that any exceptions/cancellation is rethrown.
@@ -422,7 +422,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 _twinResponseCompletions.TryRemove(correlationId, out _);
-                Logging.Exit(this, cancellationToken, $"{nameof(RoundTripTwinMessageAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
             }
 
             return response;
@@ -434,7 +434,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, $"{nameof(EnableEventReceiveAsync)}");
+            Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
             try
             {
@@ -444,7 +444,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, $"{nameof(EnableEventReceiveAsync)}");
+                Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
             }
         }
 
@@ -454,54 +454,54 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, lockToken, cancellationToken, $"{nameof(CompleteAsync)}");
+            Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Accepted);
+                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Accepted);
             }
             finally
             {
-                Logging.Exit(this, lockToken, cancellationToken, $"{nameof(CompleteAsync)}");
+                Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteAsync));
             }
         }
 
         public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, lockToken, cancellationToken, $"{nameof(AbandonAsync)}");
+            Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Released);
+                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Released);
             }
             finally
             {
-                Logging.Exit(this, lockToken, cancellationToken, $"{nameof(AbandonAsync)}");
+                Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonAsync));
             }
         }
 
         public override Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, lockToken, cancellationToken, $"{nameof(RejectAsync)}");
+            Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIoTDisposeActions.Rejected);
+                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Rejected);
             }
             finally
             {
-                Logging.Exit(this, lockToken, cancellationToken, $"{nameof(RejectAsync)}");
+                Logging.Exit(this, lockToken, cancellationToken, nameof(RejectAsync));
             }
         }
 
-        private async Task DisposeMessageAsync(string lockToken, AmqpIoTDisposeActions outcome)
+        private async Task DisposeMessageAsync(string lockToken, AmqpIotDisposeActions outcome)
         {
-            Logging.Enter(this, outcome, $"{nameof(DisposeMessageAsync)}");
+            Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
 
-            AmqpIoTOutcome disposeOutcome;
+            AmqpIotOutcome disposeOutcome;
             try
             {
                 // Currently, the same mechanism is used for sending feedback for C2D messages and events received by modules.
@@ -515,7 +515,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
+                Logging.Exit(this, outcome, nameof(DisposeMessageAsync));
             }
         }
 
@@ -532,14 +532,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             else
             {
-                if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase) ||
-                    correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
+                if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase)
+                    || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     // For Get and Patch, complete the task.
-                    TaskCompletionSource<Twin> task;
-                    if (_twinResponseCompletions.TryRemove(correlationId, out task))
+                    if (_twinResponseCompletions.TryRemove(correlationId, out TaskCompletionSource<Twin> task))
                     {
-                        if(ex == default)
+                        if (ex == default)
                         {
                             task.SetResult(twin);
                         }
@@ -565,7 +564,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             lock (_lock)
             {
-
                 if (_disposed)
                 {
                     return;
@@ -573,7 +571,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 base.Dispose(disposing);
 
-                Logging.Info(this, $"{nameof(disposing)}");
+                Logging.Info(this, nameof(disposing));
 
                 if (disposing)
                 {

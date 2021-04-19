@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 using System.Net;
+using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -51,19 +50,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (connectionString.SharedAccessKeyName.IsNullOrWhiteSpace())
             {
-                if (connectionString.ModuleId.IsNullOrWhiteSpace())
-                {
-                    return $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}";
-                }
-                else
-                {
-                    return $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}/modules/{WebUtility.UrlEncode(connectionString.ModuleId)}";
-                }
+                return connectionString.ModuleId.IsNullOrWhiteSpace()
+                    ? $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}"
+                    : $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}/modules/{WebUtility.UrlEncode(connectionString.ModuleId)}";
             }
             else
             {
                 // this is a group shared key
-                return $"{connectionString.HostName}";
+                return connectionString.HostName;
             }
         }
 

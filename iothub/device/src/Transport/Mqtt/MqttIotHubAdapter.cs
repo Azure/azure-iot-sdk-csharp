@@ -349,7 +349,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // the SDK will enable plug and play features by appending the model Id to the MQTT CONNECT packet (in the username).
                 if (!(_options?.ModelId).IsNullOrWhiteSpace())
                 {
-                    usernameString += $"&{ModelIdParam}={_options.ModelId}";
+                    usernameString += $"&{ModelIdParam}={Uri.EscapeDataString(_options.ModelId)}";
                 }
 
                 if (Logging.IsEnabled)
@@ -366,6 +366,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     CleanSession = _mqttTransportSettings.CleanSession,
                     HasWill = _mqttTransportSettings.HasWill
                 };
+
                 if (connectPacket.HasWill)
                 {
                     Message message = _willMessage.Message;
