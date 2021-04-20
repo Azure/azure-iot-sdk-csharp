@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Adds the telemetry.
+        /// Adds the telemetry to the telemetry collection.
         /// </summary>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['telemetryName']"/>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['telemetryValue']"/>
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Adds or updates the telemetry.
+        /// Adds or updates the telemetry collection.
         /// </summary>
         /// <param name="telemetryName">The name of the telemetry.</param>
         /// <param name="telemetryValue">The value of the telemetry.</param>
