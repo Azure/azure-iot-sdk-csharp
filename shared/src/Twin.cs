@@ -152,6 +152,19 @@ namespace Microsoft.Azure.Devices.Shared
         public X509Thumbprint X509Thumbprint { get; internal set; }
 
         /// <summary>
+        /// The scope of the device. Auto-generated and immutable for edge devices and modifiable in leaf devices to create child/parent relationship.
+        /// </summary>
+        [DefaultValue(null)]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public string DeviceScope { get; internal set; }
+
+        /// <summary>
+        /// The scopes of the upper level edge devices if applicable. Only available for edge devices.
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public virtual IReadOnlyList<string> ParentScopes { get; internal set; }
+
+        /// <summary>
         /// Gets the Twin as a JSON string
         /// </summary>
         /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
