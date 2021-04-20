@@ -562,7 +562,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveMessageInOperationTimeoutAsync(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
             Logger.Trace($"{nameof(ReceiveMessageInOperationTimeoutAsync)} - calling OpenAsync() for transport={transport}");
@@ -598,9 +598,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveSingleMessageAsync(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
-            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -629,9 +629,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
-            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -693,11 +693,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveSingleMessageUsingCallbackAsync(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
 
-            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
             using (msg)
@@ -720,11 +720,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
 
-            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             // For Mqtt - we will need to subscribe to the Mqtt receive telemetry topic
             // before the device can begin receiving c2d messages.
@@ -796,12 +796,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType type, Client.TransportType transport)
         {
-            var firstHandlerSemaphore = new SemaphoreSlim(0, 1);
-            var secondHandlerSemaphore = new SemaphoreSlim(0, 1);
+            using var firstHandlerSemaphore = new SemaphoreSlim(0, 1);
+            using var secondHandlerSemaphore = new SemaphoreSlim(0, 1);
 
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
-            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             // Set the first C2D message handler.
             await deviceClient.SetReceiveMessageHandlerAsync(
@@ -856,11 +856,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
             var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
 
-            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
 
@@ -899,11 +899,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, ITransportSettings[] settings)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(settings);
             var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
 
-            using var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
 

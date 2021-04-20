@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport, MsTestLogger logger)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {

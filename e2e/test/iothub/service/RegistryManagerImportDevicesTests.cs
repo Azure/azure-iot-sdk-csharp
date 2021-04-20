@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             StorageContainer storageContainer = null;
             string deviceId = $"{nameof(RegistryManager_ImportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
-            var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Logger.Trace($"Using deviceId {deviceId}");
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     ? storageContainer.SasUri
                     : storageContainer.Uri;
 
-                Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(
+                using Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(
                     new List<ExportImportDevice>
                     {
                         new ExportImportDevice(

@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task DeviceClient_Not_Exist_AMQP()
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
             using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}", Client.TransportType.Amqp_Tcp_Only))
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task DeviceClient_Bad_Credentials_AMQP()
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceClient_TokenConnectionDoubleRelease_Ok()
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             string deviceConnectionString = testDevice.ConnectionString;
 
@@ -87,29 +87,30 @@ namespace Microsoft.Azure.Devices.E2ETests
             string deviceId = config.DeviceID;
             string key = config.SharedAccessKey;
 
-            SharedAccessSignatureBuilder builder = new SharedAccessSignatureBuilder()
+            var builder = new SharedAccessSignatureBuilder()
             {
                 Key = key,
                 TimeToLive = new TimeSpan(0, 10, 0),
                 Target = $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}",
             };
 
-            DeviceAuthenticationWithToken auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
+            var auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
 
-            using (DeviceClient deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only))
-            {
-                Logger.Trace($"{deviceId}: Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
+            using DeviceClient deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only);
+            Logger.Trace($"{deviceId}: Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
-                Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-                Logger.Trace($"{deviceId}: DeviceClient SendEventAsync.");
-                await deviceClient.SendEventAsync(new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
-                Logger.Trace($"{deviceId}: DeviceClient CloseAsync.");
-                await deviceClient.CloseAsync().ConfigureAwait(false);   // First release
-            } // Second release
+            Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            Logger.Trace($"{deviceId}: DeviceClient SendEventAsync.");
+            using var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+            Logger.Trace($"{deviceId}: DeviceClient CloseAsync.");
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        // The easiest way to test that sas tokens expire with custom expiration time via the CreateFromConnectionString flow is 
+        // The easiest way to test that sas tokens expire with custom expiration time via the CreateFromConnectionString flow is
         // by initializing a DeviceClient instance over Mqtt (since sas token expiration over Mqtt is accompanied by a disconnect).
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
@@ -145,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             });
             deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeoutInMilliseconds;
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+            using var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
 
             Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
             await deviceClient.SendEventAsync(message).ConfigureAwait(false);
@@ -168,13 +169,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 20)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             int buffer = 50;
             Device device = testDevice.Device;
-            SemaphoreSlim deviceDisconnected = new SemaphoreSlim(0);
+            using var deviceDisconnected = new SemaphoreSlim(0);
 
-            var refresher = new TestTokenRefresher(
+            using var refresher = new TestTokenRefresher(
                 device.Id,
                 device.Authentication.SymmetricKey.PrimaryKey,
                 ttl,
@@ -182,77 +183,73 @@ namespace Microsoft.Azure.Devices.E2ETests
                 transport,
                 Logger);
 
-            using (DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport))
+            using DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport);
+            Logger.Trace($"Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
+
+            if (transport == Client.TransportType.Mqtt)
             {
-                Logger.Trace($"Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
-
-                if (transport == Client.TransportType.Mqtt)
+                deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
                 {
-                    deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
+                    Logger.Trace($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
+                    if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected)
                     {
-                        Logger.Trace($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
-                        if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected)
-                        {
-                            deviceDisconnected.Release();
-                        }
-                    });
-                }
-
-                var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
-
-                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl * 10)))
-                {
-                    try
-                    {
-                        // Create the first Token.
-                        Logger.Trace($"[{DateTime.UtcNow}] OpenAsync");
-                        await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
-
-                        Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (1)");
-                        await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
-                        await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
+                        deviceDisconnected.Release();
                     }
-                    catch (OperationCanceledException ex)
-                    {
-                        Assert.Fail($"{TestLogger.IdOf(deviceClient)} did not get the initial token. {ex}");
-                        throw;
-                    }
-
-                    // Wait for the Token to expire.
-                    if (transport == Client.TransportType.Http1)
-                    {
-                        float waitTime = (float)ttl * ((float)buffer / 100) + 1;
-                        Logger.Trace($"[{DateTime.UtcNow}] Waiting {waitTime} seconds.");
-                        await Task.Delay(TimeSpan.FromSeconds(waitTime)).ConfigureAwait(false);
-                    }
-                    else if (transport == Client.TransportType.Mqtt)
-                    {
-                        Logger.Trace($"[{DateTime.UtcNow}] Waiting for device disconnect.");
-                        await deviceDisconnected.WaitAsync(cts.Token).ConfigureAwait(false);
-                    }
-
-                    try
-                    {
-                        Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (2)");
-                        await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
-                        await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException ex)
-                    {
-                        Assert.Fail($"{TestLogger.IdOf(deviceClient)} did not refresh token after {refresher.DetectedRefreshInterval}. {ex}");
-                        throw;
-                    }
-
-                    // Ensure that the token was refreshed.
-                    Logger.Trace($"[{DateTime.UtcNow}] Token was refreshed after {refresher.DetectedRefreshInterval} (ttl = {ttl} seconds).");
-                    Assert.IsTrue(
-                        refresher.DetectedRefreshInterval.TotalSeconds < (float)ttl * (1 + (float)buffer / 100), // Wait for more than what we expect.
-                        $"Token was refreshed after {refresher.DetectedRefreshInterval} although ttl={ttl} seconds.");
-
-                    Logger.Trace($"[{DateTime.UtcNow}] CloseAsync");
-                    await deviceClient.CloseAsync().ConfigureAwait(false);
-                }
+                });
             }
+
+            using var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl * 10));
+            try
+            {
+                // Create the first Token.
+                Logger.Trace($"[{DateTime.UtcNow}] OpenAsync");
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+                Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (1)");
+                await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                Assert.Fail($"{TestLogger.IdOf(deviceClient)} did not get the initial token. {ex}");
+                throw;
+            }
+
+            // Wait for the Token to expire.
+            if (transport == Client.TransportType.Http1)
+            {
+                float waitTime = (float)ttl * ((float)buffer / 100) + 1;
+                Logger.Trace($"[{DateTime.UtcNow}] Waiting {waitTime} seconds.");
+                await Task.Delay(TimeSpan.FromSeconds(waitTime)).ConfigureAwait(false);
+            }
+            else if (transport == Client.TransportType.Mqtt)
+            {
+                Logger.Trace($"[{DateTime.UtcNow}] Waiting for device disconnect.");
+                await deviceDisconnected.WaitAsync(cts.Token).ConfigureAwait(false);
+            }
+
+            try
+            {
+                Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (2)");
+                await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                Assert.Fail($"{TestLogger.IdOf(deviceClient)} did not refresh token after {refresher.DetectedRefreshInterval}. {ex}");
+                throw;
+            }
+
+            // Ensure that the token was refreshed.
+            Logger.Trace($"[{DateTime.UtcNow}] Token was refreshed after {refresher.DetectedRefreshInterval} (ttl = {ttl} seconds).");
+            Assert.IsTrue(
+                refresher.DetectedRefreshInterval.TotalSeconds < (float)ttl * (1 + (float)buffer / 100), // Wait for more than what we expect.
+                $"Token was refreshed after {refresher.DetectedRefreshInterval} although ttl={ttl} seconds.");
+
+            Logger.Trace($"[{DateTime.UtcNow}] CloseAsync");
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh

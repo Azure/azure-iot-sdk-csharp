@@ -11,6 +11,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 5.0:
+          FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.18:
@@ -18,7 +20,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted Ubuntu 1604
+      vmImage: ubuntu-20.04
     steps:
       - task: DownloadBuildArtifacts@0
         inputs:
@@ -125,6 +127,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 5.0:
+          FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.18:
@@ -136,7 +140,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted VS2017
+      vmImage: windows-2019
     steps:
       - task: DownloadBuildArtifacts@0
         inputs:
@@ -156,7 +160,7 @@ jobs:
           OverWrite: true
 
       - script: |  
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
           sn -Vr *,31bf3856ad364e35
             
         displayName: 'Disable strong name validation'

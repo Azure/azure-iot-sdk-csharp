@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
@@ -19,19 +18,13 @@ using Microsoft.Azure.Devices.Common.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-#if NET451
-using System.Net.Http.Formatting;
-#endif
+using static Microsoft.Azure.Devices.Shared.HttpMessageHelper;
 
 namespace Microsoft.Azure.Devices
 {
     internal sealed class HttpClientHelper : IHttpClientHelper
     {
         private const string ApplicationJson = "application/json";
-
-#if NET451
-        static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
-#endif
         private readonly Uri _baseAddress;
         private readonly IAuthorizationHeaderProvider _authenticationHeaderProvider;
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
@@ -179,12 +172,8 @@ namespace Microsoft.Azure.Devices
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
-#if NET451
-                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
-#else
-                        string str = JsonConvert.SerializeObject(entity);
-                        requestMsg.Content = new StringContent(str, Encoding.UTF8, ApplicationJson);
-#endif
+                        SetHttpRequestMessageContent(requestMsg, entity);
+
                         return Task.FromResult(0);
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
@@ -208,12 +197,7 @@ namespace Microsoft.Azure.Devices
                     new Uri(_baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
-#if NET451
-                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
-#else
-                        string str = JsonConvert.SerializeObject(entity);
-                        requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, ApplicationJson);
-#endif
+                        SetHttpRequestMessageContent<T>(requestMsg, entity);
                         return Task.FromResult(0);
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
@@ -237,12 +221,8 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, operationType);
-#if NET451
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
-#else
-                    string str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
-                    requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, ApplicationJson);
-#endif
+                    SetHttpRequestMessageContent<T>(requestMsg, entity);
+
                     return Task.FromResult(0);
                 },
                 null,
@@ -267,12 +247,8 @@ namespace Microsoft.Azure.Devices
                 {
                     // TODO: skintali: Use string etag when service side changes are ready
                     InsertEtag(requestMsg, etag, operationType);
-#if NET451
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
-#else
-                    string str = JsonConvert.SerializeObject(entity);
-                    requestMsg.Content = new StringContent(str, Encoding.UTF8, ApplicationJson);
-#endif
+                    SetHttpRequestMessageContent<T>(requestMsg, entity);
+
                     return Task.FromResult(0);
                 },
                 async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
@@ -291,12 +267,8 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, PutOperationType.UpdateEntity);
-#if NET451
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
-#else
-                    string str = JsonConvert.SerializeObject(entity);
-                    requestMsg.Content = new StringContent(str, Encoding.UTF8, ApplicationJson);
-#endif
+                    SetHttpRequestMessageContent<T>(requestMsg, entity);
+
                     return Task.FromResult(0);
                 },
                 null,
@@ -317,12 +289,8 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, putOperationType);
-#if NET451
-                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
-#else
-                    string str = JsonConvert.SerializeObject(entity);
-                    requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, ApplicationJson);
-#endif
+                    SetHttpRequestMessageContent<T>(requestMsg, entity);
+
                     return Task.FromResult(0);
                 },
                 async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
@@ -342,9 +310,10 @@ namespace Microsoft.Azure.Devices
 #if NET451
             T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
 #else
-            string str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string str = await message.Content.ReadHttpContentAsStringAsync(token).ConfigureAwait(false);
             T entity = JsonConvert.DeserializeObject<T>(str);
 #endif
+
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;
             if (eTagHolder != null)

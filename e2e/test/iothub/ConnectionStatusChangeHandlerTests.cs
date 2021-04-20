@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
             Client.TransportType protocol, Func<RegistryManager, string, Task> registryManagerOperation)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);

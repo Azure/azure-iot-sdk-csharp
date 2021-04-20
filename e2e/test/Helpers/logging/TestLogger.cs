@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string Service = "IotHub";
 
         // Client to log to application insights.
-        private TelemetryClient _telemetryClient;
+        private readonly TelemetryClient _telemetryClient;
 
-        private IDictionary<string, string> _commonProperties;
+        private readonly IDictionary<string, string> _commonProperties;
 
         private TestLogger()
         {
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string intrumentationKey = Environment.GetEnvironmentVariable("E2E_IKEY");
             if (!string.IsNullOrWhiteSpace(intrumentationKey))
             {
-                var config = new TelemetryConfiguration
+                using var config = new TelemetryConfiguration
                 {
                     InstrumentationKey = intrumentationKey,
                 };
