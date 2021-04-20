@@ -85,8 +85,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemperatureController", "io
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorConsoleLogger", "iothub\device\samples\PnpDeviceSamples\ColorConsoleLogger\ColorConsoleLogger.csproj", "{F4D88A06-933B-4A46-AE8F-FDDD7997767A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickTest", "QuickTest\QuickTest.csproj", "{1860B073-3628-478A-A619-E60DA38C6AFE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -168,10 +166,6 @@ Global
 		{F4D88A06-933B-4A46-AE8F-FDDD7997767A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4D88A06-933B-4A46-AE8F-FDDD7997767A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4D88A06-933B-4A46-AE8F-FDDD7997767A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1860B073-3628-478A-A619-E60DA38C6AFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1860B073-3628-478A-A619-E60DA38C6AFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1860B073-3628-478A-A619-E60DA38C6AFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1860B073-3628-478A-A619-E60DA38C6AFE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -210,7 +204,6 @@ Global
 		{DE447DC5-7A22-43C6-B51E-2DF1F11BF67E} = {FAC6FF7B-BE7E-495C-A3A1-7966341B41E4}
 		{7D04CF2A-429B-4E14-BA54-513B831E2A34} = {DE447DC5-7A22-43C6-B51E-2DF1F11BF67E}
 		{F4D88A06-933B-4A46-AE8F-FDDD7997767A} = {DE447DC5-7A22-43C6-B51E-2DF1F11BF67E}
-		{1860B073-3628-478A-A619-E60DA38C6AFE} = {FAC6FF7B-BE7E-495C-A3A1-7966341B41E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
