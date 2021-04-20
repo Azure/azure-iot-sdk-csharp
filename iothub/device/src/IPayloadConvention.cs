@@ -4,22 +4,23 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    ///
+    /// The payload convention class.
     /// </summary>
+    /// <remarks>The payload convention is used to define a specific serializer as well as a specific content encoding. For example, IoT has a <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention">convention</see> that is designed to make it easier to get started with products that use specific conventions by default.</remarks>
     public abstract class IPayloadConvention
     {
         /// <summary>
-        ///
+        /// The serializer used for the payload of the <see cref="Message"/>.
         /// </summary>
-        public abstract ISerializer PayloadSerializer { get; }
+        public abstract ISerializer PayloadSerializer { get; set; }
 
         /// <summary>
-        ///
+        /// The encoder used for the payload of the <see cref="Message"/>.
         /// </summary>
-        public abstract IContentEncoder PayloadEncoder { get; }
+        public abstract IContentEncoder PayloadEncoder { get; set; }
 
         /// <summary>
-        /// Returns the byte array for the convention based message
+        /// Returns the byte array for the convention based message.
         /// </summary>
         /// <param name="objectToSendWithConvention"></param>
         /// <returns></returns>

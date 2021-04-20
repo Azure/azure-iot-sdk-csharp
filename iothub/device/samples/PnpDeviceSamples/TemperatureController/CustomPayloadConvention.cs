@@ -5,11 +5,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     internal class CustomPayloadConvention : IPayloadConvention
     {
-        public ISerializer PayloadSerializer => new CustomJsonSerializer();
+        public override ISerializer PayloadSerializer { get; set; } = new CustomJsonSerializer();
 
-        public IContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
+        public override IContentEncoder PayloadEncoder { get; set; } = Utf8ContentEncoder.Instance;
 
-        public byte[] GetObjectBytes(object objectToSendWithConvention)
+        public override byte[] GetObjectBytes(object objectToSendWithConvention)
         {
             string serializedString = PayloadSerializer.SerializeToString(objectToSendWithConvention);
             return PayloadEncoder.EncodeStringToByteArray(serializedString);

@@ -5,59 +5,73 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    ///
+    /// A collection of properties for the device.
     /// </summary>
-    public class PropertyCollection : PayloadCollection, IEnumerable<object>
+    public class PropertyCollection : PayloadCollection
     {
         private const string VersionName = "$version";
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="payloadConvention"></param>
+        /// <inheritdoc/>
         public PropertyCollection(IPayloadConvention payloadConvention = default)
             : base(payloadConvention)
         {
         }
 
         /// <summary>
-        /// highlight both "readonly" and "writable property response" propertyValue patches
+        /// Adds the value for the collection.
         /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="propertyValue"></param>
-        /// <param name="componentName"></param>
+        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the property to add.</param>
+        /// <param name="propertyValue">The value of the property to add.</param>
+        /// <param name="componentName">The component with the property to add.</param>
         public void Add(string propertyName, object propertyValue, string componentName = default)
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
 
+        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)"/>
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <summary>
-        ///
+        /// Adds the value for the collection.
         /// </summary>
-        /// <param name="properties"></param>
-        /// <param name="componentName"></param>
+        /// <param name="properties">A collection of properties to add or update.</param>
+        /// <param name="componentName">The component with the properties to add or update.</param>
         public void Add(IDictionary<string, object> properties, string componentName = default)
         => Add(properties, componentName, false);
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="properties"></param>
-        /// <param name="componentName"></param>
+        /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <param name="properties">A collection of properties to add or update.</param>
+        /// <param name="componentName">The component with the properties to add or update.</param>
         public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
             => Add(properties, componentName, true);
 
-        /// <summary>
-        /// highlight both "readonly" and "writable property response" propertyValue patches
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="propertyValue"></param>
-        /// <param name="componentName"></param>
+        /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the property to add or update.</param>
+        /// <param name="propertyValue">The value of the property to add or update.</param>
+        /// <param name="componentName">The component with the property to add or update.</param>
         public void AddOrUpdate(string propertyName, object propertyValue, string componentName = default)
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
 
+        /// <summary>
+        /// Adds or updates the value for the collection.
+        /// </summary>
+        /// <remarks>
+        /// When adding a type of <see cref="WritablePropertyBase"/> the <see cref="ISerializer.CheckType(object)"/> checks to make sure it can serialize this type correctly. This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
+        /// </remarks>
+        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="WritablePropertyBase"/> and does not pass the check from <see cref="ISerializer.CheckType(object)"/> method.</exception>        
+        /// <param name="properties">A collection of properties to add or update.</param>
+        /// <param name="componentName">The component with the properties to add or update.</param>
+        /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
         private void Add(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
 
@@ -123,14 +137,17 @@ namespace Microsoft.Azure.Devices.Client
                     componentProperties[PropertyConvention.ComponentIdentifierKey] = PropertyConvention.ComponentIdentifierValue;
                 }
 
+
                 if (forceUpdate)
                 {
                     Collection[componentName] = componentProperties;
+
                 }
                 else
                 {
                     Collection.Add(componentName, componentProperties);
                 }
+
             }
         }
 
@@ -145,37 +162,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        ///
+        /// Gets the version of the property collection.
         /// </summary>
         public long Version => Collection.TryGetValue(VersionName, out object version)
             ? (long)version
             : default;
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public string ToJson()
-        {
-            return Convention?.PayloadSerializer?.SerializeToString(Collection);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<object> GetEnumerator()
-        {
-            foreach (object property in Collection)
-            {
-                yield return property;
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
 
         /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection
@@ -199,5 +190,6 @@ namespace Microsoft.Azure.Devices.Client
 
             return writablePropertyCollection;
         }
+       
     }
 }

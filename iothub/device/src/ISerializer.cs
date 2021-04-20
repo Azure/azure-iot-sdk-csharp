@@ -6,6 +6,12 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Provides the serialzation for a specified convention
     /// </summary>
+    /// <remarks>
+    /// The serializer is responsible for converting all of your objects into the correct format for the <see cref="IPayloadConvention"/> that uses it.
+    /// <para>
+    /// By default we have implemented the <see cref="JsonContentSerializer"/> class that uses <see cref="Newtonsoft.Json.JsonConvert"/> to handle the serialization for the <see cref="DefaultPayloadConvention"/> class. 
+    /// </para>
+    /// </remarks>
     public abstract class ISerializer
     {
         /// <summary>
@@ -19,6 +25,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="objectToSerialize"></param>
         /// <returns></returns>
         public abstract string SerializeToString(object objectToSerialize);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="objectToSerialize"></param>
+        /// <returns></returns>
+        public abstract T CastFromObject<T>(object objectToSerialize);
 
         /// <summary>
         ///
