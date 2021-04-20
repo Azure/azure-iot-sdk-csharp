@@ -66,9 +66,9 @@ namespace Microsoft.Azure.Devices.Client
         /// Adds or updates the value for the collection.
         /// </summary>
         /// <remarks>
-        /// When adding a type of <see cref="WritablePropertyBase"/> the <see cref="ISerializer.CheckType(object)"/> checks to make sure it can serialize this type correctly. This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
+        /// When adding a type of <see cref="WritablePropertyBase"/> the <see cref="ISerializer.CheckWritablePropertyType(object)"/> checks to make sure it can serialize this type correctly. This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
         /// </remarks>
-        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="WritablePropertyBase"/> and does not pass the check from <see cref="ISerializer.CheckType(object)"/> method.</exception>        
+        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="WritablePropertyBase"/> and does not pass the check from <see cref="ISerializer.CheckWritablePropertyType(object)"/> method.</exception>        
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
                     var checkType = entry.Value is WritablePropertyBase;
-                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckType(entry.Value))
+                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckWritablePropertyType(entry.Value))
                     {
                         throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
                     }
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
                     var checkType = entry.Value is WritablePropertyBase;
-                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckType(entry.Value))
+                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckWritablePropertyType(entry.Value))
                     {
                         throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
                     }
@@ -152,10 +152,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Determines whether the specified property is present
+        /// Determines whether the specified property is present.
         /// </summary>
-        /// <param name="propertyName">The property to locate</param>
-        /// <returns>true if the specified property is present; otherwise, false</returns>
+        /// <param name="propertyName">The property to locate.</param>
+        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
         public bool Contains(string propertyName)
         {
             return Collection.TryGetValue(propertyName, out _);
@@ -164,16 +164,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the version of the property collection.
         /// </summary>
+        /// <value>A <see cref="long"/> that is used to identify the version of the property collection.</value>
         public long Version => Collection.TryGetValue(VersionName, out object version)
             ? (long)version
             : default;
 
         /// <summary>
-        /// Converts a <see cref="TwinCollection"/> collection to a properties collection
+        /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
         /// </summary>
-        /// <param name="twinCollection">The TwinCollection object to convert</param>
-        /// <param name="payloadConvention"></param>
-        /// <returns></returns>
+        /// <param name="twinCollection">The TwinCollection object to convert.</param>
+        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
+        /// <returns>A new instance of of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="IPayloadConvention"/>.</returns>
+        /// <remarks>This internala class is aware of the implemention of the TwinCollection ad will </remarks>
         internal static PropertyCollection FromTwinCollection(TwinCollection twinCollection, IPayloadConvention payloadConvention = default)
         {
             if (twinCollection == null)

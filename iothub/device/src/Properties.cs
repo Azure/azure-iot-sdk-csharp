@@ -99,6 +99,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the property from the collection.
         /// </summary>
         /// <remarks>
+        /// This calls <see cref="PayloadCollection.GetValue{T}(string)"/> and will use the serializer if needed. It is recommended to use this method over the <see cref="this[string]"/> accessor.
         /// </remarks>
         /// <typeparam name="T">The type to be returned.</typeparam>
         /// <param name="propertyKey">The key of the property to be returned.</param>
@@ -112,8 +113,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Converts a <see cref="TwinProperties"/> collection to a properties collection.
         /// </summary>
         /// <param name="twinProperties">The TwinProperties object to convert.</param>
-        /// <param name="payloadConvention"></param>
-        /// <returns></returns>
+        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
+        /// <returns>A new instance of of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="IPayloadConvention"/>.</returns>
         internal static Properties FromTwinProperties(TwinProperties twinProperties, IPayloadConvention payloadConvention = default)
         {
             if (twinProperties == null)

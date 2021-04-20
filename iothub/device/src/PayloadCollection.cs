@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -46,9 +45,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets the 
+        /// Gets the collection as a byte array
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// This will get the fully encoded serialized string using both <see cref="ISerializer.SerializeToString(object)"/> and <see cref="IContentEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="IPayloadConvention"/>.
+        /// </remarks>
+        /// <returns>A fully encoded serialized string.</returns>
         public virtual byte[] GetPayloadObjectBytes()
         {
             return Convention.GetObjectBytes(Convention.PayloadSerializer.SerializeToString(Collection));
@@ -65,11 +67,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public virtual T GetValue<T>(string key)
         {
-            // Use the serializer to attempt to cast the object correctly
-            if (Collection[key] is T) // JObject or JsonElement
+            // If the object is of type T go ahead and return it.
+            if (Collection[key] is T) 
             {
                 return (T)Collection[key];
             }
+            // If it's not we need to try to convert it using the serializer.
+            // JObject or JsonElement
             return Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
 
         }

@@ -25,18 +25,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The payload serializer.
         /// </summary>
-        public override ISerializer PayloadSerializer { get; set; }
+        public override ISerializer PayloadSerializer { get; } = JsonContentSerializer.Instance;
 
         /// <summary>
         /// The payload encoder.
         /// </summary>
-        public override IContentEncoder PayloadEncoder { get; set; }
-
-       /// <inheritdoc/>
-        public override byte[] GetObjectBytes(object objectToSendWithConvention)
-        {
-            string serializedString = PayloadSerializer.SerializeToString(objectToSendWithConvention);
-            return PayloadEncoder.EncodeStringToByteArray(serializedString);
-        }
+        public override IContentEncoder PayloadEncoder { get; } = Utf8ContentEncoder.Instance;
     }
 }

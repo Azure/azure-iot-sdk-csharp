@@ -707,7 +707,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Retrieve the device properties.
         /// </summary>
-        /// <param name="payloadConvention"></param>
+        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The device properties.</returns>
         public Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
@@ -726,7 +726,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="callback">The global call back to handle all writable property updates.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        /// <param name="payloadConvention"></param>
+        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
             => InternalClient.SubscribeToWritablePropertyEventAsync(callback, userContext, payloadConvention, cancellationToken);

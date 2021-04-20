@@ -12,12 +12,12 @@ namespace Microsoft.Azure.Devices.Client
     public class JsonContentSerializer : ISerializer
     {
         /// <summary>
-        /// The Content Type string
+        /// The Content Type string.
         /// </summary>
         internal const string ApplicationJson = "application/json";
 
         /// <summary>
-        /// The default instance of this class
+        /// The default instance of this class.
         /// </summary>
         public static readonly JsonContentSerializer Instance = new JsonContentSerializer();
 
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override bool CheckType(object typeToCheck)
+        public override bool CheckWritablePropertyType(object typeToCheck)
         {
             return typeToCheck is WritablePropertyResponse;
         }
