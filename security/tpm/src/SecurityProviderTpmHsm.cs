@@ -34,12 +34,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <summary>
         /// Initializes a new instance of the SecurityProviderTpmHsm class using the system TPM.
         /// </summary>
+        /// <remarks>
+        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
+        /// if your TPM hardware does not support the relevant API call.
+        /// </remarks>
         /// <param name="registrationId">The Device Provisioning Service Registration Id.</param>
         public SecurityProviderTpmHsm(string registrationId) : this(registrationId, CreateDefaultTpm2Device()) { }
 
         /// <summary>
         /// Initializes a new instance of the SecurityProviderTpmHsm class using the specified TPM module.
         /// </summary>
+        /// <remarks>
+        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
+        /// if your TPM hardware does not support the relevant API call.
+        /// </remarks>
         /// <param name="registrationId">The Device Provisioning Service Registration Id.</param>
         /// <param name="tpm">The TPM device.</param>
         public SecurityProviderTpmHsm(string registrationId, Tpm2Device tpm) : base(registrationId)
@@ -103,6 +111,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <summary>
         /// Activates an identity key within the TPM device.
         /// </summary>
+        /// <remarks>
+        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
+        /// if your TPM hardware does not support the relevant API call.
+        /// </remarks>
         /// <param name="encryptedKey">The encrypted identity key.</param>
         public override void ActivateIdentityKey(byte[] encryptedKey)
         {
@@ -168,6 +180,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <summary>
         /// Gets the Base64 encoded EndorsmentKey.
         /// </summary>
+        /// <remarks>
+        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
+        /// if your TPM hardware does not support the relevant API call.
+        /// </remarks>
         /// <returns>Base64 encoded EK.</returns>
         public override byte[] GetEndorsementKey()
         {
@@ -183,6 +199,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <summary>
         /// Gets the Base64 encoded StorageRootKey.
         /// </summary>
+        /// <remarks>
+        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
+        /// if your TPM hardware does not support the relevant API call.
+        /// </remarks>
         /// <returns>Base64 encoded SRK.</returns>
         public override byte[] GetStorageRootKey()
         {
@@ -198,6 +218,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <summary>
         /// Signs the data using the previously activated identity key.
         /// </summary>
+        /// <remarks>
+        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
+        /// if your TPM hardware does not support the relevant API call.
+        /// </remarks>
         /// <param name="data">The data to be signed.</param>
         /// <returns>The signed data.</returns>
         public override byte[] Sign(byte[] data)
@@ -251,6 +275,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <summary>
         /// Releases the unmanaged resources used by the SecurityProviderTpmHsm and optionally disposes of the managed resources.
         /// </summary>
+        /// <remarks>
+        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
+        /// if your TPM hardware does not support the relevant API call.
+        /// </remarks>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
