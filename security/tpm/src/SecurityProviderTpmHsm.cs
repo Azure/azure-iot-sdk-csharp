@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call being carried out.
+        /// if your TPM hardware does not support the relevant API call.
         /// </remarks>
         /// <param name="registrationId">The Device Provisioning Service Registration Id.</param>
         public SecurityProviderTpmHsm(string registrationId) : this(registrationId, CreateDefaultTpm2Device()) { }
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call being carried out.
+        /// if your TPM hardware does not support the relevant API call.
         /// </remarks>
         /// <param name="registrationId">The Device Provisioning Service Registration Id.</param>
         /// <param name="tpm">The TPM device.</param>
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call being carried out.
+        /// if your TPM hardware does not support the relevant API call.
         /// </remarks>
         /// <param name="encryptedKey">The encrypted identity key.</param>
         public override void ActivateIdentityKey(byte[] encryptedKey)
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call being carried out.
+        /// if your TPM hardware does not support the relevant API call.
         /// </remarks>
         /// <returns>Base64 encoded EK.</returns>
         public override byte[] GetEndorsementKey()
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call being carried out.
+        /// if your TPM hardware does not support the relevant API call.
         /// </remarks>
         /// <returns>Base64 encoded SRK.</returns>
         public override byte[] GetStorageRootKey()
@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call being carried out.
+        /// if your TPM hardware does not support the relevant API call.
         /// </remarks>
         /// <param name="data">The data to be signed.</param>
         /// <returns>The signed data.</returns>
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call being carried out.
+        /// if your TPM hardware does not support the relevant API call.
         /// </remarks>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
