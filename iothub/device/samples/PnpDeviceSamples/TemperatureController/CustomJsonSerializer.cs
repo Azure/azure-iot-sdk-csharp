@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static readonly JsonSerializerOptions s_options = new()
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         public override string ContentType => ApplicationJson;
@@ -29,8 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public override bool CheckType(object typeToCheck)
         {
-
-            throw new System.NotImplementedException();
+            return typeToCheck is CustomWritablePropertyResponse;
         }
     }
 }
