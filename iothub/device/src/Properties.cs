@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// A container for properties.
     /// <remarks>
-    /// This Properties class is not meant to be constructed by the customer code is meant to be returned from the <see cref="DeviceClient.GetPropertiesAsync(System.Threading.CancellationToken)"/> method.
+    /// The Properties class is not meant to be constructed by the customer code is meant to be returned from the <see cref="DeviceClient.GetPropertiesAsync(IPayloadConvention, System.Threading.CancellationToken)"/> method.
     /// </remarks>
     /// </summary>
     public class Properties : IEnumerable<object>
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="key">The key of the property to get.</param>
         /// <remarks>
-        /// This accessor is best used to access simple types. It is recommended to use <see cref="Get{T}(string, bool)"/> to cast a complex type.
+        /// This accessor is best used to access simple types. It is recommended to use <see cref="Get{T}(string)"/> to cast a complex type.
         /// </remarks>
         /// <returns>The specified property.</returns>
         public object this[string key]
@@ -99,30 +99,29 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the property from the collection.
         /// </summary>
         /// <remarks>
-        /// We will use the <see cref="PayloadCollection.GetValue{T}(string, bool)"/> method to cast the object from a serailizer object by default. If you have constructed the class yourself and add items to the collections you will need to use <c>false</c> for the <paramref name="useSerializer"/> parameter.
         /// </remarks>
         /// <typeparam name="T">The type to be returned.</typeparam>
         /// <param name="propertyKey">The key of the property to be returned.</param>
-        /// <param name="useSerializer">Use the serailizer to cast the property.</param>
         /// <returns>A type of <typeparamref name="T"/> or <c>null</c></returns>
-        public T Get<T>(string propertyKey, bool useSerializer = true)
+        public T Get<T>(string propertyKey)
         {
-            return _reportedPropertyCollection.GetValue<T>(propertyKey, useSerializer);
+            return _reportedPropertyCollection.GetValue<T>(propertyKey);
         }
 
         /// <summary>
         /// Converts a <see cref="TwinProperties"/> collection to a properties collection.
         /// </summary>
         /// <param name="twinProperties">The TwinProperties object to convert.</param>
+        /// <param name="payloadConvention"></param>
         /// <returns></returns>
-        internal static Properties FromTwinProperties(TwinProperties twinProperties)
+        internal static Properties FromTwinProperties(TwinProperties twinProperties, IPayloadConvention payloadConvention = default)
         {
             if (twinProperties == null)
             {
                 throw new ArgumentNullException(nameof(twinProperties));
             }
 
-            var writablePropertyCollection = new PropertyCollection();
+            var writablePropertyCollection = PropertyCollection.FromTwinCollection(twinProperties.Desired, payloadConvention);
             foreach (KeyValuePair<string, object> property in twinProperties.Desired)
             {
                 writablePropertyCollection.Add(property.Key, property.Value);
@@ -130,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
             // The version information is not accessible via the enumerator, so assign it separately.
             writablePropertyCollection.Add(VersionName, twinProperties.Desired.Version);
 
-            var propertyCollection = new PropertyCollection();
+            var propertyCollection = PropertyCollection.FromTwinCollection(twinProperties.Reported, payloadConvention);
             foreach (KeyValuePair<string, object> property in twinProperties.Reported)
             {
                 propertyCollection.Add(property.Key, property.Value);

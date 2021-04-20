@@ -1887,12 +1887,12 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
-        internal async Task<Properties> GetPropertiesAsync(CancellationToken cancellationToken)
+        internal async Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
         {
             try
             {
                 Twin hubTwin = await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
-                return Properties.FromTwinProperties(hubTwin.Properties);
+                return Properties.FromTwinProperties(hubTwin.Properties, payloadConvention);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1914,13 +1914,13 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
             {
                 // convert a TwinCollection to PropertyCollection
-                var propertyCollection = PropertyCollection.FromTwinCollection(twinCollection);
+                var propertyCollection = PropertyCollection.FromTwinCollection(twinCollection, payloadConvention);
                 callback.Invoke(propertyCollection, userContext);
 
                 return TaskHelpers.CompletedTask;

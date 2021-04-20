@@ -43,13 +43,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override T CastFromObject<T>(object objectToSerialize)
+        public override T ConvertFromObject<T>(object objectToConvert)
         {
-            if (objectToSerialize == null)
-            {
-                return default(T);
-            }
-            return ((JObject)objectToSerialize).ToObject<T>();
+            return ((JObject)objectToConvert).ToObject<T>();
         }
     }
 }

@@ -172,18 +172,19 @@ namespace Microsoft.Azure.Devices.Client
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection
         /// </summary>
         /// <param name="twinCollection">The TwinCollection object to convert</param>
+        /// <param name="payloadConvention"></param>
         /// <returns></returns>
-        internal static PropertyCollection FromTwinCollection(TwinCollection twinCollection)
+        internal static PropertyCollection FromTwinCollection(TwinCollection twinCollection, IPayloadConvention payloadConvention = default)
         {
             if (twinCollection == null)
             {
                 throw new ArgumentNullException(nameof(twinCollection));
             }
-
+            
             var writablePropertyCollection = new PropertyCollection();
-            foreach (KeyValuePair<string, object> property in twinCollection)
+            foreach (KeyValuePair<string, JObject> property in twinCollection)
             {
-                writablePropertyCollection.Add(property.Key, property.Value);
+                writablePropertyCollection.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(property.Value.ToString()));
             }
             // The version information is not accessible via the enumerator, so assign it separately.
             writablePropertyCollection.Add(VersionName, twinCollection.Version);

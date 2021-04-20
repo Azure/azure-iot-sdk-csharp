@@ -29,9 +29,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         ///
         /// </summary>
-        /// <param name="objectToSerialize"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="stringToDeserialize"></param>
         /// <returns></returns>
-        public abstract T CastFromObject<T>(object objectToSerialize);
+        public abstract T DeserializeToType<T>(string stringToDeserialize);
 
         /// <summary>
         ///
@@ -39,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T"></typeparam>
         /// <param name="stringToDeserialize"></param>
         /// <returns></returns>
-        public abstract T DeserializeToType<T>(string stringToDeserialize);
+        public abstract T ConvertFromObject<T>(object objectToConvert);
 
         /// <summary>
         /// 

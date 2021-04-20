@@ -88,7 +88,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var t = await _deviceClient.GetTwinAsync(cancellationToken);
 
-            Properties properties = await _deviceClient.GetPropertiesAsync(cancellationToken);
+            Properties properties = await _deviceClient.GetPropertiesAsync(s_payloadConvention, cancellationToken);
+
+            var sa = properties.Get<string>("");
 
             // see if we have a writable property request for "serialNumber"
             string writablePropertyName = "serialNumber";
@@ -469,6 +471,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 [propertyName] = SerialNumber
             };
+
+            var obj = propertyCollection[propertyName];
 
             await _deviceClient.UpdatePropertiesAsync(propertyCollection, cancellationToken);
             _logger.LogDebug($"Property: Update - {{ \"{propertyName}\": \"{SerialNumber}\" }} is complete.");

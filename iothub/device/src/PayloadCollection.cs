@@ -58,20 +58,20 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the value of the object from the collection.
         /// </summary>
         /// <remarks>
-        /// This class is used for both sending and receiving properties for the device and will have different behavior when casting. For example, if you're looking at the collection when used from <see cref="DeviceClient.GetPropertiesAsync(System.Threading.CancellationToken)"/> the stored objects will potetially be stored as a serialized object.
+        /// This class is used for both sending and receiving properties for the device.
         /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
-        /// <param name="useSerializer">Use the serializer to cast the object</param>
         /// <returns></returns>
-        public virtual T GetValue<T>(string key, bool useSerializer = false)
+        public virtual T GetValue<T>(string key)
         {
             // Use the serializer to attempt to cast the object correctly
-            if (useSerializer)
+            if (Collection[key] is T) // JObject or JsonElement
             {
-                return Convention.PayloadSerializer.CastFromObject<T>(Collection[key]);
+                return (T)Collection[key];
             }
-            return (T)Collection[key];
+            return Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
+
         }
 
         /// <summary>
