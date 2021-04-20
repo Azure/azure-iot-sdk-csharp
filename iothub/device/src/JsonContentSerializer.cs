@@ -45,6 +45,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc/>
         public override T ConvertFromObject<T>(object objectToConvert)
         {
+            if (objectToConvert == null)
+            {
+                return default;
+            }
             return ((JObject)objectToConvert).ToObject<T>();
         }
     }
