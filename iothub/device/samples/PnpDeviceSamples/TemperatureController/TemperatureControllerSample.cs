@@ -470,8 +470,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 [propertyName] = SerialNumber
             };
 
-            var obj = propertyCollection[propertyName];
-
             await _deviceClient.UpdatePropertiesAsync(propertyCollection, cancellationToken);
             _logger.LogDebug($"Property: Update - {{ \"{propertyName}\": \"{SerialNumber}\" }} is complete.");
         }
