@@ -1,327 +1,138 @@
 ## Plug and Play convention compatible APIs
 
+#### Common
+
+```csharp
+public abstract class ISerializer {
+    protected ISerializer();
+    public abstract string ContentType { get; }
+    public abstract bool CheckWritablePropertyType(object typeToCheck);
+    public abstract T ConvertFromObject<T>(object objectToConvert);
+    public abstract T DeserializeToType<T>(string stringToDeserialize);
+    public abstract string SerializeToString(object objectToSerialize);
+}
+
+public abstract class IContentEncoder {
+    protected IContentEncoder();
+    public abstract Encoding ContentEncoding { get; }
+    public abstract byte[] EncodeStringToByteArray(string contentPayload);
+}
+
+public abstract class IPayloadConvention {
+    protected IPayloadConvention();
+    public abstract IContentEncoder PayloadEncoder { get; }
+    public abstract ISerializer PayloadSerializer { get; }
+    public virtual byte[] GetObjectBytes(object objectToSendWithConvention);
+}
+
+public class JsonContentSerializer : ISerializer {
+    public static readonly JsonContentSerializer Instance;
+    public JsonContentSerializer();
+    public override string ContentType { get; }
+    public override bool CheckWritablePropertyType(object typeToCheck);
+    public override T ConvertFromObject<T>(object objectToConvert);
+    public override T DeserializeToType<T>(string stringToDeserialize);
+    public override string SerializeToString(object objectToSerialize);
+}
+
+public class Utf8ContentEncoder : IContentEncoder {
+    public static readonly Utf8ContentEncoder Instance;
+    public Utf8ContentEncoder();
+    public override Encoding ContentEncoding { get; }
+    public override byte[] EncodeStringToByteArray(string contentPayload);
+}
+
+public class DefaultPayloadConvention : IPayloadConvention {
+    public static readonly DefaultPayloadConvention Instance;
+    public DefaultPayloadConvention();
+    public override IContentEncoder PayloadEncoder { get; }
+    public override ISerializer PayloadSerializer { get; }
+}
+
+public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
+    protected PayloadCollection(IPayloadConvention payloadConvention=null);
+    public IDictionary<string, object> Collection { get; private set; }
+    public IPayloadConvention Convention { get; private set; }
+    public object this[string key] { get; set; }
+    public IEnumerator<object> GetEnumerator();
+    public virtual byte[] GetPayloadObjectBytes();
+    public virtual string GetSerailizedString();
+    public virtual T GetValue<T>(string key);
+    IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+```
+
 ### Properties
 
 ```csharp
 /// <summary>
 /// Retrieve the device properties.
 /// </summary>
+/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 /// <returns>The device properties.</returns>
-public Task<Properties> GetPropertiesAsync(CancellationToken cancellationToken = default);
+public Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Update a single property.
+/// Update properties.
 /// </summary>
-/// <param name="propertyName">Property name.</param>
-/// <param name="propertyValue">Property value.</param>
-/// <param name="propertyConvention">A convention handler that defines serializer to use for the properties.</param>
-/// <param name="componentName">The component name this property belongs to.</param>
+/// <param name="propertyCollection">Reported properties to push.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertyAsync(string propertyName, object propertyValue, PropertyConvention propertyConvention, string componentName = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Update a collection of properties.
-/// </summary>
-/// <param name="properties">Reported properties to push.</param>
-/// <param name="propertyConvention">A convention handler that defines serializer to use for the properties.</param>
-/// <param name="componentName">The component name this property belongs to.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertiesAsync(IDictionary<string, object> properties, PropertyConvention propertyConvention, string componentName = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Update a writable property.
-/// </summary>
-/// <param name="propertyName">Property name.</param>
-/// <param name="writablePropertyResponse">The writable properyt response to push.</param>
-/// <param name="componentName">The component name this property belongs to.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdateWritablePropertyAsync(string propertyName, WritablePropertyResponse writablePropertyResponse, string componentName = default, CancellationToken cancellationToken = default);
+public Task UpdatePropertiesAsync(PropertyCollection propertyCollection, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Sets the global listener for Writable properties
 /// </summary>
 /// <param name="callback">The global call back to handle all writable property updates.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToWritablePropertyEvent(Action<Properties, object> callback, object userContext, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Sets the component-level listener for Writable properties
-/// </summary>
-/// <param name="callback">The call back to handle all writable property updates for a particular component.</param>
-/// <param name="componentName">The component name this writable property belongs to.</param>
-/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-/// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToWritablePropertyEvent(Action<Properties, string, object> callback, string componentName, object userContext, CancellationToken cancellationToken = default);
+public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default);
 ```
 
-<details>
-<summary>Properties</summary>
+#### All related types
 
 ```csharp
-/// <summary>
-/// A container for properties.
-/// </summary>
-public class Properties
-{
-    private PropertyCollection _readOnlyProperties;
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="Properties"/>
-    /// </summary>
-    public Properties()
-    {
-        Writable = new PropertyCollection();
-        _readOnlyProperties = new PropertyCollection();
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="Properties"/> with the specified collections
-    /// </summary>
-    /// <param name="writablePropertyCollection">A collection of writable properties returned from IoT Hub</param>
-    /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub</param>
-    public Properties(PropertyCollection writablePropertyCollection, PropertyCollection readOnlyPropertyCollection)
-    {
-        Writable = writablePropertyCollection;
-        _readOnlyProperties = readOnlyPropertyCollection;
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
+public class Properties : IEnumerable, IEnumerable<object> {
+    public object this[string key] { get; }
+    public long Version { get; }
     public PropertyCollection Writable { get; private set; }
+    public bool Contains(string propertyName);
+    public T Get<T>(string propertyKey);
+    public IEnumerator<object> GetEnumerator();
+    IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
 
-    /// <summary>
-    /// Get the property from the propeties collection
-    /// </summary>
-    /// <param name="propertyName"></param>
-    /// <returns></returns>
-    public dynamic this[string propertyName]
-    {
-        get
-        {
-            return _readOnlyProperties[propertyName];
-        }
-    }
+public class PropertyCollection : PayloadCollection {
+    public PropertyCollection(IPayloadConvention payloadConvention=null);
+    public long Version { get; }
+    public void Add(IDictionary<string, object> properties, string componentName=null);
+    public void Add(string propertyName, object propertyValue, string componentName=null);
+    public void AddOrUpdate(IDictionary<string, object> properties, string componentName=null);
+    public void AddOrUpdate(string propertyName, object propertyValue, string componentName=null);
+    public bool Contains(string propertyName);
+}
 
-    /// <summary>
-    /// Converts a <see cref="TwinProperties"/> collection to a properties collection
-    /// </summary>
-    /// <param name="twinProperties">The TwinProperties object to convert</param>
-    /// <returns></returns>
-    public static Properties FromTwinProperties(TwinProperties twinProperties)
-    {
-        if (twinProperties == null)
-        {
-            throw new ArgumentNullException(nameof(twinProperties));
-        }
+public abstract class WritablePropertyBase {
+    protected const string AckCodePropertyName = "ac";
+    protected const string AckDescriptionPropertyName = "ad";
+    protected const string AckVersionPropertyName = "av";
+    protected const string ValuePropertyName = "value";
+    public WritablePropertyBase(object propertyValue, int ackCode, long ackVersion, string ackDescription=null);
+    public abstract int AckCode { get; set; }
+    public abstract string AckDescription { get; set; }
+    public abstract long AckVersion { get; set; }
+    public abstract object Value { get; set; }
+}
 
-        var writablePropertyCollection = new PropertyCollection();
-        foreach (KeyValuePair<string, object> property in twinProperties.Desired)
-        {
-            writablePropertyCollection.AddPropertyToCollection(property.Key, property.Value);
-        }
-
-        var propertyCollection = new PropertyCollection();
-        foreach (KeyValuePair<string, object> property in twinProperties.Reported)
-        {
-            propertyCollection.AddPropertyToCollection(property.Key, property.Value);
-        }
-
-        return new Properties(writablePropertyCollection, propertyCollection);
-    }
+public sealed class WritablePropertyResponse : WritablePropertyBase {
+    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription=null);
+    public override int AckCode { get; set; }
+    public override string AckDescription { get; set; }
+    public override long AckVersion { get; set; }
+    public override object Value { get; set; }
 }
 ```
-</details>
-
-<details>
-<summary>PropertyCollection</summary>
-
-```csharp
-/// <summary>
-///
-/// </summary>
-public class PropertyCollection : IEnumerable<object>
-{
-    private readonly string _propertyJson;
-    private readonly IDictionary<string, dynamic> _propertiesList = new Dictionary<string, dynamic>();
-
-    internal PropertyCollection()
-    {
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="propertyJson"></param>
-    public PropertyCollection(string propertyJson)
-    {
-        _propertyJson = propertyJson;
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="propertyName"></param>
-    /// <returns></returns>
-    public dynamic this[string propertyName]
-    {
-        get
-        {
-            return _propertiesList[propertyName];
-        }
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerator<object> GetEnumerator()
-    {
-        foreach (object property in _propertiesList)
-        {
-            yield return property;
-        }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-    internal string GetPropertyJson()
-    {
-        return _propertyJson;
-    }
-
-    internal void AddPropertyToCollection(string propertyKey, object propertyValue)
-    {
-        _propertiesList.Add(propertyKey, propertyValue);
-    }
-}
-```
-</details>
-
-
-<details>
-<summary>WritablePropertyResponse</summary>
-
-```csharp
-public class WritablePropertyResponse
-{
-    private readonly PropertyConvention _propertyConvention;
-
-    /// <summary>
-    /// Convenience constructor for specifying only the property value.
-    /// </summary>
-    /// <param name="propertyValue">The unserialized property value.</param>
-    /// <param name="propertyConvention"></param>
-    public WritablePropertyResponse(object propertyValue, PropertyConvention propertyConvention)
-    {
-        // null checks
-
-        Value = propertyValue;
-        _propertyConvention = propertyConvention;
-    }
-
-    /// <summary>
-    /// Convenience constructor for specifying the properties.
-    /// </summary>
-    /// <param name="propertyValue">The unserialized property value.</param>
-    /// <param name="ackCode">The acknowledgement code, usually an HTTP Status Code e.g. 200, 400.</param>
-    /// <param name="ackVersion">The acknowledgement version, as supplied in the property update request.</param>
-    /// <param name="ackDescription">The acknowledgement description, an optional, human-readable message about the result of the property update.</param>
-    /// <param name="propertyConvention"></param>
-    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default, PropertyConvention propertyConvention = default)
-    {
-        // null checks
-
-        Value = propertyValue;
-        AckCode = ackCode;
-        AckVersion = ackVersion;
-        AckDescription = ackDescription;
-
-        _propertyConvention = propertyConvention;
-    }
-
-    /// <summary>
-    /// The unserialized property value.
-    /// </summary>
-    [JsonIgnore]
-    public object Value { get; private set; }
-
-    /// <summary>
-    /// The acknowledgement code, usually an HTTP Status Code e.g. 200, 400.
-    /// </summary>
-    [JsonProperty("ac")]
-    public int AckCode { get; set; }
-
-    /// <summary>
-    /// The acknowledgement version, as supplied in the property update request.
-    /// </summary>
-    [JsonProperty("av")]
-    public long AckVersion { get; set; }
-
-    /// <summary>
-    /// The acknowledgement description, an optional, human-readable message about the result of the property update.
-    /// </summary>
-    [JsonProperty("ad", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string AckDescription { get; set; }
-
-    /// <summary>
-    /// The serialized property value.
-    /// </summary>
-    [JsonProperty("value")]
-    public JRaw ValueAsJson => new JRaw(_propertyConvention.SerializeToString(Value));
-}
-```
-</details>
-
-<details>
-<summary>PropertyConvention</summary>
-
-```csharp
-public class PropertyConvention
-{
-/// <summary>
-///
-/// </summary>
-public static readonly PropertyConvention Instance = new PropertyConvention();
-
-/// <summary>
-///
-/// </summary>
-public static string ComponentIdentifierKey => "__t";
-
-/// <summary>
-///
-/// </summary>
-public static string ComponentIdentifierValue => "c";
-
-/// <summary>
-///
-/// </summary>
-/// <param name="objectToSerialize"></param>
-/// <returns></returns>
-public virtual string SerializeToString(object objectToSerialize)
-{
-    return JsonConvert.SerializeObject(objectToSerialize);
-}
-
-/// <summary>
-///
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <param name="stringToDeserialize"></param>
-/// <returns></returns>
-public virtual T DeserializeToType<T>(string stringToDeserialize)
-{
-    return JsonConvert.DeserializeObject<T>(stringToDeserialize);
-}
-```
-</details>
-
 
 ### Telemetry
 
@@ -330,161 +141,60 @@ public virtual T DeserializeToType<T>(string stringToDeserialize)
 /// Send telemetry using the specified message.
 /// </summary>
 /// <remarks>
-/// Use the <see cref="Message.Message(object, TelemetryConvention)"/> constructor to pass in the formatted telemetry payload and the <see cref="TelemetryConvention"/>.
-/// If your telemetry payload does not have any specific serialization requirements you can pass in <see cref="TelemetryConvention.Instance"/>.
-/// If the telemetry is originating from a component, set the component name to <see cref="Message.ComponentName"/>.
+/// Use the <see cref="TelemetryMessage(string, TelemetryCollection)"/> constructor to pass in the optional
+/// <see cref="TelemetryCollection"/> that specifies your payload and serialization and encoding rules.
 /// </remarks>
 /// <param name="telemetryMessage">The telemetry message.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 /// <returns></returns>
-public Task SendTelemetryAsync(Message telemetryMessage, CancellationToken cancellationToken = default)
+public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default);
 ```
 
-<details>
-<summary>TelemetryConvention</summary>
+#### All related types
 
 ```csharp
-public class TelemetryConvention
-{
-    /// <summary>
-    /// The content type for a plug and play compatible telemetry message.
-    /// </summary>
-    private const string ApplicationJson = "application/json";
+public class TelemetryMessage : Message {
+    public TelemetryMessage(string componentName=null, TelemetryCollection telemetryCollection=null);
+    public new string ContentEncoding { get; }
+    public new string ContentType { get; }
+    public TelemetryCollection Telemetry { get; set; }
+    public override Stream GetBodyStream();
+}
 
-    /// <summary>
-    ///
-    /// </summary>
-    public static readonly TelemetryConvention Instance = new TelemetryConvention();
-
-    /// <summary>
-    ///
-    /// </summary>
-    public Encoding ContentEncoding { get; set; } = Encoding.UTF8;
-
-    /// <summary>
-    ///
-    /// </summary>
-    public string ContentType { get; set; } = ApplicationJson;
-
-    /// <summary>
-    /// Format a plug and play compatible telemetry message payload.
-    /// </summary>
-    /// <param name="telemetryName">The name of the telemetry, as defined in the DTDL interface. Must be 64 characters or less. For more details see
-    /// <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#telemetry"/>.</param>
-    /// <param name="telemetryValue">The unserialized telemetry payload, in the format defined in the DTDL interface.</param>
-    /// <returns>A plug and play compatible telemetry message payload, which can be sent to IoT Hub.</returns>
-    public static IDictionary<string, object> FormatTelemetryPayload(string telemetryName, object telemetryValue)
-    {
-        return new Dictionary<string, object> { { telemetryName, telemetryValue } };
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="objectToSerialize"></param>
-    /// <returns></returns>
-    public virtual string SerializeToString(object objectToSerialize)
-    {
-        return JsonConvert.SerializeObject(objectToSerialize);
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="contentPayload"></param>
-    /// <returns></returns>
-    public virtual byte[] EncodeStringToByteArray(string contentPayload)
-    {
-        return ContentEncoding.GetBytes(contentPayload);
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="objectToSendWithConvention"></param>
-    /// <returns></returns>
-    public virtual byte[] GetObjectBytes(object objectToSendWithConvention)
-    {
-        return EncodeStringToByteArray(SerializeToString(objectToSendWithConvention));
-    }
+public class TelemetryCollection : PayloadCollection {
+    public TelemetryCollection(IPayloadConvention payloadConvention=null);
+    public void Add(string telemetryName, object telemetryValue);
+    public void AddOrUpdate(string telemetryName, object telemetryValue);
 }
 ```
-</details>
 
 ### Commands
 
 ```csharp
 /// <summary>
-/// Set command callback handler.
+/// Set the global command callback handler.
 /// </summary>
-/// <param name="commandName">The name of the command this handler will be used for.</param>
-/// <param name="commandCallback">The callback for this command.</param>
-/// <param name="componentName">The component name this command belongs to.</param>
+/// <param name="callback">A method implementation that will handle the incoming command.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-/// <param name="cancellationToken"></param>
-/// <remarks>
-/// The .NET SDK has a built in dispatcher that handles per command name routing. The SDK will first attempt to find the command by name. If it is found it will execute the callback for that specific command. If there is no entry found in the dispatcher the SDK will fall back to the global command handler <see cref="SetCommandCallbackHandlerAsync(Func{CommandRequest, object, Task{CommandResponse}}, object, CancellationToken)"/>.
-/// </remarks>
-public Task SetCommandCallbackHandlerAsync(string commandName, Func<CommandRequest, object, Task<CommandResponse>> commandCallback, string componentName = default, object userContext = default, CancellationToken cancellationToken = default);
-
-/// <summary>
-/// Set the global command callback handler. This handler will be called when no named handler was found for the command.
-/// </summary>
-/// <param name="commandCallback">A method implementation that will handle the incoming command.</param>
-/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-/// <remarks>
-/// The global command handler will be the fallback handler in the event there is nothing specified in the dispatcher. See the remarks in <see cref="SetCommandCallbackHandlerAsync(Func{CommandRequest, object, Task{CommandResponse}}, object, CancellationToken)"/> for more information.
-/// </remarks>
-public Task SetCommandCallbackHandlerAsync(Func<CommandRequest, object, Task<CommandResponse>> commandCallback, object userContext = default, CancellationToken cancellationToken = default);
+public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default);
 ```
 
-<details>
-<summary>CommandRequest</summary>
+#### All related types
 
 ```csharp
-public sealed class CommandRequest : MethodRequest
-{
-    internal CommandRequest(string commandName) : this (commandName, null)
-    {
-    }
+public sealed class CommandRequest {
+    public string ComponentName { get; private set; }
+    public string DataAsJson { get; }
+    public string Name { get; private set; }
+    public T GetData<T>();
+}
 
-    internal CommandRequest(string commandName, string componentName) : this (commandName, componentName, null)
-    {
-
-    }
-
-    internal CommandRequest(string commandName, string componentName, object data) : base (commandName, ConvertToByteArray(data))
-    {
-        ComponentName = componentName;
-    }
-
-    public readonly string ComponentName { get; private set; }
-
-    private static byte[] ConvertToByteArray(object result)
-    {
-    }
+public sealed class CommandResponse {
+    public CommandResponse(int status);
+    public CommandResponse(object result, int status, IPayloadConvention payloadConvention=null);
+    public string ResultAsJson { get; }
+    public int Status { get; private set; }
 }
 ```
-</details>
-
-<details>
-<summary>CommandResponse</summary>
-
-```c#
-public class CommandResponse : MethodResponse
-{
-    public CommandResponse(object result, int status) : base (ConvertToByteArray(result), status)
-    {
-    }
-
-    public CommandResponse(int status) : base (status)
-    {
-    }
-
-    private static byte[] ConvertToByteArray(object result)
-    {
-    }
-}
-```
-</details>
