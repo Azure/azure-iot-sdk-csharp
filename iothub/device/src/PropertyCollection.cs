@@ -130,9 +130,9 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
-                if (!componentProperties.ContainsKey(PropertyConvention.ComponentIdentifierKey))
+                if (!componentProperties.ContainsKey(CommonConstants.ComponentIdentifierKey))
                 {
-                    componentProperties[PropertyConvention.ComponentIdentifierKey] = PropertyConvention.ComponentIdentifierValue;
+                    componentProperties[CommonConstants.ComponentIdentifierKey] = CommonConstants.ComponentIdentifierValue;
                 }
 
                 if (forceUpdate)

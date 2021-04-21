@@ -85,6 +85,10 @@ namespace Microsoft.Azure.Devices.Client
         // Security message constants
         public const string SecurityMessageInterfaceId = "urn:azureiot:Security:SecurityAgent:1";
 
+        // Component constants
+        public const string ComponentIdentifierKey = "__t";
+        public const string ComponentIdentifierValue = "c";
+
         public static class CloudToDevice
         {
             public const int DefaultMaxDeliveryCount = 10;
