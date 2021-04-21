@@ -199,9 +199,11 @@ public sealed class CommandResponse {
 ```
 
 
-### Non public changes to Microsoft.Azure.Devices.Client
+### Additional changes to Microsoft.Azure.Devices.Client
 
 API listing follows standard diff formatting. Lines preceded by a '+' are additions and a '-' indicates removal.
+
+Includes all public and non-public changes to existing types.
 
 ``` diff
  {
@@ -250,7 +252,7 @@ API listing follows standard diff formatting. Lines preceded by a '+' are additi
          internal sealed class ErrorDelegatingHandler : DefaultDelegatingHandler {
 +            public override Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
          }
-         
+
          internal class RetryDelegatingHandler : DefaultDelegatingHandler {
 +            public override Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
          }
