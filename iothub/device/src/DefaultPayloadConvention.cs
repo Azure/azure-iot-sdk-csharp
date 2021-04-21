@@ -4,34 +4,22 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    ///
+    /// The default implementation of the <see cref="IPayloadConvention"/> class.
     /// </summary>
-    public class DefaultPayloadConvention : IPayloadConvention
+    /// <remarks>
+    /// This class is the default <see cref="IPayloadConvention"/> that will be used for all <see cref="PayloadCollection"/> implementations. This class makes use of the <see cref="JsonContentSerializer"/> serializer and the <see cref="Utf8ContentEncoder"/>.
+    /// </remarks>
+    public sealed class DefaultPayloadConvention : IPayloadConvention
     {
         /// <summary>
-        ///
+        /// A static instance of this class.
         /// </summary>
         public static readonly DefaultPayloadConvention Instance = new DefaultPayloadConvention();
 
-        /// <summary>
-        ///
-        /// </summary>
-        public override ISerializer PayloadSerializer => JsonContentSerializer.Instance;
+        /// <inheritdoc/>
+        public override ISerializer PayloadSerializer { get; } = JsonContentSerializer.Instance;
 
-        /// <summary>
-        ///
-        /// </summary>
-        public override IContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="objectToSendWithConvention"></param>
-        /// <returns></returns>
-        public override byte[] GetObjectBytes(object objectToSendWithConvention)
-        {
-            string serializedString = PayloadSerializer.SerializeToString(objectToSendWithConvention);
-            return PayloadEncoder.EncodeStringToByteArray(serializedString);
-        }
+        /// <inheritdoc/>
+        public override IContentEncoder PayloadEncoder { get; } = Utf8ContentEncoder.Instance;
     }
 }

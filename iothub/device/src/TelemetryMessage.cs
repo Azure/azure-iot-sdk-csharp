@@ -18,11 +18,15 @@ namespace Microsoft.Azure.Devices.Client
     {
         private TelemetryCollection _telemtryCollection = new TelemetryCollection();
         /// <summary>
-        /// Gets or sets the <see cref="TelemetryCollection"/> for this TelemetryMessage
+        /// Gets or sets the <see cref="TelemetryCollection"/> for this <see cref="TelemetryMessage"/>
         /// </summary>
         /// <remarks>
-        /// Setting this value with a new instance ofd 
+        /// Setting this value with a new instance of <see cref="TelemetryCollection"/> will set the <see cref="ContentEncoding"/> and <see cref="ContentType"/> to what ever is specified by the <see cref="IPayloadConvention"/> used to construct it.
+        /// <para>
+        /// Setting the value to null will set the <see cref="ContentEncoding"/> and <see cref="ContentType"/> to null.
+        /// </para>
         /// </remarks>
+        /// <value>A telemetry collection that will be set as the message payload.</value>
         public TelemetryCollection Telemetry
         {
             get => _telemtryCollection;
@@ -46,6 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The ability to set this property has been hidden by this class to only allow you to set the ContentType via the <see cref="TelemetryCollection"/> class.
         /// </remarks>
+        /// <value>The base <see cref="Message"/> content type.</value>
         new public string ContentType
         {
             get => base.ContentType;
@@ -55,6 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The ability to set this property has been hidden by this class to only allow you to set the ContentEncoding via the <see cref="TelemetryCollection"/> class.
         /// </remarks>
+        /// <value>The base <see cref="Message"/> content encoding.</value>
         new public string ContentEncoding
         {
             get => base.ContentEncoding;

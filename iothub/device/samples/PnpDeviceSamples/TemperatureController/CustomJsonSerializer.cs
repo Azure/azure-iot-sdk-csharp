@@ -27,9 +27,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return JsonSerializer.Deserialize<T>(stringToDeserialize, s_options);
         }
 
-        public override bool CheckType(object typeToCheck)
+        public override bool CheckWritablePropertyResponseType(object typeToCheck)
         {
             return typeToCheck is CustomWritablePropertyResponse;
+        }
+
+        public override T ConvertFromObject<T>(object objectToConvert)
+        {
+            return DeserializeToType<T>(((JsonElement)objectToConvert).ToString());
         }
     }
 }

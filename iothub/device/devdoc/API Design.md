@@ -3,44 +3,51 @@
 #### Common
 
 ```csharp
-public interface ISerializer {
-    string ContentType { get; }
-    T DeserializeToType<T>(string stringToDeserialize);
-    string SerializeToString(object objectToSerialize);
+
+public abstract class IPayloadConvention {
+    protected IPayloadConvention();
+    public abstract IContentEncoder PayloadEncoder { get; }
+    public abstract ISerializer PayloadSerializer { get; }
+    public virtual byte[] GetObjectBytes(object objectToSendWithConvention);
 }
 
-public interface IContentEncoder {
-    Encoding ContentEncoding { get; }
-    byte[] EncodeStringToByteArray(string contentPayload);
+public abstract class IContentEncoder {
+    protected IContentEncoder();
+    public abstract Encoding ContentEncoding { get; }
+    public abstract byte[] EncodeStringToByteArray(string contentPayload);
 }
 
-public interface IPayloadConvention {
-    IContentEncoder PayloadEncoder { get; }
-    ISerializer PayloadSerializer { get; }
-    byte[] GetObjectBytes(object objectToSendWithConvention);
+public abstract class ISerializer {
+    protected ISerializer();
+    public abstract string ContentType { get; }
+    public abstract bool CheckWritablePropertyResponseType(object typeToCheck);
+    public abstract T ConvertFromObject<T>(object objectToConvert);
+    public abstract T DeserializeToType<T>(string stringToDeserialize);
+    public abstract string SerializeToString(object objectToSerialize);
 }
 
-public class JsonContentSerializer : ISerializer {
-    public static readonly JsonContentSerializer Instance;
-    public JsonContentSerializer();
-    public string ContentType { get; }
-    public T DeserializeToType<T>(string stringToDeserialize);
-    public string SerializeToString(object objectToSerialize);
+public sealed class DefaultPayloadConvention : IPayloadConvention {
+    public static readonly DefaultPayloadConvention Instance;
+    public DefaultPayloadConvention();
+    public override IContentEncoder PayloadEncoder { get; }
+    public override ISerializer PayloadSerializer { get; }
 }
 
 public class Utf8ContentEncoder : IContentEncoder {
     public static readonly Utf8ContentEncoder Instance;
     public Utf8ContentEncoder();
-    public Encoding ContentEncoding { get; }
-    public byte[] EncodeStringToByteArray(string contentPayload);
+    public override Encoding ContentEncoding { get; }
+    public override byte[] EncodeStringToByteArray(string contentPayload);
 }
 
-public class DefaultPayloadConvention : IPayloadConvention {
-    public static readonly DefaultPayloadConvention Instance;
-    public DefaultPayloadConvention();
-    public IContentEncoder PayloadEncoder { get; }
-    public ISerializer PayloadSerializer { get; }
-    public byte[] GetObjectBytes(object objectToSendWithConvention);
+public class JsonContentSerializer : ISerializer {
+    public static readonly JsonContentSerializer Instance;
+    public JsonContentSerializer();
+    public override string ContentType { get; }
+    public override bool CheckWritablePropertyResponseType(object typeToCheck);
+    public override T ConvertFromObject<T>(object objectToConvert);
+    public override T DeserializeToType<T>(string stringToDeserialize);
+    public override string SerializeToString(object objectToSerialize);
 }
 ```
 
@@ -50,62 +57,69 @@ public class DefaultPayloadConvention : IPayloadConvention {
 /// <summary>
 /// Retrieve the device properties.
 /// </summary>
+/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 /// <returns>The device properties.</returns>
-public Task<Properties> GetPropertiesAsync(CancellationToken cancellationToken);
+public Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
 
 /// <summary>
 /// Update properties.
 /// </summary>
-/// <param name="propertyPatch">Reported properties to push.</param>
+/// <param name="propertyCollection">Reported properties to push.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken = default);
+public Task UpdatePropertiesAsync(PropertyCollection propertyCollection, CancellationToken cancellationToken = default(CancellationToken));
 
 /// <summary>
 /// Sets the global listener for Writable properties
 /// </summary>
 /// <param name="callback">The global call back to handle all writable property updates.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default);
+public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
 ```
+
 #### All related types
 
 ```csharp
 public class Properties : IEnumerable, IEnumerable<object> {
-    public object this[string propertyName] { get; }
+    public object this[string key] { get; }
     public long Version { get; }
     public PropertyCollection Writable { get; private set; }
     public bool Contains(string propertyName);
+    public T Get<T>(string propertyKey);
     public IEnumerator<object> GetEnumerator();
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
-public class PropertyCollection : PayloadCollection, IEnumerable, IEnumerable<object> {
-    public PropertyCollection(IPayloadConvention payloadConvention=null);
-    public object this[string propertyName] { get; }
+public class PropertyCollection : PayloadCollection {
+    public PropertyCollection(IPayloadConvention payloadConvention = null);
     public long Version { get; }
-    public void Add(IDictionary<string, object> properties, string componentName=null);
-    public void Add(string propertyName, object propertyValue, string componentName=null);
+    public void Add(IDictionary<string, object> properties, string componentName = null);
+    public void Add(string propertyName, object propertyValue, string componentName = null);
+    public void AddOrUpdate(IDictionary<string, object> properties, string componentName = null);
+    public void AddOrUpdate(string propertyName, object propertyValue, string componentName = null);
     public bool Contains(string propertyName);
-    public IEnumerator<object> GetEnumerator();
-    IEnumerator System.Collections.IEnumerable.GetEnumerator();
-    public string ToJson();
 }
 
-public class WritablePropertyResponse {
-    public WritablePropertyResponse(object propertyValue, IPayloadConvention payloadConvention=null);
-    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription=null, IPayloadConvention payloadConvention=null);
-    public int AckCode { get; set; }
-    public string AckDescription { get; set; }
-    public long AckVersion { get; set; }
-    public object Value { get; private set; }
-    public JRaw ValueAsJson { get; }
+public abstract class WritablePropertyBase {
+    protected const string AckCodePropertyName = "ac";
+    protected const string AckDescriptionPropertyName = "ad";
+    protected const string AckVersionPropertyName = "av";
+    protected const string ValuePropertyName = "value";
+    public WritablePropertyBase(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
+    public abstract int AckCode { get; set; }
+    public abstract string AckDescription { get; set; }
+    public abstract long AckVersion { get; set; }
+    public abstract object Value { get; set; }
 }
 
-public class PropertyConvention : DefaultPayloadConvention {
-    public static readonly new PropertyConvention Instance;
-    public PropertyConvention();
+public sealed class WritablePropertyResponse : WritablePropertyBase {
+    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
+    public override int AckCode { get; set; }
+    public override string AckDescription { get; set; }
+    public override long AckVersion { get; set; }
+    public override object Value { get; set; }
 }
 ```
 
@@ -116,25 +130,29 @@ public class PropertyConvention : DefaultPayloadConvention {
 /// Send telemetry using the specified message.
 /// </summary>
 /// <remarks>
-/// Use the <see cref="TelemetryMessage(TelemetryCollection)"/> constructor to pass in the formatted telemetry payload and an optional
-/// <see cref="IPayloadConvention"/> that specifies your payload serialization and encoding rules.
+/// Use the <see cref="TelemetryMessage(string, TelemetryCollection)"/> constructor to pass in the optional
+/// <see cref="TelemetryCollection"/> that specifies your payload and serialization and encoding rules.
 /// </remarks>
 /// <param name="telemetryMessage">The telemetry message.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 /// <returns></returns>
-public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default)
+public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default(CancellationToken));
 ```
 #### All related types
 
 ```csharp
-public class TelemetryMessage : Message {
-    public TelemetryMessage(TelemetryCollection telemetryCollection);
+public class TelemetryCollection : PayloadCollection {
+    public TelemetryCollection(IPayloadConvention payloadConvention = null);
+    public void Add(string telemetryName, object telemetryValue);
+    public void AddOrUpdate(string telemetryName, object telemetryValue);
 }
 
-public class TelemetryCollection : PayloadCollection {
-    public TelemetryCollection(string componentName=null, IPayloadConvention convention=null);
-    public void Add(string telemetryName, object telemetryValue);
-    public string ToJson();
+public class TelemetryMessage : Message {
+    public TelemetryMessage(string componentName = null, TelemetryCollection telemetryCollection = null);
+    public new string ContentEncoding { get; }
+    public new string ContentType { get; }
+    public TelemetryCollection Telemetry { get; set; }
+    public override Stream GetBodyStream();
 }
 ```
 
@@ -148,7 +166,7 @@ public class TelemetryCollection : PayloadCollection {
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
 /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default);
+public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
 ```
 #### All related types
 
@@ -162,8 +180,35 @@ public sealed class CommandRequest {
 
 public sealed class CommandResponse {
     public CommandResponse(int status);
-    public CommandResponse(object result, int status, IPayloadConvention payloadConvention=null);
+    public CommandResponse(object result, int status, IPayloadConvention payloadConvention = null);
     public string ResultAsJson { get; }
     public int Status { get; private set; }
 }
+```
+
+
+### Other changes to Microsoft.Azure.Devices.Client
+
+API listing follows standard diff formatting. Lines preceded by a '+' are additions and a '-' indicates removal.
+
+``` diff
+ {
+     namespace Microsoft.Azure.Devices.Client {
+-        public sealed class Message : IDisposable, IReadOnlyIndicator {
++        public class Message : IDisposable, IReadOnlyIndicator {
+-            public Stream BodyStream { get; }
++            public Stream BodyStream { get; protected set; }
+-            public string ComponentName { get; set; }
++            public virtual string ComponentName { get; set; }
+-            public string ContentEncoding { get; set; }
++            public virtual string ContentEncoding { get; set; }
+-            public string ContentType { get; set; }
++            public virtual string ContentType { get; set; }
++            protected virtual void Dispose(bool disposing);
++            protected void DisposeBodyStream();
+-            public Stream GetBodyStream();
++            public virtual Stream GetBodyStream();
+         }
+     }
+ }
 ```

@@ -6,25 +6,19 @@ using System.Text;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    ///
+    /// A UTF-8 <see cref="IContentEncoder"/> implementation. 
     /// </summary>
     public class Utf8ContentEncoder : IContentEncoder
     {
         /// <summary>
-        ///
+        /// A static instance of this class.
         /// </summary>
         public static readonly Utf8ContentEncoder Instance = new Utf8ContentEncoder();
 
-        /// <summary>
-        ///
-        /// </summary>
+        /// <inheritdoc/>
         public override Encoding ContentEncoding => Encoding.UTF8;
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="contentPayload"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override byte[] EncodeStringToByteArray(string contentPayload)
         {
             return ContentEncoding.GetBytes(contentPayload);

@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var t = await _deviceClient.GetTwinAsync(cancellationToken);
 
-            Properties properties = await _deviceClient.GetPropertiesAsync(cancellationToken);
+            Properties properties = await _deviceClient.GetPropertiesAsync(s_payloadConvention, cancellationToken);
 
             // see if we have a writable property request for "serialNumber"
             string writablePropertyName = "serialNumber";
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             message.Telemetry.Add("another value", 56.2);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.ToJson()}.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()}.");
         }
 
         private Task<CommandResponse> CommandEventDispatcherAsync(CommandRequest commandRequest, object userContext)
@@ -457,7 +457,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.ToJson()} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()} in KB.");
         }
 
         // Send device serial number over property update.
