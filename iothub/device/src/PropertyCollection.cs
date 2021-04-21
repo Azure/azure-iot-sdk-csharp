@@ -99,7 +99,6 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         Collection.Add(entry.Key, entry.Value);
                     }
-
                 }
             }
             else
@@ -128,7 +127,6 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         componentProperties.Add(entry.Key, entry.Value);
                     }
-
                 }
 
                 // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
@@ -137,17 +135,14 @@ namespace Microsoft.Azure.Devices.Client
                     componentProperties[PropertyConvention.ComponentIdentifierKey] = PropertyConvention.ComponentIdentifierValue;
                 }
 
-
                 if (forceUpdate)
                 {
                     Collection[componentName] = componentProperties;
-
                 }
                 else
                 {
                     Collection.Add(componentName, componentProperties);
                 }
-
             }
         }
 

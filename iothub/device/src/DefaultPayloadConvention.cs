@@ -16,14 +16,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public static readonly DefaultPayloadConvention Instance = new DefaultPayloadConvention();
 
-        /// <summary>
-        /// The payload serializer.
-        /// </summary>
+        /// <inheritdoc/>
         public override ISerializer PayloadSerializer { get; } = JsonContentSerializer.Instance;
 
-        /// <summary>
-        /// The payload encoder.
-        /// </summary>
+        /// <inheritdoc/>
         public override IContentEncoder PayloadEncoder { get; } = Utf8ContentEncoder.Instance;
     }
 }
