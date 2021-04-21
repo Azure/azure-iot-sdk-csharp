@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             if (string.IsNullOrWhiteSpace(DeviceSecurityType))
             {
                 logger.LogWarning("Device provisioning type not set, please set the environment variable \"IOTHUB_DEVICE_SECURITY_TYPE\"" +
-                    "or pass in \"-s | --DeviceSecurityType\" through command line. \nWill default to using \"dps\" flow.");
+                    "or pass in \"--DeviceSecurityType\" through command line. \nWill default to using \"dps\" flow.");
 
                 DeviceSecurityType = "dps";
             }

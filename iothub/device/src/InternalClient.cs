@@ -1887,7 +1887,7 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
-        internal async Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
+        internal async Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention, CancellationToken cancellationToken = default)
         {
             try
             {

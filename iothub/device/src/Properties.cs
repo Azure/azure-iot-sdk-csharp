@@ -122,15 +122,10 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(twinProperties));
             }
 
+            payloadConvention ??= DefaultPayloadConvention.Instance;
+
             var writablePropertyCollection = PropertyCollection.FromTwinCollection(twinProperties.Desired, payloadConvention);
-
-            // The version information is not accessible via the enumerator, so assign it separately.
-            writablePropertyCollection.Add(VersionName, twinProperties.Desired.Version);
-
             var propertyCollection = PropertyCollection.FromTwinCollection(twinProperties.Reported, payloadConvention);
-
-            // The version information is not accessible via the enumerator, so assign it separately.
-            propertyCollection.Add(VersionName, twinProperties.Reported.Version);
 
             return new Properties(writablePropertyCollection, propertyCollection);
         }

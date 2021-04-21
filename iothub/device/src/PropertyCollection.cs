@@ -68,13 +68,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// When adding a type of <see cref="WritablePropertyBase"/> the <see cref="ISerializer.CheckWritablePropertyResponseType(object)"/> checks to make sure it can serialize this type correctly. This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
         /// </remarks>
-        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="WritablePropertyBase"/> and does not pass the check from <see cref="ISerializer.CheckWritablePropertyResponseType(object)"/> method.</exception>        
+        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="WritablePropertyBase"/> and does not pass the check from <see cref="ISerializer.CheckWritablePropertyResponseType(object)"/> method.</exception>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
         private void Add(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
-
             if (properties == null)
             {
                 throw new ArgumentNullException(nameof(properties));
@@ -177,17 +176,18 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentNullException(nameof(twinCollection));
             }
-            
+
+            payloadConvention ??= DefaultPayloadConvention.Instance;
+
             var propertyCollectionToReturn = new PropertyCollection(payloadConvention);
-            foreach (KeyValuePair<string, JObject> property in twinCollection)
+            foreach (KeyValuePair<string, object> property in twinCollection)
             {
-                propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(property.Value.ToString()));
+                propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
             }
             // The version information is not accessible via the enumerator, so assign it separately.
             propertyCollectionToReturn.Add(VersionName, twinCollection.Version);
 
             return propertyCollectionToReturn;
         }
-       
     }
 }
