@@ -49,6 +49,18 @@ public class JsonContentSerializer : ISerializer {
     public override T DeserializeToType<T>(string stringToDeserialize);
     public override string SerializeToString(object objectToSerialize);
 }
+
+public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
+    protected PayloadCollection(IPayloadConvention payloadConvention = null);
+    public IDictionary<string, object> Collection { get; private set; }
+    public IPayloadConvention Convention { get; private set; }
+    public object this[string key] { get; set; }
+    public IEnumerator<object> GetEnumerator();
+    public virtual byte[] GetPayloadObjectBytes();
+    public virtual string GetSerailizedString();
+    public virtual T GetValue<T>(string key);
+    IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
 ```
 
 ### Properties
