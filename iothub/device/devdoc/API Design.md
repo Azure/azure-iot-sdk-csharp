@@ -199,15 +199,32 @@ public sealed class CommandResponse {
 ```
 
 
-### Other changes to Microsoft.Azure.Devices.Client
+### Non public changes to Microsoft.Azure.Devices.Client
 
 API listing follows standard diff formatting. Lines preceded by a '+' are additions and a '-' indicates removal.
 
 ``` diff
  {
      namespace Microsoft.Azure.Devices.Client {
+         internal static class CommonConstants {
++            public const string ComponentIdentifierKey = "__t";
++            public const string ComponentIdentifierValue = "c";
+         }
+        
+         internal interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable {
++            Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
+         }
+
+         internal class InternalClient : IDisposable {
++            internal Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
++            internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken);
++            internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken);
++            internal Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken);
+         }
+
 -        public sealed class Message : IDisposable, IReadOnlyIndicator {
 +        public class Message : IDisposable, IReadOnlyIndicator {
++            internal Message(PayloadCollection payloadCollection);
 -            public Stream BodyStream { get; }
 +            public Stream BodyStream { get; protected set; }
 -            public string ComponentName { get; set; }
@@ -216,10 +233,32 @@ API listing follows standard diff formatting. Lines preceded by a '+' are additi
 +            public virtual string ContentEncoding { get; set; }
 -            public string ContentType { get; set; }
 +            public virtual string ContentType { get; set; }
+-            private void Dispose(bool disposing);
 +            protected virtual void Dispose(bool disposing);
 +            protected void DisposeBodyStream();
 -            public Stream GetBodyStream();
 +            public virtual Stream GetBodyStream();
++            private void SetSystemProperty(string key, object value);
+         }
+     }
+
+     namespace Microsoft.Azure.Devices.Client.Transport {
+         internal abstract class DefaultDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDelegatingHandler, IDisposable {
++            public virtual Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
+         }
+         
+         internal sealed class ErrorDelegatingHandler : DefaultDelegatingHandler {
++            public override Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
+         }
+         
+         internal class RetryDelegatingHandler : DefaultDelegatingHandler {
++            public override Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
+         }
+     }
+
+     namespace Microsoft.Azure.Devices.Client.Transport.Mqtt {
+         internal sealed class MqttTransportHandler : TransportHandler, IMqttIotHubEventHandler {
++            public override Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
          }
      }
  }
