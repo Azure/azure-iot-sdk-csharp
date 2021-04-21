@@ -123,18 +123,12 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             var writablePropertyCollection = PropertyCollection.FromTwinCollection(twinProperties.Desired, payloadConvention);
-            foreach (KeyValuePair<string, object> property in twinProperties.Desired)
-            {
-                writablePropertyCollection.Add(property.Key, property.Value);
-            }
+
             // The version information is not accessible via the enumerator, so assign it separately.
             writablePropertyCollection.Add(VersionName, twinProperties.Desired.Version);
 
             var propertyCollection = PropertyCollection.FromTwinCollection(twinProperties.Reported, payloadConvention);
-            foreach (KeyValuePair<string, object> property in twinProperties.Reported)
-            {
-                propertyCollection.Add(property.Key, property.Value);
-            }
+
             // The version information is not accessible via the enumerator, so assign it separately.
             propertyCollection.Add(VersionName, twinProperties.Reported.Version);
 

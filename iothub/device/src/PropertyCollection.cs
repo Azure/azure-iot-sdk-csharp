@@ -66,9 +66,9 @@ namespace Microsoft.Azure.Devices.Client
         /// Adds or updates the value for the collection.
         /// </summary>
         /// <remarks>
-        /// When adding a type of <see cref="WritablePropertyBase"/> the <see cref="ISerializer.CheckWritablePropertyType(object)"/> checks to make sure it can serialize this type correctly. This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
+        /// When adding a type of <see cref="WritablePropertyBase"/> the <see cref="ISerializer.CheckWritablePropertyResponseType(object)"/> checks to make sure it can serialize this type correctly. This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
         /// </remarks>
-        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="WritablePropertyBase"/> and does not pass the check from <see cref="ISerializer.CheckWritablePropertyType(object)"/> method.</exception>        
+        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="WritablePropertyBase"/> and does not pass the check from <see cref="ISerializer.CheckWritablePropertyResponseType(object)"/> method.</exception>        
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
                     var checkType = entry.Value is WritablePropertyBase;
-                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckWritablePropertyType(entry.Value))
+                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
                     {
                         throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
                     }
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
                     var checkType = entry.Value is WritablePropertyBase;
-                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckWritablePropertyType(entry.Value))
+                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
                     {
                         throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
                     }
@@ -183,15 +183,15 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(twinCollection));
             }
             
-            var writablePropertyCollection = new PropertyCollection();
+            var propertyCollectionToReturn = new PropertyCollection(payloadConvention);
             foreach (KeyValuePair<string, JObject> property in twinCollection)
             {
-                writablePropertyCollection.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(property.Value.ToString()));
+                propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(property.Value.ToString()));
             }
             // The version information is not accessible via the enumerator, so assign it separately.
-            writablePropertyCollection.Add(VersionName, twinCollection.Version);
+            propertyCollectionToReturn.Add(VersionName, twinCollection.Version);
 
-            return writablePropertyCollection;
+            return propertyCollectionToReturn;
         }
        
     }

@@ -90,8 +90,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Properties properties = await _deviceClient.GetPropertiesAsync(s_payloadConvention, cancellationToken);
 
-            var sa = properties.Get<string>("");
-
             // see if we have a writable property request for "serialNumber"
             string writablePropertyName = "serialNumber";
             if (properties.Writable.Contains(writablePropertyName))

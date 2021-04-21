@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A fully encoded serialized string.</returns>
         public virtual byte[] GetPayloadObjectBytes()
         {
-            return Convention.GetObjectBytes(Convention.PayloadSerializer.SerializeToString(Collection));
+            return Convention.GetObjectBytes(Collection);
         }
 
         /// <summary>

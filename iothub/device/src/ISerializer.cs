@@ -50,6 +50,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="typeToCheck"></param>
         /// <returns><c>true</c> if the type is supported; <c>false</c> if it is not</returns>
-        public abstract bool CheckWritablePropertyType(object typeToCheck);
+        public abstract bool CheckWritablePropertyResponseType(object typeToCheck);
     }
 }
