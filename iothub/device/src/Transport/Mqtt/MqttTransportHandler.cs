@@ -972,6 +972,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
         }
 
+        public override async Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            using var request = new Message();
+            string rid = Guid.NewGuid().ToString();
+            request.MqttTopicName = TwinGetTopic.FormatInvariant(rid);
+
+            using Message response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+
+            using var reader = new StreamReader(response.GetBodyStream(), payloadConvention.PayloadEncoder.ContentEncoding);
+            string body = reader.ReadToEnd();
+
+            try
+            {
+                ClientTwinProperties twinProperties = JsonConvert.DeserializeObject<ClientTwinProperties>(body);
+                var properties = Properties.FromClientTwinProperties(twinProperties, payloadConvention);
+                return properties;
+            }
+            catch (JsonReaderException ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+
+                throw;
+            }
+        }
+
         public override async Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

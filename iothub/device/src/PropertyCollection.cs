@@ -159,9 +159,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the version of the property collection.
         /// </summary>
         /// <value>A <see cref="long"/> that is used to identify the version of the property collection.</value>
-        public long Version => Collection.TryGetValue(VersionName, out object version)
-            ? (long)version
-            : default;
+        public long Version { get; private set; }
 
         /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
@@ -185,7 +183,34 @@ namespace Microsoft.Azure.Devices.Client
                 propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
             }
             // The version information is not accessible via the enumerator, so assign it separately.
-            propertyCollectionToReturn.Add(VersionName, twinCollection.Version);
+            propertyCollectionToReturn.Version = twinCollection.Version;
+
+            return propertyCollectionToReturn;
+        }
+
+        internal static PropertyCollection FromClientTwinDictionary(IDictionary<string, object> clientTwinPropertyDictionary, IPayloadConvention payloadConvention)
+        {
+            if (clientTwinPropertyDictionary == null)
+            {
+                throw new ArgumentNullException(nameof(clientTwinPropertyDictionary));
+            }
+
+            payloadConvention ??= DefaultPayloadConvention.Instance;
+
+            var propertyCollectionToReturn = new PropertyCollection(payloadConvention);
+            foreach (KeyValuePair<string, object> property in clientTwinPropertyDictionary)
+            {
+                // The version information should not be a part of the enumerable ProperyCollection, but rather should be
+                // accessible through its dedicated accessor.
+                if (property.Key == VersionName)
+                {
+                    propertyCollectionToReturn.Version = (long)property.Value;
+                }
+                else
+                {
+                    propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
+                }
+            }
 
             return propertyCollectionToReturn;
         }

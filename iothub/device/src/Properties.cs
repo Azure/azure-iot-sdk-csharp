@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class Properties : IEnumerable<object>
     {
-        private const string VersionName = "$version";
         private readonly PropertyCollection _reportedPropertyCollection = new PropertyCollection();
 
         /// <summary>
@@ -76,9 +75,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the version of the properties.
         /// </summary>
-        public long Version => _reportedPropertyCollection.Collection.TryGetValue(VersionName, out object version)
-            ? (long)version
-            : default;
+        public long Version => _reportedPropertyCollection.Version;
 
         /// <inheritdoc/>
         public IEnumerator<object> GetEnumerator()
@@ -109,23 +106,17 @@ namespace Microsoft.Azure.Devices.Client
             return _reportedPropertyCollection.GetValue<T>(propertyKey);
         }
 
-        /// <summary>
-        /// Converts a <see cref="TwinProperties"/> collection to a properties collection.
-        /// </summary>
-        /// <param name="twinProperties">The TwinProperties object to convert.</param>
-        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
-        /// <returns>A new instance of of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="IPayloadConvention"/>.</returns>
-        internal static Properties FromTwinProperties(TwinProperties twinProperties, IPayloadConvention payloadConvention = default)
+        internal static Properties FromClientTwinProperties(ClientTwinProperties clientTwinProperties, IPayloadConvention payloadConvention)
         {
-            if (twinProperties == null)
+            if (clientTwinProperties == null)
             {
-                throw new ArgumentNullException(nameof(twinProperties));
+                throw new ArgumentNullException(nameof(clientTwinProperties));
             }
 
             payloadConvention ??= DefaultPayloadConvention.Instance;
 
-            var writablePropertyCollection = PropertyCollection.FromTwinCollection(twinProperties.Desired, payloadConvention);
-            var propertyCollection = PropertyCollection.FromTwinCollection(twinProperties.Reported, payloadConvention);
+            var writablePropertyCollection = PropertyCollection.FromClientTwinDictionary(clientTwinProperties.Desired, payloadConvention);
+            var propertyCollection = PropertyCollection.FromClientTwinDictionary(clientTwinProperties.Reported, payloadConvention);
 
             return new Properties(writablePropertyCollection, propertyCollection);
         }

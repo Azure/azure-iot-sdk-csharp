@@ -94,11 +94,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Properties properties = await _deviceClient.GetPropertiesAsync(s_payloadConvention, s_cancellationToken);
 
-            // see if we have a writable property request for "serialNumber"
-            string writablePropertyName = "serialNumber";
-            if (properties.Writable.Contains(writablePropertyName))
+            // see if we have a writable property request for "serialNumber" and Thermostat1."targetTemperature".
+            string serialNumber = "serialNumber";
+            if (properties.Writable.Contains(serialNumber))
             {
-                _logger.LogDebug($"Found writable property request \"{writablePropertyName}\": {properties.Writable[writablePropertyName]}");
+                _logger.LogDebug($"Found writable property request \"{serialNumber}\": {properties.Writable[serialNumber]}");
+            }
+
+            string targetTemperature = "targetTemperature";
+            if (properties.Writable.Contains(Thermostat1) && ((JsonElement)properties[Thermostat1]).TryGetProperty(targetTemperature, out JsonElement targetTemperatureThermostat2))
+            {
+                _logger.LogDebug($"Found writable property request \"{Thermostat2}-{targetTemperature}\": {targetTemperatureThermostat2}");
             }
 
             // see if we have a device reported value for "serialNumber" and Thermostat2."initialValue".
@@ -107,9 +113,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug($"Found property \"serialNumber\": {properties["serialNumber"]}");
             }
 
-            if (properties.Contains(Thermostat2) && ((JsonElement)properties[Thermostat2]).TryGetProperty("initialValue", out JsonElement initialStateThermostat2))
+            string initialValue = "initialValue";
+            if (properties.Contains(Thermostat2) && ((JsonElement)properties[Thermostat2]).TryGetProperty(initialValue, out JsonElement initialStateThermostat2))
             {
-                _logger.LogDebug($"Found property \"{Thermostat2}-initialValue\": {initialStateThermostat2}");
+                _logger.LogDebug($"Found property \"{Thermostat2}-{initialValue}\": {initialStateThermostat2}");
             }
 
             s_applicationStartTime = DateTimeOffset.Now;
@@ -326,7 +333,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private Task WritablePropertyEventDispatcherAsync(PropertyCollection writableProperties, object cancellationToken)
+        /*private Task WritablePropertyEventDispatcherAsync(PropertyCollection writableProperties, object cancellationToken)
         {
             foreach (KeyValuePair<string, object> propertyUpdate in writableProperties)
             {
@@ -340,6 +347,32 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             _logger.LogDebug($"Property: Received a property update that is not implemented.");
             return Task.CompletedTask;
+        }*/
+
+        private async Task WritablePropertyEventDispatcherAsync(PropertyCollection writableProperties, object userContext)
+        {
+            // The dispatcher key will be either the root-level property name or the component name.
+            foreach (KeyValuePair<string, object> propertyUpdate in writableProperties)
+            {
+                switch (propertyUpdate.Key)
+                {
+                    case "temperatureRange":
+                        await SendTemperatureRangeAsync(writableProperties, null, propertyUpdate.Key);
+                        break;
+
+                    case Thermostat1:
+                        var thermostat1Properties = propertyUpdate.Value;
+                        break;
+
+                    case Thermostat2:
+                        var thermostat2Properties = propertyUpdate.Value;
+                        break;
+
+                    default:
+                        _logger.LogDebug($"Property: Received a property update that is not implemented.");
+                        break;
+                }
+            }
         }
 
         private async Task SendTemperatureRangeAsync(PropertyCollection writableProperties, object userContext, string dispatcherKey)
@@ -354,15 +387,43 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 writableProperties.Version,
                 "The operation completed successfully.");
 
-            // A property collection with WritablePropertyResponse needs to be always vserialized with NewtonSoft
-            // => we cannot merge it with user defined serialization settings.
             var propertyPatch = new PropertyCollection(s_payloadConvention)
             {
                 [propertyName] = temperatureUpdateResponse,
             };
 
             await _deviceClient.UpdatePropertiesAsync(propertyPatch, s_cancellationToken);
-            _logger.LogDebug($"Property: Update - {{\"{propertyName}\" is complete.");
+            _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
+        }
+
+        private async Task SendHumidityRangeAsync(PropertyCollection writableProperties, object userContext, string dispatcherKey)
+        {
+            string componentName = dispatcherKey;
+            string propertyName = "humidityRange";
+
+            bool humidityRangeReceived = ((JsonElement)writableProperties[componentName]).TryGetProperty(propertyName, out JsonElement humidityRangeJson);
+
+            if (!humidityRangeReceived)
+            {
+                _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.\n{writableProperties.Collection}");
+                return;
+            }
+
+            HumidityRange humidityRangeDesired = s_payloadConvention.PayloadSerializer.DeserializeToType<HumidityRange>(humidityRangeJson.GetRawText());
+
+            var humidityRangeResponse = new CustomWritablePropertyResponse(
+                humidityRangeDesired,
+                (int)StatusCode.Completed,
+                writableProperties.Version,
+                "The operation completed successfully.");
+
+            var propertyPatch = new PropertyCollection(s_payloadConvention)
+            {
+                [propertyName] = humidityRangeResponse,
+            };
+
+            await _deviceClient.UpdatePropertiesAsync(propertyPatch, s_cancellationToken);
+            _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
         }
 
         // The desired property update callback, which receives the target temperature as a desired property update,

@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The underlying collection for the payload.
         /// </summary>
-        public IDictionary<string, object> Collection { get; private set; } = new Dictionary<string, object>();
+        public IDictionary<string, object> Collection { get; internal set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The convention to use with this payload.
@@ -68,14 +68,13 @@ namespace Microsoft.Azure.Devices.Client
         public virtual T GetValue<T>(string key)
         {
             // If the object is of type T go ahead and return it.
-            if (Collection[key] is T) 
+            if (Collection[key] is T)
             {
                 return (T)Collection[key];
             }
             // If it's not we need to try to convert it using the serializer.
             // JObject or JsonElement
             return Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
-
         }
 
         /// <summary>
@@ -101,6 +100,5 @@ namespace Microsoft.Azure.Devices.Client
         {
             return GetEnumerator();
         }
-
     }
 }
