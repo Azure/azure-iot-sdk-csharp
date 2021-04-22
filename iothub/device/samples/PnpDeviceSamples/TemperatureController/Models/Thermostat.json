@@ -79,6 +79,31 @@
       "description": "Returns the max temperature since last device reboot."
     },
     {
+      "@type": [
+        "Property",
+        "HumidityRange"
+      ],
+      "name": "humidityRange",
+      "displayName": "Humidity Range",
+      "description": "Allows to remotely update the thermostats' min and max humidity.",
+      "writable": true,
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "maxHumidity",
+            "displayName": "Max humidity",
+            "schema": "double"
+          },
+          {
+            "name": "minHumidity",
+            "displayName": "Min humidity",
+            "schema": "double"
+          }
+        ]
+      }
+    },
+    {
       "@type": "Command",
       "name": "getMaxMinReport",
       "displayName": "Get Max-Min report.",

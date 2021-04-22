@@ -606,6 +606,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override async Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logging.Enter(this, payloadConvention, cancellationToken, nameof(SendPropertyPatchAsync));
+
+                return await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            return await base.GetPropertiesAsync(payloadConvention, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, payloadConvention, cancellationToken, nameof(SendPropertyPatchAsync));
+            }
+        }
+
         public override async Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             try

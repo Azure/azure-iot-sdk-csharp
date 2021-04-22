@@ -1887,12 +1887,13 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
-        internal async Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention, CancellationToken cancellationToken = default)
+        internal Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
+            payloadConvention ??= DefaultPayloadConvention.Instance;
+
             try
             {
-                Twin hubTwin = await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
-                return Properties.FromTwinProperties(hubTwin.Properties, payloadConvention);
+                return InnerHandler.GetPropertiesAsync(payloadConvention, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1916,6 +1917,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
+            payloadConvention ??= DefaultPayloadConvention.Instance;
+
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
             {
@@ -1932,6 +1935,8 @@ namespace Microsoft.Azure.Devices.Client
         internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             const char ComponentLevelCommandIdentifier = '*';
+
+            payloadConvention ??= DefaultPayloadConvention.Instance;
 
             // Sunscribe to methods default handler internally and use the callback received internally to invoke the user supplied command callback.
             var methodDefaultCallback = new MethodCallback(async (methodRequest, userContext) =>
