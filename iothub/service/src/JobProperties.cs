@@ -118,6 +118,13 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "storageAuthenticationType", NullValueHandling = NullValueHandling.Ignore)]
         public StorageAuthenticationType? StorageAuthenticationType { get; set; }
 
+        /// <summary>
+        /// The managed identity used to access the storage account for import and export jobs.
+        /// TODO link from service team: For more information, see <see href=""/>
+        /// </summary>
+        [JsonProperty(PropertyName = "identity", NullValueHandling = NullValueHandling.Ignore)]
+        public ManagedIdentity Identity { get; set; }
+
 #pragma warning disable CA1054 // Uri parameters should not be strings
 
         /// <summary>
@@ -151,12 +158,14 @@ namespace Microsoft.Azure.Devices
         /// <param name="excludeKeysInExport">Indicates if authorization keys are included in export output</param>
         /// <param name="outputBlobName">The name of the blob that will be created in the provided output blob container</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>
+        /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
         /// <returns>An instance of JobProperties</returns>
         public static JobProperties CreateForExportJob(
             string outputBlobContainerUri,
             bool excludeKeysInExport,
             string outputBlobName = null,
-            StorageAuthenticationType? storageAuthenticationType = null)
+            StorageAuthenticationType? storageAuthenticationType = null,
+            ManagedIdentity identity = null)
         {
             return new JobProperties
             {
@@ -165,6 +174,7 @@ namespace Microsoft.Azure.Devices
                 ExcludeKeysInExport = excludeKeysInExport,
                 OutputBlobName = outputBlobName,
                 StorageAuthenticationType = storageAuthenticationType,
+                Identity = identity
             };
         }
 
