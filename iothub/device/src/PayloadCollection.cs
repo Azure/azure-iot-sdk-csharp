@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,17 +13,12 @@ namespace Microsoft.Azure.Devices.Client
     public abstract class PayloadCollection : IEnumerable<object>
     {
         /// <summary>
-        /// Get the value at the specified key
+        /// Default constructor for the class.
         /// </summary>
-        /// <param name="key">Key of value</param>
-        /// <remarks>
-        /// This accessor is best used to access simple types. It is recommended to use <see cref="GetValue"/> to cast a complex type.
-        /// </remarks>
-        /// <returns>The specified property.</returns>
-        public object this[string key]
+        /// <param name="payloadConvention">The convention used to serailize and encode this collection.</param>
+        protected PayloadCollection(PayloadConvention payloadConvention = default)
         {
-            get => Collection[key];
-            set => Collection[key] = value;
+            Convention = payloadConvention ?? DefaultPayloadConvention.Instance;
         }
 
         /// <summary>
@@ -36,12 +32,40 @@ namespace Microsoft.Azure.Devices.Client
         public PayloadConvention Convention { get; private set; }
 
         /// <summary>
-        /// Default constructor for the class.
+        /// Get the value at the specified key
         /// </summary>
-        /// <param name="payloadConvention">The convention used to serailize and encode this collection.</param>
-        protected PayloadCollection(PayloadConvention payloadConvention = default)
+        /// <param name="key">Key of value</param>
+        /// <remarks>
+        /// This accessor is best used to access simple types. It is recommended to use <see cref="GetValue"/> to cast a complex type.
+        /// </remarks>
+        /// <returns>The specified property.</returns>
+        public virtual object this[string key]
         {
-            Convention = payloadConvention ?? DefaultPayloadConvention.Instance;
+            get => Collection[key];
+            set => AddOrUpdate(key, value);
+        }
+
+        /// <summary>
+        /// Adds the key-value pair to the collection.
+        /// </summary>
+        /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['key']"/>
+        /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['value']"/>
+        /// <inheritdoc cref="AddOrUpdate(string, object)" path="/exception"/>
+        /// <exception cref="ArgumentException">An element with the same key already exists in the collection.</exception>
+        public virtual void Add(string key, object value)
+        {
+            Collection.Add(key, value);
+        }
+
+        /// <summary>
+        /// Adds or updates the key-value pair to the collection.
+        /// </summary>
+        /// <param name="key">The name of the telemetry.</param>
+        /// <param name="value">The value of the telemetry.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c> </exception>
+        public virtual void AddOrUpdate(string key, object value)
+        {
+            Collection[key] = value;
         }
 
         /// <summary>

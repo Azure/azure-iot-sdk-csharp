@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['telemetryValue']"/>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/exception"/>
         /// <exception cref="ArgumentException">An element with the same key already exists in the collection.</exception>
-        public void Add(string telemetryName, object telemetryValue)
+        public override void Add(string telemetryName, object telemetryValue)
         {
-            Collection.Add(telemetryName, telemetryValue);
+            base.Add(telemetryName, telemetryValue);
         }
 
         /// <summary>
@@ -34,9 +34,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="telemetryName">The name of the telemetry.</param>
         /// <param name="telemetryValue">The value of the telemetry.</param>
         /// <exception cref="ArgumentNullException"><paramref name="telemetryName"/> is <c>null</c> </exception>
-        public void AddOrUpdate(string telemetryName, object telemetryValue)
+        public override void AddOrUpdate(string telemetryName, object telemetryValue)
         {
-            Collection[telemetryName] = telemetryValue;
+            base.AddOrUpdate(telemetryName, telemetryValue);
         }
     }
 }
