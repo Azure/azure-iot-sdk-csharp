@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -83,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 {
                     X509Thumbprint = new X509Thumbprint
                     {
-                        PrimaryThumbprint = Configuration.IoTHub.GetCertificateWithPrivateKey().Thumbprint
+                        PrimaryThumbprint = Configuration.IoTHub.GetCertificateWithPrivateKey().GetCertHashString(HashAlgorithmName.SHA256)
                     }
                 };
 
