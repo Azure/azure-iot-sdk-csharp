@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static readonly Random s_random = new();
         private static readonly Stopwatch s_stopwatch = Stopwatch.StartNew();
 
-        private static readonly IPayloadConvention s_payloadConvention = new CustomPayloadConvention();
+        private static readonly PayloadConvention s_payloadConvention = new CustomPayloadConvention();
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;

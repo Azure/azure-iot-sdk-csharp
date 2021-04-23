@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public virtual Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return InnerHandler?.GetPropertiesAsync(payloadConvention, cancellationToken) ?? Task.FromResult<Properties>(null);

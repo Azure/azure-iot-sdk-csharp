@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// A container for properties.
     /// <remarks>
-    /// The Properties class is not meant to be constructed by customer code. It is intended to be returned fully popualated from the <see cref="DeviceClient.GetPropertiesAsync(IPayloadConvention, System.Threading.CancellationToken)"/> method.
+    /// The Properties class is not meant to be constructed by customer code. It is intended to be returned fully popualated from the <see cref="DeviceClient.GetPropertiesAsync(PayloadConvention, System.Threading.CancellationToken)"/> method.
     /// </remarks>
     /// </summary>
     public class Properties : IEnumerable<object>
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
             return _reportedPropertyCollection.GetValue<T>(propertyKey);
         }
 
-        internal static Properties FromClientTwinProperties(ClientTwinProperties clientTwinProperties, IPayloadConvention payloadConvention)
+        internal static Properties FromClientTwinProperties(ClientTwinProperties clientTwinProperties, PayloadConvention payloadConvention)
         {
             if (clientTwinProperties == null)
             {

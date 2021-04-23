@@ -6,9 +6,9 @@ using System.Text;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// A UTF-8 <see cref="IContentEncoder"/> implementation. 
+    /// A UTF-8 <see cref="ContentEncoder"/> implementation.
     /// </summary>
-    public class Utf8ContentEncoder : IContentEncoder
+    public class Utf8ContentEncoder : ContentEncoder
     {
         /// <summary>
         /// A static instance of this class.

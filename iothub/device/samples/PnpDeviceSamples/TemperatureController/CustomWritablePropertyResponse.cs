@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class CustomWritablePropertyResponse
+    internal class CustomWritablePropertyResponse : IWritablePropertyResponse
     {
         internal CustomWritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
         {
@@ -15,16 +15,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
             AckDescription = ackDescription;
         }
 
-        [JsonPropertyName(WritablePropertyResponse.ValuePropertyName)]
+        [JsonPropertyName(ConventionBasedConstants.ValuePropertyName)]
         public object Value { get; set; }
 
-        [JsonPropertyName(WritablePropertyResponse.AckCodePropertyName)]
+        [JsonPropertyName(ConventionBasedConstants.AckCodePropertyName)]
         public int AckCode { get; set; }
 
-        [JsonPropertyName(WritablePropertyResponse.AckVersionPropertyName)]
+        [JsonPropertyName(ConventionBasedConstants.AckVersionPropertyName)]
         public long AckVersion { get; set; }
 
-        [JsonPropertyName(WritablePropertyResponse.AckDescriptionPropertyName)]
+        [JsonPropertyName(ConventionBasedConstants.AckDescriptionPropertyName)]
         public string AckDescription { get; set; }
     }
 }

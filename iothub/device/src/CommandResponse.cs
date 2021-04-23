@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class CommandResponse
     {
         private readonly object _result;
-        private readonly IPayloadConvention _payloadConvention;
+        private readonly PayloadConvention _payloadConvention;
 
         /// <summary>
         /// Make a new instance of the return class and validates that the payload is correct JSON.
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="status">status indicating success or failure.</param>
         /// <param name="payloadConvention"></param>
         /// <returns></returns>
-        public CommandResponse(object result, int status, IPayloadConvention payloadConvention = default)
+        public CommandResponse(object result, int status, PayloadConvention payloadConvention = default)
         {
             _result = result;
             Status = status;
