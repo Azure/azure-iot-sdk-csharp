@@ -37,12 +37,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override bool CheckWritablePropertyResponseType(object typeToCheck)
-        {
-            return typeToCheck is WritablePropertyResponse;
-        }
-
-        /// <inheritdoc/>
         public override T ConvertFromObject<T>(object objectToConvert)
         {
             if (objectToConvert == null)

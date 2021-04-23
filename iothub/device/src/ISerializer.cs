@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// The serializer is responsible for converting all of your objects into the correct format for the <see cref="IPayloadConvention"/> that uses it.
     /// <para>
-    /// By default we have implemented the <see cref="JsonContentSerializer"/> class that uses <see cref="Newtonsoft.Json.JsonConvert"/> to handle the serialization for the <see cref="DefaultPayloadConvention"/> class. 
+    /// By default we have implemented the <see cref="JsonContentSerializer"/> class that uses <see cref="Newtonsoft.Json.JsonConvert"/> to handle the serialization for the <see cref="DefaultPayloadConvention"/> class.
     /// </para>
     /// </remarks>
     public abstract class ISerializer
@@ -44,12 +44,5 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A converted object</returns>
         /// <remarks>This class is used by the <see cref="PropertyCollection"/> to attempt to convert from the native serailizer type (for example, JObject or JsonElement) to the desired type. When you implement this you need to be aware of what type your serializer will use for anonymous types.</remarks>
         public abstract T ConvertFromObject<T>(object objectToConvert);
-
-        /// <summary>
-        /// Checks to make sure the type of <see cref="WritablePropertyBase"/> can be properly serialized by this class.
-        /// </summary>
-        /// <param name="typeToCheck"></param>
-        /// <returns><c>true</c> if the type is supported; <c>false</c> if it is not</returns>
-        public abstract bool CheckWritablePropertyResponseType(object typeToCheck);
     }
 }

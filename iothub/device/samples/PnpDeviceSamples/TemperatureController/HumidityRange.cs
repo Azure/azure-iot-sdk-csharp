@@ -7,10 +7,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     internal class HumidityRange
     {
-        [JsonPropertyName("maxTemp")]
+        [JsonPropertyName("maxHumidity")]
         public double MaxTemperature { get; set; }
 
-        [JsonPropertyName("minTemp")]
+        [JsonPropertyName("minHumidity")]
         public double MinTemperature { get; set; }
     }
 }

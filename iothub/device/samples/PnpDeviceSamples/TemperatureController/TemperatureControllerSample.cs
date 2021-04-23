@@ -46,11 +46,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly Dictionary<string, Dictionary<DateTimeOffset, double>> _temperatureReadingsDateTimeOffset =
             new();
 
-        // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
-        // The key for this dictionary is the componentName/ root-level property name.
-        private readonly Dictionary<string, Func<PropertyCollection, object, string, Task>> _writablePropertyEventCallbacks =
-            new();
-
         // A dictionary to hold all command callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the root-level command name/ {<componentName>*<commandName>}.
         private readonly Dictionary<string, Func<CommandRequest, object, Task<CommandResponse>>> _commandEventCallbacks =
@@ -131,14 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _commandEventCallbacks.Add("updateTemperatureWithDelay", HandleTemperatureUpdateCommandAsync);
             await _deviceClient.SubscribeToCommandsAsync(CommandEventDispatcherAsync, null, s_payloadConvention, s_cancellationToken);
 
-            // WritablePropertyEventDispatcherAsync is a dispatcher that we provide to dispatch the individual component/ root-level property callbacks.
-            // Alternatively, you can also have an uber callback that implements a dispatcher internally.
-            // The important thing to note here is that you can only set a single callback for subscribing to property updates.
-            // If you set multiple callbacks to this API, the latest one will be invoked.
-            _logger.LogDebug("Set handler to receive 'targetTemperature' and 'temperatureRange' updates.");
-            _writablePropertyEventCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
-            _writablePropertyEventCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
-            _writablePropertyEventCallbacks.Add("temperatureRange", SendTemperatureRangeAsync);
+            _logger.LogDebug("Set handler to receive writable property updates.");
             await _deviceClient.SubscribeToWritablePropertyEventAsync(WritablePropertyEventDispatcherAsync, null, s_payloadConvention, s_cancellationToken);
 
             await UpdateDeviceInformationAsync(s_cancellationToken);
@@ -333,39 +321,56 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        /*private Task WritablePropertyEventDispatcherAsync(PropertyCollection writableProperties, object cancellationToken)
+        private async Task WritablePropertyEventDispatcherAsync(PropertyCollection writableProperties, object userContext)
         {
             foreach (KeyValuePair<string, object> propertyUpdate in writableProperties)
             {
                 // The dispatcher key will be either the root-level property name or the component name.
-                string dispatcherKey = propertyUpdate.Key;
-                if (_writablePropertyEventCallbacks.ContainsKey(dispatcherKey))
-                {
-                    return _writablePropertyEventCallbacks[dispatcherKey]?.Invoke(writableProperties, cancellationToken, dispatcherKey);
-                }
-            }
-
-            _logger.LogDebug($"Property: Received a property update that is not implemented.");
-            return Task.CompletedTask;
-        }*/
-
-        private async Task WritablePropertyEventDispatcherAsync(PropertyCollection writableProperties, object userContext)
-        {
-            // The dispatcher key will be either the root-level property name or the component name.
-            foreach (KeyValuePair<string, object> propertyUpdate in writableProperties)
-            {
                 switch (propertyUpdate.Key)
                 {
                     case "temperatureRange":
                         await SendTemperatureRangeAsync(writableProperties, null, propertyUpdate.Key);
                         break;
 
+                    // Component level properties will be available under a nested dictionary
                     case Thermostat1:
-                        var thermostat1Properties = propertyUpdate.Value;
+                        Dictionary<string, object> thermostat1Properties =
+                            s_payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(((JsonElement)propertyUpdate.Value).GetRawText());
+                        foreach (KeyValuePair<string, object> componentPropertyUpdate in thermostat1Properties)
+                        {
+                            switch (componentPropertyUpdate.Key)
+                            {
+                                case "targetTemperature":
+                                    await TargetTemperatureUpdateCallbackAsync(writableProperties, null, propertyUpdate.Key);
+                                    break;
+
+                                case "humidityRange":
+                                    await SendHumidityRangeAsync(writableProperties, null, propertyUpdate.Key);
+                                    break;
+
+                                default:
+                                    _logger.LogDebug($"Property: Received a property update for component \"{Thermostat1}\" that is not implemented.");
+                                    break;
+                            }
+                        }
                         break;
 
                     case Thermostat2:
-                        var thermostat2Properties = propertyUpdate.Value;
+                        Dictionary<string, object> thermostat2Properties =
+                            s_payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(((JsonElement)propertyUpdate.Value).GetRawText());
+                        foreach (KeyValuePair<string, object> componentPropertyUpdate in thermostat2Properties)
+                        {
+                            switch (componentPropertyUpdate.Key)
+                            {
+                                case "targetTemperature":
+                                    await TargetTemperatureUpdateCallbackAsync(writableProperties, null, propertyUpdate.Key);
+                                    break;
+
+                                default:
+                                    _logger.LogDebug($"Property: Received a property update for component \"{Thermostat2}\" that is not implemented.");
+                                    break;
+                            }
+                        }
                         break;
 
                     default:
@@ -432,13 +437,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task TargetTemperatureUpdateCallbackAsync(PropertyCollection writableProperties, object userContext, string dispatcherKey)
         {
             string componentName = dispatcherKey;
-
-            // The component has a single writable property, so the property name is a const here.
-            // Otherwise this would have been a switch-case.
             const string propertyName = "targetTemperature";
 
-            // PropertyCollection.Value is now always JObject (since we create PropertyCollection from TwinCollection).
-            // This implementation detail will need to be addressed.
             bool targetTempUpdateReceived = ((JsonElement)writableProperties[componentName]).TryGetProperty(propertyName, out JsonElement targetTemperatureJson);
 
             if (!targetTempUpdateReceived)

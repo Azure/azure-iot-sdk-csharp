@@ -65,10 +65,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Adds or updates the value for the collection.
         /// </summary>
-        /// <remarks>
-        /// When adding a type of <see cref="WritablePropertyBase"/> the <see cref="ISerializer.CheckWritablePropertyResponseType(object)"/> checks to make sure it can serialize this type correctly. This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
-        /// </remarks>
-        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="WritablePropertyBase"/> and does not pass the check from <see cref="ISerializer.CheckWritablePropertyResponseType(object)"/> method.</exception>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
@@ -85,11 +81,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    var checkType = entry.Value is WritablePropertyBase;
-                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
-                    {
-                        throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
-                    }
                     if (forceUpdate)
                     {
                         Collection[entry.Key] = entry.Value;
@@ -112,12 +103,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    var checkType = entry.Value is WritablePropertyBase;
-                    if (entry.Value is WritablePropertyBase && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
-                    {
-                        throw new ArgumentException("Please use the proper class extended from WritablePropertyBase to match your payload convention.");
-                    }
-
                     if (forceUpdate)
                     {
                         componentProperties[entry.Key] = entry.Value;
