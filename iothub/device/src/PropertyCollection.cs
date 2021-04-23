@@ -30,8 +30,21 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
         /// <param name="propertyName">The name of the property to add.</param>
         /// <param name="propertyValue">The value of the property to add.</param>
+        public override void Add(string propertyName, object propertyValue)
+        {
+            Add(propertyName, propertyValue, null);
+        }
+
+        /// <summary>
+        /// Adds the value for the collection.
+        /// </summary>
+        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the property to add.</param>
+        /// <param name="propertyValue">The value of the property to add.</param>
         /// <param name="componentName">The component with the property to add.</param>
-        public void Add(string propertyName, object propertyValue, string componentName = default)
+        public void Add(string propertyName, object propertyValue, string componentName)
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
 
         /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)"/>
@@ -47,10 +60,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
-        /// <param name="properties">A collection of properties to add or update.</param>
-        /// <param name="componentName">The component with the properties to add or update.</param>
-        public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
-            => Add(properties, componentName, true);
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the property to add or update.</param>
+        /// <param name="propertyValue">The value of the property to add or update.</param>
+        public override void AddOrUpdate(string propertyName, object propertyValue)
+        {
+            AddOrUpdate(propertyName, propertyValue, null);
+        }
 
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
@@ -59,8 +75,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
         /// <param name="componentName">The component with the property to add or update.</param>
-        public void AddOrUpdate(string propertyName, object propertyValue, string componentName = default)
+        public void AddOrUpdate(string propertyName, object propertyValue, string componentName)
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
+
+        /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <param name="properties">A collection of properties to add or update.</param>
+        /// <param name="componentName">The component with the properties to add or update.</param>
+        public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
+            => Add(properties, componentName, true);
 
         /// <summary>
         /// Adds or updates the value for the collection.
