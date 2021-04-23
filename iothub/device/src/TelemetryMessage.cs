@@ -7,21 +7,21 @@ using System.IO;
 
 namespace Microsoft.Azure.Devices.Client
 {
-
     /// <summary>
     /// A class used to send Telmetry to IoT Hub
     /// </summary>
     /// <remarks>
-    /// This is a sub class of <see cref="Message"/> designed to accept a <see cref="TelemetryCollection"/> to utilize the <see cref="IPayloadConvention"/> to adhere to a well defined convention. The convention defines the <see cref="ContentType"/> and <see cref="ContentEncoding"/> for this message.
+    /// This is a sub class of <see cref="Message"/> designed to accept a <see cref="TelemetryCollection"/> to utilize the <see cref="PayloadConvention"/> to adhere to a well defined convention. The convention defines the <see cref="ContentType"/> and <see cref="ContentEncoding"/> for this message.
     /// </remarks>
     public class TelemetryMessage : Message
     {
         private TelemetryCollection _telemtryCollection = new TelemetryCollection();
+
         /// <summary>
         /// Gets or sets the <see cref="TelemetryCollection"/> for this <see cref="TelemetryMessage"/>
         /// </summary>
         /// <remarks>
-        /// Setting this value with a new instance of <see cref="TelemetryCollection"/> will set the <see cref="ContentEncoding"/> and <see cref="ContentType"/> to what ever is specified by the <see cref="IPayloadConvention"/> used to construct it.
+        /// Setting this value with a new instance of <see cref="TelemetryCollection"/> will set the <see cref="ContentEncoding"/> and <see cref="ContentType"/> to what ever is specified by the <see cref="PayloadConvention"/> used to construct it.
         /// <para>
         /// Setting the value to null will set the <see cref="ContentEncoding"/> and <see cref="ContentType"/> to null.
         /// </para>
@@ -30,19 +30,19 @@ namespace Microsoft.Azure.Devices.Client
         public TelemetryCollection Telemetry
         {
             get => _telemtryCollection;
-            set 
+            set
             {
                 _telemtryCollection = value;
                 if (value != null)
                 {
                     base.ContentType = value.Convention.PayloadEncoder.ContentEncoding.WebName;
                     base.ContentEncoding = value.Convention.PayloadSerializer.ContentType;
-                } else
+                }
+                else
                 {
                     base.ContentType = null;
                     base.ContentEncoding = null;
                 }
-                
             }
         }
 

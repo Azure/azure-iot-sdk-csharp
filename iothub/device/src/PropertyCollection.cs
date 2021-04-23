@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         private const string VersionName = "$version";
 
         /// <inheritdoc/>
-        public PropertyCollection(IPayloadConvention payloadConvention = default)
+        public PropertyCollection(PayloadConvention payloadConvention = default)
             : base(payloadConvention)
         {
         }
@@ -65,6 +65,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Adds or updates the value for the collection.
         /// </summary>
+        /// <remarks>
+        /// When adding a type of <see cref="IWritablePropertyResponse"/> the <see cref="Serializer.CheckWritablePropertyResponseType(object)"/>
+        /// checks to make sure it can serialize this type correctly.
+        /// This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
+        /// </remarks>
+        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="IWritablePropertyResponse"/>
+        /// and does not pass the check from <see cref="Serializer.CheckWritablePropertyResponseType(object)"/> method.</exception>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
@@ -81,6 +88,12 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
+                    bool checkType = entry.Value is IWritablePropertyResponse;
+                    if (entry.Value is IWritablePropertyResponse && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
+                    {
+                        throw new ArgumentException("Please use the proper class implemented from IWritablePropertyResponse to match your payload convention.");
+                    }
+
                     if (forceUpdate)
                     {
                         Collection[entry.Key] = entry.Value;
@@ -103,6 +116,12 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
+                    bool checkType = entry.Value is IWritablePropertyResponse;
+                    if (entry.Value is IWritablePropertyResponse && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
+                    {
+                        throw new ArgumentException("Please use the proper class implemented from IWritablePropertyResponse to match your payload convention.");
+                    }
+
                     if (forceUpdate)
                     {
                         componentProperties[entry.Key] = entry.Value;
@@ -114,9 +133,9 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
-                if (!componentProperties.ContainsKey(CommonConstants.ComponentIdentifierKey))
+                if (!componentProperties.ContainsKey(ConventionBasedConstants.ComponentIdentifierKey))
                 {
-                    componentProperties[CommonConstants.ComponentIdentifierKey] = CommonConstants.ComponentIdentifierValue;
+                    componentProperties[ConventionBasedConstants.ComponentIdentifierKey] = ConventionBasedConstants.ComponentIdentifierValue;
                 }
 
                 if (forceUpdate)
@@ -151,9 +170,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
-        /// <returns>A new instance of of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="IPayloadConvention"/>.</returns>
+        /// <returns>A new instance of of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
         /// <remarks>This internala class is aware of the implemention of the TwinCollection ad will </remarks>
-        internal static PropertyCollection FromTwinCollection(TwinCollection twinCollection, IPayloadConvention payloadConvention = default)
+        internal static PropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention = default)
         {
             if (twinCollection == null)
             {
@@ -173,7 +192,7 @@ namespace Microsoft.Azure.Devices.Client
             return propertyCollectionToReturn;
         }
 
-        internal static PropertyCollection FromClientTwinDictionary(IDictionary<string, object> clientTwinPropertyDictionary, IPayloadConvention payloadConvention)
+        internal static PropertyCollection FromClientTwinDictionary(IDictionary<string, object> clientTwinPropertyDictionary, PayloadConvention payloadConvention)
         {
             if (clientTwinPropertyDictionary == null)
             {

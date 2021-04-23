@@ -3,11 +3,11 @@
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class CustomPayloadConvention : IPayloadConvention
+    internal class CustomPayloadConvention : PayloadConvention
     {
-        public override ISerializer PayloadSerializer => new CustomJsonSerializer();
+        public override Serializer PayloadSerializer => new CustomJsonSerializer();
 
-        public override IContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
+        public override ContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
 
         public override byte[] GetObjectBytes(object objectToSendWithConvention)
         {

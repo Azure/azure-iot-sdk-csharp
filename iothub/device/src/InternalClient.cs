@@ -1887,7 +1887,7 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
-        internal Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention, CancellationToken cancellationToken)
+        internal Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             payloadConvention ??= DefaultPayloadConvention.Instance;
 
@@ -1915,7 +1915,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             payloadConvention ??= DefaultPayloadConvention.Instance;
 
@@ -1932,7 +1932,7 @@ namespace Microsoft.Azure.Devices.Client
             return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
         }
 
-        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken)
+        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             const char ComponentLevelCommandIdentifier = '*';
 

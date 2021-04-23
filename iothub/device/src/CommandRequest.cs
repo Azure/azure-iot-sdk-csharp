@@ -11,9 +11,9 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class CommandRequest
     {
         private readonly byte[] _data;
-        private readonly IPayloadConvention _payloadConvention;
+        private readonly PayloadConvention _payloadConvention;
 
-        internal CommandRequest(string commandName, string componentName = default, byte[] data = default, IPayloadConvention payloadConvention = default)
+        internal CommandRequest(string commandName, string componentName = default, byte[] data = default, PayloadConvention payloadConvention = default)
         {
             Name = commandName;
             ComponentName = componentName;

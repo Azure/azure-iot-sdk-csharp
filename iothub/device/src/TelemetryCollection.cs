@@ -10,9 +10,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class TelemetryCollection : PayloadCollection
     {
-
         /// <inheritdoc/>
-        public TelemetryCollection(IPayloadConvention payloadConvention = default)
+        public TelemetryCollection(PayloadConvention payloadConvention = default)
             : base(payloadConvention)
         {
         }
@@ -37,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentNullException"><paramref name="telemetryName"/> is <c>null</c> </exception>
         public void AddOrUpdate(string telemetryName, object telemetryValue)
         {
-            Collection[telemetryName] =  telemetryValue;
+            Collection[telemetryName] = telemetryValue;
         }
     }
 }

@@ -7,9 +7,9 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// A <see cref="Newtonsoft.Json.JsonConvert"/> <see cref="ISerializer"/> implementation.
+    /// A <see cref="Newtonsoft.Json.JsonConvert"/> <see cref="Serializer"/> implementation.
     /// </summary>
-    public class JsonContentSerializer : ISerializer
+    public class JsonContentSerializer : Serializer
     {
         /// <summary>
         /// The Content Type string.
@@ -44,6 +44,12 @@ namespace Microsoft.Azure.Devices.Client
                 return default;
             }
             return ((JObject)objectToConvert).ToObject<T>();
+        }
+
+        /// <inheritdoc/>
+        public override bool CheckWritablePropertyResponseType(object typeToCheck)
+        {
+            return typeToCheck is WritablePropertyResponse;
         }
     }
 }

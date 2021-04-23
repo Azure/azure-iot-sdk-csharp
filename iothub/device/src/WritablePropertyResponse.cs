@@ -11,30 +11,9 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// This helper class will only work with <see cref="Newtonsoft.Json"/>.
     /// It uses <see cref="Newtonsoft.Json"/> based <see cref="JsonPropertyAttribute"/> to define the JSON property names.
-    /// For scenarios where you want to use a different serializer, you will need to implement one with its corresponding seriailizer attributes.
     /// </remarks>
-    public sealed class WritablePropertyResponse
+    public sealed class WritablePropertyResponse : IWritablePropertyResponse
     {
-        /// <summary>
-        /// Represents the JSON document property name for the value
-        /// </summary>
-        public const string ValuePropertyName = "value";
-
-        /// <summary>
-        /// Represents the JSON document property name for the Ack Code
-        /// </summary>
-        public const string AckCodePropertyName = "ac";
-
-        /// <summary>
-        /// Represents the JSON document property name for the Ack Version
-        /// </summary>
-        public const string AckVersionPropertyName = "av";
-
-        /// <summary>
-        /// Represents the JSON document property name for the Ack Description
-        /// </summary>
-        public const string AckDescriptionPropertyName = "ad";
-
         /// <summary>
         /// Convenience constructor for specifying the properties.
         /// </summary>
@@ -53,25 +32,25 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The unserialized property value.
         /// </summary>
-        [JsonProperty(ValuePropertyName)]
+        [JsonProperty(ConventionBasedConstants.ValuePropertyName)]
         public object Value { get; set; }
 
         /// <summary>
         /// The acknowledgement code, usually an HTTP Status Code e.g. 200, 400.
         /// </summary>
-        [JsonProperty(AckCodePropertyName)]
+        [JsonProperty(ConventionBasedConstants.AckCodePropertyName)]
         public int AckCode { get; set; }
 
         /// <summary>
         /// The acknowledgement version, as supplied in the property update request.
         /// </summary>
-        [JsonProperty(AckVersionPropertyName)]
+        [JsonProperty(ConventionBasedConstants.AckVersionPropertyName)]
         public long AckVersion { get; set; }
 
         /// <summary>
         /// The acknowledgement description, an optional, human-readable message about the result of the property update.
         /// </summary>
-        [JsonProperty(AckDescriptionPropertyName, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty(ConventionBasedConstants.AckDescriptionPropertyName, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string AckDescription { get; set; }
     }
 }

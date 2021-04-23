@@ -710,7 +710,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The device properties.</returns>
-        public Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
+        public Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
             => InternalClient.GetPropertiesAsync(payloadConvention, cancellationToken);
 
         /// <summary>
@@ -728,7 +728,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
+        public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
             => InternalClient.SubscribeToWritablePropertyEventAsync(callback, userContext, payloadConvention, cancellationToken);
 
         #endregion Properties
@@ -761,7 +761,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         public Task SubscribeToCommandsAsync(
             Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext,
-            IPayloadConvention payloadConvention = default,
+            PayloadConvention payloadConvention = default,
             CancellationToken cancellationToken = default)
             => InternalClient.SubscribeToCommandsAsync(callback, userContext, payloadConvention, cancellationToken);
 

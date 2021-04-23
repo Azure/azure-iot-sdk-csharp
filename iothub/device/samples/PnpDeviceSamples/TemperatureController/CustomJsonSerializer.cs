@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class CustomJsonSerializer : ISerializer
+    internal class CustomJsonSerializer : Serializer
     {
         private const string ApplicationJson = "application/json";
 
@@ -30,6 +30,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public override T ConvertFromObject<T>(object objectToConvert)
         {
             return DeserializeToType<T>(((JsonElement)objectToConvert).ToString());
+        }
+
+        public override bool CheckWritablePropertyResponseType(object typeToCheck)
+        {
+            return typeToCheck is CustomWritablePropertyResponse;
         }
     }
 }

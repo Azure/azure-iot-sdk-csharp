@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Convention driven operations.
 
-        Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention, CancellationToken cancellationToken);
+        Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken);
 
         Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
     }
