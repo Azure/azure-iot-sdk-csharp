@@ -1,32 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class CustomWritablePropertyResponse : WritablePropertyBase
+    internal class CustomWritablePropertyResponse
     {
         internal CustomWritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
-            : base(propertyValue, ackCode, ackVersion, ackDescription)
         {
+            Value = propertyValue;
+            AckCode = ackCode;
+            AckVersion = ackVersion;
+            AckDescription = ackDescription;
         }
 
-        [JsonPropertyName(ValuePropertyName)]
-        public override object Value { get; set; }
+        [JsonPropertyName(WritablePropertyResponse.ValuePropertyName)]
+        public object Value { get; set; }
 
-        [JsonPropertyName(AckCodePropertyName)]
-        public override int AckCode { get; set; }
+        [JsonPropertyName(WritablePropertyResponse.AckCodePropertyName)]
+        public int AckCode { get; set; }
 
-        [JsonPropertyName(AckVersionPropertyName)]
-        public override long AckVersion { get; set; }
+        [JsonPropertyName(WritablePropertyResponse.AckVersionPropertyName)]
+        public long AckVersion { get; set; }
 
-        [JsonPropertyName(AckDescriptionPropertyName)]
-        public override string AckDescription { get; set; }
+        [JsonPropertyName(WritablePropertyResponse.AckDescriptionPropertyName)]
+        public string AckDescription { get; set; }
     }
 }
