@@ -88,7 +88,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    bool checkType = entry.Value is IWritablePropertyResponse;
                     if (entry.Value is IWritablePropertyResponse && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
                     {
                         throw new ArgumentException("Please use the proper class implemented from IWritablePropertyResponse to match your payload convention.");
@@ -116,7 +115,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    bool checkType = entry.Value is IWritablePropertyResponse;
                     if (entry.Value is IWritablePropertyResponse && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
                     {
                         throw new ArgumentException("Please use the proper class implemented from IWritablePropertyResponse to match your payload convention.");
