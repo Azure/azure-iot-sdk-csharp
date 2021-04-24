@@ -38,14 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
-            // This sample follows the following workflow:
-            // -> Retrieve the device's properties.
-            // -> Verify if the device has previously reported a value for property "maxTempSinceLastReboot" under component "thermostat1".
-            // -> Report a value for property "maxTempSinceLastReboot" under component "thermostat1".
-            // -> Send telemetry "initialValue" under component "thermostat2".
-            // -> Subscribe and respond to event for writable property "targetTemperature" under component "thermostat1".
-            // -> Subscribe and respond to command "updateTemperatureWithDelay" under component "thermostat2".
-
             // Retrieve the device's properties.
             Properties properties = await _deviceClient.GetPropertiesAsync(cancellationToken: cancellationToken);
 
@@ -54,8 +46,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             double maxTempSinceLastReboot = 25;
             if (!properties.Contains(Thermostat1) || ((JObject)properties[Thermostat1]).Value<double>("maxTempSinceLastReboot") != maxTempSinceLastReboot)
             {
-                var propertiesToBeUpdated = new PropertyCollection();
-                propertiesToBeUpdated.Add("maxTempSinceLastReboot", maxTempSinceLastReboot, Thermostat1);
+                var propertiesToBeUpdated = new PropertyCollection
+                {
+                    { "maxTempSinceLastReboot", maxTempSinceLastReboot, Thermostat1 }
+                };
                 await _deviceClient.UpdatePropertiesAsync(propertiesToBeUpdated, cancellationToken);
                 _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerailizedString()} in KB.");
             }
@@ -138,6 +132,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             null,
             s_systemTextJsonPayloadConvention,
             cancellationToken);
+
+            Console.ReadKey();
         }
     }
 }

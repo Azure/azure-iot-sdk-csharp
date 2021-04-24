@@ -35,14 +35,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
-            // This sample follows the following workflow:
-            // -> Retrieve the device's properties.
-            // -> Verify if the device has previously reported a value for property "serialNumber".
-            // -> Report a value for property "serialNumber".
-            // -> Send telemetry "workingSet".
-            // -> Subscribe and respond to event for writable property "temperatureRange".
-            // -> Subscribe and respond to command "reboot".
-
             // Retrieve the device's properties.
             Properties properties = await _deviceClient.GetPropertiesAsync(cancellationToken: cancellationToken);
 
@@ -120,6 +112,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             },
             null,
             cancellationToken: cancellationToken);
+
+            Console.ReadKey();
         }
     }
 }
