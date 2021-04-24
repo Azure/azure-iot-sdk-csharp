@@ -3,9 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class CustomPayloadConvention : PayloadConvention
+    internal class SystemTextJsonPayloadConvention : PayloadConvention
     {
-        public override ObjectSerializer PayloadSerializer => new CustomJsonSerializer();
+        public override ObjectSerializer PayloadSerializer => new SystemTextJsonSerializer();
 
         public override ContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
 
