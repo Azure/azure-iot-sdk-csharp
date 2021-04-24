@@ -80,14 +80,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             var requestDevice = new Device(deviceName);
             if (type == TestDeviceType.X509)
             {
-                requestDevice.Authentication = new AuthenticationMechanism
-                {
-                    X509Thumbprint = new X509Thumbprint
+                using (var hasher = SHA256.Create())
+                {  
+                    var hash = hasher.ComputeHash(Configuration.IoTHub.GetCertificateWithPrivateKey().RawData);
+                    requestDevice.Authentication = new AuthenticationMechanism
                     {
-                        PrimaryThumbprint = Configuration.IoTHub.GetCertificateWithPrivateKey().GetCertHashString(HashAlgorithmName.SHA256)
-                    }
-                };
-
+                        X509Thumbprint = new X509Thumbprint
+                        {
+                            PrimaryThumbprint = BitConverter.ToString(hash).Replace("-", "")
+                        }
+                    }; 
+                }
+                
                 auth = new DeviceAuthenticationWithX509Certificate(deviceName, Configuration.IoTHub.GetCertificateWithPrivateKey());
             }
 
