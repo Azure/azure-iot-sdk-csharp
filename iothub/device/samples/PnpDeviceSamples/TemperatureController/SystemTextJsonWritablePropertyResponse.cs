@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class CustomWritablePropertyResponse : IWritablePropertyResponse
+    internal class SystemTextJsonWritablePropertyResponse : IWritablePropertyResponse
     {
-        internal CustomWritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
+        internal SystemTextJsonWritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
         {
             Value = propertyValue;
             AckCode = ackCode;
