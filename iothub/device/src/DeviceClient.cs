@@ -710,7 +710,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The device properties.</returns>
-        public Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
+        public Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
             => InternalClient.GetPropertiesAsync(payloadConvention, cancellationToken);
 
         /// <summary>
@@ -718,7 +718,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdatePropertiesAsync(PropertyCollection propertyCollection, CancellationToken cancellationToken = default)
+        public Task UpdatePropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default)
             => InternalClient.UpdatePropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
@@ -728,7 +728,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
+        public Task SubscribeToWritablePropertyEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
             => InternalClient.SubscribeToWritablePropertyEventAsync(callback, userContext, payloadConvention, cancellationToken);
 
         #endregion Properties

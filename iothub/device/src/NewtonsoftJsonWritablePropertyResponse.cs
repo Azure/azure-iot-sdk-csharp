@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     /// This helper class will only work with <see cref="Newtonsoft.Json"/>.
     /// It uses <see cref="Newtonsoft.Json"/> based <see cref="JsonPropertyAttribute"/> to define the JSON property names.
     /// </remarks>
-    public sealed class WritablePropertyResponse : IWritablePropertyResponse
+    public sealed class NewtonsoftJsonWritablePropertyResponse : IWritablePropertyResponse
     {
         /// <summary>
         /// Convenience constructor for specifying the properties.
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="ackCode">The acknowledgement code, usually an HTTP Status Code e.g. 200, 400.</param>
         /// <param name="ackVersion">The acknowledgement version, as supplied in the property update request.</param>
         /// <param name="ackDescription">The acknowledgement description, an optional, human-readable message about the result of the property update.</param>
-        public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
+        public NewtonsoftJsonWritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
         {
             Value = propertyValue;
             AckCode = ackCode;

@@ -9,10 +9,10 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// The serializer is responsible for converting all of your objects into the correct format for the <see cref="PayloadConvention"/> that uses it.
     /// <para>
-    /// By default we have implemented the <see cref="JsonContentSerializer"/> class that uses <see cref="Newtonsoft.Json.JsonConvert"/> to handle the serialization for the <see cref="DefaultPayloadConvention"/> class.
+    /// By default we have implemented the <see cref="NewtonsoftJsonObjectSerializer"/> class that uses <see cref="Newtonsoft.Json.JsonConvert"/> to handle the serialization for the <see cref="DefaultPayloadConvention"/> class.
     /// </para>
     /// </remarks>
-    public abstract class Serializer
+    public abstract class ObjectSerializer
     {
         /// <summary>
         /// Used to specify what type of content to expect
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T">The type to convert to.</typeparam>
         /// <param name="objectToConvert">The object to convert.</param>
         /// <returns>A converted object</returns>
-        /// <remarks>This class is used by the <see cref="PropertyCollection"/> to attempt to convert from the native serailizer type (for example, JObject or JsonElement) to the desired type. When you implement this you need to be aware of what type your serializer will use for anonymous types.</remarks>
+        /// <remarks>This class is used by the <see cref="ClientPropertyCollection"/> to attempt to convert from the native serailizer type (for example, JObject or JsonElement) to the desired type. When you implement this you need to be aware of what type your serializer will use for anonymous types.</remarks>
         public abstract T ConvertFromObject<T>(object objectToConvert);
 
         /// <summary>

@@ -15,24 +15,24 @@ namespace Microsoft.Azure.Devices.Client
     /// The Properties class is not meant to be constructed by customer code. It is intended to be returned fully popualated from the <see cref="DeviceClient.GetPropertiesAsync(PayloadConvention, System.Threading.CancellationToken)"/> method.
     /// </remarks>
     /// </summary>
-    public class Properties : IEnumerable<object>
+    public class ClientProperties : IEnumerable<object>
     {
-        private readonly PropertyCollection _reportedPropertyCollection = new PropertyCollection();
+        private readonly ClientPropertyCollection _reportedPropertyCollection = new ClientPropertyCollection();
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Properties"/>
+        /// Initializes a new instance of <see cref="ClientProperties"/>
         /// </summary>
-        internal Properties()
+        internal ClientProperties()
         {
-            Writable = new PropertyCollection();
+            Writable = new ClientPropertyCollection();
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Properties"/> with the specified collections
+        /// Initializes a new instance of <see cref="ClientProperties"/> with the specified collections
         /// </summary>
         /// <param name="requestedPropertyCollection">A collection of writable properties returned from IoT Hub</param>
         /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub</param>
-        internal Properties(PropertyCollection requestedPropertyCollection, PropertyCollection readOnlyPropertyCollection)
+        internal ClientProperties(ClientPropertyCollection requestedPropertyCollection, ClientPropertyCollection readOnlyPropertyCollection)
         {
             Writable = requestedPropertyCollection;
             _reportedPropertyCollection = readOnlyPropertyCollection;
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// See the <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see> documentation for more information.
         /// </remarks>
-        public PropertyCollection Writable { get; private set; }
+        public ClientPropertyCollection Writable { get; private set; }
 
         /// <summary>
         /// Get the property from the propeties collection.
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
             return _reportedPropertyCollection.GetValue<T>(propertyKey);
         }
 
-        internal static Properties FromClientTwinProperties(ClientTwinProperties clientTwinProperties, PayloadConvention payloadConvention)
+        internal static ClientProperties FromClientTwinProperties(ClientTwinProperties clientTwinProperties, PayloadConvention payloadConvention)
         {
             if (clientTwinProperties == null)
             {
@@ -115,10 +115,10 @@ namespace Microsoft.Azure.Devices.Client
 
             payloadConvention ??= DefaultPayloadConvention.Instance;
 
-            var writablePropertyCollection = PropertyCollection.FromClientTwinDictionary(clientTwinProperties.Desired, payloadConvention);
-            var propertyCollection = PropertyCollection.FromClientTwinDictionary(clientTwinProperties.Reported, payloadConvention);
+            var writablePropertyCollection = ClientPropertyCollection.FromClientTwinDictionary(clientTwinProperties.Desired, payloadConvention);
+            var propertyCollection = ClientPropertyCollection.FromClientTwinDictionary(clientTwinProperties.Reported, payloadConvention);
 
-            return new Properties(writablePropertyCollection, propertyCollection);
+            return new ClientProperties(writablePropertyCollection, propertyCollection);
         }
     }
 }

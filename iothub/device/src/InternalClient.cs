@@ -1887,7 +1887,7 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
-        internal Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        internal Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             payloadConvention ??= DefaultPayloadConvention.Instance;
 
@@ -1902,7 +1902,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken)
+        internal Task UpdatePropertiesAsync(ClientPropertyCollection propertyPatch, CancellationToken cancellationToken)
         {
             try
             {
@@ -1915,7 +1915,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertyEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             payloadConvention ??= DefaultPayloadConvention.Instance;
 
@@ -1923,7 +1923,7 @@ namespace Microsoft.Azure.Devices.Client
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
             {
                 // convert a TwinCollection to PropertyCollection
-                var propertyCollection = PropertyCollection.FromTwinCollection(twinCollection, payloadConvention);
+                var propertyCollection = ClientPropertyCollection.FromTwinCollection(twinCollection, payloadConvention);
                 callback.Invoke(propertyCollection, userContext);
 
                 return TaskHelpers.CompletedTask;

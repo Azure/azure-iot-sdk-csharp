@@ -10,14 +10,14 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// A collection of properties for the device.
+    /// A collection of properties for the client.
     /// </summary>
-    public class PropertyCollection : PayloadCollection
+    public class ClientPropertyCollection : PayloadCollection
     {
         private const string VersionName = "$version";
 
         /// <inheritdoc/>
-        public PropertyCollection(PayloadConvention payloadConvention = default)
+        public ClientPropertyCollection(PayloadConvention payloadConvention = default)
             : base(payloadConvention)
         {
         }
@@ -90,12 +90,12 @@ namespace Microsoft.Azure.Devices.Client
         /// Adds or updates the value for the collection.
         /// </summary>
         /// <remarks>
-        /// When adding a type of <see cref="IWritablePropertyResponse"/> the <see cref="Serializer.CheckWritablePropertyResponseType(object)"/>
+        /// When adding a type of <see cref="IWritablePropertyResponse"/> the <see cref="ObjectSerializer.CheckWritablePropertyResponseType(object)"/>
         /// checks to make sure it can serialize this type correctly.
         /// This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
         /// </remarks>
         /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="IWritablePropertyResponse"/>
-        /// and does not pass the check from <see cref="Serializer.CheckWritablePropertyResponseType(object)"/> method.</exception>
+        /// and does not pass the check from <see cref="ObjectSerializer.CheckWritablePropertyResponseType(object)"/> method.</exception>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
         /// <returns>A new instance of of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
         /// <remarks>This internala class is aware of the implemention of the TwinCollection ad will </remarks>
-        internal static PropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention = default)
+        internal static ClientPropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention = default)
         {
             if (twinCollection == null)
             {
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client
 
             payloadConvention ??= DefaultPayloadConvention.Instance;
 
-            var propertyCollectionToReturn = new PropertyCollection(payloadConvention);
+            var propertyCollectionToReturn = new ClientPropertyCollection(payloadConvention);
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
                 propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.Client
             return propertyCollectionToReturn;
         }
 
-        internal static PropertyCollection FromClientTwinDictionary(IDictionary<string, object> clientTwinPropertyDictionary, PayloadConvention payloadConvention)
+        internal static ClientPropertyCollection FromClientTwinDictionary(IDictionary<string, object> clientTwinPropertyDictionary, PayloadConvention payloadConvention)
         {
             if (clientTwinPropertyDictionary == null)
             {
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client
 
             payloadConvention ??= DefaultPayloadConvention.Instance;
 
-            var propertyCollectionToReturn = new PropertyCollection(payloadConvention);
+            var propertyCollectionToReturn = new ClientPropertyCollection(payloadConvention);
             foreach (KeyValuePair<string, object> property in clientTwinPropertyDictionary)
             {
                 // The version information should not be a part of the enumerable ProperyCollection, but rather should be

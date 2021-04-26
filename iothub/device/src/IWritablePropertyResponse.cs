@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <remarks>
     /// This interface is used to allow extension to use a different set of attributes or serialization.
-    /// For example our default implementation found in <see cref="WritablePropertyResponse"/> is based on Newtonsoft seriailizer attributes.
+    /// For example our default implementation found in <see cref="NewtonsoftJsonWritablePropertyResponse"/> is based on Newtonsoft seriailizer attributes.
     /// </remarks>
     public interface IWritablePropertyResponse
     {
