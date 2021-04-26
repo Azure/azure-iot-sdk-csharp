@@ -4,21 +4,21 @@
 
 ```csharp
 
-public abstract class IPayloadConvention {
-    protected IPayloadConvention();
-    public abstract IContentEncoder PayloadEncoder { get; }
-    public abstract ISerializer PayloadSerializer { get; }
+public abstract class PayloadConvention {
+    protected PayloadConvention();
+    public abstract ContentEncoder PayloadEncoder { get; }
+    public abstract Serializer PayloadSerializer { get; }
     public virtual byte[] GetObjectBytes(object objectToSendWithConvention);
 }
 
-public abstract class IContentEncoder {
-    protected IContentEncoder();
+public abstract class ContentEncoder {
+    protected ContentEncoder();
     public abstract Encoding ContentEncoding { get; }
     public abstract byte[] EncodeStringToByteArray(string contentPayload);
 }
 
-public abstract class ISerializer {
-    protected ISerializer();
+public abstract class Serializer {
+    protected Serializer();
     public abstract string ContentType { get; }
     public abstract bool CheckWritablePropertyResponseType(object typeToCheck);
     public abstract T ConvertFromObject<T>(object objectToConvert);
@@ -26,21 +26,21 @@ public abstract class ISerializer {
     public abstract string SerializeToString(object objectToSerialize);
 }
 
-public sealed class DefaultPayloadConvention : IPayloadConvention {
+public sealed class DefaultPayloadConvention : PayloadConvention {
     public static readonly DefaultPayloadConvention Instance;
     public DefaultPayloadConvention();
-    public override IContentEncoder PayloadEncoder { get; }
-    public override ISerializer PayloadSerializer { get; }
+    public override ContentEncoder PayloadEncoder { get; }
+    public override Serializer PayloadSerializer { get; }
 }
 
-public class Utf8ContentEncoder : IContentEncoder {
+public class Utf8ContentEncoder : ContentEncoder {
     public static readonly Utf8ContentEncoder Instance;
     public Utf8ContentEncoder();
     public override Encoding ContentEncoding { get; }
     public override byte[] EncodeStringToByteArray(string contentPayload);
 }
 
-public class JsonContentSerializer : ISerializer {
+public class JsonContentSerializer : Serializer {
     public static readonly JsonContentSerializer Instance;
     public JsonContentSerializer();
     public override string ContentType { get; }
@@ -51,15 +51,26 @@ public class JsonContentSerializer : ISerializer {
 }
 
 public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
-    protected PayloadCollection(IPayloadConvention payloadConvention = null);
+    protected PayloadCollection(PayloadConvention payloadConvention = null);
     public IDictionary<string, object> Collection { get; private set; }
-    public IPayloadConvention Convention { get; private set; }
-    public object this[string key] { get; set; }
+    public PayloadConvention Convention { get; private set; }
+    public virtual object this[string key] { get; set; }
+    public virtual void Add(string key, object value);
+    public virtual void AddOrUpdate(string key, object value);
     public IEnumerator<object> GetEnumerator();
     public virtual byte[] GetPayloadObjectBytes();
     public virtual string GetSerailizedString();
     public virtual T GetValue<T>(string key);
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+
+public static class ConventionBasedConstants {
+    public const string AckCodePropertyName = "ac";
+    public const string AckDescriptionPropertyName = "ad";
+    public const string AckVersionPropertyName = "av";
+    public const string ComponentIdentifierKey = "__t";
+    public const string ComponentIdentifierValue = "c";
+    public const string ValuePropertyName = "value";
 }
 ```
 
@@ -72,7 +83,7 @@ public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
 /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 /// <returns>The device properties.</returns>
-public Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
+public Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
 
 /// <summary>
 /// Update properties.
@@ -88,7 +99,7 @@ public Task UpdatePropertiesAsync(PropertyCollection propertyCollection, Cancell
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
 /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
+public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
 ```
 
 #### All related types
@@ -105,33 +116,30 @@ public class Properties : IEnumerable, IEnumerable<object> {
 }
 
 public class PropertyCollection : PayloadCollection {
-    public PropertyCollection(IPayloadConvention payloadConvention = null);
-    public long Version { get; }
+    public PropertyCollection(PayloadConvention payloadConvention = null);
+    public long Version { get; private set; }
     public void Add(IDictionary<string, object> properties, string componentName = null);
-    public void Add(string propertyName, object propertyValue, string componentName = null);
+    public override void Add(string propertyName, object propertyValue);
+    public void Add(string propertyName, object propertyValue, string componentName);
     public void AddOrUpdate(IDictionary<string, object> properties, string componentName = null);
-    public void AddOrUpdate(string propertyName, object propertyValue, string componentName = null);
+    public override void AddOrUpdate(string propertyName, object propertyValue);
+    public void AddOrUpdate(string propertyName, object propertyValue, string componentName);
     public bool Contains(string propertyName);
 }
 
-public abstract class WritablePropertyBase {
-    protected const string AckCodePropertyName = "ac";
-    protected const string AckDescriptionPropertyName = "ad";
-    protected const string AckVersionPropertyName = "av";
-    protected const string ValuePropertyName = "value";
-    public WritablePropertyBase(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
-    public abstract int AckCode { get; set; }
-    public abstract string AckDescription { get; set; }
-    public abstract long AckVersion { get; set; }
-    public abstract object Value { get; set; }
+public interface IWritablePropertyResponse {
+    int AckCode { get; set; }
+    string AckDescription { get; set; }
+    long AckVersion { get; set; }
+    object Value { get; set; }
 }
 
-public sealed class WritablePropertyResponse : WritablePropertyBase {
+public sealed class WritablePropertyResponse : IWritablePropertyResponse {
     public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
-    public override int AckCode { get; set; }
-    public override string AckDescription { get; set; }
-    public override long AckVersion { get; set; }
-    public override object Value { get; set; }
+    public int AckCode { get; set; }
+    public string AckDescription { get; set; }
+    public long AckVersion { get; set; }
+    public object Value { get; set; }
 }
 ```
 
@@ -154,9 +162,9 @@ public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationTo
 
 ```csharp
 public class TelemetryCollection : PayloadCollection {
-    public TelemetryCollection(IPayloadConvention payloadConvention = null);
-    public void Add(string telemetryName, object telemetryValue);
-    public void AddOrUpdate(string telemetryName, object telemetryValue);
+    public TelemetryCollection(PayloadConvention payloadConvention = null);
+    public override void Add(string telemetryName, object telemetryValue);
+    public override void AddOrUpdate(string telemetryName, object telemetryValue);
 }
 
 public class TelemetryMessage : Message {
@@ -178,7 +186,7 @@ public class TelemetryMessage : Message {
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
 /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
+public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, PayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
 ```
 #### All related types
 
@@ -192,7 +200,7 @@ public sealed class CommandRequest {
 
 public sealed class CommandResponse {
     public CommandResponse(int status);
-    public CommandResponse(object result, int status, IPayloadConvention payloadConvention = null);
+    public CommandResponse(object result, int status, PayloadConvention payloadConvention = null);
     public string ResultAsJson { get; }
     public int Status { get; private set; }
 }
