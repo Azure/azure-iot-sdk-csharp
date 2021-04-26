@@ -1,0 +1,16 @@
+44f37ff44 doc(readme): Update the device features readme to include pnp (#1902)
+e81b62845 lts(all): Incrementing all SDK versions to the next minor and update readme (#1903)
+70d49bb6b doc(tpm): Add doc comments about TPM exceptions thrown by the client (#1893)
+82ecc98f0 Add ParentScope property to Device (#1885)
+64f6e9f24 Update service client API version to 2021-04-12 (#1880)
+8df9dd76a feat(iot-service, shared): Add support for configuring http connection lease timeouts (#1874)
+072764732 fix(iot-device, prov-mqtt): Update websocket implementation over MQTT to not send multiple ws frames for a single MQTT packet
+cf5bb3e1c fix(e2e): script clean-up (#1868)
+666df0e56 fix(device): Escape the ModelId in the MQTT layer (#1866)
+7fdd74f5a Code cleanup around the Amqp device files (#1864)
+3bc647353 feat(iot-device): Add support for specifying sas token ttl via ClientOptions
+c43a69808 build(all): Ignore Edge from Policheck (#1819)
+7267ec0dd fix(release-pipeline): Update the environment variable (#1859)
+9f1ed79ac fix(vsts): Update test resources creation script to generate sha256 certificates
+7ce397c36 refactor(e2e-tests): Update tests to be resilient to CRUD throttling limits
+9fd6423c2 fix(e2e): Fix some environment varialbe names for consistency (#1849)

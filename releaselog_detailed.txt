@@ -1,0 +1,222 @@
+commit 44f37ff445f9b6e23240789a75fb15a5899c388b
+Author: Abhipsa Misra <abhipsa.misra@microsoft.com>
+Date:   Wed Apr 21 12:17:28 2021 -0700
+
+    doc(readme): Update the device features readme to include pnp (#1902)
+
+ readme.md | 66 ++++++++++++++++++++++++++++++++-------------------------------
+ 1 file changed, 34 insertions(+), 32 deletions(-)
+
+commit e81b62845fef0b9ea6149e12366b11b04c6526c5
+Author: jamdavi <73593426+jamdavi@users.noreply.github.com>
+Date:   Wed Apr 21 14:54:18 2021 -0400
+
+    lts(all): Incrementing all SDK versions to the next minor and update readme (#1903)
+    
+    Updated versions.csv to latest minor patch
+    Updated LTS table in readme to reflect our current state.
+
+ readme.md    | 14 +++++++++-----
+ versions.csv | 18 +++++++++---------
+ 2 files changed, 18 insertions(+), 14 deletions(-)
+
+commit 70d49bb6be1683178c39ba5acf9f6a00b039a3d2
+Author: Abhipsa Misra <abhipsa.misra@microsoft.com>
+Date:   Tue Apr 20 09:20:09 2021 -0700
+
+    doc(tpm): Add doc comments about TPM exceptions thrown by the client (#1893)
+
+ security/tpm/src/SecurityProviderTpmHsm.cs | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+commit 82ecc98f07c14ab1201f29bf998340286275537f
+Author: David R. Williamson <drwill@microsoft.com>
+Date:   Mon Apr 19 18:51:17 2021 -0700
+
+    Add ParentScope property to Device (#1885)
+
+ e2e/test/iothub/service/RegistryManagerE2ETests.cs | 62 ++++++++++++++++------
+ iothub/service/src/Device.cs                       | 20 ++++++-
+ shared/src/Twin.cs                                 | 13 +++++
+ shared/src/TwinJsonConverter.cs                    | 43 ++++++++++-----
+ 4 files changed, 108 insertions(+), 30 deletions(-)
+
+commit 64f6e9f24371bc40ab3ec7a8b8accbfb537f0fe1
+Author: David R. Williamson <drwill@microsoft.com>
+Date:   Wed Apr 14 14:07:26 2021 -0700
+
+    Update service client API version to 2021-04-12 (#1880)
+
+ iothub/service/src/ClientApiVersionHelper.cs | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+commit 8df9dd76aa6efa87d9085408d221ca61160e1656
+Author: timtay-microsoft <timtay@microsoft.com>
+Date:   Fri Apr 9 14:03:37 2021 -0700
+
+    feat(iot-service, shared): Add support for configuring http connection lease timeouts (#1874)
+    
+    Also fixes #1865 by making the default connection lease timeout no longer infinite
+
+ common/src/service/HttpClientHelper.cs             | 78 +++++++++++++---------
+ iothub/service/src/AmqpServiceClient.cs            |  3 +-
+ .../service/src/DigitalTwin/DigitalTwinClient.cs   | 52 ++++++++++++++-
+ iothub/service/src/HttpRegistryManager.cs          |  3 +-
+ iothub/service/src/HttpTransportSettings.cs        | 14 ++++
+ iothub/service/src/JobClient/HttpJobClient.cs      |  3 +-
+ iothub/service/src/Microsoft.Azure.Devices.csproj  |  4 +-
+ .../service/src/ServiceClientTransportSettings.cs  | 14 ++++
+ iothub/service/src/ServicePointHelpers.cs          | 48 +++++++++++++
+ shared/src/Microsoft.Azure.Devices.Shared.csproj   |  2 +-
+ 10 files changed, 184 insertions(+), 37 deletions(-)
+
+commit 07276473256ab2b125756a533d1183a77bdc1b87
+Author: Abhipsa Misra <abhipsa.misra@microsoft.com>
+Date:   Thu Apr 1 10:29:16 2021 -0700
+
+    fix(iot-device, prov-mqtt): Update websocket implementation over MQTT to not send multiple ws frames for a single MQTT packet
+
+ .../transport/mqtt/ClientWebSocketChannel.cs       | 61 +++++++++++++++++-----
+ .../device/src/AuthenticationWithTokenRefresh.cs   |  1 +
+ .../src/Transport/Mqtt/ClientWebSocketChannel.cs   | 45 +++++++++++++---
+ 3 files changed, 89 insertions(+), 18 deletions(-)
+
+commit cf5bb3e1c5bd865ee36345772dfa862b71a21b1a
+Author: David R. Williamson <drwill@microsoft.com>
+Date:   Mon Mar 29 17:44:22 2021 -0700
+
+    fix(e2e): script clean-up (#1868)
+
+ .../LoadEnvironmentVariablesFromKeyVault.ps1       |  11 +-
+ .../prerequisites/E2ETestsSetup/e2eTestsSetup.ps1  | 159 ++++++++++-----------
+ 2 files changed, 85 insertions(+), 85 deletions(-)
+
+commit 666df0e5607fdd9d462cdf4227afc54342bf7dba
+Author: David R. Williamson <drwill@microsoft.com>
+Date:   Mon Mar 29 16:19:01 2021 -0700
+
+    fix(device): Escape the ModelId in the MQTT layer (#1866)
+
+ iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit 7fdd74f5ab41ba2e756e50e53f843e657e51c333
+Author: David R. Williamson <drwill@microsoft.com>
+Date:   Sat Mar 27 15:22:23 2021 -0700
+
+    Code cleanup around the Amqp device files (#1864)
+
+ iothub/device/src/InternalClient.cs                |   2 +-
+ ...ientDiagnostic.cs => IotHubClientDiagnostic.cs} |   2 +-
+ .../Transport/Amqp/AmqpAuthenticationRefresher.cs  |  46 ++--
+ .../src/Transport/Amqp/AmqpConnectionHolder.cs     |  90 ++++----
+ .../src/Transport/Amqp/AmqpConnectionPool.cs       |  18 +-
+ .../src/Transport/Amqp/AmqpTransportHandler.cs     | 162 +++++++-------
+ iothub/device/src/Transport/Amqp/AmqpUnit.cs       | 151 +++++++------
+ .../device/src/Transport/Amqp/AmqpUnitManager.cs   |   8 +-
+ .../src/Transport/Amqp/IAmqpConnectionHolder.cs    |   9 +-
+ .../device/src/Transport/Amqp/IAmqpUnitManager.cs  |   2 +-
+ .../device/src/Transport/AmqpIoT/AmqpIoTOutcome.cs |  50 -----
+ .../src/Transport/AmqpIoT/AmqpIoTResultAdapter.cs  |  33 ---
+ .../AmqpIotCbsLink.cs}                             |  26 ++-
+ .../AmqpIotCbsTokenProvider.cs}                    |  16 +-
+ .../AmqpIotConnection.cs}                          |  41 ++--
+ .../AmqpIotConnector.cs}                           |  22 +-
+ .../AmqpIotConstants.cs}                           |   4 +-
+ .../AmqpIotErrorAdapter.cs}                        |  58 ++---
+ .../AmqpIotExceptionAdapter.cs}                    |  20 +-
+ .../AmqpIotLinkFactory.cs}                         |  27 +--
+ .../AmqpIotMessageConverter.cs}                    |  59 +++--
+ .../device/src/Transport/AmqpIot/AmqpIotOutcome.cs |  49 ++++
+ .../AmqpIotReceivingLink.cs}                       |  73 +++---
+ .../AmqpIotResourceException.cs}                   |  16 +-
+ .../src/Transport/AmqpIot/AmqpIotResultAdapter.cs  |  29 +++
+ .../AmqpIotSendingLink.cs}                         | 114 +++++-----
+ .../AmqpIotSession.cs}                             | 249 ++++++++++-----------
+ .../AmqpIoTTrace.cs => AmqpIot/AmqpIotTrace.cs}    |   4 +-
+ .../AmqpIotTrackingHelper.cs}                      |  10 +-
+ .../AmqpIotTransport.cs}                           |  16 +-
+ .../AmqpIotTransportLog.cs}                        |  54 ++---
+ iothub/device/src/Transport/DeviceIdentity.cs      |  16 +-
+ .../DeviceAuthenticationWithTokenRefreshTests.cs   |   8 +-
+ .../ModuleAuthenticationWithTokenRefreshTests.cs   |   6 +-
+ iothub/device/tests/IoTHubClientDiagnosticTest.cs  |  42 ++--
+ 35 files changed, 755 insertions(+), 777 deletions(-)
+
+commit 3bc647353861cc6ea236b3de9c0d12f54123a58e
+Author: Abhipsa Misra <abhipsa.misra@microsoft.com>
+Date:   Fri Mar 26 15:52:44 2021 -0700
+
+    feat(iot-device): Add support for specifying sas token ttl via ClientOptions
+
+ e2e/test/iothub/DeviceTokenRefreshE2ETests.cs      |  57 +++++++++
+ iothub/device/src/ClientFactory.cs                 |  10 +-
+ iothub/device/src/ClientOptions.cs                 |  25 ++++
+ .../src/DeviceAuthenticationWithSakRefresh.cs      |   9 ++
+ .../src/DeviceAuthenticationWithTokenRefresh.cs    |  32 ++++-
+ iothub/device/src/Edge/EdgeModuleClientFactory.cs  |  10 +-
+ .../ModuleAuthenticationWithHsm.cs                 |  12 ++
+ iothub/device/src/IotHubConnectionString.cs        |   4 +-
+ iothub/device/src/IotHubConnectionStringBuilder.cs |   9 +-
+ .../src/ModuleAuthenticationWithSakRefresh.cs      |  14 +-
+ .../src/ModuleAuthenticationWithTokenRefresh.cs    |  28 +++-
+ iothub/device/tests/DeviceClientTests.cs           | 142 ++++++++++++++++++++-
+ test.runsettings                                   |   6 +-
+ 13 files changed, 330 insertions(+), 28 deletions(-)
+
+commit c43a6980892d9d406d4dae3d45f90ca462ec081d
+Author: jamdavi <73593426+jamdavi@users.noreply.github.com>
+Date:   Thu Mar 25 12:44:41 2021 -0400
+
+    build(all): Ignore Edge from Policheck (#1819)
+    
+    Adds an exclusion database for the term Edge and updates the build pipeline to include the database during the run. This will stop naming violations with the PoliCheck tool.
+
+ .gitattributes                 |   7 +++----
+ vsts/PolicheckExclusionsDB.mdb | Bin 0 -> 364544 bytes
+ vsts/vsts.yaml                 |  18 +++++++++++-------
+ 3 files changed, 14 insertions(+), 11 deletions(-)
+
+commit 7267ec0dd77d67f52f07d45307fc5aeba4c89233
+Author: Sindhu Nagesh <vinagesh@microsoft.com>
+Date:   Wed Mar 24 13:11:13 2021 -0700
+
+    fix(release-pipeline): Update the environment variable (#1859)
+
+ vsts/test-release-nuget.yaml | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+commit 9f1ed79acce01ea79e3f9044bb1958bf2b7cb922
+Author: Abhipsa Misra <abhipsa.misra@microsoft.com>
+Date:   Tue Mar 23 16:20:10 2021 -0700
+
+    fix(vsts): Update test resources creation script to generate sha256 certificates
+
+ .../prerequisites/E2ETestsSetup/e2eTestsSetup.ps1  | 48 ++++++++++++++++++----
+ .../E2ETestsSetup/test-resources.bicep             | 24 ++++++++---
+ .../E2ETestsSetup/test-resources.json              | 27 ++++++++++--
+ 3 files changed, 82 insertions(+), 17 deletions(-)
+
+commit 7ce397c368b2a0eb3ade50871bfcdd43b3f311b9
+Author: Abhipsa Misra <abhipsa.misra@microsoft.com>
+Date:   Tue Mar 23 10:33:14 2021 -0700
+
+    refactor(e2e-tests): Update tests to be resilient to CRUD throttling limits
+
+ e2e/test/Helpers/RetryOperationHelper.cs           | 52 ++++++++++++++++++++++
+ e2e/test/Helpers/TestDevice.cs                     | 46 +++++++++++++------
+ .../device/src/RetryPolicies/ExponentialBackoff.cs |  6 +--
+ 3 files changed, 87 insertions(+), 17 deletions(-)
+
+commit 9fd6423c241165d28e9189a2921b0daf1e27f671
+Author: Sindhu Nagesh <vinagesh@microsoft.com>
+Date:   Tue Mar 23 11:19:30 2021 -0700
+
+    fix(e2e): Fix some environment varialbe names for consistency (#1849)
+
+ ...ration.AzureSecurityCenterForIoTLogAnalytics.cs |  2 +-
+ e2e/test/config/Configuration.IoTHub.cs            |  2 +-
+ .../DeviceClientX509AuthenticationE2ETests.cs      | 24 ++++++++--------
+ .../prerequisites/E2ETestsSetup/e2eTestsSetup.ps1  | 33 +++++++++++-----------
+ vsts/vsts.yaml                                     |  8 +++---
+ 5 files changed, 34 insertions(+), 35 deletions(-)
