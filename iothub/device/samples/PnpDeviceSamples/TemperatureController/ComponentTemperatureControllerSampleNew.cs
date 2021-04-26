@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     return;
                 }
 
-                double targetTemperature = ((JObject)writableProperties[Thermostat1]).GetValue(propertyName).Value<double>();
+                double targetTemperature = ((JObject)writableProperties[Thermostat1]).Value<double>(propertyName);
                 _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
                 var temperatureUpdateResponse = new WritablePropertyResponse(
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 var propertyPatch = new PropertyCollection
                 {
-                    [propertyName] = temperatureUpdateResponse,
+                    { propertyName, temperatureUpdateResponse, Thermostat1 }
                 };
 
                 await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
