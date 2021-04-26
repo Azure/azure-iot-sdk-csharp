@@ -202,13 +202,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public virtual Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler?.GetPropertiesAsync(payloadConvention, cancellationToken) ?? Task.FromResult<Properties>(null);
+            return InnerHandler?.GetPropertiesAsync(payloadConvention, cancellationToken) ?? Task.FromResult<ClientProperties>(null);
         }
 
-        public virtual Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public virtual Task SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return InnerHandler?.SendPropertyPatchAsync(reportedProperties, cancellationToken) ?? TaskHelpers.CompletedTask;
