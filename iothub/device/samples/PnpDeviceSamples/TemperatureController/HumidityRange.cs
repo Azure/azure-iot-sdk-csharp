@@ -7,10 +7,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     internal class HumidityRange
     {
+        // Properties have multiple json property annotations just for demonstration of
+        // "old" API usage in the sample - TwinCollection is tightly coupled with NewtonSoft.Json
+        // This is not something that is expected for test/ prod scenarios.
         [JsonPropertyName("maxHumidity")]
+        [Newtonsoft.Json.JsonProperty("maxHumidity")]
         public double MaxTemperature { get; set; }
 
+        // Properties have multiple json property annotations just for demonstration of
+        // "old" API usage in the sample - TwinCollection is tightly coupled with NewtonSoft.Json
+        // This is not something that is expected for test/ prod scenarios.
         [JsonPropertyName("minHumidity")]
+        [Newtonsoft.Json.JsonProperty("minHumidity")]
         public double MinTemperature { get; set; }
     }
 }
