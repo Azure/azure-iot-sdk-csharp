@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogDebug($"Command: component=\"{Thermostat2}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
                                 $" has {StatusCode.Completed}.");
 
-                    return new MethodResponse(System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(telemtry)), (int)StatusCode.Completed);
+                    return new MethodResponse(System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(updateTemperatureResponse)), (int)StatusCode.Completed);
                 }
                 catch (Newtonsoft.Json.JsonException ex)
                 {
