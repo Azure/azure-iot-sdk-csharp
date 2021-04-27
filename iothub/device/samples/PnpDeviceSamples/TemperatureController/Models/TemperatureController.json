@@ -56,6 +56,17 @@
       }
     },
     {
+      "@type": [
+        "Property",
+        "TargetHumidity"
+      ],
+      "name": "targetHumidity",
+      "schema": "double",
+      "displayName": "Target Humidity",
+      "description": "Allows to remotely specify the desired target humidity.",
+      "writable": true
+    },
+    {
       "@type": "Command",
       "commandType": "synchronous",
       "description": {

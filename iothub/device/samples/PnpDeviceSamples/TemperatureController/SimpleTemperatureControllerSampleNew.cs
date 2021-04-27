@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class SimpleTemperatureControllerSampleNew
     {
         private static readonly Random s_random = new();
-        private static readonly PayloadConvention s_systemTextJsonPayloadConvention = new SystemTextJsonPayloadConvention();
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
@@ -36,14 +35,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
             // Retrieve the device's properties.
-            Properties properties = await _deviceClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+            ClientProperties properties = await _deviceClient.GetPropertiesAsync(cancellationToken: cancellationToken);
 
             // Verify if the device has previously reported a value for property "serialNumber".
             // If the expected value has not been previously reported then report it.
             string serialNumber = "SR-12345";
             if (!properties.Contains("serialNumber") || properties.Get<string>("serialNumber") != serialNumber)
             {
-                var propertiesToBeUpdated = new PropertyCollection
+                var propertiesToBeUpdated = new ClientPropertyCollection
                 {
                     ["serialNumber"] = serialNumber
                 };
@@ -61,35 +60,34 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()} in KB.");
 
-            // Subscribe and respond to event for writable property "temperatureRange".
+            // Subscribe and respond to event for writable property "targetHumidity".
             await _deviceClient.SubscribeToWritablePropertyEventAsync(async (writableProperties, userContext) =>
             {
-                string propertyName = "temperatureRange";
+                string propertyName = "targetHumidity";
                 if (!writableProperties.Contains(propertyName))
                 {
                     _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerailizedString()}");
                     return;
                 }
 
-                TemperatureRange temperatureRangeDesired = writableProperties.GetValue<TemperatureRange>(propertyName);
+                double targetHumidity = writableProperties.GetValue<double>(propertyName);
 
-                var temperatureUpdateResponse = new SystemTextJsonWritablePropertyResponse(
-                    temperatureRangeDesired,
+                var humidityUpdateResponse = new NewtonsoftJsonWritablePropertyResponse(
+                    targetHumidity,
                     (int)StatusCode.Completed,
                     writableProperties.Version,
                     "The operation completed successfully.");
 
-                var propertyPatch = new PropertyCollection(s_systemTextJsonPayloadConvention)
+                var propertyPatch = new ClientPropertyCollection
                 {
-                    [propertyName] = temperatureUpdateResponse,
+                    [propertyName] = humidityUpdateResponse,
                 };
 
                 await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
                 _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
             },
             null,
-            s_systemTextJsonPayloadConvention,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
             // Subscribe and respond to command "reboot".
             await _deviceClient.SubscribeToCommandsAsync(async (commandRequest, userContext) =>
