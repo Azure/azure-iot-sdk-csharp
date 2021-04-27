@@ -12,21 +12,21 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    public class SimpleTemperaturControllerSampleOld
+    public class SimpleTemperatureControllerSampleOld
     {
         private static readonly Random s_random = new();
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
 
-        public SimpleTemperaturControllerSampleOld(DeviceClient deviceClient, ILogger logger)
+        public SimpleTemperatureControllerSampleOld(DeviceClient deviceClient, ILogger logger)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient), $"{nameof(deviceClient)} cannot be null.");
 
             if (logger == null)
             {
                 using ILoggerFactory loggerFactory = LoggerFactory.Create(builer => builer.AddConsole());
-                _logger = loggerFactory.CreateLogger<SimpleTemperaturControllerSampleOld>();
+                _logger = loggerFactory.CreateLogger<SimpleTemperatureControllerSampleOld>();
             }
             else
             {

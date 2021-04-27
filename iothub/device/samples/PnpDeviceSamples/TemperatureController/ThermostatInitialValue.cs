@@ -12,5 +12,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         [JsonPropertyName("humidity")]
         public double Humidity { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ThermostatInitialValue);
+        }
+
+        private bool Equals(ThermostatInitialValue objectToCompare)
+        {
+            return objectToCompare.Temperature == Temperature
+                && objectToCompare.Humidity == Humidity;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

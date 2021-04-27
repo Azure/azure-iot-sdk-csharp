@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -50,20 +48,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Humidity = 20,
                 Temperature = 25
             };
+
             if (!properties.Properties.Reported.Contains(Thermostat2)
-                || ((JObject)properties.Properties.Reported[Thermostat2]).Value<ThermostatInitialValue>("initialValue") != initialValue)
+                || !((JObject)properties.Properties.Reported[Thermostat2]).TryGetValue("initialValue", out JToken initialValueToken)
+                || !initialValue.Equals(System.Text.Json.JsonSerializer.Deserialize<ThermostatInitialValue>(initialValueToken.ToString())))
             {
-                var propertiesToBeUpdated = new TwinCollection
+                var propertiesToBeUpdated = new Dictionary<string, object>
                 {
                     ["__t"] = "c",
                     ["initialValue"] = initialValue
                 };
-                var componentProperty = new TwinCollection
+                var componentProperty = new Dictionary<string, object>
                 {
                     [Thermostat2] = propertiesToBeUpdated
                 };
-                await _deviceClient.UpdateReportedPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.ToJson()}.");
+                var twinCollection = new TwinCollection(System.Text.Json.JsonSerializer.Serialize(componentProperty));
+                await _deviceClient.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
+                _logger.LogDebug($"Property: Update - {twinCollection.ToJson()}.");
             }
 
             // Send telemetry "deviceHealth" under component "thermostat1".
@@ -72,12 +73,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Status = "running",
                 IsStopRequested = false,
             };
-            var telemtry = new Dictionary<string, object>()
+            var telemetry = new Dictionary<string, object>()
             {
                 ["deviceHealth"] = deviceHealth
             };
 
-            using var message = new Message(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemtry)))
+            using var message = new Message(System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(telemetry)))
             {
                 MessageId = s_random.Next().ToString(),
                 ContentEncoding = "utf-8",
@@ -86,39 +87,40 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             await _deviceClient.SendEventAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemtry)} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {System.Text.Json.JsonSerializer.Serialize(telemetry)}.");
 
             // Subscribe and respond to event for writable property "humidityRange" under component "thermostat1".
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(async (desired, userContext) =>
             {
                 string propertyName = "humidityRange";
-                if (!desired.Contains(Thermostat1) || !((JObject)desired[Thermostat1]).ContainsKey(propertyName))
+                if (!desired.Contains(Thermostat1) || !((JObject)desired[Thermostat1]).TryGetValue(propertyName, out JToken humidityRangeToken))
                 {
                     _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{desired.ToJson()}");
                     return;
                 }
 
-                HumidityRange targetHumidityRange = ((JObject)desired[Thermostat1]).Value<HumidityRange>(propertyName);
+                HumidityRange targetHumidityRange = System.Text.Json.JsonSerializer.Deserialize<HumidityRange>(humidityRangeToken.ToString());
 
-                var propertyPatch = new TwinCollection();
-                var componentPatch = new TwinCollection()
+                var propertyPatch = new Dictionary<string, object>();
+                var componentPatch = new Dictionary<string, object>
                 {
                     ["__t"] = "c"
                 };
-                var temperatureUpdateResponse = new TwinCollection
+                var temperatureUpdateResponse = new
                 {
-                    ["value"] = targetHumidityRange,
-                    ["ac"] = (int)StatusCode.Completed,
-                    ["av"] = desired.Version,
-                    ["ad"] = "The operation completed successfully."
+                    value = targetHumidityRange,
+                    ac = (int)StatusCode.Completed,
+                    av = desired.Version,
+                    ad = "The operation completed successfully."
                 };
                 componentPatch[propertyName] = temperatureUpdateResponse;
                 propertyPatch[Thermostat1] = componentPatch;
 
                 _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
-                await _deviceClient.UpdateReportedPropertiesAsync(propertyPatch, cancellationToken);
-                _logger.LogDebug($"Property: Update - \"{propertyPatch.ToJson()}\" is complete.");
+                var twinCollection = new TwinCollection(System.Text.Json.JsonSerializer.Serialize(propertyPatch));
+                await _deviceClient.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
+                _logger.LogDebug($"Property: Update - \"{twinCollection.ToJson()}\" is complete.");
             },
             null,
             cancellationToken: cancellationToken);
@@ -128,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 try
                 {
-                    UpdateTemperatureRequest updateTemperatureRequest = JsonConvert.DeserializeObject<UpdateTemperatureRequest>(commandRequest.DataAsJson);
+                    UpdateTemperatureRequest updateTemperatureRequest = System.Text.Json.JsonSerializer.Deserialize<UpdateTemperatureRequest>(commandRequest.DataAsJson);
 
                     _logger.LogDebug($"Command: Received - component=\"{Thermostat2}\"," +
                         $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
@@ -143,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogDebug($"Command: component=\"{Thermostat2}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
                                 $" has {StatusCode.Completed}.");
 
-                    return new MethodResponse(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemtry)), (int)StatusCode.Completed);
+                    return new MethodResponse(System.Text.Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(telemtry)), (int)StatusCode.Completed);
                 }
                 catch (Newtonsoft.Json.JsonException ex)
                 {
