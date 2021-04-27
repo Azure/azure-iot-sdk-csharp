@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static readonly JsonSerializerOptions s_options = new()
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
         };
 
         public override string ContentType => ApplicationJson;
