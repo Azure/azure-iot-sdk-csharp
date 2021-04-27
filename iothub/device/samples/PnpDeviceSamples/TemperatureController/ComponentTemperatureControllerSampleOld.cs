@@ -51,20 +51,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             if (!properties.Properties.Reported.Contains(Thermostat2)
                 || !((JObject)properties.Properties.Reported[Thermostat2]).TryGetValue("initialValue", out JToken initialValueToken)
-                || !initialValue.Equals(System.Text.Json.JsonSerializer.Deserialize<ThermostatInitialValue>(initialValueToken.ToString())))
+                || !initialValue.Equals(initialValueToken.ToObject<ThermostatInitialValue>()))
             {
-                var propertiesToBeUpdated = new Dictionary<string, object>
+                var propertiesToBeUpdated = new TwinCollection
                 {
                     ["__t"] = "c",
                     ["initialValue"] = initialValue
                 };
-                var componentProperty = new Dictionary<string, object>
+                var componentProperty = new TwinCollection
                 {
                     [Thermostat2] = propertiesToBeUpdated
                 };
-                var twinCollection = new TwinCollection(System.Text.Json.JsonSerializer.Serialize(componentProperty));
-                await _deviceClient.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
-                _logger.LogDebug($"Property: Update - {twinCollection.ToJson()}.");
+                await _deviceClient.UpdateReportedPropertiesAsync(componentProperty, cancellationToken);
+                _logger.LogDebug($"Property: Update - {componentProperty.ToJson()}.");
             }
 
             // Send telemetry "deviceHealth" under component "thermostat1".
@@ -99,28 +98,27 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     return;
                 }
 
-                HumidityRange targetHumidityRange = System.Text.Json.JsonSerializer.Deserialize<HumidityRange>(humidityRangeToken.ToString());
+                HumidityRange targetHumidityRange = humidityRangeToken.ToObject<HumidityRange>();
 
-                var propertyPatch = new Dictionary<string, object>();
-                var componentPatch = new Dictionary<string, object>
+                var propertyPatch = new TwinCollection();
+                var componentPatch = new TwinCollection()
                 {
                     ["__t"] = "c"
                 };
-                var temperatureUpdateResponse = new
+                var temperatureUpdateResponse = new TwinCollection
                 {
-                    value = targetHumidityRange,
-                    ac = (int)StatusCode.Completed,
-                    av = desired.Version,
-                    ad = "The operation completed successfully."
+                    ["value"] = targetHumidityRange,
+                    ["ac"] = (int)StatusCode.Completed,
+                    ["av"] = desired.Version,
+                    ["ad"] = "The operation completed successfully."
                 };
                 componentPatch[propertyName] = temperatureUpdateResponse;
                 propertyPatch[Thermostat1] = componentPatch;
 
                 _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
-                var twinCollection = new TwinCollection(System.Text.Json.JsonSerializer.Serialize(propertyPatch));
-                await _deviceClient.UpdateReportedPropertiesAsync(twinCollection, cancellationToken);
-                _logger.LogDebug($"Property: Update - \"{twinCollection.ToJson()}\" is complete.");
+                await _deviceClient.UpdateReportedPropertiesAsync(propertyPatch, cancellationToken);
+                _logger.LogDebug($"Property: Update - \"{propertyPatch.ToJson()}\" is complete.");
             },
             null,
             cancellationToken: cancellationToken);
