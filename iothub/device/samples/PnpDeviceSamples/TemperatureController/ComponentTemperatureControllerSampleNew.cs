@@ -47,11 +47,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Humidity = 20,
                 Temperature = 25
             };
+
             if (!properties.Contains(Thermostat2)
                 || !((JsonElement)properties[Thermostat2]).TryGetProperty("initialValue", out JsonElement initalValueReported)
-                || !initalValueReported.Equals(s_systemTextJsonPayloadConvention.PayloadSerializer.DeserializeToType<ThermostatInitialValue>(initalValueReported.GetRawText())))
+                || !initialValue.Equals(s_systemTextJsonPayloadConvention.PayloadSerializer.DeserializeToType<ThermostatInitialValue>(initalValueReported.GetRawText())))
             {
-                var propertiesToBeUpdated = new ClientPropertyCollection
+                var propertiesToBeUpdated = new ClientPropertyCollection(s_systemTextJsonPayloadConvention)
                 {
                     { "initialValue", initialValue, Thermostat2 }
                 };
@@ -74,13 +75,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 MessageId = s_random.Next().ToString(),
             };
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()}.");
 
             // Subscribe and respond to event for writable property "humidityRange" under component "thermostat1".
             await _deviceClient.SubscribeToWritablePropertyEventAsync(async (writableProperties, userContext) =>
             {
                 string propertyName = "humidityRange";
-                if (!writableProperties.Contains(Thermostat1) || !((JsonElement)properties[Thermostat1]).TryGetProperty(propertyName, out JsonElement humidityRangeJson))
+                if (!writableProperties.Contains(Thermostat1) || !((JsonElement)writableProperties[Thermostat1]).TryGetProperty(propertyName, out JsonElement humidityRangeJson))
                 {
                     _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerailizedString()}");
                     return;
