@@ -62,34 +62,34 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 MessageId = s_random.Next().ToString(),
                 ContentEncoding = "utf-8",
-                ContentType= "application/json",
+                ContentType = "application/json",
             };
 
             await _deviceClient.SendEventAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemtry)} in KB.");
 
-            // Subscribe and respond to event for writable property "temperatureRange".
+            // Subscribe and respond to event for writable property "targetHumidity".
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(async (desired, userContext) =>
             {
-                string propertyName = "temperatureRange";
+                string propertyName = "targetHumidity";
                 if (!desired.Contains(propertyName))
                 {
                     _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{desired.ToJson()}");
                     return;
                 }
 
-                TemperatureRange temperatureRangeDesired = desired[propertyName];
+                double targetHumidity = desired[propertyName];
 
                 var propertyPatch = new TwinCollection();
-                var temperatureUpdateResponse = new TwinCollection
+                var humidityUpdateResponse = new TwinCollection
                 {
-                    ["value"] = temperatureRangeDesired,
+                    ["value"] = targetHumidity,
                     ["ac"] = (int)StatusCode.Completed,
                     ["av"] = desired.Version,
                     ["ad"] = "The operation completed successfully."
                 };
-                propertyPatch[propertyName] = temperatureUpdateResponse;
-                
+                propertyPatch[propertyName] = humidityUpdateResponse;
+
                 await _deviceClient.UpdateReportedPropertiesAsync(propertyPatch, cancellationToken);
                 _logger.LogDebug($"Property: Update - \"{propertyPatch.ToJson()}\" is complete.");
             },

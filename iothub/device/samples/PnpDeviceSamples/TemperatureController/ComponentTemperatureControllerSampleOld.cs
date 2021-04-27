@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const string Thermostat2 = "thermostat2";
 
         private static readonly Random s_random = new();
-        
+
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
 
@@ -43,22 +43,27 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Retrieve the device's properties.
             Twin properties = await _deviceClient.GetTwinAsync(cancellationToken: cancellationToken);
 
-            // Verify if the device has previously reported a value for property "maxTempSinceLastReboot" under component "thermostat1".
+            // Verify if the device has previously reported a value for property "initialValue" under component "thermostat2".
             // If the expected value has not been previously reported then report it.
-            double maxTempSinceLastReboot = 25;
-            if (!properties.Properties.Reported.Contains(Thermostat1) || ((JObject)properties.Properties.Reported[Thermostat1]).Value<double>("maxTempSinceLastReboot") != maxTempSinceLastReboot)
+            var initialValue = new ThermostatInitialValue
+            {
+                Humidity = 20,
+                Temperature = 25
+            };
+            if (!properties.Properties.Reported.Contains(Thermostat2)
+                || ((JObject)properties.Properties.Reported[Thermostat2]).Value<ThermostatInitialValue>("initialValue") != initialValue)
             {
                 var propertiesToBeUpdated = new TwinCollection
                 {
                     ["__t"] = "c",
-                    ["maxTempSinceLastReboot"] = maxTempSinceLastReboot
+                    ["initialValue"] = initialValue
                 };
                 var componentProperty = new TwinCollection
                 {
-                    [Thermostat1] = propertiesToBeUpdated
+                    [Thermostat2] = propertiesToBeUpdated
                 };
                 await _deviceClient.UpdateReportedPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.ToJson()} in KB.");
+                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.ToJson()}.");
             }
 
             // Send telemetry "deviceHealth" under component "thermostat1".
@@ -83,17 +88,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SendEventAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemtry)} in KB.");
 
-            // Subscribe and respond to event for writable property "targetTemperature" under component "thermostat1".
+            // Subscribe and respond to event for writable property "humidityRange" under component "thermostat1".
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(async (desired, userContext) =>
             {
-                string propertyName = "targetTemperature";
+                string propertyName = "humidityRange";
                 if (!desired.Contains(Thermostat1) || !((JObject)desired[Thermostat1]).ContainsKey(propertyName))
                 {
                     _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{desired.ToJson()}");
                     return;
                 }
 
-                double targetTemperature = ((JObject)desired[Thermostat1]).Value<double>(propertyName);
+                HumidityRange targetHumidityRange = ((JObject)desired[Thermostat1]).Value<HumidityRange>(propertyName);
 
                 var propertyPatch = new TwinCollection();
                 var componentPatch = new TwinCollection()
@@ -102,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 };
                 var temperatureUpdateResponse = new TwinCollection
                 {
-                    ["value"] = targetTemperature,
+                    ["value"] = targetHumidityRange,
                     ["ac"] = (int)StatusCode.Completed,
                     ["av"] = desired.Version,
                     ["ad"] = "The operation completed successfully."
@@ -110,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 componentPatch[propertyName] = temperatureUpdateResponse;
                 propertyPatch[Thermostat1] = componentPatch;
 
-                _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
+                _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
                 await _deviceClient.UpdateReportedPropertiesAsync(propertyPatch, cancellationToken);
                 _logger.LogDebug($"Property: Update - \"{propertyPatch.ToJson()}\" is complete.");
