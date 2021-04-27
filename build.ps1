@@ -112,7 +112,7 @@ try {
 
         RunApp iot-hub\Samples\device\DeviceReconnectionSample "IoTHub\Device\DeviceReconnectionSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
         RunApp iot-hub\Samples\device\FileUploadSample "IoTHub\Device\FileUploadSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
-        RunApp iot-hub\Samples\device\MessageReceiveSample "IoTHub\Device\MessageReceiveSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"""
+        RunApp iot-hub\Samples\device\MessageReceiveSample "IoTHub\Device\MessageReceiveSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING""" -r 10
         RunApp iot-hub\Samples\device\MethodSample "IoTHub\Device\MethodSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
         RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample" "-p ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
 

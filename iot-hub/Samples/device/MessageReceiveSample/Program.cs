@@ -29,10 +29,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Environment.Exit(1);
                 });
 
+            TimeSpan? appRunTime = null;
+            if (parameters.ApplicationRunningTime.HasValue)
+            {
+                appRunTime = TimeSpan.FromSeconds(parameters.ApplicationRunningTime.Value);
+            }
+
             using var deviceClient = DeviceClient.CreateFromConnectionString(
                 parameters.PrimaryConnectionString,
                 parameters.TransportType);
-            var sample = new MessageReceiveSample(deviceClient);
+            var sample = new MessageReceiveSample(deviceClient, appRunTime);
             await sample.RunSampleAsync();
             await deviceClient.CloseAsync();
 

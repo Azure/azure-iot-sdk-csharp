@@ -8,9 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.31.0" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.16.0" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.13.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.37.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.17.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.15.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.8" />
   </ItemGroup>
 
