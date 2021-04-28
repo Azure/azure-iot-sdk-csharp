@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string _sendingPath = "/messages/deviceBound";
+        private const string SendingPath = "/messages/deviceBound";
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
@@ -365,7 +365,7 @@ namespace Microsoft.Azure.Devices
 
         private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)
         {
-            return Connection.CreateSendingLinkAsync(_sendingPath, timeout);
+            return Connection.CreateSendingLinkAsync(SendingPath, timeout);
         }
 
         /// <inheritdoc/>

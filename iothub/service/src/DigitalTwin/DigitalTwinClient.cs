@@ -5,14 +5,14 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Core;
 using Microsoft.Azure.Devices.Authentication;
+using Microsoft.Azure.Devices.DigitalTwin.Authentication;
 using Microsoft.Azure.Devices.Extensions;
 using Microsoft.Azure.Devices.Generated;
 using Microsoft.Rest;
 using Newtonsoft.Json;
-using Microsoft.Azure.Devices.DigitalTwin.Authentication;
-using Azure;
-using Azure.Core;
 using PnpDigitalTwin = Microsoft.Azure.Devices.Generated.DigitalTwin;
 
 namespace Microsoft.Azure.Devices

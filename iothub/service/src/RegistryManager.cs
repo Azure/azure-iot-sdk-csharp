@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices
 #if !NET451
 
         /// <summary>
-        /// Creates an instance of <see cref="RegistryManager"/>.
+        /// Creates an instance of RegistryManager.
         /// </summary>
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>

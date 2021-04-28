@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string GetIotHubHostName()
             {
-                ConnectionStringParser connectionString = new ConnectionStringParser(ConnectionString);
+                var connectionString = new ConnectionStringParser(ConnectionString);
                 return connectionString.IotHubHostName;
             }
 
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string GetIotHubSharedAccessSignature(TimeSpan timeToLive)
             {
-                ConnectionStringParser connectionString = new ConnectionStringParser(ConnectionString);
+                var connectionString = new ConnectionStringParser(ConnectionString);
                 return GenerateSasToken(
                     connectionString.IotHubHostName,
                     connectionString.SharedAccessKey,
