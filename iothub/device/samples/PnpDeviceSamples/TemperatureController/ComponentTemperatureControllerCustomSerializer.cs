@@ -2,25 +2,25 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    public class ComponentTemperatureControllerSampleNew
+    public class ComponentTemperatureControllerCustomSerializer
     {
         private const string Thermostat1 = "thermostat1";
         private const string Thermostat2 = "thermostat2";
 
         private static readonly Random s_random = new();
+        private static readonly PayloadConvention s_systemTextJsonPayloadConvention = new SystemTextJsonPayloadConvention();
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
 
-        public ComponentTemperatureControllerSampleNew(DeviceClient deviceClient, ILogger logger)
+        public ComponentTemperatureControllerCustomSerializer(DeviceClient deviceClient, ILogger logger)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient), $"{nameof(deviceClient)} cannot be null.");
 
@@ -38,10 +38,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
             // Retrieve the device's properties.
-            ClientProperties properties = await _deviceClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+            ClientProperties properties = await _deviceClient.GetPropertiesAsync(s_systemTextJsonPayloadConvention, cancellationToken);
 
-            // Verify if the device has previously reported a value for property
-            // "initialValue" under component "thermostat2".
+            // Verify if the device has previously reported a value for property "initialValue" under component "thermostat2".
             // If the expected value has not been previously reported then report it.
             var initialValue = new ThermostatInitialValue
             {
@@ -50,12 +49,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             if (!properties.Contains(Thermostat2)
-                || !((JObject)properties[Thermostat2])
-                    .TryGetValue("initialValue", out JToken initialValueReported)
+                || !((JsonElement)properties[Thermostat2])
+                    .TryGetProperty("initialValue", out JsonElement initialValueReported)
                 || !initialValue
-                    .Equals(initialValueReported.ToObject<ThermostatInitialValue>()))
+                    .Equals(s_systemTextJsonPayloadConvention.PayloadSerializer
+                        .DeserializeToType<ThermostatInitialValue>(initialValueReported.GetRawText())))
             {
-                var propertiesToBeUpdated = new ClientPropertyCollection
+                var propertiesToBeUpdated = new ClientPropertyCollection(s_systemTextJsonPayloadConvention)
                 {
                     { "initialValue", initialValue, Thermostat2 }
                 };
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             using var message = new TelemetryMessage(Thermostat1)
             {
                 MessageId = s_random.Next().ToString(),
-                Telemetry = new TelemetryCollection
+                Telemetry = new TelemetryCollection(s_systemTextJsonPayloadConvention)
                 {
                     ["deviceHealth"] = deviceHealth
                 },
@@ -85,23 +85,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 string propertyName = "humidityRange";
                 if (!writableProperties.Contains(Thermostat1)
-                    || !((JObject)writableProperties[Thermostat1])
-                        .TryGetValue(propertyName, out JToken humidityRangeRequested))
+                    || !((JsonElement)writableProperties[Thermostat1])
+                        .TryGetProperty(propertyName, out JsonElement humidityRangeRequested))
                 {
                     _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerailizedString()}");
                     return;
                 }
 
-                HumidityRange targetHumidityRange = humidityRangeRequested.ToObject<HumidityRange>();
+                HumidityRange targetHumidityRange = s_systemTextJsonPayloadConvention.PayloadSerializer.DeserializeToType<HumidityRange>(humidityRangeRequested.GetRawText());
                 _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
-                var temperatureUpdateResponse = new NewtonsoftJsonWritablePropertyResponse(
+                var temperatureUpdateResponse = new SystemTextJsonWritablePropertyResponse(
                     targetHumidityRange,
                     (int)StatusCode.Completed,
                     writableProperties.Version,
                     "The operation completed successfully.");
 
-                var propertyPatch = new ClientPropertyCollection
+                var propertyPatch = new ClientPropertyCollection(s_systemTextJsonPayloadConvention)
                 {
                     { propertyName, temperatureUpdateResponse, Thermostat1 }
                 };
@@ -110,7 +110,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
             },
             null,
-            cancellationToken: cancellationToken);
+            s_systemTextJsonPayloadConvention,
+            cancellationToken);
 
             // Subscribe and respond to command "updateTemperatureWithDelay" under component "thermostat2".
             await _deviceClient.SubscribeToCommandsAsync(async (commandRequest, userContext) =>
@@ -132,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
                                 $" has {StatusCode.Completed}.");
 
-                    return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+                    return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed, s_systemTextJsonPayloadConvention);
                 }
                 catch (JsonException ex)
                 {
@@ -141,7 +142,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
             },
             null,
-            cancellationToken: cancellationToken);
+            s_systemTextJsonPayloadConvention,
+            cancellationToken);
 
             Console.ReadKey();
         }

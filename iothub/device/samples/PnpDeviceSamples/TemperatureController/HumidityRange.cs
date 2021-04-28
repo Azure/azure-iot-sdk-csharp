@@ -2,23 +2,22 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
     internal class HumidityRange
     {
-        // Properties have multiple json property annotations just for demonstration of
-        // "old" API usage in the sample - TwinCollection is tightly coupled with NewtonSoft.Json
-        // This is not something that is expected for test/ prod scenarios.
+        // Multiple json property annotations are added to demonstrate the difference in
+        // API usgage for the different serializers.
+        [JsonProperty("maxHumidity")]
         [JsonPropertyName("maxHumidity")]
-        [Newtonsoft.Json.JsonProperty("maxHumidity")]
         public double MaxTemperature { get; set; }
 
-        // Properties have multiple json property annotations just for demonstration of
-        // "old" API usage in the sample - TwinCollection is tightly coupled with NewtonSoft.Json
-        // This is not something that is expected for test/ prod scenarios.
+        // Multiple json property annotations are added to demonstrate the difference in
+        // API usgage for the different serializers.
+        [JsonProperty("minHumidity")]
         [JsonPropertyName("minHumidity")]
-        [Newtonsoft.Json.JsonProperty("minHumidity")]
         public double MinTemperature { get; set; }
     }
 }

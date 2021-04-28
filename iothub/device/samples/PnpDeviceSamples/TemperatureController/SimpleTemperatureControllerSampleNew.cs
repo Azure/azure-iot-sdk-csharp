@@ -54,8 +54,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
             using var message = new TelemetryMessage
             {
-                Telemetry = { ["workingSet"] = workingSet },
                 MessageId = s_random.Next().ToString(),
+                Telemetry = { ["workingSet"] = workingSet },
             };
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()} in KB.");
