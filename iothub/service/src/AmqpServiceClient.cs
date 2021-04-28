@@ -57,7 +57,8 @@ namespace Microsoft.Azure.Devices
                 connectionProperties,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                transportSettings.HttpProxy);
+                transportSettings.HttpProxy,
+                transportSettings.ConnectionLeaseTimeoutMilliseconds);
 
             // Set the trace provider for the AMQP library.
             AmqpTrace.Provider = new AmqpTransportLog();
