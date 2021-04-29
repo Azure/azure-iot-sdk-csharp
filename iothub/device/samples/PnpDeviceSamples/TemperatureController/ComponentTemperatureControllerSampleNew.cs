@@ -55,10 +55,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 || !initialValue
                     .Equals(initialValueReported.ToObject<ThermostatInitialValue>()))
             {
-                var propertiesToBeUpdated = new ClientPropertyCollection
-                {
-                    { "initialValue", initialValue, Thermostat2 }
-                };
+                var propertiesToBeUpdated = new ClientPropertyCollection();
+                propertiesToBeUpdated.Add("initialValue", initialValue, Thermostat2);
+
                 await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
                 _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()}.");
             }
@@ -96,10 +95,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     HumidityRange targetHumidityRange = humidityRangeRequested.ToObject<HumidityRange>();
                     _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
-                    var propertyPatch = new ClientPropertyCollection
-                    {
-                        { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 },
-                    };
+                    var propertyPatch = new ClientPropertyCollection();
+                    propertyPatch.Add(propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1);
 
                     await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
                     _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
