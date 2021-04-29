@@ -7,9 +7,9 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// A <see cref="Newtonsoft.Json.JsonConvert"/> <see cref="ObjectSerializer"/> implementation.
+    /// A <see cref="Newtonsoft.Json.JsonConvert"/> <see cref="PayloadSerializer"/> implementation.
     /// </summary>
-    public class NewtonsoftJsonObjectSerializer : ObjectSerializer
+    public class NewtonsoftJsonPayloadSerializer : PayloadSerializer
     {
         /// <summary>
         /// The Content Type string.
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The default instance of this class.
         /// </summary>
-        public static readonly NewtonsoftJsonObjectSerializer Instance = new NewtonsoftJsonObjectSerializer();
+        public static readonly NewtonsoftJsonPayloadSerializer Instance = new NewtonsoftJsonPayloadSerializer();
 
         /// <inheritdoc/>
         public override string ContentType => ApplicationJson;

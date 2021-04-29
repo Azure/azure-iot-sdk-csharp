@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Adds a type of <see cref="IWritablePropertyResponse"/> to the collection.
         /// </summary>
         /// <remarks>
-        /// This method will use the <see cref="ObjectSerializer.CreateWritablePropertyResponse(object, int, long, string)"/> method to create an instance of <see cref="IWritablePropertyResponse"/> that will be properly serialized.
+        /// This method will use the <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/> method to create an instance of <see cref="IWritablePropertyResponse"/> that will be properly serialized.
         /// </remarks>
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
         /// <param name="propertyName">The name of the property to add or update.</param>
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Adds or updates the value for the collection.
         /// </summary>
         /// <seealso cref="PayloadConvention"/>
-        /// <seealso cref="ObjectSerializer"/>
+        /// <seealso cref="PayloadSerializer"/>
         /// <seealso cref="ContentEncoder"/>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>

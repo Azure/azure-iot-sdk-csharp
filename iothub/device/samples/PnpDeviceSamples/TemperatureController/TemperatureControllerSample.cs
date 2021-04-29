@@ -198,14 +198,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
             message.Telemetry.Add("another value", 56.2);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()}.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerializedString()}.");
         }
 
         private Task<CommandResponse> CommandEventDispatcherAsync(CommandRequest commandRequest, object userContext)
         {
             // Ideally you'd need to use the combination of command name and component name to identify the command event,
             // but for the purpose of this sample we can use the command name by itself since we know that all command names are unique.
-            string dispatcherKey = commandRequest.Name;
+            string dispatcherKey = commandRequest.CommandName;
             if (_commandEventCallbacks.ContainsKey(dispatcherKey))
             {
                 return _commandEventCallbacks[dispatcherKey]?.Invoke(commandRequest, userContext);
@@ -392,7 +392,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, s_cancellationToken);
-            _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
+            _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
         }
 
         private async Task SendHumidityRangeAsync(ClientPropertyCollection writableProperties, object userContext, string dispatcherKey)
@@ -416,7 +416,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, s_cancellationToken);
-            _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
+            _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
         }
 
         // The desired property update callback, which receives the target temperature as a desired property update,
@@ -496,7 +496,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerializedString()} in KB.");
         }
 
         // Send device serial number over property update.

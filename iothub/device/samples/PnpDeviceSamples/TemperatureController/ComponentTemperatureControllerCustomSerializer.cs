@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     { "initialValue", initialValue, Thermostat2 }
                 };
                 await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerailizedString()}.");
+                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()}.");
             }
 
             // Send telemetry "deviceHealth" under component "thermostat1".
@@ -81,65 +81,67 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 },
             };
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()}.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerializedString()}.");
 
             // Subscribe and respond to event for writable property "humidityRange" under component "thermostat1".
-            await _deviceClient.SubscribeToWritablePropertiesEventAsync(async (writableProperties, userContext) =>
-            {
-                string propertyName = "humidityRange";
-                if (!writableProperties.Contains(Thermostat1)
-                    || !((JsonElement)writableProperties[Thermostat1])
-                        .TryGetProperty(propertyName, out JsonElement humidityRangeRequested))
+            await _deviceClient.SubscribeToWritablePropertiesEventAsync(
+                async (writableProperties, userContext) =>
                 {
-                    _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerailizedString()}");
-                    return;
-                }
-
-                HumidityRange targetHumidityRange = _deviceClient.PayloadConvention.PayloadSerializer.DeserializeToType<HumidityRange>(humidityRangeRequested.GetRawText());
-
-                _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
-
-                var propertyPatch = new ClientPropertyCollection
-                {
-                    { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
-                };
-
-                await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
-                _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
-            },
-            null,
-            cancellationToken);
-
-            // Subscribe and respond to command "updateTemperatureWithDelay" under component "thermostat2".
-            await _deviceClient.SubscribeToCommandsAsync(async (commandRequest, userContext) =>
-            {
-                try
-                {
-                    UpdateTemperatureRequest updateTemperatureRequest = commandRequest.GetData<UpdateTemperatureRequest>();
-
-                    _logger.LogDebug($"Command: Received - component=\"{commandRequest.ComponentName}\"," +
-                        $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
-                    await Task.Delay(TimeSpan.FromSeconds(updateTemperatureRequest.Delay));
-
-                    var updateTemperatureResponse = new UpdateTemperatureResponse
+                    string propertyName = "humidityRange";
+                    if (!writableProperties.Contains(Thermostat1)
+                        || !((JsonElement)writableProperties[Thermostat1])
+                            .TryGetProperty(propertyName, out JsonElement humidityRangeRequested))
                     {
-                        TargetTemperature = updateTemperatureRequest.TargetTemperature,
-                        Status = (int)StatusCode.Completed
+                        _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerializedString()}");
+                        return;
+                    }
+
+                    HumidityRange targetHumidityRange = _deviceClient.PayloadConvention.PayloadSerializer.DeserializeToType<HumidityRange>(humidityRangeRequested.GetRawText());
+
+                    _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
+
+                    var propertyPatch = new ClientPropertyCollection
+                    {
+                        { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
                     };
 
-                    _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
-                                $" has {StatusCode.Completed}.");
+                    await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
+                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
+                },
+                null,
+                cancellationToken);
 
-                    return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
-                }
-                catch (JsonException ex)
+            // Subscribe and respond to command "updateTemperatureWithDelay" under component "thermostat2".
+            await _deviceClient.SubscribeToCommandsAsync(
+                async (commandRequest, userContext) =>
                 {
-                    _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                    return new CommandResponse((int)StatusCode.BadRequest);
-                }
-            },
-            null,
-            cancellationToken);
+                    try
+                    {
+                        UpdateTemperatureRequest updateTemperatureRequest = commandRequest.GetData<UpdateTemperatureRequest>();
+
+                        _logger.LogDebug($"Command: Received - component=\"{commandRequest.ComponentName}\"," +
+                            $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
+                        await Task.Delay(TimeSpan.FromSeconds(updateTemperatureRequest.Delay));
+
+                        var updateTemperatureResponse = new UpdateTemperatureResponse
+                        {
+                            TargetTemperature = updateTemperatureRequest.TargetTemperature,
+                            Status = (int)StatusCode.Completed
+                        };
+
+                        _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
+                                    $" has {StatusCode.Completed}.");
+
+                        return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+                    }
+                    catch (JsonException ex)
+                    {
+                        _logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                        return new CommandResponse((int)StatusCode.BadRequest);
+                    }
+                },
+                null,
+                cancellationToken);
 
             Console.ReadKey();
         }

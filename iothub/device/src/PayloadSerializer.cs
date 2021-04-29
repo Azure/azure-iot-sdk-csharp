@@ -9,10 +9,10 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// The serializer is responsible for converting all of your objects into the correct format for the <see cref="PayloadConvention"/> that uses it.
     /// <para>
-    /// By default we have implemented the <see cref="NewtonsoftJsonObjectSerializer"/> class that uses <see cref="Newtonsoft.Json.JsonConvert"/> to handle the serialization for the <see cref="DefaultPayloadConvention"/> class.
+    /// By default we have implemented the <see cref="NewtonsoftJsonPayloadSerializer"/> class that uses <see cref="Newtonsoft.Json.JsonConvert"/> to handle the serialization for the <see cref="DefaultPayloadConvention"/> class.
     /// </para>
     /// </remarks>
-    public abstract class ObjectSerializer
+    public abstract class PayloadSerializer
     {
         /// <summary>
         /// Used to specify what type of content to expect

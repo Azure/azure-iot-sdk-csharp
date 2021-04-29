@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal CommandRequest(PayloadConvention payloadConvention, string commandName, string componentName = default, byte[] data = default)
         {
-            Name = commandName;
+            CommandName = commandName;
             ComponentName = componentName;
             _data = data;
             _payloadConvention = payloadConvention;
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The method name.
         /// </summary>
-        public string Name { get; private set; }
+        public string CommandName { get; private set; }
 
         /// <summary>
         ///
