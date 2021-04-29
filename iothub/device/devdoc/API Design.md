@@ -7,7 +7,7 @@
 public abstract class PayloadConvention {
     protected PayloadConvention();
     public abstract ContentEncoder PayloadEncoder { get; }
-    public abstract Serializer PayloadSerializer { get; }
+    public abstract ObjectSerializer PayloadSerializer { get; }
     public virtual byte[] GetObjectBytes(object objectToSendWithConvention);
 }
 
@@ -17,11 +17,11 @@ public abstract class ContentEncoder {
     public abstract byte[] EncodeStringToByteArray(string contentPayload);
 }
 
-public abstract class Serializer {
-    protected Serializer();
+public abstract class ObjectSerializer {
+    protected ObjectSerializer();
     public abstract string ContentType { get; }
-    public abstract bool CheckWritablePropertyResponseType(object typeToCheck);
     public abstract T ConvertFromObject<T>(object objectToConvert);
+    public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public abstract T DeserializeToType<T>(string stringToDeserialize);
     public abstract string SerializeToString(object objectToSerialize);
 }
@@ -40,12 +40,12 @@ public class Utf8ContentEncoder : ContentEncoder {
     public override byte[] EncodeStringToByteArray(string contentPayload);
 }
 
-public class JsonContentSerializer : Serializer {
-    public static readonly JsonContentSerializer Instance;
-    public JsonContentSerializer();
+public class NewtonsoftJsonObjectSerializer : ObjectSerializer {
+    public static readonly NewtonsoftJsonObjectSerializer Instance;
+    public NewtonsoftJsonObjectSerializer();
     public override string ContentType { get; }
-    public override bool CheckWritablePropertyResponseType(object typeToCheck);
     public override T ConvertFromObject<T>(object objectToConvert);
+    public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public override T DeserializeToType<T>(string stringToDeserialize);
     public override string SerializeToString(object objectToSerialize);
 }
@@ -80,49 +80,49 @@ public static class ConventionBasedConstants {
 /// <summary>
 /// Retrieve the device properties.
 /// </summary>
-/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 /// <returns>The device properties.</returns>
-public Task<Properties> GetPropertiesAsync(PayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
+public Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Update properties.
 /// </summary>
 /// <param name="propertyCollection">Reported properties to push.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdatePropertiesAsync(PropertyCollection propertyCollection, CancellationToken cancellationToken = default(CancellationToken));
+public Task UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Sets the global listener for Writable properties
 /// </summary>
 /// <param name="callback">The global call back to handle all writable property updates.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
+public Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default);
 ```
 
 #### All related types
 
 ```csharp
-public class Properties : IEnumerable, IEnumerable<object> {
+public class ClientProperties : IEnumerable, IEnumerable<object> {
     public object this[string key] { get; }
     public long Version { get; }
-    public PropertyCollection Writable { get; private set; }
+    public ClientPropertyCollection Writable { get; private set; }
     public bool Contains(string propertyName);
     public T Get<T>(string propertyKey);
     public IEnumerator<object> GetEnumerator();
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
-public class PropertyCollection : PayloadCollection {
-    public PropertyCollection(PayloadConvention payloadConvention = null);
+public class ClientPropertyCollection : PayloadCollection {
+    public ClientPropertyCollection();
     public long Version { get; private set; }
     public void Add(IDictionary<string, object> properties, string componentName = null);
     public override void Add(string propertyName, object propertyValue);
-    public void Add(string propertyName, object propertyValue, string componentName);
+    public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = null, string componentName = null);
+    public void Add(string propertyName, object propertyValue, string componentName = null);
     public void AddOrUpdate(IDictionary<string, object> properties, string componentName = null);
     public override void AddOrUpdate(string propertyName, object propertyValue);
+    public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = null, string componentName = null);
     public void AddOrUpdate(string propertyName, object propertyValue, string componentName);
     public bool Contains(string propertyName);
 }
@@ -134,8 +134,8 @@ public interface IWritablePropertyResponse {
     object Value { get; set; }
 }
 
-public sealed class WritablePropertyResponse : IWritablePropertyResponse {
-    public WritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
+public sealed class NewtonsoftJsonWritablePropertyResponse : IWritablePropertyResponse {
+    public NewtonsoftJsonWritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
     public int AckCode { get; set; }
     public string AckDescription { get; set; }
     public long AckVersion { get; set; }
@@ -156,13 +156,13 @@ public sealed class WritablePropertyResponse : IWritablePropertyResponse {
 /// <param name="telemetryMessage">The telemetry message.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 /// <returns></returns>
-public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default(CancellationToken));
+public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default);
 ```
 #### All related types
 
 ```csharp
 public class TelemetryCollection : PayloadCollection {
-    public TelemetryCollection(PayloadConvention payloadConvention = null);
+    public TelemetryCollection();
     public override void Add(string telemetryName, object telemetryValue);
     public override void AddOrUpdate(string telemetryName, object telemetryValue);
 }
@@ -186,7 +186,7 @@ public class TelemetryMessage : Message {
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
 /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, PayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
+public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken = default);
 ```
 #### All related types
 
@@ -200,12 +200,11 @@ public sealed class CommandRequest {
 
 public sealed class CommandResponse {
     public CommandResponse(int status);
-    public CommandResponse(object result, int status, PayloadConvention payloadConvention = null);
+    public CommandResponse(object result, int status);
     public string ResultAsJson { get; }
     public int Status { get; private set; }
 }
 ```
-
 
 ### Additional changes to Microsoft.Azure.Devices.Client
 
@@ -216,20 +215,25 @@ Includes all public and non-public changes to existing types.
 ``` diff
  {
      namespace Microsoft.Azure.Devices.Client {
-         internal static class CommonConstants {
-+            public const string ComponentIdentifierKey = "__t";
-+            public const string ComponentIdentifierValue = "c";
-         }
+         
+        public class ClientOptions {
++            public PayloadConvention PayloadConvention { get; set; }
+        }
         
-         internal interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable {
-+            Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
-         }
+        public class DeviceClient : IDisposable {
++            public PayloadConvention PayloadConvention { get; }
+        }
 
-         internal class InternalClient : IDisposable {
-+            internal Task<Properties> GetPropertiesAsync(IPayloadConvention payloadConvention = null, CancellationToken cancellationToken = default(CancellationToken));
-+            internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken);
-+            internal Task SubscribeToWritablePropertyEventAsync(Func<PropertyCollection, object, Task> callback, object userContext, IPayloadConvention payloadConvention, CancellationToken cancellationToken);
-+            internal Task UpdatePropertiesAsync(PropertyCollection propertyPatch, CancellationToken cancellationToken);
+        internal interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable {
++            Task SendPropertyPatchAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken);
+        }
+
+        internal class InternalClient : IDisposable {
++            internal PayloadConvention PayloadConvention { get; }
++            internal Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken);
++            internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken);
++            internal Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken);
++            internal Task UpdateClientPropertiesAsync(ClientPropertyCollection clientProperties, CancellationToken cancellationToken);
          }
 
 -        public sealed class Message : IDisposable, IReadOnlyIndicator {
@@ -249,8 +253,8 @@ Includes all public and non-public changes to existing types.
 -            public Stream GetBodyStream();
 +            public virtual Stream GetBodyStream();
 +            private void SetSystemProperty(string key, object value);
-         }
-     }
+        }
+    }
 
      namespace Microsoft.Azure.Devices.Client.Transport {
          internal abstract class DefaultDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDelegatingHandler, IDisposable {
