@@ -32,6 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             TimeSpan? appRunTime = null;
             if (parameters.ApplicationRunningTime.HasValue)
             {
+                Console.WriteLine($"Running sample for a max time of {parameters.ApplicationRunningTime.Value} seconds.");
                 appRunTime = TimeSpan.FromSeconds(parameters.ApplicationRunningTime.Value);
             }
 
