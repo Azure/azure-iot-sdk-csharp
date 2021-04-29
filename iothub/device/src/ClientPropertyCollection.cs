@@ -27,11 +27,16 @@ namespace Microsoft.Azure.Devices.Client
         {
         }
 
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <summary>
         /// Adds the value for the collection.
         /// </summary>
-        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <remarks>
+        /// If the collection has a key that matches the property name this method will throw an <see cref="ArgumentException"/>.
+        /// <para>
+        /// When using this as part of the <see cref="DeviceClient.UpdatePropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> flow you to respond to a writable property update you should use <see cref="Add(string, object, int, long, string, string)"/> to ensure the correct formatting is applied when the object is serialized.
+        /// </para>
+        /// </remarks>
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
         /// <param name="propertyName">The name of the property to add.</param>
         /// <param name="propertyValue">The value of the property to add.</param>
@@ -40,20 +45,20 @@ namespace Microsoft.Azure.Devices.Client
             Add(propertyName, propertyValue, null);
         }
 
+        /// <inheritdoc path="/remarks" cref="Add(string, object)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <summary>
         /// Adds the value for the collection.
         /// </summary>
-        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
         /// <param name="propertyName">The name of the property to add.</param>
         /// <param name="propertyValue">The value of the property to add.</param>
         /// <param name="componentName">The component with the property to add.</param>
-        public void Add(string propertyName, object propertyValue, string componentName)
+        public void Add(string propertyName, object propertyValue, string componentName = default)
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
 
-        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)"/>
+        /// <inheritdoc path="/remarks" cref="Add(string, object)" />
         /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <summary>
@@ -64,8 +69,28 @@ namespace Microsoft.Azure.Devices.Client
         public void Add(IDictionary<string, object> properties, string componentName = default)
         => Add(properties, componentName, false);
 
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <summary>
+        /// Adds a type of <see cref="IWritablePropertyResponse"/> to the collection.
+        /// </summary>
+        /// <remarks>
+        /// This method will use the <see cref="ObjectSerializer.CreateWritablePropertyResponse(object, int, long, string)"/> method to create an instance of <see cref="IWritablePropertyResponse"/> that will be properly serialized.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the property to add or update.</param>
+        /// <param name="propertyValue">The value of the property to add or update.</param>
+        /// <param name="statusCode"></param>
+        /// <param name="version"></param>
+        /// <param name="description"></param>
+        /// <param name="componentName"></param>
+        public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = default, string componentName = default)
+        {
+            Add(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
+        }
+
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/remarks" cref="AddOrUpdate(IDictionary{string, object}, string)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
@@ -77,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/remarks" cref="AddOrUpdate(IDictionary{string, object}, string)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
@@ -88,20 +113,40 @@ namespace Microsoft.Azure.Devices.Client
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
 
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <remarks>
+        /// If the collection has a key that matches this will overwrite the current value. Otherwise it will attempt to add this to the collection.
+        /// <para>
+        /// When using this as part of the <see cref="DeviceClient.UpdatePropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> flow you to respond to a writable property update you should use <see cref="AddOrUpdate(string, object, int, long, string, string)"/> to ensure the correct formatting is applied when the object is serialized.
+        /// </para>
+        /// </remarks>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
             => Add(properties, componentName, true);
 
+        /// <inheritdoc path="/remarks" cref="Add(string, object, int, long, string, string)"/>
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <summary>
+        /// Adds or updates a type of <see cref="IWritablePropertyResponse"/> to the collection.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the writable property to add or update.</param>
+        /// <param name="propertyValue">The value of the writable property to add or update.</param>
+        /// <param name="statusCode"></param>
+        /// <param name="version"></param>
+        /// <param name="description"></param>
+        /// <param name="componentName"></param>
+        public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = default, string componentName = default)
+        {
+            AddOrUpdate(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
+        }
+
         /// <summary>
         /// Adds or updates the value for the collection.
         /// </summary>
-        /// <remarks>
-        /// When using this as part of the <see cref="DeviceClient.SubscribeToWritablePropertyEventAsync(Func{ClientPropertyCollection, object, System.Threading.Tasks.Task}, object, System.Threading.CancellationToken)"/> flow. You should use the <see cref="PayloadConvention.CreateWritablePropertyResponse(object, int, long, string)"/> method to add the correct <see cref="IWritablePropertyResponse"/> to ensure the correct formatting is applied when the object is serialized.
-        /// </remarks>
         /// <seealso cref="PayloadConvention"/>
         /// <seealso cref="ObjectSerializer"/>
         /// <seealso cref="ContentEncoder"/>

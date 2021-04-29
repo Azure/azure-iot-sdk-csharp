@@ -710,17 +710,6 @@ namespace Microsoft.Azure.Devices.Client
         #region Properties
 
         /// <summary>
-        /// Creates the correct <see cref="IWritablePropertyResponse"/> to be used with the <see cref="ClientPropertyCollection"/>
-        /// </summary>
-        /// <param name="value">The value of the property.</param>
-        /// <param name="statusCode">The status code of the write operation.</param>
-        /// <param name="version">The version the property is responding to.</param>
-        /// <param name="description">An optional description of the writable property response.</param>
-        /// <returns></returns>
-        public IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = default)
-            => InternalClient.CreateWritablePropertyResponse(value, statusCode, version, description);
-
-        /// <summary>
         /// Retrieve the device properties.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>

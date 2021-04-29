@@ -95,15 +95,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 HumidityRange targetHumidityRange = humidityRangeRequested.ToObject<HumidityRange>();
                 _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
-                var temperatureUpdateResponse = _deviceClient.CreateWritablePropertyResponse(
-                    targetHumidityRange,
-                    (int)StatusCode.Completed,
-                    writableProperties.Version,
-                    "The operation completed successfully.");
-
                 var propertyPatch = new ClientPropertyCollection
                 {
-                    { propertyName, temperatureUpdateResponse, Thermostat1 }
+                    { propertyName, "1", Thermostat1 },
+                    { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 },
                 };
 
                 await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);

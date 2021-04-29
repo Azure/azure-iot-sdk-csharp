@@ -31,5 +31,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             return DeserializeToType<T>(((JsonElement)objectToConvert).ToString());
         }
+
+        public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null)
+        {
+            return new SystemTextJsonWritablePropertyResponse(value, statusCode, version, description);
+        }
     }
 }

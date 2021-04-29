@@ -386,15 +386,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             TemperatureRange temperatureRangeDesired = writableProperties.GetValue<TemperatureRange>(propertyName);
 
-            var temperatureUpdateResponse = _deviceClient.CreateWritablePropertyResponse(
-                temperatureRangeDesired,
-                (int)StatusCode.Completed,
-                writableProperties.Version,
-                "The operation completed successfully.");
-
             var propertyPatch = new ClientPropertyCollection()
             {
-                [propertyName] = temperatureUpdateResponse,
+                { propertyName, temperatureRangeDesired, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully."}
             };
 
             await _deviceClient.UpdatePropertiesAsync(propertyPatch, s_cancellationToken);
@@ -416,15 +410,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             HumidityRange humidityRangeDesired = _deviceClient.ObjectSerializer.DeserializeToType<HumidityRange>(humidityRangeJson.GetRawText());
 
-            var humidityRangeResponse = _deviceClient.CreateWritablePropertyResponse(
-                humidityRangeDesired,
-                (int)StatusCode.Completed,
-                writableProperties.Version,
-                "The operation completed successfully.");
-
             var propertyPatch = new ClientPropertyCollection()
             {
-                [propertyName] = humidityRangeResponse,
+                { propertyName, humidityRangeDesired, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
             };
 
             await _deviceClient.UpdatePropertiesAsync(propertyPatch, s_cancellationToken);
@@ -450,13 +438,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             double targetTemperature = targetTemperatureJson.GetDouble();
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
-            var pendingReportedProperty = _deviceClient.CreateWritablePropertyResponse(
-                targetTemperature,
-                (int)StatusCode.InProgress,
-                writableProperties.Version);
-
             var pendingPropertyPatch = new ClientPropertyCollection();
-            pendingPropertyPatch.Add(propertyName, pendingReportedProperty, componentName);
+            pendingPropertyPatch.Add(propertyName, targetTemperature, (int)StatusCode.InProgress, writableProperties.Version, null, componentName);
 
             await _deviceClient.UpdatePropertiesAsync(pendingPropertyPatch, s_cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {targetTemperature} }} in °C is {StatusCode.InProgress}.");
@@ -469,14 +452,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await Task.Delay(6 * 1000);
             }
 
-            var completedReportedProperty = _deviceClient.CreateWritablePropertyResponse(
-                _temperature[componentName],
-                (int)StatusCode.Completed,
-                writableProperties.Version,
-                "Successfully updated target temperature");
-
             var completePropertyPatch = new ClientPropertyCollection();
-            completePropertyPatch.Add(propertyName, completedReportedProperty, componentName);
+            completePropertyPatch.Add(propertyName, _temperature[componentName], (int)StatusCode.Completed, writableProperties.Version, "Successfully updated target temperature", componentName);
 
             await _deviceClient.UpdatePropertiesAsync(completePropertyPatch, s_cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {_temperature[componentName]} }} in °C is {StatusCode.Completed}");

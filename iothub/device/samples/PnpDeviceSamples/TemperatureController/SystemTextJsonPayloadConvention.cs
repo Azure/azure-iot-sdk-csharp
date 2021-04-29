@@ -15,10 +15,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return PayloadEncoder.EncodeStringToByteArray(serializedString);
         }
 
-        /// <inheritdoc/>
-        public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null)
-        {
-            return new SystemTextJsonWritablePropertyResponse(value, statusCode, version, description);
-        }
+       
     }
 }

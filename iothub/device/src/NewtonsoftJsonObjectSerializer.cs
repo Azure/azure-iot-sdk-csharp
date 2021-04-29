@@ -45,5 +45,11 @@ namespace Microsoft.Azure.Devices.Client
             }
             return ((JObject)objectToConvert).ToObject<T>();
         }
+
+        /// <inheritdoc/>
+        public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null)
+        {
+            return new NewtonsoftJsonWritablePropertyResponse(value, statusCode, version, description);
+        }
     }
 }

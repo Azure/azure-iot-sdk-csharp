@@ -72,15 +72,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 double targetHumidity = writableProperties.GetValue<double>(propertyName);
 
-                var humidityUpdateResponse = _deviceClient.CreateWritablePropertyResponse(
-                    targetHumidity,
-                    (int)StatusCode.Completed,
-                    writableProperties.Version,
-                    "The operation completed successfully.");
-
                 var propertyPatch = new ClientPropertyCollection
                 {
-                    [propertyName] = humidityUpdateResponse,
+                    { propertyName, targetHumidity, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully." }
                 };
 
                 await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);

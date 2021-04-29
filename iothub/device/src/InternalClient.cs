@@ -1890,19 +1890,6 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
-        /// <summary>
-        /// Creates the correct <see cref="IWritablePropertyResponse"/> to be used with this serializer
-        /// </summary>
-        /// <param name="value">The value of the property.</param>
-        /// <param name="statusCode">The status code of the write operation.</param>
-        /// <param name="version">The version the property is responding to.</param>
-        /// <param name="description">An optional description of the writable property response.</param>
-        /// <returns></returns>
-        internal IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = default)
-        {
-            return _clientOptions.PayloadConvention.CreateWritablePropertyResponse(value, statusCode, version, description);
-        }
-
         internal Task<ClientProperties> GetPropertiesAsync(CancellationToken cancellationToken)
         {
             var payloadConvention = _clientOptions.PayloadConvention;
@@ -1963,11 +1950,11 @@ namespace Microsoft.Azure.Devices.Client
                     string[] split = methodRequest.Name.Split(ComponentLevelCommandIdentifier);
                     string componentName = split[0];
                     string commandName = split[1];
-                    commandRequest = new CommandRequest(commandName, payloadConvention, componentName, methodRequest.Data);
+                    commandRequest = new CommandRequest(payloadConvention, commandName, componentName, methodRequest.Data);
                 }
                 else
                 {
-                    commandRequest = new CommandRequest(methodRequest.Name, payloadConvention: payloadConvention, data: methodRequest.Data);
+                    commandRequest = new CommandRequest(payloadConvention: payloadConvention, commandName: methodRequest.Name, data: methodRequest.Data);
                 }
 
                 CommandResponse commandResponse = await callback.Invoke(commandRequest, userContext).ConfigureAwait(false);

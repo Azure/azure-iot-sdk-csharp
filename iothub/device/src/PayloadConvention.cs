@@ -32,15 +32,5 @@ namespace Microsoft.Azure.Devices.Client
             string serializedString = PayloadSerializer.SerializeToString(objectToSendWithConvention);
             return PayloadEncoder.EncodeStringToByteArray(serializedString);
         }
-
-        /// <summary>
-        /// Creates the correct <see cref="IWritablePropertyResponse"/> to be used with this serializer
-        /// </summary>
-        /// <param name="value">The value of the property.</param>
-        /// <param name="statusCode">The status code of the write operation.</param>
-        /// <param name="version">The version the property is responding to.</param>
-        /// <param name="description">An optional description of the writable property response.</param>
-        /// <returns></returns>
-        public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = default);
     }
 }

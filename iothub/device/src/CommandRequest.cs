@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly byte[] _data;
         private readonly PayloadConvention _payloadConvention;
 
-        internal CommandRequest(string commandName, PayloadConvention payloadConvention, string componentName = default, byte[] data = default)
+        internal CommandRequest(PayloadConvention payloadConvention, string commandName, string componentName = default, byte[] data = default)
         {
             Name = commandName;
             ComponentName = componentName;

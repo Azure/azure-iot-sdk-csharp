@@ -44,5 +44,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A converted object</returns>
         /// <remarks>This class is used by the <see cref="ClientPropertyCollection"/> to attempt to convert from the native serailizer type (for example, JObject or JsonElement) to the desired type. When you implement this you need to be aware of what type your serializer will use for anonymous types.</remarks>
         public abstract T ConvertFromObject<T>(object objectToConvert);
+
+        /// <summary>
+        /// Creates the correct <see cref="IWritablePropertyResponse"/> to be used with this serializer
+        /// </summary>
+        /// <param name="value">The value of the property.</param>
+        /// <param name="statusCode">The status code of the write operation.</param>
+        /// <param name="version">The version the property is responding to.</param>
+        /// <param name="description">An optional description of the writable property response.</param>
+        /// <returns></returns>
+        public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = default);
     }
 }

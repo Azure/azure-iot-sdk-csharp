@@ -22,10 +22,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc/>
         public override ContentEncoder PayloadEncoder { get; } = Utf8ContentEncoder.Instance;
 
-        /// <inheritdoc/>
-        public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null)
-        {
-            return new NewtonsoftJsonWritablePropertyResponse(value, statusCode, version, description);
-        }
+       
     }
 }
