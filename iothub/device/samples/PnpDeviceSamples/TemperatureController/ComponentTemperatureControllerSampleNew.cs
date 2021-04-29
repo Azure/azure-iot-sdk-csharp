@@ -135,9 +135,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                                     $" has {StatusCode.Completed}.");
 
                                         return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+
+                                    default:
+                                        _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
+                                        return new CommandResponse((int)StatusCode.NotFound);
                                 }
-                                _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
-                                return new CommandResponse((int)StatusCode.NotFound);
 
                             default:
                                 _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
