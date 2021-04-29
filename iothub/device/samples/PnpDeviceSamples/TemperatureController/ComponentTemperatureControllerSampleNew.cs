@@ -113,22 +113,36 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     try
                     {
-                        UpdateTemperatureRequest updateTemperatureRequest = commandRequest.GetData<UpdateTemperatureRequest>();
-
-                        _logger.LogDebug($"Command: Received - component=\"{commandRequest.ComponentName}\"," +
-                            $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
-                        await Task.Delay(TimeSpan.FromSeconds(updateTemperatureRequest.Delay));
-
-                        var updateTemperatureResponse = new UpdateTemperatureResponse
+                        switch (commandRequest.ComponentName)
                         {
-                            TargetTemperature = updateTemperatureRequest.TargetTemperature,
-                            Status = (int)StatusCode.Completed  // change this
-                        };
+                            case Thermostat2:
+                                switch (commandRequest.CommandName)
+                                {
+                                    case "updateTemperatureWithDelay":
+                                        UpdateTemperatureRequest updateTemperatureRequest = commandRequest.GetData<UpdateTemperatureRequest>();
 
-                        _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
-                                    $" has {StatusCode.Completed}.");
+                                        _logger.LogDebug($"Command: Received - component=\"{commandRequest.ComponentName}\"," +
+                                            $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
+                                        await Task.Delay(TimeSpan.FromSeconds(updateTemperatureRequest.Delay));
 
-                        return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+                                        var updateTemperatureResponse = new UpdateTemperatureResponse
+                                        {
+                                            TargetTemperature = updateTemperatureRequest.TargetTemperature,
+                                            Status = (int)StatusCode.Completed  // change this
+                                        };
+
+                                        _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
+                                                    $" has {StatusCode.Completed}.");
+
+                                        return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+                                }
+                                _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
+                                return new CommandResponse((int)StatusCode.NotFound);
+
+                            default:
+                                _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
+                                return new CommandResponse((int)StatusCode.NotFound);
+                        }
                     }
                     catch (JsonException ex)
                     {

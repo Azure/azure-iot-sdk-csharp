@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 return new CommandResponse((int)StatusCode.Completed);
 
                             default:
-                                _logger.LogWarning($"Received a command request that isn't implemented.");
+                                _logger.LogWarning($"Received a command request that isn't implemented - command name = {commandRequest.CommandName}");
                                 return new CommandResponse((int)StatusCode.NotFound);
                         }
                     }
