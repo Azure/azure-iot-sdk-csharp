@@ -22,6 +22,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
+        /// <summary>
+        /// The object serializer used by the <see cref="Client.PayloadConvention"/> set in <see cref="ClientOptions.PayloadConvention"/>. If no <see cref="Client.PayloadConvention"/> is set this will default to <see cref="NewtonsoftJsonObjectSerializer"/>.
+        /// </summary>
+        public PayloadConvention PayloadConvention => InternalClient.PayloadConvention;
+
         private DeviceClient(InternalClient internalClient)
         {
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
@@ -707,29 +712,27 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Retrieve the device properties.
         /// </summary>
-        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The device properties.</returns>
-        public Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
-            => InternalClient.GetPropertiesAsync(payloadConvention, cancellationToken);
+        public Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken = default)
+            => InternalClient.GetClientPropertiesAsync(cancellationToken);
 
         /// <summary>
         /// Update properties.
         /// </summary>
         /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdatePropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default)
-            => InternalClient.UpdatePropertiesAsync(propertyCollection, cancellationToken);
+        public Task UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default)
+            => InternalClient.UpdateClientPropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
         /// Sets the global listener for Writable properties
         /// </summary>
         /// <param name="callback">The global call back to handle all writable property updates.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToWritablePropertyEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention = default, CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToWritablePropertyEventAsync(callback, userContext, payloadConvention, cancellationToken);
+        public Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToWritablePropertiesEventAsync(callback, userContext, cancellationToken);
 
         #endregion Properties
 
@@ -757,13 +760,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="callback">A method implementation that will handle the incoming command.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         public Task SubscribeToCommandsAsync(
             Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext,
-            PayloadConvention payloadConvention = default,
             CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToCommandsAsync(callback, userContext, payloadConvention, cancellationToken);
+            => InternalClient.SubscribeToCommandsAsync(callback, userContext, cancellationToken);
 
         #endregion Commands
 

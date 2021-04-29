@@ -10,8 +10,12 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class TelemetryCollection : PayloadCollection
     {
+        /// <summary>
+        /// Default constructor for this class.
+        /// </summary>
+        public TelemetryCollection() { }
         /// <inheritdoc/>
-        public TelemetryCollection(PayloadConvention payloadConvention = default)
+        internal TelemetryCollection(PayloadConvention payloadConvention = default)
             : base(payloadConvention)
         {
         }

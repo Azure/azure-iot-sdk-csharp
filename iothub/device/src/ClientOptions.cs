@@ -54,5 +54,16 @@ namespace Microsoft.Azure.Devices.Client
         /// or the <see cref="ModuleClient.CreateFromEnvironmentAsync(ClientOptions)"/> flow.
         /// </remarks>
         public int SasTokenRenewalBuffer { get; set; }
+
+        /// <summary>
+        /// The payload convention to be used to serialize and encode the messages for our convention based methods. .
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="PayloadConvention"/> defines both the serializer and encoding to be used for our convetion based messages. You will only need to set this if you have objects that have special serialization rules or require a specific byte encoding.
+        /// <para>
+        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="NewtonsoftJsonObjectSerializer"/> serializer and <see cref="Utf8ContentEncoder"/> encoder.
+        /// </para>
+        /// </remarks>
+        public PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
     }
 }

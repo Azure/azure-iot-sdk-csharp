@@ -21,5 +21,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <inheritdoc/>
         public override ContentEncoder PayloadEncoder { get; } = Utf8ContentEncoder.Instance;
+
+       
     }
 }
