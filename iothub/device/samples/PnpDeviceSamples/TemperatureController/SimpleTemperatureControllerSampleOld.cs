@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
@@ -42,7 +43,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Verify if the device has previously reported a value for property "serialNumber".
             // If the expected value has not been previously reported then report it.
             string serialNumber = "SR-12345";
-            if (!properties.Properties.Reported.Contains("serialNumber") || properties.Properties.Reported["serialNumber"] != serialNumber)
+            if (!properties.Properties.Reported.Contains("serialNumber")
+                || properties.Properties.Reported["serialNumber"] != serialNumber)
             {
                 var propertiesToBeUpdated = new TwinCollection
                 {
@@ -54,11 +56,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Send telemetry "workingSet".
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
-            var telemtry = new Dictionary<string, object>
+            var telemetry = new Dictionary<string, object>
             {
                 ["workingSet"] = workingSet,
             };
-            using var message = new Message(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemtry)))
+            using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
             {
                 MessageId = s_random.Next().ToString(),
                 ContentEncoding = "utf-8",
@@ -66,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             await _deviceClient.SendEventAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemtry)} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
 
             // Subscribe and respond to event for writable property "targetHumidity".
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(async (desired, userContext) =>
@@ -93,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await _deviceClient.UpdateReportedPropertiesAsync(propertyPatch, cancellationToken);
                 _logger.LogDebug($"Property: Update - \"{propertyPatch.ToJson()}\" is complete.");
             },
-            cancellationToken,
+            null,
             cancellationToken);
 
             // Subscribe and respond to command "reboot".
@@ -115,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     return new MethodResponse((int)StatusCode.BadRequest);
                 }
             },
-            cancellationToken,
+            null,
             cancellationToken);
 
             Console.ReadKey();

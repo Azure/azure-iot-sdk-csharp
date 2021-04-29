@@ -40,7 +40,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Retrieve the device's properties.
             ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
-            // Verify if the device has previously reported a value for property "initialValue" under component "thermostat2".
+            // Verify if the device has previously reported a value for property
+            // "initialValue" under component "thermostat2".
             // If the expected value has not been previously reported then report it.
             var initialValue = new ThermostatInitialValue
             {
@@ -52,9 +53,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 || !((JsonElement)properties[Thermostat2])
                     .TryGetProperty("initialValue", out JsonElement initialValueReported)
                 || !initialValue
-                    .Equals(_deviceClient.PayloadConvention.PayloadSerializer.DeserializeToType<ThermostatInitialValue>(initialValueReported.GetRawText())))
+                    .Equals(_deviceClient
+                        .PayloadConvention
+                        .PayloadSerializer
+                        .DeserializeToType<ThermostatInitialValue>(initialValueReported.GetRawText())))
             {
-                var propertiesToBeUpdated = new ClientPropertyCollection()
+                var propertiesToBeUpdated = new ClientPropertyCollection
                 {
                     { "initialValue", initialValue, Thermostat2 }
                 };
@@ -95,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
-                var propertyPatch = new ClientPropertyCollection()
+                var propertyPatch = new ClientPropertyCollection
                 {
                     { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
                 };
