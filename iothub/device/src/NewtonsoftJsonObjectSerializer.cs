@@ -47,9 +47,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override bool CheckWritablePropertyResponseType(object typeToCheck)
+        public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null)
         {
-            return typeToCheck is NewtonsoftJsonWritablePropertyResponse;
+            return new NewtonsoftJsonWritablePropertyResponse(value, statusCode, version, description);
         }
     }
 }

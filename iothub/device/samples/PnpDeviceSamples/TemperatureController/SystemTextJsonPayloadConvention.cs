@@ -14,5 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             string serializedString = PayloadSerializer.SerializeToString(objectToSendWithConvention);
             return PayloadEncoder.EncodeStringToByteArray(serializedString);
         }
+
+       
     }
 }

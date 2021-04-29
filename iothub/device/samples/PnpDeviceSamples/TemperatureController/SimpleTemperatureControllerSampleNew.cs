@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
             // Retrieve the device's properties.
-            ClientProperties properties = await _deviceClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+            ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken: cancellationToken);
 
             // Verify if the device has previously reported a value for property "serialNumber".
             // If the expected value has not been previously reported then report it.
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     ["serialNumber"] = serialNumber
                 };
-                await _deviceClient.UpdatePropertiesAsync(propertiesToBeUpdated, cancellationToken);
+                await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
                 _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerailizedString()} in KB.");
             }
 
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()} in KB.");
 
             // Subscribe and respond to event for writable property "targetHumidity".
-            await _deviceClient.SubscribeToWritablePropertyEventAsync(async (writableProperties, userContext) =>
+            await _deviceClient.SubscribeToWritablePropertiesEventAsync(async (writableProperties, userContext) =>
             {
                 string propertyName = "targetHumidity";
                 if (!writableProperties.Contains(propertyName))
@@ -72,18 +72,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 double targetHumidity = writableProperties.GetValue<double>(propertyName);
 
-                var humidityUpdateResponse = new NewtonsoftJsonWritablePropertyResponse(
-                    targetHumidity,
-                    (int)StatusCode.Completed,
-                    writableProperties.Version,
-                    "The operation completed successfully.");
-
                 var propertyPatch = new ClientPropertyCollection
                 {
-                    [propertyName] = humidityUpdateResponse,
+                    { propertyName, targetHumidity, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully." }
                 };
 
-                await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
+                await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
                 _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
             },
             null,

@@ -149,6 +149,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
+        internal PayloadConvention PayloadConvention => _clientOptions.PayloadConvention;
+
         public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder, ClientOptions options)
         {
             if (Logging.IsEnabled)
@@ -1887,9 +1889,9 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
-        internal Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        internal Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken)
         {
-            payloadConvention ??= DefaultPayloadConvention.Instance;
+            var payloadConvention = _clientOptions.PayloadConvention;
 
             try
             {
@@ -1902,11 +1904,11 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task UpdatePropertiesAsync(ClientPropertyCollection propertyPatch, CancellationToken cancellationToken)
+        internal Task UpdateClientPropertiesAsync(ClientPropertyCollection clientProperties, CancellationToken cancellationToken)
         {
             try
             {
-                return InnerHandler.SendPropertyPatchAsync(propertyPatch, cancellationToken);
+                return InnerHandler.SendPropertyPatchAsync(clientProperties, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1915,9 +1917,9 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertyEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
         {
-            payloadConvention ??= DefaultPayloadConvention.Instance;
+            var payloadConvention = _clientOptions.PayloadConvention;
 
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
@@ -1932,11 +1934,11 @@ namespace Microsoft.Azure.Devices.Client
             return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
         }
 
-        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken)
         {
             const char ComponentLevelCommandIdentifier = '*';
 
-            payloadConvention ??= DefaultPayloadConvention.Instance;
+            var payloadConvention = _clientOptions.PayloadConvention;
 
             // Sunscribe to methods default handler internally and use the callback received internally to invoke the user supplied command callback.
             var methodDefaultCallback = new MethodCallback(async (methodRequest, userContext) =>
@@ -1947,15 +1949,15 @@ namespace Microsoft.Azure.Devices.Client
                     string[] split = methodRequest.Name.Split(ComponentLevelCommandIdentifier);
                     string componentName = split[0];
                     string commandName = split[1];
-                    commandRequest = new CommandRequest(commandName, componentName, methodRequest.Data, payloadConvention);
+                    commandRequest = new CommandRequest(payloadConvention, commandName, componentName, methodRequest.Data);
                 }
                 else
                 {
-                    commandRequest = new CommandRequest(methodRequest.Name, data: methodRequest.Data, payloadConvention: payloadConvention);
+                    commandRequest = new CommandRequest(payloadConvention: payloadConvention, commandName: methodRequest.Name, data: methodRequest.Data);
                 }
 
                 CommandResponse commandResponse = await callback.Invoke(commandRequest, userContext).ConfigureAwait(false);
-
+                commandResponse.PayloadConvention = payloadConvention;
                 return commandResponse.ResultAsBytes != null
                     ? new MethodResponse(commandResponse.ResultAsBytes, commandResponse.Status)
                     : new MethodResponse(commandResponse.Status);

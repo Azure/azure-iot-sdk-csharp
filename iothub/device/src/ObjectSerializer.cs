@@ -46,10 +46,13 @@ namespace Microsoft.Azure.Devices.Client
         public abstract T ConvertFromObject<T>(object objectToConvert);
 
         /// <summary>
-        /// Checks to make sure the type of <see cref="IWritablePropertyResponse"/> can be properly serialized by this class.
+        /// Creates the correct <see cref="IWritablePropertyResponse"/> to be used with this serializer
         /// </summary>
-        /// <param name="typeToCheck"></param>
-        /// <returns><c>true</c> if the type is supported; <c>false</c> if it is not</returns>
-        public abstract bool CheckWritablePropertyResponseType(object typeToCheck);
+        /// <param name="value">The value of the property.</param>
+        /// <param name="statusCode">The status code of the write operation.</param>
+        /// <param name="version">The version the property is responding to.</param>
+        /// <param name="description">An optional description of the writable property response.</param>
+        /// <returns></returns>
+        public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = default);
     }
 }

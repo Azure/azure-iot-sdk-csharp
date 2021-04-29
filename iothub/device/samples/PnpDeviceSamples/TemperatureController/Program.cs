@@ -130,6 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var options = new ClientOptions
             {
                 ModelId = ModelId,
+                PayloadConvention = new SystemTextJsonPayloadConvention()
             };
 
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
