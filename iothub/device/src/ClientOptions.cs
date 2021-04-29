@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The transport settings to use for all file upload operations, regardless of what protocol the device
-        /// client is configured with. All file upload operations take place over https. 
+        /// client is configured with. All file upload operations take place over https.
         /// If FileUploadTransportSettings is not provided, then file upload operations will use the client certificates configured
         /// in the transport settings set for the non-file upload operations.
         /// </summary>
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The <see cref="PayloadConvention"/> defines both the serializer and encoding to be used for our convetion based messages. You will only need to set this if you have objects that have special serialization rules or require a specific byte encoding.
         /// <para>
-        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="NewtonsoftJsonObjectSerializer"/> serializer and <see cref="Utf8ContentEncoder"/> encoder.
+        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="NewtonsoftJsonPayloadSerializer"/> serializer and <see cref="Utf8ContentEncoder"/> encoder.
         /// </para>
         /// </remarks>
         public PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;

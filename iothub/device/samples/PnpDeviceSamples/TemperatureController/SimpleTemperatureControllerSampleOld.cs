@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
             // Retrieve the device's properties.
-            Twin properties = await _deviceClient.GetTwinAsync(cancellationToken: cancellationToken);
+            Twin properties = await _deviceClient.GetTwinAsync(cancellationToken);
 
             // Verify if the device has previously reported a value for property "serialNumber".
             // If the expected value has not been previously reported then report it.
@@ -71,54 +71,57 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
 
             // Subscribe and respond to event for writable property "targetHumidity".
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(async (desired, userContext) =>
-            {
-                string propertyName = "targetHumidity";
-                if (!desired.Contains(propertyName))
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
+                async (desired, userContext) =>
                 {
-                    _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{desired.ToJson()}");
-                    return;
-                }
+                    string propertyName = "targetHumidity";
+                    if (!desired.Contains(propertyName))
+                    {
+                        _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{desired.ToJson()}");
+                        return;
+                    }
 
-                double targetHumidity = desired[propertyName];
+                    double targetHumidity = desired[propertyName];
 
-                var propertyPatch = new TwinCollection();
-                var humidityUpdateResponse = new TwinCollection
-                {
-                    ["value"] = targetHumidity,
-                    ["ac"] = (int)StatusCode.Completed,
-                    ["av"] = desired.Version,
-                    ["ad"] = "The operation completed successfully."
-                };
-                propertyPatch[propertyName] = humidityUpdateResponse;
+                    var propertyPatch = new TwinCollection();
+                    var humidityUpdateResponse = new TwinCollection
+                    {
+                        ["value"] = targetHumidity,
+                        ["ac"] = (int)StatusCode.Completed,
+                        ["av"] = desired.Version,
+                        ["ad"] = "The operation completed successfully."
+                    };
+                    propertyPatch[propertyName] = humidityUpdateResponse;
 
-                await _deviceClient.UpdateReportedPropertiesAsync(propertyPatch, cancellationToken);
-                _logger.LogDebug($"Property: Update - \"{propertyPatch.ToJson()}\" is complete.");
-            },
-            null,
-            cancellationToken);
+                    await _deviceClient.UpdateReportedPropertiesAsync(propertyPatch, cancellationToken);
+                    _logger.LogDebug($"Property: Update - \"{propertyPatch.ToJson()}\" is complete.");
+                },
+                null,
+                cancellationToken);
 
             // Subscribe and respond to command "reboot".
-            await _deviceClient.SetMethodHandlerAsync("reboot", async (commandRequest, userContext) =>
-            {
-                try
+            await _deviceClient.SetMethodHandlerAsync(
+                "reboot",
+                async (methodRequest, userContext) =>
                 {
-                    int delay = JsonConvert.DeserializeObject<int>(commandRequest.DataAsJson);
-                    _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
+                    try
+                    {
+                        int delay = JsonConvert.DeserializeObject<int>(methodRequest.DataAsJson);
+                        _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
 
-                    await Task.Delay(TimeSpan.FromSeconds(delay));
-                    _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCode.Completed}.");
+                        await Task.Delay(TimeSpan.FromSeconds(delay));
+                        _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCode.Completed}.");
 
-                    return new MethodResponse((int)StatusCode.Completed);
-                }
-                catch (JsonReaderException ex)
-                {
-                    _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                    return new MethodResponse((int)StatusCode.BadRequest);
-                }
-            },
-            null,
-            cancellationToken);
+                        return new MethodResponse((int)StatusCode.Completed);
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        _logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                        return new MethodResponse((int)StatusCode.BadRequest);
+                    }
+                },
+                null,
+                cancellationToken);
 
             Console.ReadKey();
         }

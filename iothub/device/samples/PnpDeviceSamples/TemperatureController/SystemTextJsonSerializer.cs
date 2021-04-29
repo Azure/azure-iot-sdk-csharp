@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class SystemTextJsonSerializer : ObjectSerializer
+    internal class SystemTextJsonSerializer : PayloadSerializer
     {
         private const string ApplicationJson = "application/json";
 

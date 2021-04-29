@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     internal class SystemTextJsonPayloadConvention : PayloadConvention
     {
-        public override ObjectSerializer PayloadSerializer => new SystemTextJsonSerializer();
+        public override PayloadSerializer PayloadSerializer => new SystemTextJsonSerializer();
 
         public override ContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
 
@@ -14,7 +14,5 @@ namespace Microsoft.Azure.Devices.Client.Samples
             string serializedString = PayloadSerializer.SerializeToString(objectToSendWithConvention);
             return PayloadEncoder.EncodeStringToByteArray(serializedString);
         }
-
-       
     }
 }

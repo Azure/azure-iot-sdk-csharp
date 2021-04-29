@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
             // Retrieve the device's properties.
-            ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken: cancellationToken);
+            ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
             // Verify if the device has previously reported a value for property "serialNumber".
             // If the expected value has not been previously reported then report it.
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     ["serialNumber"] = serialNumber
                 };
                 await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerailizedString()} in KB.");
+                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()} in KB.");
             }
 
             // Send telemetry "workingSet".
@@ -59,52 +59,65 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Telemetry = { ["workingSet"] = workingSet },
             };
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()} in KB.");
+            _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerializedString()} in KB.");
 
             // Subscribe and respond to event for writable property "targetHumidity".
-            await _deviceClient.SubscribeToWritablePropertiesEventAsync(async (writableProperties, userContext) =>
-            {
-                string propertyName = "targetHumidity";
-                if (!writableProperties.Contains(propertyName))
+            await _deviceClient.SubscribeToWritablePropertiesEventAsync(
+                async (writableProperties, userContext) =>
                 {
-                    _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerailizedString()}");
-                    return;
-                }
+                    string propertyName = "targetHumidity";
+                    if (!writableProperties.Contains(propertyName))
+                    {
+                        _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerializedString()}");
+                        return;
+                    }
 
-                double targetHumidity = writableProperties.GetValue<double>(propertyName);
+                    double targetHumidity = writableProperties.GetValue<double>(propertyName);
 
-                var propertyPatch = new ClientPropertyCollection
-                {
-                    { propertyName, targetHumidity, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully." }
-                };
+                    var propertyPatch = new ClientPropertyCollection();
+                    propertyPatch.Add(
+                        propertyName,
+                        targetHumidity,
+                        (int)StatusCode.Completed,
+                        writableProperties.Version,
+                        "The operation completed successfully.");
 
-                await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
-                _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
-            },
-            null,
-            cancellationToken: cancellationToken);
+                    await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
+                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
+                },
+                null,
+                cancellationToken);
 
             // Subscribe and respond to command "reboot".
-            await _deviceClient.SubscribeToCommandsAsync(async (commandRequest, userContext) =>
-            {
-                try
+            await _deviceClient.SubscribeToCommandsAsync(
+                async (commandRequest, userContext) =>
                 {
-                    int delay = commandRequest.GetData<int>();
-                    _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
+                    try
+                    {
+                        switch (commandRequest.CommandName)
+                        {
+                            case "reboot":
+                                int delay = commandRequest.GetData<int>();
+                                _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
 
-                    await Task.Delay(TimeSpan.FromSeconds(delay));
-                    _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCode.Completed}.");
+                                await Task.Delay(TimeSpan.FromSeconds(delay));
+                                _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCode.Completed}.");
 
-                    return new CommandResponse((int)StatusCode.Completed);
-                }
-                catch (JsonReaderException ex)
-                {
-                    _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                    return new CommandResponse((int)StatusCode.BadRequest);
-                }
-            },
-            null,
-            cancellationToken: cancellationToken);
+                                return new CommandResponse((int)StatusCode.Completed);
+
+                            default:
+                                _logger.LogWarning($"Received a command request that isn't implemented.");
+                                return new CommandResponse((int)StatusCode.NotFound);
+                        }
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        _logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                        return new CommandResponse((int)StatusCode.BadRequest);
+                    }
+                },
+                null,
+                cancellationToken);
 
             Console.ReadKey();
         }

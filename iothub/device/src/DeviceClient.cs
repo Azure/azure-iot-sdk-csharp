@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
         /// <summary>
-        /// The object serializer used by the <see cref="Client.PayloadConvention"/> set in <see cref="ClientOptions.PayloadConvention"/>. If no <see cref="Client.PayloadConvention"/> is set this will default to <see cref="NewtonsoftJsonObjectSerializer"/>.
+        /// The object serializer used by the <see cref="Client.PayloadConvention"/> set in <see cref="ClientOptions.PayloadConvention"/>. If no <see cref="Client.PayloadConvention"/> is set this will default to <see cref="NewtonsoftJsonPayloadSerializer"/>.
         /// </summary>
         public PayloadConvention PayloadConvention => InternalClient.PayloadConvention;
 

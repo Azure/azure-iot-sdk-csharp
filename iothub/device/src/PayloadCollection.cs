@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the collection as a byte array
         /// </summary>
         /// <remarks>
-        /// This will get the fully encoded serialized string using both <see cref="ObjectSerializer.SerializeToString(object)"/> and <see cref="ContentEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
+        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/> and <see cref="ContentEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
         /// </remarks>
         /// <returns>A fully encoded serialized string.</returns>
         public virtual byte[] GetPayloadObjectBytes()
@@ -102,10 +102,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Returns a serailized string of this collection from the <see cref="ObjectSerializer.SerializeToString(object)"/> method.
+        /// Returns a serailized string of this collection from the <see cref="PayloadSerializer.SerializeToString(object)"/> method.
         /// </summary>
         /// <returns></returns>
-        public virtual string GetSerailizedString()
+        public virtual string GetSerializedString()
         {
             return Convention.PayloadSerializer.SerializeToString(Collection);
         }

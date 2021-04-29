@@ -73,7 +73,7 @@
         "@type": "CommandPayload",
         "name": "tempUpdateRequest",
         "displayName": "Temperature update request",
-        "description": "The temerature value that is to be updated to.",
+        "description": "The temperature value that is to be updated to.",
         "schema": {
           "@type": "Object",
           "fields": [
