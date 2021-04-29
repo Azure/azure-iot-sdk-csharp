@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 HumidityRange targetHumidityRange = humidityRangeRequested.ToObject<HumidityRange>();
                 _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
-                var temperatureUpdateResponse = new NewtonsoftJsonWritablePropertyResponse(
+                var temperatureUpdateResponse = _deviceClient.CreateWritablePropertyResponse(
                     targetHumidityRange,
                     (int)StatusCode.Completed,
                     writableProperties.Version,

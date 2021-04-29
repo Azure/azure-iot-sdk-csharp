@@ -45,11 +45,5 @@ namespace Microsoft.Azure.Devices.Client
             }
             return ((JObject)objectToConvert).ToObject<T>();
         }
-
-        /// <inheritdoc/>
-        public override bool CheckWritablePropertyResponseType(object typeToCheck)
-        {
-            return typeToCheck is NewtonsoftJsonWritablePropertyResponse;
-        }
     }
 }

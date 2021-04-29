@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 double targetHumidity = writableProperties.GetValue<double>(propertyName);
 
-                var humidityUpdateResponse = new NewtonsoftJsonWritablePropertyResponse(
+                var humidityUpdateResponse = _deviceClient.CreateWritablePropertyResponse(
                     targetHumidity,
                     (int)StatusCode.Completed,
                     writableProperties.Version,

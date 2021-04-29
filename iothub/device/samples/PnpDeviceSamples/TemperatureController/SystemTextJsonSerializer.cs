@@ -31,10 +31,5 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             return DeserializeToType<T>(((JsonElement)objectToConvert).ToString());
         }
-
-        public override bool CheckWritablePropertyResponseType(object typeToCheck)
-        {
-            return typeToCheck is SystemTextJsonWritablePropertyResponse;
-        }
     }
 }

@@ -16,8 +16,13 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string VersionName = "$version";
 
+        /// <summary>
+        /// Default constructor for this class.
+        /// </summary>
+        public ClientPropertyCollection() { }
+
         /// <inheritdoc/>
-        public ClientPropertyCollection(PayloadConvention payloadConvention = default)
+        internal ClientPropertyCollection(PayloadConvention payloadConvention)
             : base(payloadConvention)
         {
         }
@@ -39,6 +44,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Adds the value for the collection.
         /// </summary>
         /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
         /// <param name="propertyName">The name of the property to add.</param>
@@ -48,6 +54,7 @@ namespace Microsoft.Azure.Devices.Client
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
 
         /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)"/>
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <summary>
         /// Adds the value for the collection.
@@ -60,6 +67,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
@@ -71,6 +79,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
@@ -81,6 +90,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
@@ -90,12 +100,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Adds or updates the value for the collection.
         /// </summary>
         /// <remarks>
-        /// When adding a type of <see cref="IWritablePropertyResponse"/> the <see cref="ObjectSerializer.CheckWritablePropertyResponseType(object)"/>
-        /// checks to make sure it can serialize this type correctly.
-        /// This will only be evaluated at runtime so it will throw an exception if the type does not pass the check.
+        /// When using this as part of the <see cref="DeviceClient.SubscribeToWritablePropertyEventAsync(Func{ClientPropertyCollection, object, System.Threading.Tasks.Task}, object, System.Threading.CancellationToken)"/> flow. You should use the <see cref="PayloadConvention.CreateWritablePropertyResponse(object, int, long, string)"/> method to add the correct <see cref="IWritablePropertyResponse"/> to ensure the correct formatting is applied when the object is serialized.
         /// </remarks>
-        /// <exception cref="ArgumentException">This is thrown when the object is of <see cref="IWritablePropertyResponse"/>
-        /// and does not pass the check from <see cref="ObjectSerializer.CheckWritablePropertyResponseType(object)"/> method.</exception>
+        /// <seealso cref="PayloadConvention"/>
+        /// <seealso cref="ObjectSerializer"/>
+        /// <seealso cref="ContentEncoder"/>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
@@ -112,11 +121,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    if (entry.Value is IWritablePropertyResponse && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
-                    {
-                        throw new ArgumentException("Please use the proper class implemented from IWritablePropertyResponse to match your payload convention.");
-                    }
-
                     if (forceUpdate)
                     {
                         Collection[entry.Key] = entry.Value;
@@ -139,11 +143,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
-                    if (entry.Value is IWritablePropertyResponse && !Convention.PayloadSerializer.CheckWritablePropertyResponseType(entry.Value))
-                    {
-                        throw new ArgumentException("Please use the proper class implemented from IWritablePropertyResponse to match your payload convention.");
-                    }
-
                     if (forceUpdate)
                     {
                         componentProperties[entry.Key] = entry.Value;
