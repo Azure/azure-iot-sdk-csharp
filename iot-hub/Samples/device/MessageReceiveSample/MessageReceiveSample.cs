@@ -76,8 +76,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             while (!ct.IsCancellationRequested)
             {
-                if (Console.KeyAvailable
-                    && ConsoleKey.N == Console.ReadKey().Key)
+                if (Console.IsInputRedirected // the pipeline doesn't have a console or redirects console input
+                    || (Console.KeyAvailable
+                        && ConsoleKey.N == Console.ReadKey().Key))
                 {
                     Console.WriteLine($"\n{DateTime.Now}> Ending message polling.");
                     break;
