@@ -134,12 +134,14 @@ namespace Microsoft.Azure.Devices
         /// <param name="outputBlobContainerUri">URI to a blob container.  This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
         /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>
+        /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
         /// <returns>An instance of JobProperties</returns>
         public static JobProperties CreateForImportJob(
             string inputBlobContainerUri,
             string outputBlobContainerUri,
             string inputBlobName = null,
-            StorageAuthenticationType? storageAuthenticationType = null)
+            StorageAuthenticationType? storageAuthenticationType = null,
+            ManagedIdentity identity = null)
         {
             return new JobProperties
             {
@@ -148,11 +150,12 @@ namespace Microsoft.Azure.Devices
                 OutputBlobContainerUri = outputBlobContainerUri,
                 InputBlobName = inputBlobName,
                 StorageAuthenticationType = storageAuthenticationType,
+                Identity = identity
             };
         }
 
         /// <summary>
-        /// Creates an instance of JobProperties with paramters ready to start an Import job
+        /// Creates an instance of JobProperties with parameters ready to start an Import job
         /// </summary>
         /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
         /// <param name="excludeKeysInExport">Indicates if authorization keys are included in export output</param>
