@@ -40,7 +40,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Verify if the device has previously reported a value for property "serialNumber".
             // If the expected value has not been previously reported then report it.
             string serialNumber = "SR-12345";
-            if (!properties.Contains("serialNumber") || properties.Get<string>("serialNumber") != serialNumber)
+            if (!properties.Contains("serialNumber")
+                || properties.Get<string>("serialNumber") != serialNumber)
             {
                 var propertiesToBeUpdated = new ClientPropertyCollection
                 {
