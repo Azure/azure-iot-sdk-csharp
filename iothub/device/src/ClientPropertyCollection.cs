@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <summary>
-        /// Adds a type of <see cref="IWritablePropertyResponse"/> to the collection.
+        /// Adds a writable property to the collection.
         /// </summary>
         /// <remarks>
         /// This method will use the <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/> method to create an instance of <see cref="IWritablePropertyResponse"/> that will be properly serialized.
