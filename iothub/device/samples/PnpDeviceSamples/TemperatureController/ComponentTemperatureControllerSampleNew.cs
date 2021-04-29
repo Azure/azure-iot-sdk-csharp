@@ -97,7 +97,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 var propertyPatch = new ClientPropertyCollection
                 {
-                    { propertyName, "1", Thermostat1 },
                     { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 },
                 };
 
