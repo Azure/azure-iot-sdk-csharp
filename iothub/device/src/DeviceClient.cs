@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
         /// <summary>
-        /// The object serializer used by the <see cref="PayloadConvention"/> set in <see cref="ClientOptions.PayloadConvention"/>. If no <see cref="PayloadConvention"/> is set this will default to <see cref="NewtonsoftJsonObjectSerializer"/>.
+        /// The object serializer used by the <see cref="Client.PayloadConvention"/> set in <see cref="ClientOptions.PayloadConvention"/>. If no <see cref="Client.PayloadConvention"/> is set this will default to <see cref="NewtonsoftJsonObjectSerializer"/>.
         /// </summary>
-        public ObjectSerializer ObjectSerializer => InternalClient.ObjectSerializer;
+        public PayloadConvention PayloadConvention => InternalClient.PayloadConvention;
 
         private DeviceClient(InternalClient internalClient)
         {
@@ -714,16 +714,16 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The device properties.</returns>
-        public Task<ClientProperties> GetPropertiesAsync(CancellationToken cancellationToken = default)
-            => InternalClient.GetPropertiesAsync(cancellationToken);
+        public Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken = default)
+            => InternalClient.GetClientPropertiesAsync(cancellationToken);
 
         /// <summary>
         /// Update properties.
         /// </summary>
         /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdatePropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default)
-            => InternalClient.UpdatePropertiesAsync(propertyCollection, cancellationToken);
+        public Task UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default)
+            => InternalClient.UpdateClientPropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
         /// Sets the global listener for Writable properties
@@ -731,8 +731,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">The global call back to handle all writable property updates.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToWritablePropertyEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToWritablePropertyEventAsync(callback, userContext, cancellationToken);
+        public Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToWritablePropertiesEventAsync(callback, userContext, cancellationToken);
 
         #endregion Properties
 

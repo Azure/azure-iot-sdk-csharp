@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
             // Retrieve the device's properties.
-            ClientProperties properties = await _deviceClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+            ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken: cancellationToken);
 
             // Verify if the device has previously reported a value for property
             // "initialValue" under component "thermostat2".
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     { "initialValue", initialValue, Thermostat2 }
                 };
-                await _deviceClient.UpdatePropertiesAsync(propertiesToBeUpdated, cancellationToken);
+                await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
                 _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerailizedString()}.");
             }
 
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()}.");
 
             // Subscribe and respond to event for writable property "humidityRange" under component "thermostat1".
-            await _deviceClient.SubscribeToWritablePropertyEventAsync(async (writableProperties, userContext) =>
+            await _deviceClient.SubscribeToWritablePropertiesEventAsync(async (writableProperties, userContext) =>
             {
                 string propertyName = "humidityRange";
                 if (!writableProperties.Contains(Thermostat1)
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 },
                 };
 
-                await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
+                await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
                 _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
             },
             null,

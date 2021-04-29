@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
             // Retrieve the device's properties.
-            ClientProperties properties = await _deviceClient.GetPropertiesAsync(cancellationToken);
+            ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
             // Verify if the device has previously reported a value for property "initialValue" under component "thermostat2".
             // If the expected value has not been previously reported then report it.
@@ -52,13 +52,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 || !((JsonElement)properties[Thermostat2])
                     .TryGetProperty("initialValue", out JsonElement initialValueReported)
                 || !initialValue
-                    .Equals(_deviceClient.ObjectSerializer.DeserializeToType<ThermostatInitialValue>(initialValueReported.GetRawText())))
+                    .Equals(_deviceClient.PayloadConvention.PayloadSerializer.DeserializeToType<ThermostatInitialValue>(initialValueReported.GetRawText())))
             {
                 var propertiesToBeUpdated = new ClientPropertyCollection()
                 {
                     { "initialValue", initialValue, Thermostat2 }
                 };
-                await _deviceClient.UpdatePropertiesAsync(propertiesToBeUpdated, cancellationToken);
+                await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
                 _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerailizedString()}.");
             }
 
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogDebug($"Telemetry: Sent - {message.Telemetry.GetSerailizedString()}.");
 
             // Subscribe and respond to event for writable property "humidityRange" under component "thermostat1".
-            await _deviceClient.SubscribeToWritablePropertyEventAsync(async (writableProperties, userContext) =>
+            await _deviceClient.SubscribeToWritablePropertiesEventAsync(async (writableProperties, userContext) =>
             {
                 string propertyName = "humidityRange";
                 if (!writableProperties.Contains(Thermostat1)
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     return;
                 }
 
-                HumidityRange targetHumidityRange = _deviceClient.ObjectSerializer.DeserializeToType<HumidityRange>(humidityRangeRequested.GetRawText());
+                HumidityRange targetHumidityRange = _deviceClient.PayloadConvention.PayloadSerializer.DeserializeToType<HumidityRange>(humidityRangeRequested.GetRawText());
 
                 _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
                 };
 
-                await _deviceClient.UpdatePropertiesAsync(propertyPatch, cancellationToken);
+                await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
                 _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerailizedString()}\" is complete.");
             },
             null,

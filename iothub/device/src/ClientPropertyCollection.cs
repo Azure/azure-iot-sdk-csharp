@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// If the collection has a key that matches the property name this method will throw an <see cref="ArgumentException"/>.
         /// <para>
-        /// When using this as part of the <see cref="DeviceClient.UpdatePropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> flow you to respond to a writable property update you should use <see cref="Add(string, object, int, long, string, string)"/> to ensure the correct formatting is applied when the object is serialized.
+        /// When using this as part of the <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> flow you to respond to a writable property update you should use <see cref="Add(string, object, int, long, string, string)"/> to ensure the correct formatting is applied when the object is serialized.
         /// </para>
         /// </remarks>
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// If the collection has a key that matches this will overwrite the current value. Otherwise it will attempt to add this to the collection.
         /// <para>
-        /// When using this as part of the <see cref="DeviceClient.UpdatePropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> flow you to respond to a writable property update you should use <see cref="AddOrUpdate(string, object, int, long, string, string)"/> to ensure the correct formatting is applied when the object is serialized.
+        /// When using this as part of the <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> flow you to respond to a writable property update you should use <see cref="AddOrUpdate(string, object, int, long, string, string)"/> to ensure the correct formatting is applied when the object is serialized.
         /// </para>
         /// </remarks>
         /// <param name="properties">A collection of properties to add or update.</param>

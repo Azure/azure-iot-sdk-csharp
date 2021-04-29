@@ -149,8 +149,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
-        internal ObjectSerializer ObjectSerializer => _clientOptions.PayloadConvention.PayloadSerializer;
-
+        internal PayloadConvention PayloadConvention => _clientOptions.PayloadConvention;
 
         public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder, ClientOptions options)
         {
@@ -1890,7 +1889,7 @@ namespace Microsoft.Azure.Devices.Client
 
         #region Convention driven operations
 
-        internal Task<ClientProperties> GetPropertiesAsync(CancellationToken cancellationToken)
+        internal Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken)
         {
             var payloadConvention = _clientOptions.PayloadConvention;
 
@@ -1905,7 +1904,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task UpdatePropertiesAsync(ClientPropertyCollection clientProperties, CancellationToken cancellationToken)
+        internal Task UpdateClientPropertiesAsync(ClientPropertyCollection clientProperties, CancellationToken cancellationToken)
         {
             try
             {
@@ -1918,7 +1917,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertyEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
         {
             var payloadConvention = _clientOptions.PayloadConvention;
 
