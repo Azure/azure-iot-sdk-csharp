@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Samples
                 await Task.WhenAll(baseConfigTask, addOnConfigTask).ConfigureAwait(false);
 
                 Console.WriteLine($"Cleaning up configuration created...");
-                await CleanUpConfigurations().ConfigureAwait(false);
+                await CleanUpConfigurationsAsync().ConfigureAwait(false);
 
                 Console.WriteLine("Finished.");
             }
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Samples
             }
         }
 
-        private async Task CleanUpConfigurations()
+        private async Task CleanUpConfigurationsAsync()
         {
             var configurations = await _registryManager.GetConfigurationsAsync(100).ConfigureAwait(false);
             {
@@ -110,11 +110,12 @@ namespace Microsoft.Azure.Devices.Samples
             }
 
             var removeConfigTasks = new List<Task>();
-            _configurationsToDelete.ForEach(configuration =>
-            {
-                Console.WriteLine($"Remove: {configuration.Id}");
-                removeConfigTasks.Add(_registryManager.RemoveConfigurationAsync(configuration.Id));
-            });
+            _configurationsToDelete.ForEach(
+                configuration =>
+                {
+                    Console.WriteLine($"Remove: {configuration.Id}");
+                    removeConfigTasks.Add(_registryManager.RemoveConfigurationAsync(configuration.Id));
+                });
 
             await Task.WhenAll(removeConfigTasks).ConfigureAwait(false);
             Console.WriteLine($"-- Total # of configurations deleted: {_configurationsToDelete.Count}");

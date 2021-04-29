@@ -9,12 +9,12 @@ namespace Microsoft.Azure.Devices.Samples
 
         // For this sample either:
         // - pass this value as a command-prompt argument
-        // - set the IOTHUB_CONNECTION_STRING environment variable 
+        // - set the IOTHUB_CONNECTION_STRING environment variable
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
 
         private static string s_connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
-        
-        public static async Task<int> Main(string[] args)
+
+        public static async Task Main(string[] args)
         {
             if (string.IsNullOrEmpty(s_connectionString) && args.Length > 0)
             {
@@ -25,9 +25,8 @@ namespace Microsoft.Azure.Devices.Samples
 
             var sample = new EdgeDeploymentSample(registryManager);
             await sample.RunSampleAsync().ConfigureAwait(false);
-            
+
             Console.WriteLine("Done.");
-            return 0;
         }
     }
 }

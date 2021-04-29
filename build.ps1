@@ -126,7 +126,7 @@ try {
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
         RunApp iot-hub\Samples\service\EdgeDeploymentSample "IoTHub\Service\EdgeDeploymentSample"
         RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
-        RunApp iot-hub\Samples\service\RegistryManagerSample "IoTHub\Service\RegistryManagerSample"
+        RunApp iot-hub\Samples\service\RegistryManagerSample "IoTHub\Service\RegistryManagerSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -p ""$env:IOTHUB_PFX_X509_THUMBPRINT"""
 
         $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | where {$_ -like "DeviceId*"}).Split("=")[1]
         Write-Warning "Using device $deviceId for the ServiceClientSample."

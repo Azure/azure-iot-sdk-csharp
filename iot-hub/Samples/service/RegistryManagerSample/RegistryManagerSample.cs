@@ -4,118 +4,126 @@
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
-    public class RegistryManagerSample
+    internal class RegistryManagerSample
     {
-        private const string DeviceId = "RegistryManagerSample_Device";
-        // Either set the IOTHUB_PFX_X509_THUMBPRINT and IOTHUB_PFX_X509_THUMBPRINT2 environment variables 
-        // or within launchSettings.json:
-        private static string s_primaryThumbprint = Environment.GetEnvironmentVariable("IOTHUB_PFX_X509_THUMBPRINT");
-        private static string s_secondaryThumbprint = Environment.GetEnvironmentVariable("IOTHUB_PFX_X509_THUMBPRINT2");
+        private readonly Parameters _parameters;
+        private readonly IList<string> _deviceIdsAdded = new List<string>();
 
-        // Maximum number of elements per query.
-        private const int QueryPageSize = 100;
-
-        private readonly RegistryManager _registryManager;
-
-        public RegistryManagerSample(RegistryManager registryManager)
+        public RegistryManagerSample(Parameters parameters)
         {
-            _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
+            _parameters = parameters;
         }
 
         public async Task RunSampleAsync()
         {
-            await EnumerateTwinsAsync().ConfigureAwait(false);
+            using RegistryManager registryManager = RegistryManager
+                .CreateFromConnectionString(_parameters.ConnectionString);
 
             try
             {
-                await AddDeviceAsync(DeviceId).ConfigureAwait(false);
+                await CreateDeviceHierarchyAsync(registryManager);
+
+                await AddDeviceWithSelfSignedCertificateAsync(registryManager);
+
+                await AddDeviceWithCertificateAuthorityAuthenticationAsync(registryManager);
+
+                await EnumerateTwinsAsync(registryManager);
             }
             finally
             {
-                await RemoveDeviceAsync(DeviceId).ConfigureAwait(false);
-            }
+                // clean up
+                Console.WriteLine("\n=== Removing devices ===\n");
 
-            try
-            {
-                await AddDeviceWithSelfSignedCertificateAsync(
-                    DeviceId,
-                    s_primaryThumbprint,
-                    s_secondaryThumbprint).ConfigureAwait(false);
-            }
-            finally
-            {
-                await RemoveDeviceAsync(DeviceId).ConfigureAwait(false);
-            }
-
-            try
-            {
-                await AddDeviceWithCertificateAuthorityAuthenticationAsync(DeviceId).ConfigureAwait(false);
-                await UpdateDesiredProperties(DeviceId).ConfigureAwait(false);
-            }
-            finally
-            {
-                await RemoveDeviceAsync(DeviceId).ConfigureAwait(false);
-            }
-        }
-
-        public async Task EnumerateTwinsAsync()
-        {
-            Console.WriteLine("Querying devices:");
-
-            var query = _registryManager.CreateQuery("select * from devices", QueryPageSize);
-
-            while (query.HasMoreResults)
-            {
-                IEnumerable<Twin> twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
-
-                foreach (Twin twin in twins)
+                foreach (string deviceId in _deviceIdsAdded)
                 {
-                    Console.WriteLine(
-                        "\t{0, -50} : {1, 10} : Last seen: {2, -10}",
-                        twin.DeviceId,
-                        twin.ConnectionState,
-                        twin.LastActivityTime);
+                    await RemoveDeviceAsync(registryManager, deviceId);
                 }
             }
         }
 
-        public async Task AddDeviceAsync(string deviceId)
+        /// <summary>
+        /// Creates some edge devices with a parent and child, and a leaf device as a child.
+        /// </summary>
+        private async Task CreateDeviceHierarchyAsync(RegistryManager registryManager)
         {
-            Console.Write($"Adding device '{deviceId}' with default authentication . . . ");
-            await _registryManager.AddDeviceAsync(new Device(deviceId)).ConfigureAwait(false);
-            Console.WriteLine("DONE");
+            Console.WriteLine("=== Creating a hierarchy of devices using default (symmetric key) authentication ===\n");
+
+            string edgeParentId = GenerateDeviceId();
+            var edgeParent = new Device(edgeParentId)
+            {
+                Capabilities = new DeviceCapabilities
+                {
+                    // To create an edge device, this must be set to true
+                    IotEdge = true,
+                },
+            };
+
+            // Add the device and capture the output which includes system-assigned properties like ETag and Scope.
+            edgeParent = await registryManager.AddDeviceAsync(edgeParent);
+            Console.WriteLine($"Added edge {edgeParent.Id} with device scope {edgeParent.Scope}.");
+
+            string nestedEdgeId = GenerateDeviceId();
+            var nestedEdge = new Device(nestedEdgeId)
+            {
+                Capabilities = new DeviceCapabilities
+                {
+                    IotEdge = true,
+                },
+                // To make this edge device a child of another edge device, add the parent's device scope to the parent scopes property.
+                // The scope property is immutable for an edge device, and should not be set by the client.
+                ParentScopes = { edgeParent.Scope },
+            };
+
+            nestedEdge = await registryManager.AddDeviceAsync(nestedEdge);
+            Console.WriteLine($"Added edge {nestedEdge.Id} with device scope {nestedEdge.Scope} and parent scope {nestedEdge.ParentScopes.First()}.");
+
+            // Create a device with default (shared key) authentication
+            string basicDeviceId = GenerateDeviceId();
+            var basicDevice = new Device(basicDeviceId)
+            {
+                // To make this device a child of an edge device, set the scope property to the parent's scope property value.
+                // Note, this is different to how hierarchy is specified on edge devices.
+                // The parent scopes property can be set to the same value, or left alone and the service will set it for you.
+                Scope = nestedEdge.Scope,
+            };
+            basicDevice = await registryManager.AddDeviceAsync(basicDevice);
+            Console.WriteLine($"Added device '{basicDevice.Id}' with device scope of {basicDevice.Scope} and parent scope of {basicDevice.ParentScopes.First()}.");
         }
 
-        public async Task AddDeviceWithSelfSignedCertificateAsync(
-            string deviceId,
-            string primaryThumbprint,
-            string secondaryThumbprint)
+        private async Task AddDeviceWithSelfSignedCertificateAsync(RegistryManager registryManager)
         {
-            var device = new Device(deviceId)
+            Console.WriteLine("\n=== Creating a device using self-signed certificate authentication ===\n");
+
+            string selfSignedCertDeviceId = GenerateDeviceId();
+
+            var device = new Device(selfSignedCertDeviceId)
             {
                 Authentication = new AuthenticationMechanism
                 {
                     Type = AuthenticationType.SelfSigned,
                     X509Thumbprint = new X509Thumbprint
                     {
-                        PrimaryThumbprint = primaryThumbprint,
-                        SecondaryThumbprint = secondaryThumbprint,
+                        PrimaryThumbprint = _parameters.PrimaryThumbprint,
+                        SecondaryThumbprint = _parameters.SecondaryThumbprint,
                     },
                 },
             };
 
-            Console.Write($"Adding device '{deviceId}' with self signed certificate auth . . . ");
-            await _registryManager.AddDeviceAsync(device).ConfigureAwait(false);
-            Console.WriteLine("DONE");
+            await registryManager.AddDeviceAsync(device);
+            Console.WriteLine($"Added device {selfSignedCertDeviceId} with self-signed certificate auth. ");
         }
 
-        public async Task AddDeviceWithCertificateAuthorityAuthenticationAsync(string deviceId)
+        private async Task AddDeviceWithCertificateAuthorityAuthenticationAsync(RegistryManager registryManager)
         {
-            var device = new Device(deviceId)
+            Console.WriteLine("\n=== Creating a device using CA-signed certificate authentication ===\n");
+
+            string caCertDeviceId = GenerateDeviceId();
+            var device = new Device(caCertDeviceId)
             {
                 Authentication = new AuthenticationMechanism
                 {
@@ -123,32 +131,81 @@ namespace Microsoft.Azure.Devices.Samples
                 },
             };
 
-            Console.Write($"Adding device '{deviceId}' with CA authentication . . . ");
-            await _registryManager.AddDeviceAsync(device).ConfigureAwait(false);
-            Console.WriteLine("DONE");
+            await registryManager.AddDeviceAsync(device);
+            Console.WriteLine($"Added device {caCertDeviceId} with CA authentication.");
+
+            // Demonstrate updating a twin's desired property
+            await UpdateDesiredPropertiesAsync(registryManager, caCertDeviceId);
         }
 
-        public async Task RemoveDeviceAsync(string deviceId)
+        private async Task RemoveDeviceAsync(RegistryManager registryManager, string deviceId)
         {
-            Console.Write($"Remove device '{deviceId}' . . . ");
-            await _registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
-            Console.WriteLine("Done");
+            try
+            {
+                await registryManager.RemoveDeviceAsync(deviceId);
+                Console.WriteLine($"Removed device {deviceId}.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to remove device {deviceId} due to {ex.Message}.");
+            }
         }
 
-        public async Task UpdateDesiredProperties(string deviceId)
+        private async Task EnumerateTwinsAsync(RegistryManager registryManager)
         {
-            var twin = await _registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
+            Console.WriteLine("\n=== Querying twins ===\n");
+            await Task.Delay(5000); // give a little time for the twin store to reflect all our recent additions
 
-            var patch =
-                @"{
-                properties: {
-                    desired: {
-                      customKey: 'customValue'
+            string queryText = $"SELECT * FROM devices WHERE STARTSWITH(id, '{_parameters.DevicePrefix}')";
+            Console.WriteLine($"Using query text of: {queryText}");
+
+            var query = registryManager.CreateQuery(queryText);
+
+            while (query.HasMoreResults)
+            {
+                IEnumerable<Twin> twins = await query.GetNextAsTwinAsync();
+
+                foreach (Twin twin in twins)
+                {
+                    Console.WriteLine($"{twin.DeviceId}");
+                    Console.WriteLine($"\tIs edge: {twin.Capabilities.IotEdge}");
+                    if (!string.IsNullOrWhiteSpace(twin.DeviceScope))
+                    {
+                        Console.WriteLine($"\tDevice scope: {twin.DeviceScope}");
+                    }
+                    if (twin.ParentScopes?.Any() ?? false)
+                    {
+                        Console.WriteLine($"\tParent scope: {twin.ParentScopes?.FirstOrDefault()}");
                     }
                 }
-            }";
+            }
+        }
 
-            await _registryManager.UpdateTwinAsync(twin.DeviceId, patch, twin.ETag).ConfigureAwait(false);
+        private async Task UpdateDesiredPropertiesAsync(RegistryManager registryManager, string deviceId)
+        {
+            Console.WriteLine("\n=== Updating a desired property value ===\n");
+
+            var twin = await registryManager.GetTwinAsync(deviceId);
+
+            // Set a desired value for a property the device supports, with the corresponding data type
+            var patch =
+@"{
+  ""properties"": {
+    ""desired"": {
+      ""customKey"": ""customValue""
+    }
+  }
+}";
+            Console.WriteLine($"Using property patch of:\n{patch}");
+
+            await registryManager.UpdateTwinAsync(twin.DeviceId, patch, twin.ETag);
+        }
+
+        private string GenerateDeviceId()
+        {
+            string deviceId = _parameters.DevicePrefix + Guid.NewGuid().ToString().Substring(0, 8);
+            _deviceIdsAdded.Add(deviceId);
+            return deviceId;
         }
     }
 }
