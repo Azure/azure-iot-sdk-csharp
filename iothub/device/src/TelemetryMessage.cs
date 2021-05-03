@@ -51,30 +51,22 @@ namespace Microsoft.Azure.Devices.Client
         /// The ability to set this property has been hidden by this class to only allow you to set the ContentType via the <see cref="TelemetryCollection"/> class.
         /// </remarks>
         /// <value>The base <see cref="Message"/> content type.</value>
-        new public string ContentType
-        {
-            get => base.ContentType;
-        }
+        new public string ContentType => base.ContentType;
 
         /// <inheritdoc/>
         /// <remarks>
         /// The ability to set this property has been hidden by this class to only allow you to set the ContentEncoding via the <see cref="TelemetryCollection"/> class.
         /// </remarks>
         /// <value>The base <see cref="Message"/> content encoding.</value>
-        new public string ContentEncoding
-        {
-            get => base.ContentEncoding;
-        }
+        new public string ContentEncoding => base.ContentEncoding;
 
         /// <summary>
-        /// A conveneince constructor that allows you to set the <see cref="TelemetryCollection"/> and <see cref="Message.ComponentName"/> of this <see cref="TelemetryMessage"/>
+        /// A conveneince constructor that allows you to set the <see cref="Message.ComponentName"/> of this <see cref="TelemetryMessage"/>
         /// </summary>
         /// <param name="componentName">The name of the component.</param>
-        /// <param name="telemetryCollection">A collection of telemetry for this message.</param>
-        public TelemetryMessage(string componentName = default, TelemetryCollection telemetryCollection = default)
-            : base(telemetryCollection)
+        public TelemetryMessage(string componentName = default)
+            : base()
         {
-            Telemetry = telemetryCollection ?? new TelemetryCollection();
             if (!string.IsNullOrEmpty(componentName))
             {
                 ComponentName = componentName;

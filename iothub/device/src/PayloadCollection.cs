@@ -92,9 +92,9 @@ namespace Microsoft.Azure.Devices.Client
         public virtual T GetValue<T>(string key)
         {
             // If the object is of type T go ahead and return it.
-            if (Collection[key] is T)
+            if (Collection[key] is T value)
             {
-                return (T)Collection[key];
+                return value;
             }
             // If it's not we need to try to convert it using the serializer.
             // JObject or JsonElement

@@ -10,9 +10,11 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// A container for properties.
+    /// A container for properties retrieved from the service.
     /// <remarks>
-    /// The Properties class is not meant to be constructed by customer code. It is intended to be returned fully popualated from the <see cref="DeviceClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/> method.
+    /// The Properties class is not meant to be constructed by customer code.
+    /// It is intended to be returned fully populated from the
+    /// <see cref="DeviceClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/> method.
     /// </remarks>
     /// </summary>
     public class ClientProperties : IEnumerable<object>

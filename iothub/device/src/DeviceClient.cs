@@ -742,8 +742,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Send telemetry using the specified message.
         /// </summary>
         /// <remarks>
-        /// Use the <see cref="TelemetryMessage(string, TelemetryCollection)"/> constructor to pass in the optional
-        /// <see cref="TelemetryCollection"/> that specifies your payload and serialization and encoding rules.
+        /// Use the <see cref="TelemetryMessage(string)"/> constructor to pass in the optional component name
+        /// that the telemetry message is from.
         /// </remarks>
         /// <param name="telemetryMessage">The telemetry message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
