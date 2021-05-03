@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -116,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client
             if (sasAuthorizationRule.PrimaryKey != null)
             {
                 string primareyKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
-                if (StringComparer.Ordinal.Equals(Signature, primareyKeyComputedSignature))
+                if (FixedTimeEquals(Signature, primareyKeyComputedSignature))
                 {
                     return;
                 }
@@ -125,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client
             if (sasAuthorizationRule.SecondaryKey != null)
             {
                 string secondaryKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
-                if (StringComparer.Ordinal.Equals(Signature, secondaryKeyComputedSignature))
+                if (FixedTimeEquals(Signature, secondaryKeyComputedSignature))
                 {
                     return;
                 }
@@ -204,6 +205,27 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return parsedFields;
+        }
+
+        // N.B. This allows for string comparisons without a potential security vulnerability.
+        // Without this it could be possible to attempt different values and determine length
+        // and maybe even entire string through brute force atttempts.
+        //
+        // This is also a function that can be removed later once the C# version being used
+        // supports https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptographicoperations.fixedtimeequals?view=net-5.0
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static bool FixedTimeEquals(string left, string right)
+        {
+            if (left.Length != right.Length)
+            {
+                return false;
+            }
+            var result = 0;
+            for (var i = 0; i < left.Length; i++)
+            {
+                result |= left[i] ^ right[i];
+            }
+            return result == 0;
         }
     }
 }
