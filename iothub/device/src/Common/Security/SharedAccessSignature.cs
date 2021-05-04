@@ -213,6 +213,9 @@ namespace Microsoft.Azure.Devices.Client
         //
         // This is also a function that can be removed later once the C# version being used
         // supports https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptographicoperations.fixedtimeequals?view=net-5.0
+        //
+        // This implementation is taken directly from 
+        // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Security.Cryptography.Primitives/src/System/Security/Cryptography/CryptographicOperations.cs#L31
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private static bool FixedTimeEquals(string left, string right)
         {
@@ -220,12 +223,16 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return false;
             }
-            var result = 0;
-            for (var i = 0; i < left.Length; i++)
+
+            int length = left.Length;
+            int accum = 0;
+
+            for (int i = 0; i < length; i++)
             {
-                result |= left[i] ^ right[i];
+                accum |= left[i] - right[i];
             }
-            return result == 0;
+
+            return accum == 0;
         }
     }
 }
