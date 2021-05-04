@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// The scopes of the upper level edge devices if applicable. Only available for edge devices.
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public virtual IReadOnlyList<string> ParentScopes { get; internal set; }
+        public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
 
         /// <summary>
         /// Gets the Twin as a JSON string
