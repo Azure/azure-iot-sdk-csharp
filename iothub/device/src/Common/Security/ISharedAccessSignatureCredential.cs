@@ -8,11 +8,5 @@ namespace Microsoft.Azure.Devices.Client
     internal interface ISharedAccessSignatureCredential
     {
         bool IsExpired();
-
-        void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule);
-
-        void AuthorizeHost(string hostName);
-
-        void AuthorizeTarget(Uri targetAddress);
     }
 }
