@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
 
-            var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
+            var config = new Configuration.IoTHub.ConnectionStringParser(deviceConnectionString);
             string deviceId = config.DeviceID;
 
             ConnectionStatus? status = null;

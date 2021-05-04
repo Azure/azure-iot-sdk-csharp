@@ -54,12 +54,12 @@ namespace Microsoft.Azure.Devices
         private IHttpClientHelper _httpClientHelper;
         private readonly string _iotHubName;
 
-        internal HttpRegistryManager(IotHubConnectionString connectionString, HttpTransportSettings transportSettings)
+        internal HttpRegistryManager(IotHubConnectionProperties connectionProperties, HttpTransportSettings transportSettings)
         {
-            _iotHubName = connectionString.IotHubName;
+            _iotHubName = connectionProperties.IotHubName;
             _httpClientHelper = new HttpClientHelper(
-                connectionString.HttpsEndpoint,
-                connectionString,
+                connectionProperties.HttpsEndpoint,
+                connectionProperties,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 transportSettings.Proxy,
@@ -736,7 +736,6 @@ namespace Microsoft.Azure.Devices
             {
                 Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevices2Async));
             }
-
         }
 
         public override Task RemoveDeviceAsync(string deviceId)
@@ -938,7 +937,6 @@ namespace Microsoft.Azure.Devices
 
                 return _httpClientHelper.GetAsync<RegistryStatistics>(GetStatisticsUri(), errorMappingOverrides, null, cancellationToken);
             }
-
             catch (Exception ex)
             {
                 Logging.Error(this, $"{nameof(GetRegistryStatisticsAsync)} threw an exception: {ex}", nameof(GetRegistryStatisticsAsync));
@@ -1038,7 +1036,6 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-
                 EnsureInstanceNotClosed();
 
                 return _httpClientHelper.GetAsync<IEnumerable<Module>>(
@@ -1474,7 +1471,6 @@ namespace Microsoft.Azure.Devices
             Logging.Enter(this, $"Import Job running with {jobParameters}", nameof(ImportDevicesAsync));
             try
             {
-
                 jobParameters.Type = JobType.ImportDevices;
                 return CreateJobAsync(jobParameters, cancellationToken);
             }

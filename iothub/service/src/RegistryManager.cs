@@ -7,10 +7,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 
+#if !NET451
+
+using Azure;
+using Azure.Core;
+
+#endif
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Naming",
@@ -45,6 +53,62 @@ namespace Microsoft.Azure.Devices
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             return new HttpRegistryManager(iotHubConnectionString, transportSettings);
         }
+
+#if !NET451
+
+        /// <summary>
+        /// Creates an instance of RegistryManager.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="transportSettings">The HTTP transport settings.</param>
+        /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
+        public static RegistryManager Create(
+            string hostName,
+            TokenCredential credential,
+            HttpTransportSettings transportSettings = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            return new HttpRegistryManager(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="RegistryManager"/>.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
+        /// <param name="transportSettings">The HTTP transport settings.</param>
+        /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
+        public static RegistryManager Create(
+            string hostName,
+            AzureSasCredential credential,
+            HttpTransportSettings transportSettings = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
+            return new HttpRegistryManager(sasCredentialProperties, transportSettings ?? new HttpTransportSettings());
+        }
+
+#endif
 
         /// <inheritdoc />
         public void Dispose()
