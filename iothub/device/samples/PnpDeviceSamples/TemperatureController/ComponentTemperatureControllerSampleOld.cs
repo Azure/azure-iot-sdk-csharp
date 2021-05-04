@@ -151,14 +151,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         };
 
                         _logger.LogDebug($"Command: component=\"{Thermostat2}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
-                                    $" has {Shared.StatusCodes.OK}.");
+                                    $" has {StatusCodes.OK}.");
 
                         return new MethodResponse(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(updateTemperatureResponse)), StatusCodes.OK);
                     }
                     catch (JsonException ex)
                     {
                         _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                        return new MethodResponse(Shared.StatusCodes.BadRequest);
+                        return new MethodResponse(StatusCodes.BadRequest);
                     }
                 },
                 null,

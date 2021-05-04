@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     propertyPatch.Add(
                         propertyName,
                         targetHumidity,
-                        Shared.StatusCodes.OK,
+                        StatusCodes.OK,
                         writableProperties.Version,
                         "The operation completed successfully.");
 
@@ -104,17 +104,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 await Task.Delay(TimeSpan.FromSeconds(delay));
                                 _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCodes.OK}.");
 
-                                return new CommandResponse(Shared.StatusCodes.OK);
+                                return new CommandResponse(StatusCodes.OK);
 
                             default:
                                 _logger.LogWarning($"Received a command request that isn't implemented - command name = {commandRequest.CommandName}");
-                                return new CommandResponse(Shared.StatusCodes.NotFound);
+                                return new CommandResponse(StatusCodes.NotFound);
                         }
                     }
                     catch (JsonReaderException ex)
                     {
                         _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                        return new CommandResponse(Shared.StatusCodes.BadRequest);
+                        return new CommandResponse(StatusCodes.BadRequest);
                     }
                 },
                 null,
