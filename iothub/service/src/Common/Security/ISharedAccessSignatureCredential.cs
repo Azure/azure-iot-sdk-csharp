@@ -20,23 +20,5 @@ namespace Microsoft.Azure.Devices.Common.Security
         /// The date and time of expiration.
         /// </summary>
         DateTime ExpiryTime();
-
-        /// <summary>
-        /// Authenticate against the IoT Hub using an authorization rule.
-        /// </summary>
-        /// <param name="sasAuthorizationRule">The properties that describe the keys to access the IotHub artifacts.</param>
-        void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule);
-
-        /// <summary>
-        /// Authorize access to the IoT Hub.
-        /// </summary>
-        /// <param name="hostName">IoT Hub host to authorize against.</param>
-        void Authorize(string hostName);
-
-        /// <summary>
-        /// Authorize access to the provided target address.
-        /// </summary>
-        /// <param name="targetAddress">Target address to authorize against.</param>
-        void Authorize(Uri targetAddress);
     }
 }
