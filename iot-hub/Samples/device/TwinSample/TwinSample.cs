@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Console.WriteLine($"Waiting up to {sampleRunningTime} for receiving twin desired property updates ...");
             while (!cts.IsCancellationRequested
-                && timer.Elapsed < sampleRunningTime)
+                && (sampleRunningTime == Timeout.InfiniteTimeSpan || timer.Elapsed < sampleRunningTime))
             {
                 await Task.Delay(1000);
             }

@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Console.WriteLine($"Waiting up to {sampleRunningTime} for IoT Hub method calls ...");
             while (!cts.IsCancellationRequested
-                && timer.Elapsed < sampleRunningTime)
+                && (sampleRunningTime == Timeout.InfiniteTimeSpan || timer.Elapsed < sampleRunningTime))
             {
                 await Task.Delay(1000);
             }
