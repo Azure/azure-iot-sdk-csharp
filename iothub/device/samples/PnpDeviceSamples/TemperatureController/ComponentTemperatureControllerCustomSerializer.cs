@@ -49,14 +49,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Temperature = 25
             };
 
-            if (!properties.Contains(Thermostat2)
-                || !((JsonElement)properties[Thermostat2])
-                    .TryGetProperty("initialValue", out JsonElement initialValueReported)
-                || !initialValue
-                    .Equals(_deviceClient
-                        .PayloadConvention
-                        .PayloadSerializer
-                        .DeserializeToType<ThermostatInitialValue>(initialValueReported.GetRawText())))
+            if (!properties.TryGetValue(Thermostat2, "initialValue", out ThermostatInitialValue retrievedInitialValue)
+                || !retrievedInitialValue.Equals(initialValue))
             {
                 var propertiesToBeUpdated = new ClientPropertyCollection
                 {
@@ -88,21 +82,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 async (writableProperties, userContext) =>
                 {
                     string propertyName = "humidityRange";
-                    if (!writableProperties.Contains(Thermostat1)
-                        || !((JsonElement)writableProperties[Thermostat1])
-                            .TryGetProperty(propertyName, out JsonElement humidityRangeRequested))
+                    if (!writableProperties.TryGetValue(Thermostat1, "humidityRange", out HumidityRange humidityRangeRequested))
                     {
                         _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerializedString()}");
                         return;
                     }
 
-                    HumidityRange targetHumidityRange = _deviceClient.PayloadConvention.PayloadSerializer.DeserializeToType<HumidityRange>(humidityRangeRequested.GetRawText());
-
-                    _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
+                    _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {humidityRangeRequested} }}.");
 
                     var propertyPatch = new ClientPropertyCollection
                     {
-                        { propertyName, targetHumidityRange, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
+                        { propertyName, humidityRangeRequested, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
                     };
 
                     await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);

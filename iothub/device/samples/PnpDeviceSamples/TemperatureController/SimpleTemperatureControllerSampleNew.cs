@@ -41,8 +41,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Verify if the device has previously reported a value for property "serialNumber".
             // If the expected value has not been previously reported then report it.
             string serialNumber = "SR-12345";
-            if (!properties.Contains("serialNumber")
-                || properties.Get<string>("serialNumber") != serialNumber)
+            if (!properties.TryGetValue("serialNumber", out string serialNumberReported)
+                || serialNumberReported != serialNumber)
             {
                 var propertiesToBeUpdated = new ClientPropertyCollection
                 {
@@ -67,18 +67,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 async (writableProperties, userContext) =>
                 {
                     string propertyName = "targetHumidity";
-                    if (!writableProperties.Contains(propertyName))
+                    if (!writableProperties.TryGetValue(propertyName, out double targetHumidityRequested))
                     {
                         _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerializedString()}");
                         return;
                     }
 
-                    double targetHumidity = writableProperties.GetValue<double>(propertyName);
-
                     var propertyPatch = new ClientPropertyCollection();
                     propertyPatch.Add(
                         propertyName,
-                        targetHumidity,
+                        targetHumidityRequested,
                         StatusCodes.OK,
                         writableProperties.Version,
                         "The operation completed successfully.");

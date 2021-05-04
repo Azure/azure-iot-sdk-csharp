@@ -54,9 +54,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             if (!properties.Properties.Reported.Contains(Thermostat2)
                 || !((JObject)properties.Properties.Reported[Thermostat2])
-                    .TryGetValue("initialValue", out JToken initialValueReported)
+                    .TryGetValue("initialValue", out JToken retrievedInitialValue)
                 || !initialValue
-                    .Equals(initialValueReported.ToObject<ThermostatInitialValue>()))
+                    .Equals(retrievedInitialValue.ToObject<ThermostatInitialValue>()))
             {
                 var propertiesToBeUpdated = new TwinCollection
                 {
@@ -107,6 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     }
 
                     HumidityRange targetHumidityRange = humidityRangeRequested.ToObject<HumidityRange>();
+                    _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
                     var propertyPatch = new TwinCollection();
                     var componentPatch = new TwinCollection()

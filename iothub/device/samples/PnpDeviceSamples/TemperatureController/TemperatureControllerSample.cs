@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         break;
 
                     default:
-                        _logger.LogDebug($"Property: Received a property update that is not implemented.");
+                        _logger.LogWarning($"Property: Received a property update that is not implemented.");
                         break;
                 }
             }
@@ -377,15 +377,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             string propertyName = dispatcherKey;
 
-            TemperatureRange temperatureRangeDesired = writableProperties.GetValue<TemperatureRange>(propertyName);
+            bool recognizedPropertyUpdateReceived = writableProperties.TryGetValue(propertyName, out TemperatureRange temperatureRangeDesired);
 
-            var propertyPatch = new ClientPropertyCollection()
+            if (recognizedPropertyUpdateReceived)
+            {
+                var propertyPatch = new ClientPropertyCollection()
             {
                 { propertyName, temperatureRangeDesired, StatusCodes.OK, writableProperties.Version, "The operation completed successfully."}
             };
 
-            await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, s_cancellationToken);
-            _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
+                await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, s_cancellationToken);
+                _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
+            }
+            else
+            {
+                _logger.LogWarning($"Property: Received a property update that is not implemented.");
+            }
         }
 
         private async Task SendHumidityRangeAsync(ClientPropertyCollection writableProperties, object userContext, string dispatcherKey)

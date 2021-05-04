@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="key">Key of value</param>
         /// <remarks>
-        /// This accessor is best used to access simple types. It is recommended to use <see cref="GetValue"/> to cast a complex type.
+        /// This accessor is best used to access simple types. It is recommended to use <see cref="TryGetValue"/> to cast a complex type.
         /// </remarks>
         /// <returns>The specified property.</returns>
         public virtual object this[string key]
@@ -88,17 +88,26 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
-        /// <returns></returns>
-        public virtual T GetValue<T>(string key)
+        /// <param name="value">The value of the object from the collection.</param>
+        /// <returns>true if the collection contains an element with the specified key; otherwise, false.</returns>
+        public virtual bool TryGetValue<T>(string key, out T value)
         {
-            // If the object is of type T go ahead and return it.
-            if (Collection[key] is T value)
+            if (Collection.ContainsKey(key))
             {
-                return value;
+                // If the object is of type T go ahead and return it.
+                if (Collection[key] is T valueRef)
+                {
+                    value = valueRef;
+                    return true;
+                }
+                // If it's not we need to try to convert it using the serializer.
+                // JObject or JsonElement
+                value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
+                return true;
             }
-            // If it's not we need to try to convert it using the serializer.
-            // JObject or JsonElement
-            return Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
+
+            value = default;
+            return false;
         }
 
         /// <summary>

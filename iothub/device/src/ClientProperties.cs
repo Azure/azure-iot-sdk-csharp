@@ -53,7 +53,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="key">The key of the property to get.</param>
         /// <remarks>
-        /// This accessor is best used to access simple types. It is recommended to use <see cref="Get{T}(string)"/> to cast a complex type.
+        /// This accessor is best used to access simple types. It is recommended to use <see cref="TryGetValue{T}(string, out T)"/>
+        /// or <see cref="TryGetValue{T}(string, string, out T)"/> to cast a complex type.
         /// </remarks>
         /// <returns>The specified property.</returns>
         public object this[string key]
@@ -98,14 +99,32 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the property from the collection.
         /// </summary>
         /// <remarks>
-        /// This calls <see cref="PayloadCollection.GetValue{T}(string)"/> and will use the serializer if needed. It is recommended to use this method over the <see cref="this[string]"/> accessor.
+        /// This calls <see cref="PayloadCollection.TryGetValue{T}(string, out T)"/> and will use the serializer if needed. It is recommended to use this method over the <see cref="this[string]"/> accessor.
         /// </remarks>
         /// <typeparam name="T">The type to be returned.</typeparam>
         /// <param name="propertyKey">The key of the property to be returned.</param>
-        /// <returns>A type of <typeparamref name="T"/> or <c>null</c></returns>
-        public T Get<T>(string propertyKey)
+        /// <param name="propertyValue">The value of the component-level property.</param>
+        /// <returns>true if the property collection contains a property with the specified key; otherwise, false.</returns>
+        public bool TryGetValue<T>(string propertyKey, out T propertyValue)
         {
-            return _reportedPropertyCollection.GetValue<T>(propertyKey);
+            return _reportedPropertyCollection.TryGetValue<T>(propertyKey, out propertyValue);
+        }
+
+        /// <summary>
+        /// Gets the value of a component-level property.
+        /// </summary>
+        /// <remarks>
+        /// To get the value of a root-level property use <see cref="ClientProperties.TryGetValue{T}(string, out T)"/>.
+        /// </remarks>
+        /// <typeparam name="T">The type to cast the object to.</typeparam>
+        /// <param name="componentName">The component which holds the required property.</param>
+        /// <param name="propertyName">The property to get.</param>
+        /// <param name="propertyValue">The value of the component-level property.</param>
+        /// <returns>true if the property collection contains a component level property with the specified key; otherwise, false.</returns>
+        /// <returns></returns>
+        public bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
+        {
+            return _reportedPropertyCollection.TryGetValue<T>(componentName, propertyName, out propertyValue);
         }
 
         internal static ClientProperties FromClientTwinProperties(ClientTwinProperties clientTwinProperties, PayloadConvention payloadConvention)

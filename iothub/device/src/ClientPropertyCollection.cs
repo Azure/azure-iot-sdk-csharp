@@ -232,6 +232,40 @@ namespace Microsoft.Azure.Devices.Client
         public long Version { get; private set; }
 
         /// <summary>
+        /// Gets the value of a component-level property.
+        /// </summary>
+        /// <remarks>
+        /// To get the value of a root-level property use <see cref="PayloadCollection.TryGetValue{T}(string, out T)"/>.
+        /// </remarks>
+        /// <typeparam name="T">The type to cast the object to.</typeparam>
+        /// <param name="componentName">The component which holds the required property.</param>
+        /// <param name="propertyName">The property to get.</param>
+        /// <param name="propertyValue">The value of the component-level property.</param>
+        /// <returns>true if the property collection contains a component level property with the specified key; otherwise, false.</returns>
+        public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
+        {
+            if (Collection.ContainsKey(componentName))
+            {
+                // Extract the component-level properties into a JObject.
+                // The user specified serializer settings don't really affect this since this is an internal implementation detail.
+                string componentString = Convention.PayloadSerializer.SerializeToString(Collection[componentName]);
+                JObject componentProperties = JObject.Parse(componentString);
+
+                if (componentProperties.ContainsKey(propertyName))
+                {
+                    propertyValue = Convention.PayloadSerializer.ConvertFromObject<T>(componentProperties.GetValue(propertyName));
+                    return true;
+                }
+
+                propertyValue = default;
+                return false;
+            }
+
+            propertyValue = default;
+            return false;
+        }
+
+        /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
         /// </summary>
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
