@@ -117,7 +117,11 @@ namespace Microsoft.Azure.Devices.Client
             if (sasAuthorizationRule.PrimaryKey != null)
             {
                 string primareyKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
+#if NETSTANDARD2_1
+                if (CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(Signature), Encoding.ASCII.GetBytes(primareyKeyComputedSignature)))
+#else
                 if (FixedTimeEquals(Signature, primareyKeyComputedSignature))
+#endif
                 {
                     return;
                 }
@@ -126,7 +130,11 @@ namespace Microsoft.Azure.Devices.Client
             if (sasAuthorizationRule.SecondaryKey != null)
             {
                 string secondaryKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
+#if NETSTANDARD2_1
+                if (CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(Signature), Encoding.ASCII.GetBytes(secondaryKeyComputedSignature)))
+#else
                 if (FixedTimeEquals(Signature, secondaryKeyComputedSignature))
+#endif
                 {
                     return;
                 }
