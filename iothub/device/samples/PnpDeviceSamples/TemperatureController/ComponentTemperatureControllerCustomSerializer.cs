@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const string Thermostat2 = "thermostat2";
 
         private static readonly Random s_random = new();
-        private static readonly PayloadConvention s_systemTextJsonPayloadConvention = new SystemTextJsonPayloadConvention();
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
