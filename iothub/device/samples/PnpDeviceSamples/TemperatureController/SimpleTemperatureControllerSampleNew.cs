@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -78,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     propertyPatch.Add(
                         propertyName,
                         targetHumidity,
-                        (int)StatusCode.Completed,
+                        Shared.StatusCodes.OK,
                         writableProperties.Version,
                         "The operation completed successfully.");
 
@@ -101,19 +102,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
 
                                 await Task.Delay(TimeSpan.FromSeconds(delay));
-                                _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCode.Completed}.");
+                                _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCodes.OK}.");
 
-                                return new CommandResponse((int)StatusCode.Completed);
+                                return new CommandResponse(Shared.StatusCodes.OK);
 
                             default:
                                 _logger.LogWarning($"Received a command request that isn't implemented - command name = {commandRequest.CommandName}");
-                                return new CommandResponse((int)StatusCode.NotFound);
+                                return new CommandResponse(Shared.StatusCodes.NotFound);
                         }
                     }
                     catch (JsonReaderException ex)
                     {
                         _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                        return new CommandResponse((int)StatusCode.BadRequest);
+                        return new CommandResponse(Shared.StatusCodes.BadRequest);
                     }
                 },
                 null,

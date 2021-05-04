@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
                     var propertyPatch = new ClientPropertyCollection();
-                    propertyPatch.Add(propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1);
+                    propertyPatch.Add(propertyName, targetHumidityRange, Shared.StatusCodes.OK, writableProperties.Version, "The operation completed successfully.", Thermostat1);
 
                     await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
                     _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
@@ -125,28 +125,28 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                         var updateTemperatureResponse = new UpdateTemperatureResponse
                                         {
                                             TargetTemperature = updateTemperatureRequest.TargetTemperature,
-                                            Status = (int)StatusCode.Completed  // change this
+                                            Status = Shared.StatusCodes.OK  // change this
                                         };
 
                                         _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
-                                                    $" has {StatusCode.Completed}.");
+                                                    $" has {Shared.StatusCodes.OK}.");
 
-                                        return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+                                        return new CommandResponse(updateTemperatureResponse, StatusCodes.OK);
 
                                     default:
                                         _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
-                                        return new CommandResponse((int)StatusCode.NotFound);
+                                        return new CommandResponse(Shared.StatusCodes.NotFound);
                                 }
 
                             default:
                                 _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
-                                return new CommandResponse((int)StatusCode.NotFound);
+                                return new CommandResponse(Shared.StatusCodes.NotFound);
                         }
                     }
                     catch (JsonException ex)
                     {
                         _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                        return new CommandResponse((int)StatusCode.BadRequest);
+                        return new CommandResponse(Shared.StatusCodes.BadRequest);
                     }
                 },
                 null,

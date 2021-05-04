@@ -15,15 +15,15 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Status code 200.
         /// </summary>
-        public static int Completed => 200;
+        public static int OK => 200;
         /// <summary>
         /// Status code 202.
         /// </summary>
-        public static int Pending => 202;
+        public static int Accepted => 202;
         /// <summary>
         /// Status code 400.
         /// </summary>
-        public static int Invalid => 400;
+        public static int BadRequest => 400;
         /// <summary>
         /// Status code 404.
         /// </summary>

@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     var humidityUpdateResponse = new TwinCollection
                     {
                         ["value"] = targetHumidity,
-                        ["ac"] = (int)StatusCode.Completed,
+                        ["ac"] = StatusCodes.OK,
                         ["av"] = desired.Version,
                         ["ad"] = "The operation completed successfully."
                     };
@@ -110,14 +110,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
 
                         await Task.Delay(TimeSpan.FromSeconds(delay));
-                        _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCode.Completed}.");
+                        _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCodes.OK}.");
 
-                        return new MethodResponse((int)StatusCode.Completed);
+                        return new MethodResponse(StatusCodes.OK);
                     }
                     catch (JsonReaderException ex)
                     {
                         _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                        return new MethodResponse((int)StatusCode.BadRequest);
+                        return new MethodResponse(StatusCodes.BadRequest);
                     }
                 },
                 null,
