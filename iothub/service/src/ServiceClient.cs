@@ -6,6 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 
+#if !NET451
+
+using Azure;
+using Azure.Core;
+
+#endif
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -29,8 +36,8 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 
     /// <summary>
-    /// Contains methods that services can use to send messages to devices/modules,
-    /// invoke a direct method on a device/module and deliver notifications for file upload and cloud-to-device operations.
+    /// Contains methods that services can use to send messages to devices
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
     public abstract class ServiceClient : IDisposable
     {
@@ -52,6 +59,82 @@ namespace Microsoft.Azure.Devices
         {
             return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
         }
+
+#if !NET451
+
+        /// <summary>
+        /// Creates a <see cref="ServiceClient"/> using Azure Active Directory credentials and the specified transport type.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
+        /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
+        public static ServiceClient Create(
+            string hostName,
+            TokenCredential credential,
+            TransportType transportType = TransportType.Amqp,
+            ServiceClientTransportSettings transportSettings = default,
+            ServiceClientOptions options = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+
+            return new AmqpServiceClient(
+                tokenCredentialProperties,
+                useWebSocketOnly,
+                transportSettings ?? new ServiceClientTransportSettings(),
+                options);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ServiceClient"/> using SAS token and the specified transport type.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
+        /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
+        public static ServiceClient Create(
+            string hostName,
+            AzureSasCredential credential,
+            TransportType transportType = TransportType.Amqp,
+            ServiceClientTransportSettings transportSettings = default,
+            ServiceClientOptions options = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+
+            return new AmqpServiceClient(
+                sasCredentialProperties,
+                useWebSocketOnly,
+                transportSettings ?? new ServiceClientTransportSettings(),
+                options);
+        }
+
+#endif
 
         /// <inheritdoc />
         public void Dispose()
