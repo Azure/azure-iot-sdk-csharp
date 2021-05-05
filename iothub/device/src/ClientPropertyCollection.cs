@@ -219,9 +219,14 @@ namespace Microsoft.Azure.Devices.Client
         /// Determines whether the specified property is present.
         /// </summary>
         /// <param name="propertyName">The property to locate.</param>
+        /// <param name="componentName"></param>
         /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        public bool Contains(string propertyName)
+        public bool Contains(string propertyName, string componentName = default)
         {
+            if (!string.IsNullOrEmpty(componentName) && Collection.TryGetValue(componentName, out var component))
+            {
+                return Convention.PayloadSerializer.TryGetNestedObjectValue<object>(component, propertyName, out _);
+            }
             return Collection.TryGetValue(propertyName, out _);
         }
 
@@ -229,7 +234,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the version of the property collection.
         /// </summary>
         /// <value>A <see cref="long"/> that is used to identify the version of the property collection.</value>
-        public long Version { get; private set; }
+        public long Version { get; protected set; }
 
         /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection.

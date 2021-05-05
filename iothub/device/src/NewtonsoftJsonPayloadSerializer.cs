@@ -47,6 +47,22 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
+        public override bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue)
+        {
+            outValue = default;
+            if (objectToConvert == null || string.IsNullOrEmpty(propertyName))
+            {
+                return false;
+            }
+            if (((JObject)objectToConvert).TryGetValue(propertyName, out var element))
+            {
+                outValue = element.ToObject<T>();
+                return true;
+            }
+            return false;
+        }
+
+        /// <inheritdoc/>
         public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null)
         {
             return new NewtonsoftJsonWritablePropertyResponse(value, statusCode, version, description);

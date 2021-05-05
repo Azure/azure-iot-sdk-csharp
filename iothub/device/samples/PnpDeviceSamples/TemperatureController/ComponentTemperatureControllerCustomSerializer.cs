@@ -49,14 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Temperature = 25
             };
 
-            if (!properties.Contains(Thermostat2)
-                || !((JsonElement)properties[Thermostat2])
-                    .TryGetProperty("initialValue", out JsonElement initialValueReported)
-                || !initialValue
-                    .Equals(_deviceClient
-                        .PayloadConvention
-                        .PayloadSerializer
-                        .DeserializeToType<ThermostatInitialValue>(initialValueReported.GetRawText())))
+            if (!properties.Contains("initialValue", Thermostat2))
             {
                 var propertiesToBeUpdated = new ClientPropertyCollection
                 {
@@ -64,6 +57,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 };
                 await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
                 _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()}.");
+            }
+            else
+            {
+                var tValue = properties.Get<ThermostatInitialValue>("initialValue", Thermostat2);
+                _logger.LogDebug($"Property from tValue: {tValue.Humidity}.");
+                _logger.LogDebug($"Property from tValue: {tValue.Temperature}.");
             }
 
             // Send telemetry "deviceHealth" under component "thermostat1".

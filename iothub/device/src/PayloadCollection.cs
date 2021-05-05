@@ -88,9 +88,17 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
+        /// <param name="componentName">The optional component name.</param>
         /// <returns></returns>
-        public virtual T GetValue<T>(string key)
+        public virtual T GetValue<T>(string key, string componentName = default)
         {
+            if (!string.IsNullOrEmpty(componentName) && !string.IsNullOrEmpty(key))
+            {
+                if (Convention.PayloadSerializer.TryGetNestedObjectValue(Collection[componentName], key, out T outValue))
+                {
+                    return outValue;
+                }
+            }
             // If the object is of type T go ahead and return it.
             if (Collection[key] is T)
             {
@@ -123,6 +131,20 @@ namespace Microsoft.Azure.Devices.Client
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        /// <summary>
+        /// Will set the underlying <see cref="Collection"/> of the payload collection.
+        /// </summary>
+        /// <param name="payloadCollection">The collection to get the underlying dictionary from</param>
+        protected void SetCollection(PayloadCollection payloadCollection)
+        {
+            if (payloadCollection == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            Collection = payloadCollection.Collection;
         }
     }
 }
