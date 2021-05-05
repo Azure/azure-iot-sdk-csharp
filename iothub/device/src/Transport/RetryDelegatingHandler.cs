@@ -628,18 +628,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             try
             {
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendPropertyPatchAsync));
 
-                await _internalRetryPolicy
+                return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.SendPropertyPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+                            return await base.SendPropertyPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);

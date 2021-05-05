@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             s_logger.LogDebug($"Set up the device client.");
             using DeviceClient deviceClient = await SetupDeviceClientAsync(parameters, cts.Token);
-            var sample = new SimpleTemperatureControllerSampleNew(deviceClient, s_logger);
+            var sample = new ComponentTemperatureControllerCustomSerializer(deviceClient, s_logger);
             await sample.PerformOperationsAsync(cts.Token);
         }
 
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var options = new ClientOptions
             {
                 ModelId = ModelId,
-                //PayloadConvention = new SystemTextJsonPayloadConvention()
+                PayloadConvention = new SystemTextJsonPayloadConvention()
             };
 
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);

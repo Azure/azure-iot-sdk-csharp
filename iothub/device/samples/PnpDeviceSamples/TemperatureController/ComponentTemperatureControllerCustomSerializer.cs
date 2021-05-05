@@ -56,8 +56,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     { "initialValue", initialValue, Thermostat2 }
                 };
-                await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()}.");
+                ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()}, version = {updateResponse.Version}.");
             }
 
             // Send telemetry "deviceHealth" under component "thermostat1".
@@ -95,8 +95,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         { propertyName, humidityRangeRequested, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
                     };
 
-                    await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
-                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
+                    ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
+                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\", version = {updateResponse.Version} is complete.");
                 },
                 null,
                 cancellationToken);

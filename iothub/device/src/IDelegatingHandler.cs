@@ -71,6 +71,6 @@ namespace Microsoft.Azure.Devices.Client
 
         Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken);
 
-        Task SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken);
+        Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken);
     }
 }

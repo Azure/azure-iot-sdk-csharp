@@ -48,8 +48,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     ["serialNumber"] = serialNumber
                 };
-                await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()} in KB.");
+                ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()} in KB, version = {updateResponse.Version}.");
             }
 
             // Send telemetry "workingSet".
@@ -81,8 +81,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         writableProperties.Version,
                         "The operation completed successfully.");
 
-                    await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
-                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
+                    ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
+                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\", version = {updateResponse.Version} is complete.");
                 },
                 null,
                 cancellationToken);
