@@ -9,6 +9,14 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+namespace Microsoft.Azure.Devices.Shared
+{
+    public class StatusCodesCustom : StatusCodes
+    {
+        public static int MyExtendedCode => 909;
+    }
+}
+
 namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class ComponentTemperatureControllerSampleNew

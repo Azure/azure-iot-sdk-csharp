@@ -10,7 +10,8 @@ namespace Microsoft.Azure.Devices.Shared
     /// <remarks>
     /// These status codes are based on the HTTP status codes listed here <see href="http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml"/>
     /// </remarks>
-    public static class StatusCodes
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable", Justification = "To allow customers to extend this class we need to not mark it static.")]
+    public class StatusCodes
     {
         /// <summary>
         /// Status code 200.
