@@ -11,8 +11,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Shared
 {
+    /// <summary>
+    /// Example status code extension class
+    /// </summary>
     public class StatusCodesCustom : StatusCodes
     {
+        /// <summary>
+        /// Using a non-standard 3 digit code. Can use anything from -int32 to +int32
+        /// </summary>
         public static int MyExtendedCode => 909;
     }
 }
@@ -134,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                         var updateTemperatureResponse = new UpdateTemperatureResponse
                                         {
                                             TargetTemperature = updateTemperatureRequest.TargetTemperature,
-                                            Status = StatusCodes.OK  // change this
+                                            Status = StatusCodes.OK
                                         };
 
                                         _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
