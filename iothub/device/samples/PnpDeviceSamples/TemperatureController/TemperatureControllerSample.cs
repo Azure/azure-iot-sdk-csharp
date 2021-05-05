@@ -8,20 +8,13 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal enum StatusCode
-    {
-        Completed = 200,
-        InProgress = 202,
-        NotFound = 404,
-        BadRequest = 400
-    }
-
     public class TemperatureControllerSample
     {
         private const string Thermostat1 = "thermostat1";
@@ -212,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             _logger.LogDebug($"Command: Received a command request that is not implemented.");
-            return Task.FromResult(new CommandResponse((int)StatusCode.NotFound));
+            return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
@@ -233,10 +226,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return new CommandResponse((int)StatusCode.BadRequest);
+                return new CommandResponse(StatusCodes.BadRequest);
             }
 
-            return new CommandResponse((int)StatusCode.Completed);
+            return new CommandResponse(StatusCodes.OK);
         }
 
         private async Task<CommandResponse> HandleTemperatureUpdateCommandAsync(CommandRequest request, object userContext)
@@ -254,18 +247,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 var updateTemperatureResponse = new UpdateTemperatureResponse
                 {
                     TargetTemperature = updateTemperatureRequest.TargetTemperature,
-                    Status = (int)StatusCode.Completed
+                    Status = StatusCodes.OK
                 };
 
                 _logger.LogDebug($"Command: component=\"{request.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
-                            $" has {StatusCode.Completed}.");
+                            $" has {StatusCodes.OK}.");
 
-                return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+                return new CommandResponse(updateTemperatureResponse, StatusCodes.OK);
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return new CommandResponse((int)StatusCode.BadRequest);
+                return new CommandResponse(StatusCodes.BadRequest);
             }
         }
 
@@ -303,21 +296,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $" maxTemp={report.MaximumTemperature}°C, minTemp={report.MinimumTemperature}°C, avgTemp={report.AverageTemperature}°C," +
                             $" startTime={report.StartTime.LocalDateTime}, endTime={report.EndTime.LocalDateTime}");
 
-                        return Task.FromResult(new CommandResponse(report, (int)StatusCode.Completed));
+                        return Task.FromResult(new CommandResponse(report, StatusCodes.OK));
                     }
 
                     _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
                         $"cannot generate any report.");
-                    return Task.FromResult(new CommandResponse((int)StatusCode.NotFound));
+                    return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
                 }
 
                 _logger.LogDebug($"Command: component=\"{componentName}\", no temperature readings sent yet, cannot generate any report.");
-                return Task.FromResult(new CommandResponse((int)StatusCode.NotFound));
+                return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return Task.FromResult(new CommandResponse((int)StatusCode.BadRequest));
+                return Task.FromResult(new CommandResponse(StatusCodes.BadRequest));
             }
         }
 
@@ -388,7 +381,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var propertyPatch = new ClientPropertyCollection()
             {
-                { propertyName, temperatureRangeDesired, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully."}
+                { propertyName, temperatureRangeDesired, StatusCodes.OK, writableProperties.Version, "The operation completed successfully."}
             };
 
             await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, s_cancellationToken);
@@ -412,7 +405,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var propertyPatch = new ClientPropertyCollection()
             {
-                { propertyName, humidityRangeDesired, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
+                { propertyName, humidityRangeDesired, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
             };
 
             await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, s_cancellationToken);
@@ -439,10 +432,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
 
             var pendingPropertyPatch = new ClientPropertyCollection();
-            pendingPropertyPatch.Add(propertyName, targetTemperature, (int)StatusCode.InProgress, writableProperties.Version, null, componentName);
+            pendingPropertyPatch.Add(propertyName, targetTemperature, StatusCodes.Accepted, writableProperties.Version, null, componentName);
 
             await _deviceClient.UpdateClientPropertiesAsync(pendingPropertyPatch, s_cancellationToken);
-            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {targetTemperature} }} in °C is {StatusCode.InProgress}.");
+            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {targetTemperature} }} in °C is {StatusCodes.Accepted}.");
 
             // Update Temperature in 2 steps
             double step = (targetTemperature - _temperature[componentName]) / 2d;
@@ -453,10 +446,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             var completePropertyPatch = new ClientPropertyCollection();
-            completePropertyPatch.Add(propertyName, _temperature[componentName], (int)StatusCode.Completed, writableProperties.Version, "Successfully updated target temperature", componentName);
+            completePropertyPatch.Add(propertyName, _temperature[componentName], StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature", componentName);
 
             await _deviceClient.UpdateClientPropertiesAsync(completePropertyPatch, s_cancellationToken);
-            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {_temperature[componentName]} }} in °C is {StatusCode.Completed}");
+            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {_temperature[componentName]} }} in °C is {StatusCodes.OK}");
         }
 
         // Report the property updates on "deviceInformation" component.

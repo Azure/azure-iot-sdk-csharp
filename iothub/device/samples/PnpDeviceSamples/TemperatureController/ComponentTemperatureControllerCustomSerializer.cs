@@ -5,6 +5,7 @@ using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -102,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     var propertyPatch = new ClientPropertyCollection
                     {
-                        { propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
+                        { propertyName, targetHumidityRange, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.", Thermostat1 }
                     };
 
                     await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
@@ -126,18 +127,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         var updateTemperatureResponse = new UpdateTemperatureResponse
                         {
                             TargetTemperature = updateTemperatureRequest.TargetTemperature,
-                            Status = (int)StatusCode.Completed
+                            Status = StatusCodes.OK
                         };
 
                         _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
-                                    $" has {StatusCode.Completed}.");
+                                    $" has {StatusCodes.OK}.");
 
-                        return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+                        return new CommandResponse(updateTemperatureResponse, StatusCodes.OK);
                     }
                     catch (JsonException ex)
                     {
                         _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                        return new CommandResponse((int)StatusCode.BadRequest);
+                        return new CommandResponse(StatusCodes.BadRequest);
                     }
                 },
                 null,

@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     var temperatureUpdateResponse = new TwinCollection
                     {
                         ["value"] = targetHumidityRange,
-                        ["ac"] = (int)StatusCode.Completed,
+                        ["ac"] = StatusCodes.OK,
                         ["av"] = desired.Version,
                         ["ad"] = "The operation completed successfully."
                     };
@@ -147,18 +147,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         var updateTemperatureResponse = new UpdateTemperatureResponse
                         {
                             TargetTemperature = updateTemperatureRequest.TargetTemperature,
-                            Status = (int)StatusCode.Completed
+                            Status = StatusCodes.OK
                         };
 
                         _logger.LogDebug($"Command: component=\"{Thermostat2}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
-                                    $" has {StatusCode.Completed}.");
+                                    $" has {StatusCodes.OK}.");
 
-                        return new MethodResponse(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(updateTemperatureResponse)), (int)StatusCode.Completed);
+                        return new MethodResponse(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(updateTemperatureResponse)), StatusCodes.OK);
                     }
                     catch (JsonException ex)
                     {
                         _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                        return new MethodResponse((int)StatusCode.BadRequest);
+                        return new MethodResponse(StatusCodes.BadRequest);
                     }
                 },
                 null,

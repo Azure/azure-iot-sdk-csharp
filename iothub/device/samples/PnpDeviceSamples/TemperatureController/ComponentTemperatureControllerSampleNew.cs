@@ -4,9 +4,24 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+namespace Microsoft.Azure.Devices.Shared
+{
+    /// <summary>
+    /// Example status code extension class
+    /// </summary>
+    public class StatusCodesCustom : StatusCodes
+    {
+        /// <summary>
+        /// Using a non-standard 3 digit code. Can use anything from -int32 to +int32
+        /// </summary>
+        public static int MyExtendedCode => 909;
+    }
+}
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -96,7 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
                     var propertyPatch = new ClientPropertyCollection();
-                    propertyPatch.Add(propertyName, targetHumidityRange, (int)StatusCode.Completed, writableProperties.Version, "The operation completed successfully.", Thermostat1);
+                    propertyPatch.Add(propertyName, targetHumidityRange, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.", Thermostat1);
 
                     await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
                     _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
@@ -125,28 +140,28 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                         var updateTemperatureResponse = new UpdateTemperatureResponse
                                         {
                                             TargetTemperature = updateTemperatureRequest.TargetTemperature,
-                                            Status = (int)StatusCode.Completed  // change this
+                                            Status = StatusCodes.OK
                                         };
 
                                         _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
-                                                    $" has {StatusCode.Completed}.");
+                                                    $" has {StatusCodes.OK}.");
 
-                                        return new CommandResponse(updateTemperatureResponse, (int)StatusCode.Completed);
+                                        return new CommandResponse(updateTemperatureResponse, StatusCodes.OK);
 
                                     default:
                                         _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
-                                        return new CommandResponse((int)StatusCode.NotFound);
+                                        return new CommandResponse(StatusCodes.NotFound);
                                 }
 
                             default:
                                 _logger.LogWarning($"Received a command request that isn't implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
-                                return new CommandResponse((int)StatusCode.NotFound);
+                                return new CommandResponse(StatusCodes.NotFound);
                         }
                     }
                     catch (JsonException ex)
                     {
                         _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                        return new CommandResponse((int)StatusCode.BadRequest);
+                        return new CommandResponse(StatusCodes.BadRequest);
                     }
                 },
                 null,
