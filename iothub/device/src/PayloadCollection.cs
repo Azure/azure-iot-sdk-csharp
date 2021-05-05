@@ -13,15 +13,6 @@ namespace Microsoft.Azure.Devices.Client
     public abstract class PayloadCollection : IEnumerable<object>
     {
         /// <summary>
-        /// Default constructor for the class.
-        /// </summary>
-        /// <param name="payloadConvention">The convention used to serailize and encode this collection.</param>
-        protected PayloadCollection(PayloadConvention payloadConvention = default)
-        {
-            Convention = payloadConvention ?? DefaultPayloadConvention.Instance;
-        }
-
-        /// <summary>
         /// The underlying collection for the payload.
         /// </summary>
         public IDictionary<string, object> Collection { get; private set; } = new Dictionary<string, object>();
@@ -29,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The convention to use with this payload.
         /// </summary>
-        public PayloadConvention Convention { get; private set; }
+        public PayloadConvention Convention { get; internal set; }
 
         /// <summary>
         /// Get the value at the specified key
@@ -72,7 +63,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the collection as a byte array
         /// </summary>
         /// <remarks>
-        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/> and <see cref="ContentEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
+        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/>
+        /// and <see cref="PayloadEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
         /// </remarks>
         /// <returns>A fully encoded serialized string.</returns>
         public virtual byte[] GetPayloadObjectBytes()

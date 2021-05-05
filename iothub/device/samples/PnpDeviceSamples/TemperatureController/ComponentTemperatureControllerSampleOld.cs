@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Verify if the device has previously reported a value for property
             // "initialValue" under component "thermostat2".
             // If the expected value has not been previously reported then report it.
-            var initialValue = new ThermostatInitialValue
+            var initialValue = new ThermostatInitialValueNewtonSoftJson
             {
                 Humidity = 20,
                 Temperature = 25
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 || !((JObject)properties.Properties.Reported[Thermostat2])
                     .TryGetValue("initialValue", out JToken retrievedInitialValue)
                 || !initialValue
-                    .Equals(retrievedInitialValue.ToObject<ThermostatInitialValue>()))
+                    .Equals(retrievedInitialValue.ToObject<ThermostatInitialValueNewtonSoftJson>()))
             {
                 var propertiesToBeUpdated = new TwinCollection
                 {
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // Send telemetry "deviceHealth" under component "thermostat1".
-            var deviceHealth = new DeviceHealth
+            var deviceHealth = new DeviceHealthNewtonSoftJson
             {
                 Status = "running",
                 IsStopRequested = false,
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         return;
                     }
 
-                    HumidityRange targetHumidityRange = humidityRangeRequested.ToObject<HumidityRange>();
+                    HumidityRangeNewtonSoftJson targetHumidityRange = humidityRangeRequested.ToObject<HumidityRangeNewtonSoftJson>();
                     _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
                     var propertyPatch = new TwinCollection();
@@ -114,14 +114,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     {
                         ["__t"] = "c"
                     };
-                    var temperatureUpdateResponse = new TwinCollection
+                    var humidityUpdateResponse = new TwinCollection
                     {
                         ["value"] = targetHumidityRange,
                         ["ac"] = StatusCodes.OK,
                         ["av"] = desired.Version,
                         ["ad"] = "The operation completed successfully."
                     };
-                    componentPatch[propertyName] = temperatureUpdateResponse;
+                    componentPatch[propertyName] = humidityUpdateResponse;
                     propertyPatch[Thermostat1] = componentPatch;
 
                     _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
@@ -139,13 +139,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     try
                     {
-                        UpdateTemperatureRequest updateTemperatureRequest = JsonConvert.DeserializeObject<UpdateTemperatureRequest>(commandRequest.DataAsJson);
+                        UpdateTemperatureRequestNewtonSoftJson updateTemperatureRequest = JsonConvert.DeserializeObject<UpdateTemperatureRequestNewtonSoftJson>(commandRequest.DataAsJson);
 
                         _logger.LogDebug($"Command: Received - component=\"{Thermostat2}\"," +
                             $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
                         await Task.Delay(TimeSpan.FromSeconds(updateTemperatureRequest.Delay));
 
-                        var updateTemperatureResponse = new UpdateTemperatureResponse
+                        var updateTemperatureResponse = new UpdateTemperatureResponseNewtonSoftJson
                         {
                             TargetTemperature = updateTemperatureRequest.TargetTemperature,
                             Status = StatusCodes.OK

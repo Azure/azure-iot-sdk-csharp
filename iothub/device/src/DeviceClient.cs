@@ -749,7 +749,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns></returns>
         public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default)
-            => InnerHandler.SendEventAsync(telemetryMessage, cancellationToken);
+            => InternalClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
         #endregion Telemetry
 

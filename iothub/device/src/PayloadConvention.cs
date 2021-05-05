@@ -19,12 +19,12 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the encoder used for the payload to be serialized.
         /// </summary>
         /// <value>An encoder that will be used to convert the serialized string to a byte array.</value>
-        public abstract ContentEncoder PayloadEncoder { get; }
+        public abstract PayloadEncoder PayloadEncoder { get; }
 
         /// <summary>
         /// Returns the byte array for the convention based message.
         /// </summary>
-        /// <remarks>This base class will use the <see cref="PayloadSerializer"/> and <see cref="ContentEncoder"/> to create this byte array.</remarks>
+        /// <remarks>This base class will use the <see cref="PayloadSerializer"/> and <see cref="PayloadEncoder"/> to create this byte array.</remarks>
         /// <param name="objectToSendWithConvention"></param>
         /// <returns>The correctly encoded object for this convention.</returns>
         public virtual byte[] GetObjectBytes(object objectToSendWithConvention)

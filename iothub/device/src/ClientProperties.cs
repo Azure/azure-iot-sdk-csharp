@@ -134,8 +134,6 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(clientTwinProperties));
             }
 
-            payloadConvention ??= DefaultPayloadConvention.Instance;
-
             var writablePropertyCollection = ClientPropertyCollection.FromClientTwinDictionary(clientTwinProperties.Desired, payloadConvention);
             var propertyCollection = ClientPropertyCollection.FromClientTwinDictionary(clientTwinProperties.Reported, payloadConvention);
 
