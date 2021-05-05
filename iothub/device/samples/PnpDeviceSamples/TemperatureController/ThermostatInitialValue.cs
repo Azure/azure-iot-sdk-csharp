@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Multiple json property annotations are added to demonstrate the difference in
         // API usgage for the different serializers.
         [JsonProperty("humidity")]
+        [JsonPropertyName("humidity")]
         public double Humidity { get; set; }
 
         public override bool Equals(object obj)

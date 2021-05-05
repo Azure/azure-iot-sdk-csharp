@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (componentProperties.ContainsKey(propertyName))
                 {
-                    propertyValue = Convention.PayloadSerializer.ConvertFromObject<T>(componentProperties.GetValue(propertyName));
+                    propertyValue = Convention.PayloadSerializer.DeserializeToType<T>(componentProperties.GetValue(propertyName).ToString());
                     return true;
                 }
 
