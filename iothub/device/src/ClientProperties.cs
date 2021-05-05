@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
     /// The Properties class is not meant to be constructed by customer code. It is intended to be returned fully popualated from the <see cref="DeviceClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/> method.
     /// </remarks>
     /// </summary>
-    public class ClientProperties : IEnumerable<object>
+    public class ClientProperties : ClientPropertyCollection
     {
         private readonly ClientPropertyCollection _reportedPropertyCollection = new ClientPropertyCollection();
 
@@ -47,56 +47,10 @@ namespace Microsoft.Azure.Devices.Client
         public ClientPropertyCollection Writable { get; private set; }
 
         /// <summary>
-        /// Get the property from the propeties collection.
-        /// </summary>
-        /// <param name="key">The key of the property to get.</param>
-        /// <remarks>
-        /// This accessor is best used to access simple types. It is recommended to use <see cref="Get{T}(string)"/> to cast a complex type.
-        /// </remarks>
-        /// <returns>The specified property.</returns>
-        public object this[string key]
-        {
-            get
-            {
-                return _reportedPropertyCollection[key];
-            }
-        }
-
-        /// <summary>
-        /// Determines whether the specified property is present.
-        /// </summary>
-        /// <param name="propertyName">The property to locate.</param>
-        /// <returns>true if the specified property is present; otherwise, false</returns>
-        public bool Contains(string propertyName)
-        {
-            return _reportedPropertyCollection.Collection.TryGetValue(propertyName, out _);
-        }
-
-        /// <summary>
-        /// Gets the version of the properties.
-        /// </summary>
-        public long Version => _reportedPropertyCollection.Version;
-
-        /// <inheritdoc/>
-        public IEnumerator<object> GetEnumerator()
-        {
-            foreach (object property in _reportedPropertyCollection)
-            {
-                yield return property;
-            }
-        }
-
-        /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        /// <summary>
         /// Gets the property from the collection.
         /// </summary>
         /// <remarks>
-        /// This calls <see cref="PayloadCollection.GetValue{T}(string)"/> and will use the serializer if needed. It is recommended to use this method over the <see cref="this[string]"/> accessor.
+        /// This calls <see cref="PayloadCollection.GetValue{T}(string)"/> and will use the serializer if needed. It is recommended to use this method over the <see cref="PayloadCollection.this[string]"/> accessor.
         /// </remarks>
         /// <typeparam name="T">The type to be returned.</typeparam>
         /// <param name="propertyKey">The key of the property to be returned.</param>
