@@ -173,8 +173,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString,
-            ITransportSettings[] transportSettings, ClientOptions options = default)
+        public static DeviceClient CreateFromConnectionString(
+            string connectionString,
+            ITransportSettings[] transportSettings,
+            ClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings, options));
         }
@@ -187,8 +189,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
-            ITransportSettings[] transportSettings, ClientOptions options = default)
+        public static DeviceClient CreateFromConnectionString(
+            string connectionString,
+            string deviceId,
+            ITransportSettings[] transportSettings,
+            ClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportSettings, options));
         }
