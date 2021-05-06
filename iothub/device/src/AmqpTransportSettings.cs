@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -26,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// To enable certificate revocation check. Default to be false.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Performance",
             "CA1822:Mark members as static",
             Justification = "Cannot change public property in public facing classes.")]
