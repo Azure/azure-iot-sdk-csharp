@@ -89,6 +89,8 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
           FRAMEWORK: $(FRAMEWORK)
           AZURE_IOT_LOCALPACKAGES: $(Build.ArtifactStagingDirectory)/nuget
+          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
+          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
 
       - task: CopyFiles@2
         displayName: 'Copy files to the artifacts folder'
@@ -194,6 +196,8 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
           FRAMEWORK: $(FRAMEWORK)
           AZURE_IOT_LOCALPACKAGES: $(Build.ArtifactStagingDirectory)/nuget
+          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
+          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
 
       - task: CopyFiles@2
         displayName: 'Copy TRX files to the artifacts folder'
