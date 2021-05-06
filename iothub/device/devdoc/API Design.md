@@ -6,19 +6,19 @@
 
 public abstract class PayloadConvention {
     protected PayloadConvention();
-    public abstract ContentEncoder PayloadEncoder { get; }
-    public abstract ObjectSerializer PayloadSerializer { get; }
+    public abstract PayloadEncoder PayloadEncoder { get; }
+    public abstract PayloadSerializer PayloadSerializer { get; }
     public virtual byte[] GetObjectBytes(object objectToSendWithConvention);
 }
 
-public abstract class ContentEncoder {
-    protected ContentEncoder();
+public abstract class PayloadEncoder {
+    protected PayloadEncoder();
     public abstract Encoding ContentEncoding { get; }
     public abstract byte[] EncodeStringToByteArray(string contentPayload);
 }
 
-public abstract class ObjectSerializer {
-    protected ObjectSerializer();
+public abstract class PayloadSerializer {
+    protected PayloadSerializer();
     public abstract string ContentType { get; }
     public abstract T ConvertFromObject<T>(object objectToConvert);
     public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
@@ -29,20 +29,20 @@ public abstract class ObjectSerializer {
 public sealed class DefaultPayloadConvention : PayloadConvention {
     public static readonly DefaultPayloadConvention Instance;
     public DefaultPayloadConvention();
-    public override ContentEncoder PayloadEncoder { get; }
-    public override Serializer PayloadSerializer { get; }
+    public override PayloadEncoder PayloadEncoder { get; }
+    public override PayloadSerializer PayloadSerializer { get; }
 }
 
-public class Utf8ContentEncoder : ContentEncoder {
-    public static readonly Utf8ContentEncoder Instance;
-    public Utf8ContentEncoder();
+public class Utf8PayloadEncoder : PayloadEncoder {
+    public static readonly Utf8PayloadEncoder Instance;
+    public Utf8PayloadEncoder();
     public override Encoding ContentEncoding { get; }
     public override byte[] EncodeStringToByteArray(string contentPayload);
 }
 
-public class NewtonsoftJsonObjectSerializer : ObjectSerializer {
-    public static readonly NewtonsoftJsonObjectSerializer Instance;
-    public NewtonsoftJsonObjectSerializer();
+public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
+    public static readonly NewtonsoftJsonPayloadSerializer Instance;
+    public NewtonsoftJsonPayloadSerializer();
     public override string ContentType { get; }
     public override T ConvertFromObject<T>(object objectToConvert);
     public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
@@ -51,17 +51,17 @@ public class NewtonsoftJsonObjectSerializer : ObjectSerializer {
 }
 
 public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
-    protected PayloadCollection(PayloadConvention payloadConvention = null);
+    protected PayloadCollection();
     public IDictionary<string, object> Collection { get; private set; }
-    public PayloadConvention Convention { get; private set; }
+    public PayloadConvention Convention { get; internal set; }
     public virtual object this[string key] { get; set; }
     public virtual void Add(string key, object value);
     public virtual void AddOrUpdate(string key, object value);
     public IEnumerator<object> GetEnumerator();
     public virtual byte[] GetPayloadObjectBytes();
-    public virtual string GetSerailizedString();
-    public virtual T GetValue<T>(string key);
+    public virtual string GetSerializedString();
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public virtual bool TryGetValue<T>(string key, out T value);
 }
 
 public static class ConventionBasedConstants {
@@ -89,7 +89,8 @@ public Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancell
 /// </summary>
 /// <param name="propertyCollection">Reported properties to push.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default);
+/// <returns>The response containing the operation request Id and updated version no.</returns>
+public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Sets the global listener for Writable properties
@@ -108,9 +109,10 @@ public class ClientProperties : IEnumerable, IEnumerable<object> {
     public long Version { get; }
     public ClientPropertyCollection Writable { get; private set; }
     public bool Contains(string propertyName);
-    public T Get<T>(string propertyKey);
     public IEnumerator<object> GetEnumerator();
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
+    public bool TryGetValue<T>(string propertyKey, out T propertyValue);
 }
 
 public class ClientPropertyCollection : PayloadCollection {
@@ -118,13 +120,12 @@ public class ClientPropertyCollection : PayloadCollection {
     public long Version { get; private set; }
     public void Add(IDictionary<string, object> properties, string componentName = null);
     public override void Add(string propertyName, object propertyValue);
-    public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = null, string componentName = null);
-    public void Add(string propertyName, object propertyValue, string componentName = null);
+    public void Add(string propertyName, object propertyValue, string componentName);
     public void AddOrUpdate(IDictionary<string, object> properties, string componentName = null);
     public override void AddOrUpdate(string propertyName, object propertyValue);
-    public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = null, string componentName = null);
     public void AddOrUpdate(string propertyName, object propertyValue, string componentName);
     public bool Contains(string propertyName);
+    public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
 }
 
 public interface IWritablePropertyResponse {
@@ -140,6 +141,12 @@ public sealed class NewtonsoftJsonWritablePropertyResponse : IWritablePropertyRe
     public string AckDescription { get; set; }
     public long AckVersion { get; set; }
     public object Value { get; set; }
+}
+
+public class ClientPropertiesUpdateResponse {
+    public ClientPropertiesUpdateResponse();
+    public string RequestId { get; internal set; }
+    public long Version { get; internal set; }
 }
 ```
 
@@ -168,9 +175,9 @@ public class TelemetryCollection : PayloadCollection {
 }
 
 public class TelemetryMessage : Message {
-    public TelemetryMessage(string componentName = null, TelemetryCollection telemetryCollection = null);
-    public new string ContentEncoding { get; }
-    public new string ContentType { get; }
+    public TelemetryMessage(string componentName = null);
+    public new string ContentEncoding { get; internal set; }
+    public new string ContentType { get; internal set; }
     public TelemetryCollection Telemetry { get; set; }
     public override Stream GetBodyStream();
 }
@@ -192,9 +199,9 @@ public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandRe
 
 ```csharp
 public sealed class CommandRequest {
+    public string CommandName { get; private set; }
     public string ComponentName { get; private set; }
     public string DataAsJson { get; }
-    public string Name { get; private set; }
     public T GetData<T>();
 }
 
