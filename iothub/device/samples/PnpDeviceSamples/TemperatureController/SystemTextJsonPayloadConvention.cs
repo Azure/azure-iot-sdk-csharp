@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         public override PayloadSerializer PayloadSerializer => new SystemTextJsonSerializer();
 
-        public override ContentEncoder PayloadEncoder => Utf8ContentEncoder.Instance;
+        public override PayloadEncoder PayloadEncoder => Utf8PayloadEncoder.Instance;
 
         public override byte[] GetObjectBytes(object objectToSendWithConvention)
         {

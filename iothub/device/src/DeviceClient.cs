@@ -722,7 +722,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default)
+        public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default)
             => InternalClient.UpdateClientPropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
@@ -742,14 +742,14 @@ namespace Microsoft.Azure.Devices.Client
         /// Send telemetry using the specified message.
         /// </summary>
         /// <remarks>
-        /// Use the <see cref="TelemetryMessage(string, TelemetryCollection)"/> constructor to pass in the optional
-        /// <see cref="TelemetryCollection"/> that specifies your payload and serialization and encoding rules.
+        /// Use the <see cref="TelemetryMessage(string)"/> constructor to pass in the optional component name
+        /// that the telemetry message is from.
         /// </remarks>
         /// <param name="telemetryMessage">The telemetry message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns></returns>
         public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default)
-            => InnerHandler.SendEventAsync(telemetryMessage, cancellationToken);
+            => InternalClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
         #endregion Telemetry
 

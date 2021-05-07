@@ -2,21 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Text.Json.Serialization;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    internal class UpdateTemperatureRequest
+    public class UpdateTemperatureRequestSystemTextJson
     {
-        // Multiple json property annotations are added to demonstrate the difference in
-        // API usgage for the different serializers.
-        [JsonProperty("targetTemp")]
         [JsonPropertyName("targetTemp")]
         public double TargetTemperature { get; set; }
 
-        // Multiple json property annotations are added to demonstrate the difference in
-        // API usgage for the different serializers.
-        [JsonProperty("delay")]
         [JsonPropertyName("delay")]
         public int Delay { get; set; }
     }

@@ -17,7 +17,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
 using DotNetty.Codecs.Mqtt.Packets;
@@ -87,6 +86,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
         private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
+
+        // Identifiers for property update operations.
+        public const string VersionKey = "$version";
+
+        public const string RequestIdKey = "$rid";
 
         private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
         private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
@@ -1001,7 +1005,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
@@ -1014,7 +1018,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string rid = Guid.NewGuid().ToString();
             request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);
 
-            await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+            using Message message = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+            return new ClientPropertiesUpdateResponse
+            {
+                RequestId = message.Properties[RequestIdKey],
+                Version = long.Parse(message.Properties[VersionKey], CultureInfo.InvariantCulture)
+            };
         }
 
         private async Task OpenInternalAsync(CancellationToken cancellationToken)
@@ -1143,17 +1152,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         QualityOfService.AtMostOnce)));
         }
 
-        private bool ParseResponseTopic(string topicName, out string rid, out int status)
+        private bool ParseResponseTopic(string topicName, out int status)
         {
             Match match = _twinResponseTopicRegex.Match(topicName);
             if (match.Success)
             {
                 status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                rid = HttpUtility.ParseQueryString(match.Groups[2].Value).Get("$rid");
                 return true;
             }
 
-            rid = "";
             status = 500;
             return false;
         }
@@ -1170,9 +1177,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 try
                 {
-                    if (ParseResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out int status))
+                    if (ParseResponseTopic(possibleResponse.MqttTopicName, out int status))
                     {
-                        if (rid == receivedRid)
+                        if (rid == possibleResponse.Properties[RequestIdKey])
                         {
                             if (status >= 300)
                             {

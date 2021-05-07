@@ -81,12 +81,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         return;
                     }
 
-                    double targetHumidity = desired[propertyName];
+                    double targetHumidityRequested = desired[propertyName];
 
                     var propertyPatch = new TwinCollection();
                     var humidityUpdateResponse = new TwinCollection
                     {
-                        ["value"] = targetHumidity,
+                        ["value"] = targetHumidityRequested,
                         ["ac"] = StatusCodes.OK,
                         ["av"] = desired.Version,
                         ["ad"] = "The operation completed successfully."

@@ -11,16 +11,6 @@ namespace Microsoft.Azure.Devices.Client
     public class TelemetryCollection : PayloadCollection
     {
         /// <summary>
-        /// Default constructor for this class.
-        /// </summary>
-        public TelemetryCollection() { }
-        /// <inheritdoc/>
-        internal TelemetryCollection(PayloadConvention payloadConvention = default)
-            : base(payloadConvention)
-        {
-        }
-
-        /// <summary>
         /// Adds the telemetry to the telemetry collection.
         /// </summary>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['telemetryName']"/>

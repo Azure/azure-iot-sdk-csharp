@@ -208,10 +208,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.GetPropertiesAsync(payloadConvention, cancellationToken) ?? Task.FromResult<ClientProperties>(null);
         }
 
-        public virtual Task SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public virtual Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler?.SendPropertyPatchAsync(reportedProperties, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return InnerHandler?.SendPropertyPatchAsync(reportedProperties, cancellationToken) ?? Task.FromResult<ClientPropertiesUpdateResponse>(null);
         }
 
         public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;

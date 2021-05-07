@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Shared
 {
@@ -58,27 +57,24 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Verify if the device has previously reported a value for property
             // "initialValue" under component "thermostat2".
             // If the expected value has not been previously reported then report it.
-            var initialValue = new ThermostatInitialValue
+            var initialValue = new ThermostatInitialValueNewtonSoftJson
             {
                 Humidity = 20,
                 Temperature = 25
             };
 
-            if (!properties.Contains(Thermostat2)
-                || !((JObject)properties[Thermostat2])
-                    .TryGetValue("initialValue", out JToken initialValueReported)
-                || !initialValue
-                    .Equals(initialValueReported.ToObject<ThermostatInitialValue>()))
+            if (!properties.TryGetValue(Thermostat2, "initialValue", out ThermostatInitialValueNewtonSoftJson retrievedInitialValue)
+                || !retrievedInitialValue.Equals(initialValue))
             {
                 var propertiesToBeUpdated = new ClientPropertyCollection();
                 propertiesToBeUpdated.Add("initialValue", initialValue, Thermostat2);
 
-                await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()}.");
+                ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()}, version = {updateResponse.Version}.");
             }
 
             // Send telemetry "deviceHealth" under component "thermostat1".
-            var deviceHealth = new DeviceHealth
+            var deviceHealth = new DeviceHealthNewtonSoftJson
             {
                 Status = "running",
                 IsStopRequested = false,
@@ -99,22 +95,24 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 async (writableProperties, userContext) =>
                 {
                     string propertyName = "humidityRange";
-                    if (!writableProperties.Contains(Thermostat1)
-                        || !((JObject)writableProperties[Thermostat1])
-                            .TryGetValue(propertyName, out JToken humidityRangeRequested))
+                    if (!writableProperties.TryGetValue(Thermostat1, "humidityRange", out HumidityRangeNewtonSoftJson humidityRangeRequested))
                     {
                         _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerializedString()}");
                         return;
                     }
 
-                    HumidityRange targetHumidityRange = humidityRangeRequested.ToObject<HumidityRange>();
-                    _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
+                    _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {humidityRangeRequested} }}.");
+
+                    IWritablePropertyResponse humidityUpdateResponse = _deviceClient
+                        .PayloadConvention
+                        .PayloadSerializer
+                        .CreateWritablePropertyResponse(humidityRangeRequested, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.");
 
                     var propertyPatch = new ClientPropertyCollection();
-                    propertyPatch.Add(propertyName, targetHumidityRange, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.", Thermostat1);
+                    propertyPatch.Add(propertyName, humidityUpdateResponse, Thermostat1);
 
-                    await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
-                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
+                    ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
+                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\", version = {updateResponse.Version} is complete.");
                 },
                 null,
                 cancellationToken);
@@ -131,13 +129,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 switch (commandRequest.CommandName)
                                 {
                                     case "updateTemperatureWithDelay":
-                                        UpdateTemperatureRequest updateTemperatureRequest = commandRequest.GetData<UpdateTemperatureRequest>();
+                                        UpdateTemperatureRequestNewtonSoftJson updateTemperatureRequest = commandRequest.GetData<UpdateTemperatureRequestNewtonSoftJson>();
 
                                         _logger.LogDebug($"Command: Received - component=\"{commandRequest.ComponentName}\"," +
                                             $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
                                         await Task.Delay(TimeSpan.FromSeconds(updateTemperatureRequest.Delay));
 
-                                        var updateTemperatureResponse = new UpdateTemperatureResponse
+                                        var updateTemperatureResponse = new UpdateTemperatureResponseNewtonSoftJson
                                         {
                                             TargetTemperature = updateTemperatureRequest.TargetTemperature,
                                             Status = StatusCodes.OK

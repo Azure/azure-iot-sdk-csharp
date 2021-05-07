@@ -41,15 +41,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Verify if the device has previously reported a value for property "serialNumber".
             // If the expected value has not been previously reported then report it.
             string serialNumber = "SR-12345";
-            if (!properties.Contains("serialNumber")
-                || properties.Get<string>("serialNumber") != serialNumber)
+            if (!properties.TryGetValue("serialNumber", out string serialNumberReported)
+                || serialNumberReported != serialNumber)
             {
                 var propertiesToBeUpdated = new ClientPropertyCollection
                 {
                     ["serialNumber"] = serialNumber
                 };
-                await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()} in KB.");
+                ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+                _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()} in KB, version = {updateResponse.Version}.");
             }
 
             // Send telemetry "workingSet".
@@ -67,24 +67,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 async (writableProperties, userContext) =>
                 {
                     string propertyName = "targetHumidity";
-                    if (!writableProperties.Contains(propertyName))
+                    if (!writableProperties.TryGetValue(propertyName, out double targetHumidityRequested))
                     {
                         _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{writableProperties.GetSerializedString()}");
                         return;
                     }
 
-                    double targetHumidity = writableProperties.GetValue<double>(propertyName);
+                    IWritablePropertyResponse humidityUpdateResponse = _deviceClient
+                        .PayloadConvention
+                        .PayloadSerializer
+                        .CreateWritablePropertyResponse(targetHumidityRequested, StatusCodes.OK, writableProperties.Version, "The operation completed successfully.");
 
                     var propertyPatch = new ClientPropertyCollection();
-                    propertyPatch.Add(
-                        propertyName,
-                        targetHumidity,
-                        StatusCodes.OK,
-                        writableProperties.Version,
-                        "The operation completed successfully.");
+                    propertyPatch.Add(propertyName, humidityUpdateResponse);
 
-                    await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
-                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\" is complete.");
+                    ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
+                    _logger.LogDebug($"Property: Update - \"{propertyPatch.GetSerializedString()}\", version = {updateResponse.Version} is complete.");
                 },
                 null,
                 cancellationToken);

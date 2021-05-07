@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -16,17 +16,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string VersionName = "$version";
 
-        /// <summary>
-        /// Default constructor for this class.
-        /// </summary>
-        public ClientPropertyCollection() { }
-
-        /// <inheritdoc/>
-        internal ClientPropertyCollection(PayloadConvention payloadConvention)
-            : base(payloadConvention)
-        {
-        }
-
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <summary>
         /// Adds the value for the collection.
@@ -34,7 +23,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// If the collection has a key that matches the property name this method will throw an <see cref="ArgumentException"/>.
         /// <para>
-        /// When using this as part of the <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> flow you to respond to a writable property update you should use <see cref="Add(string, object, int, long, string, string)"/> to ensure the correct formatting is applied when the object is serialized.
+        /// When using this as part of the <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
+        /// flow to respond to a writable property update you should pass in the value as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
+        /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
         /// </remarks>
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
@@ -55,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyName">The name of the property to add.</param>
         /// <param name="propertyValue">The value of the property to add.</param>
         /// <param name="componentName">The component with the property to add.</param>
-        public void Add(string propertyName, object propertyValue, string componentName = default)
+        public void Add(string propertyName, object propertyValue, string componentName)
             => Add(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
 
         /// <inheritdoc path="/remarks" cref="Add(string, object)" />
@@ -126,7 +117,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// If the collection has a key that matches this will overwrite the current value. Otherwise it will attempt to add this to the collection.
         /// <para>
-        /// When using this as part of the <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> flow you to respond to a writable property update you should use <see cref="AddOrUpdate(string, object, int, long, string, string)"/> to ensure the correct formatting is applied when the object is serialized.
+        /// When using this as part of the <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
+        /// flow to respond to a writable property update you should pass in the value as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
+        /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
         /// </remarks>
         /// <param name="properties">A collection of properties to add or update.</param>
@@ -165,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <seealso cref="PayloadConvention"/>
         /// <seealso cref="PayloadSerializer"/>
-        /// <seealso cref="ContentEncoder"/>
+        /// <seealso cref="PayloadEncoder"/>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
@@ -248,22 +241,58 @@ namespace Microsoft.Azure.Devices.Client
         public long Version { get; private set; }
 
         /// <summary>
+        /// Gets the value of a component-level property.
+        /// </summary>
+        /// <remarks>
+        /// To get the value of a root-level property use <see cref="PayloadCollection.TryGetValue{T}(string, out T)"/>.
+        /// </remarks>
+        /// <typeparam name="T">The type to cast the object to.</typeparam>
+        /// <param name="componentName">The component which holds the required property.</param>
+        /// <param name="propertyName">The property to get.</param>
+        /// <param name="propertyValue">The value of the component-level property.</param>
+        /// <returns>true if the property collection contains a component level property with the specified key; otherwise, false.</returns>
+        public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
+        {
+            if (Collection.ContainsKey(componentName))
+            {
+                // Extract the component-level properties into a JObject.
+                // The user specified serializer settings don't really affect this since this is an internal implementation detail.
+                string componentString = Convention.PayloadSerializer.SerializeToString(Collection[componentName]);
+                JObject componentProperties = JObject.Parse(componentString);
+
+                if (componentProperties.ContainsKey(propertyName))
+                {
+                    propertyValue = Convention.PayloadSerializer.DeserializeToType<T>(componentProperties.GetValue(propertyName).ToString());
+                    return true;
+                }
+
+                propertyValue = default;
+                return false;
+            }
+
+            propertyValue = default;
+            return false;
+        }
+
+        /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
         /// </summary>
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
         /// <returns>A new instance of of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
         /// <remarks>This internala class is aware of the implemention of the TwinCollection ad will </remarks>
-        internal static ClientPropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention = default)
+        internal static ClientPropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
         {
             if (twinCollection == null)
             {
                 throw new ArgumentNullException(nameof(twinCollection));
             }
 
-            payloadConvention ??= DefaultPayloadConvention.Instance;
+            var propertyCollectionToReturn = new ClientPropertyCollection
+            {
+                Convention = payloadConvention,
+            };
 
-            var propertyCollectionToReturn = new ClientPropertyCollection(payloadConvention);
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
                 propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
@@ -281,9 +310,11 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(clientTwinPropertyDictionary));
             }
 
-            payloadConvention ??= DefaultPayloadConvention.Instance;
+            var propertyCollectionToReturn = new ClientPropertyCollection
+            {
+                Convention = payloadConvention,
+            };
 
-            var propertyCollectionToReturn = new ClientPropertyCollection(payloadConvention);
             foreach (KeyValuePair<string, object> property in clientTwinPropertyDictionary)
             {
                 // The version information should not be a part of the enumerable ProperyCollection, but rather should be
