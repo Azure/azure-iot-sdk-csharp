@@ -1908,6 +1908,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
+                clientProperties.Convention = _clientOptions.PayloadConvention;
                 return InnerHandler.SendPropertyPatchAsync(clientProperties, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)

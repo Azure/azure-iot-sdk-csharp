@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The convention to use with this payload.
         /// </summary>
-        public PayloadConvention Convention { get; private set; }
+        public PayloadConvention Convention { get; internal set; }
 
         /// <summary>
         /// Get the value at the specified key

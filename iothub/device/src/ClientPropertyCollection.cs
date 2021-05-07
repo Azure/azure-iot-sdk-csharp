@@ -86,7 +86,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName"></param>
         public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = default, string componentName = default)
         {
-            Add(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
+            if (Convention?.PayloadSerializer == null)
+            {
+                Add(propertyName, new { value = propertyValue, ac = statusCode, av = version, ad = description }, componentName);
+            }
+            else
+            {
+                Add(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
+            }
+            
         }
 
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
@@ -141,7 +149,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName"></param>
         public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = default, string componentName = default)
         {
-            AddOrUpdate(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
+            if (Convention?.PayloadSerializer == null)
+            {
+                AddOrUpdate(propertyName, new { value = propertyValue, ac = statusCode, av = version, ad = description }, componentName);
+            }
+            else
+            {
+                AddOrUpdate(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
+            }
+
         }
 
         /// <summary>
