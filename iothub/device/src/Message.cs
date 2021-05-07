@@ -455,7 +455,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 SystemProperties[key] = value;
             }
-            
         }
     }
 }
