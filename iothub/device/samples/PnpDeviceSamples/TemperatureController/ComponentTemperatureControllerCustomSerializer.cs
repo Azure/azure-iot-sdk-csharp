@@ -102,18 +102,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\"," +
                         $" {{ \"{propertyName}\": {humidityRangeRequested} }}.");
 
-                    IWritablePropertyResponse humidityUpdateResponse = _deviceClient
-                        .PayloadConvention
-                        .PayloadSerializer
-                        .CreateWritablePropertyResponse(
-                            humidityRangeRequested,
-                            StatusCodes.OK,
-                            writableProperties.Version,
-                            "The operation completed successfully.");
-
                     var propertyPatch = new ClientPropertyCollection
                     {
-                        { propertyName, humidityUpdateResponse, Thermostat1 }
+                        { propertyName, humidityRangeRequested, StatusCodes.OK,
+                            writableProperties.Version, "The operation completed successfully.", Thermostat1 }
                     };
 
                     ClientPropertiesUpdateResponse updateResponse = await _deviceClient

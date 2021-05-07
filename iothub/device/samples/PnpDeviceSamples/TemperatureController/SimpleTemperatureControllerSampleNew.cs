@@ -76,17 +76,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         return;
                     }
 
-                    IWritablePropertyResponse humidityUpdateResponse = _deviceClient
-                        .PayloadConvention
-                        .PayloadSerializer
-                        .CreateWritablePropertyResponse(
-                            targetHumidityRequested,
-                            StatusCodes.OK,
-                            writableProperties.Version,
-                            "The operation completed successfully.");
-
                     var propertyPatch = new ClientPropertyCollection();
-                    propertyPatch.Add(propertyName, humidityUpdateResponse);
+                    propertyPatch.Add(
+                        propertyName,
+                        targetHumidityRequested,
+                        StatusCodes.OK,
+                        writableProperties.Version,
+                        "The operation completed successfully.");
 
                     ClientPropertiesUpdateResponse updateResponse = await _deviceClient
                         .UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
