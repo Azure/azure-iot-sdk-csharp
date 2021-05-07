@@ -37,6 +37,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
+            // Send telemetry "workingSet".
+            long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+            var telemetry = new Dictionary<string, object>
+            {
+                ["workingSet"] = workingSet,
+            };
+
+            using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
+            {
+                MessageId = s_random.Next().ToString(),
+                ContentEncoding = "utf-8",
+                ContentType = "application/json",
+            };
+            await _deviceClient.SendEventAsync(message, cancellationToken);
+            _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
+
             // Retrieve the device's properties.
             Twin properties = await _deviceClient.GetTwinAsync(cancellationToken);
 
@@ -54,22 +70,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.ToJson()} in KB.");
             }
 
-            // Send telemetry "workingSet".
-            long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
-            var telemetry = new Dictionary<string, object>
-            {
-                ["workingSet"] = workingSet,
-            };
-            using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
-            {
-                MessageId = s_random.Next().ToString(),
-                ContentEncoding = "utf-8",
-                ContentType = "application/json",
-            };
-
-            await _deviceClient.SendEventAsync(message, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
-
             // Subscribe and respond to event for writable property "targetHumidity".
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 async (desired, userContext) =>
@@ -77,7 +77,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     string propertyName = "targetHumidity";
                     if (!desired.Contains(propertyName))
                     {
-                        _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{desired.ToJson()}");
+                        _logger.LogDebug($"Property: Update - Received a property update" +
+                            $" which is not implemented.\n{desired.ToJson()}");
                         return;
                     }
 
@@ -107,16 +108,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     try
                     {
                         int delay = JsonConvert.DeserializeObject<int>(methodRequest.DataAsJson);
-                        _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
+                        _logger.LogDebug($"Command: Received - Rebooting thermostat" +
+                            $" (resetting temperature reading to 0°C after {delay} seconds).");
 
                         await Task.Delay(TimeSpan.FromSeconds(delay));
-                        _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds) has {StatusCodes.OK}.");
+                        _logger.LogDebug($"Command: Rebooting thermostat (resetting temperature" +
+                            $" reading to 0°C after {delay} seconds) has {StatusCodes.OK}.");
 
                         return new MethodResponse(StatusCodes.OK);
                     }
                     catch (JsonReaderException ex)
                     {
-                        _logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                        _logger.LogError($"Command input is invalid: {ex.Message}.");
                         return new MethodResponse(StatusCodes.BadRequest);
                     }
                 },
