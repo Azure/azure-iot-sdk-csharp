@@ -85,7 +85,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 Add(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
             }
-            
         }
 
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
@@ -150,7 +149,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 AddOrUpdate(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
             }
-
         }
 
         /// <summary>
@@ -228,9 +226,9 @@ namespace Microsoft.Azure.Devices.Client
         /// Determines whether the specified property is present.
         /// </summary>
         /// <param name="propertyName">The property to locate.</param>
-        /// <param name="componentName"></param>
+        /// <param name="componentName">The component which holds the required property.</param>
         /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        public bool Contains(string propertyName, string componentName = default)
+        public bool Contains(string componentName, string propertyName)
         {
             if (!string.IsNullOrEmpty(componentName) && Collection.TryGetValue(componentName, out var component))
             {
@@ -258,21 +256,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>true if the property collection contains a component level property with the specified key; otherwise, false.</returns>
         public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
         {
-            if (Collection.ContainsKey(componentName))
+            if (Contains(componentName, propertyName))
             {
-                // Extract the component-level properties into a JObject.
-                // The user specified serializer settings don't really affect this since this is an internal implementation detail.
-                string componentString = Convention.PayloadSerializer.SerializeToString(Collection[componentName]);
-                JObject componentProperties = JObject.Parse(componentString);
-
-                if (componentProperties.ContainsKey(propertyName))
-                {
-                    propertyValue = Convention.PayloadSerializer.DeserializeToType<T>(componentProperties.GetValue(propertyName).ToString());
-                    return true;
-                }
-
-                propertyValue = default;
-                return false;
+                object componentProperties = Collection[componentName];
+                Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
+                return true;
             }
 
             propertyValue = default;
