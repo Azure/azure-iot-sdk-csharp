@@ -154,6 +154,9 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// The scope of the device. Auto-generated and immutable for edge devices and modifiable in leaf devices to create child/parent relationship.
         /// </summary>
+        /// <remarks>
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
+        /// </remarks>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string DeviceScope { get; internal set; }
@@ -161,6 +164,9 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// The scopes of the upper level edge devices if applicable. Only available for edge devices.
         /// </summary>
+        /// <remarks>
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
+        /// </remarks>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
 
