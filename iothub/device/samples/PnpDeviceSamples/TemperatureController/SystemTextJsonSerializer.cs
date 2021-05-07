@@ -31,6 +31,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             return DeserializeToType<T>(((JsonElement)objectToConvert).ToString());
         }
+        
+        public override bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue)
+        {
+            outValue = default;
+            if (objectToConvert == null || string.IsNullOrEmpty(propertyName))
+            {
+                return false;
+            }
+            if (((JsonElement)objectToConvert).TryGetProperty(propertyName, out var element)) {
+                outValue = DeserializeToType<T>(element.GetRawText());
+                return true;
+            }
+            return false;
+        }
 
         public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null)
         {

@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 int status = GetStatus(amqpMessage);
 
                 Twin twin = null;
-                TwinCollection twinProperties = null;
+                TwinCollection twinCollection = null;
 
                 if (status >= 400)
                 {
@@ -305,7 +305,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         // Here we are getting desired property update notifications and want to handle it first
                         using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
                         string patch = reader.ReadToEnd();
-                        twinProperties = JsonConvert.DeserializeObject<TwinCollection>(patch);
+                        twinCollection = JsonConvert.DeserializeObject<TwinCollection>(patch);
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         // This shouldn't happen
                         Logging.Info("Received a correlation Id for Twin operation that does not match Get, Patch or Put request", nameof(OnTwinChangesReceived));
                     }
-                    _onTwinMessageReceived.Invoke(twin, correlationId, twinProperties, null);
+                    _onTwinMessageReceived.Invoke(twin, correlationId, twinCollection, null);
                 }
             }
             finally
@@ -347,12 +347,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal static int GetStatus(AmqpMessage response)
         {
-            if (response != null)
+            if (response != null
+                && response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status))
             {
-                if (response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status))
-                {
-                    return status;
-                }
+                return status;
+            }
+
+            return -1;
+        }
+
+        internal static long GetVersion(AmqpMessage response)
+        {
+            if (response != null
+                && response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseVersionName, out long version))
+            {
+                return version;
             }
 
             return -1;

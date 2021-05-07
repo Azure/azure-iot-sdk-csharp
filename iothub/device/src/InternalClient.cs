@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
-        internal PayloadConvention PayloadConvention => _clientOptions.PayloadConvention;
+        internal PayloadConvention PayloadConvention => _clientOptions.PayloadConvention ?? DefaultPayloadConvention.Instance;
 
         public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder, ClientOptions options)
         {
@@ -1891,11 +1891,9 @@ namespace Microsoft.Azure.Devices.Client
 
         internal Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken)
         {
-            var payloadConvention = _clientOptions.PayloadConvention;
-
             try
             {
-                return InnerHandler.GetPropertiesAsync(payloadConvention, cancellationToken);
+                return InnerHandler.GetPropertiesAsync(PayloadConvention, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1904,10 +1902,16 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task UpdateClientPropertiesAsync(ClientPropertyCollection clientProperties, CancellationToken cancellationToken)
+        internal Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPropertyCollection clientProperties, CancellationToken cancellationToken)
         {
+            if (clientProperties == null)
+            {
+                throw new ArgumentNullException(nameof(clientProperties));
+            }
+
             try
             {
+                clientProperties.Convention = PayloadConvention;
                 return InnerHandler.SendPropertyPatchAsync(clientProperties, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
@@ -1919,13 +1923,11 @@ namespace Microsoft.Azure.Devices.Client
 
         internal Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
         {
-            var payloadConvention = _clientOptions.PayloadConvention;
-
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
             {
                 // convert a TwinCollection to PropertyCollection
-                var propertyCollection = ClientPropertyCollection.FromTwinCollection(twinCollection, payloadConvention);
+                var propertyCollection = ClientPropertyCollection.FromTwinCollection(twinCollection, PayloadConvention);
                 callback.Invoke(propertyCollection, userContext);
 
                 return TaskHelpers.CompletedTask;
@@ -1934,11 +1936,23 @@ namespace Microsoft.Azure.Devices.Client
             return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
         }
 
+        internal Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken)
+        {
+            if (telemetryMessage == null)
+            {
+                throw new ArgumentNullException(nameof(telemetryMessage));
+            }
+
+            telemetryMessage.Telemetry.Convention = PayloadConvention;
+            telemetryMessage.ContentEncoding = PayloadConvention.PayloadEncoder.ContentEncoding.WebName;
+            telemetryMessage.ContentType = PayloadConvention.PayloadSerializer.ContentType;
+
+            return SendEventAsync(telemetryMessage, cancellationToken);
+        }
+
         internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken)
         {
             const char ComponentLevelCommandIdentifier = '*';
-
-            var payloadConvention = _clientOptions.PayloadConvention;
 
             // Sunscribe to methods default handler internally and use the callback received internally to invoke the user supplied command callback.
             var methodDefaultCallback = new MethodCallback(async (methodRequest, userContext) =>
@@ -1949,15 +1963,15 @@ namespace Microsoft.Azure.Devices.Client
                     string[] split = methodRequest.Name.Split(ComponentLevelCommandIdentifier);
                     string componentName = split[0];
                     string commandName = split[1];
-                    commandRequest = new CommandRequest(payloadConvention, commandName, componentName, methodRequest.Data);
+                    commandRequest = new CommandRequest(PayloadConvention, commandName, componentName, methodRequest.Data);
                 }
                 else
                 {
-                    commandRequest = new CommandRequest(payloadConvention: payloadConvention, commandName: methodRequest.Name, data: methodRequest.Data);
+                    commandRequest = new CommandRequest(payloadConvention: PayloadConvention, commandName: methodRequest.Name, data: methodRequest.Data);
                 }
 
                 CommandResponse commandResponse = await callback.Invoke(commandRequest, userContext).ConfigureAwait(false);
-                commandResponse.PayloadConvention = payloadConvention;
+                commandResponse.PayloadConvention = PayloadConvention;
                 return commandResponse.ResultAsBytes != null
                     ? new MethodResponse(commandResponse.ResultAsBytes, commandResponse.Status)
                     : new MethodResponse(commandResponse.Status);

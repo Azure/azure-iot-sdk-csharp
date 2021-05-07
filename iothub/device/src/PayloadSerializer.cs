@@ -46,6 +46,19 @@ namespace Microsoft.Azure.Devices.Client
         public abstract T ConvertFromObject<T>(object objectToConvert);
 
         /// <summary>
+        /// Gets a nested property from the serialized data.
+        /// </summary>
+        /// <remarks>
+        /// This is used internally by our <see cref="PayloadCollection"/> to attempt to get a proprty of the underlying object. An example of this would be a property under the component. 
+        /// </remarks>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="objectToConvert"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        /// <param name="outValue"></param>
+        public abstract bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue);
+
+        /// <summary>
         /// Creates the correct <see cref="IWritablePropertyResponse"/> to be used with this serializer
         /// </summary>
         /// <param name="value">The value of the property.</param>

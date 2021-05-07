@@ -15,66 +15,41 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class TelemetryMessage : Message
     {
-        private TelemetryCollection _telemtryCollection = new TelemetryCollection();
-
         /// <summary>
         /// Gets or sets the <see cref="TelemetryCollection"/> for this <see cref="TelemetryMessage"/>
         /// </summary>
-        /// <remarks>
-        /// Setting this value with a new instance of <see cref="TelemetryCollection"/> will set the <see cref="ContentEncoding"/> and <see cref="ContentType"/> to what ever is specified by the <see cref="PayloadConvention"/> used to construct it.
-        /// <para>
-        /// Setting the value to null will set the <see cref="ContentEncoding"/> and <see cref="ContentType"/> to null.
-        /// </para>
-        /// </remarks>
         /// <value>A telemetry collection that will be set as the message payload.</value>
-        public TelemetryCollection Telemetry
-        {
-            get => _telemtryCollection;
-            set
-            {
-                _telemtryCollection = value;
-                if (value != null)
-                {
-                    base.ContentType = value.Convention.PayloadEncoder.ContentEncoding.WebName;
-                    base.ContentEncoding = value.Convention.PayloadSerializer.ContentType;
-                }
-                else
-                {
-                    base.ContentType = null;
-                    base.ContentEncoding = null;
-                }
-            }
-        }
+        public TelemetryCollection Telemetry { get; set; } = new TelemetryCollection();
 
         /// <inheritdoc/>
         /// <remarks>
-        /// The ability to set this property has been hidden by this class to only allow you to set the ContentType via the <see cref="TelemetryCollection"/> class.
+        /// The ability to set this property has been hidden by this class to only allow you to set the ContentType via the <see cref="PayloadSerializer"/> class.
         /// </remarks>
         /// <value>The base <see cref="Message"/> content type.</value>
-        new public string ContentType
+        public new string ContentType
         {
-            get => base.ContentType;
+            get => base.ContentType;        // TODO - this info is available only after deviceClient.SendTelemetryAsync() has been called.
+            internal set => base.ContentType = value;
         }
 
         /// <inheritdoc/>
         /// <remarks>
-        /// The ability to set this property has been hidden by this class to only allow you to set the ContentEncoding via the <see cref="TelemetryCollection"/> class.
+        /// The ability to set this property has been hidden by this class to only allow you to set the ContentEncoding via the <see cref="PayloadEncoder"/> class.
         /// </remarks>
         /// <value>The base <see cref="Message"/> content encoding.</value>
-        new public string ContentEncoding
+        public new string ContentEncoding
         {
-            get => base.ContentEncoding;
+            get => base.ContentEncoding;        // TODO - this info is available only after deviceClient.SendTelemetryAsync() has been called.
+            internal set => base.ContentEncoding = value;
         }
 
         /// <summary>
-        /// A conveneince constructor that allows you to set the <see cref="TelemetryCollection"/> and <see cref="Message.ComponentName"/> of this <see cref="TelemetryMessage"/>
+        /// A conveneince constructor that allows you to set the <see cref="Message.ComponentName"/> of this <see cref="TelemetryMessage"/>
         /// </summary>
         /// <param name="componentName">The name of the component.</param>
-        /// <param name="telemetryCollection">A collection of telemetry for this message.</param>
-        public TelemetryMessage(string componentName = default, TelemetryCollection telemetryCollection = default)
-            : base(telemetryCollection)
+        public TelemetryMessage(string componentName = default)
+            : base()
         {
-            Telemetry = telemetryCollection ?? new TelemetryCollection();
             if (!string.IsNullOrEmpty(componentName))
             {
                 ComponentName = componentName;
@@ -85,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         public override Stream GetBodyStream()
         {
             DisposeBodyStream();
-            BodyStream = new MemoryStream(_telemtryCollection.GetPayloadObjectBytes());
+            BodyStream = new MemoryStream(Telemetry.GetPayloadObjectBytes());
             return base.GetBodyStream();
         }
     }

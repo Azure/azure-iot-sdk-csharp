@@ -40,39 +40,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
-            // Retrieve the device's properties.
-            Twin properties = await _deviceClient.GetTwinAsync(cancellationToken: cancellationToken);
-
-            // Verify if the device has previously reported a value for property
-            // "initialValue" under component "thermostat2".
-            // If the expected value has not been previously reported then report it.
-            var initialValue = new ThermostatInitialValue
-            {
-                Humidity = 20,
-                Temperature = 25
-            };
-
-            if (!properties.Properties.Reported.Contains(Thermostat2)
-                || !((JObject)properties.Properties.Reported[Thermostat2])
-                    .TryGetValue("initialValue", out JToken initialValueReported)
-                || !initialValue
-                    .Equals(initialValueReported.ToObject<ThermostatInitialValue>()))
-            {
-                var propertiesToBeUpdated = new TwinCollection
-                {
-                    ["__t"] = "c",
-                    ["initialValue"] = initialValue
-                };
-                var componentProperty = new TwinCollection
-                {
-                    [Thermostat2] = propertiesToBeUpdated
-                };
-                await _deviceClient.UpdateReportedPropertiesAsync(componentProperty, cancellationToken);
-                _logger.LogDebug($"Property: Update - {componentProperty.ToJson()}.");
-            }
-
             // Send telemetry "deviceHealth" under component "thermostat1".
-            var deviceHealth = new DeviceHealth
+            var deviceHealth = new DeviceHealthNewtonSoftJson
             {
                 Status = "running",
                 IsStopRequested = false,
@@ -89,11 +58,42 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 ContentType = "application/json",
                 ComponentName = Thermostat1
             };
-
             await _deviceClient.SendEventAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)}.");
 
-            // Subscribe and respond to event for writable property "humidityRange" under component "thermostat1".
+            // Retrieve the device's properties.
+            Twin properties = await _deviceClient.GetTwinAsync(cancellationToken: cancellationToken);
+
+            // Verify if the device has previously reported a value for property
+            // "initialValue" under component "thermostat2".
+            // If the expected value has not been previously reported then report it.
+            var initialValue = new ThermostatInitialValueNewtonSoftJson
+            {
+                Humidity = 20,
+                Temperature = 25
+            };
+
+            if (!properties.Properties.Reported.Contains(Thermostat2)
+                || !((JObject)properties.Properties.Reported[Thermostat2])
+                    .TryGetValue("initialValue", out JToken retrievedInitialValue)
+                || !initialValue
+                    .Equals(retrievedInitialValue.ToObject<ThermostatInitialValueNewtonSoftJson>()))
+            {
+                var propertiesToBeUpdated = new TwinCollection
+                {
+                    ["__t"] = "c",
+                    ["initialValue"] = initialValue
+                };
+                var componentProperty = new TwinCollection
+                {
+                    [Thermostat2] = propertiesToBeUpdated
+                };
+                await _deviceClient.UpdateReportedPropertiesAsync(componentProperty, cancellationToken);
+                _logger.LogDebug($"Property: Update - {componentProperty.ToJson()}.");
+            }
+
+            // Subscribe and respond to event for writable property "humidityRange"
+            // under component "thermostat1".
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 async (desired, userContext) =>
                 {
@@ -102,25 +102,29 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         || !((JObject)desired[Thermostat1])
                             .TryGetValue(propertyName, out JToken humidityRangeRequested))
                     {
-                        _logger.LogDebug($"Property: Update - Received a property update which is not implemented.\n{desired.ToJson()}");
+                        _logger.LogDebug($"Property: Update - Received a property update" +
+                            $" which is not implemented.\n{desired.ToJson()}");
                         return;
                     }
 
-                    HumidityRange targetHumidityRange = humidityRangeRequested.ToObject<HumidityRange>();
+                    HumidityRangeNewtonSoftJson targetHumidityRange = humidityRangeRequested
+                        .ToObject<HumidityRangeNewtonSoftJson>();
+                    _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\"," +
+                        $" {{ \"{propertyName}\": {targetHumidityRange} }}.");
 
                     var propertyPatch = new TwinCollection();
                     var componentPatch = new TwinCollection()
                     {
                         ["__t"] = "c"
                     };
-                    var temperatureUpdateResponse = new TwinCollection
+                    var humidityUpdateResponse = new TwinCollection
                     {
                         ["value"] = targetHumidityRange,
                         ["ac"] = StatusCodes.OK,
                         ["av"] = desired.Version,
                         ["ad"] = "The operation completed successfully."
                     };
-                    componentPatch[propertyName] = temperatureUpdateResponse;
+                    componentPatch[propertyName] = humidityUpdateResponse;
                     propertyPatch[Thermostat1] = componentPatch;
 
                     _logger.LogDebug($"Property: Received - component=\"{Thermostat1}\", {{ \"{propertyName}\": {targetHumidityRange} }}.");
@@ -138,13 +142,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     try
                     {
-                        UpdateTemperatureRequest updateTemperatureRequest = JsonConvert.DeserializeObject<UpdateTemperatureRequest>(commandRequest.DataAsJson);
+                        UpdateTemperatureRequestNewtonSoftJson updateTemperatureRequest = JsonConvert
+                            .DeserializeObject<UpdateTemperatureRequestNewtonSoftJson>(commandRequest.DataAsJson);
 
                         _logger.LogDebug($"Command: Received - component=\"{Thermostat2}\"," +
                             $" updating temperature reading to {updateTemperatureRequest.TargetTemperature}°C after {updateTemperatureRequest.Delay} seconds).");
                         await Task.Delay(TimeSpan.FromSeconds(updateTemperatureRequest.Delay));
 
-                        var updateTemperatureResponse = new UpdateTemperatureResponse
+                        var updateTemperatureResponse = new UpdateTemperatureResponseNewtonSoftJson
                         {
                             TargetTemperature = updateTemperatureRequest.TargetTemperature,
                             Status = StatusCodes.OK
@@ -153,7 +158,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         _logger.LogDebug($"Command: component=\"{Thermostat2}\", target temperature {updateTemperatureResponse.TargetTemperature}°C" +
                                     $" has {StatusCodes.OK}.");
 
-                        return new MethodResponse(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(updateTemperatureResponse)), StatusCodes.OK);
+                        return new MethodResponse(
+                            Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(updateTemperatureResponse)),
+                            StatusCodes.OK);
                     }
                     catch (JsonException ex)
                     {

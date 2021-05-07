@@ -25,6 +25,11 @@ namespace Microsoft.Azure.Devices.Client.Common
         public const char PropertySeparator = '&';
 
         /// <summary>
+        /// The character that marks the start of a query string.
+        /// </summary>
+        public const string QueryStringIdentifier = "?";
+
+        /// <summary>
         /// The length of property separator string.
         /// </summary>
         public const int PropertySeparatorLength = 1;
@@ -337,7 +342,10 @@ namespace Microsoft.Azure.Devices.Client.Common
 
             private Token CreateToken(TokenType tokenType, int readCount)
             {
-                string tokenValue = readCount == 0 ? null : value.Substring(position - readCount, readCount);
+                // '?' is not a valid character for message property names or values, but instead signifies the start of a query string
+                // in the case of an MQTT topic. For this reason, we'll replace the '?' from the property key before adding it into
+                // appilcation properties collection.
+                string tokenValue = readCount == 0 ? null : value.Substring(position - readCount, readCount).Replace(QueryStringIdentifier, string.Empty);
 
                 return new Token(tokenType, tokenValue);
             }

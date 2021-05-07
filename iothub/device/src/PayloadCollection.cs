@@ -13,15 +13,6 @@ namespace Microsoft.Azure.Devices.Client
     public abstract class PayloadCollection : IEnumerable<object>
     {
         /// <summary>
-        /// Default constructor for the class.
-        /// </summary>
-        /// <param name="payloadConvention">The convention used to serailize and encode this collection.</param>
-        protected PayloadCollection(PayloadConvention payloadConvention = default)
-        {
-            Convention = payloadConvention ?? DefaultPayloadConvention.Instance;
-        }
-
-        /// <summary>
         /// The underlying collection for the payload.
         /// </summary>
         public IDictionary<string, object> Collection { get; private set; } = new Dictionary<string, object>();
@@ -29,14 +20,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The convention to use with this payload.
         /// </summary>
-        public PayloadConvention Convention { get; private set; }
+        public PayloadConvention Convention { get; internal set; }
 
         /// <summary>
         /// Get the value at the specified key
         /// </summary>
         /// <param name="key">Key of value</param>
         /// <remarks>
-        /// This accessor is best used to access simple types. It is recommended to use <see cref="GetValue"/> to cast a complex type.
+        /// This accessor is best used to access simple types. It is recommended to use <see cref="TryGetValue"/> to cast a complex type.
         /// </remarks>
         /// <returns>The specified property.</returns>
         public virtual object this[string key]
@@ -72,12 +63,23 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the collection as a byte array
         /// </summary>
         /// <remarks>
-        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/> and <see cref="ContentEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
+        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/>
+        /// and <see cref="PayloadEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
         /// </remarks>
         /// <returns>A fully encoded serialized string.</returns>
         public virtual byte[] GetPayloadObjectBytes()
         {
             return Convention.GetObjectBytes(Collection);
+        }
+
+        /// <summary>
+        /// Determines whether the specified property is present.
+        /// </summary>
+        /// <param name="key">The key in the collection to locate.</param>
+        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
+        public bool Contains(string key)
+        {
+            return Collection.ContainsKey(key);
         }
 
         /// <summary>
@@ -88,17 +90,26 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
-        /// <returns></returns>
-        public virtual T GetValue<T>(string key)
+        /// <param name="value">The value of the object from the collection.</param>
+        /// <returns>true if the collection contains an element with the specified key; otherwise, false.</returns>
+        public bool TryGetValue<T>(string key, out T value)
         {
-            // If the object is of type T go ahead and return it.
-            if (Collection[key] is T)
+            if (Collection.ContainsKey(key))
             {
-                return (T)Collection[key];
+                // If the object is of type T go ahead and return it.
+                if (Collection[key] is T valueRef)
+                {
+                    value = valueRef;
+                    return true;
+                }
+                // If it's not we need to try to convert it using the serializer.
+                // JObject or JsonElement
+                value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
+                return true;
             }
-            // If it's not we need to try to convert it using the serializer.
-            // JObject or JsonElement
-            return Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
+
+            value = default;
+            return false;
         }
 
         /// <summary>
@@ -123,6 +134,21 @@ namespace Microsoft.Azure.Devices.Client
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        /// <summary>
+        /// Will set the underlying <see cref="Collection"/> of the payload collection.
+        /// </summary>
+        /// <param name="payloadCollection">The collection to get the underlying dictionary from</param>
+        protected void SetCollection(PayloadCollection payloadCollection)
+        {
+            if (payloadCollection == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            Collection = payloadCollection.Collection;
+            Convention = payloadCollection.Convention;
         }
     }
 }

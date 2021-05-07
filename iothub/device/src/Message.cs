@@ -63,20 +63,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        ///
-        /// </summary>
-        /// <param name="payloadCollection"></param>
-        internal Message(PayloadCollection payloadCollection)
-            : this()
-        {
-            ContentEncoding = payloadCollection?.Convention?.PayloadEncoder?.ContentEncoding?.WebName;
-            ContentType = payloadCollection?.Convention?.PayloadSerializer?.ContentType;
-
-            // Reset the owning of the stream
-            _streamDisposalResponsibility = StreamDisposalResponsibility.Sdk;
-        }
-
-        /// <summary>
         /// This constructor is only used on the Gateway HTTP path so that we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
