@@ -95,6 +95,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug($"Property: Update - {propertiesToBeUpdated.GetSerializedString()}," +
                     $" version = {updateResponse.Version}.");
             }
+            else
+            {
+                var tValue = properties.Get<ThermostatInitialValue>("initialValue", Thermostat2);
+                _logger.LogDebug($"Property from tValue: {tValue.Humidity}.");
+                _logger.LogDebug($"Property from tValue: {tValue.Temperature}.");
+            }
 
             // Subscribe and respond to event for writable property "humidityRange"
             // under component "thermostat1".

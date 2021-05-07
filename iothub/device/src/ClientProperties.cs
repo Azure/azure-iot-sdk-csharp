@@ -2,10 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -17,9 +13,8 @@ namespace Microsoft.Azure.Devices.Client
     /// <see cref="DeviceClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/> method.
     /// </remarks>
     /// </summary>
-    public class ClientProperties : IEnumerable<object>
+    public class ClientProperties : ClientPropertyCollection
     {
-        private readonly ClientPropertyCollection _reportedPropertyCollection = new ClientPropertyCollection();
 
         /// <summary>
         /// Initializes a new instance of <see cref="ClientProperties"/>
@@ -36,8 +31,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub</param>
         internal ClientProperties(ClientPropertyCollection requestedPropertyCollection, ClientPropertyCollection readOnlyPropertyCollection)
         {
+            SetCollection(readOnlyPropertyCollection);
+            Version = readOnlyPropertyCollection.Version;
             Writable = requestedPropertyCollection;
-            _reportedPropertyCollection = readOnlyPropertyCollection;
         }
 
         /// <summary>
