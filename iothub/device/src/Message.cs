@@ -451,8 +451,11 @@ namespace Microsoft.Azure.Devices.Client
             if (value == null)
             {
                 SystemProperties.Remove(key);
+            } else
+            {
+                SystemProperties[key] = value;
             }
-            SystemProperties[key] = value;
+            
         }
     }
 }
