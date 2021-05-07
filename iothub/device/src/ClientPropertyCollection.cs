@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -60,6 +60,34 @@ namespace Microsoft.Azure.Devices.Client
         public void Add(IDictionary<string, object> properties, string componentName = default)
         => Add(properties, componentName, false);
 
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <summary>
+        /// Adds a writable property to the collection.
+        /// </summary>
+        /// <remarks>
+        /// This method will use the <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/> method to create an instance of <see cref="IWritablePropertyResponse"/> that will be properly serialized.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the property to add or update.</param>
+        /// <param name="propertyValue">The value of the property to add or update.</param>
+        /// <param name="statusCode"></param>
+        /// <param name="version"></param>
+        /// <param name="description"></param>
+        /// <param name="componentName"></param>
+        public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = default, string componentName = default)
+        {
+            if (Convention?.PayloadSerializer == null)
+            {
+                Add(propertyName, new { value = propertyValue, ac = statusCode, av = version, ad = description }, componentName);
+            }
+            else
+            {
+                Add(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
+            }
+            
+        }
+
         /// <inheritdoc path="/summary" cref="Add(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="AddOrUpdate(IDictionary{string, object}, string)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
@@ -98,6 +126,32 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component with the properties to add or update.</param>
         public void AddOrUpdate(IDictionary<string, object> properties, string componentName = default)
             => Add(properties, componentName, true);
+
+        /// <inheritdoc path="/remarks" cref="Add(string, object, int, long, string, string)"/>
+        /// <inheritdoc path="/exception['ArgumentException']" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="Add(IDictionary{string, object}, string, bool)" />
+        /// <summary>
+        /// Adds or updates a type of <see cref="IWritablePropertyResponse"/> to the collection.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the writable property to add or update.</param>
+        /// <param name="propertyValue">The value of the writable property to add or update.</param>
+        /// <param name="statusCode"></param>
+        /// <param name="version"></param>
+        /// <param name="description"></param>
+        /// <param name="componentName"></param>
+        public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = default, string componentName = default)
+        {
+            if (Convention?.PayloadSerializer == null)
+            {
+                AddOrUpdate(propertyName, new { value = propertyValue, ac = statusCode, av = version, ad = description }, componentName);
+            }
+            else
+            {
+                AddOrUpdate(propertyName, Convention.PayloadSerializer.CreateWritablePropertyResponse(propertyValue, statusCode, version, description), componentName);
+            }
+
+        }
 
         /// <summary>
         /// Adds or updates the value for the collection.
