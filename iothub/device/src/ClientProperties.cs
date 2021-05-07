@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ClientProperties : ClientPropertyCollection
     {
-
         /// <summary>
         /// Initializes a new instance of <see cref="ClientProperties"/>
         /// </summary>
@@ -51,8 +50,8 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(clientTwinProperties));
             }
 
-            var writablePropertyCollection = ClientPropertyCollection.FromClientTwinDictionary(clientTwinProperties.Desired, payloadConvention);
-            var propertyCollection = ClientPropertyCollection.FromClientTwinDictionary(clientTwinProperties.Reported, payloadConvention);
+            ClientPropertyCollection writablePropertyCollection = FromClientTwinDictionary(clientTwinProperties.Desired, payloadConvention);
+            ClientPropertyCollection propertyCollection = FromClientTwinDictionary(clientTwinProperties.Reported, payloadConvention);
 
             return new ClientProperties(writablePropertyCollection, propertyCollection);
         }

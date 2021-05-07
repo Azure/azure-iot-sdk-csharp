@@ -148,6 +148,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             Collection = payloadCollection.Collection;
+            Convention = payloadCollection.Convention;
         }
     }
 }
