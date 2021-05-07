@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
             else
             {
-                var tValue = properties.Get<ThermostatInitialValue>("initialValue", Thermostat2);
+                properties.TryGetValue(Thermostat2, "initialValue", out ThermostatInitialValueNewtonSoftJson tValue);
                 _logger.LogDebug($"Property from tValue: {tValue.Humidity}.");
                 _logger.LogDebug($"Property from tValue: {tValue.Temperature}.");
             }
