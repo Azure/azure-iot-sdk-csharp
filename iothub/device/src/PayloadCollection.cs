@@ -73,6 +73,16 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Determines whether the specified property is present.
+        /// </summary>
+        /// <param name="key">The key in the collection to locate.</param>
+        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
+        public bool Contains(string key)
+        {
+            return Collection.ContainsKey(key);
+        }
+
+        /// <summary>
         /// Gets the value of the object from the collection.
         /// </summary>
         /// <remarks>
@@ -82,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="key">The key of the property to get.</param>
         /// <param name="value">The value of the object from the collection.</param>
         /// <returns>true if the collection contains an element with the specified key; otherwise, false.</returns>
-        public virtual bool TryGetValue<T>(string key, out T value)
+        public bool TryGetValue<T>(string key, out T value)
         {
             if (Collection.ContainsKey(key))
             {
