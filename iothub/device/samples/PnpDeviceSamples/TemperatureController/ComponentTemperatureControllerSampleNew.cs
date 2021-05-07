@@ -97,9 +97,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
             else
             {
-                properties.TryGetValue(Thermostat2, "initialValue", out ThermostatInitialValueNewtonSoftJson tValue);
-                _logger.LogDebug($"Property from tValue: {tValue.Humidity}.");
-                _logger.LogDebug($"Property from tValue: {tValue.Temperature}.");
+                _logger.LogDebug($"Property from tValue: {retrievedInitialValue.Humidity}.");
+                _logger.LogDebug($"Property from tValue: {retrievedInitialValue.Temperature}.");
             }
 
             // Subscribe and respond to event for writable property "humidityRange"
