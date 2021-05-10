@@ -54,6 +54,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #endif
 
+            public static string UserAssignedMsiResourceId => GetValue("IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID");
+
             public static X509Certificate2 GetCertificateWithPrivateKey()
             {
                 const string hubPfxCert = "IOTHUB_X509_PFX_CERTIFICATE";
