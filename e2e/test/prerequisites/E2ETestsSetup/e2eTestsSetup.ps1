@@ -120,7 +120,7 @@ $iotHubAadTestAppRegName = "$ResourceGroup-IotHubAadApp"
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 1
-
+$managedIdentityName = "$ResourceGroup-user-msi"
 
 # OpenSSL has dropped support for SHA1 signed certificates in ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
@@ -389,7 +389,8 @@ az deployment group create `
     KeyVaultName=$keyVaultName `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
     DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
-    HubUnitsCount=$iothubUnitsToBeCreated
+    HubUnitsCount=$iothubUnitsToBeCreated `
+    UserAssignedManagedIdentityName=$managedIdentityName
 
 if ($LastExitCode -ne 0)
 {
@@ -437,6 +438,12 @@ $iotHubScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/pro
 $iotHubAadTestAppPassword = az ad sp create-for-rbac -n $iotHubAadTestAppRegUrl --role $iotHubDataContributorRoleId --scope $iotHubScope --query password --output tsv
 $iotHubAadTestAppId = az ad app list --display-name $iotHubAadTestAppRegName --query "[?displayName=='$iotHubAadTestAppRegName'].appId" --output tsv
 Write-Host "`nApplication $iotHubAadTestAppRegName with Id $iotHubAadTestAppId was created successfully."
+
+#################################################################################################################################################
+# Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
+#################################################################################################################################################
+$msiPrincipalId = az identity show -n $managedIdentityName -g $ResourceGroup --query principalId --output tsv
+az role assignment create --assignee $msiPrincipalId --role 'Storage Blob Data Contributor' --scope $$resourceGroupId
 
 ##################################################################################################################################
 # Granting the iot hub system idenitty Storage blob contributor access on the resoruce group
