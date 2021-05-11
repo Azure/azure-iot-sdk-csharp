@@ -1896,6 +1896,11 @@ namespace Microsoft.Azure.Devices.Client
             _fileUploadHttpTransportHandler?.Dispose();
             _deviceReceiveMessageSemaphore?.Dispose();
             _twinDesiredPropertySemaphore?.Dispose();
+
+            if ((IotHubConnectionString?.TokenRefresher?.InstanceCreatedBySdk).GetValueOrDefault())
+            {
+                IotHubConnectionString?.TokenRefresher?.Dispose();
+            }
         }
 
         internal bool IsE2EDiagnosticSupportedProtocol()

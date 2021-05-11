@@ -65,6 +65,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
 
+        internal bool InstanceCreatedBySdk { get; set; }
+
         /// <summary>
         /// Gets a snapshot of the security token associated with the device. This call is thread-safe.
         /// </summary>
