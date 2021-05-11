@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Client
                 : builder.GatewayHostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
-            SharedAccessSignature = builder.SharedAccessSignature;
             IotHubName = builder.IotHubName;
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
@@ -74,6 +73,10 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 Debug.Assert(TokenRefresher != null);
+            }
+            else if (!string.IsNullOrWhiteSpace(builder.SharedAccessSignature))
+            {
+                SharedAccessSignature = builder.SharedAccessSignature;
             }
         }
 
