@@ -15,12 +15,12 @@ param(
 
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
-    [switch] $InstallDependencies,
+    [bool] $InstallDependencies,
 
     # Set this to true if you are generating resources for the DevOps test pipeline.
     # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
     [Parameter()]
-    [switch] $GenerateResourcesForDevOpsPipeline
+    [bool] $GenerateResourcesForDevOpsPipeline
 )
 
 $startTime = (Get-Date)
@@ -442,17 +442,17 @@ Write-Host "`nApplication $iotHubAadTestAppRegName with Id $iotHubAadTestAppId w
 #################################################################################################################################################
 # Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
 #################################################################################################################################################
+Write-Host "`nGranting the user assigned managed identity $managedIdentityName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
 $msiPrincipalId = az identity show -n $managedIdentityName -g $ResourceGroup --query principalId --output tsv
-az role assignment create --assignee $msiPrincipalId --role 'Storage Blob Data Contributor' --scope $$resourceGroupId
+$msiResourceId = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/$managedIdentityName"
+az role assignment create --assignee $msiPrincipalId --role 'Storage Blob Data Contributor' --scope $resourceGroupId --output none
 
 ##################################################################################################################################
 # Granting the iot hub system idenitty Storage blob contributor access on the resoruce group
 ##################################################################################################################################
 Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
-
 $systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.principalId --out tsv
-
-az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId
+az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId --output none
 
 ##################################################################################################################################
 # Uploading ROOT CA certificate to IoTHub and verifying
@@ -614,6 +614,7 @@ az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-ROOT-CA-CERT
 az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-INTERMEDIATE1-CERTIFICATE" --value $iothubX509Intermediate1Certificate --output none
 az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-INTERMEDIATE2-CERTIFICATE" --value $iothubX509Intermediate2Certificate --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-X509-CHAIN-DEVICE-NAME" --value $iotHubCertChainDeviceCommonName --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID" --value $msiResourceId --output none
 
 # Below Environment variables are only used in Java
 az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $dpsConnectionString --output none # DPS Connection string Environment variable for Java

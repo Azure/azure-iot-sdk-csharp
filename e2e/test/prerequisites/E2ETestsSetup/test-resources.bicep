@@ -120,7 +120,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2018-02-14' = {
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   name: StorageAccountName
   location: resourceGroup().location
   sku: {
@@ -146,7 +146,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   }
 }
 
-resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2019-06-01' = {
+resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-02-01' = {
   name: '${storageAccount.name}/${BlobServiceName}'
   properties: {
     deleteRetentionPolicy: {
@@ -155,7 +155,7 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2019-06-01'
   }
 }
 
-resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' = {
+resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-02-01' = {
   name: '${blobService.name}/${ContainerName}'
   properties: {
     publicAccess: 'None'
