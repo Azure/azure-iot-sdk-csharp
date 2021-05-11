@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,9 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <threadsafety static="true" instance="true" />
     public class DeviceClient : IDisposable
+#if !NET451 && !NET472 && !NETSTANDARD2_0
+        , IAsyncDisposable
+#endif
     {
         /// <summary>
         /// Default operation timeout.
@@ -613,11 +617,49 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Releases the unmanaged resources used by the DeviceClient and optionally disposes of the managed resources.
         /// </summary>
+        /// <remarks>
+        /// The method <see cref="CloseAsync()"/> should be called before disposing.
+        /// </remarks>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+#if !NET451 && !NET472 && !NETSTANDARD2_0
+        // IAsyncDisposable is available in .NET Standard 2.1 and above
+
+        /// <summary>
+        /// Disposes the client in an async way. See <see cref="IAsyncDisposable"/> for more information.
+        /// </summary>
+        /// <remarks>
+        /// Includes a call to <see cref="CloseAsync()"/>.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// await using var client = DeviceClient.CreateFromConnectionString(...);
+        /// </code>
+        /// or
+        /// <code>
+        /// var client = DeviceClient.CreateFromConnectionStirng(...);
+        /// try
+        /// {
+        ///     // do work
+        /// }
+        /// finally
+        /// {
+        ///     await client.DisposeAsync();
+        /// }
+        /// </code>
+        /// </example>
+        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "SuppressFinalize is called by Dispose(), which this method calls.")]
+        public async ValueTask DisposeAsync()
+        {
+            await CloseAsync().ConfigureAwait(false);
+            Dispose();
+        }
+
+#endif
 
         /// <summary>
         /// Releases the unmanaged resources used by the DeviceClient and allows for any derived class to override and

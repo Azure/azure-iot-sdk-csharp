@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -22,6 +23,9 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
     public class ModuleClient : IDisposable
+#if !NET451 && !NET472 && !NETSTANDARD2_0
+        , IAsyncDisposable
+#endif
     {
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
@@ -438,6 +442,41 @@ namespace Microsoft.Azure.Devices.Client
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+#if !NET451 && !NET472 && !NETSTANDARD2_0
+        // IAsyncDisposable is available in .NET Standard 2.1 and above
+
+        /// <summary>
+        /// Disposes the client in an async way. See <see cref="IAsyncDisposable"/> for more information.
+        /// </summary>
+        /// <remarks>
+        /// Includes a call to <see cref="CloseAsync()"/>.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// await using var client = ModuleClient.CreateFromConnectionString(...);
+        /// </code>
+        /// or
+        /// <code>
+        /// var client = ModuleClient.CreateFromConnectionStirng(...);
+        /// try
+        /// {
+        ///     // do work
+        /// }
+        /// finally
+        /// {
+        ///     await client.DisposeAsync();
+        /// }
+        /// </code>
+        /// </example>
+        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "SuppressFinalize is called by Dispose(), which this method calls.")]
+        public async ValueTask DisposeAsync()
+        {
+            await CloseAsync().ConfigureAwait(false);
+            Dispose();
+        }
+
+#endif
 
         /// <summary>
         /// Releases the unmanaged resources used by the ModuleClient and allows for any derived class to override and
