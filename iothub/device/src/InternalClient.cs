@@ -312,11 +312,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Explicitly open the InternalClient instance.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public async Task OpenAsync(CancellationToken cancellationToken)
+        public Task OpenAsync(CancellationToken cancellationToken)
         {
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
+                return InnerHandler.OpenAsync(cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -346,11 +346,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Close the InternalClient instance
         /// </summary>
-        public async Task CloseAsync(CancellationToken cancellationToken)
+        public Task CloseAsync(CancellationToken cancellationToken)
         {
             try
             {
-                await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
+                return InnerHandler.CloseAsync(cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -431,7 +431,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="lockToken"></param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>The lock identifier for the previously received message</returns>
-        public async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
+        public Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             // Codes_SRS_DEVICECLIENT_28_013: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             if (string.IsNullOrEmpty(lockToken))
@@ -441,7 +441,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                await InnerHandler.CompleteAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.CompleteAsync(lockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -471,17 +471,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="message">The message to complete</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>The previously received message</returns>
-        public async Task CompleteAsync(Message message, CancellationToken cancellationToken)
+        public Task CompleteAsync(Message message, CancellationToken cancellationToken)
         {
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            // Codes_SRS_DEVICECLIENT_28_015: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.
             try
             {
-                await CompleteAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
+                return CompleteAsync(message.LockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -513,17 +513,17 @@ namespace Microsoft.Azure.Devices.Client
         /// Puts a received message back onto the device queue
         /// </summary>
         /// <returns>The previously received message</returns>
-        public async Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
+        public Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(lockToken))
             {
                 throw new ArgumentNullException(nameof(lockToken));
             }
 
-            // Codes_SRS_DEVICECLIENT_28_015: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.
             try
             {
-                await InnerHandler.AbandonAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.AbandonAsync(lockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -547,15 +547,16 @@ namespace Microsoft.Azure.Devices.Client
         /// Puts a received message back onto the device queue
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public async Task AbandonAsync(Message message, CancellationToken cancellationToken)
+        public Task AbandonAsync(Message message, CancellationToken cancellationToken)
         {
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
+
             try
             {
-                await AbandonAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
+                return AbandonAsync(message.LockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -587,15 +588,16 @@ namespace Microsoft.Azure.Devices.Client
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <returns>The previously received message</returns>
-        public async Task RejectAsync(string lockToken, CancellationToken cancellationToken)
+        public Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(lockToken))
             {
                 throw new ArgumentNullException(nameof(lockToken));
             }
+
             try
             {
-                await InnerHandler.RejectAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.RejectAsync(lockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -619,7 +621,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public async Task RejectAsync(Message message, CancellationToken cancellationToken)
+        public Task RejectAsync(Message message, CancellationToken cancellationToken)
         {
             if (message == null)
             {
@@ -628,7 +630,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                await RejectAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
+                return RejectAsync(message.LockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -660,7 +662,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends an event to device hub
         /// </summary>
         /// <returns>The message containing the event</returns>
-        public async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
             if (message == null)
             {
@@ -673,10 +675,10 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             IotHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
-            // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.
             try
             {
-                await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.SendEventAsync(message, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -708,7 +710,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends a batch of events to device hub
         /// </summary>
         /// <returns>The task containing the event</returns>
-        public async Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             if (messages == null)
             {
@@ -726,10 +728,10 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.
             try
             {
-                await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.SendEventAsync(messages, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1020,11 +1022,11 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        internal Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
             try
             {
-                await InnerHandler.SendMethodResponseAsync(methodResponse, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.SendMethodResponseAsync(methodResponse, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1165,12 +1167,12 @@ namespace Microsoft.Azure.Devices.Client
         /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <returns>The device twin object for the current device</returns>
-        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
+        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
         {
-            // Codes_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
+            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state.
             try
             {
-                return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
+                return InnerHandler.SendTwinGetAsync(cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1203,18 +1205,18 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            // Codes_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
+            // `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null.
             if (reportedProperties == null)
             {
                 throw new ArgumentNullException(nameof(reportedProperties));
             }
 
-            // Codes_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
+            // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
             try
             {
-                await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1281,12 +1283,12 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
-        public async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            // Codes_SRS_DEVICECLIENT_28_011: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable (authentication, quota exceed) error occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable (authentication, quota exceed) error occurs.
             try
             {
-                return await InnerHandler.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                return InnerHandler.ReceiveAsync(cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1454,7 +1456,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>AsncTask</returns>
         [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public async Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
+        public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
         {
             try
             {
@@ -1480,9 +1482,8 @@ namespace Microsoft.Azure.Devices.Client
                     throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
                 }
 
-                await _fileUploadHttpTransportHandler
-                    .UploadToBlobAsync(blobName, source, cancellationToken)
-                    .ConfigureAwait(false);
+                return _fileUploadHttpTransportHandler
+                    .UploadToBlobAsync(blobName, source, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1530,7 +1531,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="message">The message to send</param>
         /// <param name="cancellationToken">A cancellation token</param>
         /// <returns>The message containing the event</returns>
-        public async Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken)
+        public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken)
         {
             try
             {
@@ -1557,7 +1558,7 @@ namespace Microsoft.Azure.Devices.Client
                 message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
 
                 // Codes_SRS_DEVICECLIENT_10_011: [The `SendEventAsync` operation shall retry sending `message` until the `BaseClient::RetryStrategy` timespan expires or unrecoverable error(authentication or quota exceed) occurs.]
-                await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.SendEventAsync(message, cancellationToken);
             }
             finally
             {
@@ -1596,7 +1597,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">A list of one or more messages to send</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
-        public async Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             try
             {
@@ -1624,7 +1625,7 @@ namespace Microsoft.Azure.Devices.Client
                 messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
 
                 // Codes_SRS_DEVICECLIENT_10_014: [The `SendEventBachAsync` operation shall retry sending `messages` until the `BaseClient::RetryStrategy` timespan expires or unrecoverable error(authentication or quota exceed) occurs.]
-                await InnerHandler.SendEventAsync(messagesList, cancellationToken).ConfigureAwait(false);
+                return InnerHandler.SendEventAsync(messagesList, cancellationToken);
             }
             finally
             {
