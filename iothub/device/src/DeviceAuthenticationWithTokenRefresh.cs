@@ -11,8 +11,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public abstract class DeviceAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
-        internal const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
-        internal const int DefaultBufferPercentage = 15;
+        internal const int DefaultTimeToLiveSeconds = 1 * 60;
+        internal const int DefaultBufferPercentage = 50;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class using default
