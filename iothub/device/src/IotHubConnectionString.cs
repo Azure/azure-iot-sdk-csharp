@@ -54,8 +54,10 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer)
                     {
-                        InstanceCreatedBySdk = true,
-                        IsIndividualSasAuthenticatedToken = builder.SharedAccessKeyName == null,
+                        // Clients initialized using group sas tokens will have an entry for "SharedAccessKeyName" in the supplied connection string.
+                        // These clients use a connection-wide TokenRefresher for authenticating all clients under the same group.
+                        // In these cases, the disposal of the TokenRefresher is delegated to the transport layer.
+                        ShouldSdkDisposeInstance = builder.SharedAccessKeyName == null,
                     };
 
                     if (Logging.IsEnabled)
@@ -67,8 +69,10 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer)
                     {
-                        InstanceCreatedBySdk = true,
-                        IsIndividualSasAuthenticatedToken = builder.SharedAccessKeyName == null,
+                        // Clients initialized using group sas tokens will have an entry for "SharedAccessKeyName" in the supplied connection string.
+                        // These clients use a connection-wide TokenRefresher for authenticating all clients under the same group.
+                        // In these cases, the disposal of the TokenRefresher is delegated to the transport layer.
+                        ShouldSdkDisposeInstance = builder.SharedAccessKeyName == null,
                     };
 
                     if (Logging.IsEnabled)

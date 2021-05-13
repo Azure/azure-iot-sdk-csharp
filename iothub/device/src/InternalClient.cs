@@ -1897,8 +1897,7 @@ namespace Microsoft.Azure.Devices.Client
             _deviceReceiveMessageSemaphore?.Dispose();
             _twinDesiredPropertySemaphore?.Dispose();
 
-            if ((IotHubConnectionString?.TokenRefresher?.InstanceCreatedBySdk).GetValueOrDefault()
-                && (IotHubConnectionString?.TokenRefresher?.IsIndividualSasAuthenticatedToken).GetValueOrDefault())
+            if ((IotHubConnectionString?.TokenRefresher?.ShouldSdkDisposeInstance).GetValueOrDefault())
             {
                 IotHubConnectionString?.TokenRefresher?.Dispose();
             }
