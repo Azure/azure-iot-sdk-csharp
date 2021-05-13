@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Devices.Client
                     TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer)
                     {
                         InstanceCreatedBySdk = true,
+                        IsIndividualSasAuthenticatedToken = builder.SharedAccessKeyName == null,
                     };
 
                     if (Logging.IsEnabled)
@@ -67,6 +68,7 @@ namespace Microsoft.Azure.Devices.Client
                     TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer)
                     {
                         InstanceCreatedBySdk = true,
+                        IsIndividualSasAuthenticatedToken = builder.SharedAccessKeyName == null,
                     };
 
                     if (Logging.IsEnabled)

@@ -101,6 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId, sasTokenTimeToLive, sasTokenRenewalBuffer)
                 {
                     InstanceCreatedBySdk = true,
+                    IsIndividualSasAuthenticatedToken = true,
                 };
 #pragma warning restore CA2000 // Dispose objects before losing scope - IDisposable ModuleAuthenticationWithHsm is disposed when the client is disposed.
 

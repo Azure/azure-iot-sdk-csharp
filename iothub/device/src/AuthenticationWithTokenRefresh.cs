@@ -67,6 +67,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool InstanceCreatedBySdk { get; set; }
 
+        internal bool IsIndividualSasAuthenticatedToken { get; set; }
+
         /// <summary>
         /// Gets a snapshot of the security token associated with the device. This call is thread-safe.
         /// </summary>
