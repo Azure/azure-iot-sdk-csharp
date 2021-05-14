@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         if (Logging.IsEnabled)
                         {
-                            Logging.Info(this, "Creating connection width AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));
+                            Logging.Info(this, "Creating connection wide AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));
                         }
 
                         amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_deviceIdentity, amqpIotConnection.GetCbsLink());
