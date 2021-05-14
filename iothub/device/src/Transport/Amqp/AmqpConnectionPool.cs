@@ -37,16 +37,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     AmqpConnectionHolder[] amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity);
                     amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, deviceIdentity);
 
-                    if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
+                    // For group sas token authenticated devices over a multiplexed connection, the TokenRefresher
+                    // of the first client connecting will be used for generating the group sas tokens
+                    // and will be associated with the connection itself.
+                    // For this reason, if the device identity of the client is not the one associated with the
+                    // connection, the associated TokenRefresher can be safely disposed.
+                    // Note - This does not cause any identity related issues since the group sas tokens are generated
+                    // against "{IoT hub name}.azure-devices.net/" as the intended audience (without the "device Id").
+                    if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped
+                        && !ReferenceEquals(amqpConnectionHolder.GetDeviceIdentityOfAuthenticationProvider(), deviceIdentity)
+                        && deviceIdentity.IotHubConnectionString?.TokenRefresher != null
+                        && deviceIdentity.IotHubConnectionString.TokenRefresher.InstanceCreatedBySdk)
                     {
-                        // For group sas token authenticated devices over a multiplexed connection, the identity
-                        // of the first device connecting will be used for generating the group sas tokens.
-                        // The TokenRefresher of the subsequently connected device identities can be safely disposed.
-                        if (!ReferenceEquals(amqpConnectionHolder.GetDeviceIdentityOfAuthenticationProvider(), deviceIdentity)
-                            && deviceIdentity.IotHubConnectionString?.TokenRefresher != null)
-                        {
-                            deviceIdentity.IotHubConnectionString.TokenRefresher.Dispose();
-                        }
+                        deviceIdentity.IotHubConnectionString.TokenRefresher.Dispose();
                     }
                 }
 

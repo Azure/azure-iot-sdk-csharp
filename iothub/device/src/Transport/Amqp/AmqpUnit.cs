@@ -850,6 +850,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     _amqpConnectionHolder?.Dispose();
                 }
 
+                // For device sas authenticated clients the authentication refresher is associated with the AMQP unit itself,
+                // so it needs to be explicitly disposed.
+                _amqpAuthenticationRefresher?.Dispose();
+
                 _sessionSemaphore?.Dispose();
                 _messageReceivingLinkSemaphore?.Dispose();
                 _messageReceivingCallbackSemaphore?.Dispose();

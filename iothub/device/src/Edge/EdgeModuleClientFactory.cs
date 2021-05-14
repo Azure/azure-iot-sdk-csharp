@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId, sasTokenTimeToLive, sasTokenRenewalBuffer)
                 {
                     // Since the sdk creates the instance of disposable ModuleAuthenticationWithHsm, the sdk needs to dispose it once the client is diposed.
-                    ShouldSdkDisposeInstance = true,
+                    InstanceCreatedBySdk = true,
                 };
 #pragma warning restore CA2000 // Dispose objects before losing scope - IDisposable ModuleAuthenticationWithHsm is disposed when the client is disposed.
 

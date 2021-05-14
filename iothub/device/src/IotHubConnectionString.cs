@@ -54,10 +54,8 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer)
                     {
-                        // Clients initialized using group sas tokens will have an entry for "SharedAccessKeyName" in the supplied connection string.
-                        // These clients use a connection-wide TokenRefresher for authenticating all clients under the same group.
-                        // In these cases, the disposal of the TokenRefresher is delegated to the transport layer.
-                        ShouldSdkDisposeInstance = builder.SharedAccessKeyName == null,
+                        // Since the sdk creates the instance of disposable DeviceAuthenticationWithSakRefresh, the sdk needs to dispose it once the client is diposed.
+                        InstanceCreatedBySdk = true,
                     };
 
                     if (Logging.IsEnabled)
@@ -69,10 +67,8 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer)
                     {
-                        // Clients initialized using group sas tokens will have an entry for "SharedAccessKeyName" in the supplied connection string.
-                        // These clients use a connection-wide TokenRefresher for authenticating all clients under the same group.
-                        // In these cases, the disposal of the TokenRefresher is delegated to the transport layer.
-                        ShouldSdkDisposeInstance = builder.SharedAccessKeyName == null,
+                        // Since the sdk creates the instance of disposable ModuleAuthenticationWithSakRefresh, the sdk needs to dispose it once the client is diposed.
+                        InstanceCreatedBySdk = true,
                     };
 
                     if (Logging.IsEnabled)

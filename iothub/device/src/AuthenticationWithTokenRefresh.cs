@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // This internal property is used by the sdk to determine if the instance was created by the sdk,
         // and thus, if it should be disposed by the sdk.
-        internal bool ShouldSdkDisposeInstance { get; set; }
+        internal bool InstanceCreatedBySdk { get; set; }
 
         /// <summary>
         /// Gets a snapshot of the security token associated with the device. This call is thread-safe.

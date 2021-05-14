@@ -76,6 +76,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (_amqpIotConnection != null && ReferenceEquals(_amqpIotConnection, o))
             {
                 _amqpAuthenticationRefresher?.StopLoop();
+                _amqpAuthenticationRefresher?.Dispose();
+
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
@@ -100,6 +102,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             _amqpAuthenticationRefresher?.StopLoop();
+            _amqpAuthenticationRefresher?.Dispose();
+
             _amqpIotConnection?.SafeClose();
             if (Logging.IsEnabled)
             {

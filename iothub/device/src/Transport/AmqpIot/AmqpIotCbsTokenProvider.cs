@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
     internal class AmqpIotCbsTokenProvider : ICbsTokenProvider, IDisposable
     {
         private readonly IotHubConnectionString _connectionString;
-        private bool _disposedValue;
+        private bool _isDisposed;
 
         public AmqpIotCbsTokenProvider(IotHubConnectionString connectionString)
         {
@@ -59,24 +59,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _connectionString.TokenRefresher.Dispose();
-                }
-
-                _disposedValue = true;
-            }
-        }
-
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    if (_connectionString?.TokenRefresher != null
+                        && _connectionString.TokenRefresher.InstanceCreatedBySdk)
+                    {
+                        _connectionString.TokenRefresher.Dispose();
+                    }
+                }
+
+                _isDisposed = true;
+            }
         }
     }
 }
