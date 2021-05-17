@@ -12,6 +12,7 @@ using Microsoft.Azure.Devices.Shared;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using System.ComponentModel;
 
 #if NET451
 
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal class InternalClient : IDisposable
     {
-        private readonly SemaphoreSlim _methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _methodsSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new SemaphoreSlim(1, 1);
@@ -121,7 +122,9 @@ namespace Microsoft.Azure.Devices.Client
         private volatile Tuple<MessageHandler, object> _defaultEventCallback;
 
         // Stores methods supported by the client device and their associated delegate.
-        private volatile Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods;
+
+        private bool _isDeviceMethodEnabled;
+        private readonly Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
 
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
@@ -152,9 +155,7 @@ namespace Microsoft.Azure.Devices.Client
         public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder, ClientOptions options)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
-            }
 
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
@@ -198,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Diagnostic sampling percentage value, [0-100];
-        /// 0 means no message will carry on diagnostics info
+        /// A value of 0 means no message will carry on diagnostics info.
         /// </summary>
         public int DiagnosticSamplingPercentage
         {
@@ -345,7 +346,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Close the InternalClient instance
         /// </summary>
-        /// <returns></returns>
         public Task CloseAsync(CancellationToken cancellationToken)
         {
             try
@@ -362,8 +362,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate.
-        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
+        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
         {
             // codes_SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**
@@ -388,8 +388,9 @@ namespace Microsoft.Azure.Devices.Client
                     Logging.Enter(this, status, reason, nameof(OnConnectionStatusChanged));
                 }
 
-                if (_connectionStatusChangesHandler != null &&
-                    (_lastConnectionStatus != status || _lastConnectionStatusChangeReason != reason))
+                if (_connectionStatusChangesHandler != null
+                    && (_lastConnectionStatus != status
+                        || _lastConnectionStatusChangeReason != reason))
                 {
                     _connectionStatusChangesHandler(status, reason);
                 }
@@ -477,7 +478,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(message));
             }
 
-            // Codes_SRS_DEVICECLIENT_28_015: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.
             try
             {
                 return CompleteAsync(message.LockToken, cancellationToken);
@@ -519,7 +520,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(lockToken));
             }
 
-            // Codes_SRS_DEVICECLIENT_28_015: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.
             try
             {
                 return InnerHandler.AbandonAsync(lockToken, cancellationToken);
@@ -611,7 +612,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task RejectAsync(Message message)
         {
-            return message == null ? throw new ArgumentNullException(nameof(message)) : RejectAsync(message.LockToken);
+            return message == null
+                ? throw new ArgumentNullException(nameof(message))
+                : RejectAsync(message.LockToken);
         }
 
         /// <summary>
@@ -672,7 +675,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             IotHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
-            // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.
             try
             {
                 return InnerHandler.SendEventAsync(message, cancellationToken);
@@ -725,7 +728,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            // Codes_SRS_DEVICECLIENT_28_019: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.
             try
             {
                 return InnerHandler.SendEventAsync(messages, cancellationToken);
@@ -741,10 +744,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
         /// A method handler can be unset by passing a null MethodCallback.
+        /// </summary>
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// </summary>
         public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext)
         {
             try
@@ -764,11 +767,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
         /// A method handler can be unset by passing a null MethodCallback.
+        /// </summary>
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// </summary>
         public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -777,39 +780,19 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            await _methodsDictionarySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
                 if (methodHandler != null)
                 {
-                    // codes_SRS_DEVICECLIENT_10_005: [ It shall EnableMethodsAsync when called for the first time. ]
-                    await EnableMethodAsync(cancellationToken).ConfigureAwait(false);
-
-                    // codes_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
-                    if (_deviceMethods == null)
-                    {
-                        _deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
-                    }
+                    await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
                     _deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
                 }
                 else
                 {
-                    // codes_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
-                    // codes_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
-                    if (_deviceMethods != null)
-                    {
-                        _deviceMethods.Remove(methodName);
-
-                        if (_deviceMethods.Count == 0)
-                        {
-                            // codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-                            _deviceMethods = null;
-                        }
-
-                        // codes_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
-                        await DisableMethodAsync(cancellationToken).ConfigureAwait(false);
-                    }
+                    _deviceMethods.Remove(methodName);
+                    await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
@@ -819,7 +802,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                _methodsDictionarySemaphore.Release();
+                _methodsSemaphore.Release();
 
                 if (Logging.IsEnabled)
                 {
@@ -866,14 +849,13 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            await _methodsDictionarySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
                 if (methodHandler != null)
                 {
-                    // codes_SRS_DEVICECLIENT_10_005: [ It shall EnableMethodsAsync when called for the first time. ]
-                    await EnableMethodAsync(cancellationToken).ConfigureAwait(false);
+                    await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
 
                     // codes_SRS_DEVICECLIENT_24_001: [ If the default callback has already been set, it is replaced with the new callback. ]
                     _deviceDefaultMethodCallback = new Tuple<MethodCallback, object>(methodHandler, userContext);
@@ -882,8 +864,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     _deviceDefaultMethodCallback = null;
 
-                    // codes_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
-                    await DisableMethodAsync(cancellationToken).ConfigureAwait(false);
+                    await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
@@ -893,7 +874,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                _methodsDictionarySemaphore.Release();
+                _methodsSemaphore.Release();
 
                 if (Logging.IsEnabled)
                 {
@@ -905,12 +886,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
+        /// </summary>
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// </summary>
 
         [Obsolete("Please use SetMethodHandlerAsync.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext)
         {
             if (Logging.IsEnabled)
@@ -921,7 +903,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Dangerous: can cause deadlocks.
-                SetMethodHandlerAsync(methodName, methodHandler, userContext).Wait();
+                SetMethodHandlerAsync(methodName, methodHandler, userContext).GetAwaiter().GetResult();
             }
             finally
             {
@@ -953,12 +935,11 @@ namespace Microsoft.Azure.Devices.Client
             MethodResponseInternal methodResponseInternal = null;
             byte[] requestData = methodRequestInternal.GetBytes();
 
-            await _methodsDictionarySemaphore.WaitAsync().ConfigureAwait(false);
+            await _methodsSemaphore.WaitAsync().ConfigureAwait(false);
             try
             {
                 Utils.ValidateDataIsEmptyOrJson(requestData);
-                _deviceMethods?.TryGetValue(methodRequestInternal.Name, out callbackContextPair);
-                if (callbackContextPair == null)
+                if (!_deviceMethods.TryGetValue(methodRequestInternal.Name, out callbackContextPair))
                 {
                     callbackContextPair = _deviceDefaultMethodCallback;
                 }
@@ -989,9 +970,9 @@ namespace Microsoft.Azure.Devices.Client
                     methodResponseInternal?.Dispose();
                 }
                 finally
-                { 
+                {
                     // Need to release this semaphore even if the above dispose call fails
-                    _methodsDictionarySemaphore.Release();
+                    _methodsSemaphore.Release();
                 }
             }
 
@@ -1054,11 +1035,16 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private Task EnableMethodAsync(CancellationToken cancellationToken)
+        private async Task HandleMethodEnableAsync(CancellationToken cancellationToken)
         {
-            return _deviceMethods == null && _deviceDefaultMethodCallback == null
-                ? InnerHandler.EnableMethodsAsync(cancellationToken)
-                : TaskHelpers.CompletedTask;
+            // If currently enabled, then skip
+            if (_isDeviceMethodEnabled)
+            {
+                return;
+            }
+
+            await InnerHandler.EnableMethodsAsync(cancellationToken).ConfigureAwait(false);
+            _isDeviceMethodEnabled = true;
         }
 
         /// <summary>
@@ -1102,7 +1088,10 @@ namespace Microsoft.Azure.Devices.Client
             // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
             // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
 
-            Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+            if (Logging.IsEnabled)
+            {
+                Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+            }
 
             // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
             await _twinDesiredPropertySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -1130,7 +1119,11 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 _twinDesiredPropertySemaphore.Release();
-                Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+                }
             }
         }
 
@@ -1142,6 +1135,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
         {
             // Obsoleted due to incorrect naming:
@@ -1175,7 +1169,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
         {
-            // Codes_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
+            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state.
             try
             {
                 return InnerHandler.SendTwinGetAsync(cancellationToken);
@@ -1213,13 +1207,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            // Codes_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
+            // `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null.
             if (reportedProperties == null)
             {
                 throw new ArgumentNullException(nameof(reportedProperties));
             }
 
-            // Codes_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
+            // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
             try
             {
                 return InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken);
@@ -1291,7 +1285,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            // Codes_SRS_DEVICECLIENT_28_011: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable (authentication, quota exceed) error occurs.
             try
             {
                 return InnerHandler.ReceiveAsync(cancellationToken);
@@ -1303,21 +1297,28 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private Task DisableMethodAsync(CancellationToken cancellationToken)
+        private async Task HandleMethodDisableAsync(CancellationToken cancellationToken)
         {
-            return _deviceMethods == null && _deviceDefaultMethodCallback == null
-                ? InnerHandler.DisableMethodsAsync(cancellationToken)
-                : TaskHelpers.CompletedTask;
+            // Don't disable if it is already disabled or if there are registered device methods
+            if (!_isDeviceMethodEnabled
+                || _deviceDefaultMethodCallback != null
+                || _deviceMethods.Any())
+            {
+                return;
+            }
+
+            await InnerHandler.DisableMethodsAsync(cancellationToken).ConfigureAwait(false);
+            _isDeviceMethodEnabled = false;
         }
 
         /// <summary>
         /// Sets a new delegate for receiving a message from the device queue using the default timeout.
         /// If a delegate is already registered it will be replaced with the new delegate.
         /// If a null delegate is passed, it will disable triggering any callback on receiving messages from the service.
+        /// </summary>
         /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// </summary>
         /// <returns>The task containing the event</returns>
         public async Task SetReceiveMessageHandlerAsync(ReceiveMessageCallback messageHandler, object userContext, CancellationToken cancellationToken)
         {
@@ -1391,8 +1392,8 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The delegate for handling c2d messages received
-        /// <param name="message">The message received</param>
         /// </summary>
+        /// <param name="message">The message received</param>
         private async Task OnDeviceMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
@@ -1405,7 +1406,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the 
+            // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the
             // item1 and the read of the item2
             await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
             ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
@@ -1423,14 +1424,14 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken = default)
+        internal Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken = default)
         {
-            return await _fileUploadHttpTransportHandler.GetFileUploadSasUriAsync(request, cancellationToken).ConfigureAwait(false);
+            return _fileUploadHttpTransportHandler.GetFileUploadSasUriAsync(request, cancellationToken);
         }
 
-        internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
+        internal Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
         {
-            await _fileUploadHttpTransportHandler.CompleteFileUploadAsync(notification, cancellationToken).ConfigureAwait(false);
+            return _fileUploadHttpTransportHandler.CompleteFileUploadAsync(notification, cancellationToken);
         }
 
         /// <summary>
@@ -1481,7 +1482,8 @@ namespace Microsoft.Azure.Devices.Client
                     throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
                 }
 
-                return _fileUploadHttpTransportHandler.UploadToBlobAsync(blobName, source, cancellationToken);
+                return _fileUploadHttpTransportHandler
+                    .UploadToBlobAsync(blobName, source, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1569,9 +1571,9 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to device hub
+        /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="messages">A list of one or more messages to send</param>
-        /// </summary>
         /// <returns>The task containing the event</returns>
         public async Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages)
         {
@@ -1590,10 +1592,10 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to device hub
+        /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="messages">A list of one or more messages to send</param>
         /// <param name="cancellationToken"></param>
-        /// </summary>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
@@ -1638,10 +1640,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets a new delegate for the particular input. If a delegate is already associated with
         /// the input, it will be replaced with the new delegate.
         /// Set messageHandler value to null to clear.
+        /// </summary>
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// </summary>
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext)
         {
@@ -1662,11 +1664,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets a new delegate for the particular input. If a delegate is already associated with
         /// the input, it will be replaced with the new delegate.
         /// Set messageHandler value to null to clear.
+        /// </summary>
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken"></param>
-        /// </summary>
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext, CancellationToken cancellationToken)
         {
@@ -1725,9 +1727,9 @@ namespace Microsoft.Azure.Devices.Client
         /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
         /// it will be overwritten.
         /// Set messageHandler value to null to clear.
+        /// </summary>
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// </summary>
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext)
         {
@@ -1747,12 +1749,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
         /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
-        /// Set messageHandler value to null to clear.
         /// it will be overwritten.
+        /// Set messageHandler value to null to clear.
+        /// </summary>
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken"></param>
-        /// </summary>
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, CancellationToken cancellationToken)
         {
@@ -1792,9 +1794,9 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The delegate for handling event messages received
+        /// </summary>
         /// <param name="input">The input on which a message is received</param>
         /// <param name="message">The message received</param>
-        /// </summary>
         internal async Task OnModuleEventMessageReceivedAsync(string input, Message message)
         {
             if (Logging.IsEnabled)
@@ -1889,7 +1891,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             InnerHandler?.Dispose();
             InnerHandler = null;
-            _methodsDictionarySemaphore?.Dispose();
+            _methodsSemaphore?.Dispose();
             _moduleReceiveMessageSemaphore?.Dispose();
             _fileUploadHttpTransportHandler?.Dispose();
             _deviceReceiveMessageSemaphore?.Dispose();

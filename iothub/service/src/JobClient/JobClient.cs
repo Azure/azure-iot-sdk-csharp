@@ -11,6 +11,13 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using System.Net.Http;
 using System.Text;
 
+#if !NET451
+
+using Azure;
+using Azure.Core;
+
+#endif
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -79,6 +86,65 @@ namespace Microsoft.Azure.Devices
 
             return new JobClient(httpClientHelper);
         }
+
+#if !NET451
+
+        /// <summary>
+        /// Creates an instance of <see cref="JobClient"/>.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="transportSettings">The HTTP transport settings.</param>
+        /// <returns>An instance of <see cref="JobClient"/>.</returns>
+        /// <remarks>
+        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
+        public static JobClient Create(
+            string hostName,
+            TokenCredential credential,
+            HttpTransportSettings transportSettings = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException(nameof(hostName));
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException(nameof(credential));
+            }
+
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            return new HttpJobClient(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="JobClient"/>.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
+        /// <param name="transportSettings">The HTTP transport settings.</param>
+        /// <returns>An instance of <see cref="JobClient"/>.</returns>
+        public static JobClient Create(
+            string hostName,
+            AzureSasCredential credential,
+            HttpTransportSettings transportSettings = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException(nameof(hostName));
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException(nameof(credential));
+            }
+
+            var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
+            return new HttpJobClient(sasCredentialProperties, transportSettings ?? new HttpTransportSettings());
+        }
+
+#endif
 
         /// <inheritdoc />
         public void Dispose()

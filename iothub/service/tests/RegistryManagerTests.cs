@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -888,6 +889,14 @@ namespace Microsoft.Azure.Devices.Api.Test
             var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.CloseAsync().ConfigureAwait(false);
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
+        }
+
+        [TestMethod]
+        public void Twin_ParentScopes_NotNull()
+        {
+            var twin = new Twin();
+            twin.ParentScopes.Should().NotBeNull("To prevent NREs because a property was unexecptedly null, it should have a default list instance assigned.");
+            twin.ParentScopes.Should().BeEmpty("The default list instance should be empty.");
         }
     }
 }
