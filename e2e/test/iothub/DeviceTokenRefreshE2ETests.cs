@@ -30,8 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}", Client.TransportType.Amqp_Tcp_Only))
+            var config = new Configuration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}", Client.TransportType.Amqp_Tcp_Only))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
             }
@@ -43,9 +43,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
+            var config = new Configuration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
             }
@@ -82,8 +82,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             string deviceConnectionString = testDevice.ConnectionString;
 
-            var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
-            string iotHub = config.IoTHub;
+            var config = new Configuration.IoTHub.ConnectionStringParser(deviceConnectionString);
+            string iotHub = config.IotHubHostName;
             string deviceId = config.DeviceID;
             string key = config.SharedAccessKey;
 

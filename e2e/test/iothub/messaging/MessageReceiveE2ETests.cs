@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
@@ -106,6 +107,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_Mqtt()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_DeviceReceiveSingleMessageCancelled_Mqtt()
+        {
+            await Mqtt_ReceiveSingleMessageWithCancelledAsync(TestDeviceType.Sasl).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -515,6 +522,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTime}.");
         }
 
+        public static async Task Mqtt_VerifyReceivedC2dMessageCancelledAsync(DeviceClient dc)
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(s_fiveSeconds);
+                await dc.ReceiveAsync(cts.Token).ConfigureAwait(false);
+            }
+            catch (IotHubCommunicationException ex)
+                when (ex.IsTransient && ex.InnerException is OperationCanceledException)
+            {
+                return;
+            }
+
+            Assert.Fail();
+        }
+
         public static async Task VerifyReceivedC2dMessageWithCancellationTokenAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value, MsTestLogger logger)
         {
             var sw = new Stopwatch();
@@ -625,6 +648,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
             await serviceClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task Mqtt_ReceiveSingleMessageWithCancelledAsync(TestDeviceType type)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt_Tcp_Only);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            // There is no message being sent so the device client should timeout waiting for the message.
+            await Mqtt_VerifyReceivedC2dMessageCancelledAsync(deviceClient).ConfigureAwait(false);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType type, Client.TransportType transport)

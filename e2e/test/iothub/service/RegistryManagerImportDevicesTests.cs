@@ -40,9 +40,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [TestCategory("LongRunning")]
         [Timeout(120000)]
         [DoNotParallelize]
-        [DataRow(StorageAuthenticationType.KeyBased)]
-        [DataRow(StorageAuthenticationType.IdentityBased)]
-        public async Task RegistryManager_ImportDevices(StorageAuthenticationType storageAuthenticationType)
+        [DataRow(StorageAuthenticationType.KeyBased, false)]
+        [DataRow(StorageAuthenticationType.IdentityBased, false)]
+        [DataRow(StorageAuthenticationType.IdentityBased, true)]
+        public async Task RegistryManager_ImportDevices(StorageAuthenticationType storageAuthenticationType, bool isUserAssignedMsi)
         {
             // arrange
 
@@ -84,6 +85,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 {
                     try
                     {
+                        ManagedIdentity identity = null;
+                        if (isUserAssignedMsi)
+                        {
+                            string userAssignedMsiResourceId = Configuration.IoTHub.UserAssignedMsiResourceId;
+                            identity = new ManagedIdentity
+                            {
+                                userAssignedIdentity = userAssignedMsiResourceId
+                            };
+                        }
+
                         importJobResponse = await registryManager
                             .ImportDevicesAsync(
                                 JobProperties.CreateForImportJob(

@@ -1,21 +1,28 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.3.255.40792",
+      "templateHash": "14804106350601198061"
+    }
+  },
   "parameters": {
     "ApplicationInsightsName": {
       "type": "string",
+      "defaultValue": "[format('{0}-ai', resourceGroup().name)]",
       "metadata": {
         "description": "The name of application insights."
-      },
-      "defaultValue": "[format('{0}-ai', resourceGroup().name)]"
+      }
     },
     "StorageAccountName": {
       "type": "string",
-      "minLength": 3,
-      "maxLength": 24,
       "metadata": {
         "description": "The name of the storage account used by the IoT hub."
-      }
+      },
+      "maxLength": 24,
+      "minLength": 3
     },
     "UserObjectId": {
       "type": "string",
@@ -31,52 +38,52 @@
     },
     "FarRegion": {
       "type": "string",
+      "defaultValue": "southeastasia",
       "metadata": {
         "description": "The region for the second IoT hub in a DPS that is far away from the test devices."
-      },
-      "defaultValue": "southeastasia"
+      }
     },
     "WebRegion": {
       "type": "string",
+      "defaultValue": "CentralUS",
       "metadata": {
         "description": "The region for the website hosting the Azure function."
-      },
-      "defaultValue": "CentralUS"
+      }
     },
     "HubName": {
       "type": "string",
+      "defaultValue": "[format('{0}-hub', resourceGroup().name)]",
       "metadata": {
         "description": "The name of the main IoT hub used by tests."
-      },
-      "defaultValue": "[format('{0}-hub', resourceGroup().name)]"
+      }
     },
     "HubUnitsCount": {
       "type": "int",
+      "defaultValue": 1,
       "metadata": {
-        "description": "The number of IoT Hub units to be deployed."
-      },
-      "defaultValue": 1
+        "description": "The number of IoT hub units to be deployed."
+      }
     },
     "ConsumerGroupName": {
       "type": "string",
+      "defaultValue": "e2e-tests",
       "metadata": {
-        "description": "The IotHub consumer group name."
-      },
-      "defaultValue": "e2e-tests"
+        "description": "The IoT hub consumer group name."
+      }
     },
     "FarHubName": {
       "type": "string",
+      "defaultValue": "[format('{0}-hubfar', resourceGroup().name)]",
       "metadata": {
         "description": "The name of the far away IoT hub used by tests."
-      },
-      "defaultValue": "[format('{0}-hubfar', resourceGroup().name)]"
+      }
     },
     "DpsName": {
       "type": "string",
+      "defaultValue": "[format('{0}-dps', resourceGroup().name)]",
       "metadata": {
         "description": "The name of DPS used by tests."
-      },
-      "defaultValue": "[format('{0}-dps', resourceGroup().name)]"
+      }
     },
     "DpsCustomAllocatorFunctionName": {
       "type": "string",
@@ -84,61 +91,67 @@
     },
     "KeyVaultName": {
       "type": "string",
-      "minLength": 3,
-      "maxLength": 24,
+      "defaultValue": "[format('{0}-kv', resourceGroup().name)]",
       "metadata": {
         "description": "The name of the key vault for storing secrets needed for running tests."
       },
-      "defaultValue": "[format('{0}-kv', resourceGroup().name)]"
+      "maxLength": 24,
+      "minLength": 3
     },
     "OperationalInsightsName": {
       "type": "string",
+      "defaultValue": "[format('{0}-oi', resourceGroup().name)]",
       "metadata": {
         "description": "The name of the operational insights instance."
-      },
-      "defaultValue": "[format('{0}-oi', resourceGroup().name)]"
+      }
     },
     "OperationInsightsLocation": {
       "type": "string",
+      "defaultValue": "westus2",
       "metadata": {
         "description": "The location for Microsoft.OperationalInsights/workspaces."
-      },
-      "defaultValue": "westus2"
+      }
     },
     "SecuritySolutionName": {
       "type": "string",
+      "defaultValue": "[format('{0}-ss', resourceGroup().name)]",
       "metadata": {
         "description": "The name of the security solution instance."
-      },
-      "defaultValue": "[format('{0}-ss', resourceGroup().name)]"
+      }
     },
     "ServerFarmName": {
       "type": "string",
+      "defaultValue": "[format('{0}-srv', resourceGroup().name)]",
       "metadata": {
         "description": "The name of the server farm to host a function app for DPS custom allocation."
-      },
-      "defaultValue": "[format('{0}-srv', resourceGroup().name)]"
+      }
     },
     "WebsiteName": {
       "type": "string",
+      "defaultValue": "[format('{0}-web', resourceGroup().name)]",
       "metadata": {
         "description": "The name of the server farm to host a function app for DPS custom allocation"
-      },
-      "defaultValue": "[format('{0}-web', resourceGroup().name)]"
+      }
     },
     "BlobServiceName": {
       "type": "string",
+      "defaultValue": "default",
       "metadata": {
         "description": "The name of BlobService inside the StorageAccount."
-      },
-      "defaultValue": "default"
+      }
     },
     "ContainerName": {
       "type": "string",
+      "defaultValue": "fileupload",
       "metadata": {
         "description": "The name of the Container inside the BlobService."
-      },
-      "defaultValue": "fileupload"
+      }
+    },
+    "UserAssignedManagedIdentityName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the user assigned managed identity."
+      }
     }
   },
   "functions": [],
@@ -201,7 +214,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2021-02-01",
       "name": "[parameters('StorageAccountName')]",
       "location": "[resourceGroup().location]",
       "sku": {
@@ -228,7 +241,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts/blobServices",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2021-02-01",
       "name": "[format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName'))]",
       "properties": {
         "deleteRetentionPolicy": {
@@ -241,7 +254,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2021-02-01",
       "name": "[format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName'))]",
       "properties": {
         "publicAccess": "None"
@@ -251,14 +264,21 @@
       ]
     },
     {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2018-11-30",
+      "name": "[parameters('UserAssignedManagedIdentityName')]",
+      "location": "[resourceGroup().location]"
+    },
+    {
       "type": "Microsoft.Devices/IotHubs",
-      "apiVersion": "2020-01-01",
+      "apiVersion": "2021-03-03-preview",
       "name": "[parameters('HubName')]",
       "location": "[resourceGroup().location]",
       "identity": {
-        "principalId": "",
-        "tenantId": "",
-        "type": "SystemAssigned"
+        "type": "SystemAssigned, UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName'))]": {}
+        }
       },
       "properties": {
         "eventHubEndpoints": {
@@ -299,14 +319,14 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[0], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[1], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[2])]",
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName'))]"
       ]
     },
     {
       "type": "Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups",
       "apiVersion": "2018-04-01",
       "name": "[format('{0}/events/{1}', parameters('HubName'), parameters('ConsumerGroupName'))]",
-      "properties": {},
       "dependsOn": [
         "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
       ]
@@ -494,7 +514,7 @@
     },
     "storageAccountConnectionString": {
       "type": "string",
-      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0}AccountKey={1};EndpointSuffix=core.windows.net', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2019-06-01').keys[0].value)]"
+      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2019-06-01').keys[0].value)]"
     },
     "workspaceId": {
       "type": "string",
@@ -511,13 +531,6 @@
     "instrumentationKey": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName')), '2015-05-01').InstrumentationKey]"
-    }
-  },
-  "metadata": {
-    "_generator": {
-      "name": "bicep",
-      "version": "0.3.1.62928",
-      "templateHash": "14958319987448365850"
     }
   }
 }

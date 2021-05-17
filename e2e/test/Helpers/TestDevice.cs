@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private const int MaxRetryCount = 5;
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ThrottlingException) };
         private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
+
         private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
             retryCount: MaxRetryCount,
             minBackoff: TimeSpan.FromMilliseconds(100),
