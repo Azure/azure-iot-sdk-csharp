@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <typeparam name="T">The type to convert to.</typeparam>
         /// <param name="objectToConvert">The object to convert.</param>
         /// <returns>A converted object</returns>
-        /// <remarks>This class is used by the <see cref="ClientPropertyCollection"/> to attempt to convert from the native serailizer type (for example, JObject or JsonElement) to the desired type. When you implement this you need to be aware of what type your serializer will use for anonymous types.</remarks>
+        /// <remarks>This class is used by the <see cref="PayloadCollection"/> class to attempt to convert from the native serailizer type (for example, JObject or JsonElement) to the desired type. When you implement this you need to be aware of what type your serializer will use for anonymous types.</remarks>
         public abstract T ConvertFromObject<T>(object objectToConvert);
 
         /// <summary>
