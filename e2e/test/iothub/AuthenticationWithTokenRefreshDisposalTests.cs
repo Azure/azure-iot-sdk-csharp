@@ -3,20 +3,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub
+namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     public class AuthenticationWithTokenRefreshDisposalTests : E2EMsTestBase
     {
+        public static readonly TimeSpan MaxWaitTime = TimeSpan.FromSeconds(10);
         private readonly string _devicePrefix = $"E2E_{nameof(AuthenticationWithTokenRefreshDisposalTests)}_";
 
         [LoggedTestMethod]
@@ -79,12 +82,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub
             await deviceClient2.CloseAsync();
             deviceClient2.Dispose();
             Logger.Trace("Test with instance 2 completed");
+
+            authenticationMethod.Dispose();
         }
 
         private async Task ReuseAuthenticationMethod_MuxedDevices(Client.TransportType transport, int devicesCount)
         {
             IList<TestDevice> testDevices = new List<TestDevice>();
+            IList<DeviceClient> deviceClients = new List<DeviceClient>();
             IList<AuthenticationWithTokenRefresh> authenticationMethods = new List<AuthenticationWithTokenRefresh>();
+            IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
 
             // Set up amqp transport settings to multiplex all device sessions over the same amqp connection.
             var amqpTransportSettings = new AmqpTransportSettings(transport)
@@ -105,27 +112,87 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub
                 authenticationMethods.Add(authenticationMethod);
             }
 
-            // Create an instance of the device client, send a test message and then close and dispose it.
+            // Initialize the client instances set the connection status change handler and open the connection.
             for (int i = 0; i < devicesCount; i++)
             {
                 DeviceClient deviceClient = DeviceClient.Create(testDevices[i].IoTHubHostName, authenticationMethods[i], new ITransportSettings[] { amqpTransportSettings });
-                await deviceClient.SendEventAsync(new Client.Message()).ConfigureAwait(false);
-                await deviceClient.CloseAsync();
-                deviceClient.Dispose();
-                Logger.Trace($"Test with client {i} completed.");
-            }
-            Logger.Trace($"Test run with instance 1 completed.");
 
-            // Perform the same steps again, reusing the previously created authentication method instance.
+                var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevices[i].Id, Logger);
+                deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
+                amqpConnectionStatuses.Add(amqpConnectionStatusChange);
+
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                deviceClients.Add(deviceClient);
+            }
+
+            // Close and dispose client instance 1.
+            // The closed client should report a status of "disabled" while the rest of them should be connected.
+
+            await deviceClients[0].CloseAsync().ConfigureAwait(false);
+            deviceClients[0].Dispose();
+
+            amqpConnectionStatuses[0].LastConnectionStatus.Should().Be(ConnectionStatus.Disabled);
+
+            Logger.Trace($"{nameof(ReuseAuthenticationMethod_MuxedDevices)}: Confirming the rest of the multiplexed devices are online and operational.");
+
+            bool notRecovered = true;
+            var sw = Stopwatch.StartNew();
+            while (notRecovered && sw.Elapsed < MaxWaitTime)
+            {
+                notRecovered = false;
+                for (int i = 1; i < devicesCount; i++)
+                {
+                    if (amqpConnectionStatuses[i].LastConnectionStatus != ConnectionStatus.Connected)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        notRecovered = true;
+                        break;
+                    }
+                }
+            }
+
+            notRecovered.Should().BeFalse();
+
+            // Send a message through the rest of the multiplexed client instances.
+            for (int i = 1; i < devicesCount; i++)
+            {
+                await deviceClients[i].SendEventAsync(new Client.Message()).ConfigureAwait(false);
+                Logger.Trace($"Test with client {i} completed.");
+            }
+
+            // Close and dispose all of the client instances.
+            for (int i = 1; i < devicesCount; i++)
+            {
+                await deviceClients[i].CloseAsync().ConfigureAwait(false);
+                deviceClients[i].Dispose();
+            }
+
+            deviceClients.Clear();
+            amqpConnectionStatuses.Clear();
+
+            // Initialize the client instances by reusing the created authentication methods and open the connection.
             for (int i = 0; i < devicesCount; i++)
             {
                 DeviceClient deviceClient = DeviceClient.Create(testDevices[i].IoTHubHostName, authenticationMethods[i], new ITransportSettings[] { amqpTransportSettings });
-                await deviceClient.SendEventAsync(new Client.Message()).ConfigureAwait(false);
-                await deviceClient.CloseAsync();
-                deviceClient.Dispose();
-                Logger.Trace($"Test with client {i} completed.");
+
+                var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevices[i].Id, Logger);
+                deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
+                amqpConnectionStatuses.Add(amqpConnectionStatusChange);
+
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                deviceClients.Add(deviceClient);
             }
-            Logger.Trace($"Test run with instance 2 completed.");
+
+            // Ensure that all clients are connected successfully, and the close and dispose the instances.
+            for (int i = 0; i < devicesCount; i++)
+            {
+                amqpConnectionStatuses[i].LastConnectionStatus.Should().Be(ConnectionStatus.Connected);
+
+                await deviceClients[i].CloseAsync();
+                deviceClients[i].Dispose();
+
+                amqpConnectionStatuses[i].LastConnectionStatus.Should().Be(ConnectionStatus.Disabled);
+            }
         }
 
         private class DeviceAuthenticationSasToken : DeviceAuthenticationWithTokenRefresh
