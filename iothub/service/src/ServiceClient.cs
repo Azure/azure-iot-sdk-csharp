@@ -71,6 +71,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
         /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
+        /// <remarks>
+        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
         public static ServiceClient Create(
             string hostName,
             TokenCredential credential,
