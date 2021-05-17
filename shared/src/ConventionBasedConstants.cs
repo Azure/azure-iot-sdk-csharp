@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
     /// Container for common convention based constants.

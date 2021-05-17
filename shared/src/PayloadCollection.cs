@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
     /// The base class for all payloads that accept a <see cref="PayloadConvention"/>
