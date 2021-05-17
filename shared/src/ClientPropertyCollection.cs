@@ -52,10 +52,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// Adds the value for the collection.
         /// </summary>
         /// <param name="properties">A collection of properties to add or update.</param>
-        /// <param name="componentName">The component with the properties to add or update.</param>
-        public void Add(string componentName, IDictionary<string, object> properties)
-        => AddInternal(properties, componentName, false);
-
+        public void Add(IDictionary<string, object> properties)
+            => AddInternal(properties, null, false);
         /// <inheritdoc path="/remarks" cref="Add(string, object)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -63,8 +61,9 @@ namespace Microsoft.Azure.Devices.Shared
         /// Adds the value for the collection.
         /// </summary>
         /// <param name="properties">A collection of properties to add or update.</param>
-        public void Add(IDictionary<string, object> properties) 
-            => AddInternal(properties, null, false);
+        /// <param name="componentName">The component with the properties to add or update.</param>
+        public void Add(string componentName, IDictionary<string, object> properties)
+        => AddInternal(properties, componentName, false);
 
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -142,10 +141,9 @@ namespace Microsoft.Azure.Devices.Shared
         /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
         /// </remarks>
-        /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="properties">A collection of properties to add or update.</param>
-        public void AddOrUpdate(string componentName, IDictionary<string, object> properties)
-            => AddInternal(properties, componentName, true);
+        public void AddOrUpdate(IDictionary<string, object> properties)
+            => AddInternal(properties, null, true);
 
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -158,9 +156,24 @@ namespace Microsoft.Azure.Devices.Shared
         /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
         /// </remarks>
+        /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="properties">A collection of properties to add or update.</param>
-        public void AddOrUpdate(IDictionary<string, object> properties)
-            => AddInternal(properties, null, true);
+        public void AddOrUpdate(string componentName, IDictionary<string, object> properties)
+            => AddInternal(properties, componentName, true);
+
+        /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
+        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
+        /// <summary>
+        /// Adds or updates a type of <see cref="IWritablePropertyResponse"/> to the collection.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
+        /// <param name="propertyName">The name of the writable property to add or update.</param>
+        /// <param name="propertyValue">The value of the writable property to add or update.</param>
+        /// <param name="statusCode"></param>
+        /// <param name="version"></param>
+        /// <param name="description"></param>
+        public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = default)
+            => AddOrUpdate(null, propertyName, propertyValue, statusCode, version, description);
 
         /// <inheritdoc path="/remarks" cref="Add(string, object, int, long, string)"/>
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -175,7 +188,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <param name="version"></param>
         /// <param name="description"></param>
         /// <param name="componentName"></param>
-        public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = default, string componentName = default)
+        public void AddOrUpdate(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description = default)
         {
             if (Convention?.PayloadSerializer == null)
             {
