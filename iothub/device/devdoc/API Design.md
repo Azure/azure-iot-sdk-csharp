@@ -24,6 +24,7 @@ public abstract class PayloadSerializer {
     public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public abstract T DeserializeToType<T>(string stringToDeserialize);
     public abstract string SerializeToString(object objectToSerialize);
+    public abstract bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue);
 }
 
 public sealed class DefaultPayloadConvention : PayloadConvention {
@@ -48,6 +49,7 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
     public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public override T DeserializeToType<T>(string stringToDeserialize);
     public override string SerializeToString(object objectToSerialize);
+    public override bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue);
 }
 
 public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
@@ -57,11 +59,13 @@ public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
     public virtual object this[string key] { get; set; }
     public virtual void Add(string key, object value);
     public virtual void AddOrUpdate(string key, object value);
+    public bool Contains(string key);
     public IEnumerator<object> GetEnumerator();
     public virtual byte[] GetPayloadObjectBytes();
     public virtual string GetSerializedString();
+    protected void SetCollection(PayloadCollection payloadCollection);
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
-    public virtual bool TryGetValue<T>(string key, out T value);
+    public bool TryGetValue<T>(string key, out T value);
 }
 
 public static class ConventionBasedConstants {
@@ -104,27 +108,22 @@ public Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollectio
 #### All related types
 
 ```csharp
-public class ClientProperties : IEnumerable, IEnumerable<object> {
-    public object this[string key] { get; }
-    public long Version { get; }
+public class ClientProperties : ClientPropertyCollection {
     public ClientPropertyCollection Writable { get; private set; }
-    public bool Contains(string propertyName);
-    public IEnumerator<object> GetEnumerator();
-    IEnumerator System.Collections.IEnumerable.GetEnumerator();
-    public bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
-    public bool TryGetValue<T>(string propertyKey, out T propertyValue);
 }
 
 public class ClientPropertyCollection : PayloadCollection {
     public ClientPropertyCollection();
-    public long Version { get; private set; }
+    public long Version { get; protected set; }
     public void Add(IDictionary<string, object> properties, string componentName = null);
     public override void Add(string propertyName, object propertyValue);
+    public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = null, string componentName = null);
     public void Add(string propertyName, object propertyValue, string componentName);
-    public void AddOrUpdate(IDictionary<string, object> properties, string componentName = null);
+    public void AddOrUpdate(IDictionary<string, object> properties, string componentNam = null);
     public override void AddOrUpdate(string propertyName, object propertyValue);
+    public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = null, string componentName = null);
     public void AddOrUpdate(string propertyName, object propertyValue, string componentName);
-    public bool Contains(string propertyName);
+    public bool Contains(string componentName, string propertyName);
     public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
 }
 
