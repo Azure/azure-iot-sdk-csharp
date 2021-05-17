@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
         /// <returns>A new instance of of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
-        /// <remarks>This internala class is aware of the implemention of the TwinCollection ad will </remarks>
+        /// <remarks>This internal class is aware of the implemention of the TwinCollection ad will </remarks>
         internal static ClientPropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
         {
             if (twinCollection == null)
@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(twinCollection));
             }
 
-            var propertyCollectionToReturn = new ClientPropertyCollection
+            var propertyCollectionToReturn = new ClientPropertyCollection()
             {
                 Convention = payloadConvention,
             };
