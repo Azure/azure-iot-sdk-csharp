@@ -63,6 +63,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
         /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
+        /// <remarks>
+        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
         public static RegistryManager Create(
             string hostName,
             TokenCredential credential,
