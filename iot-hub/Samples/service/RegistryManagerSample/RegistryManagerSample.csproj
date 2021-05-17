@@ -9,7 +9,7 @@
 
   <ItemGroup>
   	<PackageReference Include="CommandLineParser" Version="2.8.0" />
-  	<PackageReference Include="Microsoft.Azure.Devices" Version="1.33.0" />
+  	<PackageReference Include="Microsoft.Azure.Devices" Version="1.34.0" />
   </ItemGroup>
 
 </Project>
