@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 
 namespace Microsoft.Azure.Devices.Client
@@ -23,23 +24,27 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <inheritdoc/>
         /// <remarks>
-        /// The ability to set this property has been hidden by this class to only allow you to set the ContentType via the <see cref="PayloadSerializer"/> class.
+        /// This property has been hidden by this class to only allow you to set the ContentType via the <see cref="PayloadSerializer"/> class.
         /// </remarks>
         /// <value>The base <see cref="Message"/> content type.</value>
+        [Browsable(false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public new string ContentType
         {
-            get => base.ContentType;        // TODO - this info is available only after deviceClient.SendTelemetryAsync() has been called.
+            get => base.ContentType;
             internal set => base.ContentType = value;
         }
 
         /// <inheritdoc/>
         /// <remarks>
-        /// The ability to set this property has been hidden by this class to only allow you to set the ContentEncoding via the <see cref="PayloadEncoder"/> class.
+        /// This property has been hidden by this class to only allow you to set the ContentEncoding via the <see cref="PayloadEncoder"/> class.
         /// </remarks>
         /// <value>The base <see cref="Message"/> content encoding.</value>
+        [Browsable(false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public new string ContentEncoding
         {
-            get => base.ContentEncoding;        // TODO - this info is available only after deviceClient.SendTelemetryAsync() has been called.
+            get => base.ContentEncoding;
             internal set => base.ContentEncoding = value;
         }
 
