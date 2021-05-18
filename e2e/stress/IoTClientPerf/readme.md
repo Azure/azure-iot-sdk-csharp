@@ -9,7 +9,7 @@ Use `dotnet run` to display the help page for this tool.
 
 Fill in the following environment variables (see the e2e\test prerequisites for details):
 ```
-IOTHUB_CONN_STRING_CSHARP=
+IOTHUB_CONNECTION_STRING=
 IOTHUB_DEVICE_CONN_STRING=
 IOTHUB_DEVICE_CONN_STRING2=
 IOTHUB_X509_PFX_CERTIFICATE=

@@ -218,5 +218,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Used to indicate that the message is a security message
         /// </summary>
         public const string InterfaceId = "iothub-interface-id";
+
+        /// <summary>
+        /// Used to specify the DTDL component name
+        /// </summary>
+        public const string ComponentName = "dt-subject";
     }
 }

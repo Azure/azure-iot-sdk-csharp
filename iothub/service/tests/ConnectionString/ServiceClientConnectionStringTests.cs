@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.ConnectionString);
+            Assert.IsNotNull(serviceClient.Connection.Credential);
         }
 
         [TestMethod]
@@ -182,14 +182,11 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
 
             Assert.IsNotNull(serviceClient.Connection);
-            IotHubConnectionString iotHubConnectionString = serviceClient.Connection.ConnectionString;
+            IotHubConnectionString iotHubConnectionString = (IotHubConnectionString)serviceClient.Connection.Credential;
             Assert.IsNotNull(iotHubConnectionString);
             Assert.AreEqual("testhub.azure-devices-int.net", iotHubConnectionString.Audience);
-            Assert.AreEqual("edgehub1.ms.com", iotHubConnectionString.HostName);
-            Assert.AreEqual("edgecapabledevice1", iotHubConnectionString.DeviceId);
-            Assert.AreEqual("testModule", iotHubConnectionString.ModuleId);
+            Assert.AreEqual("testhub.azure-devices-int.net", iotHubConnectionString.HostName);
             Assert.AreEqual("dGVzdFN0cmluZzE=", iotHubConnectionString.SharedAccessKey);
-            Assert.AreEqual("edgehub1.ms.com", iotHubConnectionString.GatewayHostName);
             Assert.IsNotNull(iotHubConnectionString.GetPassword());
         }
     }

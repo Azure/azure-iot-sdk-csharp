@@ -36,8 +36,6 @@ namespace Microsoft.Azure.Devices
         internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
         internal static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
-        private readonly AccessRights _accessRights;
-
         private readonly bool _useWebSocketOnly;
         private readonly ServiceClientTransportSettings _transportSettings;
 
@@ -51,7 +49,7 @@ namespace Microsoft.Azure.Devices
         private IOThreadTimer _refreshTokenTimer;
 #endif
 
-        public IotHubConnection(IotHubConnectionString connectionString, AccessRights accessRights, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
+        public IotHubConnection(IotHubConnectionProperties credential, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
 #if !NET451
             _refreshTokenTimer = new IOThreadTimerSlim(s => ((IotHubConnection)s).OnRefreshTokenAsync(), this);
@@ -59,8 +57,7 @@ namespace Microsoft.Azure.Devices
             _refreshTokenTimer = new IOThreadTimer(s => ((IotHubConnection)s).OnRefreshTokenAsync(), this, false);
 #endif
 
-            ConnectionString = connectionString;
-            _accessRights = accessRights;
+            Credential = credential;
             _faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(CreateSessionAsync, CloseConnection);
             _useWebSocketOnly = useWebSocketOnly;
             _transportSettings = transportSettings;
@@ -71,7 +68,7 @@ namespace Microsoft.Azure.Devices
             _faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(onCreate, onClose);
         }
 
-        internal IotHubConnectionString ConnectionString { get; private set; }
+        internal IotHubConnectionProperties Credential { get; private set; }
 
         public Task OpenAsync(TimeSpan timeout)
         {
@@ -114,7 +111,7 @@ namespace Microsoft.Azure.Devices
                     session = await _faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 }
 
-                Uri linkAddress = ConnectionString.BuildLinkAddress(path);
+                Uri linkAddress = Credential.BuildLinkAddress(path);
 
                 var linkSettings = new AmqpLinkSettings
                 {
@@ -156,7 +153,7 @@ namespace Microsoft.Azure.Devices
                     session = await _faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 }
 
-                Uri linkAddress = ConnectionString.BuildLinkAddress(path);
+                Uri linkAddress = Credential.BuildLinkAddress(path);
 
                 var linkSettings = new AmqpLinkSettings
                 {
@@ -306,7 +303,7 @@ namespace Microsoft.Azure.Devices
                 {
                     MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
                     ContainerId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
-                    HostName = ConnectionString.AmqpEndpoint.Host,
+                    HostName = Credential.AmqpEndpoint.Host,
                 };
 
                 var amqpConnection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
@@ -430,7 +427,7 @@ namespace Microsoft.Azure.Devices
             try
             {
                 var timeoutHelper = new TimeoutHelper(timeout);
-                var websocketUri = new Uri($"{ WebSocketConstants.Scheme }{ ConnectionString.HostName}:{ WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}");
+                var websocketUri = new Uri($"{ WebSocketConstants.Scheme }{ Credential.HostName}:{ WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}");
 
                 Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
 
@@ -494,13 +491,13 @@ namespace Microsoft.Azure.Devices
         {
             var tcpTransportSettings = new TcpTransportSettings
             {
-                Host = ConnectionString.HostName,
-                Port = ConnectionString.AmqpEndpoint.Port,
+                Host = Credential.HostName,
+                Port = Credential.AmqpEndpoint.Port,
             };
 
             var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
-                TargetHost = ConnectionString.HostName,
+                TargetHost = Credential.HostName,
                 Certificate = null, // TODO: add client cert support
                 CertificateValidationCallback = OnRemoteCertificateValidation
             };
@@ -545,15 +542,15 @@ namespace Microsoft.Azure.Devices
         {
             Logging.Enter(this, cbsLink, timeout, nameof(SendCbsTokenAsync));
 
-            string audience = ConnectionString.AmqpEndpoint.AbsoluteUri;
-            string resource = ConnectionString.AmqpEndpoint.AbsoluteUri;
+            string audience = Credential.AmqpEndpoint.AbsoluteUri;
+            string resource = Credential.AmqpEndpoint.AbsoluteUri;
             DateTime expiresAtUtc = await cbsLink
                 .SendTokenAsync(
-                    ConnectionString,
-                    ConnectionString.AmqpEndpoint,
+                    Credential,
+                    Credential.AmqpEndpoint,
                     audience,
                     resource,
-                    AccessRightsHelper.AccessRightsToStringArray(_accessRights),
+                    Credential.AmqpAudience.ToArray(),
                     timeout)
                 .ConfigureAwait(false);
             ScheduleTokenRefresh(expiresAtUtc);

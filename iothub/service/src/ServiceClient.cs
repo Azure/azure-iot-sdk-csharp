@@ -14,6 +14,13 @@ using Microsoft.Azure.Devices.Common.Data;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 
+#if !NET451
+
+using Azure;
+using Azure.Core;
+
+#endif
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -37,8 +44,8 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 
     /// <summary>
-    /// Contains methods that services can use to send messages to devices/modules,
-    /// invoke a direct method on a device/module and deliver notifications for file upload and cloud-to-device operations.
+    /// Contains methods that services can use to send messages to devices
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
     public class ServiceClient : IDisposable
     {
@@ -71,21 +78,41 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        internal ServiceClient(IotHubConnection connection, string iotHubName, IHttpClientHelper httpClientHelper, ServiceClientOptions options)
+        internal ServiceClient(
+            IotHubConnectionProperties connectionProperties,
+            bool useWebSocketOnly,
+            ServiceClientTransportSettings transportSettings,
+            ServiceClientOptions options)
         {
-            Connection = connection;
-            _iotHubName = iotHubName;
-            _clientOptions = options;
-            _httpClientHelper = httpClientHelper;
+            Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings); ;
             _openTimeout = IotHubConnection.DefaultOpenTimeout;
             _operationTimeout = IotHubConnection.DefaultOperationTimeout;
-            _sendingPath = "/messages/deviceBound";
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
             _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
             _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
+            _iotHubName = connectionProperties.IotHubName;
+            _clientOptions = options;
+            _sendingPath = "/messages/deviceBound";
+            _httpClientHelper = new HttpClientHelper(
+                connectionProperties.HttpsEndpoint,
+                connectionProperties,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                s_defaultOperationTimeout,
+                transportSettings.HttpProxy,
+                transportSettings.ConnectionLeaseTimeoutMilliseconds);
 
             // Set the trace provider for the AMQP library.
             AmqpTrace.Provider = new AmqpTransportLog();
+        }
+
+        // internal test helper
+        internal ServiceClient(IotHubConnection connection, IHttpClientHelper httpClientHelper)
+        {
+            Connection = connection;
+            _httpClientHelper = httpClientHelper;
+            _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
+            _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
+            _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
         }
 
         /// <summary>
@@ -98,6 +125,85 @@ namespace Microsoft.Azure.Devices
         {
             return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
         }
+
+#if !NET451
+
+        /// <summary>
+        /// Creates a <see cref="ServiceClient"/> using Azure Active Directory credentials and the specified transport type.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
+        /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
+        /// <remarks>
+        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
+        public static ServiceClient Create(
+            string hostName,
+            TokenCredential credential,
+            TransportType transportType = TransportType.Amqp,
+            ServiceClientTransportSettings transportSettings = default,
+            ServiceClientOptions options = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+
+            return new ServiceClient(
+                tokenCredentialProperties,
+                useWebSocketOnly,
+                transportSettings ?? new ServiceClientTransportSettings(),
+                options);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ServiceClient"/> using SAS token and the specified transport type.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
+        /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
+        public static ServiceClient Create(
+            string hostName,
+            AzureSasCredential credential,
+            TransportType transportType = TransportType.Amqp,
+            ServiceClientTransportSettings transportSettings = default,
+            ServiceClientOptions options = default)
+        {
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+            }
+
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+
+            return new ServiceClient(
+                sasCredentialProperties,
+                useWebSocketOnly,
+                transportSettings ?? new ServiceClientTransportSettings(),
+                options);
+        }
+
+#endif
 
         /// <inheritdoc />
         public void Dispose()
@@ -151,16 +257,12 @@ namespace Microsoft.Azure.Devices
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
-            var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly, transportSettings);
-            var httpClientHelper = new HttpClientHelper(
-               iotHubConnectionString.HttpsEndpoint,
-               iotHubConnectionString,
-               ExceptionHandlingHelper.GetDefaultErrorMapping(),
-               s_defaultOperationTimeout,
-               transportSettings.HttpProxy,
-               transportSettings.ConnectionLeaseTimeoutMilliseconds);
-            var serviceClient = new ServiceClient(iotHubConnection, iotHubConnectionString.IotHubName, httpClientHelper, options);
-            return serviceClient;
+
+            return new ServiceClient(
+                iotHubConnectionString,
+                useWebSocketOnly,
+                transportSettings,
+                options);
         }
 
         /// <summary>
