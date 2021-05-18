@@ -136,13 +136,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.RejectAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public virtual Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return InnerHandler?.SendEventAsync(message, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public virtual Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskHelpers.CompletedTask;

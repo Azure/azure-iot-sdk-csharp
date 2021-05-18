@@ -36,8 +36,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             Assert.AreEqual("Value3", message.Properties["Prop3"]);
 
             Assert.AreEqual(3, message.SystemProperties.Count);
-            Assert.AreEqual("Corrid1", message.SystemProperties["correlation-id"]);
-            Assert.AreEqual("MessageId1", message.SystemProperties["message-id"]);
+            Assert.AreEqual("Corrid1", message.SystemProperties[MessageSystemPropertyNames.CorrelationId]);
+            Assert.AreEqual("MessageId1", message.SystemProperties[MessageSystemPropertyNames.MessageId]);
+            Assert.AreEqual(null, message.SystemProperties[MessageSystemPropertyNames.LockToken]);
         }
 
         [TestMethod]
@@ -57,8 +58,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             Assert.AreEqual("Value3", message.Properties["Prop3"]);
 
             Assert.AreEqual(3, message.SystemProperties.Count);
-            Assert.AreEqual("Corrid1", message.SystemProperties["correlation-id"]);
-            Assert.AreEqual("MessageId1", message.SystemProperties["message-id"]);
+            Assert.AreEqual("Corrid1", message.SystemProperties[MessageSystemPropertyNames.CorrelationId]);
+            Assert.AreEqual("MessageId1", message.SystemProperties[MessageSystemPropertyNames.MessageId]);
+            Assert.AreEqual(null, message.SystemProperties[MessageSystemPropertyNames.LockToken]);
         }
 
         [TestMethod]

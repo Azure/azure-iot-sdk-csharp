@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Devices.Client
         public Http1TransportSettings FileUploadTransportSettings { get; set; } = new Http1TransportSettings();
 
         /// <summary>
-        /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the device or module client instance.
-        /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
+        /// The configuration for setting <see cref="MessageBase.MessageId"/> for every message sent by the device or module client instance.
+        /// The default behavior is that <see cref="MessageBase.MessageId"/> is set only by the user.
         /// </summary>
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
 
