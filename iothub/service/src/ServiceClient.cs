@@ -84,8 +84,7 @@ namespace Microsoft.Azure.Devices
             ServiceClientTransportSettings transportSettings,
             ServiceClientOptions options)
         {
-            var iotHubConnection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings);
-            Connection = iotHubConnection;
+            Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings); ;
             _openTimeout = IotHubConnection.DefaultOpenTimeout;
             _operationTimeout = IotHubConnection.DefaultOperationTimeout;
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
