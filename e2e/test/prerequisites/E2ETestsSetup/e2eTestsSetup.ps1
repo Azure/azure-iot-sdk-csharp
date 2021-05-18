@@ -15,12 +15,12 @@ param(
 
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
-    [switch] $InstallDependencies,
+    [bool] $InstallDependencies,
 
     # Set this to true if you are generating resources for the DevOps test pipeline.
     # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
     [Parameter()]
-    [switch] $GenerateResourcesForDevOpsPipeline
+    [bool] $GenerateResourcesForDevOpsPipeline
 )
 
 $startTime = (Get-Date)
@@ -116,10 +116,11 @@ if (-not $isAdmin)
 
 $Region = $Region.Replace(' ', '')
 $logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
+$iotHubAadTestAppRegName = "$ResourceGroup-IotHubAadApp"
 $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 1
-
+$managedIdentityName = "$ResourceGroup-user-msi"
 
 # OpenSSL has dropped support for SHA1 signed certificates in ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
@@ -339,25 +340,6 @@ if ($InstallDependencies)
     az extension add --name azure-iot
 }
 
-#################################################################################################################################################
-# Configure an AAD app and create self signed certs and get the bytes to generate more content info.
-#################################################################################################################################################
-
-$logAnalyticsAppId = az ad app list --show-mine --query "[?displayName=='$logAnalyticsAppRegnName'].appId" --output tsv
-if (-not $logAnalyticsAppId)
-{
-    Write-Host "`nCreating App Registration $logAnalyticsAppRegnName."
-    $logAnalyticsAppId = az ad app create --display-name $logAnalyticsAppRegnName --reply-urls https://api.loganalytics.io/ --available-to-other-tenants false --query 'appId' --output tsv
-    Write-Host "`nApplication $logAnalyticsAppRegnName with Id $logAnalyticsAppId was created successfully."
-}
-
-$spExists = az ad sp list --show-mine --query "[?appId=='$logAnalyticsAppId'].appId" --output tsv
-if (-not $spExists)
-{
-    Write-Host "`nCreating the service principal for the app registration, if it does not exist."
-    az ad sp create --id $logAnalyticsAppId --output none
-}
-
 ######################################################################################################
 # Setup azure context
 ######################################################################################################
@@ -407,7 +389,8 @@ az deployment group create `
     KeyVaultName=$keyVaultName `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
     DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
-    HubUnitsCount=$iothubUnitsToBeCreated
+    HubUnitsCount=$iothubUnitsToBeCreated `
+    UserAssignedManagedIdentityName=$managedIdentityName
 
 if ($LastExitCode -ne 0)
 {
@@ -436,14 +419,40 @@ $keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --
 $instrumentationKey = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.instrumentationKey.value' --output tsv
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
 
+#################################################################################################################################################
+# Configure an AAD app and create self signed certs and get the bytes to generate more content info.
+#################################################################################################################################################
+Write-Host "`nCreating App Registration $logAnalyticsAppRegnName"
+$logAnalyticsAppRegUrl = "http://$logAnalyticsAppRegnName"
+az ad sp create-for-rbac -n $logAnalyticsAppRegUrl --role "Reader" --scope $resourceGroupId --output none
+$logAnalyticsAppId = az ad app list --display-name $logAnalyticsAppRegnName --query "[?displayName=='$logAnalyticsAppRegnName'].appId" --output tsv
+Write-Host "`nApplication $logAnalyticsAppRegnName with Id $logAnalyticsAppId was created successfully."
+
+#################################################################################################################################################
+# Configure an AAD app to perform IoT hub data actions.
+#################################################################################################################################################
+Write-Host "`nCreating App Registration $iotHubAadTestAppRegName"
+$iotHubAadTestAppRegUrl = "http://$iotHubAadTestAppRegName"
+$iotHubDataContributorRoleId = "4fc6c259987e4a07842ec321cc9d413f"
+$iotHubScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/IotHubs/$iotHubName"
+$iotHubAadTestAppPassword = az ad sp create-for-rbac -n $iotHubAadTestAppRegUrl --role $iotHubDataContributorRoleId --scope $iotHubScope --query password --output tsv
+$iotHubAadTestAppId = az ad app list --display-name $iotHubAadTestAppRegName --query "[?displayName=='$iotHubAadTestAppRegName'].appId" --output tsv
+Write-Host "`nApplication $iotHubAadTestAppRegName with Id $iotHubAadTestAppId was created successfully."
+
+#################################################################################################################################################
+# Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
+#################################################################################################################################################
+Write-Host "`nGranting the user assigned managed identity $managedIdentityName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
+$msiPrincipalId = az identity show -n $managedIdentityName -g $ResourceGroup --query principalId --output tsv
+$msiResourceId = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/$managedIdentityName"
+az role assignment create --assignee $msiPrincipalId --role 'Storage Blob Data Contributor' --scope $resourceGroupId --output none
+
 ##################################################################################################################################
 # Granting the iot hub system idenitty Storage blob contributor access on the resoruce group
 ##################################################################################################################################
 Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
-
 $systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.principalId --out tsv
-
-az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId
+az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId --output none
 
 ##################################################################################################################################
 # Uploading ROOT CA certificate to IoTHub and verifying
@@ -554,36 +563,6 @@ az iot dps enrollment create `
     --certificate-path $individualDeviceCertPath `
     --output none
 
-# The Service Principal takes a while to get propogated and if a different endpoint is hit before that, trying to grant a permission will fail.
-# Adding retries so that we can grant the permissions successfully without re-running the script.
-Write-Host "`nGranting $logAnalyticsAppId Reader role assignment to the $ResourceGroup resource group."
-$tries = 0;
-while (++$tries -le 10)
-{
-    try
-    {
-        az role assignment create --role Reader --assignee $logAnalyticsAppId --resource-group $ResourceGroup --output none
-
-        if ($LastExitCode -eq 0)
-        {
-            Write-Host "`tSucceeded"
-            break;
-        }
-    }
-    catch
-    {
-    }
-
-    if ($tries -ge 10)
-    {
-        Write-Error "Max retries reached for granting service principal permissions."
-        throw;
-    }
-
-    Write-Host "`tGranting service principal permission failed. Waiting 5 seconds before retry."
-    Start-Sleep -s 5
-}
-
 Write-Host "`nCreating a self-signed certificate and placing it in $ResourceGroup."
 az ad app credential reset --id $logAnalyticsAppId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
 Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup."
@@ -625,6 +604,8 @@ az keyvault secret set --vault-name $keyVaultName --name "STORAGE-ACCOUNT-CONNEC
 az keyvault secret set --vault-name $keyVaultName --name "LA-WORKSPACE-ID" --value $workspaceId --output none
 az keyvault secret set --vault-name $keyVaultName --name "MSFT-TENANT-ID" --value "72f988bf-86f1-41af-91ab-2d7cd011db47" --output none
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-ID" --value $logAnalyticsAppId --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CLIENT-ID" --value $iotHubAadTestAppId --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CLIENT-SECRET" --value $iotHubAadTestAppPassword --output none
 az keyvault secret set --vault-name $keyVaultName --name "LA-AAD-APP-CERT-BASE64" --value $fileContentB64String --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" --value "invalidcertgde1.westus.cloudapp.azure.com" --output none
 az keyvault secret set --vault-name $keyVaultName --name "PIPELINE-ENVIRONMENT" --value "prod" --output none
@@ -633,6 +614,7 @@ az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-ROOT-CA-CERT
 az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-INTERMEDIATE1-CERTIFICATE" --value $iothubX509Intermediate1Certificate --output none
 az keyvault secret set --vault-name $keyVaultName --name "HUB-CHAIN-INTERMEDIATE2-CERTIFICATE" --value $iothubX509Intermediate2Certificate --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-X509-CHAIN-DEVICE-NAME" --value $iotHubCertChainDeviceCommonName --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID" --value $msiResourceId --output none
 
 # Below Environment variables are only used in Java
 az keyvault secret set --vault-name $keyVaultName --name "IOT-DPS-CONNECTION-STRING" --value $dpsConnectionString --output none # DPS Connection string Environment variable for Java

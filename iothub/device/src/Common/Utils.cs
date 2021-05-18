@@ -96,12 +96,14 @@ namespace Microsoft.Azure.Devices.Client
 
         public static void ValidateDataIsEmptyOrJson(byte[] data)
         {
-            if (data.Length != 0)
+            if (data != null
+                && data.Length != 0)
             {
                 using var stream = new MemoryStream(data);
                 using var streamReader = new StreamReader(stream, Encoding.UTF8, false, Math.Min(1024, data.Length));
 
                 using var reader = new JsonTextReader(streamReader);
+              
                 while (reader.Read())
                 {
                 }

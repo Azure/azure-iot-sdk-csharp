@@ -19,10 +19,11 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class DeviceClientTests
     {
-        private const string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
-        private const string fakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
+        private const string FakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private const string FakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
+        private const string TestModelId = "dtmi:com:example:testModel;1";
 
-        private static readonly IotHubConnectionStringBuilder s_csBuilder = IotHubConnectionStringBuilder.Create(fakeConnectionString);
+        private static readonly IotHubConnectionStringBuilder s_csBuilder = IotHubConnectionStringBuilder.Create(FakeConnectionString);
         private static readonly IotHubConnectionString s_cs = new IotHubConnectionString(s_csBuilder);
 
         [TestMethod]
@@ -148,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
-            DeviceClient.CreateFromConnectionString(fakeConnectionStringWithModuleId);
+            DeviceClient.CreateFromConnectionString(FakeConnectionStringWithModuleId);
         }
 
         /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
@@ -156,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_DefaultValue()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             Assert.AreEqual((uint)(4 * 60 * 1000), deviceClient.OperationTimeoutInMilliseconds);
         }
@@ -164,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceClient_DefaultDiagnosticSamplingPercentage_Ok()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             const int DefaultPercentage = 0;
             Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
         }
@@ -172,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceClient_SetDiagnosticSamplingPercentageInRange_Ok()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             const int ValidPercentage = 80;
             deviceClient.DiagnosticSamplingPercentage = ValidPercentage;
             Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, ValidPercentage);
@@ -181,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceClient_SetDiagnosticSamplingPercentageOutOfRange_Fail()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             const int DefaultPercentage = 0;
             const int InvalidPercentageExceedUpperLimit = 200;
             const int InvalidPercentageExceedLowerLimit = -100;
@@ -210,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceClient_StartDiagLocallyThatDoNotSupport_ThrowException()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Http1);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, TransportType.Http1);
             try
             {
                 deviceClient.DiagnosticSamplingPercentage = 100;
@@ -232,7 +233,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 new Http1TransportSettings(),
             };
 
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, transportSettings);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, transportSettings);
             try
             {
                 deviceClient.DiagnosticSamplingPercentage = 100;
@@ -247,7 +248,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_GetSet()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             deviceClient.OperationTimeoutInMilliseconds = 9999;
 
             Assert.AreEqual((uint)9999, deviceClient.OperationTimeoutInMilliseconds);
@@ -256,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Open()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             deviceClient.OperationTimeoutInMilliseconds = 0;
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -271,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Receive()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.ReceiveAsync(Arg.Any<TimeoutHelper>()).Returns(new Task<Message>(() => new Message()));
@@ -286,7 +287,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task DeviceClient_OnMethodCalled_Unsubscribe()
         {
             // arrange
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
 
@@ -312,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
 
@@ -331,7 +332,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
 
@@ -353,7 +354,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) **]**
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
@@ -374,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
@@ -395,7 +396,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
         public async Task DeviceClient_OnMethodCalled_MethodResponseHasInvalidJson()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool isMethodHandlerCalled = false;
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
@@ -416,7 +417,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest_With_SetMethodHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
 
@@ -437,7 +438,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody_With_SetMethodHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
 
@@ -462,7 +463,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
@@ -486,7 +487,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodDefaultHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodDefaultHandlerCalled = false;
@@ -508,7 +509,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerNotMatchedAndDefaultHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
@@ -537,7 +538,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerAndDefaultHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
@@ -566,7 +567,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler_With_No_Result()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
@@ -589,7 +590,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
         public async Task DeviceClientOnMethodCalledMethodResponseHasInvalidJsonWithSetMethodHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool isMethodHandlerCalled = false;
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
@@ -612,7 +613,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
         public async Task DeviceClientOnMethodCalledNoMethodHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
@@ -1186,7 +1187,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
         public void DeviceClientOnConnectionOpenedInvokeHandlerForStatusChange()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatus? status = null;
             ConnectionStatusChangeReason? statusChangeReason = null;
@@ -1210,7 +1211,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
         public void DeviceClientOnConnectionOpenedWithNullHandler()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatus? status = null;
             ConnectionStatusChangeReason? statusChangeReason = null;
@@ -1233,7 +1234,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**
         public void DeviceClientOnConnectionOpenedNotInvokeHandlerWithoutStatusChange()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatus? status = null;
             ConnectionStatusChangeReason? statusChangeReason = null;
@@ -1264,7 +1265,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed. **]**
         public void DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
         {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             var sender = new object();
@@ -1299,7 +1300,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ProductInfoStoresProductInfoOk()
         {
             const string userAgent = "name/version (runtime; os; arch)";
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             client.ProductInfo = userAgent;
             Assert.AreEqual(userAgent, client.ProductInfo);
         }
@@ -1308,7 +1309,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task CompleteAsyncThrowsForNullMessage()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.CompleteAsync((Message)null);
         }
 
@@ -1316,7 +1317,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task CompleteAsyncWithCancellationTokenThrowsForNullMessage()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.CompleteAsync((Message)null, CancellationToken.None);
         }
 
@@ -1324,7 +1325,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task CompleteAsyncThrowsForNullLockToken()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.CompleteAsync((string)null);
         }
 
@@ -1332,7 +1333,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task CompleteAsyncWithCancellationTokenThrowsForNullLockToken()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.CompleteAsync((string)null, CancellationToken.None);
         }
 
@@ -1340,7 +1341,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task RejectAsyncThrowsForNullMessage()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.RejectAsync((Message)null);
         }
 
@@ -1348,7 +1349,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task RejectAsyncWithCancellationTokenThrowsForNullMessage()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.RejectAsync((Message)null, CancellationToken.None);
         }
 
@@ -1356,7 +1357,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task RejectAsyncThrowsForNullLockToken()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.RejectAsync((string)null);
         }
 
@@ -1364,7 +1365,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task RejectAsyncWithCancellationTokenThrowsForNullLockToken()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.RejectAsync((string)null, CancellationToken.None);
         }
 
@@ -1372,7 +1373,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task AbandonAsyncThrowsForNullMessage()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.AbandonAsync((Message)null);
         }
 
@@ -1380,7 +1381,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task AbandonAsyncWithCancellationTokenThrowsForNullMessage()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.AbandonAsync((Message)null, CancellationToken.None);
         }
 
@@ -1388,7 +1389,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task AbandonAsyncThrowsForNullLockToken()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.AbandonAsync((string)null);
         }
 
@@ -1396,7 +1397,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task AbandonAsyncWithCancellationTokenThrowsForNullLockToken()
         {
-            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             await client.AbandonAsync((string)null, CancellationToken.None);
         }
 
@@ -1405,7 +1406,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var messageId = Guid.NewGuid().ToString();
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
@@ -1434,7 +1435,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
             };
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, options);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
@@ -1463,7 +1464,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, options);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
@@ -1488,7 +1489,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var messageId = Guid.NewGuid().ToString();
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
@@ -1517,7 +1518,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
             };
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, options);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
@@ -1546,7 +1547,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
-            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, options);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
@@ -1576,7 +1577,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            Action createDeviceClient = () => { DeviceClient.CreateFromConnectionString(fakeConnectionString, options); };
+            Action createDeviceClient = () => { DeviceClient.CreateFromConnectionString(FakeConnectionString, options); };
 
             // assert
             createDeviceClient.Should().Throw<ArgumentOutOfRangeException>();
@@ -1592,7 +1593,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            Action createDeviceClient = () => { DeviceClient.CreateFromConnectionString(fakeConnectionString, options); };
+            Action createDeviceClient = () => { DeviceClient.CreateFromConnectionString(FakeConnectionString, options); };
 
             // assert
             createDeviceClient.Should().Throw<ArgumentOutOfRangeException>();
@@ -1613,7 +1614,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            InternalClient internalClient = ClientFactory.CreateFromConnectionString(fakeConnectionString, null, TransportType.Mqtt, pipelineBuilderSubstitute, options);
+            InternalClient internalClient = ClientFactory.CreateFromConnectionString(FakeConnectionString, null, TransportType.Mqtt, pipelineBuilderSubstitute, options);
 
             // assert
             var authMethod = internalClient.IotHubConnectionString.TokenRefresher;
@@ -1654,7 +1655,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            InternalClient internalClient = ClientFactory.CreateFromConnectionString(fakeConnectionString, authMethod1, TransportType.Mqtt, pipelineBuilderSubstitute, options);
+            InternalClient internalClient = ClientFactory.CreateFromConnectionString(FakeConnectionString, authMethod1, TransportType.Mqtt, pipelineBuilderSubstitute, options);
 
             // assert
             // Clients created with their own specific AuthenticationWithTokenRefresh IAuthenticationMethod will ignore the sas token renewal options specified in ClientOptions.
@@ -1682,6 +1683,94 @@ namespace Microsoft.Azure.Devices.Client.Test
             int expectedRenewalBufferSecondsFromSdkDefault = (int)(sasExpirationTimeInSecondsSdkDefault * ((float)sasRenewalBufferSdkDefault / 100));
             var expectedRefreshTimeFromSdkDefault = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromSdkDefault);
             authMethod.RefreshesOn.Should().BeCloseTo(expectedRefreshTimeFromSdkDefault, (int)buffer.TotalMilliseconds);
+        }
+
+        [TestMethod]
+        public void DeviceClient_InitWithTransportAndModelId_ThrowsWhenHttp()
+        {
+            // arrange
+
+            var clientOptions = new ClientOptions
+            {
+                ModelId = TestModelId,
+            };
+
+            // act
+
+            Action act = () => DeviceClient.CreateFromConnectionString(FakeConnectionString, TransportType.Http1, clientOptions);
+
+            // assert
+
+            act.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("*Plug and Play*")
+                .WithMessage("*HTTP*");
+        }
+
+        [TestMethod]
+        public void DeviceClient_InitWithTransportArrayAndModelId_ThrowsWhenHttp()
+        {
+            // arrange
+
+            var clientOptions = new ClientOptions
+            {
+                ModelId = TestModelId,
+            };
+
+            var allTransportTypes = new ITransportSettings[]
+            {
+                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
+                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only),
+                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
+                new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only),
+                new Http1TransportSettings(),
+            };
+
+            // act
+
+            Action act = () => DeviceClient.CreateFromConnectionString(FakeConnectionString, allTransportTypes, clientOptions);
+
+            // assert
+
+            act.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("*Plug and Play*")
+                .WithMessage("*HTTP*");
+        }
+
+        [TestMethod]
+        public void Deviceclient_InitWithNonHttpTransportAndModelId_DoesNotThrow()
+        {
+            // arrange
+
+            var clientOptions = new ClientOptions
+            {
+                ModelId = TestModelId,
+            };
+
+            var allTransportTypes = new ITransportSettings[]
+            {
+                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
+                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only),
+                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
+                new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only),
+            };
+
+            // act and assert
+            FluentActions
+                .Invoking(() => { using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, allTransportTypes, clientOptions); })
+                .Should()
+                .NotThrow();
+        }
+
+        [TestMethod]
+        public void DeviceClient_InitWithHttpTransportButNoModelId_DoesNotThrow()
+        {
+            // act and assert
+            FluentActions
+                .Invoking(() => { using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, TransportType.Http1); })
+                .Should()
+                .NotThrow();
         }
 
         private class TestDeviceAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh

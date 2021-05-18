@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -109,9 +110,30 @@ namespace Microsoft.Azure.Devices
         public virtual DeviceCapabilities Capabilities { get; set; }
 
         /// <summary>
-        /// Scope to which this device instance belongs to
+        /// The scope of the device. For edge devices, this is auto-generated and immutable. For leaf devices, set this to create child/parent
+        /// relationship.
         /// </summary>
+        /// <remarks>
+        /// For leaf devices, the value to set a parent edge device can be retrieved from the parent edge device's <see cref="Scope"/> property.
+        ///
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
+        /// </remarks>
         [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Ignore)]
         public virtual string Scope { get; set; }
+
+        /// <summary>
+        /// The scopes of the upper level edge devices if applicable.
+        /// </summary>
+        /// <remarks>
+        /// For edge devices, the value to set a parent edge device can be retrieved from the parent edge device's <see cref="Scope"/> property.
+        ///
+        /// For leaf devices, this could be set to the same value as <see cref="Scope"/> or left for the service to copy over.
+        ///
+        /// For now, this list can only have 1 element in the collection.
+        ///
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
+        /// </remarks>
+        [JsonProperty(PropertyName = "parentScopes", NullValueHandling = NullValueHandling.Ignore)]
+        public virtual IList<string> ParentScopes { get; internal set; } = new List<string>();
     }
 }

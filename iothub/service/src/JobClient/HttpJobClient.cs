@@ -28,14 +28,15 @@ namespace Microsoft.Azure.Devices
 
         private IHttpClientHelper _httpClientHelper;
 
-        internal HttpJobClient(IotHubConnectionString connectionString, HttpTransportSettings transportSettings)
+        internal HttpJobClient(IotHubConnectionProperties connectionProperties, HttpTransportSettings transportSettings)
         {
             _httpClientHelper = new HttpClientHelper(
-                connectionString.HttpsEndpoint,
-                connectionString,
+                connectionProperties.HttpsEndpoint,
+                connectionProperties,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                transportSettings.Proxy);
+                transportSettings.Proxy,
+                transportSettings.ConnectionLeaseTimeoutMilliseconds);
         }
 
         // internal test helper

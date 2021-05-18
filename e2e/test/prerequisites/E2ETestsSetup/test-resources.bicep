@@ -1,138 +1,69 @@
-param ApplicationInsightsName string {
-  default: '${resourceGroup().name}-ai'
-  metadata: {
-      description: 'The name of application insights.'
-  }
-}
+@description('The name of application insights.')
+param ApplicationInsightsName string = '${resourceGroup().name}-ai'
 
-param StorageAccountName string {
-  minLength: 3
-  maxLength: 24
-  metadata: {
-    description: 'The name of the storage account used by the IoT hub.'
-  }
-}
+@minLength(3)
+@maxLength(24)
+@description('The name of the storage account used by the IoT hub.')
+param StorageAccountName string
 
-param UserObjectId string {
-  metadata: {
-    description: 'Signed in user objectId'
-  }
-}
+@description('Signed in user objectId')
+param UserObjectId string
 
 param DpsCustomAllocatorRunCsxContent string
 
 param DpsCustomAllocatorProjContent string
 
-param FarRegion string {
-  default: 'southeastasia'
-  metadata: {
-    description: 'The region for the second IoT hub in a DPS that is far away from the test devices.'
-  }
-}
+@description('The region for the second IoT hub in a DPS that is far away from the test devices.')
+param FarRegion string ='southeastasia'
 
-param WebRegion string {
-  default: 'CentralUS'
-  metadata: {
-    description: 'The region for the website hosting the Azure function.'
-  }
-}
+@description('The region for the website hosting the Azure function.')
+param WebRegion string = 'CentralUS'
 
-param HubName string {
-  default: '${resourceGroup().name}-hub'
-  metadata: {
-    description: 'The name of the main IoT hub used by tests.'
-  }
-}
+@description('The name of the main IoT hub used by tests.')
+param HubName string = '${resourceGroup().name}-hub'
 
-param HubUnitsCount int {
-  default: 1
-  metadata: {
-    description: 'The number of IoT Hub units to be deployed.'
-  }
-}
+@description('The number of IoT hub units to be deployed.')
+param HubUnitsCount int = 1
 
-param ConsumerGroupName string {
-  default: 'e2e-tests'
-  metadata: {
-    description: 'The IotHub consumer group name.'
-  }
-}
+@description('The IoT hub consumer group name.')
+param ConsumerGroupName string = 'e2e-tests'
 
-param FarHubName string {
-  default: '${resourceGroup().name}-hubfar'
-  metadata: {
-    description: 'The name of the far away IoT hub used by tests.'
-  }
-}
+@description('The name of the far away IoT hub used by tests.')
+param FarHubName string = '${resourceGroup().name}-hubfar'
 
-param DpsName string {
-  default: '${resourceGroup().name}-dps'
-  metadata: {
-    description: 'The name of DPS used by tests.'
-  }
-}
+@description('The name of DPS used by tests.')
+param DpsName string ='${resourceGroup().name}-dps'
 
-param DpsCustomAllocatorFunctionName string {
-  default: 'DpsCustomAllocator'
-}
+param DpsCustomAllocatorFunctionName string = 'DpsCustomAllocator'
 
-param KeyVaultName string {
-  default: '${resourceGroup().name}-kv'
-  minLength: 3
-  maxLength: 24
-  metadata: {
-    description: 'The name of the key vault for storing secrets needed for running tests.'
-  }
-}
+@minLength(3)
+@maxLength(24)
+@description('The name of the key vault for storing secrets needed for running tests.')
+param KeyVaultName string = '${resourceGroup().name}-kv'
 
-param OperationalInsightsName string {
-  default: '${resourceGroup().name}-oi'
-  metadata: {
-    description: 'The name of the operational insights instance.'
-  }
-}
+@description('The name of the operational insights instance.')
+param OperationalInsightsName string = '${resourceGroup().name}-oi'
 
-param OperationInsightsLocation string {
-  default: 'westus2'
-  metadata: {
-    description: 'The location for Microsoft.OperationalInsights/workspaces.'
-  }
-}
+@description('The location for Microsoft.OperationalInsights/workspaces.')
+param OperationInsightsLocation string = 'westus2'
 
-param SecuritySolutionName string {
-  default: '${resourceGroup().name}-ss'
-  metadata: {
-    description: 'The name of the security solution instance.'
-  }
-}
+@description('The name of the security solution instance.')
+param SecuritySolutionName string = '${resourceGroup().name}-ss'
 
-param ServerFarmName string {
-  default: '${resourceGroup().name}-srv'
-  metadata: {
-    description: 'The name of the server farm to host a function app for DPS custom allocation.'
-  }
-}
+@description('The name of the server farm to host a function app for DPS custom allocation.')
+param ServerFarmName string = '${resourceGroup().name}-srv'
 
-param WebsiteName string {
-  default: '${resourceGroup().name}-web'
-  metadata: {
-    description: 'The name of the server farm to host a function app for DPS custom allocation'
-  }
-}
+@description('The name of the server farm to host a function app for DPS custom allocation')
+param WebsiteName string = '${resourceGroup().name}-web'
 
-param BlobServiceName string {
-  default: 'default'
-  metadata: {
-    description: 'The name of BlobService inside the StorageAccount.'
-  }
-}
+@description('The name of BlobService inside the StorageAccount.')
+param BlobServiceName string = 'default'
 
-param ContainerName string {
-  default: 'fileupload'
-  metadata: {
-    description: 'The name of the Container inside the BlobService.'
-  }
-}
+@description('The name of the Container inside the BlobService.')
+param ContainerName string = 'fileupload'
+
+@description('The name of the user assigned managed identity.')
+param UserAssignedManagedIdentityName string
 
 var hubKeysId = resourceId('Microsoft.Devices/IotHubs/Iothubkeys', HubName, 'iothubowner')
 var farHubKeysId =  resourceId('Microsoft.Devices/IotHubs/Iothubkeys', FarHubName, 'iothubowner')
@@ -189,7 +120,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2018-02-14' = {
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   name: StorageAccountName
   location: resourceGroup().location
   sku: {
@@ -215,7 +146,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   }
 }
 
-resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2019-06-01' = {
+resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-02-01' = {
   name: '${storageAccount.name}/${BlobServiceName}'
   properties: {
     deleteRetentionPolicy: {
@@ -224,20 +155,26 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2019-06-01'
   }
 }
 
-resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' = {
+resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-02-01' = {
   name: '${blobService.name}/${ContainerName}'
   properties: {
     publicAccess: 'None'
   }
 }
 
-resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
+resource userAssignedManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: UserAssignedManagedIdentityName
+  location: resourceGroup().location
+}
+
+resource iotHub 'Microsoft.Devices/IotHubs@2021-03-03-preview' = {
   name: HubName
   location: resourceGroup().location
   identity: {
-    principalId: ''
-    tenantId: ''
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedManagedIdentity.id}' : {}
+    }
   }
   properties: {
     eventHubEndpoints: {
@@ -283,8 +220,6 @@ resource iotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
 
 resource consumerGroups 'Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups@2018-04-01' = {
   name: '${iotHub.name}/events/${ConsumerGroupName}'
-  properties: {
-  }
 }
 
 resource farIotHub 'Microsoft.Devices/IotHubs@2020-01-01' = {
@@ -430,7 +365,7 @@ output farHubHostName string = reference(farIotHub.id).hostName
 output farHubConnectionString string = 'HostName=${FarHubName}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=${listkeys(farHubKeysId, '2019-11-04').primaryKey}'
 output dpsName string = DpsName
 output dpsConnectionString string = 'HostName=${DpsName}.azure-devices-provisioning.net;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=${listkeys(dpsKeysId, '2017-11-15').primaryKey}'
-output storageAccountConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${StorageAccountName}AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value};EndpointSuffix=core.windows.net'
+output storageAccountConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${StorageAccountName};AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value};EndpointSuffix=core.windows.net'
 output workspaceId string = '${reference(operationalInsightsWorkspaces.id, '2017-03-15-preview').customerId}'
 output customAllocationPolicyWebhook string = 'https://${WebsiteName}.azurewebsites.net/api/${DpsCustomAllocatorFunctionName}?code=${listkeys(functionKeysId, '2019-08-01').default}'
 output keyVaultName string = KeyVaultName

@@ -38,7 +38,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             { MessageSystemPropertyNames.CreationTimeUtc, CustomHeaderConstants.CreationTimeUtc },
             { MessageSystemPropertyNames.ContentType, CustomHeaderConstants.ContentType },
             { MessageSystemPropertyNames.ContentEncoding, CustomHeaderConstants.ContentEncoding },
-            { MessageSystemPropertyNames.InterfaceId, CustomHeaderConstants.InterfaceId }
+            { MessageSystemPropertyNames.InterfaceId, CustomHeaderConstants.InterfaceId },
+            { MessageSystemPropertyNames.ComponentName, CustomHeaderConstants.ComponentName }
         };
 
         private static readonly IDictionary<string, string> s_mapHttpHeadersToMessageProperties = new Dictionary<string, string>

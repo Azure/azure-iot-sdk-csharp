@@ -7,12 +7,14 @@ using Microsoft.Azure.Devices.Common.Security;
 namespace Microsoft.Azure.Devices.Authentication
 {
     /// <summary>
-    /// Allows authentication to the API using a Shared Access Key
+    /// Allows authentication to the API using a Shared Access Key generated from the connection string provided.
+    /// The PnP client is auto generated from swagger and needs to implement a specific class to pass to the protocol layer
+    /// unlike the rest of the clients which are hand-written. So, this implementation for authentication is specific to digital twin (Pnp).
     /// </summary>
-    internal class SharedAccessKeyCredentials : IotServiceClientCredentials
+    internal class DigitalTwinConnectionStringCredential : DigitalTwinServiceClientCredentials
     {
         // Time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
-        // The token will be renewed when it has 15% or less of the sas token's lifespan left.
+        // The token will be renewed when it has 15% or less of the SAS token's lifespan left.
         private const int RenewalTimeBufferPercentage = 15;
 
         private readonly object _sasLock = new object();
@@ -26,22 +28,20 @@ namespace Microsoft.Azure.Devices.Authentication
         private DateTimeOffset _tokenExpiryTime;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="SharedAccessKeyCredentials"/> class.
+        /// Initializes a new instance of <see cref="DigitalTwinConnectionStringCredential"/> class.
         /// </summary>
-        /// <param name="connectionString">The IoT Hub connection string.</param>
-        internal SharedAccessKeyCredentials(string connectionString)
+        /// <param name="connectionString">The IoT Hub connection string properties.</param>
+        internal DigitalTwinConnectionStringCredential(IotHubConnectionString connectionString)
         {
-            var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-
-            _sharedAccessKey = iotHubConnectionString.SharedAccessKey;
-            _sharedAccessPolicy = iotHubConnectionString.SharedAccessKeyName;
-            _audience = iotHubConnectionString.Audience;
+            _sharedAccessKey = connectionString.SharedAccessKey;
+            _sharedAccessPolicy = connectionString.SharedAccessKeyName;
+            _audience = connectionString.Audience;
 
             _cachedSasToken = null;
         }
 
         /// <inheritdoc />
-        protected override string GetSasToken()
+        public override string GetAuthorizationHeader()
         {
             lock (_sasLock)
             {
@@ -76,6 +76,5 @@ namespace Microsoft.Azure.Devices.Authentication
             DateTimeOffset tokenExpiryTimeWithBuffer = _tokenExpiryTime.AddMilliseconds(-bufferTimeInMilliseconds);
             return DateTimeOffset.UtcNow.CompareTo(tokenExpiryTimeWithBuffer) >= 0;
         }
-
     }
 }

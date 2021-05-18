@@ -24,11 +24,11 @@ namespace Microsoft.Azure.Devices
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string SendingPath = "/messages/deviceBound";
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
-        private readonly string _sendingPath;
         private readonly AmqpFeedbackReceiver _feedbackReceiver;
         private readonly AmqpFileNotificationReceiver _fileNotificationReceiver;
         private readonly IHttpClientHelper _httpClientHelper;
@@ -37,24 +37,28 @@ namespace Microsoft.Azure.Devices
 
         private int _sendingDeliveryTag;
 
-        public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings, ServiceClientOptions options)
+        public AmqpServiceClient(
+            IotHubConnectionProperties connectionProperties,
+            bool useWebSocketOnly,
+            ServiceClientTransportSettings transportSettings,
+            ServiceClientOptions options)
         {
-            var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly, transportSettings);
+            var iotHubConnection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings);
             Connection = iotHubConnection;
             OpenTimeout = IotHubConnection.DefaultOpenTimeout;
             OperationTimeout = IotHubConnection.DefaultOperationTimeout;
-            _sendingPath = "/messages/deviceBound";
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
             _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
             _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
-            _iotHubName = iotHubConnectionString.IotHubName;
+            _iotHubName = connectionProperties.IotHubName;
             _clientOptions = options;
             _httpClientHelper = new HttpClientHelper(
-                iotHubConnectionString.HttpsEndpoint,
-                iotHubConnectionString,
+                connectionProperties.HttpsEndpoint,
+                connectionProperties,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                transportSettings.HttpProxy);
+                transportSettings.HttpProxy,
+                transportSettings.ConnectionLeaseTimeoutMilliseconds);
 
             // Set the trace provider for the AMQP library.
             AmqpTrace.Provider = new AmqpTransportLog();
@@ -361,7 +365,7 @@ namespace Microsoft.Azure.Devices
 
         private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)
         {
-            return Connection.CreateSendingLinkAsync(_sendingPath, timeout);
+            return Connection.CreateSendingLinkAsync(SendingPath, timeout);
         }
 
         /// <inheritdoc/>

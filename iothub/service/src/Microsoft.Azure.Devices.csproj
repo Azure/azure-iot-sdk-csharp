@@ -1,6 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;net472;net451</TargetFrameworks>
+	<!--netcoreapp2.1 target framework here is solely so that this library can use the SocketsHttpHandler class to handle connection lease timeout issues.-->
+	<!--See #1874 for additional details-->
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net472;net451;netcoreapp2.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <!-- TODO #176: Enable warnings as errors. -->
@@ -23,7 +25,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.31.0</Version>
+    <Version>1.34.0</Version>
     <Title>Microsoft Azure IoT Service Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -161,6 +163,7 @@
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
+    <PackageReference Include="Azure.Core" Version="1.9.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,10 +11,13 @@ using Microsoft.Rest;
 
 namespace Microsoft.Azure.Devices.Authentication
 {
-    internal abstract class IotServiceClientCredentials : ServiceClientCredentials
+    /// <summary>
+    /// This class adds the authentication tokens to the header before calling the digital twin APIs.
+    /// </summary>
+    internal abstract class DigitalTwinServiceClientCredentials : ServiceClientCredentials, IAuthorizationHeaderProvider
     {
         /// <summary>
-        /// Add a SAS token to the outgoing http request, then send it to the next pipeline segment
+        /// Add a JWT for Azure Active Directory or SAS token to the outgoing http request, then send it to the next pipeline segment.
         /// </summary>
         /// <param name="request">The request that is being sent</param>
         /// <param name="cancellationToken">The cancellation token</param>
@@ -23,7 +26,7 @@ namespace Microsoft.Azure.Devices.Authentication
         {
             request.ThrowIfNull(nameof(HttpRequestMessage));
 
-            request.Headers.Add(HttpRequestHeader.Authorization.ToString(), GetSasToken());
+            request.Headers.Add(HttpRequestHeader.Authorization.ToString(), GetAuthorizationHeader());
             request.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
 
             return base.ProcessHttpRequestAsync(request, cancellationToken);
@@ -33,6 +36,6 @@ namespace Microsoft.Azure.Devices.Authentication
         /// Return a SAS token
         /// </summary>
         /// <returns>A SAS token</returns>
-        protected abstract string GetSasToken();
+        public abstract string GetAuthorizationHeader();
     }
 }

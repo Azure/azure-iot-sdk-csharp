@@ -8,7 +8,9 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public enum MethodResponseStatusCode
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <summary>
+        /// Equivalent to HTTP status code 400, bad request.
+        /// </summary>
         BadRequest = 400,
 
         /// <summary>
@@ -16,7 +18,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         UserCodeException = 500,
 
+        /// <summary>
+        /// Equivalent to HTTP status code 501, not implemented server error. It is used when a method call from the service
+        /// specifies a method name not registered with the client for callback.
+        /// </summary>
         MethodNotImplemented = 501,
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }
