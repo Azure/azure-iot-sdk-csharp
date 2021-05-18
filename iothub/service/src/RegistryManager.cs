@@ -77,10 +77,23 @@ namespace Microsoft.Azure.Devices
         {
         }
 
+        internal RegistryManager(IotHubConnectionProperties connectionProperties, HttpTransportSettings transportSettings)
+        {
+            _iotHubName = connectionProperties.IotHubName;
+            _httpClientHelper = new HttpClientHelper(
+                connectionProperties.HttpsEndpoint,
+                connectionProperties,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                s_defaultOperationTimeout,
+                transportSettings.Proxy,
+                transportSettings.ConnectionLeaseTimeoutMilliseconds);
+        }
+
+        // internal test helper
         internal RegistryManager(string iotHubName, IHttpClientHelper httpClientHelper)
         {
             _iotHubName = iotHubName;
-            _httpClientHelper = httpClientHelper;
+            _httpClientHelper = httpClientHelper ?? throw new ArgumentNullException(nameof(httpClientHelper));
         }
 
         /// <summary>
@@ -108,14 +121,7 @@ namespace Microsoft.Azure.Devices
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            var httpClientHelper = new HttpClientHelper(
-                iotHubConnectionString.HttpsEndpoint,
-                iotHubConnectionString,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                s_defaultOperationTimeout,
-                transportSettings.Proxy,
-                transportSettings.ConnectionLeaseTimeoutMilliseconds);
-            return new RegistryManager(iotHubConnectionString.IotHubName, httpClientHelper);
+            return new RegistryManager(iotHubConnectionString, transportSettings);
         }
 
 #if !NET451
@@ -146,7 +152,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
-            return new HttpRegistryManager(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
+            return new RegistryManager(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 
         /// <summary>
@@ -172,7 +178,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
-            return new HttpRegistryManager(sasCredentialProperties, transportSettings ?? new HttpTransportSettings());
+            return new RegistryManager(sasCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 
 #endif

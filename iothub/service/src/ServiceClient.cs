@@ -78,21 +78,41 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        internal ServiceClient(IotHubConnection connection, string iotHubName, IHttpClientHelper httpClientHelper, ServiceClientOptions options)
+        internal ServiceClient(
+            IotHubConnectionProperties connectionProperties,
+            bool useWebSocketOnly,
+            ServiceClientTransportSettings transportSettings,
+            ServiceClientOptions options)
         {
-            Connection = connection;
-            _iotHubName = iotHubName;
-            _clientOptions = options;
-            _httpClientHelper = httpClientHelper;
+            var iotHubConnection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings);
+            Connection = iotHubConnection;
             _openTimeout = IotHubConnection.DefaultOpenTimeout;
             _operationTimeout = IotHubConnection.DefaultOperationTimeout;
-            _sendingPath = "/messages/deviceBound";
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
             _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
             _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
+            _iotHubName = connectionProperties.IotHubName;
+            _clientOptions = options;
+            _sendingPath = "/messages/deviceBound";
+            _httpClientHelper = new HttpClientHelper(
+                connectionProperties.HttpsEndpoint,
+                connectionProperties,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                s_defaultOperationTimeout,
+                transportSettings.HttpProxy,
+                transportSettings.ConnectionLeaseTimeoutMilliseconds);
 
             // Set the trace provider for the AMQP library.
             AmqpTrace.Provider = new AmqpTransportLog();
+        }
+
+        // internal test helper
+        internal ServiceClient(IotHubConnection connection, IHttpClientHelper httpClientHelper)
+        {
+            Connection = connection;
+            _httpClientHelper = httpClientHelper;
+            _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
+            _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
         }
 
         /// <summary>
@@ -140,7 +160,7 @@ namespace Microsoft.Azure.Devices
             var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
             bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
 
-            return new AmqpServiceClient(
+            return new ServiceClient(
                 tokenCredentialProperties,
                 useWebSocketOnly,
                 transportSettings ?? new ServiceClientTransportSettings(),
@@ -176,7 +196,7 @@ namespace Microsoft.Azure.Devices
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
             bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
 
-            return new AmqpServiceClient(
+            return new ServiceClient(
                 sasCredentialProperties,
                 useWebSocketOnly,
                 transportSettings ?? new ServiceClientTransportSettings(),
@@ -237,16 +257,12 @@ namespace Microsoft.Azure.Devices
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
-            var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly, transportSettings);
-            var httpClientHelper = new HttpClientHelper(
-               iotHubConnectionString.HttpsEndpoint,
-               iotHubConnectionString,
-               ExceptionHandlingHelper.GetDefaultErrorMapping(),
-               s_defaultOperationTimeout,
-               transportSettings.HttpProxy,
-               transportSettings.ConnectionLeaseTimeoutMilliseconds);
-            var serviceClient = new ServiceClient(iotHubConnection, iotHubConnectionString.IotHubName, httpClientHelper, options);
-            return serviceClient;
+
+            return new ServiceClient(
+                iotHubConnectionString,
+                useWebSocketOnly,
+                transportSettings,
+                options);
         }
 
         /// <summary>

@@ -47,14 +47,15 @@ namespace Microsoft.Azure.Devices.Api.Test
                 It.IsAny<Uri>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), null, It.IsAny<CancellationToken>())
                 ).Throws(new DeviceNotFoundException("device-id"));
 
-            // Instantiate AmqpServiceClient with Mock IHttpClientHelper
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
+
             Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
             Action<AmqpSession> onClose = _ => { };
-            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+
+            // Instantiate ServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
-            var serviceClient = new ServiceClient(connection, null, restOpMock.Object, null);
+            var serviceClient = new ServiceClient(connection, restOpMock.Object);
 
             // Execute method under test
             PurgeMessageQueueResult result = await serviceClient.PurgeMessageQueueAsync("TestDevice", CancellationToken.None).ConfigureAwait(false);
@@ -77,14 +78,15 @@ namespace Microsoft.Azure.Devices.Api.Test
                 It.IsAny<Uri>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), null, It.IsAny<CancellationToken>())
                 ).ReturnsAsync(expectedResult);
 
-            // Instantiate AmqpServiceClient with Mock IHttpClientHelper
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
+
             Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
             Action<AmqpSession> onClose = _ => { };
-            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+
+            // Instantiate ServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
-            var serviceClient = new ServiceClient(connection, null, restOpMock.Object, null);
+            var serviceClient = new ServiceClient(connection, restOpMock.Object);
 
             return Tuple.Create(restOpMock, serviceClient, expectedResult);
         }
@@ -97,9 +99,11 @@ namespace Microsoft.Azure.Devices.Api.Test
             var connectionClosed = false;
             Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
             Action<AmqpSession> onClose = _ => { connectionClosed = true; };
-            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+
+            // Instantiate ServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
-            var serviceClient = new ServiceClient(connection, null, restOpMock.Object, null);
+            var serviceClient = new ServiceClient(connection, restOpMock.Object);
+
             // This is required to cause onClose callback invocation.
             await connection.OpenAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             serviceClient.Dispose();
@@ -118,7 +122,8 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
-            var serviceClient = new ServiceClient(connection, null, restOpMock.Object, null);
+            var serviceClient = new ServiceClient(connection, restOpMock.Object);
+
             // This is required to cause onClose callback invocation.
             await connection.OpenAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             await serviceClient.CloseAsync().ConfigureAwait(false);

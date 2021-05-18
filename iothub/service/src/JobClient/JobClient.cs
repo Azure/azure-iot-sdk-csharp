@@ -44,9 +44,21 @@ namespace Microsoft.Azure.Devices
         {
         }
 
+        // internal test helper
         internal JobClient(IHttpClientHelper httpClientHelper)
         {
             _httpClientHelper = httpClientHelper;
+        }
+
+        internal JobClient(IotHubConnectionProperties connectionProperties, HttpTransportSettings transportSettings)
+        {
+            _httpClientHelper = new HttpClientHelper(
+                connectionProperties.HttpsEndpoint,
+                connectionProperties,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                s_defaultOperationTimeout,
+                transportSettings.Proxy,
+                transportSettings.ConnectionLeaseTimeoutMilliseconds);
         }
 
         /// <summary>
@@ -75,16 +87,7 @@ namespace Microsoft.Azure.Devices
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-
-            var httpClientHelper = new HttpClientHelper(
-                 iotHubConnectionString.HttpsEndpoint,
-                 iotHubConnectionString,
-                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                 s_defaultOperationTimeout,
-                 transportSettings.Proxy,
-                 transportSettings.ConnectionLeaseTimeoutMilliseconds);
-
-            return new JobClient(httpClientHelper);
+            return new JobClient(iotHubConnectionString, transportSettings);
         }
 
 #if !NET451
@@ -115,7 +118,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
-            return new HttpJobClient(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
+            return new JobClient(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 
         /// <summary>
@@ -141,7 +144,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
-            return new HttpJobClient(sasCredentialProperties, transportSettings ?? new HttpTransportSettings());
+            return new JobClient(sasCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 
 #endif
