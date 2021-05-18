@@ -113,6 +113,7 @@ namespace Microsoft.Azure.Devices
             _httpClientHelper = httpClientHelper;
             _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
             _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
+            _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
         }
 
         /// <summary>
