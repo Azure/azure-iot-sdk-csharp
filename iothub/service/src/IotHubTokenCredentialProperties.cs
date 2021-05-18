@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                        new TokenRequestContext(TokenHelper.GetAadTokenScopes(HostName)),
                         new CancellationToken());
                 }
             }
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices
 
 #else
             AccessToken token = await _credential.GetTokenAsync(
-                new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                new TokenRequestContext(TokenHelper.GetAadTokenScopes(HostName)),
                 new CancellationToken()).ConfigureAwait(false);
             return new CbsToken(
                $"{_tokenType} {token.Token}",

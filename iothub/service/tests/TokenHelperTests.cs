@@ -44,6 +44,19 @@ namespace Microsoft.Azure.Devices.Tests
             isExpired.Should().Be(expectedIsExpired);
         }
 
+        [TestMethod]
+        [DataRow("my-hub.azure-devices.net", "https://iothubs.azure.net/.default")] // Public cloud
+        [DataRow("my-hub.azure-devices.us", "https://iothubs.azure.us/.default")] // US Government Cloud - Fairfax
+        public void TestAadTokenScopes_Succeeds(string hostname, string expectedAadTokenScope)
+        {
+            // act
+            string[] scopes = TokenHelper.GetAadTokenScopes(hostname);
+
+            // assert
+            scopes.Length.Should().Be(1);
+            scopes[0].Should().Be(expectedAadTokenScope);
+        }
+
 #endif
     }
 }

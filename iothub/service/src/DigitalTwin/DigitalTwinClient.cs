@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
-            var tokenCredential = new DigitalTwinTokenCredential(credential);
+            var tokenCredential = new DigitalTwinTokenCredential(credential, hostName);
             return new DigitalTwinClient(hostName, tokenCredential, handlers);
         }
 

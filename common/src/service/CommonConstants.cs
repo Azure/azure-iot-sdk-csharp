@@ -130,6 +130,10 @@ namespace Microsoft.Azure.Devices.Common
 
         public const string HttpErrorCodeName = "iothub-errorcode";
 
+        // The US government cloud (Fairfax) has a different audience.
+        public static readonly string[] IotHubUsGovCloudAadTokenScopes = new string[] { "https://iothubs.azure.us/.default" };
+
+        // Public cloud and all other clouds share the same audience.
         public static readonly string[] IotHubAadTokenScopes = new string[] { "https://iothubs.azure.net/.default" };
 
         //Service Analytics related

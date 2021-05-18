@@ -17,5 +17,12 @@ namespace Microsoft.Azure.Devices.Common
             TimeSpan timeToExpiry = expiry - DateTimeOffset.UtcNow;
             return timeToExpiry.TotalMinutes < 10;
         }
+
+        public static string[] GetAadTokenScopes(string hostName)
+        {
+            return hostName.EndsWith("azure-devices.us", StringComparison.OrdinalIgnoreCase)
+                ? CommonConstants.IotHubUsGovCloudAadTokenScopes
+                : CommonConstants.IotHubAadTokenScopes;
+        }
     }
 }
