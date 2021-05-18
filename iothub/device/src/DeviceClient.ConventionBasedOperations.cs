@@ -26,5 +26,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default)
             => InternalClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
+
+        /// <summary>
+        /// Set the global command callback handler.
+        /// </summary>
+        /// <param name="callback">A method implementation that will handle the incoming command.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        public Task SubscribeToCommandsAsync(
+            Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext,
+            CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToCommandsAsync(callback, userContext, cancellationToken);
     }
 }

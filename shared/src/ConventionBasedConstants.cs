@@ -9,6 +9,11 @@ namespace Microsoft.Azure.Devices.Shared
     public static class ConventionBasedConstants
     {
         /// <summary>
+        /// Separator for a component-level command name.
+        /// </summary>
+        public const char ComponentLevelCommandSeparator = '*';
+
+        /// <summary>
         /// Marker key to indicate a component-level property.
         /// </summary>
         public const string ComponentIdentifierKey = "__t";
