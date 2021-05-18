@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 string stringToSign = WebUtility.UrlEncode(resourceUri) + "\n" + expiry;
 
-                HMACSHA256 hmac = new HMACSHA256(Convert.FromBase64String(sharedAccessKey));
+                using var hmac = new HMACSHA256(Convert.FromBase64String(sharedAccessKey));
                 string signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
 
                 // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
