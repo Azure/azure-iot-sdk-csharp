@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 || !retrievedInitialValue.Equals(initialValue))
             {
                 var propertiesToBeUpdated = new ClientPropertyCollection();
-                propertiesToBeUpdated.Add("initialValue", initialValue, Thermostat2);
+                propertiesToBeUpdated.Add(Thermostat2, "initialValue", initialValue);
 
                 ClientPropertiesUpdateResponse updateResponse = await _deviceClient
                     .UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
@@ -122,12 +122,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     var propertyPatch = new ClientPropertyCollection();
                     propertyPatch.Add(
+                        Thermostat1,
                         propertyName,
                         humidityRangeRequested,
                         StatusCodes.OK,
                         writableProperties.Version,
-                        "The operation completed successfully.",
-                        Thermostat1);
+                        "The operation completed successfully.");
 
                     ClientPropertiesUpdateResponse updateResponse = await _deviceClient
                         .UpdateClientPropertiesAsync(propertyPatch, cancellationToken);
