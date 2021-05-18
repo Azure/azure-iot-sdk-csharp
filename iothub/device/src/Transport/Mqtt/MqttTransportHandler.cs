@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             try
             {
@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             foreach (Message message in messages)
             {

@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a device can use to send messages to and receive messages from the service,
     /// respond to direct method invocations from the service, and send and receive twin property updates.
     /// </summary>
-    internal class InternalClient : IDisposable
+    internal partial class InternalClient : IDisposable
     {
         private readonly SemaphoreSlim _methodsSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
@@ -643,7 +643,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends an event to device hub
         /// </summary>
         /// <returns>The message containing the event</returns>
-        public async Task SendEventAsync(Message message)
+        public async Task SendEventAsync(MessageBase message)
         {
             try
             {
@@ -662,7 +662,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends an event to device hub
         /// </summary>
         /// <returns>The message containing the event</returns>
-        public Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             if (message == null)
             {

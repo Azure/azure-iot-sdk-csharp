@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return TaskHelpers.CompletedTask;
         }
 
-        public override Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             Debug.Assert(message != null);
             cancellationToken.ThrowIfCancellationRequested();
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
-        public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             if (messages == null)
             {
@@ -494,7 +494,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return new Uri(stringBuilder.ToString(), UriKind.Relative);
         }
 
-        private static string ToJson(IEnumerable<Message> messages)
+        private static string ToJson(IEnumerable<MessageBase> messages)
         {
             using var sw = new StringWriter();
             using var writer = new JsonTextWriter(sw);
@@ -502,7 +502,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // [
             writer.WriteStartArray();
 
-            foreach (Message message in messages)
+            foreach (MessageBase message in messages)
             {
                 // {
                 writer.WriteStartObject();

@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<Message> messages, TimeSpan timeout)
+        public async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<MessageBase> messages, TimeSpan timeout)
         {
             Logging.Enter(this, messages, timeout, nameof(SendMessagesAsync));
 
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public async Task<AmqpIotOutcome> SendMessageAsync(Message message, TimeSpan timeout)
+        public async Task<AmqpIotOutcome> SendMessageAsync(MessageBase message, TimeSpan timeout)
         {
             Logging.Enter(this, message, timeout, nameof(SendMessageAsync));
 
@@ -463,7 +463,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public async Task<AmqpIotOutcome> SendEventsAsync(IEnumerable<Message> messages, TimeSpan timeout)
+        public async Task<AmqpIotOutcome> SendEventsAsync(IEnumerable<MessageBase> messages, TimeSpan timeout)
         {
             Logging.Enter(this, messages, timeout, nameof(SendEventsAsync));
 
@@ -477,7 +477,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public async Task<AmqpIotOutcome> SendEventAsync(Message message, TimeSpan timeout)
+        public async Task<AmqpIotOutcome> SendEventAsync(MessageBase message, TimeSpan timeout)
         {
             Logging.Enter(this, message, timeout, nameof(SendEventAsync));
 

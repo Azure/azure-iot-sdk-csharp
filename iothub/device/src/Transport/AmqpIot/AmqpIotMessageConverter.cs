@@ -46,11 +46,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return message;
         }
 
-        public static AmqpMessage MessageToAmqpMessage(Message message)
+        public static AmqpMessage MessageToAmqpMessage(MessageBase message)
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(Message));
+                throw Fx.Exception.ArgumentNull(nameof(MessageBase));
             }
             message.ThrowIfDisposed();
 
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the Message instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, Message data, bool copyUserProperties = true)
+        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, MessageBase data, bool copyUserProperties = true)
         {
             amqpMessage.Properties.MessageId = data.MessageId;
 
