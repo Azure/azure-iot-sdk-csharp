@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     /// <summary>
     /// Parameters to execute a direct method on the device
     /// </summary>
     public class CloudToDeviceMethod
     {
-        internal CloudToDeviceMethod() { } // @ailn: for serialization only
+        // @ailn: for serialization only
+        internal CloudToDeviceMethod()
+        {
+        }
 
         /// <summary>
         /// Creates an instance of CloudToDeviceMethod type
@@ -28,9 +30,9 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentException("Canot be empty", nameof(methodName));
             }
 
-            this.MethodName = methodName;
-            this.ResponseTimeout = responseTimeout;
-            this.ConnectionTimeout = connectionTimeout;
+            MethodName = methodName;
+            ResponseTimeout = responseTimeout;
+            ConnectionTimeout = connectionTimeout;
         }
 
         /// <summary>
@@ -73,20 +75,39 @@ namespace Microsoft.Azure.Devices
         public TimeSpan ConnectionTimeout { get; set; }
 
         /// <summary>
+        /// Method timeout in seconds
+        /// </summary>
+        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout <= TimeSpan.Zero
+            ? (int?)null
+            : (int)ResponseTimeout.TotalSeconds;
+
+        /// <summary>
+        /// Connection timeout in seconds
+        /// </summary>
+        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout <= TimeSpan.Zero
+            ? (int?)null
+            : (int)ConnectionTimeout.TotalSeconds;
+
+        [JsonProperty("payload")]
+        internal JRaw Payload { get; set; }
+
+        /// <summary>
         /// Set payload as json
         /// </summary>
         public CloudToDeviceMethod SetPayloadJson(string json)
         {
             if (json == null)
             {
-                this.Payload = null;
+                Payload = null;
             }
             else
             {
                 try
                 {
                     JToken.Parse(json); // @ailn: this is just a check for valid json as JRaw does not do the validation.
-                    this.Payload = new JRaw(json);
+                    Payload = new JRaw(json);
                 }
                 catch (JsonException ex)
                 {
@@ -102,25 +123,10 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string GetPayloadAsJson()
         {
-            // @ailn: 
+            // @ailn:
             //  JRaw inherits from JToken which implements explicit string operator.
             //  It takes care of null ref and performs to string logic.
-            return (string)this.Payload;
+            return (string)Payload;
         }
-
-        /// <summary>
-        /// Method timeout in seconds
-        /// </summary>
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => this.ResponseTimeout <= TimeSpan.Zero ? (int?)null : (int)this.ResponseTimeout.TotalSeconds;
-
-        /// <summary>
-        /// Connection timeout in seconds
-        /// </summary>
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => this.ConnectionTimeout <= TimeSpan.Zero ? (int?)null : (int)this.ConnectionTimeout.TotalSeconds;
-
-        [JsonProperty("payload")]
-        internal JRaw Payload { get; set; }
     }
 }

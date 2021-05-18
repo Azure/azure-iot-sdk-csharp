@@ -106,54 +106,6 @@ namespace Microsoft.Azure.Devices.Client
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
 
-        public void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)
-        {
-            if (IsExpired())
-            {
-                throw new UnauthorizedAccessException($"The specified SAS token is expired on { ExpiresOn}.");
-            }
-
-            if (sasAuthorizationRule.PrimaryKey != null)
-            {
-                string primareyKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
-                if (StringComparer.Ordinal.Equals(Signature, primareyKeyComputedSignature))
-                {
-                    return;
-                }
-            }
-
-            if (sasAuthorizationRule.SecondaryKey != null)
-            {
-                string secondaryKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
-                if (StringComparer.Ordinal.Equals(Signature, secondaryKeyComputedSignature))
-                {
-                    return;
-                }
-            }
-
-            throw new UnauthorizedAccessException("The specified SAS token has an invalid signature. It does not match either the primary or secondary key.");
-        }
-
-        public void AuthorizeHost(string iotHubHostName)
-        {
-            SecurityHelper.ValidateIotHubHostName(iotHubHostName, IotHubName);
-        }
-
-        public void AuthorizeTarget(Uri targetAddress)
-        {
-            if (targetAddress == null)
-            {
-                throw new ArgumentNullException(nameof(targetAddress));
-            }
-
-            string target = targetAddress.Host + targetAddress.AbsolutePath;
-
-            if (!target.StartsWith(Audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
-            {
-                throw new UnauthorizedAccessException("Invalid target audience");
-            }
-        }
-
         public string ComputeSignature(byte[] key)
         {
             var fields = new List<string>

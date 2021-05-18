@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
 using System.Threading.Tasks;
 
 namespace TlsProtocolTests
@@ -14,7 +16,7 @@ namespace TlsProtocolTests
         /// </remarks>
         static async Task Main(string[] args)
         {
-            string hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
+            string hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
             string deviceConnectionString = Environment.GetEnvironmentVariable("DEVICE_CONN_STRING");
 
             await IotServiceTests.RunTest(hubConnectionString).ConfigureAwait(false);
