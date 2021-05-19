@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
         }
 
         [LoggedTestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
+        public async Task Method_DeviceReceivesCommandAndResponse_MqttWs()
         {
             await SendCommandAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveCommandAsync).ConfigureAwait(false);
         }
@@ -293,7 +293,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                 (request, context) =>
                 {
                     logger.Trace($"{nameof(SubscribeAndUnsubscribeCommandAsync)}: DeviceClient method: {request.CommandName}.");
-                    return Task.FromResult(new Shared.CommandResponse(new DeviceCommandResponse(), 200));
+                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
                 },
                 null)
                 .ConfigureAwait(false);
@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                         methodCallReceived.SetException(ex);
                     }
 
-                    return Task.FromResult(new Shared.CommandResponse(new DeviceCommandResponse(), 200));
+                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
                 },
                 null).ConfigureAwait(false);
 
