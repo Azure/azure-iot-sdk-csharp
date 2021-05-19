@@ -161,7 +161,6 @@ public class ClientPropertiesUpdateResponse {
 /// </remarks>
 /// <param name="telemetryMessage">The telemetry message.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-/// <returns></returns>
 public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default);
 ```
 #### All related types
@@ -190,7 +189,6 @@ public class TelemetryMessage : Message {
 /// </summary>
 /// <param name="callback">A method implementation that will handle the incoming command.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-/// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for commands.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken = default);
 ```

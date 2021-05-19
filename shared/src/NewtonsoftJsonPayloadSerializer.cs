@@ -7,12 +7,12 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// A <see cref="Newtonsoft.Json.JsonConvert"/> <see cref="PayloadSerializer"/> implementation.
+    /// A <see cref="JsonConvert"/> <see cref="PayloadSerializer"/> implementation.
     /// </summary>
     public class NewtonsoftJsonPayloadSerializer : PayloadSerializer
     {
         /// <summary>
-        /// The Content Type string.
+        /// The content type string.
         /// </summary>
         internal const string ApplicationJson = "application/json";
 
@@ -47,14 +47,14 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <inheritdoc/>
-        public override bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue)
+        public override bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue)
         {
             outValue = default;
-            if (objectToConvert == null || string.IsNullOrEmpty(propertyName))
+            if (nestedObject == null || string.IsNullOrEmpty(propertyName))
             {
                 return false;
             }
-            if (((JObject)objectToConvert).TryGetValue(propertyName, out var element))
+            if (((JObject)nestedObject).TryGetValue(propertyName, out JToken element))
             {
                 outValue = element.ToObject<T>();
                 return true;

@@ -6,7 +6,9 @@ namespace Microsoft.Azure.Devices.Shared
     /// <summary>
     /// The payload convention class.
     /// </summary>
-    /// <remarks>The payload convention is used to define a specific serializer as well as a specific content encoding. For example, IoT has a <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention">convention</see> that is designed to make it easier to get started with products that use specific conventions by default.</remarks>
+    /// <remarks>The payload convention is used to define a specific serializer as well as a specific content encoding.
+    /// For example, IoT has a <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention">convention</see> that is designed
+    /// to make it easier to get started with products that use specific conventions by default.</remarks>
     public abstract class PayloadConvention
     {
         /// <summary>
@@ -22,10 +24,10 @@ namespace Microsoft.Azure.Devices.Shared
         public abstract PayloadEncoder PayloadEncoder { get; }
 
         /// <summary>
-        /// Returns the byte array for the convention based message.
+        /// Returns the byte array for the convention-based message.
         /// </summary>
         /// <remarks>This base class will use the <see cref="PayloadSerializer"/> and <see cref="PayloadEncoder"/> to create this byte array.</remarks>
-        /// <param name="objectToSendWithConvention"></param>
+        /// <param name="objectToSendWithConvention">The convention-based message that is to be sent.</param>
         /// <returns>The correctly encoded object for this convention.</returns>
         public virtual byte[] GetObjectBytes(object objectToSendWithConvention)
         {

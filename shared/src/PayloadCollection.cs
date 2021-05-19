@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// The base class for all payloads that accept a <see cref="PayloadConvention"/>
+    /// The base class for all payloads that accept a <see cref="PayloadConvention"/>.
     /// </summary>
     public abstract class PayloadCollection : IEnumerable<object>
     {
@@ -23,12 +23,13 @@ namespace Microsoft.Azure.Devices.Shared
         public PayloadConvention Convention { get; internal set; }
 
         /// <summary>
-        /// Get the value at the specified key
+        /// Get the value at the specified key.
         /// </summary>
-        /// <param name="key">Key of value</param>
         /// <remarks>
-        /// This accessor is best used to access simple types. It is recommended to use <see cref="TryGetValue"/> to cast a complex type.
+        /// This accessor is best used to access and cast to simple types.
+        /// It is recommended to use <see cref="TryGetValue"/> to deserialize to a complex type.
         /// </remarks>
+        /// <param name="key">Key of value.</param>
         /// <returns>The specified property.</returns>
         public virtual object this[string key]
         {
@@ -53,17 +54,17 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="key">The name of the telemetry.</param>
         /// <param name="value">The value of the telemetry.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c> </exception>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
         public virtual void AddOrUpdate(string key, object value)
         {
             Collection[key] = value;
         }
 
         /// <summary>
-        /// Gets the collection as a byte array
+        /// Gets the collection as a byte array.
         /// </summary>
         /// <remarks>
-        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/>
+        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/>.
         /// and <see cref="PayloadEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
         /// </remarks>
         /// <returns>A fully encoded serialized string.</returns>
@@ -91,7 +92,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
         /// <param name="value">The value of the object from the collection.</param>
-        /// <returns>true if the collection contains an element with the specified key; otherwise, false.</returns>
+        /// <returns>True if the collection contains an element with the specified key; otherwise, it returns false.</returns>
         public bool TryGetValue<T>(string key, out T value)
         {
             if (Collection.ContainsKey(key))
@@ -113,9 +114,9 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Returns a serailized string of this collection from the <see cref="PayloadSerializer.SerializeToString(object)"/> method.
+        /// Returns a serialized string of this collection from the <see cref="PayloadSerializer.SerializeToString(object)"/> method.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A serialized string of this collection.</returns>
         public virtual string GetSerializedString()
         {
             return Convention.PayloadSerializer.SerializeToString(Collection);
@@ -139,7 +140,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Will set the underlying <see cref="Collection"/> of the payload collection.
         /// </summary>
-        /// <param name="payloadCollection">The collection to get the underlying dictionary from</param>
+        /// <param name="payloadCollection">The collection to get the underlying dictionary from.</param>
         protected void SetCollection(PayloadCollection payloadCollection)
         {
             if (payloadCollection == null)

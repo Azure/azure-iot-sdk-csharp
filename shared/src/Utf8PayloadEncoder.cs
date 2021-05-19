@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Shared
     public class Utf8PayloadEncoder : PayloadEncoder
     {
         /// <summary>
-        /// A static instance of this class.
+        /// The default instance of this class.
         /// </summary>
         public static readonly Utf8PayloadEncoder Instance = new Utf8PayloadEncoder();
 

@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Shared
     /// </summary>
     /// <remarks>
     /// This interface is used to allow extension to use a different set of attributes for serialization.
-    /// For example our default implementation found in <see cref="NewtonsoftJsonWritablePropertyResponse"/> is based on <see cref="Newtonsoft.Json"/> seriailizer attributes.
+    /// For example our default implementation found in <see cref="NewtonsoftJsonWritablePropertyResponse"/> is based on <see cref="Newtonsoft.Json"/> serializer attributes.
     /// </remarks>
     public interface IWritablePropertyResponse
     {
@@ -18,17 +18,17 @@ namespace Microsoft.Azure.Devices.Shared
         public object Value { get; set; }
 
         /// <summary>
-        /// The acknowledgement code, usually an HTTP Status Code e.g. 200, 400.
+        /// The acknowledgment code, usually an HTTP Status Code e.g. 200, 400.
         /// </summary>
         public int AckCode { get; set; }
 
         /// <summary>
-        /// The acknowledgement version, as supplied in the property update request.
+        /// The acknowledgment version, as supplied in the property update request.
         /// </summary>
         public long AckVersion { get; set; }
 
         /// <summary>
-        /// The acknowledgement description, an optional, human-readable message about the result of the property update.
+        /// The acknowledgment description, an optional, human-readable message about the result of the property update.
         /// </summary>
         public string AckDescription { get; set; }
     }

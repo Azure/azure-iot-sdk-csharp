@@ -45,14 +45,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         /// <inheritdoc/>
-        public override bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue)
+        public override bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue)
         {
             outValue = default;
-            if (objectToConvert == null || string.IsNullOrEmpty(propertyName))
+            if (nestedObject == null || string.IsNullOrEmpty(propertyName))
             {
                 return false;
             }
-            if (((JsonElement)objectToConvert).TryGetProperty(propertyName, out JsonElement element))
+            if (((JsonElement)nestedObject).TryGetProperty(propertyName, out JsonElement element))
             {
                 outValue = DeserializeToType<T>(element.GetRawText());
                 return true;
