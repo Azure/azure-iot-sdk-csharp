@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// A collection of properties for the client.
