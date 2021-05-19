@@ -3,7 +3,6 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Client")]
 #if (DEBUG)
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Shared.Tests")]
 #endif
