@@ -4,12 +4,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The base class for all payloads that accept a <see cref="PayloadConvention"/>.
     /// </summary>
+    /// <remarks>
+    /// This classes uses the <see cref="NewtonsoftJsonPayloadSerializer"/> and
+    /// <see cref="Utf8PayloadEncoder"/> based <see cref="DefaultPayloadConvention"/> by default.
+    /// </remarks>
     public abstract class PayloadCollection : IEnumerable<object>
     {
         /// <summary>

@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Converts the object using the serializer.
         /// </summary>
-        /// <remarks>This class is used by the <see cref="PayloadCollection"/> class to attempt to convert from the native serializer type
+        /// <remarks>This class is used by the PayloadCollection-based classes to attempt to convert from the native serializer type
         /// (for example, JObject or JsonElement) to the desired type.
         /// When you implement this you need to be aware of what type your serializer will use for anonymous types.</remarks>
         /// <typeparam name="T">The type to convert to.</typeparam>
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets a nested property from the serialized data.
         /// </summary>
         /// <remarks>
-        /// This is used internally by our <see cref="PayloadCollection"/> to attempt to get a property of the underlying object.
+        /// This is used internally by our PayloadCollection-based classes to attempt to get a property of the underlying object.
         /// An example of this would be a property under the component.
         /// </remarks>
         /// <typeparam name="T">The type to convert the retrieved property to.</typeparam>
