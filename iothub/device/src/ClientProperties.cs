@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -9,8 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// A container for properties retrieved from the service.
     /// <remarks>
     /// The Properties class is not meant to be constructed by customer code.
-    /// It is intended to be returned fully populated from the
-    /// <see cref="DeviceClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/> method.
+    /// It is intended to be returned fully populated from the client method.
     /// </remarks>
     /// </summary>
     public class ClientProperties : ClientPropertyCollection
@@ -42,18 +42,5 @@ namespace Microsoft.Azure.Devices.Client
         /// See the <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see> documentation for more information.
         /// </remarks>
         public ClientPropertyCollection Writable { get; private set; }
-
-        internal static ClientProperties FromClientTwinProperties(ClientTwinProperties clientTwinProperties, PayloadConvention payloadConvention)
-        {
-            if (clientTwinProperties == null)
-            {
-                throw new ArgumentNullException(nameof(clientTwinProperties));
-            }
-
-            ClientPropertyCollection writablePropertyCollection = FromClientTwinDictionary(clientTwinProperties.Desired, payloadConvention);
-            ClientPropertyCollection propertyCollection = FromClientTwinDictionary(clientTwinProperties.Reported, payloadConvention);
-
-            return new ClientProperties(writablePropertyCollection, propertyCollection);
-        }
     }
 }

@@ -4,7 +4,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
     /// A <see cref="Newtonsoft.Json.JsonConvert"/> <see cref="PayloadSerializer"/> implementation.

@@ -29,9 +29,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
 
-        private static CancellationToken s_cancellationToken;
-        private static DateTimeOffset s_applicationStartTime;
-
         // Dictionary to hold the temperature updates sent over each "Thermostat" component.
         // NOTE: Memory constrained devices should leverage storage capabilities of an external service to store this
         // information and perform computation.

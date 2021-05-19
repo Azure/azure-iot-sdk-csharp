@@ -993,7 +993,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 ClientTwinProperties twinProperties = JsonConvert.DeserializeObject<ClientTwinProperties>(body);
-                var properties = ClientProperties.FromClientTwinProperties(twinProperties, payloadConvention);
+                var properties = twinProperties.ToClientProperties(payloadConvention);
                 return properties;
             }
             catch (JsonReaderException ex)
