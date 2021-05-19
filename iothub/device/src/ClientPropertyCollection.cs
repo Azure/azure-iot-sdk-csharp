@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(twinCollection));
             }
 
-            var propertyCollectionToReturn = new ClientPropertyCollection()
+            var propertyCollectionToReturn = new ClientPropertyCollection
             {
                 Convention = payloadConvention,
             };
