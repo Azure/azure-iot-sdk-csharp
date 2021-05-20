@@ -1,6 +1,7 @@
-﻿ // Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#if !NET451
 using System;
 using System.Diagnostics.Tracing;
 using System.Net;
@@ -72,121 +73,64 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
         [LoggedTestMethod]
         public async Task Command_DeviceReceivesCommandAndResponseWithComponent_Mqtt()
         {
-            await SendCommandAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveCommandWithComponentAsync, withComponent: true).ConfigureAwait(false);
+            await SendCommandAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveCommandAsync, withComponent: true).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Command_DeviceReceivesCommandAndResponseWithComponent_MqttWs()
         {
-            await SendCommandAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveCommandWithComponentAsync, withComponent: true).ConfigureAwait(false);
+            await SendCommandAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveCommandAsync, withComponent: true).ConfigureAwait(false);
         }
 
 
         [LoggedTestMethod]
         public async Task Command_DeviceUnsubscribesWithComponent_Mqtt()
         {
-            await SendCommandAndUnsubscribeAsync(Client.TransportType.Mqtt_Tcp_Only, SubscribeAndUnsubscribeCommandWithComponentAsync, withComponent: true).ConfigureAwait(false);
+            await SendCommandAndUnsubscribeAsync(Client.TransportType.Mqtt_Tcp_Only, SubscribeAndUnsubscribeCommandAsync, withComponent: true).ConfigureAwait(false);
         }
 
 
         [LoggedTestMethod]
         public async Task Command_DeviceUnsubscribesWithComponent_MqttWs()
         {
-            await SendCommandAndUnsubscribeAsync(Client.TransportType.Mqtt_WebSocket_Only, SubscribeAndUnsubscribeCommandWithComponentAsync, withComponent: true).ConfigureAwait(false);
+            await SendCommandAndUnsubscribeAsync(Client.TransportType.Mqtt_WebSocket_Only, SubscribeAndUnsubscribeCommandAsync, withComponent: true).ConfigureAwait(false);
         }
 
-        public static async Task ServiceSendCommandAndVerifyResponseAsync(string deviceId, string methodName, MsTestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        public static async Task DigitalTwinsSendCommandAndVerifyResponseAsync(string deviceId, string componentName, string methodName, string respJson, string reqJson, MsTestLogger logger)
         {
-            ServiceClient serviceClient = null;
-            if (serviceClientTransportSettings == default)
-            {
-                serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            }
-            else
-            {
-                serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
-            }
+            DigitalTwinClient digitalTwinClient = null;
+            digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
-            TimeSpan methodTimeout = responseTimeout == default ? s_defaultCommandTimeoutMinutes : responseTimeout;
-            logger.Trace($"{nameof(ServiceSendCommandAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            try
+            logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Invoke method {methodName}.");
+            Rest.HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> response = null;
+            if (string.IsNullOrEmpty(componentName))
             {
-                CloudToDeviceMethodResult response =
-                    await serviceClient.InvokeDeviceMethodAsync(
-                        deviceId,
-                        new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(null)).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (!(ex is DeviceNotFoundException))
-                    throw ex;
-            }
-            finally
-            {
-                await serviceClient.CloseAsync().ConfigureAwait(false);
-                serviceClient.Dispose();
-            }
-        }
-
-        public static async Task ServiceSendCommandAndVerifyResponseAsync(string deviceId, string methodName, string respJson, string reqJson, MsTestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
-        {
-            ServiceClient serviceClient = null;
-            if (serviceClientTransportSettings == default)
-            {
-                serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            }
-            else
-            {
-                serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
-            }
-
-            TimeSpan methodTimeout = responseTimeout == default ? s_defaultCommandTimeoutMinutes : responseTimeout;
-            logger.Trace($"{nameof(ServiceSendCommandAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            CloudToDeviceMethodResult response =
-                await serviceClient.InvokeDeviceMethodAsync(
+                response =
+                await digitalTwinClient.InvokeCommandAsync(
                     deviceId,
-                    new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
+                    methodName,
+                    reqJson).ConfigureAwait(false);
+            }
+            else
+            {
+                response =
+                await digitalTwinClient.InvokeComponentCommandAsync(
+                    deviceId,
+                    componentName,
+                    methodName,
+                    reqJson).ConfigureAwait(false);
+            }
 
-            logger.Trace($"{nameof(ServiceSendCommandAndVerifyResponseAsync)}: Method status: {response.Status}.");
-            Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
-            string payload = response.GetPayloadAsJson();
+
+            logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Method status: {response.Response.StatusCode}.");
+            Assert.AreEqual(200, Shared.StatusCodes.OK, $"The expected response status should be 200 but was {response.Response.StatusCode}");
+            string payload = response.Body.Payload;
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
 
-            await serviceClient.CloseAsync().ConfigureAwait(false);
-            serviceClient.Dispose();
+            digitalTwinClient.Dispose();
         }
 
-        public static async Task ServiceSendCommandAndVerifyResponseAsync(string deviceId, string moduleId, string methodName, string respJson, string reqJson, MsTestLogger logger, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
-        {
-            ServiceClient serviceClient = null;
-            if (serviceClientTransportSettings == default)
-            {
-                serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            }
-            else
-            {
-                serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
-            }
-
-            TimeSpan methodTimeout = responseTimeout == default ? s_defaultCommandTimeoutMinutes : responseTimeout;
-
-            logger.Trace($"{nameof(ServiceSendCommandAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            CloudToDeviceMethodResult response =
-                await serviceClient.InvokeDeviceMethodAsync(
-                    deviceId,
-                    moduleId,
-                    new CloudToDeviceMethod(methodName, responseTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
-
-            logger.Trace($"{nameof(ServiceSendCommandAndVerifyResponseAsync)}: Method status: {response.Status}.");
-            Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
-            string payload = response.GetPayloadAsJson();
-            Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
-
-            await serviceClient.CloseAsync().ConfigureAwait(false);
-            serviceClient.Dispose();
-        }
-
-        public static async Task<Task> SubscribeAndUnsubscribeCommandAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
+        public static async Task<Task> SubscribeAndUnsubscribeCommandAsync(DeviceClient deviceClient, string componentName, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
@@ -194,8 +138,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                 .SubscribeToCommandsAsync(
                 (request, context) =>
                 {
-                    logger.Trace($"{nameof(SubscribeAndUnsubscribeCommandAsync)}: DeviceClient method: {request.CommandName}.");
-                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
+                    if (string.IsNullOrEmpty(componentName))
+                    {
+                        logger.Trace($"{nameof(SubscribeAndUnsubscribeCommandAsync)}: DeviceClient method: {request.CommandName}.");
+                    }
+                    else
+                    {
+                        logger.Trace($"{nameof(SubscribeAndUnsubscribeCommandAsync)}: DeviceClient method: {request.ComponentName} {request.CommandName}.");
+                    }
+                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), Shared.StatusCodes.OK));
                 },
                 null)
                 .ConfigureAwait(false);
@@ -206,27 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
             return methodCallReceived.Task;
         }
 
-        public static async Task<Task> SubscribeAndUnsubscribeCommandWithComponentAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
-        {
-            var methodCallReceived = new TaskCompletionSource<bool>();
-
-            await deviceClient
-                .SubscribeToCommandsAsync(
-                (request, context) =>
-                {
-                    logger.Trace($"{nameof(SubscribeAndUnsubscribeCommandAsync)}: DeviceClient method: {request.ComponentName} - {request.CommandName}.");
-                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
-                },
-                null)
-                .ConfigureAwait(false);
-
-            await deviceClient.SubscribeToCommandsAsync(null, null).ConfigureAwait(false);
-
-            // Return the task that tells us we have received the callback.
-            return methodCallReceived.Task;
-        }
-
-        public static async Task<Task> SetDeviceReceiveCommandAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
+        public static async Task<Task> SetDeviceReceiveCommandAsync(DeviceClient deviceClient, string componentName, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
@@ -238,7 +169,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                     try
                     {
                         var valueToTest = request.GetData<ServiceCommandRequestObject>();
-                        Assert.AreEqual(methodName, request.CommandName, $"The expected method name should be {methodName} but was {request.CommandName}");
+                        if (!string.IsNullOrEmpty(componentName))
+                        {
+                            Assert.AreEqual(componentName, request.ComponentName, $"The expected component name should be {componentName} but was {request.ComponentName}");
+                        } else
+                        {
+                            Assert.AreEqual(null, request.ComponentName, $"The expected component name should be null but was {request.ComponentName}");
+                        }
+                        
                         Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
                         Assert.AreEqual(ServiceCommandRequestAssertion.a, valueToTest.a, $"The expected respose object did not decode properly. Value a should be {ServiceCommandRequestAssertion.a} but was {valueToTest?.a ?? int.MinValue}");
                         methodCallReceived.SetResult(true);
@@ -248,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                         methodCallReceived.SetException(ex);
                     }
 
-                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
+                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), Shared.StatusCodes.OK));
                 },
                 null).ConfigureAwait(false);
 
@@ -256,64 +194,40 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
             return methodCallReceived.Task;
         }
 
-        public static async Task<Task> SetDeviceReceiveCommandWithComponentAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
-        {
-            var methodCallReceived = new TaskCompletionSource<bool>();
-
-            await deviceClient.SubscribeToCommandsAsync(
-                (request, context) =>
-                {
-                    logger.Trace($"{nameof(SetDeviceReceiveCommandAsync)}: DeviceClient method: {request.CommandName}.");
-
-                    try
-                    {
-                        var valueToTest = request.GetData<ServiceCommandRequestObject>();
-                        Assert.AreEqual(methodName, $"{request.ComponentName}*{request.CommandName}", $"The expected method name should be {methodName} but was {request.ComponentName}*{request.CommandName}");
-                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
-                        Assert.AreEqual(ServiceCommandRequestAssertion.a, valueToTest.a, $"The expected respose object did not decode properly. Value a should be {ServiceCommandRequestAssertion.a} but was {valueToTest?.a ?? int.MinValue}");
-                        methodCallReceived.SetResult(true);
-                    }
-                    catch (Exception ex)
-                    {
-                        methodCallReceived.SetException(ex);
-                    }
-
-                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
-                },
-                null).ConfigureAwait(false);
-
-            // Return the task that tells us we have received the callback.
-            return methodCallReceived.Task;
-        }
-
-        private async Task SendCommandAndUnsubscribeAsync(Client.TransportType transport, Func<DeviceClient, string, MsTestLogger, Task<Task>> subscribeAndUnsubscribeMethod, bool withComponent = false, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        private async Task SendCommandAndUnsubscribeAsync(Client.TransportType transport, Func<DeviceClient, string, string, MsTestLogger, Task<Task>> subscribeAndUnsubscribeMethod, bool withComponent = false, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            await subscribeAndUnsubscribeMethod(deviceClient, CommandName, Logger).ConfigureAwait(false);
+            string componentName = null;
+            if (withComponent)
+            {
+                componentName = ComponentName;
+            }
 
-            await ServiceSendCommandAndVerifyResponseAsync(testDevice.Id, CommandName, Logger, responseTimeout: responseTimeout, serviceClientTransportSettings: serviceClientTransportSettings).ConfigureAwait(false);
+            await subscribeAndUnsubscribeMethod(deviceClient, componentName, CommandName, Logger).ConfigureAwait(false);
+
+            await SubscribeAndUnsubscribeCommandAsync(deviceClient, componentName, CommandName, Logger);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendCommandAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, bool withComponent = false, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        private async Task SendCommandAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, bool withComponent = false, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            string commandNameString = CommandName;
+            string componentName = null;
             if (withComponent)
             {
-                commandNameString = $"{ComponentName}*{CommandName}";
+                componentName = ComponentName;
             }
 
-            Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, commandNameString, Logger).ConfigureAwait(false);
+            Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, componentName, CommandName, Logger).ConfigureAwait(false);
 
             await Task
                 .WhenAll(
-                    ServiceSendCommandAndVerifyResponseAsync(testDevice.Id, commandNameString, DeviceResponseJson, ServiceRequestJson, Logger, responseTimeout, serviceClientTransportSettings),
+                    DigitalTwinsSendCommandAndVerifyResponseAsync(testDevice.Id, componentName, CommandName, DeviceResponseJson, ServiceRequestJson, Logger),
                     methodReceivedTask)
                 .ConfigureAwait(false);
 
@@ -321,3 +235,4 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
         }
     }
 }
+#endif
