@@ -292,11 +292,6 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         public void ClearMetadata()
         {
-            TryClearMetadata(MetadataName);
-            TryClearMetadata(LastUpdatedName);
-            TryClearMetadata(LastUpdatedVersionName);
-            TryClearMetadata(VersionName);
-
             // GitHub Issue: https://github.com/Azure/azure-iot-sdk-csharp/issues/1971
             // When we clear the metadata from the underlying collection we need to also clear
             // the _metadata object so the TryGetMemberInternal will return a JObject instead of a new TwinCollection
