@@ -49,9 +49,9 @@ To learn more about how to configure and run the Temperature Controller device s
 - IoT Central, see [Tutorial: Create and connect a client application to your Azure IoT Central application][temp-controller-central-tutorial]
 
 [pnp-convention]: https://docs.microsoft.com/azure/iot-pnp/concepts-convention
-[d-thermostat]: /iot-hub/Samples/device/PnpDeviceSamples/Thermostat
-[d-temperature-controller]: /iot-hub/Samples/device/PnpDeviceSamples/TemperatureController
-[thermostat-model]: /iot-hub/Samples/device/PnpDeviceSamples/Thermostat/Models/Thermostat.json
+[d-thermostat]: ./Thermostat
+[d-temperature-controller]: ./TemperatureController
+[thermostat-model]: /iot-hub/Samples/device/convention-based-samples/Thermostat/Models/Thermostat.json
 [d-device-info]: https://devicemodels.azure.com/dtmi/azure/devicemanagement/deviceinformation-1.json
 [thermostat-hub-qs]: https://docs.microsoft.com/azure/iot-pnp/quickstart-connect-device?pivots=programming-language-csharp
 [temp-controller-hub-tutorial]: https://docs.microsoft.com/azure/iot-pnp/tutorial-multiple-components?pivots=programming-language-csharp
