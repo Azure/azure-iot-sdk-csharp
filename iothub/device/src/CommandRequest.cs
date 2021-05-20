@@ -39,7 +39,24 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The command request data.</returns>
         public T GetData<T>()
         {
-            return _payloadConvention.PayloadSerializer.DeserializeToType<T>(DataAsJson);
+            string dataAsJson = DataAsJson;
+
+            return dataAsJson == null
+                ? default
+                : _payloadConvention.PayloadSerializer.DeserializeToType<T>(dataAsJson);
+        }
+
+        /// <summary>
+        /// The command request data bytes.
+        /// </summary>
+        /// <returns>
+        /// The command request data bytes.
+        /// </returns>
+        public byte[] GetDataAsBytes()
+        {
+            // Need to return a clone of the array so that consumers
+            // of this library cannot change its contents.
+            return (byte[])_data.Clone();
         }
 
         /// <summary>
