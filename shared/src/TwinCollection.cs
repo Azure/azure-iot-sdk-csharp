@@ -235,6 +235,9 @@ namespace Microsoft.Azure.Devices.Shared
                 return false;
             }
 
+            // Check to see if this TwinCollection has a non-null metadata object
+            // If the object is empty this signifies the TwinCollection was defined without the metadata
+            // or, the metadata was cleared with the ClearMetadata method.
             if (_metadata?[propertyName] is JObject)
             {
                 if (value is JValue jsonValue)
@@ -293,6 +296,11 @@ namespace Microsoft.Azure.Devices.Shared
             TryClearMetadata(LastUpdatedName);
             TryClearMetadata(LastUpdatedVersionName);
             TryClearMetadata(VersionName);
+
+            // GitHub Issue: https://github.com/Azure/azure-iot-sdk-csharp/issues/1971
+            // When we clear the metadata from the underlying collection we need to also clear
+            // the _metadata object so the TryGetMemberInternal will return a JObject instead of a new TwinCollection
+            _metadata.RemoveAll();
         }
     }
 }
