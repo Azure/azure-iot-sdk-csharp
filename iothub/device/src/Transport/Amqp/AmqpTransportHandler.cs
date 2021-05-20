@@ -521,6 +521,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #endregion Accept-Dispose
 
+        #region Convention-based operations
+
+        public override Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("Property operations are currently not supported over AMQP. Please use MQTT protocol instead.");
+        }
+
+        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("Property operations are currently not supported over AMQP. Please use MQTT protocol instead.");
+        }
+
+        #endregion Convention-based operations
+
         #region Helpers
 
         private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
