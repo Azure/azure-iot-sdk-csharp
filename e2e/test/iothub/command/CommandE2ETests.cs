@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
             return methodCallReceived.Task;
         }
 
-        private async Task SendCommandAndUnsubscribeAsync(Client.TransportType transport, Func<DeviceClient, string, string, MsTestLogger, Task<Task>> subscribeAndUnsubscribeMethod, bool withComponent = false, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        private async Task SendCommandAndUnsubscribeAsync(Client.TransportType transport, Func<DeviceClient, string, string, MsTestLogger, Task<Task>> subscribeAndUnsubscribeMethod, bool withComponent = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendCommandAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, bool withComponent = false, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        private async Task SendCommandAndRespondAsync(Client.TransportType transport, Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, bool withComponent = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
