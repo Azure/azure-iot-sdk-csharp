@@ -40,7 +40,8 @@ namespace Microsoft.Azure.Devices.Client
             var methodDefaultCallback = new MethodCallback(async (methodRequest, userContext) =>
             {
                 CommandRequest commandRequest;
-                if (methodRequest.Name.Contains(ConventionBasedConstants.ComponentLevelCommandSeparator))
+                if (methodRequest.Name != null
+                    && methodRequest.Name.Contains(ConventionBasedConstants.ComponentLevelCommandSeparator))
                 {
                     string[] split = methodRequest.Name.Split(ConventionBasedConstants.ComponentLevelCommandSeparator);
                     string componentName = split[0];
