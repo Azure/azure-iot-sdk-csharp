@@ -43,7 +43,6 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 return default;
             }
-
             return ((JToken)objectToConvert).ToObject<T>();
         }
 
