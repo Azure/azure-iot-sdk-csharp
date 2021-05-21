@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <summary>
-        /// Adds the value for the collection.
+        /// Adds the value to the collection.
         /// </summary>
         /// <remarks>
         /// If the collection has a key that matches the property name this method will throw an <see cref="ArgumentException"/>.
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <summary>
-        /// Adds the value for the collection.
+        /// Adds the value to the collection.
         /// </summary>
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
         /// <param name="componentName">The component with the property to add.</param>
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <summary>
-        /// Adds the value for the collection.
+        /// Adds the values to the collection.
         /// </summary>
         /// <param name="properties">A collection of properties to add or update.</param>
         public void Add(IDictionary<string, object> properties)
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <summary>
-        /// Adds the value for the collection.
+        /// Adds the values to the collection.
         /// </summary>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
@@ -209,7 +209,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <seealso cref="PayloadEncoder"/>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
-        /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior. Setting to true will simply overwrite the value; setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
+        /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior.
+        /// Setting to true will simply overwrite the value. Setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
         private void AddInternal(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
             if (properties == null)

@@ -9,10 +9,11 @@ namespace Microsoft.Azure.Devices.Client
     public class ClientPropertiesUpdateResponse
     {
         /// <summary>
-        /// The request Id that is appended to the <see cref="InternalClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
+        /// The request Id that is associated with the <see cref="InternalClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
         /// </summary>
         /// <remarks>
-        /// This request Id is relevant only for operations over MQTT, and can be used for debugging the operation from the service side.
+        /// This request Id is relevant only for operations over MQTT, and can be used for tracking the operation on service side logs.
+        /// Note that you would need to contact the support team to track operations on the service side.
         /// </remarks>
         public string RequestId { get; internal set; }
 

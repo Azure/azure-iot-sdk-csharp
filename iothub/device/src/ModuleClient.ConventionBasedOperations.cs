@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SubscribeToCommandsAsync(callback, userContext, cancellationToken);
 
         /// <summary>
-        /// Retrieve the device properties.
+        /// Retrieve the client properties.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The device properties.</returns>
@@ -46,7 +46,8 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.GetClientPropertiesAsync(cancellationToken);
 
         /// <summary>
-        /// Update properties.
+        /// Update the client properties.
+        /// This operation enables the partial update of the properties of the connected client.
         /// </summary>
         /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -55,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.UpdateClientPropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
-        /// Sets the global listener for Writable properties
+        /// Sets the global listener for writable property update events.
         /// </summary>
         /// <param name="callback">The global call back to handle all writable property updates.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
