@@ -397,6 +397,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
+        public override Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("Property operations are not supported over HTTP. Please use MQTT protocol instead.");
+        }
+
+        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("Property operations are not supported over HTTP. Please use MQTT protocol instead.");
+        }
+
         // This is for invoking methods from an edge module to another edge device or edge module.
         internal Task<MethodInvokeResponse> InvokeMethodAsync(MethodInvokeRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
         {

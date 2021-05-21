@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubCommunicationException("MQTT is disconnected.");
                 }
 
-                if (data is Message message)
+                if (data is MessageBase message)
                 {
                     await SendMessageAsync(context, message).ConfigureAwait(true);
                     return;
@@ -839,7 +839,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 Logging.Exit(this, context.Name, packet, nameof(ProcessPublish));
         }
 
-        private async Task SendMessageAsync(IChannelHandlerContext context, Message message)
+        private async Task SendMessageAsync(IChannelHandlerContext context, MessageBase message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, message, nameof(SendMessageAsync));
@@ -1132,7 +1132,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return ret;
         }
 
-        public async Task<PublishPacket> ComposePublishPacketAsync(IChannelHandlerContext context, Message message, QualityOfService qos, string topicName)
+        public async Task<PublishPacket> ComposePublishPacketAsync(IChannelHandlerContext context, MessageBase message, QualityOfService qos, string topicName)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, topicName, nameof(ComposePublishPacketAsync));
@@ -1386,7 +1386,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        internal static string PopulateMessagePropertiesFromMessage(string topicName, Message message)
+        internal static string PopulateMessagePropertiesFromMessage(string topicName, MessageBase message)
         {
             var systemProperties = new Dictionary<string, string>();
             foreach (KeyValuePair<string, object> property in message.SystemProperties)

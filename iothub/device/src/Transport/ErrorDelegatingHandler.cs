@@ -145,6 +145,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }
 
+        public override Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.GetPropertiesAsync(payloadConvention, cancellationToken));
+        }
+
+        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.SendPropertyPatchAsync(reportedProperties, cancellationToken));
+        }
+
         private static bool IsNetworkExceptionChain(Exception exceptionChain)
         {
             return exceptionChain.Unwind(true).Any(e => IsNetwork(e) && !IsTlsSecurity(e));

@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 return default;
             }
-            return ((JObject)objectToConvert).ToObject<T>();
+            return ((JToken)objectToConvert).ToObject<T>();
         }
 
         /// <inheritdoc/>

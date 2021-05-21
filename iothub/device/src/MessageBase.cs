@@ -182,15 +182,6 @@ namespace Microsoft.Azure.Devices.Client
         public bool IsSecurityMessage => CommonConstants.SecurityMessageInterfaceId.Equals(GetSystemProperty<string>(MessageSystemPropertyNames.InterfaceId), StringComparison.Ordinal);
 
         /// <summary>
-        /// Used to specify the content type of the message.
-        /// </summary>
-        internal string PayloadContentType
-        {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
-            set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
-        }
-
-        /// <summary>
         /// Specifies the input name on which the message was sent, if there was one.
         /// </summary>
         public string InputName
@@ -218,19 +209,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Used to specify the content encoding type of the message.
-        /// </summary>
-        internal string PayloadContentEncoding
-        {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
-            set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
-        }
-
-        /// <summary>
         /// The DTDL component name from where the telemetry message has originated.
         /// This is relevant only for plug and play certified devices.
         /// </summary>
-        internal string ComponentName
+        public string ComponentName
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ComponentName);
             set => SystemProperties[MessageSystemPropertyNames.ComponentName] = value;
@@ -249,6 +231,24 @@ namespace Microsoft.Azure.Devices.Client
             "CA1721:Property names should not match get methods",
             Justification = "Cannot remove public property on a public facing type")]
         public Stream BodyStream { get { return _bodyStream; } protected set { _bodyStream = value; } }
+
+        /// <summary>
+        /// Used to specify the content type of the message.
+        /// </summary>
+        internal string PayloadContentType
+        {
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
+            set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
+        }
+
+        /// <summary>
+        /// Used to specify the content encoding type of the message.
+        /// </summary>
+        internal string PayloadContentEncoding
+        {
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
+            set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
+        }
 
         /// <summary>
         /// For outgoing messages, contains the Mqtt topic that the message is being sent to
