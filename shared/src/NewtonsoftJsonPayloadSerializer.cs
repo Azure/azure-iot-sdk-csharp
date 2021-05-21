@@ -44,11 +44,6 @@ namespace Microsoft.Azure.Devices.Shared
                 return default;
             }
 
-            if (objectToConvert is JArray)
-            {
-                return ((JArray)objectToConvert).ToObject<T>();
-            }
-
             return ((JToken)objectToConvert).ToObject<T>();
         }
 
