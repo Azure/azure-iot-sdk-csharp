@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Telemetry
             string userId = Guid.NewGuid().ToString();
             string componentName = Guid.NewGuid().ToString();
 
-            logger.Trace($"{nameof(ComposeTelemetryMessage)}: messageId='{messageId}' userId='{userId}' p1Value='{p1Value}'");
+            logger.Trace($"{nameof(ComposeTelemetryMessageWithComponent)}: messageId='{messageId}' userId='{userId}' p1Value='{p1Value}'");
             var message = new TelemetryMessage
             {
                 MessageId = messageId,
@@ -111,7 +111,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Telemetry
             string messageId = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
-            string componentName = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(ComposeTelemetryMessage)}: messageId='{messageId}' userId='{userId}' p1Value='{p1Value}'");
             var message = new TelemetryMessage
