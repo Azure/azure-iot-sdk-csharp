@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Gets the count of properties in the Collection
+        /// Gets the count of properties in the Collection.
         /// </summary>
         public int Count
         {
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Gets the Metadata for this property
+        /// Gets the Metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property</returns>
         public Metadata GetMetadata()
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Gets the LastUpdatedVersion for this property
+        /// Gets the LastUpdatedVersion for this property.
         /// </summary>
         /// <returns>LastUpdatdVersion if present, null otherwise</returns>
         public long? GetLastUpdatedVersion()
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Gets the TwinProperties as a JSON string
+        /// Gets the TwinProperties as a JSON string.
         /// </summary>
         /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
         /// <returns>JSON string</returns>
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Determines whether the specified property is present
+        /// Determines whether the specified property is present.
         /// </summary>
         /// <param name="propertyName">The property to locate</param>
         /// <returns>true if the specified property is present; otherwise, false</returns>
@@ -227,6 +227,17 @@ namespace Microsoft.Azure.Devices.Shared
             }
         }
 
+        /// <summary>
+        /// Gets the specified property from the twin collection.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to get.</param>
+        /// <param name="result">The value to return from the property collection.</param>
+        /// <returns>A <see cref="JToken"/> as an <see cref="object"/> if the metadata is not present; otherwise it will return a <see cref="TwinCollection"/>, a <see cref="TwinCollectionArray"/> or a <see cref="TwinCollectionValue"/>.</returns>
+        /// <remarks>
+        /// If this method is used with a <see cref="TwinCollection"/> returned from a <c>DeviceClient</c> it will always return a <see cref="JToken"/>. However, if you are using this method with a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client, it will return the corresponding type depending on what is stored in the properties collection.
+        /// 
+        /// For example a <see cref="List{T}"/> would return a <see cref="TwinCollectionArray"/>, with the metadata intact, when used with a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client. If you need this method to always return a <see cref="JToken"/> please see the <see cref="ClearAllMetadata"/> method for more information.
+        /// </remarks>
         private bool TryGetMemberInternal(string propertyName, out object result)
         {
             if (!JObject.TryGetValue(propertyName, out JToken value))
@@ -235,9 +246,6 @@ namespace Microsoft.Azure.Devices.Shared
                 return false;
             }
 
-            // Check to see if this TwinCollection has a non-null metadata object
-            // If the object is empty this signifies the TwinCollection was defined without the metadata
-            // or, the metadata was cleared with the ClearMetadata method.
             if (_metadata?[propertyName] is JObject)
             {
                 if (value is JValue jsonValue)
@@ -288,10 +296,29 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Clear metadata out of the collection
+        /// Clears metadata out of the properties collection.
         /// </summary>
+        /// <remarks>
+        /// This will only clear the metadata from the properties collection but will not change the <see cref="TwinCollection"/> metadata collection object. This allows you to still use methods such as <see cref="GetMetadata"/>. If you need to remove all metadata, please use <see cref="ClearAllMetadata"/>.
+        /// </remarks>
         public void ClearMetadata()
         {
+            TryClearMetadata(MetadataName);
+            TryClearMetadata(LastUpdatedName);
+            TryClearMetadata(LastUpdatedVersionName);
+            TryClearMetadata(VersionName);
+        }
+
+        /// <summary>
+        /// Clears all metadata out of the twin collection as well as all of the metadata from the properties collection.
+        /// </summary>
+        /// <remarks>
+        /// This will remove all metadata from the <see cref="TwinCollection"/> metadata object as well as the metadata for all of the properties collection. The difference from the <see cref="ClearMetadata"/> method is it will also clear the underlying metadata container which will affect methods such as <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
+        /// This method would be useful if you are performing any operations that require <see cref="TryGetMemberInternal(string, out object)"/> to return a <see cref="JToken"/> regardless of the client you are using.
+        /// </remarks>
+        public void ClearAllMetadata()
+        {
+            ClearMetadata();
             // GitHub Issue: https://github.com/Azure/azure-iot-sdk-csharp/issues/1971
             // When we clear the metadata from the underlying collection we need to also clear
             // the _metadata object so the TryGetMemberInternal will return a JObject instead of a new TwinCollection
