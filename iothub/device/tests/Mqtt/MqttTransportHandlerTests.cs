@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Diagnostics;
@@ -37,6 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         private const int statusFailure = 400;
         private const string fakeResponseId = "fakeResponseId";
         private static readonly TimeSpan ReceiveTimeoutBuffer = TimeSpan.FromSeconds(5);
+
         private delegate bool MessageMatcher(Message msg);
 
         [TestMethod]
@@ -369,7 +370,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Returns(msg =>
                 {
                     var response = new Message(twinByteStream);
-                    response.MqttTopicName = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusSuccess);
+                    string mqttTopic = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusSuccess);
+                    response.MqttTopicName = mqttTopic;
+                    var publishPacket = new PublishPacket(QualityOfService.AtMostOnce, false, false)
+                    {
+                        TopicName = mqttTopic
+                    };
+                    MqttIotHubAdapter.PopulateMessagePropertiesFromPacket(response, publishPacket);
                     transport.OnMessageReceived(response);
                     return TaskHelpers.CompletedTask;
                 });
@@ -393,7 +400,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                    .Returns(msg =>
                    {
                        var response = new Message();
-                       response.MqttTopicName = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusFailure);
+                       string mqttTopic = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusFailure);
+                       response.MqttTopicName = mqttTopic;
+                       var publishPacket = new PublishPacket(QualityOfService.AtMostOnce, false, false)
+                       {
+                           TopicName = mqttTopic
+                       };
+                       MqttIotHubAdapter.PopulateMessagePropertiesFromPacket(response, publishPacket);
                        transport.OnMessageReceived(response);
                        return TaskHelpers.CompletedTask;
                    });
@@ -431,8 +444,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // arrange
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
             var props = new TwinCollection();
-            string receivedBody = null;
             props["foo"] = "bar";
+            string receivedBody = null;
             channel
                 .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(twinPatchReportedTopicPrefix)))
                 .Returns(msg =>
@@ -442,7 +455,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     receivedBody = reader.ReadToEnd();
 
                     var response = new Message();
-                    response.MqttTopicName = GetResponseTopic(request.MqttTopicName, statusSuccess);
+                    string mqttTopic = GetResponseTopic(request.MqttTopicName, statusSuccess);
+                    response.MqttTopicName = mqttTopic;
+                    var publishPacket = new PublishPacket(QualityOfService.AtMostOnce, false, false)
+                    {
+                        TopicName = mqttTopic
+                    };
+                    MqttIotHubAdapter.PopulateMessagePropertiesFromPacket(response, publishPacket);
                     transport.OnMessageReceived(response);
 
                     return TaskHelpers.CompletedTask;
@@ -470,7 +489,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 {
                     var request = msg.Arg<Message>();
                     var response = new Message();
-                    response.MqttTopicName = GetResponseTopic(request.MqttTopicName, statusFailure);
+                    string mqttTopic = GetResponseTopic(request.MqttTopicName, statusFailure);
+                    response.MqttTopicName = mqttTopic;
+                    var publishPacket = new PublishPacket(QualityOfService.AtMostOnce, false, false)
+                    {
+                        TopicName = mqttTopic
+                    };
+                    MqttIotHubAdapter.PopulateMessagePropertiesFromPacket(response, publishPacket);
                     transport.OnMessageReceived(response);
                     return TaskHelpers.CompletedTask;
                 });
