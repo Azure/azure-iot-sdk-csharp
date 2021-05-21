@@ -270,7 +270,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             var twinPatch = new Twin();
-            twinPatch.Properties.Desired[propName] = propValue;
+            if (propValue is List<object>)
+            {
+                twinPatch.Properties.Desired[propName] = (Newtonsoft.Json.Linq.JToken)(JsonConvert.DeserializeObject(JsonConvert.SerializeObject(propValue)));
+            }
+            else
+            {
+                twinPatch.Properties.Desired[propName] = propValue;
+            }
 
             await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);
