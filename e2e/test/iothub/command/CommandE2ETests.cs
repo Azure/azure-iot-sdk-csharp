@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if !NET451
 using System;
 using System.Diagnostics.Tracing;
 using System.Net;
@@ -69,12 +68,41 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
 
         public static async Task DigitalTwinsSendCommandAndVerifyResponseAsync(string deviceId, string componentName, string commandName, MsTestLogger logger)
         {
-            DigitalTwinClient digitalTwinClient = null;
-            digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-
             string payloadToSend = JsonConvert.SerializeObject(new ServiceCommandRequestObject { A = 123 });
+            string responseExpected = JsonConvert.SerializeObject(new DeviceCommandResponse());
+            string payloadReceived = string.Empty;
+            int statusCode = 0;
+#if NET451
+
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Invoke command {commandName}.");
+            
+            CloudToDeviceMethodResult serviceClientResponse = null;
+            if (string.IsNullOrEmpty(componentName))
+            {
+                var serviceCommand = new CloudToDeviceMethod(commandName).SetPayloadJson(payloadToSend);
+                serviceClientResponse =
+                await serviceClient.InvokeDeviceMethodAsync(
+                    deviceId, serviceCommand).ConfigureAwait(false);
+            }
+            else
+            {
+                var serviceCommand = new CloudToDeviceMethod($"{componentName}*{commandName}").SetPayloadJson(payloadToSend);
+                serviceClientResponse =
+                await serviceClient.InvokeDeviceMethodAsync(
+                    deviceId, serviceCommand).ConfigureAwait(false);
+            }
+
+            statusCode = serviceClientResponse.Status;
+            payloadReceived = serviceClientResponse.GetPayloadAsJson();
+
+            serviceClient.Dispose();
+#else
+            DigitalTwinClient digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+            logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Invoke command {commandName}.");
+
             Rest.HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> response = null;
             if (string.IsNullOrEmpty(componentName))
             {
@@ -94,13 +122,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                     payloadToSend).ConfigureAwait(false);
             }
 
-            string responseExpected = JsonConvert.SerializeObject(new DeviceCommandResponse());
-            logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Command status: {response.Response.StatusCode}.");
-            Assert.AreEqual(200, (int)response.Response.StatusCode, $"The expected response status should be 200 but was {response.Response.StatusCode}");
-            string payload = response.Body.Payload;
-            Assert.AreEqual(responseExpected, payload, $"The expected response payload should be {responseExpected} but was {payload}");
+            statusCode = (int)response.Response.StatusCode;
+            payloadReceived = response.Body.Payload;
 
             digitalTwinClient.Dispose();
+#endif
+            logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Command status: {statusCode}.");
+            Assert.AreEqual(200, statusCode, $"The expected response status should be 200 but was {statusCode}");
+            Assert.AreEqual(responseExpected, payloadReceived, $"The expected response payload should be {responseExpected} but was {payloadReceived}");
+
         }
 
         public static async Task<Task> SetDeviceReceiveCommandAsync(DeviceClient deviceClient, string componentName, string commandName, MsTestLogger logger)
@@ -166,4 +196,3 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
         }
     }
 }
-#endif
