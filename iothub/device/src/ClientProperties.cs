@@ -5,17 +5,19 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// A container for properties retrieved from the service.
-    /// <remarks>
-    /// The Properties class is not meant to be constructed by customer code.
-    /// It is intended to be returned fully populated from the client method.
-    /// </remarks>
     /// </summary>
+    /// <remarks>
+    /// The <see cref="ClientProperties"/> class is not meant to be constructed by customer code.
+    /// It is intended to be returned fully populated from the client method <see cref="InternalClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/>.
+    /// </remarks>
     public class ClientProperties : ClientPropertyCollection
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ClientProperties"/>.
+        /// This is provided for unit testing purposes only.
         /// </summary>
-        internal ClientProperties()
+        /// <inheritdoc path="/remarks" cref="ClientProperties" />
+        public ClientProperties()
         {
             Writable = new ClientPropertyCollection();
         }
