@@ -282,9 +282,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var deviceInformation = new ClientPropertyCollection();
             deviceInformation.Add(componentName, deviceInformationProperties);
 
-            await _deviceClient.UpdateClientPropertiesAsync(deviceInformation, cancellationToken);
+            ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(deviceInformation, cancellationToken);
 
-            _logger.LogDebug($"Property: Update - component = '{componentName}', properties update is complete.");
+            _logger.LogDebug($"Property: Update - component = '{componentName}', properties update is complete " +
+                $"with a version of {updateResponse.Version}.");
         }
 
         // Send working set of device memory over telemetry.
@@ -311,8 +312,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var reportedProperties = new ClientPropertyCollection();
             reportedProperties.Add(propertyName, serialNumber);
 
-            await _deviceClient.UpdateClientPropertiesAsync(reportedProperties, cancellationToken);
-            _logger.LogDebug($"Property: Update - {{ {reportedProperties.GetSerializedString()} }} is complete.");
+            ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperties, cancellationToken);
+
+            _logger.LogDebug($"Property: Update - {{ {reportedProperties.GetSerializedString()} }} is complete " +
+                $"with a version of {updateResponse.Version}.");
         }
 
         private async Task SendTemperatureAsync(string componentName, CancellationToken cancellationToken)
@@ -363,9 +366,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var reportedProperties = new ClientPropertyCollection();
             reportedProperties.Add(componentName, propertyName, maxTemp);
 
-            await _deviceClient.UpdateClientPropertiesAsync(reportedProperties, cancellationToken);
+            ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperties, cancellationToken);
 
-            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ {reportedProperties.GetSerializedString()} in °C is complete.");
+            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ {reportedProperties.GetSerializedString()}" +
+                $" in °C is complete with a version of {updateResponse.Version}.");
         }
     }
 }
