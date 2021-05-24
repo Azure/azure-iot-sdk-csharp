@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await Properties_DeviceSetsPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, s_listOfPropertyValues, Logger).ConfigureAwait(false);
         }
 
-        public static async Task Properties_DeviceSetsPropertyAndGetsItBackAsync(DeviceClient deviceClient, string deviceId, object propValue, MsTestLogger logger)
+        public static async Task Properties_DeviceSetsPropertyAndGetsItBackAsync<T>(DeviceClient deviceClient, string deviceId, T propValue, MsTestLogger logger)
         {
             var propName = Guid.NewGuid().ToString();
 
@@ -216,8 +216,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await deviceClient.UpdateClientPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            var actual = deviceTwin.Properties.Reported[propName];
+            ClientProperties deviceTwin = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+            if (deviceTwin.TryGetValue<T>(propName, out var propFromCollection))
+            {
+                Assert.AreEqual(JsonConvert.SerializeObject(propFromCollection), JsonConvert.SerializeObject(propValue));
+            }
+            else
+            {
+                Assert.Fail($"The property {propName} was not found in the Writable collection");
+            }
             Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
@@ -432,21 +439,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             string value1 = serviceTwin.Properties.Reported[propName1].ToString();
 
             Assert.AreEqual(value1, propEmptyValue);
-
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        [propName1] = new Dictionary<string, object>
-                        {
-                            [propName2] = null
-                        }
-                    })
-                .ConfigureAwait(false);
-            serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
-            string value2 = serviceTwin.Properties.Reported[propName1].ToString();
-            Assert.AreEqual(value2, propEmptyValue);
         }
 
         private async Task Properties_ClientHandlesRejectionInvalidPropertyNameAsync(Client.TransportType transport)
