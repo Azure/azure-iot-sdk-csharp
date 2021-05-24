@@ -88,6 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             foreach (KeyValuePair<string, object> writableProperty in writableProperties)
             {
+                // The dispatcher key will be either a root-level property name or a component name.
                 switch (writableProperty.Key)
                 {
                     case Thermostat1:
@@ -118,24 +119,29 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string targetTemperatureProperty = "targetTemperature";
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{targetTemperatureProperty}\": {targetTemperature}°C }}.");
 
+            double currentTemperature = _temperature.ContainsKey(componentName)
+                ? _temperature[componentName]
+                : 0d;
+
             // Update Temperature in 2 steps
-            double step = (targetTemperature - _temperature[componentName]) / 2d;
-            for (int i = 1; i <= 2; i++)
-            {
-                _temperature[componentName] = Math.Round(_temperature[componentName] + step, 1);
+            // For. eg, if the current temperature is 10 and the desired is 30, it'll go 10 (current) => 20 (in-progress) => 30 (desired).
+            double step = (targetTemperature - currentTemperature) / 2d;
 
-                var reportedPropertyInProgress = new ClientPropertyCollection();
-                reportedPropertyInProgress.Add(componentName, targetTemperatureProperty, _temperature[componentName], StatusCodes.Accepted, version);
-                ClientPropertiesUpdateResponse inProgressUpdateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedPropertyInProgress);
+            _temperature[componentName] = Math.Round(currentTemperature + step, 1);
+            var reportedPropertyInProgress = new ClientPropertyCollection();
+            reportedPropertyInProgress.Add(componentName, targetTemperatureProperty, _temperature[componentName], StatusCodes.Accepted, version);
 
-                _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ {reportedPropertyInProgress.GetSerializedString()} is {nameof(StatusCodes.Accepted)} " +
-                    $"with a version of {inProgressUpdateResponse.Version}.");
+            ClientPropertiesUpdateResponse inProgressUpdateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedPropertyInProgress);
 
-                await Task.Delay(6 * 1000);
-            }
+            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ {reportedPropertyInProgress.GetSerializedString()} is {nameof(StatusCodes.Accepted)} " +
+                $"with a version of {inProgressUpdateResponse.Version}.");
 
+            await Task.Delay(6 * 1000);
+
+            _temperature[componentName] = Math.Round(_temperature[componentName] + step, 1);
             var reportedProperty = new ClientPropertyCollection();
             reportedProperty.Add(componentName, targetTemperatureProperty, _temperature[componentName], StatusCodes.Accepted, version, "Successfully updated target temperature.");
+
             ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ {reportedProperty.GetSerializedString()} is {nameof(StatusCodes.OK)} " +
@@ -306,16 +312,26 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Send device serial number over property update.
         private async Task SendDeviceSerialNumberAsync(CancellationToken cancellationToken)
         {
-            const string propertyName = "serialNumber";
-            const string serialNumber = "SR-123456";
+            const string serialNumber = "serialNumber";
+            const string currentSerialNumber = "SR-123456";
 
-            var reportedProperties = new ClientPropertyCollection();
-            reportedProperties.Add(propertyName, serialNumber);
+            // Verify if the device has previously reported the current value for property "serialNumber".
+            // If the expected value has not been previously reported then report it.
 
-            ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperties, cancellationToken);
+            // Retrieve the device's properties.
+            ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
-            _logger.LogDebug($"Property: Update - {{ {reportedProperties.GetSerializedString()} }} is complete " +
-                $"with a version of {updateResponse.Version}.");
+            if (!properties.TryGetValue("serialNumber", out string serialNumberReported)
+                || serialNumberReported != currentSerialNumber)
+            {
+                var reportedProperties = new ClientPropertyCollection();
+                reportedProperties.Add(serialNumber, currentSerialNumber);
+
+                ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperties, cancellationToken);
+
+                _logger.LogDebug($"Property: Update - {{ {reportedProperties.GetSerializedString()} }} is complete " +
+                    $"with a version of {updateResponse.Version}.");
+            }
         }
 
         private async Task SendTemperatureAsync(string componentName, CancellationToken cancellationToken)
