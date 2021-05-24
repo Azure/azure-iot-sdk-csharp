@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await PropertiesWithComponents_DeviceSetsPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, s_listOfPropertyValues, Logger).ConfigureAwait(false);
         }
 
-        public static async Task PropertiesWithComponents_DeviceSetsPropertyAndGetsItBackAsync(DeviceClient deviceClient, string deviceId, object propValue, MsTestLogger logger)
+        public static async Task PropertiesWithComponents_DeviceSetsPropertyAndGetsItBackAsync<T>(DeviceClient deviceClient, string deviceId, T propValue, MsTestLogger logger)
         {
             var propName = Guid.NewGuid().ToString();
 
@@ -220,10 +220,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await deviceClient.UpdateClientPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            var actual = deviceTwin.Properties.Reported[ComponentName][propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
-
+            ClientProperties deviceTwin = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+            if (deviceTwin.TryGetValue<T>(propName, out var propFromCollection))
+            {
+                Assert.AreEqual(JsonConvert.SerializeObject(propFromCollection), JsonConvert.SerializeObject(propValue));
+            }
+            else
+            {
+                Assert.Fail($"The property {propName} was not found in the Writable collection");
+            }
             // Validate the updated twin from the service-client
             Twin completeTwin = await _registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
             var actualProp = completeTwin.Properties.Reported[ComponentName][propName];
@@ -447,7 +452,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             string value1 = serviceTwin.Properties.Reported[ComponentName][propName1].ToString();
 
             Assert.AreEqual(value1, propEmptyValue);
-
         }
 
         private async Task PropertiesWithComponents_ClientHandlesRejectionInvalidPropertyNameAsync(Client.TransportType transport)
