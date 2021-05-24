@@ -100,6 +100,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>True if the collection contains an element with the specified key; otherwise, it returns false.</returns>
         public bool TryGetValue<T>(string key, out T value)
         {
+            if (Logging.IsEnabled && Convention == null)
+            {
+                Logging.Info($"The convention for this collection is not set; this typically means this collection was not created by the client. TryGetValue will attempt to get the property value but may not behave as expected.");
+            }
+
             if (Collection.ContainsKey(key))
             {
                 // If the object is of type T go ahead and return it.
