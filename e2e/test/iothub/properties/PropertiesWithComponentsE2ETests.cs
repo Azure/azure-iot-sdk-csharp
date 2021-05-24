@@ -221,13 +221,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated twin from the device-client
             ClientProperties deviceTwin = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            if (deviceTwin.TryGetValue<T>(propName, out var propFromCollection))
+            if (deviceTwin.TryGetValue<T>(ComponentName, propName, out var propFromCollection))
             {
                 Assert.AreEqual(JsonConvert.SerializeObject(propFromCollection), JsonConvert.SerializeObject(propValue));
             }
             else
             {
-                Assert.Fail($"The property {propName} was not found in the Writable collection");
+                Assert.Fail($"The property {propName} was not found in the  collection");
             }
             // Validate the updated twin from the service-client
             Twin completeTwin = await _registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);

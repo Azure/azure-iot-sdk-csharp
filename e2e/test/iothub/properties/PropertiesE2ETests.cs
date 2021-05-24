@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             }
             else
             {
-                Assert.Fail($"The property {propName} was not found in the Writable collection");
+                Assert.Fail($"The property {propName} was not found in the collection");
             }
 
             // Validate the updated twin from the service-client
