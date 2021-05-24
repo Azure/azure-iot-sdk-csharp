@@ -313,7 +313,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled && Convention == null)
             {
-                Logging.Info(this, $"The convention for this collection is not set; this typically means this collection was not created by the client. TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
+                Logging.Info(this, $"The convention for this collection is not set; this typically means this collection was not created by the client. " +
+                    $"TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
             }
 
             if (Contains(componentName, propertyName))
