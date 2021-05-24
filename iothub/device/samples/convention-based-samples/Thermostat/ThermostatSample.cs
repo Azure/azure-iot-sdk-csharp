@@ -99,6 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // The callback to handle command invocation requests.
         private Task<CommandResponse> HandleCommandsAsync(CommandRequest commandRequest, object userContext)
         {
+            // In this approach, we'll switch through the command name returned and handle each root-level command.
             switch (commandRequest.CommandName)
             {
                 case "getMaxMinReport":

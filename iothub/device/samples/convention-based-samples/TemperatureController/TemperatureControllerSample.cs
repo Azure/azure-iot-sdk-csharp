@@ -141,10 +141,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // The callback to handle command invocation requests.
         private Task<CommandResponse> HandleCommandsAsync(CommandRequest commandRequest, object userContext)
         {
+            // In this approach, we'll first switch through the component name returned and handle each component-level command.
+            // For the "default" case, we'll first check if the component name is null.
+            // If null, then this would be a root-level command request, so we'll switch through each root-level command.
+            // If not null, then this is a component-level command that has not been implemented.
+
+            // Switch through CommandRequest.ComponentName to handle all component-level commands.
             switch (commandRequest.ComponentName)
             {
                 case Thermostat1:
                 case Thermostat2:
+                    // For each component, switch through CommandRequest.CommandName to handle the specific component-level command.
                     switch (commandRequest.CommandName)
                     {
                         case "getMaxMinReport":
@@ -157,9 +164,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
                     }
 
+                // For the default case, first check if CommandRequest.ComponentName is null.
                 default:
+                    // If CommandRequest.ComponentName is null, then this is a root-level command request.
                     if (commandRequest.ComponentName == null)
                     {
+                        // Switch through CommandRequest.CommandName to handle all root-level commands.
                         switch (commandRequest.CommandName)
                         {
                             case "reboot":
@@ -182,7 +192,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
+        // The callback to handle root-level "reboot" command.
+        // This method will send a temperature update (of 0°C) over telemetry for both associated components.
         private async Task<CommandResponse> HandleRebootCommandAsync(CommandRequest commandRequest, object userContext)
         {
             try
@@ -207,8 +218,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the
-        // specified time to the current time.
+        // The callback to handle component-level "getMaxMinReport" command.
+        // This method will returns the max, min and average temperature from the specified time to the current time.
         private Task<CommandResponse> HandleMaxMinReportCommandAsync(CommandRequest commandRequest, object userContext)
         {
             try
