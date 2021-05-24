@@ -3,7 +3,9 @@
 
 #if !NET451
 
+using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Shared
 {
@@ -12,6 +14,31 @@ namespace Microsoft.Azure.Devices.Shared
     /// </summary>
     public class SystemTextJsonPayloadSerializer : PayloadSerializer
     {
+        /// <summary>
+        /// Class taken from https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-converters-how-to?pivots=dotnet-5-0#deserialize-inferred-types-to-object-properties
+        /// </summary>
+        internal class ObjectToInferredTypesConverter : JsonConverter<object>
+        {
+            public override object Read(
+                ref Utf8JsonReader reader,
+                Type typeToConvert,
+                JsonSerializerOptions options) => reader.TokenType switch
+                {
+                    JsonTokenType.True => true,
+                    JsonTokenType.False => false,
+                    JsonTokenType.Number when reader.TryGetInt64(out long l) => l,
+                    JsonTokenType.Number => reader.GetDouble(),
+                    JsonTokenType.String when reader.TryGetDateTime(out DateTime datetime) => datetime,
+                    JsonTokenType.String => reader.GetString(),
+                    _ => JsonDocument.ParseValue(ref reader).RootElement.Clone()
+                };
+
+            public override void Write(
+                Utf8JsonWriter writer,
+                object objectToWrite,
+                JsonSerializerOptions options) =>
+                JsonSerializer.Serialize(writer, objectToWrite, objectToWrite.GetType(), options);
+        }
         /// <summary>
         /// The Content Type string.
         /// </summary>
@@ -34,13 +61,15 @@ namespace Microsoft.Azure.Devices.Shared
         /// <inheritdoc/>
         public override T DeserializeToType<T>(string stringToDeserialize)
         {
-            return JsonSerializer.Deserialize<T>(stringToDeserialize);
+            var jsonOptions = new JsonSerializerOptions();
+            jsonOptions.Converters.Add(new ObjectToInferredTypesConverter());
+            return JsonSerializer.Deserialize<T>(stringToDeserialize, jsonOptions);
         }
 
         /// <inheritdoc/>
         public override T ConvertFromObject<T>(object objectToConvert)
         {
-            return DeserializeToType<T>(((JsonElement)objectToConvert).ToString());
+            return DeserializeToType<T>(SerializeToString(objectToConvert));
         }
 
         /// <inheritdoc/>
