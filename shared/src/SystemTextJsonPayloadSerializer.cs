@@ -4,9 +4,8 @@
 #if !NET451
 
 using System.Text.Json;
-using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Samples
+namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
     /// A <see cref="System.Text.Json"/> <see cref="PayloadSerializer"/> implementation.
