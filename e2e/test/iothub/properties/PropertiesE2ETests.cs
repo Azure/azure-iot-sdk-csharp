@@ -225,7 +225,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             {
                 Assert.Fail($"The property {propName} was not found in the Writable collection");
             }
-            Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
             Twin completeTwin = await _registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
