@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <inheritdoc/>
         public override T ConvertFromObject<T>(object objectToConvert)
         {
-            return DeserializeToType<T>(((JsonElement)objectToConvert).ToString());
+            return DeserializeToType<T>(SerializeToString(objectToConvert));
         }
 
         /// <inheritdoc/>

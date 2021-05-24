@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Retrieve the device's properties.
             ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
-            if (!properties.TryGetValue("serialNumber", out string serialNumberReported)
+            if (!properties.TryGetValue(serialNumber, out string serialNumberReported)
                 || serialNumberReported != currentSerialNumber)
             {
                 var reportedProperties = new ClientPropertyCollection();
