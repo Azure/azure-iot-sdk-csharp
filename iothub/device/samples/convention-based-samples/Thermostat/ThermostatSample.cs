@@ -16,7 +16,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class ThermostatSample
     {
-        private readonly Random _random = new Random();
+        private static readonly Random s_random = new Random();
+        private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(5);
 
         private double _temperature = 0d;
         private double _maxTemp = 0d;
@@ -37,30 +38,31 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
-            // This sample follows the following workflow:
-            // -> Set handler to receive and respond to writable property update requests.
-            // -> Set handler to receive and respond to commands.
-            // -> Periodically send "temperature" over telemetry.
-            // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set.
-
+            // Set handler to receive and respond to writable property update requests.
             _logger.LogDebug($"Subscribe to writable property updates.");
             await _deviceClient.SubscribeToWritablePropertiesEventAsync(HandlePropertyUpdatesAsync, null, cancellationToken);
 
+            // Set handler to receive and respond to commands.
             _logger.LogDebug($"Subscribe to commands.");
             await _deviceClient.SubscribeToCommandsAsync(HandleCommandsAsync, null, cancellationToken);
 
             bool temperatureReset = true;
+
+            // Periodically send "temperature" over telemetry.
+            // Send "maxTempSinceLastReboot" over property update, when a new max temperature is reached.
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (temperatureReset)
                 {
                     // Generate a random value between 5.0°C and 45.0°C for the current temperature reading.
-                    _temperature = Math.Round(_random.NextDouble() * 40.0 + 5.0, 1);
+                    _temperature = GenerateTemperatureWithinRange(45, 5);
                     temperatureReset = false;
                 }
 
+                // Send temperature updates over telemetry and the value of max temperature since last reboot over property update.
                 await SendTemperatureAsync();
-                await Task.Delay(5 * 1000);
+
+                await Task.Delay(s_sleepDuration);
             }
         }
 
@@ -147,7 +149,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        // Send temperature updates over telemetry. The sample also sends the value of max temperature since last reboot over reported property update.
+        // Send temperature updates over telemetry.
+        // This also sends the value of max temperature since last reboot over property update.
         private async Task SendTemperatureAsync()
         {
             await SendTemperatureTelemetryAsync();
@@ -156,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             if (maxTemp > _maxTemp)
             {
                 _maxTemp = maxTemp;
-                await UpdateMaxTemperatureSinceLastRebootAsync();
+                await UpdateMaxTemperatureSinceLastRebootPropertyAsync();
             }
         }
 
@@ -176,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // Send temperature over reported property update.
-        private async Task UpdateMaxTemperatureSinceLastRebootAsync()
+        private async Task UpdateMaxTemperatureSinceLastRebootPropertyAsync()
         {
             const string propertyName = "maxTempSinceLastReboot";
             var reportedProperties = new ClientPropertyCollection();
@@ -186,6 +189,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             _logger.LogDebug($"Property: Update - {reportedProperties.GetSerializedString()} is {nameof(StatusCodes.OK)} " +
                 $"with a version of {updateResponse.Version}.");
+        }
+
+        private static double GenerateTemperatureWithinRange(int max = 50, int min = 0)
+        {
+            return Math.Round(s_random.NextDouble() * (max - min) + min, 1);
         }
     }
 }

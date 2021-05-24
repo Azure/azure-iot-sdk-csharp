@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const string Thermostat2 = "thermostat2";
 
         private static readonly Random s_random = new Random();
+        private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(5);
 
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
@@ -44,42 +45,49 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
-            // This sample follows the following workflow:
-            // -> Set handler to receive and respond to writable property update requests.
-            // -> Set handler to receive and respond to commands.
-            // -> Update device information on "deviceInformation" component.
-            // -> Send initial device info - "workingSet" over telemetry, "serialNumber" over reported property update - root interface.
-            // -> Periodically send "temperature" over telemetry - on "Thermostat" components.
-            // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set - on "Thermostat" components.
-
+            // Set handler to receive and respond to writable property update requests.
             _logger.LogDebug("Subscribe to writable property updates.");
             await _deviceClient.SubscribeToWritablePropertiesEventAsync(HandlePropertyUpdatesAsync, null, cancellationToken);
 
+            // Set handler to receive and respond to commands.
             _logger.LogDebug($"Subscribe to commands.");
             await _deviceClient.SubscribeToCommandsAsync(HandleCommandsAsync, null, cancellationToken);
 
-            await UpdateDeviceInformationAsync(cancellationToken);
-            await SendDeviceSerialNumberAsync(cancellationToken);
+            // Report device information on "deviceInformation" component.
+            // This is a component-level property update call.
+            await UpdateDeviceInformationPropertyAsync(cancellationToken);
+
+            // Verify if the device has previously reported the current value for property "serialNumber".
+            // If the expected value has not been previously reported then send device serial number over property update.
+            // This is a root-level property update call.
+            await SendDeviceSerialNumberPropertyIfNotCurrentAsync(cancellationToken);
 
             bool temperatureReset = true;
             _maxTemp[Thermostat1] = 0d;
             _maxTemp[Thermostat2] = 0d;
 
+            // Periodically send "temperature" over telemetry - on "Thermostat" components.
+            // Send "maxTempSinceLastReboot" over property update, when a new max temperature is reached - on "Thermostat" components.
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (temperatureReset)
                 {
                     // Generate a random value between 5.0°C and 45.0°C for the current temperature reading for each "Thermostat" component.
-                    _temperature[Thermostat1] = Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1);
-                    _temperature[Thermostat2] = Math.Round(s_random.NextDouble() * 40.0 + 5.0, 1);
+                    _temperature[Thermostat1] = GenerateTemperatureWithinRange(45, 5);
+                    _temperature[Thermostat2] = GenerateTemperatureWithinRange(45, 5);
                 }
 
+                // Send temperature updates over telemetry and the value of max temperature since last reboot over property update.
+                // Both of these are component-level calls.
                 await SendTemperatureAsync(Thermostat1, cancellationToken);
                 await SendTemperatureAsync(Thermostat2, cancellationToken);
-                await SendDeviceMemoryAsync(cancellationToken);
+
+                // Send working set of device memory over telemetry.
+                // This is a root-level telemetry call.
+                await SendDeviceMemoryTelemetryAsync(cancellationToken);
 
                 temperatureReset = _temperature[Thermostat1] == 0 && _temperature[Thermostat2] == 0;
-                await Task.Delay(5 * 1000);
+                await Task.Delay(s_sleepDuration);
             }
         }
 
@@ -114,6 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
+        // The callback to handle target temperature property update requests for a component.
         private async Task HandleTargetTemperatureUpdateRequestAsync(string componentName, double targetTemperature, long version, object userContext)
         {
             const string targetTemperatureProperty = "targetTemperature";
@@ -251,8 +260,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        // Report the property updates on "deviceInformation" component.
-        private async Task UpdateDeviceInformationAsync(CancellationToken cancellationToken)
+        // Report the property values on "deviceInformation" component.
+        // This is a component-level property update call.
+        private async Task UpdateDeviceInformationPropertyAsync(CancellationToken cancellationToken)
         {
             const string componentName = "deviceInformation";
             var deviceInformationProperties = new Dictionary<string, object>
@@ -276,7 +286,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // Send working set of device memory over telemetry.
-        private async Task SendDeviceMemoryAsync(CancellationToken cancellationToken)
+        // This is a root-level telemetry call.
+        private async Task SendDeviceMemoryTelemetryAsync(CancellationToken cancellationToken)
         {
             const string workingSetName = "workingSet";
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
@@ -290,8 +301,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogDebug($"Telemetry: Sent - {telemetryMessage.Telemetry.GetSerializedString()} in KB.");
         }
 
-        // Send device serial number over property update.
-        private async Task SendDeviceSerialNumberAsync(CancellationToken cancellationToken)
+        // Verify if the device has previously reported the current value for property "serialNumber".
+        // If the expected value has not been previously reported then send device serial number over property update.
+        // This is a root-level property update call.
+        private async Task SendDeviceSerialNumberPropertyIfNotCurrentAsync(CancellationToken cancellationToken)
         {
             const string serialNumber = "serialNumber";
             const string currentSerialNumber = "SR-123456";
@@ -315,6 +328,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
+        // Send temperature updates over telemetry.
+        // This also sends the value of max temperature since last reboot over property update.
         private async Task SendTemperatureAsync(string componentName, CancellationToken cancellationToken)
         {
             await SendTemperatureTelemetryAsync(componentName, cancellationToken);
@@ -327,6 +342,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
+        // Send temperature update over telemetry.
+        // This is a component-level telemetry call.
         private async Task SendTemperatureTelemetryAsync(string componentName, CancellationToken cancellationToken)
         {
             const string telemetryName = "temperature";
@@ -356,6 +373,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
+        // Send temperature over reported property update.
+        // This is a component-level property update.
         private async Task UpdateMaxTemperatureSinceLastRebootAsync(string componentName, CancellationToken cancellationToken)
         {
             const string propertyName = "maxTempSinceLastReboot";
@@ -367,6 +386,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {reportedProperties.GetSerializedString()}" +
                 $" in °C is complete with a version of {updateResponse.Version}.");
+        }
+
+        private static double GenerateTemperatureWithinRange(int max = 50, int min = 0)
+        {
+            return Math.Round(s_random.NextDouble() * (max - min) + min, 1);
         }
     }
 }
