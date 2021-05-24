@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     case "targetTemperature":
                         const string tagetTemperatureProperty = "targetTemperature";
                         double targetTemperatureRequested = Convert.ToDouble(writableProperty.Value);
-                        _logger.LogDebug($"Property: Received - {{ \"{tagetTemperatureProperty}\": {targetTemperatureRequested}°C }}.");
+                        _logger.LogDebug($"Property: Received - [ \"{tagetTemperatureProperty}\": {targetTemperatureRequested}°C ].");
 
                         // Update Temperature in 2 steps
                         // For. eg, if the current temperature is 10 and the desired is 30, it'll go 10 (current) => 20 (in-progress) => 30 (desired).
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                         ClientPropertiesUpdateResponse inProgressUpdateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedPropertyInProgress);
 
-                        _logger.LogDebug($"Property: Update - {{ {reportedPropertyInProgress.GetSerializedString()} is {nameof(StatusCodes.Accepted)} " +
+                        _logger.LogDebug($"Property: Update - [ {reportedPropertyInProgress.GetSerializedString()} ] is {nameof(StatusCodes.Accepted)} " +
                             $"with a version of {inProgressUpdateResponse.Version}.");
 
                         await Task.Delay(6 * 1000);
@@ -97,13 +97,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                         ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 
-                        _logger.LogDebug($"Property: Update - {{ {reportedProperty.GetSerializedString()} is {nameof(StatusCodes.OK)} " +
+                        _logger.LogDebug($"Property: Update - [ {reportedProperty.GetSerializedString()} ] is {nameof(StatusCodes.OK)} " +
                             $"with a version of {updateResponse.Version}.");
 
                         break;
 
                     default:
-                        _logger.LogWarning($"Property: Received an unrecognized property update from service:\n{{ {writableProperty.Key}: {writableProperty.Value} }}.");
+                        _logger.LogWarning($"Property: Received an unrecognized property update from service:\n[ {writableProperty.Key}: {writableProperty.Value} ].");
                         break;
                 }
             }
