@@ -271,13 +271,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var deviceInformationProperties = new Dictionary<string, object>
             {
                 { "manufacturer", "element15" },
-                    { "model", "ModelIDxcdvmk" },
-                    { "swVersion", "1.0.0" },
-                    { "osName", "Windows 10" },
-                    { "processorArchitecture", "64-bit" },
-                    { "processorManufacturer", "Intel" },
-                    { "totalStorage", 256 },
-                    { "totalMemory", 1024 },
+                { "model", "ModelIDxcdvmk" },
+                { "swVersion", "1.0.0" },
+                { "osName", "Windows 10" },
+                { "processorArchitecture", "64-bit" },
+                { "processorManufacturer", "Intel" },
+                { "totalStorage", 256 },
+                { "totalMemory", 1024 },
             };
             var deviceInformation = new ClientPropertyCollection();
             deviceInformation.Add(componentName, deviceInformationProperties);
