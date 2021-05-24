@@ -76,28 +76,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         double targetTemperatureRequested = Convert.ToDouble(writableProperty.Value);
                         _logger.LogDebug($"Property: Received - [ \"{tagetTemperatureProperty}\": {targetTemperatureRequested}°C ].");
 
-                        // Update Temperature in 2 steps
-                        // For. eg, if the current temperature is 10 and the desired is 30, it'll go 10 (current) => 20 (in-progress) => 30 (desired).
-                        double step = (targetTemperatureRequested - _temperature) / 2d;
-
-                        _temperature = Math.Round(_temperature + step, 1);
-                        var reportedPropertyInProgress = new ClientPropertyCollection();
-                        reportedPropertyInProgress.Add(tagetTemperatureProperty, _temperature, StatusCodes.Accepted, writableProperties.Version);
-
-                        ClientPropertiesUpdateResponse inProgressUpdateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedPropertyInProgress);
-
-                        _logger.LogDebug($"Property: Update - [ {reportedPropertyInProgress.GetSerializedString()} ] is {nameof(StatusCodes.Accepted)} " +
-                            $"with a version of {inProgressUpdateResponse.Version}.");
-
-                        await Task.Delay(6 * 1000);
-
-                        _temperature = Math.Round(_temperature + step, 1);
+                        _temperature = targetTemperatureRequested;
                         var reportedProperty = new ClientPropertyCollection();
                         reportedProperty.Add(tagetTemperatureProperty, _temperature, StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature");
 
                         ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 
-                        _logger.LogDebug($"Property: Update - [ {reportedProperty.GetSerializedString()} ] is {nameof(StatusCodes.OK)} " +
+                        _logger.LogDebug($"Property: Update - {reportedProperty.GetSerializedString()} is {nameof(StatusCodes.OK)} " +
                             $"with a version of {updateResponse.Version}.");
 
                         break;
