@@ -283,6 +283,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!string.IsNullOrEmpty(componentName) && Collection.TryGetValue(componentName, out var component))
             {
+                if (component is IDictionary<string, object> nestedDictionary)
+                {
+                    return nestedDictionary.TryGetValue(propertyName, out var _);
+                }
                 return Convention.PayloadSerializer.TryGetNestedObjectValue<object>(component, propertyName, out _);
             }
             return Collection.TryGetValue(propertyName, out _);
@@ -307,11 +311,28 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>true if the property collection contains a component level property with the specified key; otherwise, false.</returns>
         public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
         {
+            if (Logging.IsEnabled && Convention == null)
+            {
+                Logging.Info(this, $"The convention for this collection is not set; this typically means this collection was not created by the client. TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
+            }
+
             if (Contains(componentName, propertyName))
             {
                 object componentProperties = Collection[componentName];
-                Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
-                return true;
+
+                if (componentProperties is IDictionary<string, object> nestedDictionary)
+                {
+                    if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement) && dictionaryElement is T valueRef)
+                    {
+                        propertyValue = valueRef;
+                        return true;
+                    }
+                }
+                else
+                {
+                    Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
+                    return true;
+                }
             }
 
             propertyValue = default;
