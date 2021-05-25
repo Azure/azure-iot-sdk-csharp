@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if !NET451
-
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
     /// An optional, helper class for constructing a writable property response.
@@ -56,5 +54,3 @@ namespace Microsoft.Azure.Devices.Shared
         public string AckDescription { get; set; }
     }
 }
-
-#endif
