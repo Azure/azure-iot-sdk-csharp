@@ -2,6 +2,12 @@
 
 #### Common
 
+```diff
+public class ClientOptions {
++    public PayloadConvention PayloadConvention { get; set; }
+}
+```
+
 ```csharp
 
 public abstract class PayloadConvention {
@@ -24,7 +30,7 @@ public abstract class PayloadSerializer {
     public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public abstract T DeserializeToType<T>(string stringToDeserialize);
     public abstract string SerializeToString(object objectToSerialize);
-    public abstract bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue);
+    public abstract bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue);
 }
 
 public sealed class DefaultPayloadConvention : PayloadConvention {
@@ -49,7 +55,7 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
     public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public override T DeserializeToType<T>(string stringToDeserialize);
     public override string SerializeToString(object objectToSerialize);
-    public override bool TryGetNestedObjectValue<T>(object objectToConvert, string propertyName, out T outValue);
+    public override bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue);
 }
 
 public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
@@ -69,12 +75,21 @@ public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
 }
 
 public static class ConventionBasedConstants {
+    public const char ComponentLevelCommandSeparator = '*';
     public const string AckCodePropertyName = "ac";
     public const string AckDescriptionPropertyName = "ad";
     public const string AckVersionPropertyName = "av";
     public const string ComponentIdentifierKey = "__t";
     public const string ComponentIdentifierValue = "c";
     public const string ValuePropertyName = "value";
+}
+
+public class StatusCodes {
+    public StatusCodes();
+    public static int Accepted { get; }
+    public static int BadRequest { get; }
+    public static int NotFound { get; }
+    public static int OK { get; }
 }
 ```
 
@@ -109,20 +124,25 @@ public Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollectio
 
 ```csharp
 public class ClientProperties : ClientPropertyCollection {
+    public ClientProperties();
     public ClientPropertyCollection Writable { get; private set; }
 }
 
 public class ClientPropertyCollection : PayloadCollection {
     public ClientPropertyCollection();
     public long Version { get; protected set; }
-    public void Add(IDictionary<string, object> properties, string componentName = null);
+    public void Add(IDictionary<string, object> properties);
+    public void Add(string componentName, IDictionary<string, object> properties);
     public override void Add(string propertyName, object propertyValue);
-    public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = null, string componentName = null);
-    public void Add(string propertyName, object propertyValue, string componentName);
-    public void AddOrUpdate(IDictionary<string, object> properties, string componentNam = null);
+    public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = null);
+    public void Add(string componentName, string propertyName, object propertyValue);
+    public void Add(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description = null);
+    public void AddOrUpdate(IDictionary<string, object> properties);
+    public void AddOrUpdate(string componentName, IDictionary<string, object> properties);
     public override void AddOrUpdate(string propertyName, object propertyValue);
-    public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = null, string componentName = null);
-    public void AddOrUpdate(string propertyName, object propertyValue, string componentName);
+    public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = null);
+    public void AddOrUpdate(string componentName, string propertyName, object propertyValue);
+    public void AddOrUpdate(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description = null);
     public bool Contains(string componentName, string propertyName);
     public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
 }
@@ -172,10 +192,8 @@ public class TelemetryCollection : PayloadCollection {
     public override void AddOrUpdate(string telemetryName, object telemetryValue);
 }
 
-public class TelemetryMessage : Message {
+public sealed class TelemetryMessage : MessageBase {
     public TelemetryMessage(string componentName = null);
-    public new string ContentEncoding { get; internal set; }
-    public new string ContentType { get; internal set; }
     public TelemetryCollection Telemetry { get; set; }
     public override Stream GetBodyStream();
 }
@@ -200,6 +218,7 @@ public sealed class CommandRequest {
     public string ComponentName { get; private set; }
     public string DataAsJson { get; }
     public T GetData<T>();
+    public byte[] GetDataAsBytes();
 }
 
 public sealed class CommandResponse {
