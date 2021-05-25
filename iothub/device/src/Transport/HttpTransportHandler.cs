@@ -60,7 +60,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly string _deviceId;
         private readonly string _moduleId;
 
-        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings, HttpClientHandler httpClientHandler = null)
+        internal HttpTransportHandler(
+            IPipelineContext context,
+            IotHubConnectionString iotHubConnectionString,
+            Http1TransportSettings transportSettings,
+            HttpClientHandler httpClientHandler = null,
+            bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)
         {
             ProductInfo productInfo = context.Get<ProductInfo>();
@@ -75,7 +80,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 transportSettings.ClientCertificate,
                 httpClientHandler,
                 productInfo,
-                transportSettings.Proxy);
+                transportSettings.Proxy,
+                isClientPrimaryTransportHandler);
         }
 
         public override Task OpenAsync(TimeoutHelper timeoutHelper)
