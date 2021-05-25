@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if !NET451
-
 using System.Text.Json;
+using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
     /// A <see cref="System.Text.Json"/> <see cref="PayloadSerializer"/> implementation.
@@ -40,7 +39,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <inheritdoc/>
         public override T ConvertFromObject<T>(object objectToConvert)
         {
-            return DeserializeToType<T>(((JsonElement)objectToConvert).ToString());
+            return DeserializeToType<T>(SerializeToString(objectToConvert));
         }
 
         /// <inheritdoc/>
@@ -66,5 +65,3 @@ namespace Microsoft.Azure.Devices.Shared
         }
     }
 }
-
-#endif
