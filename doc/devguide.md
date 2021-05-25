@@ -9,6 +9,11 @@ Before starting development on the Azure IoT SDK for C# you will need to install
 ### Design
 We are following the [Azure SDK design specification for C#](https://azuresdkspecs.z5.web.core.windows.net/DotNetSpec.html). To preserve backward compatibility, existing code will not change to follow these rules.
 
+#### Using [`IDisposable`](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable?view=net-5.0#implementing-idisposable) types:
+- The sdk should dispose any `IDisposable` resource that it creates.
+- The sdk should not dispose an `IDisposable` resource that is supplied by the calling application. This is because the caller might want to reuse the resource elsewhere in the application. The responsibility of disposal of caller-supplied `IDisposable` resource is on the caller. An example of such a resource would be an `X509Certificate` instance that is used for authenticating our clients.
+- If the sdk implements `class A` that owns an `IDisposable` resource `X`, then `A` should also be `IDisposable`. In that case, resource `X` can be safely disposed when `class A` is disposed.
+
 ### Code style
 Please read and apply our [coding style](coding-style.md) when proposing PRs against the Azure repository. When changing existing files, please apply changes to the entire file. Otherwise, maintain the same style.
 

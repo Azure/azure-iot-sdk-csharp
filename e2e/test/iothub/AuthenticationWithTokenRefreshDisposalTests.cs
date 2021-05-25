@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authenticationMethods.Add(authenticationMethod);
             }
 
-            // Initialize the client instances set the connection status change handler and open the connection.
+            // Initialize the client instances, set the connection status change handler and open the connection.
             for (int i = 0; i < devicesCount; i++)
             {
                 DeviceClient deviceClient = DeviceClient.Create(testDevices[i].IoTHubHostName, authenticationMethods[i], new ITransportSettings[] { amqpTransportSettings });

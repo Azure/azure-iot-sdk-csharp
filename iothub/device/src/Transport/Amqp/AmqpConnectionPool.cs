@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // For this reason, if the device identity of the client is not the one associated with the
                     // connection, the associated TokenRefresher can be safely disposed.
                     // Note - This does not cause any identity related issues since the group sas tokens are generated
-                    // against "{IoT hub name}.azure-devices.net/" as the intended audience (without the "device Id").
+                    // against the hub host as the intended audience (without the "device Id").
                     if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped
                         && !ReferenceEquals(amqpConnectionHolder.GetDeviceIdentityOfAuthenticationProvider(), deviceIdentity)
                         && deviceIdentity.IotHubConnectionString?.TokenRefresher != null
