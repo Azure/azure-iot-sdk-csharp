@@ -74,13 +74,39 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 switch (writableProperty.Key)
                 {
                     case "targetTemperature":
-                        const string tagetTemperatureProperty = "targetTemperature";
+                        const string targetTemperatureProperty = "targetTemperature";
                         double targetTemperatureRequested = Convert.ToDouble(writableProperty.Value);
-                        _logger.LogDebug($"Property: Received - [ \"{tagetTemperatureProperty}\": {targetTemperatureRequested}°C ].");
+
+                        _logger.LogDebug($"Property: Received - [ \"{targetTemperatureProperty}\": {targetTemperatureRequested}°C ].");
+
+                        // Evaluate if this is a request that needs to be responded to, i.e.:
+                        // -> The twin's last reported "targetTemperature" value is not the same as the requested value.
+                        // -> The twin's last reported "targetTemperature" version is less than the requested property version.
+
+                        // Retrieve the device's properties.
+                        ClientProperties properties = await _deviceClient.GetClientPropertiesAsync();
+
+                        bool wasTargetTemperatureReported = properties.TryGetValue(targetTemperatureProperty, out NewtonsoftJsonWritablePropertyResponse targetTemperatureWritableResponse);
+
+                        if (wasTargetTemperatureReported)
+                        {
+                            double targetTemperatureReported = Convert.ToDouble(targetTemperatureWritableResponse.Value);
+
+                            // If the last reported "targetTemperature" value is already at the requested value
+                            // and with a version greater than or equal to the requested version, then the device has already responded to this request.
+                            if (targetTemperatureReported == targetTemperatureRequested
+                                && targetTemperatureWritableResponse.AckVersion >= writableProperties.Version)
+                            {
+                                _logger.LogDebug($"Property: Update - {targetTemperatureProperty} is already at {targetTemperatureRequested} " +
+                                $"with a version of {targetTemperatureWritableResponse.AckVersion}. The update request with a version of {writableProperties.Version} " +
+                                $"has been discarded.");
+                            }
+                            break;
+                        }
 
                         _temperature = targetTemperatureRequested;
                         var reportedProperty = new ClientPropertyCollection();
-                        reportedProperty.Add(tagetTemperatureProperty, _temperature, StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature");
+                        reportedProperty.Add(targetTemperatureProperty, _temperature, StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature");
 
                         ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 
