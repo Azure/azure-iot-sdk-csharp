@@ -52,7 +52,7 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
     public NewtonsoftJsonPayloadSerializer();
     public override string ContentType { get; }
     public override T ConvertFromObject<T>(object objectToConvert);
-    public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description=null);
+    public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public override T DeserializeToType<T>(string stringToDeserialize);
     public override string SerializeToString(object objectToSerialize);
     public override bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue);
@@ -134,15 +134,15 @@ public class ClientPropertyCollection : PayloadCollection {
     public void Add(IDictionary<string, object> properties);
     public void Add(string componentName, IDictionary<string, object> properties);
     public override void Add(string propertyName, object propertyValue);
-    public void Add(string propertyName, object propertyValue, int statusCode, long version, string description=null);
+    public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = null);
     public void Add(string componentName, string propertyName, object propertyValue);
-    public void Add(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description=null);
+    public void Add(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description = null);
     public void AddOrUpdate(IDictionary<string, object> properties);
     public void AddOrUpdate(string componentName, IDictionary<string, object> properties);
     public override void AddOrUpdate(string propertyName, object propertyValue);
-    public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description=null);
+    public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = null);
     public void AddOrUpdate(string componentName, string propertyName, object propertyValue);
-    public void AddOrUpdate(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description=null);
+    public void AddOrUpdate(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description = null);
     public bool Contains(string componentName, string propertyName);
     public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
 }
@@ -155,7 +155,7 @@ public interface IWritablePropertyResponse {
 }
 
 public sealed class NewtonsoftJsonWritablePropertyResponse : IWritablePropertyResponse {
-    public NewtonsoftJsonWritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription=null);
+    public NewtonsoftJsonWritablePropertyResponse(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
     public int AckCode { get; set; }
     public string AckDescription { get; set; }
     public long AckVersion { get; set; }
@@ -193,7 +193,7 @@ public class TelemetryCollection : PayloadCollection {
 }
 
 public sealed class TelemetryMessage : MessageBase {
-    public TelemetryMessage(string componentName=null);
+    public TelemetryMessage(string componentName = null);
     public TelemetryCollection Telemetry { get; set; }
     public override Stream GetBodyStream();
 }
