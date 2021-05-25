@@ -84,6 +84,13 @@ namespace Microsoft.Azure.Devices.Client
 
                 Debug.Assert(TokenRefresher != null);
             }
+            // SharedAccessSignature should be set only if it is non-null and the authentication method of the device client is
+            // not of type AuthenticationWithTokenRefresh.
+            // Setting the sas value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
+            // This flow can be hit if the same authentication method is always used to initialize the client;
+            // as in, on disposal and reinitialization. This is because the value of the sas token computed is stored within the authentication method,
+            // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
+            // instead of being identified as a sas-token-refresh-enabled-client.
             else if (!string.IsNullOrWhiteSpace(builder.SharedAccessSignature))
             {
                 SharedAccessSignature = builder.SharedAccessSignature;

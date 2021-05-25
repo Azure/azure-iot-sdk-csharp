@@ -76,12 +76,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient.Dispose();
             Logger.Trace("Test with instance 1 completed");
 
-            // Perform the same steps again, reusing the previously created authentication method instance.
+            // Perform the same steps again, reusing the previously created authentication method instance to ensure
+            // that the sdk did not dispose the user supplied authentication method instance.
             DeviceClient deviceClient2 = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
             await deviceClient2.SendEventAsync(new Client.Message()).ConfigureAwait(false);
             await deviceClient2.CloseAsync();
             deviceClient2.Dispose();
-            Logger.Trace("Test with instance 2 completed");
+            Logger.Trace("Test with instance 2 completed, reused the previously created authentication method instance for the device client.");
 
             authenticationMethod.Dispose();
         }
