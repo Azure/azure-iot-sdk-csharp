@@ -173,7 +173,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (disposing)
             {
                 StopLoop();
-                _cancellationTokenSource.Dispose();
+                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource = null;
+
+                _amqpIotCbsTokenProvider?.Dispose();
             }
 
             _disposed = true;

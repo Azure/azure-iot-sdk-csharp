@@ -21,7 +21,7 @@ using Azure.Identity;
 
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     /// <summary>
     /// Tests to ensure authentication using Azure active directory succeeds in all the clients.
