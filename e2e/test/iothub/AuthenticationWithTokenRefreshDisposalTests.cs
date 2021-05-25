@@ -128,6 +128,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Close and dispose client instance 1.
             // The closed client should report a status of "disabled" while the rest of them should be connected.
+            // This is to ensure that disposal on one multiplexed device doesn't cause cascading failures
+            // in the rest of the devices on the same tcp connection.
 
             await deviceClients[0].CloseAsync().ConfigureAwait(false);
             deviceClients[0].Dispose();
