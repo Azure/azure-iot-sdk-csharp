@@ -27,7 +27,7 @@ public abstract class PayloadSerializer {
     protected PayloadSerializer();
     public abstract string ContentType { get; }
     public abstract T ConvertFromObject<T>(object objectToConvert);
-    public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description=null);
+    public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public abstract T DeserializeToType<T>(string stringToDeserialize);
     public abstract string SerializeToString(object objectToSerialize);
     public abstract bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue);
