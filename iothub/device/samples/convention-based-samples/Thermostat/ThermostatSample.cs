@@ -98,10 +98,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 && targetTemperatureWritableResponse.AckVersion >= writableProperties.Version)
                             {
                                 _logger.LogDebug($"Property: Update - {targetTemperatureProperty} is already at {targetTemperatureRequested} " +
-                                $"with a version of {targetTemperatureWritableResponse.AckVersion}. The update request with a version of {writableProperties.Version} " +
-                                $"has been discarded.");
+                                    $"with a version of {targetTemperatureWritableResponse.AckVersion}. The update request with a version of {writableProperties.Version} " +
+                                    $"has been ignored.");
+
+                                break;
                             }
-                            break;
                         }
 
                         _temperature = targetTemperatureRequested;
