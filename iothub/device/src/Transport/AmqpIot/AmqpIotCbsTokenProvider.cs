@@ -9,9 +9,10 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotCbsTokenProvider : ICbsTokenProvider
+    internal class AmqpIotCbsTokenProvider : ICbsTokenProvider, IDisposable
     {
         private readonly IotHubConnectionString _connectionString;
+        private bool _isDisposed;
 
         public AmqpIotCbsTokenProvider(IotHubConnectionString connectionString)
         {
@@ -55,6 +56,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 {
                     Logging.Exit(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
                 }
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    if (_connectionString?.TokenRefresher != null
+                        && _connectionString.TokenRefresher.InstanceCreatedBySdk)
+                    {
+                        _connectionString.TokenRefresher.Dispose();
+                    }
+                }
+
+                _isDisposed = true;
             }
         }
     }
