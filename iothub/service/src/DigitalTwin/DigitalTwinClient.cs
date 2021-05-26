@@ -102,6 +102,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
         /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
+        /// <param name="credentialOptions">Options that allow configuration of the token credential during initialization.</param>
         /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
         /// <remarks>
         /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
@@ -109,6 +110,7 @@ namespace Microsoft.Azure.Devices
         public static DigitalTwinClient Create(
             string hostName,
             TokenCredential credential,
+            TokenCredentialOptions credentialOptions = default,
             params DelegatingHandler[] handlers)
         {
             if (string.IsNullOrEmpty(hostName))
@@ -121,7 +123,12 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
-            var tokenCredential = new DigitalTwinTokenCredential(credential, hostName);
+            if (credentialOptions == null)
+            {
+                credentialOptions = new TokenCredentialOptions();
+            }
+
+            var tokenCredential = new DigitalTwinTokenCredential(credential, credentialOptions);
             return new DigitalTwinClient(hostName, tokenCredential, handlers);
         }
 

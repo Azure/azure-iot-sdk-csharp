@@ -18,9 +18,9 @@ namespace Microsoft.Azure.Devices.Common
             return timeToExpiry.TotalMinutes < 10;
         }
 
-        public static string[] GetAadTokenScopes(string hostName)
+        public static string[] GetAadTokenScopes(CloudConfiguration cloudConfiguration)
         {
-            return hostName.EndsWith("azure-devices.us", StringComparison.OrdinalIgnoreCase)
+            return cloudConfiguration == CloudConfiguration.FairFax
                 ? CommonConstants.IotHubUsGovCloudAadTokenScopes
                 : CommonConstants.IotHubAadTokenScopes;
         }

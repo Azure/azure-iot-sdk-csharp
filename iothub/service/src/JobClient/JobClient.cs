@@ -56,6 +56,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
+        /// <param name="credentialOptions">Options that allow configuration of the token credential during initialization.</param>
         /// <returns>An instance of <see cref="JobClient"/>.</returns>
         /// <remarks>
         /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
@@ -63,7 +64,8 @@ namespace Microsoft.Azure.Devices
         public static JobClient Create(
             string hostName,
             TokenCredential credential,
-            HttpTransportSettings transportSettings = default)
+            HttpTransportSettings transportSettings = default,
+            TokenCredentialOptions credentialOptions = default)
         {
             if (string.IsNullOrEmpty(hostName))
             {
@@ -75,7 +77,12 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(credential));
             }
 
-            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            if (credentialOptions == null)
+            {
+                credentialOptions = new TokenCredentialOptions();
+            }
+
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential, credentialOptions);
             return new HttpJobClient(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 

@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices
         private const string _tokenType = "Bearer";
         private readonly TokenCredential _credential;
         private readonly object _tokenLock = new object();
+        private readonly TokenCredentialOptions _options;
         private AccessToken? _cachedAccessToken;
 #endif
 
@@ -37,9 +38,10 @@ namespace Microsoft.Azure.Devices
         }
 #else
 
-        public IotHubTokenCrendentialProperties(string hostName, TokenCredential credential) : base(hostName)
+        public IotHubTokenCrendentialProperties(string hostName, TokenCredential credential, TokenCredentialOptions options) : base(hostName)
         {
             _credential = credential;
+            _options = options;
         }
 
 #endif
@@ -79,7 +81,7 @@ namespace Microsoft.Azure.Devices
 
 #else
             AccessToken token = await _credential.GetTokenAsync(
-                new TokenRequestContext(TokenHelper.GetAadTokenScopes(HostName)),
+                new TokenRequestContext(TokenHelper.GetAadTokenScopes(_options.cloudConfiguraion)),
                 new CancellationToken()).ConfigureAwait(false);
             return new CbsToken(
                $"{_tokenType} {token.Token}",

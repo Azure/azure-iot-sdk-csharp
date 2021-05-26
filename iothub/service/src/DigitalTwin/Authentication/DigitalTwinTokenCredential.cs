@@ -18,14 +18,14 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
     internal class DigitalTwinTokenCredential : DigitalTwinServiceClientCredentials
     {
         private readonly object _tokenLock = new object();
-        private readonly string _hostName;
+        private readonly TokenCredentialOptions _options;
         private AccessToken? _cachedAccessToken;
         private TokenCredential _credential;
 
-        public DigitalTwinTokenCredential(TokenCredential credential, string hostName)
+        public DigitalTwinTokenCredential(TokenCredential credential, TokenCredentialOptions options = default)
         {
             _credential = credential;
-            _hostName = hostName;
+            _options = options;
         }
 
         public override string GetAuthorizationHeader()
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(TokenHelper.GetAadTokenScopes(_hostName)),
+                        new TokenRequestContext(TokenHelper.GetAadTokenScopes(_options.cloudConfiguraion)),
                         new CancellationToken());
                 }
             }
