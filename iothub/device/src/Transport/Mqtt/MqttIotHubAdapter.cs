@@ -1022,6 +1022,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             finally
             {
+                if (_passwordProvider is IotHubConnectionString iotHubConnectionString
+                    && iotHubConnectionString.TokenRefresher != null
+                    && iotHubConnectionString.TokenRefresher.InstanceCreatedBySdk)
+                {
+                    iotHubConnectionString.TokenRefresher.Dispose();
+                }
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, context.Name, nameof(ShutdownAsync));
             }

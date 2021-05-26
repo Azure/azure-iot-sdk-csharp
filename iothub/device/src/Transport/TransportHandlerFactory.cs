@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         new Func<Message, Task>(onDeviceMessageReceivedCallback));
 
                 case TransportType.Http1:
-                    return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
+                    return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings, isClientPrimaryTransportHandler: true);
 
                 case TransportType.Mqtt_Tcp_Only:
                 case TransportType.Mqtt_WebSocket_Only:
