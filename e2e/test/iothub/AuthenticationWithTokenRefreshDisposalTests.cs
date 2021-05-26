@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // that the sdk did not dispose the user supplied authentication method instance.
             DeviceClient deviceClient2 = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
             using var message2 = new Client.Message();
-            await deviceClient.SendEventAsync(message2).ConfigureAwait(false);
+            await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
             await deviceClient2.CloseAsync();
             deviceClient2.Dispose();
             Logger.Trace("Test with instance 2 completed, reused the previously created authentication method instance for the device client.");
