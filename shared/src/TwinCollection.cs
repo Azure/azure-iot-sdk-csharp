@@ -296,10 +296,10 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Clears metadata out of the properties collection.
+        /// Clears metadata out of the twin collection.
         /// </summary>
         /// <remarks>
-        /// This will only clear the metadata from the properties collection but will not change the <see cref="TwinCollection"/> metadata collection object. This allows you to still use methods such as <see cref="GetMetadata"/>. If you need to remove all metadata, please use <see cref="ClearAllMetadata"/>.
+        /// This will only clear the metadata from the twin collection but will not change the base metadata object. This allows you to still use methods such as <see cref="GetMetadata"/>. If you need to remove all metadata, please use <see cref="ClearAllMetadata"/>.
         /// </remarks>
         public void ClearMetadata()
         {
@@ -310,10 +310,10 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Clears all metadata out of the twin collection as well as all of the metadata from the properties collection.
+        /// Clears all metadata out of the twin collection as well as the base metadata object.
         /// </summary>
         /// <remarks>
-        /// This will remove all metadata from the <see cref="TwinCollection"/> metadata object as well as the metadata for all of the properties collection. The difference from the <see cref="ClearMetadata"/> method is it will also clear the underlying metadata container which will affect methods such as <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
+        /// This will remove all metadata from the base metadata object as well as the metadata for the twin collection. The difference from the <see cref="ClearMetadata"/> method is this will also clear the underlying metadata object which will affect methods such as <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
         /// This method would be useful if you are performing any operations that require <see cref="TryGetMemberInternal(string, out object)"/> to return a <see cref="JToken"/> regardless of the client you are using.
         /// </remarks>
         public void ClearAllMetadata()
