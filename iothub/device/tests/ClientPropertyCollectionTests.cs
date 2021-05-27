@@ -11,21 +11,47 @@ namespace Microsoft.Azure.Devices.Client.Tests
     [TestCategory("Unit")]
     public class ClientPropertyCollectionTests
     {
-        private const string propertyName = "propertyOne";
-        private const string simplePropertyValue = "propertyValue";
+        private const string boolPropertyName = "boolProperty";
+        private const string doublePropertyName = "doubleProperty";
+        private const string floatPropertyName = "floatProperty";
+        private const string intPropertyName = "intProperty";
+        private const string shortPropertyName = "shortProperty";
+        private const string stringPropertyName = "stringPropertyName";
+        private const bool boolPropertyValue = false;
+        private const double doublePropertyValue = 1.001;
+        private const float floatPropertyValue = 1.2f;
+        private const int intPropertyValue = 12345678;
+        private const short shortPropertyValue = 1234;
+        private const string stringPropertyValue = "propertyValue";
         private const string componentName = "testableComponent";
         private const string writablePropertyDescription = "testableWritablePropertyDescription";
         private const string updatedPropertyValue = "updatedPropertyValue";
 
         [TestMethod]
-        public void ClientPropertyCollection_CanAddSimpleObjectAndGetBackWithoutDeviceClient()
+        public void ClientPropertyCollection_CanAddSimpleObjectsAndGetBackWithoutDeviceClient()
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { propertyName, simplePropertyValue }
+                { stringPropertyName, stringPropertyValue },
+                { boolPropertyName, boolPropertyValue },
+                { doublePropertyName, doublePropertyValue },
+                { floatPropertyName, floatPropertyValue },
+                { intPropertyName, intPropertyValue },
+                { shortPropertyName, shortPropertyValue }
+
             };
-            clientProperties.TryGetValue<string>(propertyName, out var outValue);
-            Assert.AreEqual(simplePropertyValue, outValue, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
+            clientProperties.TryGetValue(stringPropertyName, out string stringOutValue);
+            Assert.AreEqual(stringPropertyValue, stringOutValue, $"Property values do not match, expected {stringPropertyValue} but got {stringOutValue}");
+            clientProperties.TryGetValue(boolPropertyName, out bool boolOutValue);
+            Assert.AreEqual(boolPropertyValue, boolOutValue, $"Property values do not match, expected {boolPropertyValue} but got {boolOutValue}");
+            clientProperties.TryGetValue(doublePropertyName, out double doubleOutValue);
+            Assert.AreEqual(doublePropertyValue, doubleOutValue, $"Property values do not match, expected {doublePropertyValue} but got {doubleOutValue}");
+            clientProperties.TryGetValue(floatPropertyName, out float floatOutValue);
+            Assert.AreEqual(floatPropertyValue, floatOutValue, $"Property values do not match, expected {floatPropertyValue} but got {floatOutValue}");
+            clientProperties.TryGetValue(intPropertyName, out int intOutValue);
+            Assert.AreEqual(intPropertyValue, intOutValue, $"Property values do not match, expected {intPropertyValue} but got {intOutValue}");
+            clientProperties.TryGetValue(shortPropertyName, out short shortOutValue);
+            Assert.AreEqual(shortPropertyValue, shortOutValue, $"Property values do not match, expected {shortPropertyValue} but got {shortOutValue}");
         }
 
         [TestMethod]
@@ -33,10 +59,27 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, propertyName, simplePropertyValue }
+                { componentName, new Dictionary<string, object> {
+                    {stringPropertyName, stringPropertyValue },
+                    {boolPropertyName, boolPropertyValue },
+                    {doublePropertyName, doublePropertyValue },
+                    {floatPropertyName, floatPropertyValue },
+                    {intPropertyName, intPropertyValue },
+                    {shortPropertyName, shortPropertyValue } }
+                }
             };
-            clientProperties.TryGetValue<string>(componentName, propertyName, out var outValue);
-            Assert.AreEqual(simplePropertyValue, outValue, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
+            clientProperties.TryGetValue(componentName, stringPropertyName, out string outValue);
+            Assert.AreEqual(stringPropertyValue, outValue, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            clientProperties.TryGetValue(componentName, boolPropertyName, out bool boolOutValue);
+            Assert.AreEqual(boolPropertyValue, boolOutValue, $"Property values do not match, expected {boolPropertyValue} but got {boolOutValue}");
+            clientProperties.TryGetValue(componentName, doublePropertyName, out double doubleOutValue);
+            Assert.AreEqual(doublePropertyValue, doubleOutValue, $"Property values do not match, expected {doublePropertyValue} but got {doubleOutValue}");
+            clientProperties.TryGetValue(componentName, floatPropertyName, out float floatOutValue);
+            Assert.AreEqual(floatPropertyValue, floatOutValue, $"Property values do not match, expected {floatPropertyValue} but got {floatOutValue}");
+            clientProperties.TryGetValue(componentName, intPropertyName, out int intOutValue);
+            Assert.AreEqual(intPropertyValue, intOutValue, $"Property values do not match, expected {intPropertyValue} but got {intOutValue}");
+            clientProperties.TryGetValue(componentName, shortPropertyName, out short shortOutValue);
+            Assert.AreEqual(shortPropertyValue, shortOutValue, $"Property values do not match, expected {shortPropertyValue} but got {shortOutValue}");
         }
 
         [TestMethod]
@@ -44,13 +87,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { propertyName, simplePropertyValue }
+                { stringPropertyName, stringPropertyValue }
             };
-            clientProperties.TryGetValue<string>(propertyName, out var outValue);
-            Assert.AreEqual(simplePropertyValue, outValue, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
+            clientProperties.TryGetValue<string>(stringPropertyName, out var outValue);
+            Assert.AreEqual(stringPropertyValue, outValue, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
 
-            clientProperties.AddOrUpdate(propertyName, updatedPropertyValue);
-            clientProperties.TryGetValue<string>(propertyName, out var outValueChanged);
+            clientProperties.AddOrUpdate(stringPropertyName, updatedPropertyValue);
+            clientProperties.TryGetValue<string>(stringPropertyName, out var outValueChanged);
             Assert.AreEqual(updatedPropertyValue, outValueChanged, $"Property values do not match, expected {updatedPropertyValue} but got {outValue}");
         }
 
@@ -59,13 +102,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, propertyName, simplePropertyValue }
+                { componentName, stringPropertyName, stringPropertyValue }
             };
-            clientProperties.TryGetValue<string>(componentName, propertyName, out var outValue);
-            Assert.AreEqual(simplePropertyValue, outValue, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
+            clientProperties.TryGetValue<string>(componentName, stringPropertyName, out var outValue);
+            Assert.AreEqual(stringPropertyValue, outValue, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
 
-            clientProperties.AddOrUpdate(componentName, propertyName, updatedPropertyValue);
-            clientProperties.TryGetValue<string>(componentName, propertyName, out var outValueChanged);
+            clientProperties.AddOrUpdate(componentName, stringPropertyName, updatedPropertyValue);
+            clientProperties.TryGetValue<string>(componentName, stringPropertyName, out var outValueChanged);
             Assert.AreEqual(updatedPropertyValue, outValueChanged, $"Property values do not match, expected {updatedPropertyValue} but got {outValue}");
         }
 
@@ -74,11 +117,11 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { propertyName, simplePropertyValue }
+                { stringPropertyName, stringPropertyValue }
             };
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                clientProperties.Add(propertyName, simplePropertyValue);
+                clientProperties.Add(stringPropertyName, stringPropertyValue);
             });
         }
 
@@ -87,11 +130,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, propertyName, simplePropertyValue }
+                { componentName, stringPropertyName, stringPropertyValue },
+
             };
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                clientProperties.Add(componentName, propertyName, simplePropertyValue);
+                clientProperties.Add(componentName, stringPropertyName, stringPropertyValue);
             });
         }
 
@@ -100,13 +144,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { propertyName, simplePropertyValue, 200, 2, writablePropertyDescription }
+                { stringPropertyName, stringPropertyValue, 200, 2, writablePropertyDescription }
             };
-            clientProperties.TryGetValue<dynamic>(propertyName, out var outValue);
-            Assert.AreEqual(simplePropertyValue, outValue.value, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
-            Assert.AreEqual(200, outValue.ac, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
-            Assert.AreEqual(2, outValue.av, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
-            Assert.AreEqual(writablePropertyDescription, outValue.ad, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
+            clientProperties.TryGetValue<dynamic>(stringPropertyName, out var outValue);
+            Assert.AreEqual(stringPropertyValue, outValue.value, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            Assert.AreEqual(200, outValue.ac, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            Assert.AreEqual(2, outValue.av, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            Assert.AreEqual(writablePropertyDescription, outValue.ad, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
         }
 
         [TestMethod]
@@ -114,13 +158,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, propertyName, simplePropertyValue, 200, 2, writablePropertyDescription }
+                { componentName, stringPropertyName, stringPropertyValue, 200, 2, writablePropertyDescription }
             };
-            clientProperties.TryGetValue<dynamic>(componentName, propertyName, out var outValue);
-            Assert.AreEqual(simplePropertyValue, outValue.value, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
-            Assert.AreEqual(200, outValue.ac, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
-            Assert.AreEqual(2, outValue.av, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
-            Assert.AreEqual(writablePropertyDescription, outValue.ad, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
+            clientProperties.TryGetValue<dynamic>(componentName, stringPropertyName, out var outValue);
+            Assert.AreEqual(stringPropertyValue, outValue.value, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            Assert.AreEqual(200, outValue.ac, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            Assert.AreEqual(2, outValue.av, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            Assert.AreEqual(writablePropertyDescription, outValue.ad, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
         }
 
         [TestMethod]
@@ -128,13 +172,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, propertyName, simplePropertyValue }
+                { componentName, stringPropertyName, stringPropertyValue }
             };
-            clientProperties.TryGetValue<string>(componentName, propertyName, out var outValue);
-            clientProperties.TryGetValue<string>(componentName, "__t", out var componentOut);
+            clientProperties.TryGetValue<string>(componentName, stringPropertyName, out var outValue);
+            clientProperties.TryGetValue<string>(componentName, ConventionBasedConstants.ComponentIdentifierKey, out var componentOut);
 
-            Assert.AreEqual(simplePropertyValue, outValue, $"Property values do not match, expected {simplePropertyValue} but got {outValue}");
-            Assert.AreEqual("c", componentOut, $"Property values do not match, expected c but got {componentOut}");
+            Assert.AreEqual(stringPropertyValue, outValue, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            Assert.AreEqual(ConventionBasedConstants.ComponentIdentifierValue, componentOut, $"Property values do not match, expected c but got {componentOut}");
         }
     }
 }
