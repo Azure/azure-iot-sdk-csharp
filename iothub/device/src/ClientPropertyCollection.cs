@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // If the componentName is null then simply add the key-value pair to Collection dictionary.
-            // this will either insert a property or overwrite it if it already exists.
+            // This will either insert a property or overwrite it if it already exists.
             if (componentName == null)
             {
                 foreach (KeyValuePair<string, object> entry in properties)
@@ -237,8 +237,8 @@ namespace Microsoft.Azure.Devices.Client
             else
             {
                 // If the component name already exists within the dictionary, then the value is a dictionary containing the component level property key and values.
-                // Append this property dictionary to the existing property value dictionary (overwrite entries if they already exist).
-                // Otherwise, add this as a new entry.
+                // Append this property dictionary to the existing property value dictionary (overwrite entries if they already exist, if forceUpdate is true).
+                // Otherwise, if the component name does not exist in the dictionary, then add this as a new entry.
                 var componentProperties = new Dictionary<string, object>();
                 if (Collection.ContainsKey(componentName))
                 {
@@ -262,14 +262,7 @@ namespace Microsoft.Azure.Devices.Client
                     componentProperties[ConventionBasedConstants.ComponentIdentifierKey] = ConventionBasedConstants.ComponentIdentifierValue;
                 }
 
-                if (forceUpdate)
-                {
-                    Collection[componentName] = componentProperties;
-                }
-                else
-                {
-                    Collection.Add(componentName, componentProperties);
-                }
+                Collection[componentName] = componentProperties;
             }
         }
 
