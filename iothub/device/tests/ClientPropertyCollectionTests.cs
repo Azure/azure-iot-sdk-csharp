@@ -242,13 +242,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             outIntValue.Should().BeNull();
         }
 
-        // Component1   -> prop1 = 123
-        //              -> prop2 = "abc"
-        // How to differentiate between:
-        //  -> replace value of prop2 => AddOrUpdate("Component1", "prop2", "xyz");
-        // vs
-        //  -> replace the value for Component1 altogether
-
         [TestMethod]
         public void ClientPropertyCollection_CanAddMultiplePropertyWithComponentAndGetBackWithoutDeviceClient()
         {
