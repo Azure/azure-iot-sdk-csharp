@@ -123,7 +123,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 // If it's not, we need to try to convert it using the serializer.
-                // JObject or JsonElement
                 value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
                 return true;
             }

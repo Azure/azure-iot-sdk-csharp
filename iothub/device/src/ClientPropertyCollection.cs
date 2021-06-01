@@ -252,14 +252,26 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (componentProperties is IDictionary<string, object> nestedDictionary)
                 {
-                    if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement) && dictionaryElement is T valueRef)
+                    if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
                     {
-                        propertyValue = valueRef;
-                        return true;
+                        // If the value is null, go ahead and return it.
+                        if (dictionaryElement == null)
+                        {
+                            propertyValue = default;
+                            return true;
+                        }
+
+                        // If the object is of type T, go ahead and return it.
+                        if (dictionaryElement is T valueRef)
+                        {
+                            propertyValue = valueRef;
+                            return true;
+                        }
                     }
                 }
                 else
                 {
+                    // If it's not, we need to try to convert it using the serializer.
                     Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
                     return true;
                 }

@@ -134,7 +134,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
             clientProperties.TryGetValue(stringPropertyName, out string outStringValue);
             outStringValue.Should().Be(stringPropertyValue);
 
-            clientProperties.TryGetValue(intPropertyName, out int? outIntValue);
+            bool nullPropertyPresent = clientProperties.TryGetValue(intPropertyName, out int? outIntValue);
+            nullPropertyPresent.Should().BeTrue();
             outIntValue.Should().BeNull();
         }
 
@@ -236,7 +237,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
             clientProperties.TryGetValue(componentName, stringPropertyName, out string outStringValue);
             outStringValue.Should().Be(stringPropertyValue);
 
-            clientProperties.TryGetValue(componentName, intPropertyName, out int? outIntValue);
+            bool nullPropertyPresent = clientProperties.TryGetValue(componentName, intPropertyName, out int? outIntValue);
+            nullPropertyPresent.Should().BeTrue();
             outIntValue.Should().BeNull();
         }
 
