@@ -108,13 +108,21 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Collection.ContainsKey(key))
             {
-                // If the object is of type T go ahead and return it.
+                // If the value is null, go ahead and return it.
+                if (Collection[key] == null)
+                {
+                    value = default;
+                    return true;
+                }
+
+                // If the object is of type T, go ahead and return it.
                 if (Collection[key] is T valueRef)
                 {
                     value = valueRef;
                     return true;
                 }
-                // If it's not we need to try to convert it using the serializer.
+
+                // If it's not, we need to try to convert it using the serializer.
                 // JObject or JsonElement
                 value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
                 return true;
@@ -131,6 +139,14 @@ namespace Microsoft.Azure.Devices.Client
         public virtual string GetSerializedString()
         {
             return Convention.PayloadSerializer.SerializeToString(Collection);
+        }
+
+        /// <summary>
+        /// Remove all items from the collection.
+        /// </summary>
+        public void ClearCollection()
+        {
+            Collection.Clear();
         }
 
         ///  <inheritdoc />

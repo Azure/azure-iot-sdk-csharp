@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 
@@ -26,11 +27,22 @@ namespace Microsoft.Azure.Devices.Client
         /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
         /// </remarks>
-        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c> </exception>
-        /// <param name="propertyName">The name of the property to add.</param>
-        /// <param name="propertyValue">The value of the property to add.</param>
-        public override void Add(string propertyName, object propertyValue)
-            => Add(null, propertyName, propertyValue);
+        /// <exception cref="ArgumentNullException"><paramref name="rootKey"/> is <c>null</c> </exception>
+        /// <param name="rootKey">The root key to add to the collection. This can either be a root-level property name or a component name.</param>
+        /// <param name="propertyValue">The value of the property to add. This can either be a root-level property value or the complete property collection for a component.</param>
+        public override void Add(string rootKey, object propertyValue)
+        {
+            if (IsDictionary(propertyValue))
+            {
+                string componentName = rootKey;
+                var properties = (IDictionary<string, object>)propertyValue;
+                AddInternal(properties, componentName, false);
+            }
+            else
+            {
+                Add(null, rootKey, propertyValue);
+            }
+        }
 
         /// <inheritdoc path="/remarks" cref="Add(string, object)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -54,17 +66,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="properties">A collection of properties to add or update.</param>
         public void Add(IDictionary<string, object> properties)
             => AddInternal(properties, null, false);
-
-        /// <inheritdoc path="/remarks" cref="Add(string, object)" />
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <summary>
-        /// Adds the values to the collection.
-        /// </summary>
-        /// <param name="properties">A collection of properties to add or update.</param>
-        /// <param name="componentName">The component with the properties to add or update.</param>
-        public void Add(string componentName, IDictionary<string, object> properties)
-        => AddInternal(properties, componentName, false);
 
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -202,71 +203,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Adds or updates the value for the collection.
-        /// </summary>
-        /// <seealso cref="PayloadConvention"/>
-        /// <seealso cref="PayloadSerializer"/>
-        /// <seealso cref="PayloadEncoder"/>
-        /// <param name="properties">A collection of properties to add or update.</param>
-        /// <param name="componentName">The component with the properties to add or update.</param>
-        /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior.
-        /// Setting to true will simply overwrite the value. Setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
-        private void AddInternal(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
-        {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            // If the componentName is null then simply add the key-value pair to Collection dictionary.
-            // This will either insert a property or overwrite it if it already exists.
-            if (componentName == null)
-            {
-                foreach (KeyValuePair<string, object> entry in properties)
-                {
-                    if (forceUpdate)
-                    {
-                        Collection[entry.Key] = entry.Value;
-                    }
-                    else
-                    {
-                        Collection.Add(entry.Key, entry.Value);
-                    }
-                }
-            }
-            else
-            {
-                // If the component name already exists within the dictionary, then the value is a dictionary containing the component level property key and values.
-                // Append this property dictionary to the existing property value dictionary (overwrite entries if they already exist, if forceUpdate is true).
-                // Otherwise, if the component name does not exist in the dictionary, then add this as a new entry.
-                var componentProperties = new Dictionary<string, object>();
-                if (Collection.ContainsKey(componentName))
-                {
-                    componentProperties = (Dictionary<string, object>)Collection[componentName];
-                }
-                foreach (KeyValuePair<string, object> entry in properties)
-                {
-                    if (forceUpdate)
-                    {
-                        componentProperties[entry.Key] = entry.Value;
-                    }
-                    else
-                    {
-                        componentProperties.Add(entry.Key, entry.Value);
-                    }
-                }
-
-                // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
-                if (!componentProperties.ContainsKey(ConventionBasedConstants.ComponentIdentifierKey))
-                {
-                    componentProperties[ConventionBasedConstants.ComponentIdentifierKey] = ConventionBasedConstants.ComponentIdentifierValue;
-                }
-
-                Collection[componentName] = componentProperties;
-            }
-        }
-
-        /// <summary>
         /// Determines whether the specified property is present.
         /// </summary>
         /// <param name="propertyName">The property to locate.</param>
@@ -389,6 +325,83 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return propertyCollectionToReturn;
+        }
+
+        /// <summary>
+        /// Adds or updates the value for the collection.
+        /// </summary>
+        /// <seealso cref="PayloadConvention"/>
+        /// <seealso cref="PayloadSerializer"/>
+        /// <seealso cref="PayloadEncoder"/>
+        /// <param name="properties">A collection of properties to add or update.</param>
+        /// <param name="componentName">The component with the properties to add or update.</param>
+        /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior.
+        /// Setting to true will simply overwrite the value. Setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
+        private void AddInternal(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            // If the componentName is null then simply add the key-value pair to Collection dictionary.
+            // This will either insert a property or overwrite it if it already exists.
+            if (componentName == null)
+            {
+                foreach (KeyValuePair<string, object> entry in properties)
+                {
+                    if (forceUpdate)
+                    {
+                        Collection[entry.Key] = entry.Value;
+                    }
+                    else
+                    {
+                        Collection.Add(entry.Key, entry.Value);
+                    }
+                }
+            }
+            else
+            {
+                // If the component name already exists within the dictionary, then the value is a dictionary containing the component level property key and values.
+                // Append this property dictionary to the existing property value dictionary (overwrite entries if they already exist, if forceUpdate is true).
+                // Otherwise, if the component name does not exist in the dictionary, then add this as a new entry.
+                var componentProperties = new Dictionary<string, object>();
+                if (Collection.ContainsKey(componentName))
+                {
+                    componentProperties = (Dictionary<string, object>)Collection[componentName];
+                }
+                foreach (KeyValuePair<string, object> entry in properties)
+                {
+                    if (forceUpdate)
+                    {
+                        componentProperties[entry.Key] = entry.Value;
+                    }
+                    else
+                    {
+                        componentProperties.Add(entry.Key, entry.Value);
+                    }
+                }
+
+                // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
+                if (!componentProperties.ContainsKey(ConventionBasedConstants.ComponentIdentifierKey))
+                {
+                    componentProperties[ConventionBasedConstants.ComponentIdentifierKey] = ConventionBasedConstants.ComponentIdentifierValue;
+                }
+
+                Collection[componentName] = componentProperties;
+            }
+        }
+
+        private static bool IsDictionary(object objectToCompare)
+        {
+            if (objectToCompare == null)
+            {
+                return false;
+            }
+
+            return objectToCompare is IDictionary
+                && objectToCompare.GetType().IsGenericType
+                && objectToCompare.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>));
         }
     }
 }

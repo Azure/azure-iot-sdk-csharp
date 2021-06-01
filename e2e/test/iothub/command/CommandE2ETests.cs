@@ -2,12 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.Tracing;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -77,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Invoke command {commandName}.");
-            
+
             CloudToDeviceMethodResult serviceClientResponse = null;
             if (string.IsNullOrEmpty(componentName))
             {
@@ -130,7 +126,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
             logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Command status: {statusCode}.");
             Assert.AreEqual(200, statusCode, $"The expected response status should be 200 but was {statusCode}");
             Assert.AreEqual(responseExpected, payloadReceived, $"The expected response payload should be {responseExpected} but was {payloadReceived}");
-
         }
 
         public static async Task<Task> SetDeviceReceiveCommandAsync(DeviceClient deviceClient, string componentName, string commandName, MsTestLogger logger)
@@ -152,7 +147,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                         else
                         {
                             Assert.AreEqual(componentName, request.ComponentName, $"The expected component name should be {componentName} but was {request.ComponentName}");
-
                         }
                         var assertionObject = new ServiceCommandRequestAssertion();
                         string responseExpected = JsonConvert.SerializeObject(assertionObject);
