@@ -22,34 +22,33 @@ namespace Microsoft.Azure.Devices.Client.Tests
         private const string objectPropertyName = "objectPropertyName";
         private const string arrayPropertyName = "arrayPropertyName";
         private const string mapPropertyName = "mapPropertyName";
+
         private const bool boolPropertyValue = false;
         private const double doublePropertyValue = 1.001;
         private const float floatPropertyValue = 1.2f;
         private const int intPropertyValue = 12345678;
         private const short shortPropertyValue = 1234;
         private const string stringPropertyValue = "propertyValue";
+
         private const string componentName = "testableComponent";
         private const string writablePropertyDescription = "testableWritablePropertyDescription";
         private const string updatedPropertyValue = "updatedPropertyValue";
 
-        private static readonly CustomClientProperty s_objectPropertyValue = new CustomClientProperty { Id = 1, Name = "testName" };
+        private static readonly CustomClientProperty s_objectPropertyValue = new CustomClientProperty { Id = 123, Name = "testName" };
 
         private static readonly List<object> s_arrayPropertyValues = new List<object>
         {
             1,
             "someString",
             false,
-            new CustomClientProperty
-            {
-                Id = 123,
-                Name = "someName"
-            }
+            s_objectPropertyValue
         };
 
         private static readonly Dictionary<string, object> s_mapPropertyValues = new Dictionary<string, object>
         {
             { "key1", "value1" },
-            { "key2", 123 }
+            { "key2", 123 },
+            { "key3", s_objectPropertyValue }
         };
 
         [TestMethod]
@@ -91,10 +90,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
             objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
 
             clientProperties.TryGetValue(arrayPropertyName, out List<object> outArrayValue);
+            outArrayValue.Should().HaveSameCount(s_arrayPropertyValues);
             outArrayValue.Should().BeEquivalentTo(s_arrayPropertyValues);
 
             clientProperties.TryGetValue(mapPropertyName, out Dictionary<string, object> outMapValue);
-            outMapValue.Should().HaveCount(2);
+            outMapValue.Should().HaveSameCount(s_mapPropertyValues);
+            outMapValue.Should().BeEquivalentTo(s_mapPropertyValues);
         }
 
         [TestMethod]
@@ -194,10 +195,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
             objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
 
             clientProperties.TryGetValue(componentName, arrayPropertyName, out List<object> outArrayValue);
+            outArrayValue.Should().HaveSameCount(s_arrayPropertyValues);
             outArrayValue.Should().BeEquivalentTo(s_arrayPropertyValues);
 
             clientProperties.TryGetValue(componentName, mapPropertyName, out Dictionary<string, object> outMapValue);
-            outMapValue.Should().HaveCount(2);
+            outMapValue.Should().HaveSameCount(s_mapPropertyValues);
+            outMapValue.Should().BeEquivalentTo(s_mapPropertyValues);
         }
 
         [TestMethod]

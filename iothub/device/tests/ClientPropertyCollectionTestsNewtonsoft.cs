@@ -1,78 +1,193 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
+    // These tests test the deserialization of the service response to a ClientPropertyCollection.
+    // This flow is convention aware and uses NewtonSoft.Json for deserialization.
+    // For the purpose of these tests we will create an instance of a Twin class to simulate the service response.
     public class ClientPropertyCollectionTestsNewtonsoft
     {
-        private const string boolPropertyName = "boolProperty";
-        private const string doublePropertyName = "doubleProperty";
-        private const string floatPropertyName = "floatProperty";
-        private const string intPropertyName = "intProperty";
-        private const string shortPropertyName = "shortProperty";
-        private const string stringPropertyName = "stringPropertyName";
-        private const bool boolPropertyValue = false;
-        private const double doublePropertyValue = 1.001;
-        private const float floatPropertyValue = 1.2f;
-        private const int intPropertyValue = 12345678;
-        private const short shortPropertyValue = 1234;
-        private const string stringPropertyValue = "propertyValue";
-        private const string componentName = "testableComponent";
-        private const string writablePropertyDescription = "testableWritablePropertyDescription";
-        private const string updatedPropertyValue = "updatedPropertyValue";
-        private const string twinJson = "{ \"stringPropertyName\" : \"propertyValue\", \"boolProperty\" : false, \"doublePropertyName\" : 1.001, \"floatProperty\" : 1.2, \"intProperty\" : 12345678, \"shortProperty\" : 1234 }";
-        private const string twinJsonWritableProperty = "{ \"stringPropertyName\" : { \"value\" : \"propertyValue\",  \"ac\" : 200, \"av\" : 2, \"ad\" : \"testableWritablePropertyDescription\" } }";
-        private const string twinJsonWithComponent = "{ \"testableComponent\" : { \"__t\" : \"c\",  \"stringPropertyName\" : \"propertyValue\", \"boolProperty\" : false, \"doublePropertyName\" : 1.001, \"floatProperty\" : 1.2, \"intProperty\" : 12345678, \"shortProperty\" : 1234 } }";
-        private const string twinJsonWritablePropertyWithComponent = "{ \"testableComponent\" : { \"__t\" : \"c\", \"stringPropertyName\" : { \"value\" : \"propertyValue\",  \"ac\" : 200, \"av\" : 2, \"ad\" : \"testableWritablePropertyDescription\" } } }";
+        internal const string BoolPropertyName = "boolProperty";
+        internal const string DoublePropertyName = "doubleProperty";
+        internal const string FloatPropertyName = "floatProperty";
+        internal const string IntPropertyName = "intProperty";
+        internal const string ShortPropertyName = "shortProperty";
+        internal const string StringPropertyName = "stringPropertyName";
+        internal const string ObjectPropertyName = "objectPropertyName";
+        internal const string ArrayPropertyName = "arrayPropertyName";
+        internal const string MapPropertyName = "mapPropertyName";
+        internal const string ComponentName = "testableComponent";
 
-        private static TwinCollection collectionToRoundTrip = new TwinCollection(twinJson);
-        private static TwinCollection collectionWritablePropertyToRoundTrip = new TwinCollection(twinJsonWritableProperty);
-        private static TwinCollection collectionWithComponentToRoundTrip = new TwinCollection(twinJsonWithComponent);
-        private static TwinCollection collectionWritablePropertyWithComponentToRoundTrip = new TwinCollection(twinJsonWritablePropertyWithComponent);
+        private const bool BoolPropertyValue = false;
+        private const double DoublePropertyValue = 1.001;
+        private const float FloatPropertyValue = 1.2f;
+        private const int IntPropertyValue = 12345678;
+        private const short ShortPropertyValue = 1234;
+        private const string StringPropertyValue = "propertyValue";
+
+        private const string UpdatedPropertyValue = "updatedPropertyValue";
+
+        private static readonly CustomClientProperty s_objectPropertyValue = new CustomClientProperty { Id = 123, Name = "testName" };
+
+        private static readonly List<object> s_arrayPropertyValues = new List<object>
+        {
+            1,
+            "someString",
+            false,
+            s_objectPropertyValue
+        };
+
+        private static readonly Dictionary<string, object> s_mapPropertyValues = new Dictionary<string, object>
+        {
+            { "key1", "value1" },
+            { "key2", 123 },
+            { "key3", s_objectPropertyValue }
+        };
+
+        // Create an object that represents all of the properties as root-level properties.
+        private static readonly RootLevelProperties s_rootLevelProperties = new RootLevelProperties
+        {
+            BooleanProperty = BoolPropertyValue,
+            DoubleProperty = DoublePropertyValue,
+            FloatProperty = FloatPropertyValue,
+            IntProperty = IntPropertyValue,
+            ShortProperty = ShortPropertyValue,
+            StringProperty = StringPropertyValue,
+            ObjectProperty = s_objectPropertyValue,
+            ArrayProperty = s_arrayPropertyValues,
+            MapProperty = s_mapPropertyValues
+        };
+
+        // Create an object that represents all of the properties as component-level properties.
+        // This adds the "__t": "c" component identifier as a part of "ComponentProperties" class declaration.
+        private static readonly ComponentLevelProperties s_componentLevelProperties = new ComponentLevelProperties
+        {
+            Properties = new ComponentProperties
+            {
+                BooleanProperty = BoolPropertyValue,
+                DoubleProperty = DoublePropertyValue,
+                FloatProperty = FloatPropertyValue,
+                IntProperty = IntPropertyValue,
+                ShortProperty = ShortPropertyValue,
+                StringProperty = StringPropertyValue,
+                ObjectProperty = s_objectPropertyValue,
+                ArrayProperty = s_arrayPropertyValues,
+                MapProperty = s_mapPropertyValues
+            },
+        };
+
+        // Create a writable property response with the expected values.
+        private static readonly IWritablePropertyResponse s_writablePropertyResponse = new NewtonsoftJsonWritablePropertyResponse(
+            propertyValue: StringPropertyValue,
+            ackCode: StatusCodes.OK,
+            ackVersion: 2,
+            ackDescription: "testableWritablePropertyDescription");
+
+        // Create a JObject instance that represents a writable property response sent for a root-level property.
+        private static readonly JObject s_writablePropertyResponseJObject = new JObject(
+            new JProperty(StringPropertyName, JObject.FromObject(s_writablePropertyResponse)));
+
+        // Create a JObject instance that represents a writable property response sent for a component-level property.
+        // This adds the "__t": "c" component identifier to the constructed JObject.
+        private static readonly JObject s_writablePropertyResponseWithComponentJObject = new JObject(
+            new JProperty(ComponentName, new JObject(
+                new JProperty(ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue),
+                new JProperty(StringPropertyName, JObject.FromObject(s_writablePropertyResponse)))));
+
+        // The above constructed json objects are used for initializing a twin response.
+        // This is because we are using a Twin instance to simulate the service response.
+
+        private static TwinCollection collectionToRoundTrip = new TwinCollection(JsonConvert.SerializeObject(s_rootLevelProperties));
+        private static TwinCollection collectionWithComponentToRoundTrip = new TwinCollection(JsonConvert.SerializeObject(s_componentLevelProperties));
+        private static TwinCollection collectionWritablePropertyToRoundTrip = new TwinCollection(s_writablePropertyResponseJObject, null);
+        private static TwinCollection collectionWritablePropertyWithComponentToRoundTrip = new TwinCollection(s_writablePropertyResponseWithComponentJObject, null);
 
         [TestMethod]
-        public void ClientPropertyCollectionNewtonsoft_CanGetSimpleValue()
+        public void ClientPropertyCollectionNewtonsoft_CanGetValue()
         {
-            
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
-            clientProperties.Convention = DefaultPayloadConvention.Instance;
-            
-            clientProperties.TryGetValue(stringPropertyName, out string stringOutValue);
-            Assert.AreEqual(stringPropertyValue, stringOutValue, $"Property values do not match, expected {stringPropertyValue} but got {stringOutValue}");
-            clientProperties.TryGetValue(boolPropertyName, out bool boolOutValue);
-            Assert.AreEqual(boolPropertyValue, boolOutValue, $"Property values do not match, expected {boolPropertyValue} but got {boolOutValue}");
-            clientProperties.TryGetValue(doublePropertyName, out double doubleOutValue);
-            Assert.AreEqual(doublePropertyValue, doubleOutValue, $"Property values do not match, expected {doublePropertyValue} but got {doubleOutValue}");
-            clientProperties.TryGetValue(floatPropertyName, out float floatOutValue);
-            Assert.AreEqual(floatPropertyValue, floatOutValue, $"Property values do not match, expected {floatPropertyValue} but got {floatOutValue}");
-            clientProperties.TryGetValue(intPropertyName, out int intOutValue);
-            Assert.AreEqual(intPropertyValue, intOutValue, $"Property values do not match, expected {intPropertyValue} but got {intOutValue}");
-            clientProperties.TryGetValue(shortPropertyName, out short shortOutValue);
-            Assert.AreEqual(shortPropertyValue, shortOutValue, $"Property values do not match, expected {shortPropertyValue} but got {shortOutValue}");        
+
+            clientProperties.TryGetValue(StringPropertyName, out string stringOutValue);
+            stringOutValue.Should().Be(StringPropertyValue);
+
+            clientProperties.TryGetValue(BoolPropertyName, out bool boolOutValue);
+            boolOutValue.Should().Be(BoolPropertyValue);
+
+            clientProperties.TryGetValue(DoublePropertyName, out double doubleOutValue);
+            doubleOutValue.Should().Be(DoublePropertyValue);
+
+            clientProperties.TryGetValue(FloatPropertyName, out float floatOutValue);
+            floatOutValue.Should().Be(FloatPropertyValue);
+
+            clientProperties.TryGetValue(IntPropertyName, out int intOutValue);
+            intOutValue.Should().Be(IntPropertyValue);
+
+            clientProperties.TryGetValue(ShortPropertyName, out short shortOutValue);
+            shortOutValue.Should().Be(ShortPropertyValue);
+
+            clientProperties.TryGetValue(ObjectPropertyName, out CustomClientProperty objectOutValue);
+            objectOutValue.Id.Should().Be(s_objectPropertyValue.Id);
+            objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
+
+            // The two lists won't be exactly equal since TryGetValue doesn't implement nested deserialization
+            // => the complex object inside the list is deserialized to a JObject.
+            clientProperties.TryGetValue(ArrayPropertyName, out List<object> outArrayValue);
+            outArrayValue.Should().HaveSameCount(s_arrayPropertyValues);
+
+            // The two dictionaries won't be exactly equal since TryGetValue doesn't implement nested deserialization
+            // => the complex object inside the dictionary is deserialized to a JObject.
+            clientProperties.TryGetValue(MapPropertyName, out Dictionary<string, object> outMapValue);
+            outMapValue.Should().HaveSameCount(s_mapPropertyValues);
         }
 
         [TestMethod]
-        public void ClientPropertyCollectionNewtonsoft_CanGetSimpleValueWithComponent()
+        public void ClientPropertyCollectionNewtonsoft_CanGetValueWithComponent()
         {
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
-            clientProperties.TryGetValue(componentName, stringPropertyName, out string outValue);
-            Assert.AreEqual(stringPropertyValue, outValue, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            clientProperties.TryGetValue(componentName, boolPropertyName, out bool boolOutValue);
-            Assert.AreEqual(boolPropertyValue, boolOutValue, $"Property values do not match, expected {boolPropertyValue} but got {boolOutValue}");
-            // clientProperties.TryGetValue(componentName, doublePropertyName, out double doubleOutValue);
-            // Assert.AreEqual(doublePropertyValue, doubleOutValue, $"Property values do not match, expected {doublePropertyValue} but got {doubleOutValue}");
-            clientProperties.TryGetValue(componentName, floatPropertyName, out float floatOutValue);
-            Assert.AreEqual(floatPropertyValue, floatOutValue, $"Property values do not match, expected {floatPropertyValue} but got {floatOutValue}");
-            clientProperties.TryGetValue(componentName, intPropertyName, out int intOutValue);
-            Assert.AreEqual(intPropertyValue, intOutValue, $"Property values do not match, expected {intPropertyValue} but got {intOutValue}");
-            clientProperties.TryGetValue(componentName, shortPropertyName, out short shortOutValue);
-            Assert.AreEqual(shortPropertyValue, shortOutValue, $"Property values do not match, expected {shortPropertyValue} but got {shortOutValue}");
+
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string stringOutValue);
+            stringOutValue.Should().Be(StringPropertyValue);
+
+            clientProperties.TryGetValue(ComponentName, BoolPropertyName, out bool boolOutValue);
+            boolOutValue.Should().Be(BoolPropertyValue);
+
+            clientProperties.TryGetValue(ComponentName, DoublePropertyName, out double doubleOutValue);
+            doubleOutValue.Should().Be(DoublePropertyValue);
+
+            clientProperties.TryGetValue(ComponentName, FloatPropertyName, out float floatOutValue);
+            floatOutValue.Should().Be(FloatPropertyValue);
+
+            clientProperties.TryGetValue(ComponentName, IntPropertyName, out int intOutValue);
+            intOutValue.Should().Be(IntPropertyValue);
+
+            clientProperties.TryGetValue(ComponentName, ShortPropertyName, out short shortOutValue);
+            shortOutValue.Should().Be(ShortPropertyValue);
+
+            clientProperties.TryGetValue(ComponentName, ObjectPropertyName, out CustomClientProperty objectOutValue);
+            objectOutValue.Id.Should().Be(s_objectPropertyValue.Id);
+            objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
+
+            // The two lists won't be exactly equal since TryGetValue doesn't implement nested deserialization
+            // => the complex object inside the list is deserialized to a JObject.
+            clientProperties.TryGetValue(ComponentName, ArrayPropertyName, out List<object> outArrayValue);
+            outArrayValue.Should().HaveSameCount(s_arrayPropertyValues);
+
+            // The two dictionaries won't be exactly equal since TryGetValue doesn't implement nested deserialization
+            // => the complex object inside the dictionary is deserialized to a JObject.
+            clientProperties.TryGetValue(ComponentName, MapPropertyName, out Dictionary<string, object> outMapValue);
+            outMapValue.Should().HaveSameCount(s_mapPropertyValues);
         }
 
         [TestMethod]
@@ -80,11 +195,11 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWritablePropertyToRoundTrip, DefaultPayloadConvention.Instance);
 
-            clientProperties.TryGetValue<NewtonsoftJsonWritablePropertyResponse>(stringPropertyName, out var outValue);
-            Assert.AreEqual(stringPropertyValue, outValue.Value, $"Property values do not match, expected {stringPropertyValue} but got {outValue.Value}");
-            Assert.AreEqual(200, outValue.AckCode, $"Property values do not match, expected 200 but got {outValue.AckCode}");
-            Assert.AreEqual(2, outValue.AckVersion, $"Property values do not match, expected 2 but got {outValue.AckVersion}");
-            Assert.AreEqual(writablePropertyDescription, outValue.AckDescription, $"Property values do not match, expected {writablePropertyDescription} but got {outValue.AckDescription}");
+            clientProperties.TryGetValue<NewtonsoftJsonWritablePropertyResponse>(StringPropertyName, out var outValue);
+            outValue.Value.Should().Be(StringPropertyValue);
+            outValue.AckCode.Should().Be(s_writablePropertyResponse.AckCode);
+            outValue.AckVersion.Should().Be(s_writablePropertyResponse.AckVersion);
+            outValue.AckDescription.Should().Be(s_writablePropertyResponse.AckDescription);
         }
 
         [TestMethod]
@@ -92,11 +207,11 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWritablePropertyWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
-            clientProperties.TryGetValue<NewtonsoftJsonWritablePropertyResponse>(componentName, stringPropertyName, out var outValue);
-            Assert.AreEqual(stringPropertyValue, outValue.Value, $"Property values do not match, expected {stringPropertyValue} but got {outValue.Value}");
-            Assert.AreEqual(200, outValue.AckCode, $"Property values do not match, expected 200 but got {outValue.AckCode}");
-            Assert.AreEqual(2, outValue.AckVersion, $"Property values do not match, expected 2 but got {outValue.AckVersion}");
-            Assert.AreEqual(writablePropertyDescription, outValue.AckDescription, $"Property values do not match, expected {writablePropertyDescription} but got {outValue.AckDescription}");
+            clientProperties.TryGetValue<NewtonsoftJsonWritablePropertyResponse>(ComponentName, StringPropertyName, out var outValue);
+            outValue.Value.Should().Be(StringPropertyValue);
+            outValue.AckCode.Should().Be(s_writablePropertyResponse.AckCode);
+            outValue.AckVersion.Should().Be(s_writablePropertyResponse.AckVersion);
+            outValue.AckDescription.Should().Be(s_writablePropertyResponse.AckDescription);
         }
 
         [TestMethod]
@@ -104,11 +219,53 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
-            clientProperties.TryGetValue<string>(componentName, stringPropertyName, out var outValue);
-            clientProperties.TryGetValue<string>(componentName, "__t", out var componentOut);
+            clientProperties.TryGetValue<string>(ComponentName, StringPropertyName, out var outValue);
+            clientProperties.TryGetValue<string>(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out var componentOut);
 
-            Assert.AreEqual(stringPropertyValue, outValue, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            Assert.AreEqual("c", componentOut, $"Property values do not match, expected c but got {componentOut}");
+            outValue.Should().Be(StringPropertyValue);
+            componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
         }
+    }
+
+    internal class RootLevelProperties
+    {
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.BoolPropertyName)]
+        public bool BooleanProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.DoublePropertyName)]
+        public double DoubleProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.FloatPropertyName)]
+        public float FloatProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.IntPropertyName)]
+        public int IntProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ShortPropertyName)]
+        public short ShortProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.StringPropertyName)]
+        public string StringProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ObjectPropertyName)]
+        public object ObjectProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ArrayPropertyName)]
+        public IList ArrayProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.MapPropertyName)]
+        public IDictionary MapProperty { get; set; }
+    }
+
+    internal class ComponentProperties : RootLevelProperties
+    {
+        [JsonProperty(ConventionBasedConstants.ComponentIdentifierKey)]
+        public string ComponentIdentifier { get; } = ConventionBasedConstants.ComponentIdentifierValue;
+    }
+
+    internal class ComponentLevelProperties
+    {
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentName)]
+        public ComponentProperties Properties { get; set; }
     }
 }

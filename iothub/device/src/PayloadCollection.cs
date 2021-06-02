@@ -115,8 +115,9 @@ namespace Microsoft.Azure.Devices.Client
                     return true;
                 }
 
-                // If the object is of type T, go ahead and return it.
-                if (Collection[key] is T valueRef)
+                // If the object is of type T or can be cast to type T, go ahead and return it.
+                if (Collection[key] is T valueRef
+                    || NumericHelpers.TryCastNumericTo(Collection[key], out valueRef))
                 {
                     value = valueRef;
                     return true;

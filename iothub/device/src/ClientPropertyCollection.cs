@@ -261,8 +261,9 @@ namespace Microsoft.Azure.Devices.Client
                             return true;
                         }
 
-                        // If the object is of type T, go ahead and return it.
-                        if (dictionaryElement is T valueRef)
+                        // If the object is of type T or can be cast to type T, go ahead and return it.
+                        if (dictionaryElement is T valueRef
+                            || NumericHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
                         {
                             propertyValue = valueRef;
                             return true;
