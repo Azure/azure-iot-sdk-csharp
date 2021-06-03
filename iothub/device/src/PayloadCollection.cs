@@ -45,6 +45,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Adds the key-value pair to the collection.
         /// </summary>
+        /// <remarks>
+        /// For <see cref="ClientPropertyCollection"/> operations use <see cref="ClientPropertyCollection.AddRootProperty(string, object)"/> instead.
+        /// </remarks>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['key']"/>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['value']"/>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/exception"/>
@@ -57,6 +60,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Adds or updates the key-value pair to the collection.
         /// </summary>
+        /// <remarks>
+        /// For <see cref="ClientPropertyCollection"/> operations use <see cref="ClientPropertyCollection.AddOrUpdateRootProperty(string, object)"/> instead.
+        /// </remarks>
         /// <param name="key">The name of the telemetry.</param>
         /// <param name="value">The value of the telemetry.</param>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
