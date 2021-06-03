@@ -65,6 +65,7 @@ public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
     public virtual object this[string key] { get; set; }
     public virtual void Add(string key, object value);
     public virtual void AddOrUpdate(string key, object value);
+    public void ClearCollection();
     public bool Contains(string key);
     public IEnumerator<object> GetEnumerator();
     public virtual byte[] GetPayloadObjectBytes();
@@ -132,17 +133,13 @@ public class ClientPropertyCollection : PayloadCollection {
     public ClientPropertyCollection();
     public long Version { get; protected set; }
     public void Add(IDictionary<string, object> properties);
-    public void Add(string componentName, IDictionary<string, object> properties);
-    public override void Add(string propertyName, object propertyValue);
-    public void Add(string propertyName, object propertyValue, int statusCode, long version, string description = null);
-    public void Add(string componentName, string propertyName, object propertyValue);
-    public void Add(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description = null);
+    public void AddComponentProperties(string componentName, IDictionary<string, object> properties);
+    public void AddComponentProperty(string componentName, string propertyName, object propertyValue);
     public void AddOrUpdate(IDictionary<string, object> properties);
-    public void AddOrUpdate(string componentName, IDictionary<string, object> properties);
-    public override void AddOrUpdate(string propertyName, object propertyValue);
-    public void AddOrUpdate(string propertyName, object propertyValue, int statusCode, long version, string description = null);
-    public void AddOrUpdate(string componentName, string propertyName, object propertyValue);
-    public void AddOrUpdate(string componentName, string propertyName, object propertyValue, int statusCode, long version, string description = null);
+    public void AddOrUpdateComponentProperties(string componentName, IDictionary<string, object> properties);
+    public void AddOrUpdateComponentProperty(string componentName, string propertyName, object propertyValue);
+    public void AddOrUpdateRootProperty(string propertyName, object propertyValue);
+    public void AddRootProperty(string propertyName, object propertyValue);
     public bool Contains(string componentName, string propertyName);
     public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
 }
