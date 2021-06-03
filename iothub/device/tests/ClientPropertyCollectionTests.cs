@@ -277,10 +277,18 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 { StringPropertyName, StringPropertyValue, StatusCodes.OK, 2, WritablePropertyDescription }
             };
             clientProperties.TryGetValue(StringPropertyName, out dynamic outValue);
-            outValue.value.Should().Be(StringPropertyValue);
-            outValue.ac.Should().Be(StatusCodes.OK);
-            outValue.av.Should().Be(2);
-            outValue.ad.Should().Be(WritablePropertyDescription);
+
+            string retrievedValue = outValue.value;
+            retrievedValue.Should().Be(StringPropertyValue);
+
+            int retrievedAckCode = outValue.ac;
+            retrievedAckCode.Should().Be(StatusCodes.OK);
+
+            long retrievedAckVersion = outValue.av;
+            retrievedAckVersion.Should().Be(2);
+
+            string retrievedAckDescription = outValue.ad;
+            retrievedAckDescription.Should().Be(WritablePropertyDescription);
         }
 
         [TestMethod]
@@ -291,10 +299,18 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 { ComponentName, StringPropertyName, StringPropertyValue, StatusCodes.OK, 2, WritablePropertyDescription }
             };
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out dynamic outValue);
-            outValue.value.Should().Be(StringPropertyValue);
-            outValue.ac.Should().Be(StatusCodes.OK);
-            outValue.av.Should().Be(2);
-            outValue.ad.Should().Be(WritablePropertyDescription);
+
+            string retrievedValue = outValue.value;
+            retrievedValue.Should().Be(StringPropertyValue);
+
+            int retrievedAckCode = outValue.ac;
+            retrievedAckCode.Should().Be(StatusCodes.OK);
+
+            long retrievedAckVersion = outValue.av;
+            retrievedAckVersion.Should().Be(2);
+
+            string retrievedAckDescription = outValue.ad;
+            retrievedAckDescription.Should().Be(WritablePropertyDescription);
         }
 
         [TestMethod]
