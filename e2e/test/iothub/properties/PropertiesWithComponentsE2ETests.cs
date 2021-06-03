@@ -213,10 +213,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             logger.Trace($"{nameof(PropertiesWithComponents_DeviceSetsPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
-            var props = new ClientPropertyCollection
-            {
-                { ComponentName, propName, propValue }
-            };
+            var props = new ClientPropertyCollection();
+            props.AddComponentProperty(ComponentName, propName, propValue);
             await deviceClient.UpdateClientPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
@@ -293,7 +291,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             {
                 twinPatch.Properties.Desired[componentName][propName] = propValue;
             }
-
 
             await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);
@@ -400,10 +397,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            var patch = new ClientPropertyCollection
-            {
-                { ComponentName, propName, propValue }
-            };
+            var patch = new ClientPropertyCollection();
+            patch.AddComponentProperty(ComponentName, propName, propValue);
             await deviceClient.UpdateClientPropertiesAsync(patch).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
 
@@ -423,29 +418,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        { ComponentName, propName1, null }
-                    })
-                .ConfigureAwait(false);
+            var prop1 = new ClientPropertyCollection();
+            prop1.AddComponentProperty(ComponentName, propName1, null);
+            await deviceClient.UpdateClientPropertiesAsync(prop1).ConfigureAwait(false);
+
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsTrue(serviceTwin.Properties.Reported.Contains(ComponentName));
             Assert.IsFalse(serviceTwin.Properties.Reported[ComponentName].Contains(propName1));
 
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        {
-                            ComponentName, propName1, new Dictionary<string, object>
-                            {
-                                [propName2] = null
-                            }
-                        }
-                    })
-                .ConfigureAwait(false);
+            var prop2 = new ClientPropertyCollection();
+            prop2.AddComponentProperty(
+                ComponentName,
+                propName1,
+                new Dictionary<string, object>
+                {
+                    [propName2] = null
+                });
+            await deviceClient.UpdateClientPropertiesAsync(prop2).ConfigureAwait(false);
+
             serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsTrue(serviceTwin.Properties.Reported.Contains(ComponentName));
             Assert.IsTrue(serviceTwin.Properties.Reported[ComponentName].Contains(propName1));
