@@ -26,7 +26,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
         public DeviceAuthenticationWithTpm(
             string deviceId,
-            SecurityProviderTpm securityProvider) : base(deviceId)
+            SecurityProviderTpm securityProvider)
+            : base(deviceId)
         {
             _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }
@@ -43,7 +44,27 @@ namespace Microsoft.Azure.Devices.Client
             string deviceId,
             SecurityProviderTpm securityProvider,
             int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage) : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage)
+            int timeBufferPercentage)
+            : this(deviceId, securityProvider, suggestedTimeToLiveSeconds, timeBufferPercentage, true)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class.
+        /// </summary>
+        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
+        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value.</param>
+        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as percentage of
+        /// the time to live. EX: If you want a SAS token to live for 85% of life before proactive renewal, this value should be 15.</param>
+        /// <param name="disposalBySdk">True if the authentication method should be disposed of by sdk; false if you intend to reuse the authentication method.</param>
+        public DeviceAuthenticationWithTpm(
+            string deviceId,
+            SecurityProviderTpm securityProvider,
+            int suggestedTimeToLiveSeconds,
+            int timeBufferPercentage,
+            bool disposalBySdk)
+            : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage, disposalBySdk)
         {
             _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }

@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (disposing)
                 {
                     if (_connectionString?.TokenRefresher != null
-                        && _connectionString.TokenRefresher.InstanceCreatedBySdk)
+                        && _connectionString.TokenRefresher.DisposalBySdk)
                     {
                         _connectionString.TokenRefresher.Dispose();
                     }

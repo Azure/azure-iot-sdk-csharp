@@ -40,7 +40,29 @@ namespace Microsoft.Azure.Devices.Client
             string deviceId,
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
-            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage))
+            : this(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage, true)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class.
+        /// </summary>
+        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="suggestedTimeToLiveSeconds">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        /// <param name="disposalBySdk">True if the authentication method should be disposed of by sdk; false if you intend to reuse the authentication method.</param>
+        ///</param>
+        public DeviceAuthenticationWithTokenRefresh(
+            string deviceId,
+            int suggestedTimeToLiveSeconds,
+            int timeBufferPercentage,
+            bool disposalBySdk)
+            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage), disposalBySdk)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {

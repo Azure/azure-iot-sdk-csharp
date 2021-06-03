@@ -32,6 +32,22 @@ namespace Microsoft.Azure.Devices.Client
         public AuthenticationWithTokenRefresh(
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
+            : this(suggestedTimeToLiveSeconds, timeBufferPercentage, true)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
+        /// </summary>
+        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
+        /// may choose to ignore this value.</param>
+        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
+        /// a percentage of the time to live.</param>
+        /// <param name="disposalBySdk">True if the authentication method should be disposed of by sdk; false if you intend to reuse the authentication method.</param>
+        public AuthenticationWithTokenRefresh(
+            int suggestedTimeToLiveSeconds,
+            int timeBufferPercentage,
+            bool disposalBySdk)
         {
             if (suggestedTimeToLiveSeconds < 0)
             {
@@ -48,6 +64,8 @@ namespace Microsoft.Azure.Devices.Client
             ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLiveSeconds);
             Debug.Assert(IsExpiring);
             UpdateTimeBufferSeconds(_suggestedTimeToLiveSeconds);
+
+            DisposalBySdk = disposalBySdk;
         }
 
         /// <summary>
@@ -65,21 +83,25 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
 
-        // This internal property is used by the sdk to determine if the instance was created by the sdk,
-        // and thus, if it should be disposed by the sdk.
-        internal bool InstanceCreatedBySdk { get; set; }
+        // This internal property is used by the sdk to determine if the disposal should be handled by the sdk.
+        internal bool DisposalBySdk { get; }
 
         /// <summary>
         /// Gets a snapshot of the security token associated with the device. This call is thread-safe.
         /// </summary>
         public async Task<string> GetTokenAsync(string iotHub)
         {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("This authentication method instance has already been disposed. " +
+                    "Please create a new instance and pass it to the DeviceClient/ ModuleClient during initialization.");
+            }
+
             if (!IsExpiring)
             {
                 return _token;
             }
 
-            Debug.Assert(_lock != null);
             await _lock.WaitAsync().ConfigureAwait(false);
 
             try

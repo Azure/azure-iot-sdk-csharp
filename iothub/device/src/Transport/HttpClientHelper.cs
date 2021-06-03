@@ -550,7 +550,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (_isClientPrimaryTransportHandler
                     && _authenticationHeaderProvider is IotHubConnectionString iotHubConnectionString
                     && iotHubConnectionString.TokenRefresher != null
-                    && iotHubConnectionString.TokenRefresher.InstanceCreatedBySdk)
+                    && iotHubConnectionString.TokenRefresher.DisposalBySdk)
                 {
                     iotHubConnectionString.TokenRefresher.Dispose();
                 }
