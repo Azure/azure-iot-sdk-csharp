@@ -59,6 +59,7 @@ public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
     public virtual object this[string key] { get; set; }
     public virtual void Add(string key, object value);
     public virtual void AddOrUpdate(string key, object value);
+    public void ClearCollection();
     public bool Contains(string key);
     public IEnumerator<object> GetEnumerator();
     public virtual byte[] GetPayloadObjectBytes();
@@ -109,6 +110,7 @@ public Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollectio
 
 ```csharp
 public class ClientProperties : ClientPropertyCollection {
+    public ClientProperties();
     public ClientPropertyCollection Writable { get; private set; }
 }
 
@@ -172,10 +174,8 @@ public class TelemetryCollection : PayloadCollection {
     public override void AddOrUpdate(string telemetryName, object telemetryValue);
 }
 
-public class TelemetryMessage : Message {
-    public TelemetryMessage(string componentName = null);
-    public new string ContentEncoding { get; internal set; }
-    public new string ContentType { get; internal set; }
+public sealed class TelemetryMessage : MessageBase {
+    public TelemetryMessage(string componentName=null);
     public TelemetryCollection Telemetry { get; set; }
     public override Stream GetBodyStream();
 }

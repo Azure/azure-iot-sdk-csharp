@@ -74,13 +74,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 switch (writableProperty.Key)
                 {
                     case "targetTemperature":
-                        const string tagetTemperatureProperty = "targetTemperature";
+                        const string targetTemperatureProperty = "targetTemperature";
                         double targetTemperatureRequested = Convert.ToDouble(writableProperty.Value);
-                        _logger.LogDebug($"Property: Received - [ \"{tagetTemperatureProperty}\": {targetTemperatureRequested}°C ].");
+                        _logger.LogDebug($"Property: Received - [ \"{targetTemperatureProperty}\": {targetTemperatureRequested}°C ].");
 
                         _temperature = targetTemperatureRequested;
                         var reportedProperty = new ClientPropertyCollection();
-                        reportedProperty.Add(tagetTemperatureProperty, _temperature, StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature");
+                        reportedProperty.Add(targetTemperatureProperty, _temperature, StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature");
 
                         ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 

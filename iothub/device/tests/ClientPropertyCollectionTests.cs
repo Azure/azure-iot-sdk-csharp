@@ -13,27 +13,29 @@ namespace Microsoft.Azure.Devices.Client.Tests
     [TestCategory("Unit")]
     public class ClientPropertyCollectionTests
     {
-        private const string boolPropertyName = "boolProperty";
-        private const string doublePropertyName = "doubleProperty";
-        private const string floatPropertyName = "floatProperty";
-        private const string intPropertyName = "intProperty";
-        private const string shortPropertyName = "shortProperty";
-        private const string stringPropertyName = "stringPropertyName";
-        private const string objectPropertyName = "objectPropertyName";
-        private const string arrayPropertyName = "arrayPropertyName";
-        private const string mapPropertyName = "mapPropertyName";
+        private const string BoolPropertyName = "boolProperty";
+        private const string DoublePropertyName = "doubleProperty";
+        private const string FloatPropertyName = "floatProperty";
+        private const string IntPropertyName = "intProperty";
+        private const string ShortPropertyName = "shortProperty";
+        private const string StringPropertyName = "stringPropertyName";
+        private const string ObjectPropertyName = "objectPropertyName";
+        private const string ArrayPropertyName = "arrayPropertyName";
+        private const string MapPropertyName = "mapPropertyName";
+        private const string DateTimePropertyName = "dateTimePropertyName";
 
-        private const bool boolPropertyValue = false;
-        private const double doublePropertyValue = 1.001;
-        private const float floatPropertyValue = 1.2f;
-        private const int intPropertyValue = 12345678;
-        private const short shortPropertyValue = 1234;
-        private const string stringPropertyValue = "propertyValue";
+        private const bool BoolPropertyValue = false;
+        private const double DoublePropertyValue = 1.001;
+        private const float FloatPropertyValue = 1.2f;
+        private const int IntPropertyValue = 12345678;
+        private const short ShortPropertyValue = 1234;
+        private const string StringPropertyValue = "propertyValue";
 
-        private const string componentName = "testableComponent";
-        private const string writablePropertyDescription = "testableWritablePropertyDescription";
-        private const string updatedPropertyValue = "updatedPropertyValue";
+        private const string ComponentName = "testableComponent";
+        private const string WritablePropertyDescription = "testableWritablePropertyDescription";
+        private const string UpdatedPropertyValue = "updatedPropertyValue";
 
+        private static readonly DateTimeOffset s_dateTimePropertyValue = DateTimeOffset.Now;
         private static readonly CustomClientProperty s_objectPropertyValue = new CustomClientProperty { Id = 123, Name = "testName" };
 
         private static readonly List<object> s_arrayPropertyValues = new List<object>
@@ -56,46 +58,50 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { stringPropertyName, stringPropertyValue },
-                { boolPropertyName, boolPropertyValue },
-                { doublePropertyName, doublePropertyValue },
-                { floatPropertyName, floatPropertyValue },
-                { intPropertyName, intPropertyValue },
-                { shortPropertyName, shortPropertyValue },
-                { objectPropertyName, s_objectPropertyValue },
-                { arrayPropertyName, s_arrayPropertyValues },
-                { mapPropertyName, s_mapPropertyValues }
+                { StringPropertyName, StringPropertyValue },
+                { BoolPropertyName, BoolPropertyValue },
+                { DoublePropertyName, DoublePropertyValue },
+                { FloatPropertyName, FloatPropertyValue },
+                { IntPropertyName, IntPropertyValue },
+                { ShortPropertyName, ShortPropertyValue },
+                { ObjectPropertyName, s_objectPropertyValue },
+                { ArrayPropertyName, s_arrayPropertyValues },
+                { MapPropertyName, s_mapPropertyValues },
+                { DateTimePropertyName, s_dateTimePropertyValue }
             };
 
-            clientProperties.TryGetValue(stringPropertyName, out string stringOutValue);
-            stringOutValue.Should().Be(stringPropertyValue);
+            clientProperties.TryGetValue(StringPropertyName, out string stringOutValue);
+            stringOutValue.Should().Be(StringPropertyValue);
 
-            clientProperties.TryGetValue(boolPropertyName, out bool boolOutValue);
-            boolOutValue.Should().Be(boolPropertyValue);
+            clientProperties.TryGetValue(BoolPropertyName, out bool boolOutValue);
+            boolOutValue.Should().Be(BoolPropertyValue);
 
-            clientProperties.TryGetValue(doublePropertyName, out double doubleOutValue);
-            doubleOutValue.Should().Be(doublePropertyValue);
+            clientProperties.TryGetValue(DoublePropertyName, out double doubleOutValue);
+            doubleOutValue.Should().Be(DoublePropertyValue);
 
-            clientProperties.TryGetValue(floatPropertyName, out float floatOutValue);
-            floatOutValue.Should().Be(floatPropertyValue);
+            clientProperties.TryGetValue(FloatPropertyName, out float floatOutValue);
+            floatOutValue.Should().Be(FloatPropertyValue);
 
-            clientProperties.TryGetValue(intPropertyName, out int intOutValue);
-            intOutValue.Should().Be(intPropertyValue);
+            clientProperties.TryGetValue(IntPropertyName, out int intOutValue);
+            intOutValue.Should().Be(IntPropertyValue);
 
-            clientProperties.TryGetValue(shortPropertyName, out short shortOutValue);
-            shortOutValue.Should().Be(shortPropertyValue);
+            clientProperties.TryGetValue(ShortPropertyName, out short shortOutValue);
+            shortOutValue.Should().Be(ShortPropertyValue);
 
-            clientProperties.TryGetValue(objectPropertyName, out CustomClientProperty objectOutValue);
+            clientProperties.TryGetValue(ObjectPropertyName, out CustomClientProperty objectOutValue);
             objectOutValue.Id.Should().Be(s_objectPropertyValue.Id);
             objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
 
-            clientProperties.TryGetValue(arrayPropertyName, out List<object> outArrayValue);
-            outArrayValue.Should().HaveSameCount(s_arrayPropertyValues);
-            outArrayValue.Should().BeEquivalentTo(s_arrayPropertyValues);
+            clientProperties.TryGetValue(ArrayPropertyName, out List<object> arrayOutValue);
+            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValues);
+            arrayOutValue.Should().BeEquivalentTo(s_arrayPropertyValues);
 
-            clientProperties.TryGetValue(mapPropertyName, out Dictionary<string, object> outMapValue);
-            outMapValue.Should().HaveSameCount(s_mapPropertyValues);
-            outMapValue.Should().BeEquivalentTo(s_mapPropertyValues);
+            clientProperties.TryGetValue(MapPropertyName, out Dictionary<string, object> mapOutValue);
+            mapOutValue.Should().HaveSameCount(s_mapPropertyValues);
+            mapOutValue.Should().BeEquivalentTo(s_mapPropertyValues);
+
+            clientProperties.TryGetValue(DateTimePropertyName, out DateTimeOffset dateTimeOutValue);
+            dateTimeOutValue.Should().Be(s_dateTimePropertyValue);
         }
 
         [TestMethod]
@@ -103,10 +109,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { stringPropertyName, stringPropertyValue }
+                { StringPropertyName, StringPropertyValue }
             };
 
-            Action act = () => clientProperties.Add(stringPropertyName, stringPropertyValue);
+            Action act = () => clientProperties.Add(StringPropertyName, StringPropertyValue);
             act.Should().Throw<ArgumentException>("\"Add\" method does not support adding a key that already exists in the collection.");
         }
 
@@ -115,27 +121,27 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { stringPropertyName, stringPropertyValue }
+                { StringPropertyName, StringPropertyValue }
             };
-            clientProperties.TryGetValue(stringPropertyName, out string outValue);
-            outValue.Should().Be(stringPropertyValue);
+            clientProperties.TryGetValue(StringPropertyName, out string outValue);
+            outValue.Should().Be(StringPropertyValue);
 
-            clientProperties.AddOrUpdate(stringPropertyName, updatedPropertyValue);
-            clientProperties.TryGetValue(stringPropertyName, out string outValueChanged);
-            outValueChanged.Should().Be(updatedPropertyValue, "\"AddOrUpdate\" should overwrite the value if the key already exists in the collection.");
+            clientProperties.AddOrUpdate(StringPropertyName, UpdatedPropertyValue);
+            clientProperties.TryGetValue(StringPropertyName, out string outValueChanged);
+            outValueChanged.Should().Be(UpdatedPropertyValue, "\"AddOrUpdate\" should overwrite the value if the key already exists in the collection.");
         }
 
         [TestMethod]
         public void ClientPropertyCollection_CanAddNullPropertyAndGetBackWithoutDeviceClient()
         {
             var clientProperties = new ClientPropertyCollection();
-            clientProperties.Add(stringPropertyName, stringPropertyValue);
-            clientProperties.Add(intPropertyName, null);
+            clientProperties.Add(StringPropertyName, StringPropertyValue);
+            clientProperties.Add(IntPropertyName, null);
 
-            clientProperties.TryGetValue(stringPropertyName, out string outStringValue);
-            outStringValue.Should().Be(stringPropertyValue);
+            clientProperties.TryGetValue(StringPropertyName, out string outStringValue);
+            outStringValue.Should().Be(StringPropertyValue);
 
-            bool nullPropertyPresent = clientProperties.TryGetValue(intPropertyName, out int? outIntValue);
+            bool nullPropertyPresent = clientProperties.TryGetValue(IntPropertyName, out int? outIntValue);
             nullPropertyPresent.Should().BeTrue();
             outIntValue.Should().BeNull();
         }
@@ -144,14 +150,14 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollection_CanAddMultiplePropertyAndGetBackWithoutDeviceClient()
         {
             var clientProperties = new ClientPropertyCollection();
-            clientProperties.Add(stringPropertyName, stringPropertyValue);
-            clientProperties.Add(intPropertyName, intPropertyValue);
+            clientProperties.Add(StringPropertyName, StringPropertyValue);
+            clientProperties.Add(IntPropertyName, IntPropertyValue);
 
-            clientProperties.TryGetValue(stringPropertyName, out string outStringValue);
-            outStringValue.Should().Be(stringPropertyValue);
+            clientProperties.TryGetValue(StringPropertyName, out string outStringValue);
+            outStringValue.Should().Be(StringPropertyValue);
 
-            clientProperties.TryGetValue(intPropertyName, out int outIntValue);
-            outIntValue.Should().Be(intPropertyValue);
+            clientProperties.TryGetValue(IntPropertyName, out int outIntValue);
+            outIntValue.Should().Be(IntPropertyValue);
         }
 
         [TestMethod]
@@ -159,48 +165,52 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, new Dictionary<string, object> {
-                    { stringPropertyName, stringPropertyValue },
-                    { boolPropertyName, boolPropertyValue },
-                    { doublePropertyName, doublePropertyValue },
-                    { floatPropertyName, floatPropertyValue },
-                    { intPropertyName, intPropertyValue },
-                    { shortPropertyName, shortPropertyValue },
-                    { objectPropertyName, s_objectPropertyValue },
-                    { arrayPropertyName, s_arrayPropertyValues },
-                    { mapPropertyName, s_mapPropertyValues } }
+                { ComponentName, new Dictionary<string, object> {
+                    { StringPropertyName, StringPropertyValue },
+                    { BoolPropertyName, BoolPropertyValue },
+                    { DoublePropertyName, DoublePropertyValue },
+                    { FloatPropertyName, FloatPropertyValue },
+                    { IntPropertyName, IntPropertyValue },
+                    { ShortPropertyName, ShortPropertyValue },
+                    { ObjectPropertyName, s_objectPropertyValue },
+                    { ArrayPropertyName, s_arrayPropertyValues },
+                    { MapPropertyName, s_mapPropertyValues },
+                    { DateTimePropertyName, s_dateTimePropertyValue } }
                 }
             };
 
-            clientProperties.TryGetValue(componentName, stringPropertyName, out string stringOutValue);
-            stringOutValue.Should().Be(stringPropertyValue);
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string stringOutValue);
+            stringOutValue.Should().Be(StringPropertyValue);
 
-            clientProperties.TryGetValue(componentName, boolPropertyName, out bool boolOutValue);
-            boolOutValue.Should().Be(boolPropertyValue);
+            clientProperties.TryGetValue(ComponentName, BoolPropertyName, out bool boolOutValue);
+            boolOutValue.Should().Be(BoolPropertyValue);
 
-            clientProperties.TryGetValue(componentName, doublePropertyName, out double doubleOutValue);
-            doubleOutValue.Should().Be(doublePropertyValue);
+            clientProperties.TryGetValue(ComponentName, DoublePropertyName, out double doubleOutValue);
+            doubleOutValue.Should().Be(DoublePropertyValue);
 
-            clientProperties.TryGetValue(componentName, floatPropertyName, out float floatOutValue);
-            floatOutValue.Should().Be(floatPropertyValue);
+            clientProperties.TryGetValue(ComponentName, FloatPropertyName, out float floatOutValue);
+            floatOutValue.Should().Be(FloatPropertyValue);
 
-            clientProperties.TryGetValue(componentName, intPropertyName, out int intOutValue);
-            intOutValue.Should().Be(intPropertyValue);
+            clientProperties.TryGetValue(ComponentName, IntPropertyName, out int intOutValue);
+            intOutValue.Should().Be(IntPropertyValue);
 
-            clientProperties.TryGetValue(componentName, shortPropertyName, out short shortOutValue);
-            shortOutValue.Should().Be(shortPropertyValue);
+            clientProperties.TryGetValue(ComponentName, ShortPropertyName, out short shortOutValue);
+            shortOutValue.Should().Be(ShortPropertyValue);
 
-            clientProperties.TryGetValue(componentName, objectPropertyName, out CustomClientProperty objectOutValue);
+            clientProperties.TryGetValue(ComponentName, ObjectPropertyName, out CustomClientProperty objectOutValue);
             objectOutValue.Id.Should().Be(s_objectPropertyValue.Id);
             objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
 
-            clientProperties.TryGetValue(componentName, arrayPropertyName, out List<object> outArrayValue);
-            outArrayValue.Should().HaveSameCount(s_arrayPropertyValues);
-            outArrayValue.Should().BeEquivalentTo(s_arrayPropertyValues);
+            clientProperties.TryGetValue(ComponentName, ArrayPropertyName, out List<object> arrayOutValue);
+            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValues);
+            arrayOutValue.Should().BeEquivalentTo(s_arrayPropertyValues);
 
-            clientProperties.TryGetValue(componentName, mapPropertyName, out Dictionary<string, object> outMapValue);
-            outMapValue.Should().HaveSameCount(s_mapPropertyValues);
-            outMapValue.Should().BeEquivalentTo(s_mapPropertyValues);
+            clientProperties.TryGetValue(ComponentName, MapPropertyName, out Dictionary<string, object> mapOutValue);
+            mapOutValue.Should().HaveSameCount(s_mapPropertyValues);
+            mapOutValue.Should().BeEquivalentTo(s_mapPropertyValues);
+
+            clientProperties.TryGetValue(ComponentName, DateTimePropertyName, out DateTimeOffset dateTimeOutValue);
+            dateTimeOutValue.Should().Be(s_dateTimePropertyValue);
         }
 
         [TestMethod]
@@ -208,10 +218,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, stringPropertyName, stringPropertyValue },
+                { ComponentName, StringPropertyName, StringPropertyValue }
             };
 
-            Action act = () => clientProperties.Add(componentName, stringPropertyName, stringPropertyValue);
+            Action act = () => clientProperties.Add(ComponentName, StringPropertyName, StringPropertyValue);
             act.Should().Throw<ArgumentException>("\"Add\" method does not support adding a key that already exists in the collection.");
         }
 
@@ -220,27 +230,27 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, stringPropertyName, stringPropertyValue }
+                { ComponentName, StringPropertyName, StringPropertyValue }
             };
-            clientProperties.TryGetValue(componentName, stringPropertyName, out string outValue);
-            outValue.Should().Be(stringPropertyValue);
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
+            outValue.Should().Be(StringPropertyValue);
 
-            clientProperties.AddOrUpdate(componentName, stringPropertyName, updatedPropertyValue);
-            clientProperties.TryGetValue(componentName, stringPropertyName, out string outValueChanged);
-            outValueChanged.Should().Be(updatedPropertyValue, "\"AddOrUpdate\" should overwrite the value if the key already exists in the collection.");
+            clientProperties.AddOrUpdate(ComponentName, StringPropertyName, UpdatedPropertyValue);
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValueChanged);
+            outValueChanged.Should().Be(UpdatedPropertyValue, "\"AddOrUpdate\" should overwrite the value if the key already exists in the collection.");
         }
 
         [TestMethod]
         public void ClientPropertyCollection_CanAddNullPropertyWithComponentAndGetBackWithoutDeviceClient()
         {
             var clientProperties = new ClientPropertyCollection();
-            clientProperties.Add(componentName, stringPropertyName, stringPropertyValue);
-            clientProperties.Add(componentName, intPropertyName, null);
+            clientProperties.Add(ComponentName, StringPropertyName, StringPropertyValue);
+            clientProperties.Add(ComponentName, IntPropertyName, null);
 
-            clientProperties.TryGetValue(componentName, stringPropertyName, out string outStringValue);
-            outStringValue.Should().Be(stringPropertyValue);
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outStringValue);
+            outStringValue.Should().Be(StringPropertyValue);
 
-            bool nullPropertyPresent = clientProperties.TryGetValue(componentName, intPropertyName, out int? outIntValue);
+            bool nullPropertyPresent = clientProperties.TryGetValue(ComponentName, IntPropertyName, out int? outIntValue);
             nullPropertyPresent.Should().BeTrue();
             outIntValue.Should().BeNull();
         }
@@ -249,14 +259,14 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollection_CanAddMultiplePropertyWithComponentAndGetBackWithoutDeviceClient()
         {
             var clientProperties = new ClientPropertyCollection();
-            clientProperties.Add(componentName, stringPropertyName, stringPropertyValue);
-            clientProperties.Add(componentName, intPropertyName, intPropertyValue);
+            clientProperties.Add(ComponentName, StringPropertyName, StringPropertyValue);
+            clientProperties.Add(ComponentName, IntPropertyName, IntPropertyValue);
 
-            clientProperties.TryGetValue(componentName, stringPropertyName, out string outStringValue);
-            outStringValue.Should().Be(stringPropertyValue);
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outStringValue);
+            outStringValue.Should().Be(StringPropertyValue);
 
-            clientProperties.TryGetValue(componentName, intPropertyName, out int outIntValue);
-            outIntValue.Should().Be(intPropertyValue);
+            clientProperties.TryGetValue(ComponentName, IntPropertyName, out int outIntValue);
+            outIntValue.Should().Be(IntPropertyValue);
         }
 
         [TestMethod]
@@ -264,13 +274,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { stringPropertyName, stringPropertyValue, 200, 2, writablePropertyDescription }
+                { StringPropertyName, StringPropertyValue, StatusCodes.OK, 2, WritablePropertyDescription }
             };
-            clientProperties.TryGetValue(stringPropertyName, out dynamic outValue);
-            Assert.AreEqual(stringPropertyValue, outValue.value, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            Assert.AreEqual(200, outValue.ac, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            Assert.AreEqual(2, outValue.av, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            Assert.AreEqual(writablePropertyDescription, outValue.ad, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            clientProperties.TryGetValue(StringPropertyName, out dynamic outValue);
+            outValue.value.Should().Be(StringPropertyValue);
+            outValue.ac.Should().Be(StatusCodes.OK);
+            outValue.av.Should().Be(2);
+            outValue.ad.Should().Be(WritablePropertyDescription);
         }
 
         [TestMethod]
@@ -278,13 +288,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, stringPropertyName, stringPropertyValue, 200, 2, writablePropertyDescription }
+                { ComponentName, StringPropertyName, StringPropertyValue, StatusCodes.OK, 2, WritablePropertyDescription }
             };
-            clientProperties.TryGetValue(componentName, stringPropertyName, out dynamic outValue);
-            Assert.AreEqual(stringPropertyValue, outValue.value, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            Assert.AreEqual(200, outValue.ac, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            Assert.AreEqual(2, outValue.av, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            Assert.AreEqual(writablePropertyDescription, outValue.ad, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out dynamic outValue);
+            outValue.value.Should().Be(StringPropertyValue);
+            outValue.ac.Should().Be(StatusCodes.OK);
+            outValue.av.Should().Be(2);
+            outValue.ad.Should().Be(WritablePropertyDescription);
         }
 
         [TestMethod]
@@ -292,13 +302,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection
             {
-                { componentName, stringPropertyName, stringPropertyValue }
+                { ComponentName, StringPropertyName, StringPropertyValue }
             };
-            clientProperties.TryGetValue(componentName, stringPropertyName, out string outValue);
-            clientProperties.TryGetValue(componentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
+            clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
 
-            Assert.AreEqual(stringPropertyValue, outValue, $"Property values do not match, expected {stringPropertyValue} but got {outValue}");
-            Assert.AreEqual(ConventionBasedConstants.ComponentIdentifierValue, componentOut, $"Property values do not match, expected c but got {componentOut}");
+            outValue.Should().Be(StringPropertyValue);
+            componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
         }
     }
 

@@ -39,11 +39,11 @@ namespace Microsoft.Azure.Devices.Shared
         /// <inheritdoc/>
         public override T ConvertFromObject<T>(object objectToConvert)
         {
-            if (objectToConvert == null)
-            {
-                return default;
-            }
-            return ((JToken)objectToConvert).ToObject<T>();
+            var token = JToken.FromObject(objectToConvert);
+
+            return objectToConvert == null
+                ? default
+                : token.ToObject<T>();
         }
 
         /// <inheritdoc/>
