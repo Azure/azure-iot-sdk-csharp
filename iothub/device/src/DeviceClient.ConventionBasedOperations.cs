@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -14,6 +15,11 @@ namespace Microsoft.Azure.Devices.Client
     /// <threadsafety static="true" instance="true" />
     public partial class DeviceClient : IDisposable
     {
+        /// <summary>
+        /// The <see cref="PayloadConvention"/> that the client uses for convention-based operations.
+        /// </summary>
+        public PayloadConvention PayloadConvention => InternalClient.PayloadConvention;
+
         /// <summary>
         /// Send telemetry using the specified message.
         /// </summary>

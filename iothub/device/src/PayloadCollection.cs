@@ -45,6 +45,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Adds the key-value pair to the collection.
         /// </summary>
+        /// <remarks>
+        /// For property operations see <see cref="ClientPropertyCollection.AddRootProperty(string, object)"/>
+        /// and <see cref="ClientPropertyCollection.AddComponentProperties(string, IDictionary{string, object})"/>instead.
+        /// </remarks>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['key']"/>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['value']"/>
         /// <inheritdoc cref="AddOrUpdate(string, object)" path="/exception"/>
@@ -57,6 +61,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Adds or updates the key-value pair to the collection.
         /// </summary>
+        /// <remarks>
+        /// For property operations see <see cref="ClientPropertyCollection.AddOrUpdateRootProperty(string, object)"/>
+        /// and <see cref="ClientPropertyCollection.AddOrUpdateComponentProperties(string, IDictionary{string, object})"/>instead.
+        /// </remarks>
         /// <param name="key">The name of the telemetry.</param>
         /// <param name="value">The value of the telemetry.</param>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
@@ -108,14 +116,22 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Collection.ContainsKey(key))
             {
-                // If the object is of type T go ahead and return it.
-                if (Collection[key] is T valueRef)
+                // If the value is null, go ahead and return it.
+                if (Collection[key] == null)
+                {
+                    value = default;
+                    return true;
+                }
+
+                // If the object is of type T or can be cast to type T, go ahead and return it.
+                if (Collection[key] is T valueRef
+                    || NumericHelpers.TryCastNumericTo(Collection[key], out valueRef))
                 {
                     value = valueRef;
                     return true;
                 }
-                // If it's not we need to try to convert it using the serializer.
-                // JObject or JsonElement
+
+                // If it's not, we need to try to convert it using the serializer.
                 value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
                 return true;
             }
@@ -131,6 +147,14 @@ namespace Microsoft.Azure.Devices.Client
         public virtual string GetSerializedString()
         {
             return Convention.PayloadSerializer.SerializeToString(Collection);
+        }
+
+        /// <summary>
+        /// Remove all items from the collection.
+        /// </summary>
+        public void ClearCollection()
+        {
+            Collection.Clear();
         }
 
         ///  <inheritdoc />

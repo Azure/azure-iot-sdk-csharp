@@ -2,12 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The telmetry collection used to populate a <see cref="TelemetryMessage"/>.
+    /// The telemetry collection used to populate a <see cref="TelemetryMessage"/>.
     /// </summary>
     public class TelemetryCollection : PayloadCollection
     {
