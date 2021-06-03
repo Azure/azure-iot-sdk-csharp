@@ -29,9 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         private static bool TryGetNumeric(object expression)
         {
             if (expression == null)
-            {
                 return false;
-            }
 
             return double.TryParse(
                 Convert.ToString(
