@@ -33,6 +33,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This accessor is best used to access and cast to simple types.
         /// It is recommended to use <see cref="TryGetValue"/> to deserialize to a complex type.
+        /// <para>
+        /// <remarks>
+        /// For setting component-level property values see <see cref="ClientPropertyCollection.AddComponentProperty(string, string, object)"/>
+        /// and <see cref="ClientPropertyCollection.AddComponentProperties(string, IDictionary{string, object})"/>instead.
+        /// These convenience methods ensure that component-level properties include the component identifier markers { "__t": "c" }.
+        /// For more information see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
+        /// </remarks>
+        /// </para>
         /// </remarks>
         /// <param name="key">Key of value.</param>
         /// <returns>The specified property.</returns>

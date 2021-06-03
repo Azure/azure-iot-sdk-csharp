@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -21,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
     {
         private readonly string _devicePrefix = $"E2E_{nameof(PropertiesE2ETests)}_";
 
-        private static readonly RegistryManager _registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+        private static readonly RegistryManager s_registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
         private static readonly List<object> s_listOfPropertyValues = new List<object>
         {
@@ -207,19 +206,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
         public static async Task Properties_DeviceSetsPropertyAndGetsItBackAsync<T>(DeviceClient deviceClient, string deviceId, T propValue, MsTestLogger logger)
         {
-            var propName = Guid.NewGuid().ToString();
+            string propName = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(Properties_DeviceSetsPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
             var props = new ClientPropertyCollection();
-            props[propName] = propValue;
+            props.AddRootProperty(propName, propValue);
             await deviceClient.UpdateClientPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            ClientProperties deviceTwin = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            if (deviceTwin.TryGetValue<T>(propName, out var propFromCollection))
+            ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+            if (clientProperties.TryGetValue<T>(propName, out T propFromCollection))
             {
-                Assert.AreEqual(JsonConvert.SerializeObject(propFromCollection), JsonConvert.SerializeObject(propValue));
+                Assert.AreEqual(propFromCollection, propValue);
             }
             else
             {
@@ -227,9 +226,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             }
 
             // Validate the updated twin from the service-client
-            Twin completeTwin = await _registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
-            var actualProp = completeTwin.Properties.Reported[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+            Twin completeTwin = await s_registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
+            dynamic actualProp = completeTwin.Properties.Reported[propName];
+            Assert.AreEqual(actualProp, propValue);
         }
 
         public static async Task<Task> SetClientPropertyUpdateCallbackHandlerAsync<T>(DeviceClient deviceClient, string expectedPropName, T expectedPropValue, MsTestLogger logger)
@@ -248,7 +247,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                             if (patch.TryGetValue<T>(expectedPropName, out var propertyFromCollection))
                             {
                                 Assert.AreEqual(JsonConvert.SerializeObject(expectedPropValue), JsonConvert.SerializeObject(propertyFromCollection));
-                            } else
+                            }
+                            else
                             {
                                 Assert.Fail("Property was not found in the collection.");
                             }
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             var twinPatch = new Twin();
             if (propValue is List<object>)
             {
-                twinPatch.Properties.Desired[propName] = (Newtonsoft.Json.Linq.JToken)(JsonConvert.DeserializeObject(JsonConvert.SerializeObject(propValue)));
+                twinPatch.Properties.Desired[propName] = (Newtonsoft.Json.Linq.JToken)JsonConvert.DeserializeObject(JsonConvert.SerializeObject(propValue));
             }
             else
             {
@@ -344,13 +344,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             if (deviceTwin.Writable.TryGetValue<T>(propName, out var propFromCollection))
             {
                 Assert.AreEqual(JsonConvert.SerializeObject(propFromCollection), JsonConvert.SerializeObject(propValue));
-            } else
+            }
+            else
             {
                 Assert.Fail($"The property {propName} was not found in the Writable collection");
             }
-            
+
             // Validate the updated twin from the service-client
-            Twin completeTwin = await _registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            Twin completeTwin = await s_registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             var actualProp = completeTwin.Properties.Desired[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
 
@@ -375,7 +376,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             if (deviceTwin.Writable.TryGetValue(propName, out string propFromCollection))
             {
                 Assert.AreEqual<string>(propFromCollection, propValue);
-            } else
+            }
+            else
             {
                 Assert.Fail("Property not found in ClientProperties");
             }
