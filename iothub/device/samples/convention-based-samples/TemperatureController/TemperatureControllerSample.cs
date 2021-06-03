@@ -129,8 +129,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogDebug($"Property: Received - component=\"{componentName}\", [ \"{targetTemperatureProperty}\": {targetTemperature}°C ].");
 
             _temperature[componentName] = targetTemperature;
+            IWritablePropertyResponse writableResponse = _deviceClient
+                .PayloadConvention
+                .PayloadSerializer
+                .CreateWritablePropertyResponse(_temperature[componentName], StatusCodes.OK, version, "Successfully updated target temperature.");
+
             var reportedProperty = new ClientPropertyCollection();
-            reportedProperty.Add(componentName, targetTemperatureProperty, _temperature[componentName], StatusCodes.Accepted, version, "Successfully updated target temperature.");
+            reportedProperty.AddComponentProperty(componentName, targetTemperatureProperty, writableResponse);
 
             ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 
@@ -288,7 +293,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 { "totalMemory", 1024 },
             };
             var deviceInformation = new ClientPropertyCollection();
-            deviceInformation.Add(componentName, deviceInformationProperties);
+            deviceInformation.AddComponentProperties(componentName, deviceInformationProperties);
 
             ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(deviceInformation, cancellationToken);
 
@@ -330,7 +335,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 || serialNumberReported != currentSerialNumber)
             {
                 var reportedProperties = new ClientPropertyCollection();
-                reportedProperties.Add(serialNumber, currentSerialNumber);
+                reportedProperties.AddRootProperty(serialNumber, currentSerialNumber);
 
                 ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperties, cancellationToken);
 
@@ -391,7 +396,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string propertyName = "maxTempSinceLastReboot";
             double maxTemp = _maxTemp[componentName];
             var reportedProperties = new ClientPropertyCollection();
-            reportedProperties.Add(componentName, propertyName, maxTemp);
+            reportedProperties.AddComponentProperty(componentName, propertyName, maxTemp);
 
             ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperties, cancellationToken);
 

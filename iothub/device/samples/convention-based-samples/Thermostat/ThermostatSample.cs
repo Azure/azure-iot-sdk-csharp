@@ -74,13 +74,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 switch (writableProperty.Key)
                 {
                     case "targetTemperature":
-                        const string tagetTemperatureProperty = "targetTemperature";
+                        const string targetTemperatureProperty = "targetTemperature";
                         double targetTemperatureRequested = Convert.ToDouble(writableProperty.Value);
-                        _logger.LogDebug($"Property: Received - [ \"{tagetTemperatureProperty}\": {targetTemperatureRequested}°C ].");
+                        _logger.LogDebug($"Property: Received - [ \"{targetTemperatureProperty}\": {targetTemperatureRequested}°C ].");
 
                         _temperature = targetTemperatureRequested;
+                        IWritablePropertyResponse writableResponse = _deviceClient
+                            .PayloadConvention
+                            .PayloadSerializer
+                            .CreateWritablePropertyResponse(_temperature, StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature");
+
                         var reportedProperty = new ClientPropertyCollection();
-                        reportedProperty.Add(tagetTemperatureProperty, _temperature, StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature");
+                        reportedProperty.AddRootProperty(targetTemperatureProperty, writableResponse);
 
                         ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 
@@ -184,7 +189,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string propertyName = "maxTempSinceLastReboot";
             var reportedProperties = new ClientPropertyCollection();
-            reportedProperties.Add(propertyName, _maxTemp);
+            reportedProperties.AddRootProperty(propertyName, _maxTemp);
 
             ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperties);
 
