@@ -55,6 +55,17 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
+        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
+        /// </summary>
+        /// <param name="twinJson">JSON fragment containing the twin data.</param>
+        /// <param name="metadataJson">JSON fragment containing the metadata.</param>
+        public TwinCollection(JObject twinJson, JObject metadataJson)
+        {
+            JObject = twinJson ?? new JObject();
+            _metadata = metadataJson;
+        }
+
+        /// <summary>
         /// Creates a <see cref="TwinCollection"/> using a JSON fragment as the body.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
@@ -66,17 +77,6 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 _metadata = metadataJToken as JObject;
             }
-        }
-
-        /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
-        /// </summary>
-        /// <param name="twinJson">JSON fragment containing the twin data.</param>
-        /// <param name="metadataJson">JSON fragment containing the metadata.</param>
-        public TwinCollection(JObject twinJson, JObject metadataJson)
-        {
-            JObject = twinJson ?? new JObject();
-            _metadata = metadataJson;
         }
 
         /// <summary>
@@ -120,8 +120,6 @@ namespace Microsoft.Azure.Devices.Shared
                 return count;
             }
         }
-
-        internal JObject JObject { get; private set; }
 
         /// <summary>
         /// Property Indexer
@@ -227,6 +225,19 @@ namespace Microsoft.Azure.Devices.Shared
             }
         }
 
+        /// <summary>
+        /// Clear metadata out of the collection
+        /// </summary>
+        public void ClearMetadata()
+        {
+            TryClearMetadata(MetadataName);
+            TryClearMetadata(LastUpdatedName);
+            TryClearMetadata(LastUpdatedVersionName);
+            TryClearMetadata(VersionName);
+        }
+
+        internal JObject JObject { get; private set; }
+
         private bool TryGetMemberInternal(string propertyName, out object result)
         {
             if (!JObject.TryGetValue(propertyName, out JToken value))
@@ -282,17 +293,6 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 JObject.Remove(propertyName);
             }
-        }
-
-        /// <summary>
-        /// Clear metadata out of the collection
-        /// </summary>
-        public void ClearMetadata()
-        {
-            TryClearMetadata(MetadataName);
-            TryClearMetadata(LastUpdatedName);
-            TryClearMetadata(LastUpdatedVersionName);
-            TryClearMetadata(VersionName);
         }
     }
 }
