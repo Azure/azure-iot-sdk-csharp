@@ -29,6 +29,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
         private Message _expectedMessageSentByService = null;
 
+        private readonly SemaphoreSlim _clientPropertyCallbackSemaphore = new SemaphoreSlim(0, 1);
+        private ExceptionDispatchInfo _clientPropertyExceptionDispatch;
+        private object _expectedClientPropertyValue = null;
+
         public TestDeviceCallbackHandler(DeviceClient deviceClient, TestDevice testDevice, MsTestLogger logger)
         {
             _deviceClient = deviceClient;
@@ -46,6 +50,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             get => Volatile.Read(ref _expectedMessageSentByService);
             set => Volatile.Write(ref _expectedMessageSentByService, value);
+        }
+
+        public object ExpectedClientPropertyValue
+        {
+            get => Volatile.Read(ref _expectedClientPropertyValue);
+            set => Volatile.Write(ref _expectedClientPropertyValue, value);
         }
 
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
@@ -156,6 +166,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             await _receivedMessageCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
             _receiveMessageExceptionDispatch?.Throw();
+        }
+
+        public async Task SetClientPropertyUpdateCallbackHandlerAsync<T>(string expectedPropName)
+        {
+            string userContext = "myContext";
+
+            await _deviceClient.SubscribeToWritablePropertiesEventAsync(
+                (patch, context) =>
+                {
+                    _logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback property: WritableProperty: {patch}, {context}");
+
+                    try
+                    {
+                        bool isPropertyPresent = patch.TryGetValue(expectedPropName, out T propertyFromCollection);
+                        isPropertyPresent.Should().BeTrue();
+                        propertyFromCollection.Should().BeEquivalentTo((T)ExpectedClientPropertyValue);
+                        context.Should().Be(userContext);
+                    }
+                    catch (Exception ex)
+                    {
+                        _clientPropertyExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                    }
+                    finally
+                    {
+                        // Always notify that we got the callback.
+                        _clientPropertyCallbackSemaphore.Release();
+                    }
+
+                    return Task.FromResult(true);
+                }, userContext).ConfigureAwait(false);
+        }
+
+        public async Task WaitForClientPropertyUpdateCallbcakAsync(CancellationToken ct)
+        {
+            await _clientPropertyCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
+            _clientPropertyExceptionDispatch?.Throw();
         }
 
         public void Dispose()

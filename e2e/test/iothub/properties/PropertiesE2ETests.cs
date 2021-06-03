@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -21,17 +23,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         private readonly string _devicePrefix = $"E2E_{nameof(PropertiesE2ETests)}_";
 
         private static readonly RegistryManager s_registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+        private static readonly TimeSpan s_maxWaitTimeForCallback = TimeSpan.FromSeconds(30);
 
-        private static readonly List<object> s_listOfPropertyValues = new List<object>
+        private static readonly Dictionary<string, object> s_mapOfPropertyValues = new Dictionary<string, object>
         {
-            1,
-            "someString",
-            false,
-            new CustomClientProperty
-            {
-                Id = 123,
-                Name = "someName"
-            }
+            { "key1", 123 },
+            { "key2", "someString" },
+            { "key3", true }
         };
 
         [LoggedTestMethod]
@@ -51,17 +49,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceSetsPropertyArrayAndGetsItBack_Mqtt()
+        public async Task Properties_DeviceSetsPropertyMapAndGetsItBack_Mqtt()
         {
-            await Properties_DeviceSetsPropertyArrayAndGetsItBackSingleDeviceAsync(
+            await Properties_DeviceSetsPropertyMapAndGetsItBackSingleDeviceAsync(
                     Client.TransportType.Mqtt_Tcp_Only)
                 .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceSetsPropertyArrayAndGetsItBack_MqttWs()
+        public async Task Properties_DeviceSetsPropertyMapAndGetsItBack_MqttWs()
         {
-            await Properties_DeviceSetsPropertyArrayAndGetsItBackSingleDeviceAsync(
+            await Properties_DeviceSetsPropertyMapAndGetsItBackSingleDeviceAsync(
                     Client.TransportType.Mqtt_WebSocket_Only)
                 .ConfigureAwait(false);
         }
@@ -89,7 +87,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         {
             await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(
                     Client.TransportType.Mqtt_Tcp_Only,
-                    SetClientPropertyUpdateCallbackHandlerAsync,
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
         }
@@ -99,28 +96,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         {
             await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(
                     Client.TransportType.Mqtt_WebSocket_Only,
-                    SetClientPropertyUpdateCallbackHandlerAsync,
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyArrayAndDeviceReceivesEvent_Mqtt()
+        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEvent_Mqtt()
         {
             await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(
                     Client.TransportType.Mqtt_Tcp_Only,
-                    SetClientPropertyUpdateCallbackHandlerAsync,
-                    s_listOfPropertyValues)
+                    s_mapOfPropertyValues)
                 .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyArrayAndDeviceReceivesEvent_MqttWs()
+        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEvent_MqttWs()
         {
             await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(
                     Client.TransportType.Mqtt_WebSocket_Only,
-                    SetClientPropertyUpdateCallbackHandlerAsync,
-                    s_listOfPropertyValues)
+                    s_mapOfPropertyValues)
                 .ConfigureAwait(false);
         }
 
@@ -196,12 +190,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await Properties_DeviceSetsPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
         }
 
-        private async Task Properties_DeviceSetsPropertyArrayAndGetsItBackSingleDeviceAsync(Client.TransportType transport)
+        private async Task Properties_DeviceSetsPropertyMapAndGetsItBackSingleDeviceAsync(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            await Properties_DeviceSetsPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, s_listOfPropertyValues, Logger).ConfigureAwait(false);
+            await Properties_DeviceSetsPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, s_mapOfPropertyValues, Logger).ConfigureAwait(false);
         }
 
         public static async Task Properties_DeviceSetsPropertyAndGetsItBackAsync<T>(DeviceClient deviceClient, string deviceId, T propValue, MsTestLogger logger)
@@ -216,59 +210,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated twin from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            if (clientProperties.TryGetValue<T>(propName, out T propFromCollection))
-            {
-                Assert.AreEqual(propFromCollection, propValue);
-            }
-            else
-            {
-                Assert.Fail($"The property {propName} was not found in the collection");
-            }
+            bool isPropertyPresent = clientProperties.TryGetValue<T>(propName, out T propFromCollection);
+            isPropertyPresent.Should().BeTrue();
+            propFromCollection.Should().BeEquivalentTo<T>(propValue);
 
             // Validate the updated twin from the service-client
             Twin completeTwin = await s_registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Reported[propName];
-            Assert.AreEqual(actualProp, propValue);
-        }
 
-        public static async Task<Task> SetClientPropertyUpdateCallbackHandlerAsync<T>(DeviceClient deviceClient, string expectedPropName, T expectedPropValue, MsTestLogger logger)
-        {
-            var propertyUpdateReceived = new TaskCompletionSource<bool>();
-            string userContext = "myContext";
-
-            await deviceClient
-                .SubscribeToWritablePropertiesEventAsync(
-                    (patch, context) =>
-                    {
-                        logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: WritableProperty: {patch}, {context}");
-
-                        try
-                        {
-                            if (patch.TryGetValue<T>(expectedPropName, out var propertyFromCollection))
-                            {
-                                Assert.AreEqual(JsonConvert.SerializeObject(expectedPropValue), JsonConvert.SerializeObject(propertyFromCollection));
-                            }
-                            else
-                            {
-                                Assert.Fail("Property was not found in the collection.");
-                            }
-                            Assert.AreEqual(userContext, context, "Context");
-                        }
-                        catch (Exception e)
-                        {
-                            propertyUpdateReceived.SetException(e);
-                        }
-                        finally
-                        {
-                            propertyUpdateReceived.SetResult(true);
-                        }
-
-                        return Task.FromResult<bool>(true);
-                    },
-                    userContext)
-                .ConfigureAwait(false);
-
-            return propertyUpdateReceived.Task;
+            // The value will be retrieved as a TwinCollection, so we'll serialize the value and then compare.
+            string serializedActualPropertyValue = JsonConvert.SerializeObject(actualProp);
+            serializedActualPropertyValue.Should().Be(JsonConvert.SerializeObject(propValue));
         }
 
         public static async Task RegistryManagerUpdateWritablePropertyAsync<T>(string deviceId, string propName, T propValue)
@@ -276,14 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             var twinPatch = new Twin();
-            if (propValue is List<object>)
-            {
-                twinPatch.Properties.Desired[propName] = (Newtonsoft.Json.Linq.JToken)JsonConvert.DeserializeObject(JsonConvert.SerializeObject(propValue));
-            }
-            else
-            {
-                twinPatch.Properties.Desired[propName] = propValue;
-            }
+            twinPatch.Properties.Desired[propName] = propValue;
 
             await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);
@@ -291,7 +236,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
         private async Task Properties_ServiceSetsWritablePropertyAndDeviceUnsubscribes(Client.TransportType transport, object propValue)
         {
-            var propName = Guid.NewGuid().ToString();
+            string propName = Guid.NewGuid().ToString();
 
             Logger.Trace($"{nameof(Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
@@ -303,12 +248,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                 SubscribeToWritablePropertiesEventAsync(
                     (patch, context) =>
                     {
-                        Logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: WritableProperty: {patch}, {context}");
+                        Assert.Fail("After having unsubscribed from receiving client property update notifications " +
+                            "this callback should not have been invoked.");
 
-                        // After unsubscribing it should never reach here
-                        Assert.IsNull(patch);
-
-                        return Task.FromResult<bool>(true);
+                        return Task.FromResult(true);
                     },
                     null)
                 .ConfigureAwait(false);
@@ -324,36 +267,37 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync<T>(Client.TransportType transport, Func<DeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, T propValue)
+        private async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync<T>(Client.TransportType transport, T propValue)
         {
-            var propName = Guid.NewGuid().ToString();
+            using var cts = new CancellationTokenSource(s_maxWaitTimeForCallback);
+            string propName = Guid.NewGuid().ToString();
 
             Logger.Trace($"{nameof(Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
 
-            Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue, Logger).ConfigureAwait(false);
+            await testDeviceCallbackHandler.SetClientPropertyUpdateCallbackHandlerAsync<T>(propName).ConfigureAwait(false);
+            testDeviceCallbackHandler.ExpectedClientPropertyValue = propValue;
 
             await Task.WhenAll(
                 RegistryManagerUpdateWritablePropertyAsync(testDevice.Id, propName, propValue),
-                updateReceivedTask).ConfigureAwait(false);
+                testDeviceCallbackHandler.WaitForClientPropertyUpdateCallbcakAsync(cts.Token)).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            ClientProperties deviceTwin = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            if (deviceTwin.Writable.TryGetValue<T>(propName, out var propFromCollection))
-            {
-                Assert.AreEqual(JsonConvert.SerializeObject(propFromCollection), JsonConvert.SerializeObject(propValue));
-            }
-            else
-            {
-                Assert.Fail($"The property {propName} was not found in the Writable collection");
-            }
+            ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+            bool isPropertyPresent = clientProperties.Writable.TryGetValue<T>(propName, out T propFromCollection);
+            isPropertyPresent.Should().BeTrue();
+            propFromCollection.Should().BeEquivalentTo<T>(propValue);
 
             // Validate the updated twin from the service-client
             Twin completeTwin = await s_registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
-            var actualProp = completeTwin.Properties.Desired[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+            dynamic actualProp = completeTwin.Properties.Desired[propName];
+
+            // The value will be retrieved as a TwinCollection, so we'll serialize the value and then compare.
+            string serializedActualPropertyValue = JsonConvert.SerializeObject(actualProp);
+            serializedActualPropertyValue.Should().Be(JsonConvert.SerializeObject(propValue));
 
             await deviceClient.SubscribeToWritablePropertiesEventAsync(null, null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -361,8 +305,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
         private async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGetAsync(Client.TransportType transport)
         {
-            var propName = Guid.NewGuid().ToString();
-            var propValue = Guid.NewGuid().ToString();
+            string propName = Guid.NewGuid().ToString();
+            string propValue = Guid.NewGuid().ToString();
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
@@ -372,37 +316,35 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             twinPatch.Properties.Desired[propName] = propValue;
             await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
-            ClientProperties deviceTwin = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            if (deviceTwin.Writable.TryGetValue(propName, out string propFromCollection))
-            {
-                Assert.AreEqual<string>(propFromCollection, propValue);
-            }
-            else
-            {
-                Assert.Fail("Property not found in ClientProperties");
-            }
+            ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+            bool isPropertyPresent = clientProperties.Writable.TryGetValue(propName, out string propFromCollection);
+            isPropertyPresent.Should().BeTrue();
+            propFromCollection.Should().Be(propValue);
+
             await deviceClient.CloseAsync().ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task Properties_DeviceSetsPropertyAndServiceReceivesItAsync(Client.TransportType transport)
         {
-            var propName = Guid.NewGuid().ToString();
-            var propValue = Guid.NewGuid().ToString();
+            string propName = Guid.NewGuid().ToString();
+            string propValue = Guid.NewGuid().ToString();
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             var patch = new ClientPropertyCollection();
-            patch[propName] = propValue;
+            patch.AddRootProperty(propName, propValue);
             await deviceClient.UpdateClientPropertiesAsync(patch).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
 
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
+            dynamic actualProp = serviceTwin.Properties.Reported[propName];
 
-            Logger.Trace("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
+            // The value will be retrieved as a TwinCollection, so we'll serialize the value and then compare.
+            string serializedActualPropertyValue = JsonConvert.SerializeObject(actualProp);
+            serializedActualPropertyValue.Should().Be(JsonConvert.SerializeObject(propValue));
         }
 
         private async Task Properties_ServiceDoesNotCreateNullPropertyInCollectionAsync(Client.TransportType transport)
