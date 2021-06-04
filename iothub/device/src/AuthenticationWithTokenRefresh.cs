@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
         /// associated device/ module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// use <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>
@@ -48,11 +48,12 @@ namespace Microsoft.Azure.Devices.Client
         /// may choose to ignore this value.</param>
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
         /// a percentage of the time to live.</param>
-        /// <param name="disposalBySdk">True if the authentication method should be disposed of by sdk; false if you intend to reuse the authentication method.</param>
+        /// <param name="disposeWithClient "><c>true</c> if the authentication method should be disposed of by the client
+        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.</param>
         public AuthenticationWithTokenRefresh(
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage,
-            bool disposalBySdk)
+            bool disposeWithClient)
         {
             if (suggestedTimeToLiveSeconds < 0)
             {
@@ -70,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
             Debug.Assert(IsExpiring);
             UpdateTimeBufferSeconds(_suggestedTimeToLiveSeconds);
 
-            DisposalBySdk = disposalBySdk;
+            DisposalWithClient = disposeWithClient;
         }
 
         /// <summary>
@@ -88,8 +89,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
 
-        // This internal property is used by the sdk to determine if the disposal should be handled by the sdk.
-        internal bool DisposalBySdk { get; }
+        // This internal property is used by the sdk to determine if the authentication method
+        // should be disposed when the client that it is initialized with is disposed.
+        internal bool DisposalWithClient { get; }
 
         /// <summary>
         /// Gets a snapshot of the security token associated with the device. This call is thread-safe.

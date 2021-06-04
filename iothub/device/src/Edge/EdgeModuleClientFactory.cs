@@ -98,8 +98,8 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 int sasTokenRenewalBuffer = _options?.SasTokenRenewalBuffer ?? default;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope - IDisposable ModuleAuthenticationWithHsm is disposed when the client is disposed.
-                // Since the sdk creates the instance of disposable ModuleAuthenticationWithHsm, the sdk needs to dispose it once the client is diposed.
-                var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId, sasTokenTimeToLive, sasTokenRenewalBuffer, disposalBySdk: true);
+                // Since the sdk creates the instance of disposable ModuleAuthenticationWithHsm, the sdk needs to dispose it once the client is disposed.
+                var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId, sasTokenTimeToLive, sasTokenRenewalBuffer, disposeWithClient: true);
 #pragma warning restore CA2000 // Dispose objects before losing scope - IDisposable ModuleAuthenticationWithHsm is disposed when the client is disposed.
 
                 Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");

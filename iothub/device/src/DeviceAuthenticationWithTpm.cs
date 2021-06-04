@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
         /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="DeviceAuthenticationWithTpm(string, SecurityProviderTpm, int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// use <see cref="DeviceAuthenticationWithTpm(string, SecurityProviderTpm, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
@@ -62,14 +62,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value.</param>
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as percentage of
         /// the time to live. EX: If you want a SAS token to live for 85% of life before proactive renewal, this value should be 15.</param>
-        /// <param name="disposalBySdk">True if the authentication method should be disposed of by sdk; false if you intend to reuse the authentication method.</param>
+        /// <param name="disposeWithClient "><c>true</c> if the authentication method should be disposed of by the client
+        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.</param>
         public DeviceAuthenticationWithTpm(
             string deviceId,
             SecurityProviderTpm securityProvider,
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage,
-            bool disposalBySdk)
-            : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage, disposalBySdk)
+            bool disposeWithClient)
+            : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage, disposeWithClient)
         {
             _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }

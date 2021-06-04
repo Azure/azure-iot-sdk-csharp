@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task AuthenticationMethodDisposesTokenRefresher(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposalBySdk: true);
+            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: true);
 
             // Create an instance of the device client, send a test message and then close and dispose it.
             DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task ReuseAuthenticationMethod_SingleDevice(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposalBySdk: false);
+            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
 
             // Create an instance of the device client, send a test message and then close and dispose it.
             DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
 #pragma warning disable CA2000 // Dispose objects before losing scope - the authentication method is disposed at the end of the test.
-                var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposalBySdk: false);
+                var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 testDevices.Add(testDevice);
@@ -278,8 +278,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public DeviceAuthenticationSasToken(
                 string connectionString,
-                bool disposalBySdk)
-                : base(GetDeviceIdFromConnectionString(connectionString), s_suggestedSasTimeToLiveInSeconds, s_sasRenewalBufferPercentage, disposalBySdk)
+                bool disposeWithClient)
+                : base(GetDeviceIdFromConnectionString(connectionString), s_suggestedSasTimeToLiveInSeconds, s_sasRenewalBufferPercentage, disposeWithClient)
             {
                 if (connectionString == null)
                 {

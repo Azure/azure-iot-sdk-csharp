@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (ModuleId.IsNullOrWhiteSpace())
                 {
                     // Since the sdk creates the instance of disposable DeviceAuthenticationWithSakRefresh, the sdk needs to dispose it once the client is disposed.
-                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer, disposalBySdk: true);
+                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer, disposeWithClient: true);
 
                     if (Logging.IsEnabled)
                     {
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
                 else
                 {
                     // Since the sdk creates the instance of disposable ModuleAuthenticationWithSakRefresh, the sdk needs to dispose it once the client is disposed.
-                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer, disposalBySdk: true);
+                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer, disposeWithClient: true);
 
                     if (Logging.IsEnabled)
                     {

@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
         /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="DeviceAuthenticationWithTokenRefresh(string, int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// use <see cref="DeviceAuthenticationWithTokenRefresh(string, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
         public DeviceAuthenticationWithTokenRefresh(string deviceId)
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
         /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="DeviceAuthenticationWithTokenRefresh(string, int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// use <see cref="DeviceAuthenticationWithTokenRefresh(string, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="suggestedTimeToLiveSeconds">
@@ -65,14 +65,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="timeBufferPercentage">
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
-        /// <param name="disposalBySdk">True if the authentication method should be disposed of by sdk; false if you intend to reuse the authentication method.</param>
         ///</param>
+        ///<param name="disposeWithClient ">
+        ///<c>true</c> if the authentication method should be disposed of by the client
+        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
+        /// </param>
         public DeviceAuthenticationWithTokenRefresh(
             string deviceId,
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage,
-            bool disposalBySdk)
-            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage), disposalBySdk)
+            bool disposeWithClient)
+            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage), disposeWithClient)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {

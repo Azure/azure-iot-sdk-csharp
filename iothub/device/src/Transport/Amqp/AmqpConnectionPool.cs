@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped
                         && !ReferenceEquals(amqpConnectionHolder.GetDeviceIdentityOfAuthenticationProvider(), deviceIdentity)
                         && deviceIdentity.IotHubConnectionString?.TokenRefresher != null
-                        && deviceIdentity.IotHubConnectionString.TokenRefresher.DisposalBySdk)
+                        && deviceIdentity.IotHubConnectionString.TokenRefresher.DisposalWithClient)
                     {
                         deviceIdentity.IotHubConnectionString.TokenRefresher.Dispose();
                     }
