@@ -151,17 +151,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceDoesNotCreateNullPropertyInCollection_Mqtt()
+        public async Task Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingIt_Mqtt()
         {
-            await Properties_ServiceDoesNotCreateNullPropertyInCollectionAsync(
+            await Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingItAsync(
                     Client.TransportType.Mqtt_Tcp_Only)
                 .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
+        public async Task Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingIt_MqttWs()
         {
-            await Properties_ServiceDoesNotCreateNullPropertyInCollectionAsync(
+            await Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingItAsync(
                     Client.TransportType.Mqtt_WebSocket_Only)
                 .ConfigureAwait(false);
         }
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             props.AddRootProperty(propName, propValue);
             await deviceClient.UpdateClientPropertiesAsync(props).ConfigureAwait(false);
 
-            // Validate the updated twin from the device-client
+            // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
             bool isPropertyPresent = clientProperties.TryGetValue<T>(propName, out T propFromCollection);
             isPropertyPresent.Should().BeTrue();
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                 RegistryManagerUpdateWritablePropertyAsync(testDevice.Id, propName, propValue),
                 testDeviceCallbackHandler.WaitForClientPropertyUpdateCallbcakAsync(cts.Token)).ConfigureAwait(false);
 
-            // Validate the updated twin from the device-client
+            // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
             bool isPropertyPresent = clientProperties.Writable.TryGetValue<T>(propName, out T propFromCollection);
             isPropertyPresent.Should().BeTrue();
@@ -347,26 +347,39 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             serializedActualPropertyValue.Should().Be(JsonConvert.SerializeObject(propValue));
         }
 
-        private async Task Properties_ServiceDoesNotCreateNullPropertyInCollectionAsync(Client.TransportType transport)
+        private async Task Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingItAsync(Client.TransportType transport)
         {
-            var propName1 = Guid.NewGuid().ToString();
-            var propName2 = Guid.NewGuid().ToString();
-            var propEmptyValue = "{}";
+            string propName1 = Guid.NewGuid().ToString();
+            string propName2 = Guid.NewGuid().ToString();
+            string propValue = Guid.NewGuid().ToString();
+            string propEmptyValue = "{}";
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
+            // First send a property patch with valid values for both prop1 and prop2.
             await deviceClient
                 .UpdateClientPropertiesAsync(
                     new ClientPropertyCollection
                     {
-                        [propName1] = null
+                        [propName1] = new Dictionary<string, object>
+                        {
+                            [propName2] = propValue
+                        }
                     })
                 .ConfigureAwait(false);
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+            serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
 
+            TwinCollection prop1Value = serviceTwin.Properties.Reported[propName1];
+            prop1Value.Contains(propName2).Should().BeTrue();
+
+            string prop2Value = prop1Value[propName2];
+            prop2Value.Should().Be(propValue);
+
+            // Sending a null value for a property will result in service removing the property from the client's twin representation.
+            // As a result, for the property patch sent here will result in propName2 being removed.
             await deviceClient
                 .UpdateClientPropertiesAsync(
                     new ClientPropertyCollection
@@ -378,23 +391,34 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                     })
                 .ConfigureAwait(false);
             serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
-            string value1 = serviceTwin.Properties.Reported[propName1].ToString();
+            serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
 
-            Assert.AreEqual(value1, propEmptyValue);
+            string serializedActualProperty = JsonConvert.SerializeObject(serviceTwin.Properties.Reported[propName1]);
+            serializedActualProperty.Should().Be(propEmptyValue);
+
+            // Sending a null value for a property will result in service removing the property from the client's twin representation.
+            // As a result, for the property patch sent here will result in propName1 being removed.
+            await deviceClient
+                .UpdateClientPropertiesAsync(
+                    new ClientPropertyCollection
+                    {
+                        [propName1] = null
+                    })
+                .ConfigureAwait(false);
+            serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            serviceTwin.Properties.Reported.Contains(propName1).Should().BeFalse();
         }
 
         private async Task Properties_ClientHandlesRejectionInvalidPropertyNameAsync(Client.TransportType transport)
         {
-            var propName1 = "$" + Guid.NewGuid().ToString();
-            var propName2 = Guid.NewGuid().ToString();
+            string propName1 = "$" + Guid.NewGuid().ToString();
+            string propName2 = Guid.NewGuid().ToString();
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            var exceptionThrown = false;
-            try
+            Func<Task> func = async () =>
             {
                 await deviceClient
                     .UpdateClientPropertiesAsync(
@@ -404,16 +428,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                             [propName2] = "abcd"
                         })
                     .ConfigureAwait(false);
-            }
-            catch (IotHubException)
-            {
-                exceptionThrown = true;
-            }
-
-            Assert.IsTrue(exceptionThrown, "IotHubException was expected for updating reported property with an invalid property name, but was not thrown.");
+            };
+            await func.Should().ThrowAsync<IotHubException>();
 
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+            serviceTwin.Properties.Reported.Contains(propName1).Should().BeFalse();
+            serviceTwin.Properties.Reported.Contains(propName2).Should().BeFalse();
         }
     }
 
