@@ -13,11 +13,11 @@ namespace Microsoft.Azure.Devices.Client.Tests
     [TestCategory("Unit")]
     public class ClientPropertyCollectionTests
     {
-        private const string BoolPropertyName = "boolProperty";
-        private const string DoublePropertyName = "doubleProperty";
-        private const string FloatPropertyName = "floatProperty";
-        private const string IntPropertyName = "intProperty";
-        private const string ShortPropertyName = "shortProperty";
+        private const string BoolPropertyName = "boolPropertyName";
+        private const string DoublePropertyName = "doublePropertyName";
+        private const string FloatPropertyName = "floatPropertyName";
+        private const string IntPropertyName = "intPropertyName";
+        private const string ShortPropertyName = "shortPropertyName";
         private const string StringPropertyName = "stringPropertyName";
         private const string ObjectPropertyName = "objectPropertyName";
         private const string ArrayPropertyName = "arrayPropertyName";
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         private static readonly DateTimeOffset s_dateTimePropertyValue = DateTimeOffset.Now;
         private static readonly CustomClientProperty s_objectPropertyValue = new CustomClientProperty { Id = 123, Name = "testName" };
 
-        private static readonly List<object> s_arrayPropertyValues = new List<object>
+        private static readonly List<object> s_arrayPropertyValue = new List<object>
         {
             1,
             "someString",
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             s_objectPropertyValue
         };
 
-        private static readonly Dictionary<string, object> s_mapPropertyValues = new Dictionary<string, object>
+        private static readonly Dictionary<string, object> s_mapPropertyValue = new Dictionary<string, object>
         {
             { "key1", "value1" },
             { "key2", 123 },
@@ -65,8 +65,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 { IntPropertyName, IntPropertyValue },
                 { ShortPropertyName, ShortPropertyValue },
                 { ObjectPropertyName, s_objectPropertyValue },
-                { ArrayPropertyName, s_arrayPropertyValues },
-                { MapPropertyName, s_mapPropertyValues },
+                { ArrayPropertyName, s_arrayPropertyValue },
+                { MapPropertyName, s_mapPropertyValue },
                 { DateTimePropertyName, s_dateTimePropertyValue }
             };
 
@@ -93,12 +93,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
             objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
 
             clientProperties.TryGetValue(ArrayPropertyName, out List<object> arrayOutValue);
-            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValues);
-            arrayOutValue.Should().BeEquivalentTo(s_arrayPropertyValues);
+            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValue);
+            arrayOutValue.Should().BeEquivalentTo(s_arrayPropertyValue);
 
             clientProperties.TryGetValue(MapPropertyName, out Dictionary<string, object> mapOutValue);
-            mapOutValue.Should().HaveSameCount(s_mapPropertyValues);
-            mapOutValue.Should().BeEquivalentTo(s_mapPropertyValues);
+            mapOutValue.Should().HaveSameCount(s_mapPropertyValue);
+            mapOutValue.Should().BeEquivalentTo(s_mapPropertyValue);
 
             clientProperties.TryGetValue(DateTimePropertyName, out DateTimeOffset dateTimeOutValue);
             dateTimeOutValue.Should().Be(s_dateTimePropertyValue);
@@ -173,8 +173,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
                     { IntPropertyName, IntPropertyValue },
                     { ShortPropertyName, ShortPropertyValue },
                     { ObjectPropertyName, s_objectPropertyValue },
-                    { ArrayPropertyName, s_arrayPropertyValues },
-                    { MapPropertyName, s_mapPropertyValues },
+                    { ArrayPropertyName, s_arrayPropertyValue },
+                    { MapPropertyName, s_mapPropertyValue },
                     { DateTimePropertyName, s_dateTimePropertyValue } }
                 }
             };
@@ -202,12 +202,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
             objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
 
             clientProperties.TryGetValue(ComponentName, ArrayPropertyName, out List<object> arrayOutValue);
-            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValues);
-            arrayOutValue.Should().BeEquivalentTo(s_arrayPropertyValues);
+            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValue);
+            arrayOutValue.Should().BeEquivalentTo(s_arrayPropertyValue);
 
             clientProperties.TryGetValue(ComponentName, MapPropertyName, out Dictionary<string, object> mapOutValue);
-            mapOutValue.Should().HaveSameCount(s_mapPropertyValues);
-            mapOutValue.Should().BeEquivalentTo(s_mapPropertyValues);
+            mapOutValue.Should().HaveSameCount(s_mapPropertyValue);
+            mapOutValue.Should().BeEquivalentTo(s_mapPropertyValue);
 
             clientProperties.TryGetValue(ComponentName, DateTimePropertyName, out DateTimeOffset dateTimeOutValue);
             dateTimeOutValue.Should().Be(s_dateTimePropertyValue);

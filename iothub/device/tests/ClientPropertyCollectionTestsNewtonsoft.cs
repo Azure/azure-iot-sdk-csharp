@@ -19,11 +19,11 @@ namespace Microsoft.Azure.Devices.Client.Tests
     // For the purpose of these tests we will create an instance of a Twin class to simulate the service response.
     public class ClientPropertyCollectionTestsNewtonsoft
     {
-        internal const string BoolPropertyName = "boolProperty";
-        internal const string DoublePropertyName = "doubleProperty";
-        internal const string FloatPropertyName = "floatProperty";
-        internal const string IntPropertyName = "intProperty";
-        internal const string ShortPropertyName = "shortProperty";
+        internal const string BoolPropertyName = "boolPropertyName";
+        internal const string DoublePropertyName = "doublePropertyName";
+        internal const string FloatPropertyName = "floatPropertyName";
+        internal const string IntPropertyName = "intPropertyName";
+        internal const string ShortPropertyName = "shortPropertyName";
         internal const string StringPropertyName = "stringPropertyName";
         internal const string ObjectPropertyName = "objectPropertyName";
         internal const string ArrayPropertyName = "arrayPropertyName";
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         private static readonly DateTimeOffset s_dateTimePropertyValue = DateTimeOffset.Now;
         private static readonly CustomClientProperty s_objectPropertyValue = new CustomClientProperty { Id = 123, Name = "testName" };
 
-        private static readonly List<object> s_arrayPropertyValues = new List<object>
+        private static readonly List<object> s_arrayPropertyValue = new List<object>
         {
             1,
             "someString",
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             s_objectPropertyValue
         };
 
-        private static readonly Dictionary<string, object> s_mapPropertyValues = new Dictionary<string, object>
+        private static readonly Dictionary<string, object> s_mapPropertyValue = new Dictionary<string, object>
         {
             { "key1", "value1" },
             { "key2", 123 },
@@ -68,8 +68,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
             ShortProperty = ShortPropertyValue,
             StringProperty = StringPropertyValue,
             ObjectProperty = s_objectPropertyValue,
-            ArrayProperty = s_arrayPropertyValues,
-            MapProperty = s_mapPropertyValues,
+            ArrayProperty = s_arrayPropertyValue,
+            MapProperty = s_mapPropertyValue,
             DateTimeProperty = s_dateTimePropertyValue
         };
 
@@ -86,8 +86,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 ShortProperty = ShortPropertyValue,
                 StringProperty = StringPropertyValue,
                 ObjectProperty = s_objectPropertyValue,
-                ArrayProperty = s_arrayPropertyValues,
-                MapProperty = s_mapPropertyValues,
+                ArrayProperty = s_arrayPropertyValue,
+                MapProperty = s_mapPropertyValue,
                 DateTimeProperty = s_dateTimePropertyValue
             },
         };
@@ -148,12 +148,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // The two lists won't be exactly equal since TryGetValue doesn't implement nested deserialization
             // => the complex object inside the list is deserialized to a JObject.
             clientProperties.TryGetValue(ArrayPropertyName, out List<object> arrayOutValue);
-            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValues);
+            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValue);
 
             // The two dictionaries won't be exactly equal since TryGetValue doesn't implement nested deserialization
             // => the complex object inside the dictionary is deserialized to a JObject.
             clientProperties.TryGetValue(MapPropertyName, out Dictionary<string, object> mapOutValue);
-            mapOutValue.Should().HaveSameCount(s_mapPropertyValues);
+            mapOutValue.Should().HaveSameCount(s_mapPropertyValue);
 
             clientProperties.TryGetValue(DateTimePropertyName, out DateTimeOffset dateTimeOutValue);
             dateTimeOutValue.Should().Be(s_dateTimePropertyValue);
@@ -189,12 +189,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // The two lists won't be exactly equal since TryGetValue doesn't implement nested deserialization
             // => the complex object inside the list is deserialized to a JObject.
             clientProperties.TryGetValue(ComponentName, ArrayPropertyName, out List<object> arrayOutValue);
-            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValues);
+            arrayOutValue.Should().HaveSameCount(s_arrayPropertyValue);
 
             // The two dictionaries won't be exactly equal since TryGetValue doesn't implement nested deserialization
             // => the complex object inside the dictionary is deserialized to a JObject.
             clientProperties.TryGetValue(ComponentName, MapPropertyName, out Dictionary<string, object> mapOutValue);
-            mapOutValue.Should().HaveSameCount(s_mapPropertyValues);
+            mapOutValue.Should().HaveSameCount(s_mapPropertyValue);
 
             clientProperties.TryGetValue(ComponentName, DateTimePropertyName, out DateTimeOffset dateTimeOutValue);
             dateTimeOutValue.Should().Be(s_dateTimePropertyValue);
