@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// For setting component-level property values see <see cref="ClientPropertyCollection.AddComponentProperty(string, string, object)"/>
         /// and <see cref="ClientPropertyCollection.AddComponentProperties(string, IDictionary{string, object})"/> instead.
         /// These convenience methods ensure that component-level properties include the component identifier markers { "__t": "c" }.
-        /// For more information see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
+        /// For more information see <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
         /// </remarks>
         /// </para>
         /// </remarks>

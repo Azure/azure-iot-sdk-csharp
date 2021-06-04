@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="propertyName">The name of the property to add.</param>
         /// <param name="propertyValue">The value of the property to add.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>. </exception>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException"><paramref name="propertyName"/> already exists in the collection.</exception>
         public void AddRootProperty(string propertyName, object propertyValue)
             => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null, false);
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
         /// </summary>
-        /// <remarks>This internal class is aware of the implementation of the TwinCollection ad will </remarks>
+        /// <remarks>This internal class is aware of the implementation of the TwinCollection.</remarks>
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
         /// <returns>A new instance of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior.
         /// Setting to true will simply overwrite the value. Setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
-        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c> for a root-level property operation. </exception>
+        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c> for a root-level property operation.</exception>
         private void AddInternal(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
             // If the componentName is null then simply add the key-value pair to Collection dictionary.
