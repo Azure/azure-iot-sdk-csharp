@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         // Create a writable property response with the expected values.
         private static readonly IWritablePropertyResponse s_writablePropertyResponse = new NewtonsoftJsonWritablePropertyResponse(
             propertyValue: StringPropertyValue,
-            ackCode: StatusCodes.OK,
+            ackCode: CommonClientResponseCodes.OK,
             ackVersion: 2,
             ackDescription: "testableWritablePropertyDescription");
 

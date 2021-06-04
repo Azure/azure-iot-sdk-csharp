@@ -132,14 +132,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
             IWritablePropertyResponse writableResponse = _deviceClient
                 .PayloadConvention
                 .PayloadSerializer
-                .CreateWritablePropertyResponse(_temperature[componentName], StatusCodes.OK, version, "Successfully updated target temperature.");
+                .CreateWritablePropertyResponse(_temperature[componentName], CommonClientResponseCodes.OK, version, "Successfully updated target temperature.");
 
             var reportedProperty = new ClientPropertyCollection();
             reportedProperty.AddComponentProperty(componentName, targetTemperatureProperty, writableResponse);
 
             ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 
-            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {reportedProperty.GetSerializedString()} is {nameof(StatusCodes.OK)} " +
+            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {reportedProperty.GetSerializedString()} is {nameof(CommonClientResponseCodes.OK)} " +
                 $"with a version of {updateResponse.Version}.");
         }
 
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             _logger.LogWarning($"Received a command request that isn't" +
                             $" implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
 
-                            return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
+                            return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
                     }
 
                 // For the default case, first check if CommandRequest.ComponentName is null.
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 _logger.LogWarning($"Received a command request that isn't" +
                                     $" implemented - command name = {commandRequest.CommandName}");
 
-                                return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
+                                return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
                         }
                     }
                     else
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         _logger.LogWarning($"Received a command request that isn't" +
                             $" implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
 
-                        return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
+                        return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
                     }
             }
         }
@@ -214,12 +214,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _temperatureReadingsDateTimeOffset.Clear();
                 _logger.LogDebug($"Command: Reboot completed.");
 
-                return new CommandResponse(StatusCodes.OK);
+                return new CommandResponse(CommonClientResponseCodes.OK);
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input for {commandRequest.CommandName} is invalid: {ex.Message}.");
-                return new CommandResponse(StatusCodes.BadRequest);
+                return new CommandResponse(CommonClientResponseCodes.BadRequest);
             }
         }
 
@@ -254,25 +254,25 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $" maxTemp={report.MaximumTemperature}, minTemp={report.MinimumTemperature}, avgTemp={report.AverageTemperature}, " +
                             $"startTime={report.StartTime.LocalDateTime}, endTime={report.EndTime.LocalDateTime}");
 
-                        return Task.FromResult(new CommandResponse(report, StatusCodes.OK));
+                        return Task.FromResult(new CommandResponse(report, CommonClientResponseCodes.OK));
                     }
 
                     _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\"," +
                         $" no relevant readings found since {sinceInUtc.LocalDateTime}, cannot generate any report.");
 
-                    return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
+                    return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
                 }
 
                 _logger.LogDebug($"Command: component=\"{commandRequest.ComponentName}\", no temperature readings sent yet," +
                     $" cannot generate any report.");
 
-                return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
+                return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogError($"Command input for {commandRequest.CommandName} is invalid: {ex.Message}.");
 
-                return Task.FromResult(new CommandResponse(StatusCodes.BadRequest));
+                return Task.FromResult(new CommandResponse(CommonClientResponseCodes.BadRequest));
             }
         }
 

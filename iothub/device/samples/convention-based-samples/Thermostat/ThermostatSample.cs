@@ -82,14 +82,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         IWritablePropertyResponse writableResponse = _deviceClient
                             .PayloadConvention
                             .PayloadSerializer
-                            .CreateWritablePropertyResponse(_temperature, StatusCodes.OK, writableProperties.Version, "Successfully updated target temperature");
+                            .CreateWritablePropertyResponse(_temperature, CommonClientResponseCodes.OK, writableProperties.Version, "Successfully updated target temperature");
 
                         var reportedProperty = new ClientPropertyCollection();
                         reportedProperty.AddRootProperty(targetTemperatureProperty, writableResponse);
 
                         ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperty);
 
-                        _logger.LogDebug($"Property: Update - {reportedProperty.GetSerializedString()} is {nameof(StatusCodes.OK)} " +
+                        _logger.LogDebug($"Property: Update - {reportedProperty.GetSerializedString()} is {nameof(CommonClientResponseCodes.OK)} " +
                             $"with a version of {updateResponse.Version}.");
 
                         break;
@@ -133,25 +133,25 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 $" maxTemp={report.MaximumTemperature}, minTemp={report.MinimumTemperature}, avgTemp={report.AverageTemperature}, " +
                                 $"startTime={report.StartTime.LocalDateTime}, endTime={report.EndTime.LocalDateTime}");
 
-                            return Task.FromResult(new CommandResponse(report, StatusCodes.OK));
+                            return Task.FromResult(new CommandResponse(report, CommonClientResponseCodes.OK));
                         }
 
                         _logger.LogDebug($"Command: No relevant readings found since {sinceInUtc.LocalDateTime}, cannot generate any report.");
 
-                        return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
+                        return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
                     }
                     catch (JsonReaderException ex)
                     {
                         _logger.LogError($"Command input for {commandRequest.CommandName} is invalid: {ex.Message}.");
 
-                        return Task.FromResult(new CommandResponse(StatusCodes.BadRequest));
+                        return Task.FromResult(new CommandResponse(CommonClientResponseCodes.BadRequest));
                     }
 
                 default:
                     _logger.LogWarning($"Received a command request that isn't" +
                         $" implemented - command name = {commandRequest.CommandName}");
 
-                    return Task.FromResult(new CommandResponse(StatusCodes.NotFound));
+                    return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
             }
         }
 
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(reportedProperties);
 
-            _logger.LogDebug($"Property: Update - {reportedProperties.GetSerializedString()} is {nameof(StatusCodes.OK)} " +
+            _logger.LogDebug($"Property: Update - {reportedProperties.GetSerializedString()} is {nameof(CommonClientResponseCodes.OK)} " +
                 $"with a version of {updateResponse.Version}.");
         }
 

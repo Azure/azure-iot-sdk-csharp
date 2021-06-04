@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection();
 
-            var writableResponse = new NewtonsoftJsonWritablePropertyResponse(StringPropertyValue, StatusCodes.OK, 2, WritablePropertyDescription);
+            var writableResponse = new NewtonsoftJsonWritablePropertyResponse(StringPropertyValue, CommonClientResponseCodes.OK, 2, WritablePropertyDescription);
             clientProperties.AddRootProperty(StringPropertyName, writableResponse);
 
             clientProperties.TryGetValue(StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var clientProperties = new ClientPropertyCollection();
 
-            var writableResponse = new NewtonsoftJsonWritablePropertyResponse(StringPropertyValue, StatusCodes.OK, 2, WritablePropertyDescription);
+            var writableResponse = new NewtonsoftJsonWritablePropertyResponse(StringPropertyValue, CommonClientResponseCodes.OK, 2, WritablePropertyDescription);
             clientProperties.AddComponentProperty(ComponentName, StringPropertyName, writableResponse);
 
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);

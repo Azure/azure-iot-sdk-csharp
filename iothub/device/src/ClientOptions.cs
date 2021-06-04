@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Options that allow configuration of the device or module client instance during initialization.
+    /// These options cannot be updated once the client has been initialized.
     /// </summary>
     public class ClientOptions
     {
