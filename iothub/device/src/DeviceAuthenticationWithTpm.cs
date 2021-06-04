@@ -22,6 +22,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class with default
         /// time to live of 1 hour and default buffer percentage value of 15.
         /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="DeviceAuthenticationWithTpm(string, SecurityProviderTpm, int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
         public DeviceAuthenticationWithTpm(

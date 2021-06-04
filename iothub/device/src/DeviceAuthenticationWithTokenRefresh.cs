@@ -18,6 +18,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class using default
         /// TTL and TTL buffer time settings.
         /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="DeviceAuthenticationWithTokenRefresh(string, int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
         public DeviceAuthenticationWithTokenRefresh(string deviceId)
             : this(deviceId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
@@ -27,6 +32,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class.
         /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="DeviceAuthenticationWithTokenRefresh(string, int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="suggestedTimeToLiveSeconds">
         /// The suggested time to live value for the generated SAS tokens.

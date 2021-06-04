@@ -25,6 +25,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
         /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated device/ module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// </remarks>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as

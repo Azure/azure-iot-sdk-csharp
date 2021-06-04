@@ -28,6 +28,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class using default
         /// TTL and TTL buffer time settings.
         /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// </remarks>
         /// <param name="deviceId">The Id of the device.</param>
         /// <param name="moduleId">The Id of the module.</param>
         public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId)
@@ -38,6 +43,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class.
         /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/> constructor and set <c>disposalBySdk</c> to <c>false</c>.
+        /// </remarks>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="moduleId">The module Id.</param>
         /// <param name="suggestedTimeToLiveSeconds">
