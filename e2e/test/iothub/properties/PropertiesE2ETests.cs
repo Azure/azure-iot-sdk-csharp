@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             prop2Value.Should().Be(propValue);
 
             // Sending a null value for a property will result in service removing the property from the client's twin representation.
-            // As a result, for the property patch sent here will result in propName2 being removed.
+            // For the property patch sent here will result in propName2 being removed.
             await deviceClient
                 .UpdateClientPropertiesAsync(
                     new ClientPropertyCollection
@@ -396,8 +396,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             string serializedActualProperty = JsonConvert.SerializeObject(serviceTwin.Properties.Reported[propName1]);
             serializedActualProperty.Should().Be(propEmptyValue);
 
-            // Sending a null value for a property will result in service removing the property from the client's twin representation.
-            // As a result, for the property patch sent here will result in propName1 being removed.
+            // For the property patch sent here will result in propName1 being removed.
             await deviceClient
                 .UpdateClientPropertiesAsync(
                     new ClientPropertyCollection

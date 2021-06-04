@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
@@ -60,31 +59,34 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
         {
-            await _deviceClient.SetMethodHandlerAsync(methodName,
-                (request, context) =>
-                {
-                    try
+            await _deviceClient
+                .SetMethodHandlerAsync(
+                    methodName,
+                    (request, context) =>
                     {
-                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.Name} {request.ResponseTimeout}.");
-                        request.Name.Should().Be(methodName, "The expected method name should match what was sent from service");
-                        request.DataAsJson.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
+                        try
+                        {
+                            _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.Name} {request.ResponseTimeout}.");
+                            request.Name.Should().Be(methodName, "The expected method name should match what was sent from service");
+                            request.DataAsJson.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 
-                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
+                            return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
 
-                        _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
-                        return Task.FromResult(new MethodResponse(500));
-                    }
-                    finally
-                    {
-                        // Always notify that we got the callback.
-                        _methodCallbackSemaphore.Release();
-                    }
-                },
-                null).ConfigureAwait(false);
+                            _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                            return Task.FromResult(new MethodResponse(500));
+                        }
+                        finally
+                        {
+                            // Always notify that we got the callback.
+                            _methodCallbackSemaphore.Release();
+                        }
+                    },
+                    null)
+                .ConfigureAwait(false);
         }
 
         public async Task WaitForMethodCallbackAsync(CancellationToken ct)
@@ -97,29 +99,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             string userContext = "myContext";
 
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
-                (patch, context) =>
-                {
-                    _logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback twin: DesiredProperty: {patch}, {context}");
+            await _deviceClient
+                .SetDesiredPropertyUpdateCallbackAsync(
+                    (patch, context) =>
+                    {
+                        _logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback twin: DesiredProperty: {patch}, {context}");
 
-                    try
-                    {
-                        string propertyValue = patch[expectedPropName];
-                        propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
-                        context.Should().Be(userContext, "The context should match what was set by service");
-                    }
-                    catch (Exception ex)
-                    {
-                        _twinExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
-                    }
-                    finally
-                    {
-                        // Always notify that we got the callback.
-                        _twinCallbackSemaphore.Release();
-                    }
+                        try
+                        {
+                            string propertyValue = patch[expectedPropName];
+                            propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
+                            context.Should().Be(userContext, "The context should match what was set by service");
+                        }
+                        catch (Exception ex)
+                        {
+                            _twinExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                        }
+                        finally
+                        {
+                            // Always notify that we got the callback.
+                            _twinCallbackSemaphore.Release();
+                        }
 
-                    return Task.FromResult<bool>(true);
-                }, userContext).ConfigureAwait(false);
+                        return Task.FromResult<bool>(true);
+                    },
+                    userContext)
+                .ConfigureAwait(false);
         }
 
         public async Task WaitForTwinCallbackAsync(CancellationToken ct)
@@ -130,31 +135,33 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetMessageReceiveCallbackHandlerAsync()
         {
-            await _deviceClient.SetReceiveMessageHandlerAsync(
-                async (receivedMessage, context) =>
-                {
-                    _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {receivedMessage.MessageId}.");
+            await _deviceClient
+                .SetReceiveMessageHandlerAsync(
+                    async (receivedMessage, context) =>
+                    {
+                        _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {receivedMessage.MessageId}.");
 
-                    try
-                    {
-                        receivedMessage.MessageId.Should().Be(ExpectedMessageSentByService.MessageId, "Received message Id should match what was sent by service");
-                        receivedMessage.UserId.Should().Be(ExpectedMessageSentByService.UserId, "Received user Id should match what was sent by service");
+                        try
+                        {
+                            receivedMessage.MessageId.Should().Be(ExpectedMessageSentByService.MessageId, "Received message Id should match what was sent by service");
+                            receivedMessage.UserId.Should().Be(ExpectedMessageSentByService.UserId, "Received user Id should match what was sent by service");
 
-                        await CompleteMessageAsync(receivedMessage).ConfigureAwait(false);
-                        _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {receivedMessage.MessageId}.");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
-                        _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
-                    }
-                    finally
-                    {
-                        // Always notify that we got the callback.
-                        _receivedMessageCallbackSemaphore.Release();
-                    }
-                },
-                null).ConfigureAwait(false);
+                            await CompleteMessageAsync(receivedMessage).ConfigureAwait(false);
+                            _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {receivedMessage.MessageId}.");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
+                            _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                        }
+                        finally
+                        {
+                            // Always notify that we got the callback.
+                            _receivedMessageCallbackSemaphore.Release();
+                        }
+                    },
+                    null)
+                .ConfigureAwait(false);
         }
 
         private async Task CompleteMessageAsync(Client.Message message)
@@ -168,34 +175,40 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _receiveMessageExceptionDispatch?.Throw();
         }
 
-        public async Task SetClientPropertyUpdateCallbackHandlerAsync<T>(string expectedPropName)
+        public async Task SetClientPropertyUpdateCallbackHandlerAsync<T>(string expectedPropName, string componentName = default)
         {
             string userContext = "myContext";
 
-            await _deviceClient.SubscribeToWritablePropertiesEventAsync(
-                (patch, context) =>
-                {
-                    _logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback property: WritableProperty: {patch}, {context}");
+            await _deviceClient
+                .SubscribeToWritablePropertiesEventAsync(
+                    (patch, context) =>
+                    {
+                        _logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback property: WritableProperty: {patch}, {context}");
 
-                    try
-                    {
-                        bool isPropertyPresent = patch.TryGetValue(expectedPropName, out T propertyFromCollection);
-                        isPropertyPresent.Should().BeTrue();
-                        propertyFromCollection.Should().BeEquivalentTo((T)ExpectedClientPropertyValue);
-                        context.Should().Be(userContext);
-                    }
-                    catch (Exception ex)
-                    {
-                        _clientPropertyExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
-                    }
-                    finally
-                    {
-                        // Always notify that we got the callback.
-                        _clientPropertyCallbackSemaphore.Release();
-                    }
+                        try
+                        {
+                            bool isPropertyPresent = componentName == null
+                                ? patch.TryGetValue(expectedPropName, out T propertyFromCollection)
+                                : patch.TryGetValue(componentName, expectedPropName, out propertyFromCollection);
 
-                    return Task.FromResult(true);
-                }, userContext).ConfigureAwait(false);
+                            isPropertyPresent.Should().BeTrue();
+                            propertyFromCollection.Should().BeEquivalentTo((T)ExpectedClientPropertyValue);
+                            context.Should().Be(userContext);
+                        }
+                        catch (Exception ex)
+                        {
+                            _clientPropertyExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                        }
+                        finally
+                        {
+                            // Always notify that we got the callback.
+                            _clientPropertyCallbackSemaphore.Release();
+                        }
+
+                        return Task.FromResult(true);
+                    },
+                    userContext)
+                .ConfigureAwait(false);
         }
 
         public async Task WaitForClientPropertyUpdateCallbcakAsync(CancellationToken ct)
