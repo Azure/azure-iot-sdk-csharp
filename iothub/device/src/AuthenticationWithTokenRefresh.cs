@@ -93,8 +93,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (_isDisposed)
             {
-                throw new ObjectDisposedException("This authentication method instance has already been disposed. " +
-                    "Please create a new instance and pass it to the DeviceClient/ ModuleClient during initialization.");
+                throw new ObjectDisposedException("The authentication method instance has already been disposed, so this client is no longer usable. " +
+                    "Please close and dispose your current client instance. To continue carrying out operations from your device/ module, " +
+                    "create a new authentication method instance and use it for reinitializing your client.");
             }
 
             if (!IsExpiring)
