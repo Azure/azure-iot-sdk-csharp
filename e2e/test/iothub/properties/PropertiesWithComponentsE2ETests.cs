@@ -288,9 +288,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await testDeviceCallbackHandler.SetClientPropertyUpdateCallbackHandlerAsync<T>(propName, ComponentName).ConfigureAwait(false);
             testDeviceCallbackHandler.ExpectedClientPropertyValue = propValue;
 
-            await Task.WhenAll(
-                RegistryManagerUpdateWritablePropertyAsync(testDevice.Id, ComponentName, propName, propValue),
-                testDeviceCallbackHandler.WaitForClientPropertyUpdateCallbcakAsync(cts.Token)).ConfigureAwait(false);
+            await Task
+                .WhenAll(
+                    RegistryManagerUpdateWritablePropertyAsync(testDevice.Id, ComponentName, propName, propValue),
+                    testDeviceCallbackHandler.WaitForClientPropertyUpdateCallbcakAsync(cts.Token))
+                .ConfigureAwait(false);
 
             // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
