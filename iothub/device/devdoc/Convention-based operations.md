@@ -6,6 +6,14 @@
 public class ClientOptions {
 +    public PayloadConvention PayloadConvention { get; set; }
 }
+
+public class DeviceClient : IDisposable {
++    public PayloadConvention PayloadConvention { get; }
+}
+
+public class ModuleClient : IDisposable {
++    public PayloadConvention PayloadConvention { get; }
+}
 ```
 
 ```csharp
@@ -85,12 +93,12 @@ public static class ConventionBasedConstants {
     public const string ValuePropertyName = "value";
 }
 
-public class StatusCodes {
-    public StatusCodes();
-    public static int Accepted { get; }
-    public static int BadRequest { get; }
-    public static int NotFound { get; }
-    public static int OK { get; }
+public class CommonClientResponseCodes {
+    public const int Accepted = 202;
+    public const int BadRequest = 400;
+    public const int NotFound = 404;
+    public const int OK = 200;
+    public CommonClientResponseCodes();
 }
 ```
 
