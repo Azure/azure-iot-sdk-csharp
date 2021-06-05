@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Shared
     /// A list of common status codes to represent the response from the client.
     /// </summary>
     /// <remarks>
-    /// These status codes are based on the HTTP status codes listed here <see href="http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml"/>
+    /// These status codes are based on the HTTP status codes listed here <see href="http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml"/>.
     /// </remarks>
     [SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable",
         Justification = "To allow customers to extend this class we need to not mark it static.")]
