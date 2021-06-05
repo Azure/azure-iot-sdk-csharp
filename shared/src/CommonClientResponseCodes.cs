@@ -16,23 +16,28 @@ namespace Microsoft.Azure.Devices.Shared
     public class CommonClientResponseCodes
     {
         /// <summary>
-        /// Status code 200.
+        /// As per HTTP semantics this code indicates that the request has succeeded.
         /// </summary>
-        public static int OK => 200;
+        public const int OK = 200;
 
         /// <summary>
-        /// Status code 202.
+        /// As per HTTP semantics this code indicates that the request has been
+        /// accepted for processing, but the processing has not been completed.
         /// </summary>
-        public static int Accepted => 202;
+        public const int Accepted = 202;
 
         /// <summary>
-        /// Status code 400.
+        /// As per HTTP semantics this code indicates that the server cannot or
+        /// will not process the request due to something that is perceived to be a client error
+        /// (e.g., malformed request syntax, invalid request message framing, or deceptive request routing).
         /// </summary>
-        public static int BadRequest => 400;
+        public const int BadRequest = 400;
 
         /// <summary>
-        /// Status code 404.
+        /// As per HTTP semantics this code indicates that the origin server did
+        /// not find a current representation for the target resource or is not
+        /// willing to disclose that one exists.
         /// </summary>
-        public static int NotFound => 404;
+        public const int NotFound = 404;
     }
 }
