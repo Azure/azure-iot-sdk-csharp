@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
-    public class ModuleClient : IDisposable
+    public partial class ModuleClient : IDisposable
 #if !NET451 && !NET472 && !NETSTANDARD2_0
         , IAsyncDisposable
 #endif

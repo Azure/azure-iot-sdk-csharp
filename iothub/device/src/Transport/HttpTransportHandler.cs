@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return TaskHelpers.CompletedTask;
         }
 
-        public override Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             Debug.Assert(message != null);
             cancellationToken.ThrowIfCancellationRequested();
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
-        public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             if (messages == null)
             {
@@ -403,6 +403,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
+        public override Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("Property operations are not supported over HTTP. Please use MQTT protocol instead.");
+        }
+
+        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("Property operations are not supported over HTTP. Please use MQTT protocol instead.");
+        }
+
         // This is for invoking methods from an edge module to another edge device or edge module.
         internal Task<MethodInvokeResponse> InvokeMethodAsync(MethodInvokeRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
         {
@@ -500,7 +510,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return new Uri(stringBuilder.ToString(), UriKind.Relative);
         }
 
-        private static string ToJson(IEnumerable<Message> messages)
+        private static string ToJson(IEnumerable<MessageBase> messages)
         {
             using var sw = new StringWriter();
             using var writer = new JsonTextWriter(sw);
@@ -508,7 +518,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // [
             writer.WriteStartArray();
 
-            foreach (Message message in messages)
+            foreach (MessageBase message in messages)
             {
                 // {
                 writer.WriteStartObject();
