@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client
         bool IsUsable { get; }
 
         // Telemetry uplink.
-        Task SendEventAsync(Message message, CancellationToken cancellationToken);
+        Task SendEventAsync(MessageBase message, CancellationToken cancellationToken);
 
-        Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
+        Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken);
 
         // Telemetry downlink for devices.
         Task<Message> ReceiveAsync(CancellationToken cancellationToken);
@@ -66,5 +66,11 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
+
+        // Convention driven operations.
+
+        Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken);
+
+        Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken);
     }
 }

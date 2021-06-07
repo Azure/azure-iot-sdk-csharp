@@ -136,13 +136,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.RejectAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public virtual Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return InnerHandler?.SendEventAsync(message, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public virtual Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskHelpers.CompletedTask;
@@ -200,6 +200,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.GetPropertiesAsync(payloadConvention, cancellationToken) ?? Task.FromResult<ClientProperties>(null);
+        }
+
+        public virtual Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.SendPropertyPatchAsync(reportedProperties, cancellationToken) ?? Task.FromResult<ClientPropertiesUpdateResponse>(null);
         }
 
         public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;

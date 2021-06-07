@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
         }
 
-        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             try
             {
@@ -603,6 +603,50 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 Logging.Exit(this, lockToken, cancellationToken, nameof(RejectAsync));
+            }
+        }
+
+        public override async Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logging.Enter(this, payloadConvention, cancellationToken, nameof(SendPropertyPatchAsync));
+
+                return await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            return await base.GetPropertiesAsync(payloadConvention, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, payloadConvention, cancellationToken, nameof(SendPropertyPatchAsync));
+            }
+        }
+
+        public override async Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendPropertyPatchAsync));
+
+                return await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            return await base.SendPropertyPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendPropertyPatchAsync));
             }
         }
 

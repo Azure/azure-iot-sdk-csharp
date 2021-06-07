@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Options that allow configuration of the device or module client instance during initialization.
+    /// Updating these options after the client has been initialized will not change the behavior of the client.
     /// </summary>
     public class ClientOptions
     {
@@ -19,15 +20,15 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The transport settings to use for all file upload operations, regardless of what protocol the device
-        /// client is configured with. All file upload operations take place over https. 
+        /// client is configured with. All file upload operations take place over https.
         /// If FileUploadTransportSettings is not provided, then file upload operations will use the client certificates configured
         /// in the transport settings set for the non-file upload operations.
         /// </summary>
         public Http1TransportSettings FileUploadTransportSettings { get; set; } = new Http1TransportSettings();
 
         /// <summary>
-        /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the device or module client instance.
-        /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
+        /// The configuration for setting <see cref="MessageBase.MessageId"/> for every message sent by the device or module client instance.
+        /// The default behavior is that <see cref="MessageBase.MessageId"/> is set only by the user.
         /// </summary>
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
 
@@ -54,5 +55,18 @@ namespace Microsoft.Azure.Devices.Client
         /// or the <see cref="ModuleClient.CreateFromEnvironmentAsync(ClientOptions)"/> flow.
         /// </remarks>
         public int SasTokenRenewalBuffer { get; set; }
+
+        /// <summary>
+        /// The payload convention to be used to serialize and encode the messages for convention based methods.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="Shared.PayloadConvention"/> defines both the serializer and encoding to be used for convention based messages.
+        /// You will only need to set this if you have objects that have special serialization rules or require a specific byte encoding.
+        /// <para>
+        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="NewtonsoftJsonPayloadSerializer"/> serializer
+        /// and <see cref="Utf8PayloadEncoder"/> encoder.
+        /// </para>
+        /// </remarks>
+        public PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
     }
 }

@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Telemetry handling
 
-        internal async Task<AmqpIotOutcome> SendMessageAsync(Message message, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendMessageAsync(MessageBase message, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<Message> messages, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<MessageBase> messages, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {

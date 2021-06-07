@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
         private const string DiagnosticCreationTimeUtcKey = "creationtimeutc";
         private static readonly DateTime Dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        internal static bool AddDiagnosticInfoIfNecessary(Message message, int diagnosticSamplingPercentage, ref int currentMessageCount)
+        internal static bool AddDiagnosticInfoIfNecessary(MessageBase message, int diagnosticSamplingPercentage, ref int currentMessageCount)
         {
             bool result = false;
 
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
             return result;
         }
 
-        internal static bool HasDiagnosticProperties(Message message)
+        internal static bool HasDiagnosticProperties(MessageBase message)
         {
             return message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagId) && message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagCorrelationContext);
         }

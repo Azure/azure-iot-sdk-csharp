@@ -93,6 +93,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
         private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
+        // Identifiers for property update operations.
+        public const string VersionKey = "$version";
+
+        public const string RequestIdKey = "$rid";
+
         private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
         private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
@@ -235,7 +240,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             try
             {
@@ -256,7 +261,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             foreach (Message message in messages)
             {
@@ -977,6 +982,56 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
         }
 
+        public override async Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            using var request = new Message();
+            string rid = Guid.NewGuid().ToString();
+            request.MqttTopicName = TwinGetTopic.FormatInvariant(rid);
+
+            using Message response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+
+            using var reader = new StreamReader(response.GetBodyStream(), payloadConvention.PayloadEncoder.ContentEncoding);
+            string body = reader.ReadToEnd();
+
+            try
+            {
+                ClientTwinProperties twinProperties = JsonConvert.DeserializeObject<ClientTwinProperties>(body);
+                var properties = twinProperties.ToClientProperties(payloadConvention);
+                return properties;
+            }
+            catch (JsonReaderException ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+
+                throw;
+            }
+        }
+
+        public override async Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            byte[] body = reportedProperties.GetPayloadObjectBytes();
+            using var bodyStream = new MemoryStream(body);
+
+            using var request = new Message(bodyStream);
+
+            string rid = Guid.NewGuid().ToString();
+            request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);
+
+            using Message message = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+            return new ClientPropertiesUpdateResponse
+            {
+                RequestId = message.Properties[RequestIdKey],
+                Version = long.Parse(message.Properties[VersionKey], CultureInfo.InvariantCulture)
+            };
+        }
+
         private async Task OpenInternalAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -1103,17 +1158,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         QualityOfService.AtMostOnce)));
         }
 
-        private bool ParseResponseTopic(string topicName, out string rid, out int status)
+        private bool ParseResponseTopic(string topicName, out int status)
         {
             Match match = _twinResponseTopicRegex.Match(topicName);
             if (match.Success)
             {
                 status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                rid = HttpUtility.ParseQueryString(match.Groups[2].Value).Get("$rid");
                 return true;
             }
 
-            rid = "";
             status = 500;
             return false;
         }
@@ -1130,9 +1183,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 try
                 {
-                    if (ParseResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out int status))
+                    if (ParseResponseTopic(possibleResponse.MqttTopicName, out int status))
                     {
-                        if (rid == receivedRid)
+                        if (rid == possibleResponse.Properties[RequestIdKey])
                         {
                             if (status >= 300)
                             {

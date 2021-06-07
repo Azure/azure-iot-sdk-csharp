@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Telemetry
 
-        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(MessageBase message, CancellationToken cancellationToken)
         {
             Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
 
@@ -520,6 +520,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         #endregion Accept-Dispose
+
+        #region Convention-based operations
+
+        public override Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("This operation is currently not supported over AMQP, please use MQTT protocol instead. " +
+                "Note that you can still retrieve a client's properties using DeviceClient.GetTwinAsync(CancellationToken cancellationToken) or " +
+                "ModuleClient.GetTwinAsync(CancellationToken cancellationToken) operations, but the properties will not be formatted " +
+                "as per DTDL terminology.");
+        }
+
+        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("This operation is currently not supported over AMQP, please use MQTT protocol instead. " +
+                "Note that you can still retrieve a client's properties using DeviceClient.GetTwinAsync(CancellationToken cancellationToken) or " +
+                "ModuleClient.GetTwinAsync(CancellationToken cancellationToken) operations, but the properties will not be formatted " +
+                "as per DTDL terminology.");
+        }
+
+        #endregion Convention-based operations
 
         #region Helpers
 
