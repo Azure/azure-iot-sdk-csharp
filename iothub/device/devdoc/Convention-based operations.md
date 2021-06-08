@@ -4,7 +4,8 @@
 
 ```diff
 public class ClientOptions {
-+    public PayloadConvention PayloadConvention { get; set; }
++    public ClientOptions(PayloadConvention payloadConvention = null);
++    public PayloadConvention PayloadConvention { get; }
 }
 
 public class DeviceClient : IDisposable {
