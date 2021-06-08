@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using System.Threading;
 using Microsoft.Azure.Devices.Common;
+using System.Linq;
 
 #if !NET451
 
@@ -24,6 +25,7 @@ namespace Microsoft.Azure.Devices
     {
 #if !NET451
         private const string _tokenType = "Bearer";
+        private readonly string[] _tokenCredentialAuthenticationScopes;
         private readonly TokenCredential _credential;
         private readonly object _tokenLock = new object();
         private AccessToken? _cachedAccessToken;
@@ -37,9 +39,10 @@ namespace Microsoft.Azure.Devices
         }
 #else
 
-        public IotHubTokenCrendentialProperties(string hostName, TokenCredential credential) : base(hostName)
+        public IotHubTokenCrendentialProperties(string hostName, TokenCredential credential, IReadOnlyList<string> tokenCredentialAuthenticationScopes) : base(hostName)
         {
             _credential = credential;
+            _tokenCredentialAuthenticationScopes = tokenCredentialAuthenticationScopes.ToArray();
         }
 
 #endif
@@ -58,7 +61,7 @@ namespace Microsoft.Azure.Devices
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                        new TokenRequestContext(_tokenCredentialAuthenticationScopes),
                         new CancellationToken());
                 }
             }
@@ -79,7 +82,7 @@ namespace Microsoft.Azure.Devices
 
 #else
             AccessToken token = await _credential.GetTokenAsync(
-                new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                new TokenRequestContext(_tokenCredentialAuthenticationScopes),
                 new CancellationToken()).ConfigureAwait(false);
             return new CbsToken(
                $"{_tokenType} {token.Token}",
