@@ -226,6 +226,36 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
+        /// Clears metadata out of the twin collection.
+        /// </summary>
+        /// <remarks>
+        /// This will only clear the metadata from the twin collection but will not change the base metadata object. This allows you to still use methods such as <see cref="GetMetadata"/>. If you need to remove all metadata, please use <see cref="ClearAllMetadata"/>.
+        /// </remarks>
+        public void ClearMetadata()
+        {
+            TryClearMetadata(MetadataName);
+            TryClearMetadata(LastUpdatedName);
+            TryClearMetadata(LastUpdatedVersionName);
+            TryClearMetadata(VersionName);
+        }
+
+        /// <summary>
+        /// Clears all metadata out of the twin collection as well as the base metadata object.
+        /// </summary>
+        /// <remarks>
+        /// This will remove all metadata from the base metadata object as well as the metadata for the twin collection. The difference from the <see cref="ClearMetadata"/> method is this will also clear the underlying metadata object which will affect methods such as <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
+        /// This method would be useful if you are performing any operations that require <see cref="TryGetMemberInternal(string, out object)"/> to return a <see cref="JToken"/> regardless of the client you are using.
+        /// </remarks>
+        public void ClearAllMetadata()
+        {
+            ClearMetadata();
+            // GitHub Issue: https://github.com/Azure/azure-iot-sdk-csharp/issues/1971
+            // When we clear the metadata from the underlying collection we need to also clear
+            // the _metadata object so the TryGetMemberInternal will return a JObject instead of a new TwinCollection
+            _metadata.RemoveAll();
+        }
+
+        /// <summary>
         /// Gets the specified property from the twin collection.
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
@@ -291,36 +321,6 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 JObject.Remove(propertyName);
             }
-        }
-
-        /// <summary>
-        /// Clears metadata out of the twin collection.
-        /// </summary>
-        /// <remarks>
-        /// This will only clear the metadata from the twin collection but will not change the base metadata object. This allows you to still use methods such as <see cref="GetMetadata"/>. If you need to remove all metadata, please use <see cref="ClearAllMetadata"/>.
-        /// </remarks>
-        public void ClearMetadata()
-        {
-            TryClearMetadata(MetadataName);
-            TryClearMetadata(LastUpdatedName);
-            TryClearMetadata(LastUpdatedVersionName);
-            TryClearMetadata(VersionName);
-        }
-
-        /// <summary>
-        /// Clears all metadata out of the twin collection as well as the base metadata object.
-        /// </summary>
-        /// <remarks>
-        /// This will remove all metadata from the base metadata object as well as the metadata for the twin collection. The difference from the <see cref="ClearMetadata"/> method is this will also clear the underlying metadata object which will affect methods such as <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
-        /// This method would be useful if you are performing any operations that require <see cref="TryGetMemberInternal(string, out object)"/> to return a <see cref="JToken"/> regardless of the client you are using.
-        /// </remarks>
-        public void ClearAllMetadata()
-        {
-            ClearMetadata();
-            // GitHub Issue: https://github.com/Azure/azure-iot-sdk-csharp/issues/1971
-            // When we clear the metadata from the underlying collection we need to also clear
-            // the _metadata object so the TryGetMemberInternal will return a JObject instead of a new TwinCollection
-            _metadata.RemoveAll();
         }
     }
 }
