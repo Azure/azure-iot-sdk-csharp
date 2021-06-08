@@ -1,22 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Devices.Shared;
+using System.Text;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Options that allow configuration of the service client instance during initialization.
+    /// Options that allow configuration of the DigitalTwinClient instance during initialization.
     /// </summary>
-    public class ServiceClientOptions
+    public class DigitalTwinClientOptions
     {
-        /// <summary>
-        /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the service client instance.
-        /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
-        /// </summary>
-        public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
-
         /// <summary>
         /// The authentication scopes to use when requesting access tokens from Azure Active Directory for authenticating with the
         /// IoT Hub.

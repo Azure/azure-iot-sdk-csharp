@@ -25,6 +25,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
         /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated device/ module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// </remarks>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
@@ -32,6 +37,23 @@ namespace Microsoft.Azure.Devices.Client
         public AuthenticationWithTokenRefresh(
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
+            : this(suggestedTimeToLiveSeconds, timeBufferPercentage, true)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
+        /// </summary>
+        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
+        /// may choose to ignore this value.</param>
+        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
+        /// a percentage of the time to live.</param>
+        /// <param name="disposeWithClient "><c>true</c> if the authentication method should be disposed of by the client
+        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.</param>
+        public AuthenticationWithTokenRefresh(
+            int suggestedTimeToLiveSeconds,
+            int timeBufferPercentage,
+            bool disposeWithClient)
         {
             if (suggestedTimeToLiveSeconds < 0)
             {
@@ -48,6 +70,8 @@ namespace Microsoft.Azure.Devices.Client
             ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLiveSeconds);
             Debug.Assert(IsExpiring);
             UpdateTimeBufferSeconds(_suggestedTimeToLiveSeconds);
+
+            DisposalWithClient = disposeWithClient;
         }
 
         /// <summary>
@@ -65,21 +89,27 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
 
-        // This internal property is used by the sdk to determine if the instance was created by the sdk,
-        // and thus, if it should be disposed by the sdk.
-        internal bool InstanceCreatedBySdk { get; set; }
+        // This internal property is used by the sdk to determine if the authentication method
+        // should be disposed when the client that it is initialized with is disposed.
+        internal bool DisposalWithClient { get; }
 
         /// <summary>
         /// Gets a snapshot of the security token associated with the device. This call is thread-safe.
         /// </summary>
         public async Task<string> GetTokenAsync(string iotHub)
         {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("The authentication method instance has already been disposed, so this client is no longer usable. " +
+                    "Please close and dispose your current client instance. To continue carrying out operations from your device/ module, " +
+                    "create a new authentication method instance and use it for reinitializing your client.");
+            }
+
             if (!IsExpiring)
             {
                 return _token;
             }
 
-            Debug.Assert(_lock != null);
             await _lock.WaitAsync().ConfigureAwait(false);
 
             try
