@@ -55,19 +55,77 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_Amqp()
         {
-            await ReuseAuthenticationMethod_MuxedDevices(Client.TransportType.Amqp_Tcp_Only, 2);
+            await ReuseAuthenticationMethod_MuxedDevices(Client.TransportType.Amqp_Tcp_Only, 2).ConfigureAwait(false); ;
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_AmqpWs()
         {
-            await ReuseAuthenticationMethod_MuxedDevices(Client.TransportType.Amqp_WebSocket_Only, 2);
+            await ReuseAuthenticationMethod_MuxedDevices(Client.TransportType.Amqp_WebSocket_Only, 2).ConfigureAwait(false); ;
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Http()
+        {
+            await AuthenticationMethodDisposesTokenRefresher(Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Amqp()
+        {
+            await AuthenticationMethodDisposesTokenRefresher(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_AmqpWs()
+        {
+            await AuthenticationMethodDisposesTokenRefresher(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        // Even on encountering an exception, the MQTT layer keeps on reattempting CONNECT when communicating via DotNetty's TCP stack.
+        // As a result, instead of throwing the actual exception encountered an IotHubCommunicationException is thrown (on operation timeout).
+        // This is not an issue when the communication is over websockets (where we use the sdk's websocket implementation).
+        // This test has been ignored until we root-cause the issue on DotNetty's TCP stack.
+        [Ignore]
+        [LoggedTestMethod]
+        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Mqtt()
+        {
+            await AuthenticationMethodDisposesTokenRefresher(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_MqttWs()
+        {
+            await AuthenticationMethodDisposesTokenRefresher(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        private async Task AuthenticationMethodDisposesTokenRefresher(Client.TransportType transport)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: true);
+
+            // Create an instance of the device client, send a test message and then close and dispose it.
+            DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+            using var message1 = new Client.Message();
+            await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
+            await deviceClient.CloseAsync();
+            deviceClient.Dispose();
+            Logger.Trace("Test with instance 1 completed");
+
+            // Perform the same steps again, reusing the previously created authentication method instance.
+            // Since the default behavior is to dispose AuthenticationWithTokenRefresh authentication method on DeviceClient disposal,
+            // this should now throw an ObjectDisposedException.
+            DeviceClient deviceClient2 = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+            using var message2 = new Client.Message();
+
+            Func<Task> act = async () => await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
+            await act.Should().ThrowAsync<ObjectDisposedException>();
         }
 
         private async Task ReuseAuthenticationMethod_SingleDevice(Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString);
+            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
 
             // Create an instance of the device client, send a test message and then close and dispose it.
             DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
@@ -110,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
 #pragma warning disable CA2000 // Dispose objects before losing scope - the authentication method is disposed at the end of the test.
-                var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString);
+                var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 testDevices.Add(testDevice);
@@ -215,9 +273,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             private const string SasTokenTargetFormat = "{0}/devices/{1}";
             private readonly IotHubConnectionStringBuilder _connectionStringBuilder;
 
+            private static readonly int s_suggestedSasTimeToLiveInSeconds = (int)TimeSpan.FromMinutes(30).TotalSeconds;
+            private static readonly int s_sasRenewalBufferPercentage = 50;
+
             public DeviceAuthenticationSasToken(
-                string connectionString)
-                : base(GetDeviceIdFromConnectionString(connectionString))
+                string connectionString,
+                bool disposeWithClient)
+                : base(GetDeviceIdFromConnectionString(connectionString), s_suggestedSasTimeToLiveInSeconds, s_sasRenewalBufferPercentage, disposeWithClient)
             {
                 if (connectionString == null)
                 {

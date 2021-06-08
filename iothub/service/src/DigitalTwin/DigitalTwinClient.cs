@@ -57,23 +57,56 @@ namespace Microsoft.Azure.Devices
         /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
         /// <remarks>
         /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// This constructor internally uses <see cref="IotHubAuthenticationScopes.DefaultAuthenticationScopes"/>, which is used for
+        /// any public or private cloud other than Azure US Government cloud.
+        /// For Azure US Government cloud users, use the constructor with <see cref="DigitalTwinClientOptions"/> and set the
+        /// <see cref="DigitalTwinClientOptions.TokenCredentialAuthenticationScopes"/> to <see cref="IotHubAuthenticationScopes.AzureGovernmentAuthenticationScopes"/>.
         /// </remarks>
         public static DigitalTwinClient Create(
             string hostName,
             TokenCredential credential,
             params DelegatingHandler[] handlers)
         {
+            return Create(hostName, credential, null, handlers);
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="DigitalTwinClient"/>.
+        /// </summary>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="options">Options that allow configuration of the DigitalTwinClient instance during initialization.</param>
+        /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
+        /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
+        /// <remarks>
+        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// This constructor sets the default for <see cref="DigitalTwinClientOptions.TokenCredentialAuthenticationScopes"/> to
+        /// <see cref="IotHubAuthenticationScopes.DefaultAuthenticationScopes"/>, which is used for any public or private cloud other than Azure US Government cloud.
+        /// For Azure US Government cloud users, set the <see cref="DigitalTwinClientOptions.TokenCredentialAuthenticationScopes"/>
+        /// to <see cref="IotHubAuthenticationScopes.AzureGovernmentAuthenticationScopes"/>.
+        /// </remarks>
+        public static DigitalTwinClient Create(
+            string hostName,
+            TokenCredential credential,
+            DigitalTwinClientOptions options,
+            params DelegatingHandler[] handlers)
+        {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+                throw new ArgumentNullException(nameof(hostName), "Parameter cannot be null or empty.");
             }
 
             if (credential == null)
             {
-                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+                throw new ArgumentNullException(nameof(credential));
             }
 
-            var tokenCredential = new DigitalTwinTokenCredential(credential);
+            if (options == null)
+            {
+                options = new DigitalTwinClientOptions();
+            }
+
+            var tokenCredential = new DigitalTwinTokenCredential(credential, options.TokenCredentialAuthenticationScopes);
             return new DigitalTwinClient(hostName, tokenCredential, handlers);
         }
 
@@ -91,12 +124,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+                throw new ArgumentNullException(nameof(hostName), "Parameter cannot be null or empty.");
             }
 
             if (credential == null)
             {
-                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+                throw new ArgumentNullException(nameof(credential));
             }
 
             var sasCredential = new DigitalTwinSasCredential(credential);
@@ -124,7 +157,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Updates a digital twin.
-        /// <para>For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin."/></para>
+        /// <para>For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/></para>
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="digitalTwinUpdateOperations">The application/json-patch+json operations to be performed on the specified digital twin.</param>
