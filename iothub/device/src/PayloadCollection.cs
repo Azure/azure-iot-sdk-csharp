@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
     /// This classes uses the <see cref="NewtonsoftJsonPayloadSerializer"/> and
     /// <see cref="Utf8PayloadEncoder"/> based <see cref="DefaultPayloadConvention"/> by default.
     /// </remarks>
-    public abstract class PayloadCollection : IEnumerable<object>
+    public abstract class PayloadCollection : IEnumerable<KeyValuePair<string, object>>
     {
         /// <summary>
         /// The underlying collection for the payload.
@@ -166,9 +166,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         ///  <inheritdoc />
-        public IEnumerator<object> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
-            foreach (object property in Collection)
+            foreach (KeyValuePair<string, object> property in Collection)
             {
                 yield return property;
             }
