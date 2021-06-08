@@ -156,6 +156,8 @@ namespace Microsoft.Azure.Devices.Shared
             set => TrySetMemberInternal(propertyName, value);
         }
 
+        internal JObject JObject { get; private set; }
+
         /// <inheritdoc />
         public override string ToString()
         {
@@ -263,7 +265,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>A <see cref="JToken"/> as an <see cref="object"/> if the metadata is not present; otherwise it will return a <see cref="TwinCollection"/>, a <see cref="TwinCollectionArray"/> or a <see cref="TwinCollectionValue"/>.</returns>
         /// <remarks>
         /// If this method is used with a <see cref="TwinCollection"/> returned from a <c>DeviceClient</c> it will always return a <see cref="JToken"/>. However, if you are using this method with a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client, it will return the corresponding type depending on what is stored in the properties collection.
-        /// 
+        ///
         /// For example a <see cref="List{T}"/> would return a <see cref="TwinCollectionArray"/>, with the metadata intact, when used with a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client. If you need this method to always return a <see cref="JToken"/> please see the <see cref="ClearAllMetadata"/> method for more information.
         /// </remarks>
         private bool TryGetMemberInternal(string propertyName, out object result)

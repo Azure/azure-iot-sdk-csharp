@@ -101,50 +101,69 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task AuthenticationMethodDisposesTokenRefresher(Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: true);
+            AuthenticationWithTokenRefresh authenticationMethod = null;
+            DeviceClient testClient = null;
+            try
+            {
+                TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+                authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: true);
 
-            // Create an instance of the device client, send a test message and then close and dispose it.
-            DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
-            using var message1 = new Client.Message();
-            await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
-            await deviceClient.CloseAsync();
-            deviceClient.Dispose();
-            Logger.Trace("Test with instance 1 completed");
+                // Create an instance of the device client, send a test message and then close and dispose it.
+                testClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+                using var message1 = new Client.Message();
+                await testClient.SendEventAsync(message1).ConfigureAwait(false);
+                await testClient.CloseAsync();
+                testClient.Dispose();
+                testClient = null;
+                Logger.Trace("Test with instance 1 completed");
 
-            // Perform the same steps again, reusing the previously created authentication method instance.
-            // Since the default behavior is to dispose AuthenticationWithTokenRefresh authentication method on DeviceClient disposal,
-            // this should now throw an ObjectDisposedException.
-            DeviceClient deviceClient2 = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
-            using var message2 = new Client.Message();
+                // Perform the same steps again, reusing the previously created authentication method instance.
+                // Since the default behavior is to dispose AuthenticationWithTokenRefresh authentication method on DeviceClient disposal,
+                // this should now throw an ObjectDisposedException.
+                testClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+                using var message2 = new Client.Message();
 
-            Func<Task> act = async () => await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
-            await act.Should().ThrowAsync<ObjectDisposedException>();
+                Func<Task> act = async () => await testClient.SendEventAsync(message2).ConfigureAwait(false);
+                await act.Should().ThrowAsync<ObjectDisposedException>();
+            }
+            finally
+            {
+                testClient?.Dispose();
+                authenticationMethod?.Dispose();
+            }
         }
 
         private async Task ReuseAuthenticationMethod_SingleDevice(Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
+            AuthenticationWithTokenRefresh authenticationMethod = null;
+            DeviceClient testClient = null;
+            try
+            {
+                TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+                authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
 
-            // Create an instance of the device client, send a test message and then close and dispose it.
-            DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
-            using var message1 = new Client.Message();
-            await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
-            await deviceClient.CloseAsync();
-            deviceClient.Dispose();
-            Logger.Trace("Test with instance 1 completed");
+                // Create an instance of the device client, send a test message and then close and dispose it.
+                testClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+                using var message1 = new Client.Message();
+                await testClient.SendEventAsync(message1).ConfigureAwait(false);
+                await testClient.CloseAsync();
+                testClient.Dispose();
+                testClient = null;
+                Logger.Trace("Test with instance 1 completed");
 
-            // Perform the same steps again, reusing the previously created authentication method instance to ensure
-            // that the sdk did not dispose the user supplied authentication method instance.
-            DeviceClient deviceClient2 = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
-            using var message2 = new Client.Message();
-            await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
-            await deviceClient2.CloseAsync();
-            deviceClient2.Dispose();
-            Logger.Trace("Test with instance 2 completed, reused the previously created authentication method instance for the device client.");
-
-            authenticationMethod.Dispose();
+                // Perform the same steps again, reusing the previously created authentication method instance to ensure
+                // that the sdk did not dispose the user supplied authentication method instance.
+                testClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+                using var message2 = new Client.Message();
+                await testClient.SendEventAsync(message2).ConfigureAwait(false);
+                await testClient.CloseAsync();
+                Logger.Trace("Test with instance 2 completed, reused the previously created authentication method instance for the device client.");
+            }
+            finally
+            {
+                authenticationMethod?.Dispose();
+                testClient?.Dispose();
+            }
         }
 
         private async Task ReuseAuthenticationMethod_MuxedDevices(Client.TransportType transport, int devicesCount)

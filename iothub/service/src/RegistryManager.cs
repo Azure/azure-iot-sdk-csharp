@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices
                 credential,
                 options.TokenCredentialAuthenticationScopes);
 
-            return new HttpRegistryManager(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
+            return new RegistryManager(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 
         /// <summary>

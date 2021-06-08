@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices
                 credential,
                 options.TokenCredentialAuthenticationScopes);
 
-            return new HttpJobClient(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
+            return new JobClient(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 
         /// <summary>
