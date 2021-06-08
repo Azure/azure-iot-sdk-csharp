@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             'p',
             "PrimaryKey",
             Required = true,
-            HelpText = "The primary key of the individual or group enrollment.")]
+            HelpText = "The primary key of the individual enrollment or the derived primary key of the group enrollment. See the ComputeDerivedSymmetricKeySample for how to generate the derived key.")]
         public string PrimaryKey { get; set; }
 
         [Option(

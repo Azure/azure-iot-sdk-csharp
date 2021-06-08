@@ -26,14 +26,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
         public async Task RunSampleAsync()
         {
-            // When registering with a symmetric key using a group enrollment, the provided key will not
-            // work for a specific device, rather it must be computed based on two values: the group enrollment
-            // key and the desired device Id.
-            if (_parameters.EnrollmentType == EnrollmentType.Group)
-            {
-                _parameters.PrimaryKey = ComputeDerivedSymmetricKey(_parameters.PrimaryKey, _parameters.Id);
-            }
-
             Console.WriteLine($"Initializing the device provisioning client...");
 
             // For individual enrollments, the first parameter must be the registration Id, where in the enrollment
@@ -80,26 +72,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             await iotClient.SendEventAsync(message);
 
             Console.WriteLine("Finished.");
-        }
-
-        /// <summary>
-        /// Compute a symmetric key for the provisioned device from the enrollment group symmetric key used in attestation.
-        /// </summary>
-        /// <param name="enrollmentKey">Enrollment group symmetric key.</param>
-        /// <param name="deviceId">The device Id of the key to create.</param>
-        /// <returns>The key for the specified device Id registration in the enrollment group.</returns>
-        /// <seealso>
-        /// https://docs.microsoft.com/en-us/azure/iot-edge/how-to-auto-provision-symmetric-keys?view=iotedge-2018-06#derive-a-device-key
-        /// </seealso>
-        private static string ComputeDerivedSymmetricKey(string enrollmentKey, string deviceId)
-        {
-            if (string.IsNullOrWhiteSpace(enrollmentKey))
-            {
-                return enrollmentKey;
-            }
-
-            using var hmac = new HMACSHA256(Convert.FromBase64String(enrollmentKey));
-            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(deviceId)));
         }
 
         private ProvisioningTransportHandler GetTransportHandler()
