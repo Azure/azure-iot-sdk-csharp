@@ -13,6 +13,19 @@ namespace Microsoft.Azure.Devices.Client
     public class ClientOptions
     {
         /// <summary>
+        /// Initializes an instance of <see cref="ClientOptions"/>.
+        /// </summary>
+        /// <param name="payloadConvention">
+        /// The payload convention to be used to serialize and encode the messages for convention based methods.
+        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="NewtonsoftJsonPayloadSerializer"/> serializer
+        /// and <see cref="Utf8PayloadEncoder"/> encoder.
+        /// </param>
+        public ClientOptions(PayloadConvention payloadConvention = default)
+        {
+            PayloadConvention = payloadConvention ?? DefaultPayloadConvention.Instance;
+        }
+
+        /// <summary>
         /// The DTDL model Id associated with the device or module client instance.
         /// This feature is currently supported only over MQTT and AMQP.
         /// </summary>
@@ -67,6 +80,6 @@ namespace Microsoft.Azure.Devices.Client
         /// and <see cref="Utf8PayloadEncoder"/> encoder.
         /// </para>
         /// </remarks>
-        public PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
+        public PayloadConvention PayloadConvention { get; }
     }
 }

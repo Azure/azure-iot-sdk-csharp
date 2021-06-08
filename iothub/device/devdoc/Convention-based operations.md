@@ -4,7 +4,8 @@
 
 ```diff
 public class ClientOptions {
-+    public PayloadConvention PayloadConvention { get; set; }
++    public ClientOptions(PayloadConvention payloadConvention = null);
++    public PayloadConvention PayloadConvention { get; }
 }
 
 public class DeviceClient : IDisposable {
@@ -66,7 +67,7 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
     public override bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue);
 }
 
-public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
+public abstract class PayloadCollection : IEnumerable, IEnumerable<KeyValuePair<string, object>> {
     protected PayloadCollection();
     public IDictionary<string, object> Collection { get; private set; }
     public PayloadConvention Convention { get; internal set; }
@@ -75,7 +76,7 @@ public abstract class PayloadCollection : IEnumerable, IEnumerable<object> {
     public virtual void AddOrUpdate(string key, object value);
     public void ClearCollection();
     public bool Contains(string key);
-    public IEnumerator<object> GetEnumerator();
+    public IEnumerator<KeyValuePair<string, object>> GetEnumerator();
     public virtual byte[] GetPayloadObjectBytes();
     public virtual string GetSerializedString();
     protected void SetCollection(PayloadCollection payloadCollection);
