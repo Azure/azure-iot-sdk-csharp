@@ -156,6 +156,8 @@ namespace Microsoft.Azure.Devices.Shared
             set => TrySetMemberInternal(propertyName, value);
         }
 
+        internal JObject JObject { get; private set; }
+
         /// <inheritdoc />
         public override string ToString()
         {
