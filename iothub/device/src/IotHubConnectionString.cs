@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Client
                 : builder.GatewayHostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
-            SharedAccessSignature = builder.SharedAccessSignature;
             IotHubName = builder.IotHubName;
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
@@ -53,7 +52,9 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (ModuleId.IsNullOrWhiteSpace())
                 {
-                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer);
+                    // Since the sdk creates the instance of disposable DeviceAuthenticationWithSakRefresh, the sdk needs to dispose it once the client is disposed.
+                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer, disposeWithClient: true);
+
                     if (Logging.IsEnabled)
                     {
                         Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
@@ -61,7 +62,9 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer);
+                    // Since the sdk creates the instance of disposable ModuleAuthenticationWithSakRefresh, the sdk needs to dispose it once the client is disposed.
+                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer, disposeWithClient: true);
+
                     if (Logging.IsEnabled)
                     {
                         Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
@@ -74,6 +77,17 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 Debug.Assert(TokenRefresher != null);
+            }
+            // SharedAccessSignature should be set only if it is non-null and the authentication method of the device client is
+            // not of type AuthenticationWithTokenRefresh.
+            // Setting the sas value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
+            // This flow can be hit if the same authentication method is always used to initialize the client;
+            // as in, on disposal and reinitialization. This is because the value of the sas token computed is stored within the authentication method,
+            // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
+            // instead of being identified as a sas-token-refresh-enabled-client.
+            else if (!string.IsNullOrWhiteSpace(builder.SharedAccessSignature))
+            {
+                SharedAccessSignature = builder.SharedAccessSignature;
             }
         }
 

@@ -16,7 +16,8 @@ namespace Microsoft.Azure.Devices.Client
         public ModuleAuthenticationWithSakRefresh(
             string deviceId,
             string moduleId,
-            IotHubConnectionString connectionString) : base(deviceId, moduleId)
+            IotHubConnectionString connectionString)
+            : base(deviceId, moduleId)
         {
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
@@ -26,7 +27,9 @@ namespace Microsoft.Azure.Devices.Client
             string moduleId,
             IotHubConnectionString connectionString,
             TimeSpan sasTokenTimeToLive,
-            int sasTokenRenewalBuffer) : base(deviceId, moduleId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer)
+            int sasTokenRenewalBuffer,
+            bool disposeWithClient)
+            : base(deviceId, moduleId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer, disposeWithClient)
         {
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }

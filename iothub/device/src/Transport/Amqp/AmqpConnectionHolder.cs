@@ -206,19 +206,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // Create AmqpConnection
                     amqpIotConnection = await _amqpIotConnector.OpenConnectionAsync(timeout).ConfigureAwait(false);
 
-                    if (_deviceIdentity.AuthenticationModel != AuthenticationModel.X509)
+                    if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
                     {
-                        if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
+                        if (Logging.IsEnabled)
                         {
-                            if (Logging.IsEnabled)
-                            {
-                                Logging.Info(this, "Creating connection width AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));
-                            }
-
-                            amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_deviceIdentity, amqpIotConnection.GetCbsLink());
-                            await amqpAuthenticationRefresher.InitLoopAsync(timeout).ConfigureAwait(false);
+                            Logging.Info(this, "Creating connection wide AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));
                         }
+
+                        amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_deviceIdentity, amqpIotConnection.GetCbsLink());
+                        await amqpAuthenticationRefresher.InitLoopAsync(timeout).ConfigureAwait(false);
                     }
+
                     _amqpIotConnection = amqpIotConnection;
                     _amqpAuthenticationRefresher = amqpAuthenticationRefresher;
                     _amqpIotConnection.Closed += OnConnectionClosed;
@@ -270,6 +268,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 Logging.Exit(this, amqpUnit, nameof(RemoveAmqpUnit));
             }
+        }
+
+        internal DeviceIdentity GetDeviceIdentityOfAuthenticationProvider()
+        {
+            return _deviceIdentity;
         }
     }
 }
