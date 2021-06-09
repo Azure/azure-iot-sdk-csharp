@@ -26,7 +26,7 @@ jobs:
         inputs:
           buildType: 'specific'
           project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-          pipeline: '278' # csharp-release-build
+          pipeline: '355' # csharp-release-build-preview
           buildVersionToDownload: 'latest'
           downloadType: 'single'
           downloadPath: '$(System.ArtifactsDirectory)'
@@ -149,7 +149,7 @@ jobs:
         inputs:
           buildType: 'specific'
           project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdk
-          pipeline: '278' # csharp-release-build
+          pipeline: '355' # csharp-release-build-preview
           buildVersionToDownload: 'latest'
           downloadType: 'single'
           downloadPath: '$(System.ArtifactsDirectory)'
