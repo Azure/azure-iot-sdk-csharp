@@ -36,6 +36,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     AmqpConnectionHolder[] amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity);
                     amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, deviceIdentity);
+
+                    // For group sas token authenticated devices over a multiplexed connection, the TokenRefresher
+                    // of the first client connecting will be used for generating the group sas tokens
+                    // and will be associated with the connection itself.
+                    // For this reason, if the device identity of the client is not the one associated with the
+                    // connection, the associated TokenRefresher can be safely disposed.
+                    // Note - This does not cause any identity related issues since the group sas tokens are generated
+                    // against the hub host as the intended audience (without the "device Id").
+                    if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped
+                        && !ReferenceEquals(amqpConnectionHolder.GetDeviceIdentityOfAuthenticationProvider(), deviceIdentity)
+                        && deviceIdentity.IotHubConnectionString?.TokenRefresher != null
+                        && deviceIdentity.IotHubConnectionString.TokenRefresher.DisposalWithClient)
+                    {
+                        deviceIdentity.IotHubConnectionString.TokenRefresher.Dispose();
+                    }
                 }
 
                 if (Logging.IsEnabled)

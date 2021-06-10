@@ -20,3 +20,4 @@ jobs:
           ado_new_state: "New"
           ado_close_state: "Done"
           ado_bypassrules: false
+          log_level: 300
