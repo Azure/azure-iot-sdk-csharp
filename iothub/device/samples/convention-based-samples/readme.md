@@ -12,41 +12,335 @@ products:
 urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 ---
 
+# IoT Plug And Play (PnP) device/ module APIs
+
+Devices/ modules connecting to IoT Hub that announce their DTDL model Id during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
+These devices/ modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to specify any metadata information that needs to accompany these messages.
+
+Comparision of API calls (non-convention aware APIs vs convention-aware APIs):
+
+## Telemetry
+
+### Send no-component telemetry:
+
+#### Using non-convention aware API:
+
+```csharp
+// Send telemetry "workingSet".
+long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+var telemetry = new Dictionary<string, object>
+{
+    ["workingSet"] = workingSet,
+};
+
+using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
+{
+    MessageId = s_random.Next().ToString(),
+    ContentEncoding = "utf-8",
+    ContentType = "application/json",
+};
+await _deviceClient.SendEventAsync(message, cancellationToken);
+```
+
+#### Using convention aware API:
+
+```csharp
+// Send telemetry "workingSet".
+long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+using var telemetryMessage = new TelemetryMessage
+{
+    MessageId = Guid.NewGuid().ToString(),
+    Telemetry = { ["workingSet"] = workingSet },
+};
+
+await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
+```
+
+### Send component-level telemetry:
+
+#### Using non-convention aware API:
+
+```csharp
+// Send telemetry "workingSet" under component "thermostat1".
+long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+var telemetry = new Dictionary<string, object>()
+{
+    ["workingSet"] = workingSet,
+};
+
+using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
+{
+    MessageId = s_random.Next().ToString(),
+    ContentEncoding = "utf-8",
+    ContentType = "application/json",
+    ComponentName = "thermostat1",
+};
+await _deviceClient.SendEventAsync(message, cancellationToken);
+```
+
+#### Using convention aware API:
+
+```csharp
+// Send telemetry "workingSet" under component "thermostat1".
+long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+using var telemtryMessage = new TelemetryMessage("thermostat1")
+{
+    MessageId = Guid.NewGuid().ToString(),
+    Telemetry = { ["workingSet"] = workingSet },
+};
+
+await _deviceClient.SendTelemetryAsync(telemtryMessage, cancellationToken);
+```
+
+## Commands
+
+### Respond to no-component command:
+
+#### Using non-convention aware API:
+
+```csharp
+// Subscribe and respond to command "reboot".
+await _deviceClient.SetMethodHandlerAsync(
+    "reboot",
+    async (methodRequest, userContext) =>
+    {
+        try
+        {
+            int delay = JsonConvert.DeserializeObject<int>(methodRequest.DataAsJson);
+            await Task.Delay(TimeSpan.FromSeconds(delay));
+            
+            // Application code ...
+
+            return new MethodResponse(CommonClientResponseCodes.OK);
+        }
+        catch (JsonReaderException ex)
+        {
+            return new MethodResponse(CommonClientResponseCodes.BadRequest);
+        }
+    },
+    null,
+    cancellationToken);
+```
+
+#### Using convention aware API:
+
+```csharp
+// Subscribe and respond to command "reboot".
+await _deviceClient.SubscribeToCommandsAsync(
+    async (commandRequest, userContext) =>
+    {
+        // This API does not support setting command-level callbacks.
+        // For this reason we'll switch through the command name returned and handle each root-level command.
+        switch (commandRequest.CommandName)
+        {
+            case "reboot":
+                try
+                {
+                    int delay = commandRequest.GetData<int>();
+                    await Task.Delay(delay * 1000);
+
+                    // Application code ...
+
+                    return new CommandResponse(CommonClientResponseCodes.OK);
+                }
+                catch (JsonReaderException ex)
+                {
+                    return new CommandResponse(CommonClientResponseCodes.BadRequest);
+                }
+
+            default:
+                _logger.LogWarning($"Received a command request that isn't" +
+                    $" implemented - command name = {commandRequest.CommandName}");
+
+                return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
+        }
+    },
+    null,
+    cancellationToken);
+```
+
+### Respond to component-level commands:
+
+#### Using non-convention aware API:
+
+```csharp
+// Subscribe and respond to command "getMaxMinReport" under component "thermostat1".
+// The method that the application subscribes to is in the format {componentName}*{commandName}.
+await _deviceClient.SetMethodHandlerAsync(
+    "thermostat1*getMaxMinReport",
+    async (commandRequest, userContext) =>
+    {
+        try
+        {
+            DateTimeOffset sinceInUtc = JsonConvert.DeserializeObject<DateTimeOffset>(request.DataAsJson);
+            
+            // Application code ...
+            Report report = GetMaxMinReport(sinceInUtc);
+
+            return new MethodResponse(
+                Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report)),
+                CommonClientResponseCodes.OK);
+        }
+        catch (JsonReaderException ex)
+        {
+            return new MethodResponse(CommonClientResponseCodes.BadRequest);
+        }
+    },
+    null,
+    cancellationToken);
+```
+
+#### Using convention aware API:
+
+```csharp
+// Subscribe and respond to command "getMaxMinReport" under component "thermostat1".
+await _deviceClient.(
+    async () =>
+    {
+        // This API does not support setting command-level callbacks.
+        // For this reason we'll first switch through the component name returned and handle each component-level command.
+        // For the "default" case, we'll first check if the component name is null.
+        // If null, then this would be a root-level command request, so we'll switch through each root-level command.
+        // If not null, then this is a component-level command that has not been implemented.
+
+        // Switch through CommandRequest.ComponentName to handle all component-level commands.
+        switch (commandRequest.ComponentName)
+        {
+            case "thermostat1":
+                // For each component, switch through CommandRequest.CommandName to handle the specific component-level command.
+                switch (commandRequest.CommandName)
+                {
+                    case "getMaxMinReport":
+                        try
+                        {
+                            DateTimeOffset sinceInUtc = commandRequest.GetData<DateTimeOffset>();
+                            
+                            // Application code ...
+                            Report report = GetMaxMinReport(sinceInUtc);
+
+                            return Task.FromResult(new CommandResponse(report, CommonClientResponseCodes.OK));
+                        }
+                        catch (JsonReaderException ex)
+                        {
+                            _logger.LogError($"Command input for {commandRequest.CommandName} is invalid: {ex.Message}.");
+
+                            return Task.FromResult(new CommandResponse(CommonClientResponseCodes.BadRequest));
+                        }
+
+                    default:
+                        _logger.LogWarning($"Received a command request that isn't" +
+                            $" implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
+
+                        return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
+                }
+
+            // For the default case, first check if CommandRequest.ComponentName is null.
+            default:
+                // If CommandRequest.ComponentName is null, then this is a root-level command request.
+                if (commandRequest.ComponentName == null)
+                {
+                    // Switch through CommandRequest.CommandName to handle all root-level commands.
+                    switch (commandRequest.CommandName)
+                    {
+                        case "reboot":
+                            return HandleRebootCommandAsync(commandRequest, userContext);
+
+                        default:
+                            _logger.LogWarning($"Received a command request that isn't" +
+                                $" implemented - command name = {commandRequest.CommandName}");
+
+                            return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning($"Received a command request that isn't" +
+                        $" implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
+
+                    return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
+                }
+        }
+
+    }
+);
+```
+
+## Properties
+
+### Retrive client properties:
+
+#### Using non-convention aware API:
+
+```csharp
+```
+
+#### Using convention aware API:
+
+```csharp
+```
+
+### Update no-component property:
+
+#### Using non-convention aware API:
+
+```csharp
+```
+
+#### Using convention aware API:
+
+```csharp
+```
+
+### Update component-level properties:
+
+#### Using non-convention aware API:
+
+```csharp
+```
+
+#### Using convention aware API:
+
+```csharp
+```
+
+### Respond to no-component property update requests:
+
+#### Using non-convention aware API:
+
+```csharp
+```
+
+#### Using convention aware API:
+
+```csharp
+```
+
+### Respond to component-level property update requests:
+
+#### Using non-convention aware API:
+
+```csharp
+```
+
+#### Using convention aware API:
+
+```csharp
+```
+
 # IoT Plug And Play device samples
 
 These samples demonstrate how a device that follows the [IoT Plug and Play conventions][pnp-convention] interacts with IoT Hub or IoT Central, to:
 
 - Send telemetry.
-- Update read-only and read-write properties.
+- Update client properties and be notified of service requested property update requests.
 - Respond to command invocation.
 
 The samples demonstrate two scenarios:
 
-- An IoT Plug and Play device that implements the [Thermostat][d-thermostat] model. This model has a single interface that defines telemetry, read-only and read-write properties, and commands.
+- An IoT Plug and Play device that implements the [Thermostat][d-thermostat] model. This model has a single interface that defines telemetry, properties and commands.
 - An IoT Plug and Play device that implements the [Temperature controller][d-temperature-controller] model. This model uses multiple components:
-  - The top-level interface defines telemetry, read-only property and commands.
+  - The top-level interface defines telemetry, properties and commands.
   - The model includes two [Thermostat][thermostat-model] components, and a [device information][d-device-info] component.
-
-## Configuring the samples in Visual Studio
-
-These samples use the `launchSettings.json` in Visual Studio for different configuration settings, one for direct connection strings and one for the Device Provisioning Service (DPS).
-
-The configuration file is committed to the repository as `launchSettings.template.json`. Rename the file to `launchSettings.json` and then configure it from the **Debug** tab in the project properties.
-
-## Configuring the samples in VSCode
-
-These samples use the `launch.json` in Visual Studio Code for different configuration settings, one for direct connection strings and one for DPS.
-
-The configuration file is committed to the repository as `launch.template.json`. Rename it to `launch.json` to take effect when you start a debugging session.
-
-## Quickstarts and tutorials
-
-To learn more about how to configure and run the Thermostat device sample with IoT Hub, see [Quickstart: Connect a sample IoT Plug and Play device application running on Linux or Windows to IoT Hub][thermostat-hub-qs].
-
-To learn more about how to configure and run the Temperature Controller device sample with:
-
-- IoT Hub, see [Tutorial: Connect an IoT Plug and Play multiple component device application running on Linux or Windows to IoT Hub][temp-controller-hub-tutorial]
-- IoT Central, see [Tutorial: Create and connect a client application to your Azure IoT Central application][temp-controller-central-tutorial]
 
 [pnp-convention]: https://docs.microsoft.com/azure/iot-pnp/concepts-convention
 [d-thermostat]: ./Thermostat
