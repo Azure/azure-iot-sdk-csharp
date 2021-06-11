@@ -14,13 +14,51 @@ urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 
 # IoT Plug And Play (PnP) device/ module APIs
 
-## Contents
-
-- TO-DO
-
 Devices/ modules connecting to IoT Hub that announce their DTDL model Id during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
 
 These devices/ modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to specify any metadata information that needs to accompany these messages.
+
+## Table of Contents
+
+  - [Client initialization](#client-initialization)
+    - [Announce model ID during client initialization (same as before)](#announce-model-id-during-client-initialization-same-as-before)
+    - [Define the serialization and encoding convention that the client follows (newly introduced)](#define-the-serialization-and-encoding-convention-that-the-client-follows-newly-introduced)
+  - [Terms used](#terms-used)
+  - [Comparision of API calls - non-convention aware APIs (old) vs convention-aware APIs (newly introduced):](#comparision-of-api-calls---non-convention-aware-apis-old-vs-convention-aware-apis-newly-introduced)
+    - [Telemetry](#telemetry)
+      - [Send top-level telemetry:](#send-top-level-telemetry)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old)
+        - [Using convention aware API (new):](#using-convention-aware-api-new)
+      - [Send component-level telemetry:](#send-component-level-telemetry)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-1)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-1)
+    - [Commands](#commands)
+      - [Respond to top-level commands:](#respond-to-top-level-commands)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-2)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-2)
+      - [Respond to component-level commands:](#respond-to-component-level-commands)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-3)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-3)
+    - [Properties](#properties)
+      - [Retrive top-level client properties:](#retrive-top-level-client-properties)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-4)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-4)
+      - [Retrive component-level client properties:](#retrive-component-level-client-properties)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-5)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-5)
+      - [Update top-level property:](#update-top-level-property)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-6)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-6)
+      - [Update component-level properties:](#update-component-level-properties)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-7)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-7)
+      - [Respond to top-level property update requests:](#respond-to-top-level-property-update-requests)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-8)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-8)
+      - [Respond to component-level property update requests:](#respond-to-component-level-property-update-requests)
+        - [Using non-convention aware API (old):](#using-non-convention-aware-api-old-9)
+        - [Using convention aware API (new):](#using-convention-aware-api-new-9)
+- [IoT Plug And Play device samples](#iot-plug-and-play-device-samples)
 
 ## Client initialization
 
@@ -48,11 +86,19 @@ var options = new ClientOptions(SystemTextJsonPayloadConvention.Instance)
 DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
 ```
 
-## Comparision of API calls - non-convention aware APIs (old) vs convention-aware APIs (newly introduced):
+## Terms used:
+Telemetry, commands, proprties and components can all be defined in the contents section of the main interface of a DTDL v2 model. Components enable interfaces to be composed of other interfaces.
 
-### Terms used:
-- Top-level telemetry/ commands/ preoperties - TO-DO
-- Component-level telemetry/ commands/ properties -  TO-DO
+In DTDL v2, a component cannot contain another component. The maximum depth of components is 1.
+
+- Top-level telemetry/ commands/ preoperties
+  - These refer to the telemetry, commands and properties that are defined directly in the contents section of the main interface of a DTDL v2 model. In case of a model with no components, the main interface refers to the default component.
+  - When working with this category of telemetry, commands and properties, you do not need to specify any component name.
+- Component-level telemetry/ commands/ properties
+  - These refer to the telemetry, commands and properties that are defined in the contents section of an interface, which itself is defined as a component within the main interface.
+  - When working with this category of telemetry, commands and properties, you need to specify the name of the component that these contents belong to.
+
+## Comparision of API calls - non-convention aware APIs (old) vs convention-aware APIs (newly introduced):
 
 ## Telemetry
 
@@ -148,7 +194,7 @@ await _deviceClient.SetMethodHandlerAsync(
 
             return new MethodResponse(CommonClientResponseCodes.OK);
         }
-        catch (JsonReaderException ex)
+        catch (JsonReaderException)
         {
             return new MethodResponse(CommonClientResponseCodes.BadRequest);
         }
@@ -179,14 +225,14 @@ await _deviceClient.SubscribeToCommandsAsync(
 
                     return new CommandResponse(CommonClientResponseCodes.OK);
                 }
-                catch (JsonReaderException ex)
+                catch (JsonReaderException)
                 {
                     return new CommandResponse(CommonClientResponseCodes.BadRequest);
                 }
         }
         else
         {
-            return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
+            return new CommandResponse(CommonClientResponseCodes.NotFound);
         }
     },
     null,
@@ -202,22 +248,23 @@ await _deviceClient.SubscribeToCommandsAsync(
 // The method that the application subscribes to is in the format {componentName}*{commandName}.
 await _deviceClient.SetMethodHandlerAsync(
     "thermostat1*getMaxMinReport",
-    async (commandRequest, userContext) =>
+    (commandRequest, userContext) =>
     {
         try
         {
-            DateTimeOffset sinceInUtc = JsonConvert.DeserializeObject<DateTimeOffset>(request.DataAsJson);
-            
+            DateTimeOffset sinceInUtc = JsonConvert.DeserializeObject<DateTimeOffset>(commandRequest.DataAsJson);
+
             // Application code ...
             Report report = GetMaxMinReport(sinceInUtc);
 
-            return new MethodResponse(
-                Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report)),
-                CommonClientResponseCodes.OK);
+            return Task.FromResult(
+                new MethodResponse(
+                    Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report)),
+                    CommonClientResponseCodes.OK));
         }
-        catch (JsonReaderException ex)
+        catch (JsonReaderException)
         {
-            return new MethodResponse(CommonClientResponseCodes.BadRequest);
+            return Task.FromResult(new MethodResponse(CommonClientResponseCodes.BadRequest));
         }
     },
     null,
@@ -229,7 +276,7 @@ await _deviceClient.SetMethodHandlerAsync(
 ```csharp
 // Subscribe and respond to command "getMaxMinReport" under component "thermostat1".
 await _deviceClient.SubscribeToCommandsAsync(
-    async (commandRequest, userContext) =>
+    (commandRequest, userContext) =>
     {
         // This API does not support setting command-level callbacks.
         // For this reason we'll need to inspect both commandRequest.ComponentName and commandRequest.CommandName, and perform the actions accordingly.
@@ -241,13 +288,13 @@ await _deviceClient.SubscribeToCommandsAsync(
             try
             {
                 DateTimeOffset sinceInUtc = commandRequest.GetData<DateTimeOffset>();
-                
+
                 // Application code ...
                 Report report = GetMaxMinReport(sinceInUtc);
 
                 return Task.FromResult(new CommandResponse(report, CommonClientResponseCodes.OK));
             }
-            catch (JsonReaderException ex)
+            catch (JsonReaderException)
             {
                 return Task.FromResult(new CommandResponse(CommonClientResponseCodes.BadRequest));
             }
@@ -270,14 +317,14 @@ await _deviceClient.SubscribeToCommandsAsync(
 // Retrieve the client's properties.
 Twin properties = await _deviceClient.GetTwinAsync(cancellationToken);
 
-// To fetch the value of client reported property "serialNumber"
+// To fetch the value of client reported property "serialNumber".
 bool isSerialNumberReported = properties.Properties.Reported.Contains("serialNumber");
 if (isSerialNumberReported)
 {
     string serialNumberReported = properties.Properties.Reported["serialNumber"];
 }
 
-// To fetch the value of service requested "targetTemperature" value
+// To fetch the value of service requested "targetTemperature" value.
 bool isTargetTemperatureUpdateRequested = properties.Properties.Desired.Contains("targetTemperature");
 if (isTargetTemperatureUpdateRequested)
 {
@@ -291,11 +338,11 @@ if (isTargetTemperatureUpdateRequested)
 // Retrieve the client's properties.
  ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
-// To fetch the value of client reported property "serialNumber"
+// To fetch the value of client reported property "serialNumber".
 bool isSerialNumberReported = properties.TryGetValue("serialNumber", out string serialNumberReported);
 
 
-// To fetch the value of service requested "targetTemperature" value
+// To fetch the value of service requested "targetTemperature" value.
 bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("targetTemperature", out double targetTemperatureUpdateRequest);
 ```
 
@@ -307,22 +354,24 @@ bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("targe
 // Retrieve the client's properties.
 Twin properties = await _deviceClient.GetTwinAsync(cancellationToken);
 
-// To fetch the value of client reported property "serialNumber" under component "thermostat1"
+// To fetch the value of client reported property "serialNumber" under component "thermostat1".
+JToken serialNumberJToken = null;
 bool isSerialNumberReported = properties.Properties.Reported.Contains("thermostat1")
-    && ((JObject)properties.Properties.Reported["thermostat1"]).TryGetValue("serialNumber", out JToken serialNumberJToken);
+    && ((JObject)properties.Properties.Reported["thermostat1"]).TryGetValue("serialNumber", out serialNumberJToken);
 
 if (isSerialNumberReported)
 {
-    string serialNumberReported = serialNumberJToken.ToObject<string>()
+    string serialNumberReported = serialNumberJToken?.ToObject<string>();
 }
 
-// To fetch the value of service requested "targetTemperature" value under component "thermostat1"
+// To fetch the value of service requested "targetTemperature" value under component "thermostat1".
+JToken targetTemperatureUpdateRequestJToken = null;
 bool isTargetTemperatureUpdateRequested = properties.Properties.Desired.Contains("thermostat1")
-    && ((JObject)properties.Properties.Desired["thermostat1"]).TryGetValue("targetTemperature", out JToken targetTemperatureUpdateRequestJToken);
+    && ((JObject)properties.Properties.Desired["thermostat1"]).TryGetValue("targetTemperature", out targetTemperatureUpdateRequestJToken);
 
 if (isTargetTemperatureUpdateRequested)
 {
-    double targetTemperatureUpdateRequest = targetTemperatureUpdateRequestJToken.ToObject<double>()
+    double targetTemperatureUpdateRequest = (double)(targetTemperatureUpdateRequestJToken?.ToObject<double>());
 }
 ```
 
@@ -332,11 +381,11 @@ if (isTargetTemperatureUpdateRequested)
 // Retrieve the client's properties.
  ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
-// To fetch the value of client reported property "serialNumber" under component "thermostat1"
+// To fetch the value of client reported property "serialNumber" under component "thermostat1".
 bool isSerialNumberReported = properties.TryGetValue("thermostat1", "serialNumber", out string serialNumberReported);
 
 
-// To fetch the value of service requested "targetTemperature" value under component "thermostat1"
+// To fetch the value of service requested "targetTemperature" value under component "thermostat1".
 bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("thermostat1", "targetTemperature", out double targetTemperatureUpdateRequest);
 ```
 
@@ -345,11 +394,25 @@ bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("therm
 #### Using non-convention aware API (old):
 
 ```csharp
+// Update the property "serialNumber".
+var propertiesToBeUpdated = new TwinCollection
+{
+    ["serialNumber"] = "SR-1234",
+};
+await _deviceClient.UpdateReportedPropertiesAsync(propertiesToBeUpdated, cancellationToken);
 ```
 
 #### Using convention aware API (new):
 
 ```csharp
+// Update the property "serialNumber".
+var propertiesToBeUpdated = new ClientPropertyCollection
+{
+    ["serialNumber"] = "SR-1234",
+};
+ClientPropertiesUpdateResponse updateResponse = await _deviceClient
+    .UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+long updatedVersion = updateResponse.Version;
 ```
 
 ### Update component-level properties:
@@ -357,11 +420,31 @@ bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("therm
 #### Using non-convention aware API (old):
 
 ```csharp
+// Update the property "serialNumber" under component "thermostat1".
+// When calling the UpdateReportedPropertiesAsync API the component-level property update requests must
+// include the {"__t": "c"} marker to indicate that the element refers to a component.
+var thermostatProperties = new TwinCollection
+{
+    ["__t"] = "c",
+    ["serialNumber"] = "SR-1234",
+};
+var propertiesToBeUpdated = new TwinCollection
+{
+    ["thermostat1"] = thermostatProperties
+};
+await _deviceClient.UpdateReportedPropertiesAsync(propertiesToBeUpdated, cancellationToken);
 ```
 
 #### Using convention aware API (new):
 
 ```csharp
+// Update the property "serialNumber" under component "thermostat1".
+var propertiesToBeUpdated = new ClientPropertyCollection();
+propertiesToBeUpdated.AddComponentProperty("thermostat1", "serialNumber", "SR-1234");
+
+ClientPropertiesUpdateResponse updateResponse = await _deviceClient
+    .UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+long updatedVersion = updateResponse.Version;
 ```
 
 ### Respond to top-level property update requests:
@@ -369,11 +452,57 @@ bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("therm
 #### Using non-convention aware API (old):
 
 ```csharp
+// Subscribe and respond to event for writable property "targetTemperature".
+// This writable property update response should follow the format specified here: https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties.
+await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
+    async (desired, userContext) =>
+    {
+        if (desired.Contains("targetTemperature"))
+        {
+            double targetTemperature = desired["targetTemperature"];
+
+            var targetTemperatureUpdateResponse = new TwinCollection
+            {
+                ["value"] = targetTemperature,
+                ["ac"] = CommonClientResponseCodes.OK,
+                ["av"] = desired.Version,
+                ["ad"] = "The operation completed successfully."
+            };
+            var propertiesToBeUpdated = new TwinCollection()
+            {
+                ["targetTemperature"] = targetTemperatureUpdateResponse,
+            };
+
+            await _deviceClient.UpdateReportedPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+        }
+    },
+    null,
+    cancellationToken);
 ```
 
 #### Using convention aware API (new):
 
 ```csharp
+// Subscribe and respond to event for writable property "targetTemperature".
+// This writable property update response should follow the format specified here: https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties.
+await _deviceClient.SubscribeToWritablePropertiesEventAsync(
+    async (writableProperties, userContext) =>
+    {
+        if (writableProperties.TryGetValue("targetTemperature", out double targetTemperature))
+        {
+            IWritablePropertyResponse writableResponse = _deviceClient
+                .PayloadConvention
+                .PayloadSerializer
+                .CreateWritablePropertyResponse(targetTemperature, CommonClientResponseCodes.OK, writableProperties.Version, "The operation completed successfully.");
+
+            var propertiesToBeUpdated = new ClientPropertyCollection();
+            propertiesToBeUpdated.AddRootProperty("targetTemperature", writableResponse);
+
+            ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+        }
+    },
+    null,
+    cancellationToken);
 ```
 
 ### Respond to component-level property update requests:
@@ -381,11 +510,69 @@ bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("therm
 #### Using non-convention aware API (old):
 
 ```csharp
+// Subscribe and respond to event for writable property "targetTemperature"
+// under component "thermostat1".
+// This writable property update response should follow the format specified here: https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties.
+// When calling the UpdateReportedPropertiesAsync API the component-level property update requests must
+// include the {"__t": "c"} marker to indicate that the element refers to a component.
+await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
+    async (desired, userContext) =>
+    {
+        if (desired.Contains("thermostat1")
+            && ((JObject)desired["thermostat1"])
+                .TryGetValue("targetTemperature", out JToken targetTemperatureRequested))
+        {
+            double targetTemperature = targetTemperatureRequested
+                .ToObject<double>();
+            
+            var targetTemperatureUpdateResponse = new TwinCollection
+            {
+                ["value"] = targetTemperature,
+                ["ac"] = CommonClientResponseCodes.OK,
+                ["av"] = desired.Version,
+                ["ad"] = "The operation completed successfully."
+            };
+            var thermostatProperties = new TwinCollection()
+            {
+                ["__t"] = "c",
+                ["targetTemperature"] = targetTemperatureUpdateResponse,
+            };
+            var propertiesToBeUpdated = new TwinCollection()
+            {
+                ["thermostat1"] = thermostatProperties,
+            };
+
+            await _deviceClient.UpdateReportedPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+        }
+    },
+    null,
+    cancellationToken);
 ```
 
 #### Using convention aware API (new):
 
 ```csharp
+// Subscribe and respond to event for writable property "targetTemperature"
+// under component "thermostat1".
+// This writable property update response should follow the format specified here: https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties.
+await _deviceClient.SubscribeToWritablePropertiesEventAsync(
+    async (writableProperties, userContext) =>
+    {
+        if (writableProperties.TryGetValue("thermostat1", "targetTemperature", out double targetTemperature))
+        {
+            IWritablePropertyResponse writableResponse = _deviceClient
+                .PayloadConvention
+                .PayloadSerializer
+                .CreateWritablePropertyResponse(targetTemperature, CommonClientResponseCodes.OK, writableProperties.Version, "The operation completed successfully.");
+
+            var propertiesToBeUpdated = new ClientPropertyCollection();
+            propertiesToBeUpdated.AddComponentProperty("thermostat1", "targetTemperature", writableResponse);
+
+            ClientPropertiesUpdateResponse updateResponse = await _deviceClient.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+        }
+    },
+    null,
+    cancellationToken);
 ```
 
 # IoT Plug And Play device samples
@@ -398,8 +585,8 @@ These samples demonstrate how a device that follows the [IoT Plug and Play conve
 
 The samples demonstrate two scenarios:
 
-- An IoT Plug and Play device that implements the [Thermostat][d-thermostat] model. This model has a single interface that defines telemetry, properties and commands.
-- An IoT Plug and Play device that implements the [Temperature controller][d-temperature-controller] model. This model uses multiple components:
+- An IoT Plug and Play device that implements the [Thermostat][d-thermostat] model. This model has a single interface (the default component) that defines telemetry, properties and commands.
+- An IoT Plug and Play device that implements the [Temperature controller][d-temperature-controller] model. This model defines multiple interfaces:
   - The top-level interface defines telemetry, properties and commands.
   - The model includes two [Thermostat][thermostat-model] components, and a [device information][d-device-info] component.
 
