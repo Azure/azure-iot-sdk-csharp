@@ -270,7 +270,7 @@ await _deviceClient.(
                     switch (commandRequest.CommandName)
                     {
                         case "reboot":
-                            return HandleRebootCommandAsync(commandRequest, userContext);
+                            // Application code ...
 
                         default:
                             _logger.LogWarning($"Received a command request that isn't" +
