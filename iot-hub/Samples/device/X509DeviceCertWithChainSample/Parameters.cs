@@ -41,13 +41,13 @@ namespace X509DeviceCertWithChainSample
         public string RootCertPath { get; set; }
 
         [Option(
-            "intermediate1CertPassword",
+            "intermediate1CertPath",
             Required = true,
             HelpText = "Path to intermediate 1 certificate.")]
         public string Intermediate1CertPath { get; set; }
 
         [Option(
-            "intermediate2CertPassword",
+            "intermediate2CertPath",
             Required = true,
             HelpText = "Path to intermediate 2 certificate.")]
         public string Intermediate2CertPath { get; set; }

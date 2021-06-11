@@ -47,7 +47,6 @@ namespace X509DeviceCertWithChainSample
 
             var sample = new X509DeviceCertWithChainSample(deviceClient);
             await sample.RunSampleAsync();
-            await deviceClient.CloseAsync();
 
             return 0;
         }
