@@ -14,25 +14,25 @@ urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 
 # IoT Plug And Play (PnP) device/ module APIs
 
-Devices/ modules connecting to IoT Hub that announce their DTDL model Id during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
+Device(s)/ module(s) connecting to IoT Hub that announce their DTDL model Id during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
 
-These devices/ modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to specify any metadata information that needs to accompany these messages.
+These device(s)/ module(s) can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to manually format these messages to follow the PnP convention.
 
 ## Table of Contents
 
-  - [Client initialization](#client-initialization)
-    - [Announce model ID during client initialization (same as before)](#announce-model-id-during-client-initialization-same-as-before)
-    - [Define the serialization and encoding convention that the client follows (newly introduced)](#define-the-serialization-and-encoding-convention-that-the-client-follows-newly-introduced)
-  - [Terms used](#terms-used)
-  - [Comparision of API calls - non-convention aware APIs (old) vs convention-aware APIs (newly introduced):](#comparision-of-api-calls---non-convention-aware-apis-old-vs-convention-aware-apis-newly-introduced)
-    - [Telemetry](#telemetry)
-    - [Commands](#commands)
-    - [Properties](#properties)
+- [Client initialization](#client-initialization)
+  - [Announce model Id during client initialization (same as in latest `master` release)](#announce-model-id-during-client-initialization-same-as-in-latest-master-release)
+  - [Define the serialization and encoding convention that the client follows (newly introduced in `preview`)](#define-the-serialization-and-encoding-convention-that-the-client-follows-newly-introduced-in-preview)
+- [Terms used](#terms-used)
+- [Comparison of API calls - non-convention-aware APIs (old) vs convention-aware APIs (new):](#comparison-of-api-calls---non-convention-aware-apis-old-vs-convention-aware-apis-new)
+  - [Telemetry](#telemetry)
+  - [Commands](#commands)
+  - [Properties](#properties)
 - [IoT Plug And Play device samples](#iot-plug-and-play-device-samples)
 
 ## Client initialization
 
-### Announce model ID during client initialization (same as before)
+### Announce model Id during client initialization (same as in latest [`master`][latest-master-release] release)
 
 ```csharp
 var options = new ClientOptions
@@ -43,11 +43,11 @@ var options = new ClientOptions
 DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
 ```
 
-### Define the serialization and encoding convention that the client follows (newly introduced)
+### Define the serialization and encoding convention that the client follows (newly introduced in [`preview`][latest-preview-release])
 
 ```csharp
 // Specify a custom System.Text.Json serialization and Utf8 encoding based PayloadConvention to be used.
-// If not specified the library defaults to a convention that uses Newtonsoft.Json-based serializer and Utf8-based encoder.
+// If not specified, the library defaults to a convention that uses Newtonsoft.Json-based serializer and Utf8-based encoder.
 var options = new ClientOptions(SystemTextJsonPayloadConvention.Instance)
 {
     ModelId = ModelId,
@@ -68,20 +68,22 @@ In DTDL v2, a component cannot contain another component. The maximum depth of c
   - These refer to the telemetry, commands and properties that are defined in the contents section of an interface, which itself is defined as a component within the main interface.
   - When working with this category of telemetry, commands and properties, you need to specify the name of the component that these contents belong to.
 
-## Comparision of API calls - non-convention aware APIs (old) vs convention-aware APIs (newly introduced):
+## Comparison of API calls - non-convention-aware APIs (old) vs convention-aware APIs (new):
+
+The following section provides a comparison between the older non-convention-aware APIs (as per latest [`master`][latest-master-release] release) and the newly introduced convention-aware APIs (as per latest [`preview`][latest-preview-release] release).
 
 ## Telemetry
 
 ### Send top-level telemetry:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
-// Send telemetry "workingSet".
-long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+// Send telemetry "serialNumber".
+string serialNumber = "SR-1234";
 var telemetry = new Dictionary<string, object>
 {
-    ["workingSet"] = workingSet,
+    ["serialNumber"] = serialNumber,
 };
 
 using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
@@ -96,12 +98,12 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 #### Using convention aware API (new):
 
 ```csharp
-// Send telemetry "workingSet".
-long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+// Send telemetry "serialNumber".
+string serialNumber = "SR-1234";
 using var telemetryMessage = new TelemetryMessage
 {
     MessageId = Guid.NewGuid().ToString(),
-    Telemetry = { ["workingSet"] = workingSet },
+    Telemetry = { ["serialNumber"] = serialNumber },
 };
 
 await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
@@ -109,14 +111,14 @@ await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
 ### Send component-level telemetry:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
-// Send telemetry "workingSet" under component "thermostat1".
-long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+// Send telemetry "serialNumber" under component "thermostat1".
+string serialNumber = "SR-1234";
 var telemetry = new Dictionary<string, object>()
 {
-    ["workingSet"] = workingSet,
+    ["serialNumber"] = serialNumber,
 };
 
 using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
@@ -132,12 +134,12 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 #### Using convention aware API (new):
 
 ```csharp
-// Send telemetry "workingSet" under component "thermostat1".
-long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
+// Send telemetry "serialNumber" under component "thermostat1".
+string serialNumber = "SR-1234";
 using var telemtryMessage = new TelemetryMessage("thermostat1")
 {
     MessageId = Guid.NewGuid().ToString(),
-    Telemetry = { ["workingSet"] = workingSet },
+    Telemetry = { ["serialNumber"] = serialNumber },
 };
 
 await _deviceClient.SendTelemetryAsync(telemtryMessage, cancellationToken);
@@ -147,7 +149,7 @@ await _deviceClient.SendTelemetryAsync(telemtryMessage, cancellationToken);
 
 ### Respond to top-level commands:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
 // Subscribe and respond to command "reboot".
@@ -211,7 +213,7 @@ await _deviceClient.SubscribeToCommandsAsync(
 
 ### Respond to component-level commands:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
 // Subscribe and respond to command "getMaxMinReport" under component "thermostat1".
@@ -281,7 +283,7 @@ await _deviceClient.SubscribeToCommandsAsync(
 
 ### Retrive top-level client properties:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
 // Retrieve the client's properties.
@@ -318,7 +320,7 @@ bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("targe
 
 ### Retrive component-level client properties:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
 // Retrieve the client's properties.
@@ -361,7 +363,7 @@ bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("therm
 
 ### Update top-level property:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
 // Update the property "serialNumber".
@@ -387,7 +389,7 @@ long updatedVersion = updateResponse.Version;
 
 ### Update component-level properties:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
 // Update the property "serialNumber" under component "thermostat1".
@@ -419,7 +421,7 @@ long updatedVersion = updateResponse.Version;
 
 ### Respond to top-level property update requests:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
 // Subscribe and respond to event for writable property "targetTemperature".
@@ -477,7 +479,7 @@ await _deviceClient.SubscribeToWritablePropertiesEventAsync(
 
 ### Respond to component-level property update requests:
 
-#### Using non-convention aware API (old):
+#### Using non-convention-aware API (old):
 
 ```csharp
 // Subscribe and respond to event for writable property "targetTemperature"
@@ -571,3 +573,5 @@ The samples demonstrate two scenarios:
 [temp-controller-hub-tutorial]: https://docs.microsoft.com/azure/iot-pnp/tutorial-multiple-components?pivots=programming-language-csharp
 [temp-controller-central-tutorial]: https://docs.microsoft.com/azure/iot-central/core/tutorial-connect-device?pivots=programming-language-csharp
 [device-reconnection-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/DeviceReconnectionSample
+[latest-master-release]: https://github.com/Azure/azure-iot-sdk-csharp/tree/2021-05-13
+[latest-preview-release]: https://github.com/Azure/azure-iot-sdk-csharp/tree/preview_2021-6-8
