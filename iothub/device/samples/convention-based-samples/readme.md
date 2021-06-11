@@ -14,6 +14,10 @@ urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 
 # IoT Plug And Play (PnP) device/ module APIs
 
+## Contents
+
+- TO-DO
+
 Devices/ modules connecting to IoT Hub that announce their DTDL model Id during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
 
 These devices/ modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to specify any metadata information that needs to accompany these messages.
@@ -31,7 +35,7 @@ var options = new ClientOptions
 DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
 ```
 
-### Define the convention that the client follows (newly introduced)
+### Define the serialization and encoding convention that the client follows (newly introduced)
 
 ```csharp
 // Specify a custom System.Text.Json based PayloadConvention to be used.
@@ -44,13 +48,17 @@ var options = new ClientOptions(SystemTextJsonPayloadConvention.Instance)
 DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
 ```
 
-## Comparision of API calls (non-convention aware APIs vs convention-aware APIs):
+## Comparision of API calls - non-convention aware APIs (old) vs convention-aware APIs (newly introduced):
+
+### Terms used:
+- Top-level telemetry/ commands/ preoperties - TO-DO
+- Component-level telemetry/ commands/ properties -  TO-DO
 
 ## Telemetry
 
-### Send no-component telemetry:
+### Send top-level telemetry:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 // Send telemetry "workingSet".
@@ -69,7 +77,7 @@ using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObje
 await _deviceClient.SendEventAsync(message, cancellationToken);
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 // Send telemetry "workingSet".
@@ -85,7 +93,7 @@ await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
 ### Send component-level telemetry:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 // Send telemetry "workingSet" under component "thermostat1".
@@ -105,7 +113,7 @@ using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObje
 await _deviceClient.SendEventAsync(message, cancellationToken);
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 // Send telemetry "workingSet" under component "thermostat1".
@@ -121,9 +129,9 @@ await _deviceClient.SendTelemetryAsync(telemtryMessage, cancellationToken);
 
 ## Commands
 
-### Respond to no-component command:
+### Respond to top-level commands:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 // Subscribe and respond to command "reboot".
@@ -149,7 +157,7 @@ await _deviceClient.SetMethodHandlerAsync(
     cancellationToken);
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 // Subscribe and respond to command "reboot".
@@ -187,7 +195,7 @@ await _deviceClient.SubscribeToCommandsAsync(
 
 ### Respond to component-level commands:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 // Subscribe and respond to command "getMaxMinReport" under component "thermostat1".
@@ -216,7 +224,7 @@ await _deviceClient.SetMethodHandlerAsync(
     cancellationToken);
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 // Subscribe and respond to command "getMaxMinReport" under component "thermostat1".
@@ -254,9 +262,9 @@ await _deviceClient.SubscribeToCommandsAsync(
 
 ## Properties
 
-### Retrive no-component client properties:
+### Retrive top-level client properties:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 // Retrieve the client's properties.
@@ -277,7 +285,7 @@ if (isTargetTemperatureUpdateRequested)
 }
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 // Retrieve the client's properties.
@@ -293,7 +301,7 @@ bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("targe
 
 ### Retrive component-level client properties:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 // Retrieve the client's properties.
@@ -318,7 +326,7 @@ if (isTargetTemperatureUpdateRequested)
 }
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 // Retrieve the client's properties.
@@ -332,50 +340,50 @@ bool isSerialNumberReported = properties.TryGetValue("thermostat1", "serialNumbe
 bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("thermostat1", "targetTemperature", out double targetTemperatureUpdateRequest);
 ```
 
-### Update no-component property:
+### Update top-level property:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 ```
 
 ### Update component-level properties:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 ```
 
-### Respond to no-component property update requests:
+### Respond to top-level property update requests:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 ```
 
 ### Respond to component-level property update requests:
 
-#### Using non-convention aware API:
+#### Using non-convention aware API (old):
 
 ```csharp
 ```
 
-#### Using convention aware API:
+#### Using convention aware API (new):
 
 ```csharp
 ```
