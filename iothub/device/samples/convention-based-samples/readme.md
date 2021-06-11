@@ -15,6 +15,7 @@ urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 # IoT Plug And Play (PnP) device/ module APIs
 
 Devices/ modules connecting to IoT Hub that announce their DTDL model Id during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
+
 These devices/ modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to specify any metadata information that needs to accompany these messages.
 
 ## Client initialization
