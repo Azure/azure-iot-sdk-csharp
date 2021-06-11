@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private readonly SemaphoreSlim _clientPropertyCallbackSemaphore = new SemaphoreSlim(0, 1);
         private ExceptionDispatchInfo _clientPropertyExceptionDispatch;
         private object _expectedClientPropertyValue;
-        
+
         public TestDeviceCallbackHandler(DeviceClient deviceClient, TestDevice testDevice, MsTestLogger logger)
         {
             _deviceClient = deviceClient;
