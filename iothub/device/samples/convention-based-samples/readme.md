@@ -12,11 +12,11 @@ products:
 urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 ---
 
-# IoT Plug And Play (PnP) device/ module APIs
+# IoT Plug And Play (PnP) device/module APIs
 
-Device(s)/ module(s) connecting to IoT Hub that announce their DTDL model ID during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
+Device(s)/module(s) connecting to IoT Hub that announce their DTDL model ID during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
 
-These devices/ modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to manually format these messages to follow the PnP convention.
+These devices/modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to manually format these messages to follow the PnP convention.
 
 ## Table of Contents
 
@@ -61,10 +61,10 @@ Telemetry, commands, properties and components can all be defined in the content
 
 In DTDL v2, a component cannot contain another component. The maximum depth of components is 1.
 
-- Top-level telemetry/ commands/ properties
+- Top-level telemetry/commands/properties
   - These refer to the telemetry, commands and properties that are defined directly in the contents section of the main interface of a DTDL v2 model. In case of a model with no components, the main interface refers to the default component.
   - When working with this category of telemetry, commands and properties, you do not need to specify any component name.
-- Component-level telemetry/ commands/ properties
+- Component-level telemetry/commands/properties
   - These refer to the telemetry, commands and properties that are defined in the contents section of an interface, which itself is defined as a component within the main interface.
   - When working with this category of telemetry, commands and properties, you need to specify the name of the component that these contents belong to.
 
