@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the value of a component-level property.
         /// </summary>
         /// <remarks>
-        /// To get the value of a root-level property use <see cref="PayloadCollection.TryGetValue{T}(string, out T)"/>.
+        /// To get the value of a top-level property use <see cref="PayloadCollection.TryGetValue{T}(string, out T)"/>.
         /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior.
         /// Setting to true will simply overwrite the value. Setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
-        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c> for a root-level property operation.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c> for a top-level property operation.</exception>
         private void AddInternal(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
             // If the componentName is null then simply add the key-value pair to Collection dictionary.
