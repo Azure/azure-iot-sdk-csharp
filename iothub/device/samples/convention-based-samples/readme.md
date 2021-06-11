@@ -342,6 +342,7 @@ Twin properties = await _deviceClient.GetTwinAsync(cancellationToken);
 // To fetch the value of client reported property "serialNumber" under component "thermostat1"
 bool isSerialNumberReported = properties.Properties.Reported.Contains("thermostat1")
     && ((JObject)properties.Properties.Reported["thermostat1"]).TryGetValue("serialNumber", out JToken serialNumberJToken);
+
 if (isSerialNumberReported)
 {
     string serialNumberReported = serialNumberJToken.ToObject<string>()
@@ -350,6 +351,7 @@ if (isSerialNumberReported)
 // To fetch the value of service requested "targetTemperature" value under component "thermostat1"
 bool isTargetTemperatureUpdateRequested = properties.Properties.Desired.Contains("thermostat1")
     && ((JObject)properties.Properties.Desired["thermostat1"]).TryGetValue("targetTemperature", out JToken targetTemperatureUpdateRequestJToken);
+    
 if (isTargetTemperatureUpdateRequested)
 {
     double targetTemperatureUpdateRequest = targetTemperatureUpdateRequestJToken.ToObject<double>()
