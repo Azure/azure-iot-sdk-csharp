@@ -157,11 +157,12 @@ await _deviceClient.SubscribeToCommandsAsync(
     async (commandRequest, userContext) =>
     {
         // This API does not support setting command-level callbacks.
-        // For this reason we'll switch through the command name returned and handle each root-level command.
-        switch (commandRequest.CommandName)
+        // For this reason we'll need to inspect the commandRequest.CommandName for the request command and perform the actions accordingly.
+        // Refer to the ThermostatSample.cs for a complete sample implementation.
+
+        if (commandRequest.CommandName == "reboot")
         {
-            case "reboot":
-                try
+            try
                 {
                     int delay = commandRequest.GetData<int>();
                     await Task.Delay(delay * 1000);
@@ -174,12 +175,10 @@ await _deviceClient.SubscribeToCommandsAsync(
                 {
                     return new CommandResponse(CommonClientResponseCodes.BadRequest);
                 }
-
-            default:
-                _logger.LogWarning($"Received a command request that isn't" +
-                    $" implemented - command name = {commandRequest.CommandName}");
-
-                return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
+        }
+        else
+        {
+            return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
         }
     },
     null,
@@ -221,73 +220,34 @@ await _deviceClient.SetMethodHandlerAsync(
 
 ```csharp
 // Subscribe and respond to command "getMaxMinReport" under component "thermostat1".
-await _deviceClient.(
-    async () =>
+await _deviceClient.SubscribeToCommandsAsync(
+    async (commandRequest, userContext) =>
     {
         // This API does not support setting command-level callbacks.
-        // For this reason we'll first switch through the component name returned and handle each component-level command.
-        // For the "default" case, we'll first check if the component name is null.
-        // If null, then this would be a root-level command request, so we'll switch through each root-level command.
-        // If not null, then this is a component-level command that has not been implemented.
+        // For this reason we'll need to inspect both commandRequest.ComponentName and commandRequest.CommandName, and perform the actions accordingly.
+        // Refer to the TemperatureControllerSample.cs for a complete sample implementation.
 
-        // Switch through CommandRequest.ComponentName to handle all component-level commands.
-        switch (commandRequest.ComponentName)
+        if (commandRequest.ComponentName == "thermostat1"
+            && commandRequest.CommandName == "getMaxMinReport")
         {
-            case "thermostat1":
-                // For each component, switch through CommandRequest.CommandName to handle the specific component-level command.
-                switch (commandRequest.CommandName)
-                {
-                    case "getMaxMinReport":
-                        try
-                        {
-                            DateTimeOffset sinceInUtc = commandRequest.GetData<DateTimeOffset>();
-                            
-                            // Application code ...
-                            Report report = GetMaxMinReport(sinceInUtc);
+            try
+            {
+                DateTimeOffset sinceInUtc = commandRequest.GetData<DateTimeOffset>();
+                
+                // Application code ...
+                Report report = GetMaxMinReport(sinceInUtc);
 
-                            return Task.FromResult(new CommandResponse(report, CommonClientResponseCodes.OK));
-                        }
-                        catch (JsonReaderException ex)
-                        {
-                            _logger.LogError($"Command input for {commandRequest.CommandName} is invalid: {ex.Message}.");
-
-                            return Task.FromResult(new CommandResponse(CommonClientResponseCodes.BadRequest));
-                        }
-
-                    default:
-                        _logger.LogWarning($"Received a command request that isn't" +
-                            $" implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
-
-                        return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
-                }
-
-            // For the default case, first check if CommandRequest.ComponentName is null.
-            default:
-                // If CommandRequest.ComponentName is null, then this is a root-level command request.
-                if (commandRequest.ComponentName == null)
-                {
-                    // Switch through CommandRequest.CommandName to handle all root-level commands.
-                    switch (commandRequest.CommandName)
-                    {
-                        case "reboot":
-                            // Application code ...
-
-                        default:
-                            _logger.LogWarning($"Received a command request that isn't" +
-                                $" implemented - command name = {commandRequest.CommandName}");
-
-                            return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning($"Received a command request that isn't" +
-                        $" implemented - component name = {commandRequest.ComponentName}, command name = {commandRequest.CommandName}");
-
-                    return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
-                }
+                return Task.FromResult(new CommandResponse(report, CommonClientResponseCodes.OK));
+            }
+            catch (JsonReaderException ex)
+            {
+                return Task.FromResult(new CommandResponse(CommonClientResponseCodes.BadRequest));
+            }
         }
-
+        else
+        {
+            return Task.FromResult(new CommandResponse(CommonClientResponseCodes.NotFound));
+        }
     }
 );
 ```
