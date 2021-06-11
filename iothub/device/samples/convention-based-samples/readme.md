@@ -324,7 +324,7 @@ if (isTargetTemperatureUpdateRequested)
  ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
 // To fetch the value of client reported property "serialNumber"
-bool isSerialNumberReported = properties.TryGetValue("serialNumber", out string serialNumberReported)
+bool isSerialNumberReported = properties.TryGetValue("serialNumber", out string serialNumberReported);
 
 
 // To fetch the value of service requested "targetTemperature" value
@@ -351,7 +351,7 @@ if (isSerialNumberReported)
 // To fetch the value of service requested "targetTemperature" value under component "thermostat1"
 bool isTargetTemperatureUpdateRequested = properties.Properties.Desired.Contains("thermostat1")
     && ((JObject)properties.Properties.Desired["thermostat1"]).TryGetValue("targetTemperature", out JToken targetTemperatureUpdateRequestJToken);
-    
+
 if (isTargetTemperatureUpdateRequested)
 {
     double targetTemperatureUpdateRequest = targetTemperatureUpdateRequestJToken.ToObject<double>()
@@ -365,7 +365,7 @@ if (isTargetTemperatureUpdateRequested)
  ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
 
 // To fetch the value of client reported property "serialNumber" under component "thermostat1"
-bool isSerialNumberReported = properties.TryGetValue("thermostat1", "serialNumber", out string serialNumberReported)
+bool isSerialNumberReported = properties.TryGetValue("thermostat1", "serialNumber", out string serialNumberReported);
 
 
 // To fetch the value of service requested "targetTemperature" value under component "thermostat1"
