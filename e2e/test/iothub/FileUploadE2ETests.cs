@@ -130,10 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
 
-                // The X509 certificate being used for device authentication needs to be set into FileUploadTransportSettings as well,
-                // so that the HttpClient created for file upload operation has access to those certificates.
-                clientOptions.FileUploadTransportSettings.ClientCertificate = cert;
-                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, x509Auth, Client.TransportType.Http1, clientOptions);
+                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, Client.TransportType.Http1, clientOptions);
             }
             else
             {

@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             { "key3", s_objectPropertyValue }
         };
 
-        // Create an object that represents all of the properties as root-level properties.
+        // Create an object that represents all of the properties as top-level properties.
         private static readonly RootLevelProperties s_rootLevelProperties = new RootLevelProperties
         {
             BooleanProperty = BoolPropertyValue,
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             ackVersion: 2,
             ackDescription: "testableWritablePropertyDescription");
 
-        // Create a JObject instance that represents a writable property response sent for a root-level property.
+        // Create a JObject instance that represents a writable property response sent for a top-level property.
         private static readonly JObject s_writablePropertyResponseJObject = new JObject(
             new JProperty(StringPropertyName, JObject.FromObject(s_writablePropertyResponse)));
 

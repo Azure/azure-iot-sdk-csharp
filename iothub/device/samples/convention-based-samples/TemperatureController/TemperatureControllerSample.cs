@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Verify if the device has previously reported the current value for property "serialNumber".
             // If the expected value has not been previously reported then send device serial number over property update.
-            // This is a root-level property update call.
+            // This is a top-level property update call.
             await SendDeviceSerialNumberPropertyIfNotCurrentAsync(cancellationToken);
 
             bool temperatureReset = true;
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await SendTemperatureAsync(Thermostat2, cancellationToken);
 
                 // Send working set of device memory over telemetry.
-                // This is a root-level telemetry call.
+                // This is a top-level telemetry call.
                 await SendDeviceMemoryTelemetryAsync(cancellationToken);
 
                 temperatureReset = _temperature[Thermostat1] == 0 && _temperature[Thermostat2] == 0;
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             foreach (KeyValuePair<string, object> writableProperty in writableProperties)
             {
-                // The dispatcher key will be either a root-level property name or a component name.
+                // The dispatcher key will be either a top-level property name or a component name.
                 switch (writableProperty.Key)
                 {
                     case Thermostat1:
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             // In this approach, we'll first switch through the component name returned and handle each component-level command.
             // For the "default" case, we'll first check if the component name is null.
-            // If null, then this would be a root-level command request, so we'll switch through each root-level command.
+            // If null, then this would be a top-level command request, so we'll switch through each top-level command.
             // If not null, then this is a component-level command that has not been implemented.
 
             // Switch through CommandRequest.ComponentName to handle all component-level commands.
@@ -171,10 +171,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 // For the default case, first check if CommandRequest.ComponentName is null.
                 default:
-                    // If CommandRequest.ComponentName is null, then this is a root-level command request.
+                    // If CommandRequest.ComponentName is null, then this is a top-level command request.
                     if (commandRequest.ComponentName == null)
                     {
-                        // Switch through CommandRequest.CommandName to handle all root-level commands.
+                        // Switch through CommandRequest.CommandName to handle all top-level commands.
                         switch (commandRequest.CommandName)
                         {
                             case "reboot":
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        // The callback to handle root-level "reboot" command.
+        // The callback to handle top-level "reboot" command.
         // This method will send a temperature update (of 0°C) over telemetry for both associated components.
         private async Task<CommandResponse> HandleRebootCommandAsync(CommandRequest commandRequest, object userContext)
         {
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // Send working set of device memory over telemetry.
-        // This is a root-level telemetry call.
+        // This is a top-level telemetry call.
         private async Task SendDeviceMemoryTelemetryAsync(CancellationToken cancellationToken)
         {
             const string workingSetName = "workingSet";
@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // Verify if the device has previously reported the current value for property "serialNumber".
         // If the expected value has not been previously reported then send device serial number over property update.
-        // This is a root-level property update call.
+        // This is a top-level property update call.
         private async Task SendDeviceSerialNumberPropertyIfNotCurrentAsync(CancellationToken cancellationToken)
         {
             const string serialNumber = "serialNumber";
