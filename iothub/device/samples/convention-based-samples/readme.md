@@ -38,7 +38,7 @@ DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnec
 ### Define the serialization and encoding convention that the client follows (newly introduced)
 
 ```csharp
-// Specify a custom System.Text.Json based PayloadConvention to be used.
+// Specify a custom System.Text.Json serialization and Utf8 encoding based PayloadConvention to be used.
 // If not specified the library defaults to a convention that uses Newtonsoft.Json-based serializer and Utf8-based encoder.
 var options = new ClientOptions(SystemTextJsonPayloadConvention.Instance)
 {
