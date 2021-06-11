@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             foreach (KeyValuePair<string, object> writableProperty in writableProperties)
             {
-                // The dispatcher key will be either a no-component property name or a component name.
+                // The dispatcher key will be either a top-level property name or a component name.
                 switch (writableProperty.Key)
                 {
                     case Thermostat1:
