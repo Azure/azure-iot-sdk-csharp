@@ -17,7 +17,33 @@ urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 Devices/ modules connecting to IoT Hub that announce their DTDL model Id during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
 These devices/ modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to specify any metadata information that needs to accompany these messages.
 
-Comparision of API calls (non-convention aware APIs vs convention-aware APIs):
+## Client initialization
+
+### Send model ID (same as before)
+
+```csharp
+var options = new ClientOptions
+{
+    ModelId = ModelId,
+};
+
+DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
+```
+
+### Define the convention that the client follows (newly introduced)
+
+```csharp
+// Specify a custom System.Text.Json based PayloadConvention to be used.
+// If not specified the library defaults to a convention that uses Newtonsoft.Json-based serializer and Utf8-based encoder.
+var options = new ClientOptions(SystemTextJsonPayloadConvention.Instance)
+{
+    ModelId = ModelId,
+};
+
+DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
+```
+
+## Comparision of API calls (non-convention aware APIs vs convention-aware APIs):
 
 ## Telemetry
 
@@ -407,6 +433,8 @@ The samples demonstrate two scenarios:
   - The top-level interface defines telemetry, properties and commands.
   - The model includes two [Thermostat][thermostat-model] components, and a [device information][d-device-info] component.
 
+> NOTE: These samples are only meant to demonstrate the usage of Plug and Play APIs. If you are looking for a good device sample to get started with, please see the [device reconnection sample][device-reconnection-sample]. It shows how to connect a device, handle disconnect events, cases to handle when making calls, and when to re-initialize the `DeviceClient`.
+
 [pnp-convention]: https://docs.microsoft.com/azure/iot-pnp/concepts-convention
 [d-thermostat]: ./Thermostat
 [d-temperature-controller]: ./TemperatureController
@@ -415,3 +443,4 @@ The samples demonstrate two scenarios:
 [thermostat-hub-qs]: https://docs.microsoft.com/azure/iot-pnp/quickstart-connect-device?pivots=programming-language-csharp
 [temp-controller-hub-tutorial]: https://docs.microsoft.com/azure/iot-pnp/tutorial-multiple-components?pivots=programming-language-csharp
 [temp-controller-central-tutorial]: https://docs.microsoft.com/azure/iot-central/core/tutorial-connect-device?pivots=programming-language-csharp
+[device-reconnection-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/DeviceReconnectionSample
