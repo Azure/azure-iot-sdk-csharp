@@ -267,16 +267,81 @@ await _deviceClient.(
 
 ## Properties
 
-### Retrive client properties:
+### Retrive no-component client properties:
 
 #### Using non-convention aware API:
 
 ```csharp
+// Retrieve the client's properties.
+Twin properties = await _deviceClient.GetTwinAsync(cancellationToken);
+
+// To fetch the value of client reported property "serialNumber"
+bool isSerialNumberReported = properties.Properties.Reported.Contains("serialNumber");
+if (isSerialNumberReported)
+{
+    string serialNumberReported = properties.Properties.Reported["serialNumber"];
+}
+
+
+// To fetch the value of service requested "targetTemperature" value
+bool isTargetTemperatureUpdateRequested = properties.Properties.Desired.Contains("targetTemperature");
+if (isTargetTemperatureUpdateRequested)
+{
+    double targetTemperatureUpdateRequest = properties.Properties.Desired["targetTemperature"];
+}
 ```
 
 #### Using convention aware API:
 
 ```csharp
+// Retrieve the client's properties.
+ ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
+
+// To fetch the value of client reported property "serialNumber"
+bool isSerialNumberReported = properties.TryGetValue("serialNumber", out string serialNumberReported)
+
+
+// To fetch the value of service requested "targetTemperature" value
+bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("targetTemperature", out double targetTemperatureUpdateRequest);
+```
+
+### Retrive component-level client properties:
+
+#### Using non-convention aware API:
+
+```csharp
+// Retrieve the client's properties.
+Twin properties = await _deviceClient.GetTwinAsync(cancellationToken);
+
+// To fetch the value of client reported property "serialNumber" under component "thermostat1"
+bool isSerialNumberReported = properties.Properties.Reported.Contains("thermostat1")
+    && ((JObject)properties.Properties.Reported["thermostat1"]).TryGetValue("serialNumber", out JToken serialNumberJToken);
+if (isSerialNumberReported)
+{
+    string serialNumberReported = serialNumberJToken.ToObject<string>()
+}
+
+// To fetch the value of service requested "targetTemperature" value under component "thermostat1"
+bool isTargetTemperatureUpdateRequested = properties.Properties.Desired.Contains("thermostat1")
+    && ((JObject)properties.Properties.Desired["thermostat1"]).TryGetValue("targetTemperature", out JToken targetTemperatureUpdateRequestJToken);
+if (isTargetTemperatureUpdateRequested)
+{
+    double targetTemperatureUpdateRequest = targetTemperatureUpdateRequestJToken.ToObject<double>()
+}
+```
+
+#### Using convention aware API:
+
+```csharp
+// Retrieve the client's properties.
+ ClientProperties properties = await _deviceClient.GetClientPropertiesAsync(cancellationToken);
+
+// To fetch the value of client reported property "serialNumber" under component "thermostat1"
+bool isSerialNumberReported = properties.TryGetValue("thermostat1", "serialNumber", out string serialNumberReported)
+
+
+// To fetch the value of service requested "targetTemperature" value under component "thermostat1"
+bool isTargetTemperatureUpdateRequested = properties.Writable.TryGetValue("thermostat1", "targetTemperature", out double targetTemperatureUpdateRequest);
 ```
 
 ### Update no-component property:
