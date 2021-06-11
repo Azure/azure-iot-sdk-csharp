@@ -14,14 +14,14 @@ urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 
 # IoT Plug And Play (PnP) device/ module APIs
 
-Device(s)/ module(s) connecting to IoT Hub that announce their DTDL model Id during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
+Device(s)/ module(s) connecting to IoT Hub that announce their DTDL model ID during initialization can now perform convention-based operations. One such convention supported is [IoT Plug and Play][pnp-convention].
 
-These device(s)/ module(s) can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to manually format these messages to follow the PnP convention.
+These devices/ modules can now use the native PnP APIs in the Azure IoT device SDKs to directly exchange messages with an IoT Hub, without having to manually format these messages to follow the PnP convention.
 
 ## Table of Contents
 
 - [Client initialization](#client-initialization)
-  - [Announce model Id during client initialization (same as in latest `master` release)](#announce-model-id-during-client-initialization-same-as-in-latest-master-release)
+  - [Announce model ID during client initialization (same as in latest `master` release)](#announce-model-ID-during-client-initialization-same-as-in-latest-master-release)
   - [Define the serialization and encoding convention that the client follows (newly introduced in `preview`)](#define-the-serialization-and-encoding-convention-that-the-client-follows-newly-introduced-in-preview)
 - [Terms used](#terms-used)
 - [Comparison of API calls - non-convention-aware APIs (old) vs convention-aware APIs (new):](#comparison-of-api-calls---non-convention-aware-apis-old-vs-convention-aware-apis-new)
@@ -32,7 +32,7 @@ These device(s)/ module(s) can now use the native PnP APIs in the Azure IoT devi
 
 ## Client initialization
 
-### Announce model Id during client initialization (same as in latest [`master`][latest-master-release] release)
+### Announce model ID during client initialization (same as in latest [`master`][latest-master-release] release)
 
 ```csharp
 var options = new ClientOptions
@@ -57,11 +57,11 @@ DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnec
 ```
 
 ## Terms used:
-Telemetry, commands, proprties and components can all be defined in the contents section of the main interface of a DTDL v2 model. Components enable interfaces to be composed of other interfaces.
+Telemetry, commands, properties and components can all be defined in the contents section of the main interface of a DTDL v2 model. Components enable interfaces to be composed of other interfaces.
 
 In DTDL v2, a component cannot contain another component. The maximum depth of components is 1.
 
-- Top-level telemetry/ commands/ preoperties
+- Top-level telemetry/ commands/ properties
   - These refer to the telemetry, commands and properties that are defined directly in the contents section of the main interface of a DTDL v2 model. In case of a model with no components, the main interface refers to the default component.
   - When working with this category of telemetry, commands and properties, you do not need to specify any component name.
 - Component-level telemetry/ commands/ properties
