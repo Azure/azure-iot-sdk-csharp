@@ -20,7 +20,7 @@ These devices/ modules can now use the native PnP APIs in the Azure IoT device S
 
 ## Client initialization
 
-### Send model ID (same as before)
+### Announce model ID during client initialization (same as before)
 
 ```csharp
 var options = new ClientOptions
