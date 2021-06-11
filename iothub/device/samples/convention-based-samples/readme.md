@@ -309,7 +309,6 @@ if (isSerialNumberReported)
     string serialNumberReported = properties.Properties.Reported["serialNumber"];
 }
 
-
 // To fetch the value of service requested "targetTemperature" value
 bool isTargetTemperatureUpdateRequested = properties.Properties.Desired.Contains("targetTemperature");
 if (isTargetTemperatureUpdateRequested)
