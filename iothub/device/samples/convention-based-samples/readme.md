@@ -95,7 +95,7 @@ using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObje
 await _deviceClient.SendEventAsync(message, cancellationToken);
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Send telemetry "serialNumber".
@@ -131,7 +131,7 @@ using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObje
 await _deviceClient.SendEventAsync(message, cancellationToken);
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Send telemetry "serialNumber" under component "thermostat1".
@@ -175,7 +175,7 @@ await _deviceClient.SetMethodHandlerAsync(
     cancellationToken);
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Subscribe and respond to command "reboot".
@@ -243,7 +243,7 @@ await _deviceClient.SetMethodHandlerAsync(
     cancellationToken);
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Subscribe and respond to command "getMaxMinReport" under component "thermostat1".
@@ -304,7 +304,7 @@ if (isTargetTemperatureUpdateRequested)
 }
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Retrieve the client's properties.
@@ -347,7 +347,7 @@ if (isTargetTemperatureUpdateRequested)
 }
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Retrieve the client's properties.
@@ -374,7 +374,7 @@ var propertiesToBeUpdated = new TwinCollection
 await _deviceClient.UpdateReportedPropertiesAsync(propertiesToBeUpdated, cancellationToken);
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Update the property "serialNumber".
@@ -407,7 +407,7 @@ var propertiesToBeUpdated = new TwinCollection
 await _deviceClient.UpdateReportedPropertiesAsync(propertiesToBeUpdated, cancellationToken);
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Update the property "serialNumber" under component "thermostat1".
@@ -452,7 +452,7 @@ await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
     cancellationToken);
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Subscribe and respond to event for writable property "targetTemperature".
@@ -521,7 +521,7 @@ await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
     cancellationToken);
 ```
 
-#### Using convention aware API (new):
+#### Using convention-aware API (new):
 
 ```csharp
 // Subscribe and respond to event for writable property "targetTemperature"
