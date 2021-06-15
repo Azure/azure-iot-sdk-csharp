@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
@@ -16,16 +15,5 @@ namespace Microsoft.Azure.Devices
         /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
         /// </summary>
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
-
-        /// <summary>
-        /// The authentication scopes to use when requesting access tokens from Azure Active Directory for authenticating with the
-        /// IoT Hub.
-        /// </summary>
-        /// <remarks>
-        /// This value defaults <see cref="IotHubAuthenticationScopes.DefaultAuthenticationScopes"/>, which is used for
-        /// any public or private cloud other than Azure US Government cloud.
-        /// For Azure US Government cloud users, this value must be set to <see cref="IotHubAuthenticationScopes.AzureGovernmentAuthenticationScopes"/>.
-        /// </remarks>
-        public IReadOnlyList<string> TokenCredentialAuthenticationScopes { get; set; } = IotHubAuthenticationScopes.DefaultAuthenticationScopes;
     }
 }
