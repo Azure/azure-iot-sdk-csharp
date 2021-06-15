@@ -73,10 +73,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
         /// <remarks>
         /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
-        /// This constructor sets the default for <see cref="ServiceClientOptions.TokenCredentialAuthenticationScopes"/> to
-        /// <see cref="IotHubAuthenticationScopes.DefaultAuthenticationScopes"/>, which is used for any public or private cloud other than Azure US Government cloud.
-        /// For Azure US Government cloud users, set the <see cref="ServiceClientOptions.TokenCredentialAuthenticationScopes"/>
-        /// to <see cref="IotHubAuthenticationScopes.AzureGovernmentAuthenticationScopes"/>.
         /// </remarks>
         public static ServiceClient Create(
             string hostName,
@@ -87,24 +83,15 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException(nameof(hostName), "Parameter cannot be null or empty.");
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
             }
 
             if (credential == null)
             {
-                throw new ArgumentNullException(nameof(credential));
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
-            if (options == null)
-            {
-                options = new ServiceClientOptions();
-            }
-
-            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(
-                hostName,
-                credential,
-                options.TokenCredentialAuthenticationScopes);
-
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
             bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
 
             return new AmqpServiceClient(
@@ -132,12 +119,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException(nameof(hostName), "Parameter cannot be null or empty.");
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
             }
 
             if (credential == null)
             {
-                throw new ArgumentNullException(nameof(credential));
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);

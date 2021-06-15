@@ -130,6 +130,8 @@ namespace Microsoft.Azure.Devices.Common
 
         public const string HttpErrorCodeName = "iothub-errorcode";
 
+        public static readonly string[] IotHubAadTokenScopes = new string[] { "https://iothubs.azure.net/.default" };
+
         //Service Analytics related
         public static class ServiceAnalytics
         {
