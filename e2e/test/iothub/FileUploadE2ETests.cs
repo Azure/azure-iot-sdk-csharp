@@ -117,18 +117,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                 x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
             DeviceClient deviceClient;
+            var clientOptions = new ClientOptions()
+            {
+                FileUploadTransportSettings = fileUploadTransportSettings
+            };
 
             if (x509auth)
             {
                 X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
                 var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
-
                 deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, Client.TransportType.Http1);
             }
             else
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Http1);
+                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Http1, clientOptions);
             }
 
             var fileUploadSasUriRequest = new FileUploadSasUriRequest()
