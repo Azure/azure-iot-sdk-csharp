@@ -127,8 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
                 var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
-
-                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, Client.TransportType.Http1, clientOptions);
+                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, Client.TransportType.Http1);
             }
             else
             {
