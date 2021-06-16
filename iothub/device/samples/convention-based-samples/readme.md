@@ -79,11 +79,11 @@ The following section provides a comparison between the older non-convention-awa
 #### Using non-convention-aware API (old):
 
 ```csharp
-// Send telemetry "serialNumber".
-string serialNumber = "SR-1234";
+// Send telemetry "temperature".
+int temperature = "70";
 var telemetry = new Dictionary<string, object>
 {
-    ["serialNumber"] = serialNumber,
+    ["temperature"] = temperature,
 };
 
 using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
@@ -98,12 +98,12 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 #### Using convention-aware API (new):
 
 ```csharp
-// Send telemetry "serialNumber".
-string serialNumber = "SR-1234";
+// Send telemetry "temperature".
+int temperature = "70";
 using var telemetryMessage = new TelemetryMessage
 {
     MessageId = Guid.NewGuid().ToString(),
-    Telemetry = { ["serialNumber"] = serialNumber },
+    Telemetry = { ["temperature"] = temperature },
 };
 
 await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
@@ -114,11 +114,11 @@ await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 #### Using non-convention-aware API (old):
 
 ```csharp
-// Send telemetry "serialNumber" under component "thermostat1".
-string serialNumber = "SR-1234";
+// Send telemetry "temperature" under component "thermostat1".
+int temperature = "70";
 var telemetry = new Dictionary<string, object>()
 {
-    ["serialNumber"] = serialNumber,
+    ["temperature"] = temperature,
 };
 
 using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry)))
@@ -134,12 +134,12 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 #### Using convention-aware API (new):
 
 ```csharp
-// Send telemetry "serialNumber" under component "thermostat1".
-string serialNumber = "SR-1234";
+// Send telemetry "temperature" under component "thermostat1".
+int temperature = "70";
 using var telemtryMessage = new TelemetryMessage("thermostat1")
 {
     MessageId = Guid.NewGuid().ToString(),
-    Telemetry = { ["serialNumber"] = serialNumber },
+    Telemetry = { ["temperature"] = temperature },
 };
 
 await _deviceClient.SendTelemetryAsync(telemtryMessage, cancellationToken);
