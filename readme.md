@@ -65,7 +65,12 @@ If you would like to build or change the SDK source code, please follow the [dev
 
 > .NET Standard 1.3 (IoT Hub SDKs only) is last supported in the [2020-02-27](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2020-2-27) and in the [2020-1-31 LTS](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31) releases.
 
-The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices, mainly modern versions Windows and Linux.
+The IoT Hub device SDK for .NET can be used with a broad range of device platforms and is officially supported on the following Operating Systems:
+
+*  Windows versions officially supported by Microsoft.
+*  [Linux distributions](https://docs.microsoft.com/en-us/dotnet/core/install/linux) supported by .NET core.
+
+> Note: For Linux, we test our clients against Ubuntu 16.04.7 LTS.
 
 The NuGet packages provide support for the following .NET flavors:
 - .NET 5.0
