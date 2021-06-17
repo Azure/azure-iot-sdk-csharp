@@ -135,7 +135,7 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature" under component "thermostat1".
-int temperature = "70";
+int temperature = 70;
 using var telemtryMessage = new TelemetryMessage("thermostat1")
 {
     MessageId = Guid.NewGuid().ToString(),
