@@ -99,7 +99,7 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature".
-int temperature = "70";
+int temperature = 70;
 using var telemetryMessage = new TelemetryMessage
 {
     MessageId = Guid.NewGuid().ToString(),
