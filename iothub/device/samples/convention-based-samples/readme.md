@@ -80,7 +80,7 @@ The following section provides a comparison between the older non-convention-awa
 
 ```csharp
 // Send telemetry "temperature".
-int temperature = 70;
+double temperature = 70;
 var telemetry = new Dictionary<string, object>
 {
     ["temperature"] = temperature,
@@ -99,7 +99,7 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature".
-int temperature = 70;
+double temperature = 70;
 using var telemetryMessage = new TelemetryMessage
 {
     MessageId = Guid.NewGuid().ToString(),
@@ -115,7 +115,7 @@ await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature" under component "thermostat1".
-int temperature = 70;
+double temperature = 70;
 var telemetry = new Dictionary<string, object>()
 {
     ["temperature"] = temperature,
@@ -135,7 +135,7 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature" under component "thermostat1".
-int temperature = 70;
+double temperature = 70;
 using var telemtryMessage = new TelemetryMessage("thermostat1")
 {
     MessageId = Guid.NewGuid().ToString(),
