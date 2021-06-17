@@ -115,7 +115,7 @@ await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature" under component "thermostat1".
-int temperature = "70";
+int temperature = 70;
 var telemetry = new Dictionary<string, object>()
 {
     ["temperature"] = temperature,
