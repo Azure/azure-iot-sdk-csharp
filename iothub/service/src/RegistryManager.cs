@@ -132,41 +132,26 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <param name="options">Options that allow configuration of the RegistryManager instance during initialization.</param>
         /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
         /// <remarks>
         /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
-        /// This constructor sets the default for <see cref="RegistryManagerOptions.TokenCredentialAuthenticationScopes"/> to
-        /// <see cref="IotHubAuthenticationScopes.DefaultAuthenticationScopes"/>, which is used for any public or private cloud other than Azure US Government cloud.
-        /// For Azure US Government cloud users, set the <see cref="RegistryManagerOptions.TokenCredentialAuthenticationScopes"/>
-        /// to <see cref="IotHubAuthenticationScopes.AzureGovernmentAuthenticationScopes"/>.
         /// </remarks>
         public static RegistryManager Create(
             string hostName,
             TokenCredential credential,
-            HttpTransportSettings transportSettings = default,
-            RegistryManagerOptions options = default)
+            HttpTransportSettings transportSettings = default)
         {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException(nameof(hostName), "Parameter cannot be null or empty.");
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
             }
 
             if (credential == null)
             {
-                throw new ArgumentNullException(nameof(credential));
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
-            if (options == null)
-            {
-                options = new RegistryManagerOptions();
-            }
-
-            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(
-                hostName,
-                credential,
-                options.TokenCredentialAuthenticationScopes);
-
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
             return new RegistryManager(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 
@@ -184,12 +169,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException(nameof(hostName), "Parameter cannot be null or empty.");
+                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
             }
 
             if (credential == null)
             {
-                throw new ArgumentNullException(nameof(credential));
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
