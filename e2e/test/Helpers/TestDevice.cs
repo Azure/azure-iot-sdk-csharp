@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
             // Delete existing devices named this way and create a new one.
-            using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             Client.IAuthenticationMethod auth = null;
@@ -84,11 +84,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 {
                     X509Thumbprint = new X509Thumbprint
                     {
-                        PrimaryThumbprint = Configuration.IoTHub.GetCertificateWithPrivateKey().Thumbprint
+                        PrimaryThumbprint = TestConfiguration.IoTHub.GetCertificateWithPrivateKey().Thumbprint
                     }
                 };
 
-                auth = new DeviceAuthenticationWithX509Certificate(deviceName, Configuration.IoTHub.GetCertificateWithPrivateKey());
+                auth = new DeviceAuthenticationWithX509Certificate(deviceName, TestConfiguration.IoTHub.GetCertificateWithPrivateKey());
             }
 
             Device device = null;
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             get
             {
-                string iotHubHostName = GetHostName(Configuration.IoTHub.ConnectionString);
+                string iotHubHostName = GetHostName(TestConfiguration.IoTHub.ConnectionString);
                 return $"HostName={iotHubHostName};DeviceId={Device.Id};SharedAccessKey={Device.Authentication.SymmetricKey.PrimaryKey}";
             }
         }
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Used in conjunction with DeviceClient.Create()
         /// </summary>
-        public string IoTHubHostName => GetHostName(Configuration.IoTHub.ConnectionString);
+        public string IoTHubHostName => GetHostName(TestConfiguration.IoTHub.ConnectionString);
 
         /// <summary>
         /// Device Id
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 }
                 else
                 {
-                    deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, Device.Id, transportSettings, options);
+                    deviceClient = DeviceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, Device.Id, transportSettings, options);
                     s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IoTHub connection string: ID={TestLogger.IdOf(deviceClient)}");
                 }
             }
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task RemoveDeviceAsync()
         {
-            using var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             await rm.RemoveDeviceAsync(Id).ConfigureAwait(false);
         }
     }

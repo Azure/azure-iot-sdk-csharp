@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    public static partial class Configuration
+    public static partial class TestConfiguration
     {
         public static class Storage
         {
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             static Storage()
             {
-                ConnectionString = Configuration.GetValue("STORAGE_ACCOUNT_CONNECTION_STRING");
+                ConnectionString = TestConfiguration.GetValue("STORAGE_ACCOUNT_CONNECTION_STRING");
                 Name = s_saName.Match(ConnectionString).Value;
                 Key = s_saKey.Match(ConnectionString).Value;
             }
