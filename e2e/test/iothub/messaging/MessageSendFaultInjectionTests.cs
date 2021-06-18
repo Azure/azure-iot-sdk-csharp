@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     public partial class MessageSendFaultInjectionTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
-        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
 
         [LoggedTestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()

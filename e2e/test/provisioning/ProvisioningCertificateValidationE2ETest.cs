@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(
-                TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
+                Configuration.Provisioning.ConnectionStringInvalidServiceCertificate);
             Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
                 new QuerySpecification("SELECT * FROM enrollmentGroups"));
 
@@ -97,9 +97,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
         {
             using var security =
-                new SecurityProviderX509Certificate(TestConfiguration.Provisioning.GetIndividualEnrollmentCertificate());
+                new SecurityProviderX509Certificate(Configuration.Provisioning.GetIndividualEnrollmentCertificate());
             ProvisioningDeviceClient provisioningDeviceClient = ProvisioningDeviceClient.Create(
-                TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
+                Configuration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",
                 security,
                 transport);

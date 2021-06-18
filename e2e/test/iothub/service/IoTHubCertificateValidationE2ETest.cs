@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task RegistryManager_QueryDevicesInvalidServiceCertificateHttp_Fails()
         {
-            var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
+            var rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionStringInvalidServiceCertificate);
             IQuery query = rm.CreateQuery("select * from devices");
             var exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
                 () => query.GetNextAsTwinAsync()).ConfigureAwait(false);
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private static async Task TestServiceClientInvalidServiceCertificate(TransportType transport)
         {
             var service = ServiceClient.CreateFromConnectionString(
-                TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate,
+                Configuration.IoTHub.ConnectionStringInvalidServiceCertificate,
                 transport);
             await service.SendAsync("testDevice1", new Message()).ConfigureAwait(false);
         }
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task JobClient_ScheduleTwinUpdateInvalidServiceCertificateHttp_Fails()
         {
-            var job = JobClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
+            var job = JobClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionStringInvalidServiceCertificate);
             var exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
                 () => job.ScheduleTwinUpdateAsync(
                     "testDevice",
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             using (DeviceClient deviceClient =
                 DeviceClient.CreateFromConnectionString(
-                    TestConfiguration.IoTHub.DeviceConnectionStringInvalidServiceCertificate,
+                    Configuration.IoTHub.DeviceConnectionStringInvalidServiceCertificate,
                     transport))
             {
                 await deviceClient.SendEventAsync(new Client.Message()).ConfigureAwait(false);

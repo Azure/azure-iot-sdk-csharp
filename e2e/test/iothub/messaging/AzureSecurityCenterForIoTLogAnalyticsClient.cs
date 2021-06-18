@@ -38,10 +38,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     | where DeviceId == ""{0}""
     | where IoTRawEventId == ""{1}""";
 
-        private readonly string _workspaceId = TestConfiguration.AzureSecurityCenterForIoTLogAnalytics.WorkspacedId;
-        private readonly string _aadTenant = TestConfiguration.AzureSecurityCenterForIoTLogAnalytics.AadTenant;
-        private readonly string _appId = TestConfiguration.AzureSecurityCenterForIoTLogAnalytics.AadAppId;
-        private readonly string _appCertificate = TestConfiguration.AzureSecurityCenterForIoTLogAnalytics.AadAppCertificate;
+        private readonly string _workspaceId = Configuration.AzureSecurityCenterForIoTLogAnalytics.WorkspacedId;
+        private readonly string _aadTenant = Configuration.AzureSecurityCenterForIoTLogAnalytics.AadTenant;
+        private readonly string _appId = Configuration.AzureSecurityCenterForIoTLogAnalytics.AadAppId;
+        private readonly string _appCertificate = Configuration.AzureSecurityCenterForIoTLogAnalytics.AadAppCertificate;
 
         private readonly TimeSpan _polingInterval = TimeSpan.FromSeconds(20);
         private readonly TimeSpan _timeout = TimeSpan.FromMinutes(5);
