@@ -81,7 +81,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
         /// </summary>
-        /// <param name="data">The optional additional data.</param>
+        /// <param name="data">
+        /// The optional additional data that is passed through to the custom allocation policy webhook if 
+        /// a custom allocation policy webhook is setup for this enrollment.
+        /// </param>
         /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
         /// <remarks>
         /// Due to the AMQP library used by this library uses not accepting cancellation tokens, this overload and <see cref="RegisterAsync(TimeSpan)"/>
@@ -122,7 +125,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
         /// </summary>
-        /// <param name="data">The optional additional data.</param>
+        /// <param name="data">
+        /// The optional additional data that is passed through to the custom allocation policy webhook if 
+        /// a custom allocation policy webhook is setup for this enrollment.
+        /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <remarks>
         /// Due to the AMQP library used by this library uses not accepting cancellation tokens, the provided cancellation token will only be checked 
