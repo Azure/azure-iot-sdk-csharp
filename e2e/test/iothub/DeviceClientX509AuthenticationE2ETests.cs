@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public DeviceClientX509AuthenticationE2ETests()
         {
-            _hostName = GetHostName(Configuration.IoTHub.ConnectionString);
+            _hostName = GetHostName(TestConfiguration.IoTHub.ConnectionString);
         }
 
         [LoggedTestMethod]
@@ -148,12 +148,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             // arrange
             var chainCerts = new X509Certificate2Collection();
-            chainCerts.Add(Configuration.IoTHub.GetRootCACertificate());
-            chainCerts.Add(Configuration.IoTHub.GetIntermediate1Certificate());
-            chainCerts.Add(Configuration.IoTHub.GetIntermediate2Certificate());
+            chainCerts.Add(TestConfiguration.IoTHub.GetRootCACertificate());
+            chainCerts.Add(TestConfiguration.IoTHub.GetIntermediate1Certificate());
+            chainCerts.Add(TestConfiguration.IoTHub.GetIntermediate2Certificate());
             var auth = new DeviceAuthenticationWithX509Certificate(
-                Configuration.IoTHub.X509ChainDeviceName,
-                Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
+                TestConfiguration.IoTHub.X509ChainDeviceName,
+                TestConfiguration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
                 chainCerts);
             using var deviceClient = DeviceClient.Create(
                 _hostName,
@@ -173,12 +173,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             // arrange
             var chainCerts = new X509Certificate2Collection();
-            chainCerts.Add(Configuration.IoTHub.GetRootCACertificate());
-            chainCerts.Add(Configuration.IoTHub.GetIntermediate1Certificate());
-            chainCerts.Add(Configuration.IoTHub.GetIntermediate2Certificate());
+            chainCerts.Add(TestConfiguration.IoTHub.GetRootCACertificate());
+            chainCerts.Add(TestConfiguration.IoTHub.GetIntermediate1Certificate());
+            chainCerts.Add(TestConfiguration.IoTHub.GetIntermediate2Certificate());
             var auth = new DeviceAuthenticationWithX509Certificate(
-                Configuration.IoTHub.X509ChainDeviceName,
-                Configuration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
+                TestConfiguration.IoTHub.X509ChainDeviceName,
+                TestConfiguration.IoTHub.GetChainDeviceCertificateWithPrivateKey(),
                 chainCerts);
             using var deviceClient = DeviceClient.Create(
                 _hostName,
@@ -293,7 +293,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private DeviceClient CreateDeviceClientWithInvalidId(Client.TransportType transportType)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceName, Configuration.IoTHub.GetCertificateWithPrivateKey());
+            var auth = new DeviceAuthenticationWithX509Certificate(deviceName, TestConfiguration.IoTHub.GetCertificateWithPrivateKey());
             return DeviceClient.Create(_hostName, auth, transportType);
         }
     }

@@ -31,8 +31,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private const string InvalidIdScope = "0neFFFFFFFF";
         private const string PayloadJsonData = "{\"testKey\":\"testValue\"}";
         private const string InvalidGlobalAddress = "httpbin.org";
-        private static readonly string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
-        private static readonly string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
 
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
@@ -372,17 +372,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var closeHostName = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString).HostName;
+            var closeHostName = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString).HostName;
 
-            ICollection<string> iotHubsToProvisionTo = new List<string>() { closeHostName, Configuration.Provisioning.FarAwayIotHubHostName };
+            ICollection<string> iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
             string expectedDestinationHub = "";
-            if (closeHostName.Length > Configuration.Provisioning.FarAwayIotHubHostName.Length)
+            if (closeHostName.Length > TestConfiguration.Provisioning.FarAwayIotHubHostName.Length)
             {
                 expectedDestinationHub = closeHostName;
             }
-            else if (closeHostName.Length < Configuration.Provisioning.FarAwayIotHubHostName.Length)
+            else if (closeHostName.Length < TestConfiguration.Provisioning.FarAwayIotHubHostName.Length)
             {
-                expectedDestinationHub = Configuration.Provisioning.FarAwayIotHubHostName;
+                expectedDestinationHub = TestConfiguration.Provisioning.FarAwayIotHubHostName;
             }
             else
             {
@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            var iothubs = new List<string>() { IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString).HostName };
+            var iothubs = new List<string>() { IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString).HostName };
             await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(
                     transportType,
                     attestationType,
@@ -500,7 +500,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
-                Configuration.Provisioning.IdScope,
+                TestConfiguration.Provisioning.IdScope,
                 security,
                 transport);
 
@@ -555,7 +555,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             var customAllocationDefinition = new CustomAllocationDefinition
             {
-                WebhookUrl = Configuration.Provisioning.CustomAllocationPolicyWebhook,
+                WebhookUrl = TestConfiguration.Provisioning.CustomAllocationPolicyWebhook,
                 ApiVersion = "2019-03-31",
             };
 
@@ -578,7 +578,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
-                Configuration.Provisioning.IdScope,
+                TestConfiguration.Provisioning.IdScope,
                 security,
                 transport);
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
@@ -645,7 +645,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid");
             var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
-                Configuration.Provisioning.IdScope,
+                TestConfiguration.Provisioning.IdScope,
                 security,
                 transport);
 
@@ -812,7 +812,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
                 InvalidGlobalAddress,
-                Configuration.Provisioning.IdScope,
+                TestConfiguration.Provisioning.IdScope,
                 security,
                 transport);
 
@@ -893,7 +893,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");
 
-            var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+            var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
 
             switch (attestationType)
             {
@@ -903,7 +903,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
 
-                    var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+                    var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
 
                     Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
                     IndividualEnrollment individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
@@ -922,12 +922,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Individual:
-                            certificate = Configuration.Provisioning.GetIndividualEnrollmentCertificate();
+                            certificate = TestConfiguration.Provisioning.GetIndividualEnrollmentCertificate();
                             break;
 
                         case EnrollmentType.Group:
-                            certificate = Configuration.Provisioning.GetGroupEnrollmentCertificate();
-                            collection = Configuration.Provisioning.GetGroupEnrollmentChain();
+                            certificate = TestConfiguration.Provisioning.GetGroupEnrollmentCertificate();
+                            collection = TestConfiguration.Provisioning.GetGroupEnrollmentChain();
                             break;
 
                         default:

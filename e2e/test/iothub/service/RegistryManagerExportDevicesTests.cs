@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             StorageContainer storageContainer = null;
             string deviceId = $"{nameof(RegistryManager_ExportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
-            var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             Logger.Trace($"Using deviceId {deviceId}");
 
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         ManagedIdentity identity = null;
                         if (isUserAssignedMsi)
                         {
-                            string userAssignedMsiResourceId = Configuration.IoTHub.UserAssignedMsiResourceId;
+                            string userAssignedMsiResourceId = TestConfiguration.IoTHub.UserAssignedMsiResourceId;
                             identity = new ManagedIdentity
                             {
                                 userAssignedIdentity = userAssignedMsiResourceId
