@@ -22,6 +22,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
+        // This polling interval is the default time between checking if the device has reached a terminal state in its registration process
+        // DPS will generally send a retry-after header that overrides this default value though.
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
         private static readonly TimeSpan s_timeoutConstant = TimeSpan.FromMinutes(1);
 

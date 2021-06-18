@@ -73,8 +73,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(TimeSpan timeout)
         {
-            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
-
             return RegisterAsync(null, timeout);
         }
 
