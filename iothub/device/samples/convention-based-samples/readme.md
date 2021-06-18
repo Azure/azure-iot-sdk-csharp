@@ -80,7 +80,7 @@ The following section provides a comparison between the older non-convention-awa
 
 ```csharp
 // Send telemetry "temperature".
-double temperature = 70;
+double temperature = 70.0D;
 var telemetry = new Dictionary<string, object>
 {
     ["temperature"] = temperature,
