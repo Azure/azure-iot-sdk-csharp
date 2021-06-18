@@ -99,7 +99,7 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature".
-double temperature = 70;
+double temperature = 70.0D;
 using var telemetryMessage = new TelemetryMessage
 {
     MessageId = Guid.NewGuid().ToString(),
@@ -115,7 +115,7 @@ await _deviceClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature" under component "thermostat1".
-double temperature = 70;
+double temperature = 70.0D;
 var telemetry = new Dictionary<string, object>()
 {
     ["temperature"] = temperature,
@@ -135,7 +135,7 @@ await _deviceClient.SendEventAsync(message, cancellationToken);
 
 ```csharp
 // Send telemetry "temperature" under component "thermostat1".
-double temperature = 70;
+double temperature = 70.0D;
 using var telemtryMessage = new TelemetryMessage("thermostat1")
 {
     MessageId = Guid.NewGuid().ToString(),
