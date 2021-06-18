@@ -114,7 +114,9 @@ namespace Microsoft.Azure.Devices
         /// relationship.
         /// </summary>
         /// <remarks>
-        /// For leaf devices, the value to set a parent edge device can be retrieved from the parent edge device's <see cref="Scope"/> property.
+        /// For leaf devices, the value to set a parent edge device can be retrieved from the parent edge device's Scope property.
+        ///
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
         [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Ignore)]
         public virtual string Scope { get; set; }

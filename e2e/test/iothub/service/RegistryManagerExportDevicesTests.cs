@@ -53,6 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // arrange
 
             StorageContainer storageContainer = null;
+            string edgeId = $"{nameof(RegistryManager_ExportDevices)}-Edge-{StorageContainer.GetRandomSuffix(4)}";
             string deviceId = $"{nameof(RegistryManager_ExportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
             var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
@@ -70,11 +71,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     ? storageContainer.SasUri
                     : storageContainer.Uri;
 
+                var edge = await registryManager
+                    .AddDeviceAsync(
+                        new Device(edgeId)
+                        {
+                            Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
+                            Capabilities = new Shared.DeviceCapabilities { IotEdge = true },
+                        })
+                    .ConfigureAwait(false);
+
                 await registryManager
                     .AddDeviceAsync(
                         new Device(deviceId)
                         {
                             Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
+                            Scope = edge.Scope,
                         })
                     .ConfigureAwait(false);
 
@@ -139,6 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     {
                         Logger.Trace($"Found device in export as [{serializedDeivce}]");
                         foundDeviceInExport = true;
+                        device.DeviceScope.Should().Be(edge.Scope);
                         break;
                     }
                 }
@@ -151,6 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     storageContainer?.Dispose();
 
                     await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                    await registryManager.RemoveDeviceAsync(edgeId).ConfigureAwait(false);
                 }
                 catch { }
             }
