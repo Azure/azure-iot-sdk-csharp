@@ -5,13 +5,14 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains device properties specified during export/import operation
+    /// Contains device properties specified during export/import job operation.
     /// </summary>
     public sealed class ExportImportDevice
     {
@@ -21,7 +22,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Property container
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Public property. No behavior changes allowed.")]
+        [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Public property. No behavior changes allowed.")]
         public sealed class PropertyContainer
         {
             /// <summary>
@@ -38,14 +39,14 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an ExportImportDevice <see cref="ExportImportDevice" />
+        /// Create an ExportImportDevice.
         /// </summary>
         public ExportImportDevice()
         {
         }
 
         /// <summary>
-        /// Create an ExportImportDevice <see cref="ExportImportDevice" />
+        /// Create an ExportImportDevice.
         /// </summary>
         /// <param name="device">Device properties</param>
         /// <param name="importmode">Identifies the behavior when merging a device to the registry during import actions.</param>
@@ -66,13 +67,13 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Id of the device
+        /// Id of the device.
         /// </summary>
         [JsonProperty(PropertyName = "id", Required = Required.Always)]
         public string Id { get; set; }
 
         /// <summary>
-        /// Module Id for the object
+        /// Module Id for the object.
         /// </summary>
         [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
         public string ModuleId { get; set; }
@@ -88,31 +89,31 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// ImportMode of the device
+        /// Import mode of the device.
         /// </summary>
         [JsonProperty(PropertyName = "importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public ImportMode ImportMode { get; set; }
 
         /// <summary>
-        /// Status of the device
+        /// Status of the device.
         /// </summary>
         [JsonProperty(PropertyName = "status", Required = Required.Always)]
         public DeviceStatus Status { get; set; }
 
         /// <summary>
-        /// StatusReason of the device
+        /// Status reason of the device.
         /// </summary>
         [JsonProperty(PropertyName = "statusReason", NullValueHandling = NullValueHandling.Ignore)]
         public string StatusReason { get; set; }
 
         /// <summary>
-        /// AuthenticationMechanism of the device
+        /// Authentication mechanism of the device.
         /// </summary>
         [JsonProperty(PropertyName = "authentication")]
         public AuthenticationMechanism Authentication { get; set; }
 
         /// <summary>
-        /// string representing a Twin ETag for the entity, as per RFC7232.
+        /// String representing a Twin ETag for the entity, as per RFC7232.
         /// </summary>
         [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
         public string TwinETag
@@ -128,16 +129,28 @@ namespace Microsoft.Azure.Devices
         public TwinCollection Tags { get; set; }
 
         /// <summary>
-        /// Desired and Reported property bags
+        /// Desired and reported property bags
         /// </summary>
         [JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
         public PropertyContainer Properties { get; set; }
 
         /// <summary>
-        /// Status of Capabilities enabled on the device
+        /// Status of capabilities enabled on the device
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
         public DeviceCapabilities Capabilities { get; set; }
+
+        /// <summary>
+        /// The scope of the device. For edge devices, this is auto-generated and immutable. For leaf devices, set this to create child/parent
+        /// relationship.
+        /// </summary>
+        /// <remarks>
+        /// For leaf devices, the value to set a parent edge device can be retrieved from the parent edge device's device scope property.
+        ///
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
+        /// </remarks>
+        [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Include)]
+        public string DeviceScope { get; set; }
 
         private static string SanitizeETag(string eTag)
         {
