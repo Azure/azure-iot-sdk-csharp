@@ -21,10 +21,10 @@ Note that, while we only directly test on Windows 10, we do support other Window
 Nightly test platform details:
 
 .NET versions tested on
-  -.NET Framework 4.5.1
-  -.NET Framework 4.7.2
-  -.NET Core 2.1.18
-  -.NET Core 3.1
+-.NET Framework 4.5.1
+-.NET Framework 4.7.2
+-.NET Core 2.1.18
+-.NET Core 3.1
 
 Default locale: en_US, platform encoding: Cp1252
 
@@ -37,8 +37,8 @@ Note that, while we only directly test on Ubuntu 1604, we do generally support o
 Nightly test platform details:
 
 .NET versions tested on:
-  -.NET Core 2.1.18
-  -.NET Core 3.1
+-.NET Core 2.1.18
+-.NET Core 3.1
 
 Default locale: en_US, platform encoding: UTF-8
 
