@@ -14,7 +14,7 @@ namespace TlsProtocolTests
         /// </remarks>
         static async Task Main(string[] args)
         {
-            string hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
+            string hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
             string deviceConnectionString = Environment.GetEnvironmentVariable("DEVICE_CONN_STRING");
 
             await IotServiceTests.RunTest(hubConnectionString).ConfigureAwait(false);
