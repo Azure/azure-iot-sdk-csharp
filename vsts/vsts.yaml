@@ -61,7 +61,7 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
-          IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
           IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
           IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
           DPS_IDSCOPE: $(DPS-IDSCOPE)
@@ -81,7 +81,7 @@ jobs:
           FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
           CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
           IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
-          LA_AAD_TENANT: $(LA-AAD-TENANT)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
@@ -93,6 +93,9 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
+          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
+          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
@@ -157,7 +160,7 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
-          IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
           IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
           IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
           DPS_IDSCOPE: $(DPS-IDSCOPE)
@@ -177,7 +180,7 @@ jobs:
           FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
           CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
           IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
-          LA_AAD_TENANT: $(LA-AAD-TENANT)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
@@ -189,6 +192,9 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
+          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
+          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
@@ -233,7 +239,8 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted VS2017
+      name: Azure Pipelines
+      vmImage: vs2017-win2016
     steps:
       - script: |
           rem Run dotnet first experience.
@@ -245,7 +252,15 @@ jobs:
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
-
+      
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+        displayName: "Run PoliCheck"
+        inputs:
+          targetType: F
+          optionsRulesDBPath: 'vsts/PolicheckExclusionsDB.mdb'
+          optionsSEV: '1|2|3|4'
+          optionsPE: 1
+      
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
         displayName: "Run MpCmdRun.exe"
         inputs:
@@ -289,11 +304,6 @@ jobs:
 
           # TODO #181 Samples / tests fail the test due to fake connection strings.
           debugMode: false
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
-        displayName: "Run PoliCheck"
-        inputs:
-          targetType: F
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
         displayName: "Run Vulnerability Assessment"
