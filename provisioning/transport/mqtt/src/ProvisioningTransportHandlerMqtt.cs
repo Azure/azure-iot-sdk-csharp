@@ -67,6 +67,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Registers a device described by the message.
         /// </summary>
         /// <param name="message">The provisioning message.</param>
+        /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
+        /// <returns>The registration result.</returns>
+        public override async Task<DeviceRegistrationResult> RegisterAsync(
+            ProvisioningTransportRegisterMessage message,
+            TimeSpan timeout)
+        {
+            using var cts = new CancellationTokenSource(timeout);
+            return await RegisterAsync(message, cts.Token).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Registers a device described by the message.
+        /// </summary>
+        /// <param name="message">The provisioning message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
         public override async Task<DeviceRegistrationResult> RegisterAsync(

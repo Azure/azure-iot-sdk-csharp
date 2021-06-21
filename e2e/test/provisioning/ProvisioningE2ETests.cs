@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -432,6 +433,62 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
         }
 
+        [LoggedTestMethod]
+        public async Task ProvisioningDeviceClient_ValidRegistrationId_TimeSpanTimeoutRespected_Mqtt()
+        {
+            try
+            {
+                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return; // expected exception was thrown, so exit the test
+            }
+
+            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
+        }
+
+        [LoggedTestMethod]
+        public async Task ProvisioningDeviceClient_ValidRegistrationId_TimeSpanTimeoutRespected_Https()
+        {
+            try
+            {
+                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return; // expected exception was thrown, so exit the test
+            }
+
+            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
+        }
+
+        [LoggedTestMethod]
+        public async Task ProvisioningDeviceClient_ValidRegistrationId_TimeSpanTimeoutRespected_Amqps()
+        {
+            try
+            {
+                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
+            }
+            catch (ProvisioningTransportException ex) when (ex.InnerException is SocketException && ((SocketException) ex.InnerException).SocketErrorCode == SocketError.TimedOut)
+            {
+                // The expected exception is a bit different in AMQP compared to MQTT/HTTPS
+                return; // expected exception was thrown, so exit the test
+            }
+
+            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
+        }
+
+        public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+            Client.TransportType transportType,
+            AttestationMechanismType attestationType,
+            EnrollmentType? enrollmentType,
+            TimeSpan timeout)
+        {
+            //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
+            await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(transportType, attestationType, enrollmentType, false, null, AllocationPolicy.Hashed, null, null, null, timeout, s_proxyServerAddress).ConfigureAwait(false);
+        }
+
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             Client.TransportType transportType,
             AttestationMechanismType attestationType,
@@ -440,7 +497,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(transportType, attestationType, enrollmentType, setCustomProxy, null, AllocationPolicy.Hashed, null, null, null, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(transportType, attestationType, enrollmentType, setCustomProxy, null, AllocationPolicy.Hashed, null, null, null, TimeSpan.MaxValue, proxyServerAddress).ConfigureAwait(false);
         }
 
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
@@ -463,7 +520,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     null,
                     iothubs,
                     capabilities,
-                    s_proxyServerAddress)
+                    TimeSpan.MaxValue,
+                    proxyServerAddress)
                 .ConfigureAwait(false);
         }
 
@@ -477,6 +535,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iothubs,
             DeviceCapabilities deviceCapabilities,
+            TimeSpan timeout,
             string proxyServerAddress = null)
         {
             string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
@@ -516,7 +575,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 try
                 {
-                    result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                    if (timeout != TimeSpan.MaxValue)
+                    {
+                        result = await provClient.RegisterAsync(timeout).ConfigureAwait(false);
+                    }
+                    else
+                    { 
+                        result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                    }
                     break;
                 }
                 // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
