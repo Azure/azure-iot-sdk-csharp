@@ -65,6 +65,8 @@ If you would like to build or change the SDK source code, please follow the [dev
 
 For an official list of all the operating systems and .NET platforms that we support, please see [this document](./supported_platforms.md)
 
+Note that you can configure your TLS protocol version and ciphers by following [this document](./configure_tls_protocol_version_and_ciphers.md)
+
 ## Key features and roadmap
 
 ### IoT Hub Device SDK

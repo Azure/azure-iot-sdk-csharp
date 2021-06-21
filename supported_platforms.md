@@ -51,3 +51,5 @@ OS name: "linux", version: "4.15.0-1113-azure", arch: "amd64", family: "unix"
 - This library does not officially support being run on MacOS.
 - This library does not officially support being run in Xamarin applications.
 - .NET Standard 1.3 (IoT Hub SDKs only) is last supported in the [2020-02-27](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2020-2-27) and in the [2020-1-31 LTS](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31) releases.
+- [.NET Core Runtime ID Catalog](https://docs.microsoft.com/dotnet/core/rid-catalog)
+- In order to run this SDK your device will need to meet the [.NET Framework System Requirements](https://docs.microsoft.com/dotnet/framework/get-started/system-requirements)
