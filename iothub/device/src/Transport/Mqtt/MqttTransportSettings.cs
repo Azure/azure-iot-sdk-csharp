@@ -165,9 +165,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <remarks>
         /// In the event that IoT Hub receives burst traffic, it will implement traffic shaping in order to process the incoming requests.
         /// In such cases, during client connection the CONNECT requests can have a delay in being acknowledged and processed by IoT Hub.
-        /// The <see cref="ConnectArrivalTimeout"/> governs the duration the client will wait for a CONNACK packet before disconnecting and reopening the connection.
+        /// The <c>ConnectArrivalTimeout</c> governs the duration the client will wait for a CONNACK packet before disconnecting and reopening the connection.
         /// To know more about IoT Hub's throttling limits and traffic shaping feature, see
-        /// <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-quotas-throttling#operation-throttles"/>.
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#operation-throttles"/>.
         /// </remarks>
         public TimeSpan ConnectArrivalTimeout { get; set; }
 
