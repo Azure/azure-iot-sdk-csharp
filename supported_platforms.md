@@ -1,6 +1,6 @@
 # Microsoft Azure IoT SDKs for .NET
 
-This SDK is tested nightly on a mix of .NET frameworks on both Windows 10 and on Ubuntu 1604. For additional details
+This SDK is tested nightly on a mix of .NET implementations on both Windows 10 and on Ubuntu 1604. For additional details
 for each tested platform, see the respective sections below. 
 
 ## Supported .NET versions
