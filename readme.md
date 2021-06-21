@@ -61,6 +61,10 @@ It shows how to connect a device, handle disconnect events, cases to handle when
 
 If you would like to build or change the SDK source code, please follow the [devguide](doc/devguide.md).
 
+## OS platforms and hardware compatibility
+
+For an official list of all the operating systems and .NET platforms that we support, please see [this document](./supported_platforms.md)
+
 ## Key features and roadmap
 
 ### IoT Hub Device SDK

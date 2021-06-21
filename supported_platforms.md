@@ -16,15 +16,16 @@ versions nor are there guarantees that we will fix bugs that are only present on
 
 ## Windows 10
 
-Note that, while we only directly test on Windows 10, we do support other Windows versions as well.
+Note that, while we only directly test on Windows 10, we do support other Windows versions officially supported by Microsoft.
 
 Nightly test platform details:
 
 .NET versions tested on
-- .NET Framework 4.5.1
-- .NET Framework 4.7.2
-- .NET Core 2.1.18
 - .NET Core 3.1
+- .NET Core 2.1.18
+- .NET Framework 4.7.2 (only IoT Hub SDKs tested)
+- .NET Framework 4.5.1 (only IoT Hub SDKs tested)
+
 
 Default locale: en_US, platform encoding: Cp1252
 
@@ -32,13 +33,13 @@ OS name: "windows server 2016", version: "10.0", arch: "amd64", family: "windows
 
 ## Ubuntu 1604
 
-Note that, while we only directly test on Ubuntu 1604, we do generally support other popular linux distributions. 
+Note that, while we only directly test on Ubuntu 1604, we do generally support other [Linux distributions supported by .NET core](https://docs.microsoft.com/en-us/dotnet/core/install/linux). 
 
 Nightly test platform details:
 
 .NET versions tested on:
-- .NET Core 2.1.18
 - .NET Core 3.1
+- .NET Core 2.1.18
 
 Default locale: en_US, platform encoding: UTF-8
 
