@@ -47,6 +47,7 @@ OS name: "linux", version: "4.15.0-1113-azure", arch: "amd64", family: "unix"
 
 ## Miscellaneous support notes
 
+- This library has a [preview version](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/preview_2021-6-8) that supports .NET 5.0, but we don't officially support it in our main releases yet.
 - This library does not officially support being run on MacOS.
 - This library does not officially support being run in Xamarin applications.
 - .NET Standard 1.3 (IoT Hub SDKs only) is last supported in the [2020-02-27](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2020-2-27) and in the [2020-1-31 LTS](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31) releases.
