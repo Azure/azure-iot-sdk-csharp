@@ -14,7 +14,7 @@ The NuGet packages provide support for the following .NET versions:
 This SDK _may_ work with other versions of .NET, but there are no guarantees that they will _always_ work for those 
 versions nor are there guarantees that we will fix bugs that are only present on those versions.
 
-Note that applications targeting multiple .NET frameworks have some rules for target framework precedence, so applications using this library will pick the net451/net472 dll as per framework precedence.
+Note that applications will resolve the dll that is being referenced based on the framework precedence rules. This means that .NET Framework targeting applications will look for the closet .NET Framework dll. In the absence of that, it will pick up the closest .NET Standard dll. Similarly for netcoreapp applications will look for the closest netcoreapp dll and in the absence of one will pick the closest .NET Standard dll. Since we publish the above list of dlls, you should target the appropriate net target to ensure you get the desired .net API coverage
 
 ## Windows 10
 
