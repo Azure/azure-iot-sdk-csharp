@@ -63,27 +63,9 @@ If you would like to build or change the SDK source code, please follow the [dev
 
 ## OS platforms and hardware compatibility
 
-> .NET Standard 1.3 (IoT Hub SDKs only) is last supported in the [2020-02-27](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2020-2-27) and in the [2020-1-31 LTS](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31) releases.
+For an official list of all the operating systems and .NET platforms that we support, please see [this document](./supported_platforms.md)
 
-The IoT Hub device SDK for .NET can be used with a broad range of device platforms and is officially supported on the following Operating Systems:
-
-*  Windows versions officially supported by Microsoft.
-*  [Linux distributions](https://docs.microsoft.com/en-us/dotnet/core/install/linux) supported by .NET core.
-
-> Note: For Linux, we test our clients against Ubuntu 16.04.7 LTS.
-
-The NuGet packages provide support for the following .NET flavors:
-- .NET Standard 2.1
-- .NET Standard 2.0
-- .NET Framework 4.7.2 (IoT Hub SDKs only)
-- .NET Framework 4.5.1 (IoT Hub SDKs only)
-
-For details on .NET support see the [.NET Standard documentation](https://docs.microsoft.com/dotnet/standard/net-standard).
-For details on OS support see the following resources:
-
-- [.NET Core Runtime ID Catalog](https://docs.microsoft.com/dotnet/core/rid-catalog)
-- [.NET Framework System Requirements](https://docs.microsoft.com/dotnet/framework/get-started/system-requirements)
-- [Configure TLS Protocol Version and Ciphers](./configure_tls_protocol_version_and_ciphers.md)
+Note that you can configure your TLS protocol version and ciphers by following [this document](./configure_tls_protocol_version_and_ciphers.md)
 
 ## Key features and roadmap
 
