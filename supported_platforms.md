@@ -14,6 +14,8 @@ The NuGet packages provide support for the following .NET versions:
 This SDK _may_ work with other versions of .NET, but there are no guarantees that they will _always_ work for those 
 versions nor are there guarantees that we will fix bugs that are only present on those versions.
 
+Note that applications targeting multiple .NET frameworks have some rules for target framework precedence, so applications using this library will pick the net451/net472 dll as per framework precedence.
+
 ## Windows 10
 
 Note that, while we only directly test on Windows 10, we do support other Windows versions officially supported by Microsoft.
