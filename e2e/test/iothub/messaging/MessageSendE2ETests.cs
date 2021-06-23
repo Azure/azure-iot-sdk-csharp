@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private const int MessageBatchCount = 5;
         private const int LargeMessageSizeInBytes = 255 * 1024; // The maximum message size for device to cloud messages is 256 KB. We are allowing 1 KB of buffer for message header information etc.
+        private const int ExceedAllowedMessageSizeInBytes = 300 * 1024;
         private readonly string DevicePrefix = $"{nameof(MessageSendE2ETests)}_";
         private readonly string ModulePrefix = $"{nameof(MessageSendE2ETests)}_";
         private static string ProxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
@@ -243,6 +244,47 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSendSingleLargeMessageAsync(TestDeviceType testDeviceType, Client.TransportType transportType, int messageSize)
         {
             await SendSingleMessage(testDeviceType, transportType, messageSize).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_Amqp()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_AmqpWs()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
+        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
+        // and throwing a MessageTooLargeException, if relevant.
+        [LoggedTestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_Mqtt()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
+        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
+        // and throwing a MessageTooLargeException, if relevant.
+        [LoggedTestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_MqttWs()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_Http()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport, int messageSize = 0)
