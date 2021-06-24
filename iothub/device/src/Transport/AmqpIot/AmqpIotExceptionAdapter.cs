@@ -19,6 +19,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 return new UnauthorizedException(exception.Message, exception);
             }
+            else if (exception is OperationCanceledException)
+            {
+                var innerAmqpException = exception.InnerException as AmqpException;
+                return innerAmqpException == null
+                    ? exception
+                    : AmqpIotErrorAdapter.ToIotHubClientContract(innerAmqpException);
+            }
             else
             {
                 var amqpException = exception as AmqpException;

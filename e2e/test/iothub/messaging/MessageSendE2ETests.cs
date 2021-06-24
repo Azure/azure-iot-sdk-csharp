@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private const int MessageBatchCount = 5;
         private const int LargeMessageSizeInBytes = 255 * 1024; // The maximum message size for device to cloud messages is 256 KB. We are allowing 1 KB of buffer for message header information etc.
-        private const int ExceedAllowedMessageSizeInBytes = 300 * 1024;
+        private const int ExceedAllowedMessageSizeInBytes = 3000 * 1024;
         private readonly string DevicePrefix = $"{nameof(MessageSendE2ETests)}_";
         private readonly string ModulePrefix = $"{nameof(MessageSendE2ETests)}_";
         private static string ProxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
