@@ -969,6 +969,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 _handlerSemaphore?.Dispose();
                 _handlerSemaphore = null;
+
+                Logging.Info(this, "I WAS DISPOSED*******RetryDelegatingHandler******");
             }
         }
     }

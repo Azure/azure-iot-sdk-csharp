@@ -193,6 +193,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             base.Dispose(disposing);
             _handlerLock?.Dispose();
             _handlerLock = null;
+
+            Logging.Info(this, "I WAS DISPOSED*******ProtocolRoutingDelegatingHandler******");
         }
     }
 }
