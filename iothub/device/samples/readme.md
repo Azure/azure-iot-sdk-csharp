@@ -1,5 +1,10 @@
 
-This folder contains simple samples showing how to use the various features of Microsoft Azure IoT Hub service, from a device running C# code.
+This folder contains simple samples showing how to use the various preview features of Microsoft Azure IoT Hub .NET SDK.
+
+The following features are currently in preview:
+- .NET 5.0 support.
+- Support for convention-based operations.
+- Device Streaming.
 
 ### [Device samples][device-samples]
 
@@ -12,8 +17,8 @@ This folder contains simple samples showing how to use the various features of M
 - [File upload sample][d-file-upload-sample]
 - [Import/export devices sample][d-import-export-devices-sample]
 - [Connect with X509 certificate sample][d-x509-cert-sample]
-- [Plug and Play device samples][d-pnp-sample]
-- [Xamarin sample][d-xamarin-sample]
+- [Convention based operations samples][d-convention-based-operations-sample]
+- [Device streaming sample][d-device-streaming-sample]
 
 ### Module sample
 
@@ -65,18 +70,18 @@ You need to clone the repository or download the sample (the one you want to try
     dotnet run
     ```
 
-[device-samples]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device
-[d-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/DeviceReconnectionSample
-[d-receive-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/MessageReceiveSample
-[d-method-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/MethodSample
-[d-twin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/TwinSample
-[d-file-upload-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/FileUploadSample
-[d-x509-cert-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/X509DeviceCertWithChainSample
-[d-import-export-devices-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/ImportExportDevicesSample
-[d-pnp-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/PnpDeviceSamples
-[d-xamarin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/XamarinSample
+[device-samples]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device
+[d-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/DeviceReconnectionSample
+[d-receive-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/MessageReceiveSample
+[d-method-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/MethodSample
+[d-twin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/TwinSample
+[d-file-upload-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/FileUploadSample
+[d-x509-cert-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/X509DeviceCertWithChainSample
+[d-import-export-devices-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/ImportExportDevicesSample
+[d-convention-based-operations-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/ConventionBasedOperations
+[d-device-streaming-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/DeviceStreamingSample
 
-[m-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/module/ModuleSample
+[m-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/module/ModuleSample
 
 [lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
 [lnk-manage-iot-device]: https://github.com/Azure/azure-iot-device-ecosystem/blob/master/setup_iothub.md#create-new-device-in-the-iot-hub-device-identity-registry
