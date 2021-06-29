@@ -1411,12 +1411,12 @@ namespace Microsoft.Azure.Devices.Client
             await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
             ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
             object callbackContext = _deviceReceiveMessageCallback?.Item2;
-            _deviceReceiveMessageSemaphore.Release();
 
             if (callback != null)
             {
-                await callback.Invoke(message, callbackContext).ConfigureAwait(false);
+                _ = callback.Invoke(message, callbackContext);
             }
+            _deviceReceiveMessageSemaphore.Release();
 
             if (Logging.IsEnabled)
             {
