@@ -34,6 +34,15 @@ Due to security considerations, build logs are not publicly available.
 | Microsoft.Azure.Devices.DigitalTwin.Client            | N/A                                                       | [![NuGet][pnp-device-prerelease]][pnp-device-nuget]           |
 | Microsoft.Azure.Devices.DigitalTwin.Service           | N/A                                                       | [![NuGet][pnp-service-prerelease]][pnp-service-nuget]         |
 
+> Note:  
+> Device streaming feature is not being included in our newer preview releases as there is no active development going on in the service. For more details on the feature, see [here](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-device-streams-overview). It is not recommended to take dependency on preview nugets for production applications as breaking changes can be introduced in preview nugets.  
+>  
+> The feature has not been included in any preview release after [2020-10-14](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/preview_2020-10-14). However, the feature is still available under previews/deviceStreaming branch.  
+>  
+> The latest preview nuget versions that contain the feature are:  
+Microsoft.Azure.Devices.Client - 1.32.0-preview-001  
+Microsoft.Azure.Devices - 1.28.0-preview-001
+
 The API reference documentation for .NET SDK is [here][dotnet-api-reference].
 
 To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
