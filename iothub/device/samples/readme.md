@@ -15,7 +15,6 @@ The following features are currently in preview:
 - [Receive message sample][d-receive-message-sample]
 - [Twin sample][d-twin-sample]
 - [File upload sample][d-file-upload-sample]
-- [Import/export devices sample][d-import-export-devices-sample]
 - [Connect with X509 certificate sample][d-x509-cert-sample]
 - [Convention based operations samples][d-convention-based-operations-sample]
 - [Device streaming sample][d-device-streaming-sample]
@@ -77,7 +76,6 @@ You need to clone the repository or download the sample (the one you want to try
 [d-twin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/TwinSample
 [d-file-upload-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/FileUploadSample
 [d-x509-cert-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/X509DeviceCertWithChainSample
-[d-import-export-devices-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/ImportExportDevicesSample
 [d-convention-based-operations-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/ConventionBasedOperations
 [d-device-streaming-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/device/DeviceStreamingSample
 
