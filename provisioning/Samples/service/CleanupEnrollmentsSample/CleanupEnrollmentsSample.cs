@@ -18,7 +18,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private static int _enrollmentGroupsDeleted;
         private List<string> individualEnrollmentsToBeRetained =
             new List<string>{
-                "iothubx509device1"
+                "iothubx509device1",
+                "SymmetricKeySampleIndividualEnrollment"
             };
         private List<string> groupEnrollmentsToBeRetained =
             new List<string>{

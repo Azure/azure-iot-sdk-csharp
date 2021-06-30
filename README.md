@@ -20,6 +20,9 @@ azure-iot-samples-csharp provides a set of easy-to-understand, continuously-test
 
   **Note:** The samples can be compiled using the NET Core SDK 2.1 SDK if the language version of projects using C# 8 features are changed to `preview`.
 
+## Preview features
+
+Samples showing how to use the various preview features of Microsoft Azure IoT .NET SDK are present [here](https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview).
 
 ## Resources
 

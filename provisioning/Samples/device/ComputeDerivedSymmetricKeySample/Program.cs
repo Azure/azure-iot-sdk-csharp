@@ -23,9 +23,6 @@ namespace ComputeDerivedSymmetricKeySample
             var sample = new ComputeDerivedKeySample(parameters);
             sample.RunSample();
 
-            Console.WriteLine("Enter any key to exit.");
-            Console.ReadKey();
-
             return 0;
         }
     }

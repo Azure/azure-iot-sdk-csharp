@@ -49,7 +49,14 @@ namespace AzureSasCredentialAuthenticationSample
             's',
             "SharedAccessKey",
             Required = true,
-            HelpText = "The shared access key for IoT hub.")]
-        public string SharedAccessKey { get; set; }       
+            HelpText = "The shared access key for connecting to IoT hub.")]
+        public string SharedAccessKey { get; set; }
+
+        [Option(
+            'n',
+            "SharedAccessKeyName",
+            Required = true,
+            HelpText = "The shared access key name for the access key supplied. Eg. iothubowner, registryRead etc.")]
+        public string SharedAccessKeyName { get; set; }
     }
 }

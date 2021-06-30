@@ -23,6 +23,13 @@ param(
     [string] $deviceId
 )
 
+# Check that script is run in admin mode
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+if (-not $isAdmin)
+{
+    throw "This script must be run in administrative mode."
+}
+
 # Setup parameters
 $subjectPrefix = "IoT Test"
 $rootCommonName = "$subjectPrefix Root CA"
@@ -94,7 +101,7 @@ if ($certExits)
 az iot hub certificate create -g $resourceGroup --hub-name $hubName --name $certNameToUpload --path $rootCertPath | Out-Null
 
 # Verify rootCA cert in IotHub
-Write-Host "Verifying possesion of rootCACert in $hubName"
+Write-Host "Verifying possession of rootCACert in $hubName"
 $etag = az iot hub certificate show -g $resourceGroup --hub-name $hubName --name $certNameToUpload --query 'etag'
 $requestedCommonName = az iot hub certificate generate-verification-code -g $resourceGroup --hub-name $hubName --name $certNameToUpload -e $etag --query 'properties.verificationCode'
 $verificationCertArgs = @{
@@ -109,4 +116,4 @@ $verificationCert = New-SelfSignedCertificate @verificationCertArgs
 Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
 $etag = az iot hub certificate show -g $resourceGroup --hub-name $hubName --name $certNameToUpload --query 'etag'
 az iot hub certificate verify -g $resourceGroup --hub-name $hubName --name $certNameToUpload -e $etag --path $verificationCertPath --output none
-Write-Host "Successfuly verified possesion of rootCACert in $hubName"
+Write-Host "Successfully verified possession of rootCACert in $hubName"

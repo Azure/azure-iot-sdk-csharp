@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             string codeBase = Assembly.GetExecutingAssembly().Location;
             string workingDirectory = Path.GetDirectoryName(codeBase);
 
-            // Ascend the directory looking for one that has a certficate with the specified name,
+            // Ascend the directory looking for one that has a certificate with the specified name,
             // because the sample exe is likely in a build output folder ~3 levels below in
             // the project folder.
             while (!string.IsNullOrWhiteSpace(workingDirectory))

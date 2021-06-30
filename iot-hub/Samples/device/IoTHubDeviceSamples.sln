@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MethodSample", "MethodSampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwinSample", "TwinSample\TwinSample.csproj", "{AE5A05F3-A0B7-4D56-ACE1-FC8B9D223FA5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceClientStreamingSample", "DeviceStreamingSample\DeviceClientStreamingSample.csproj", "{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceReconnectionSample", "DeviceReconnectionSample\DeviceReconnectionSample.csproj", "{EA56CE79-4954-40F4-BEDD-5EB7B75149B6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PnpDeviceSamples", "PnpDeviceSamples", "{F5303EDE-71ED-4F4F-973A-A9604DE9FA04}"
@@ -49,10 +47,6 @@ Global
 		{AE5A05F3-A0B7-4D56-ACE1-FC8B9D223FA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE5A05F3-A0B7-4D56-ACE1-FC8B9D223FA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE5A05F3-A0B7-4D56-ACE1-FC8B9D223FA5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EA56CE79-4954-40F4-BEDD-5EB7B75149B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EA56CE79-4954-40F4-BEDD-5EB7B75149B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA56CE79-4954-40F4-BEDD-5EB7B75149B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
