@@ -5,7 +5,6 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             // For individual enrollments, the first parameter must be the registration Id, where in the enrollment
             // the device Id is already chosen. However, for group enrollments the device Id can be requested by
             // the device, as long as the key has been computed using that value.
-            // Also, the secondary could could be included, but was left out for the simplicity of this sample.
+            // Also, the secondary could be included, but was left out for the simplicity of this sample.
             using var security = new SecurityProviderSymmetricKey(
                 _parameters.Id,
                 _parameters.PrimaryKey,

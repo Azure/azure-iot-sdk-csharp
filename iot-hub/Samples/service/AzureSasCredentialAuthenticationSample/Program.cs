@@ -39,7 +39,7 @@ namespace AzureSasCredentialAuthenticationSample
 
             TimeSpan timeToLive = TimeSpan.FromHours(1);
             DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
-            string sasToken = GenerateSasToken(parameters.ResourceUri, parameters.SharedAccessKey, expiresOn);
+            string sasToken = GenerateSasToken(parameters.ResourceUri, parameters.SharedAccessKey, parameters.SharedAccessKeyName, expiresOn);
             // Note: Pass the generated sasToken and not just the shared access signature when creating the AzureSasCredential.
             AzureSasCredential sasCredential = new AzureSasCredential(sasToken);
 
@@ -47,7 +47,7 @@ namespace AzureSasCredentialAuthenticationSample
             // This sample just shows how to perform the update but it is not necessary to update the token
             // until the token is close to its expiry.
             DateTime newExpiresOn = DateTime.UtcNow.Add(timeToLive);
-            string updatedSasToken = GenerateSasToken(parameters.ResourceUri, parameters.SharedAccessKey, newExpiresOn);
+            string updatedSasToken = GenerateSasToken(parameters.ResourceUri, parameters.SharedAccessKey, parameters.SharedAccessKeyName, newExpiresOn);
             sasCredential.Update(updatedSasToken);
 
             // There are constructors for all the other clients where you can pass SAS credentials - JobClient, RegistryManager, DigitalTwinClient
@@ -58,7 +58,7 @@ namespace AzureSasCredentialAuthenticationSample
             await sample.RunSampleAsync(serviceClient, parameters.DeviceId);
         }
 
-        private static string GenerateSasToken(string resourceUri, string sharedAccessKey, DateTime expiresOn, string policyName = default )
+        private static string GenerateSasToken(string resourceUri, string sharedAccessKey, string policyName, DateTime expiresOn)
         {
             DateTime epochTime = new DateTime(1970, 1, 1);
             TimeSpan secondsFromEpochTime = expiresOn.Subtract(epochTime);

@@ -30,9 +30,6 @@ namespace SymmetricKeySample
             var sample = new ProvisioningDeviceClientSample(parameters);
             await sample.RunSampleAsync();
 
-            Console.WriteLine("Enter any key to exit.");
-            Console.ReadKey();
-
             return 0;
         }
     }

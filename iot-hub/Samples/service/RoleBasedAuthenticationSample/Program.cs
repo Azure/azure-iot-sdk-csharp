@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using Azure.Core;
 using Azure.Identity;
 using CommandLine;
@@ -40,7 +41,7 @@ namespace RoleBasedAuthenticationSample
 
             // DefaultAzureCredential supports different authentication mechanisms and determines the appropriate credential type based of the environment it is executing in.
             // It attempts to use multiple credential types in an order until it finds a working credential.
-            // For more info <see cref="https://docs.microsoft.com/en-us/dotnet/api/azure.identity?view=azure-dotnet"/>
+            // For more info see https://docs.microsoft.com/en-us/dotnet/api/azure.identity?view=azure-dotnet.
             TokenCredential tokenCredential = new DefaultAzureCredential(); 
 
             // There are constructors for all the other clients where you can pass AAD credentials - JobClient, RegistryManager, DigitalTwinClient

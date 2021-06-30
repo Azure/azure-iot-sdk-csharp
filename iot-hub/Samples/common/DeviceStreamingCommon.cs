@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Samples.Common
         /// </summary>
         /// <param name="url">Url to the Streaming Gateway.</param>
         /// <param name="authorizationToken">Authorization token to connect to the Streaming Gateway.</param>
-        /// <param name="cancellationToken">The token used for cancelling this operation if desired.</param>
+        /// <param name="cancellationToken">The token used for canceling this operation if desired.</param>
         /// <returns>A ClientWebSocket instance connected to the Device Streaming gateway, if successful.</returns>
         public static async Task<ClientWebSocket> GetStreamingClientAsync(Uri url, string authorizationToken, CancellationToken cancellationToken)
         {
