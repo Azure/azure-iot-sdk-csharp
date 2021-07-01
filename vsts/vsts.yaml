@@ -34,6 +34,7 @@ jobs:
 
     condition: succeeded()
     pool:
+      # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
     steps:
       - task: Docker@1
@@ -145,6 +146,7 @@ jobs:
 
     condition: succeeded()
     pool:
+      # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: windows-2019
     steps:
       - script: |

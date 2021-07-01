@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
 
-            var config = new Configuration.IoTHub.ConnectionStringParser(deviceConnectionString);
+            var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
             string deviceId = config.DeviceID;
 
             ConnectionStatus? status = null;
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(twin);
 
                 // Delete/disable the device in IoT Hub. This should trigger the ConnectionStatusChangesHandler.
-                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(registryManager, deviceId).ConfigureAwait(false);
                 }
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(twin);
 
                 // Delete/disable the device in IoT Hub.
-                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(registryManager, testModule.DeviceId).ConfigureAwait(false);
                 }
