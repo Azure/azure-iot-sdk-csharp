@@ -10,8 +10,8 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     /// <summary>
-    /// Transport handler router. 
-    /// Tries to open the connection in the protocol order it was set. 
+    /// Transport handler router.
+    /// Tries to open the connection in the protocol order it was set.
     /// If fails tries to open the next one, etc.
     /// </summary>
     internal class ProtocolRoutingDelegatingHandler : DefaultDelegatingHandler
@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// After we've verified that we could open the transport for any operation, we will stop attempting others in the list.
         /// </summary>
         private bool _transportSelectionComplete;
+
         private int _nextTransportIndex;
 
         private SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);

@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var fileUploadTransportSettings = new Http1TransportSettings()
             {
-                Proxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
+                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
             };
 
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
@@ -124,11 +124,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (x509auth)
             {
-                X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
+                X509Certificate2 cert = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
 
                 var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
-
-                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, Client.TransportType.Http1, clientOptions);
+                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, Client.TransportType.Http1);
             }
             else
             {
@@ -166,7 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             DeviceClient deviceClient;
             if (x509auth)
             {
-                X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
+                X509Certificate2 cert = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
 
                 var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
                 deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
@@ -198,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             DeviceClient deviceClient;
             if (x509auth)
             {
-                X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
+                X509Certificate2 cert = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
 
                 var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
                 deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
