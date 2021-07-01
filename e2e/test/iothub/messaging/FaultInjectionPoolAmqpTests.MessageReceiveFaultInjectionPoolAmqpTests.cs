@@ -895,7 +895,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyAddress = null)
         {
             // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
@@ -955,7 +955,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyAddress = null)
         {
             // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {

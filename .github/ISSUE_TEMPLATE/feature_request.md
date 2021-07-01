@@ -26,6 +26,8 @@ Thank you for raising a feature request! To get started, here's a few things to 
 
 As an open source project, we welcome PRs for new features, and we don't want to reject any hard work you've done to contribute. **So propose your solution through an issue first** so we can discuss the changes, and if things look good we will ask you submit a PR to implement the changes.
 
+Note that feature requests that only affect unsupported platforms may be closed as "won't fix" if we have no plans to support that platform. See [this document](../../supported_platforms.md) for details on which platforms are officially supported.
+
 ------------------------------- delete above -------------------------------
 
 **Is your feature request related to a problem? Please describe.**

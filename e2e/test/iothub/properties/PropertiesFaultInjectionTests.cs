@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
         private async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue)
         {
-            using var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;

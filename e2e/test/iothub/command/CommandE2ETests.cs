@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
             int statusCode = 0;
 #if NET451
 
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Invoke command {commandName}.");
 
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
 
             serviceClient.Dispose();
 #else
-            DigitalTwinClient digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            DigitalTwinClient digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Invoke command {commandName}.");
 
