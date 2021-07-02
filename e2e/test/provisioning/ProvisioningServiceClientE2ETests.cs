@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningServiceClientE2ETests : E2EMsTestBase
     {
-        private static readonly string s_proxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"E2E_{nameof(ProvisioningServiceClientE2ETests)}_";
 
 #pragma warning disable CA1823
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
         {
-            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType, null, AllocationPolicy.Static, null, null, null);
 
             AttestationMechanism attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
         {
-            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null);
 
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     using (var tpmSim = new SecurityProviderTpmSimulator(registrationId))
                     {
                         string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-                        using ProvisioningServiceClient provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+                        using ProvisioningServiceClient provisioningService = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
                         individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek))
                         {
                             Capabilities = capabilities,
@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transportSettings.Proxy = new WebProxy(proxyServerAddress);
             }
 
-            return ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString, transportSettings);
+            return ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString, transportSettings);
         }
 
         /// <summary>

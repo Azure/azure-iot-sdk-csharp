@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
