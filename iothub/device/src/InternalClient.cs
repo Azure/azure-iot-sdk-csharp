@@ -1409,14 +1409,21 @@ namespace Microsoft.Azure.Devices.Client
             // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the
             // item1 and the read of the item2
             await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
-            ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
-            object callbackContext = _deviceReceiveMessageCallback?.Item2;
 
-            if (callback != null)
+            try
             {
-                _ = callback.Invoke(message, callbackContext);
+                ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
+                object callbackContext = _deviceReceiveMessageCallback?.Item2;
+
+                if (callback != null)
+                {
+                    _ = callback.Invoke(message, callbackContext);
+                }
             }
-            _deviceReceiveMessageSemaphore.Release();
+            finally
+            {
+                _deviceReceiveMessageSemaphore.Release();
+            }
 
             if (Logging.IsEnabled)
             {
