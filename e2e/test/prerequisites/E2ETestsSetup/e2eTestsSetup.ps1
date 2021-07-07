@@ -489,6 +489,12 @@ if ($isVerified -eq 'false')
 }
 
 ##################################################################################################################################
+# Fetch the iothubowner policy details
+##################################################################################################################################
+$iothubownerSasPolicy = "iothubowner"
+$iothubownerSasPrimaryKey = az iot hub policy show --hub-name $iotHubName --name $iothubownerSasPolicy --query 'primaryKey'
+
+##################################################################################################################################
 # Create device in IoTHub that uses a certificate signed by intermediate certificate
 ##################################################################################################################################
 
@@ -496,9 +502,68 @@ $iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub
 
 if (-not $iotHubCertChainDevice)
 {
-    Write-Host "`nCreating device $iotHubCertChainDeviceCommonName on IoT Hub."
+    Write-Host "`nCreating X509 CA certificate authenticated device $iotHubCertChainDeviceCommonName on IoT Hub."
     az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubCertChainDeviceCommonName --am x509_ca
 }
+
+##################################################################################################################################
+# Create the IoT devices and modules that are used by the .NET samples
+##################################################################################################################################
+$iotHubSasBasedDeviceId = "DoNotDeleteDevice1"
+$iotHubSasBasedDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubSasBasedDeviceId'].deviceId" --output tsv
+
+if (-not $iotHubSasBasedDevice)
+{
+    Write-Host "`nCreating SAS based device $iotHubSasBasedDeviceId on IoT Hub."
+    az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --ee
+}
+$iotHubSasBasedDeviceConnectionString = az iot hub device-identity connection-string show --device-id $iotHubSasBasedDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+
+$iotHubSasBasedModuleId = "DoNotDeleteModule1"
+$iotHubSasBasedModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --query "[?moduleId=='$iotHubSasBasedModuleId'].moduleId" --output tsv
+
+if (-not $iotHubSasBasedModule)
+{
+    Write-Host "`nCreating SAS based module $iotHubSasBasedModuleId under device $iotHubSasBasedDeviceId on IoT Hub."
+    az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId
+}
+$iotHubSasBasedModuleConnectionString = az iot hub module-identity connection-string show --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+
+$thermostatSampleDeviceId = "ThermostatSample_DoNotDelete"
+$thermostatSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$thermostatSampleDeviceId'].deviceId" --output tsv
+
+if (-not $thermostatSampleDevice)
+{
+    Write-Host "`nCreating SAS based device $thermostatSampleDeviceId on IoT Hub."
+    az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $thermostatSampleDeviceId --ee
+}
+$thermostatSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $thermostatSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+
+$temperatureControllerSampleDeviceId = "TemperatureControllerSample_DoNotDelete"
+$temperatureControllerSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$temperatureControllerSampleDeviceId'].deviceId" --output tsv
+
+if (-not $temperatureControllerSampleDevice)
+{
+    Write-Host "`nCreating SAS based device $temperatureControllerSampleDeviceId on IoT Hub."
+    az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $temperatureControllerSampleDeviceId --ee
+}
+$temperatureControllerSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $temperatureControllerSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+
+##################################################################################################################################
+# Create the DPS enrollments that are used by the .NET samples
+##################################################################################################################################
+
+$symmetricKeySampleEnrollmentRegistrationId = "SymmetricKeySampleIndividualEnrollment"
+$symmetricKeyEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $dpsName --query "[?deviceId=='$symmetricKeySampleEnrollmentRegistrationId'].deviceId" --output tsv
+if ($symmetricKeyEnrollmentExists)
+{
+    Write-Host "`nDeleting existing individual enrollment $symmetricKeySampleEnrollmentRegistrationId."
+    az iot dps enrollment delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId
+}
+Write-Host "`nAdding individual enrollment $symmetricKeySampleEnrollmentRegistrationId."
+az iot dps enrollment create -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId --attestation-type symmetrickey --output none
+
+$symmetricKeySampleEnrollmentPrimaryKey = az iot dps enrollment show -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId --show-keys --query 'attestation.symmetricKey.primaryKey' --output tsv
 
 ##################################################################################################################################
 # Uploading certificate to DPS, verifying and creating enrollment groups
@@ -587,7 +652,7 @@ Remove-Item -r $selfSignedCerts
 
 Write-Host "`nWriting secrets to KeyVault $keyVaultName."
 az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id $userObjectId --secret-permissions delete get list set --output none
-az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none # IoT Hub Connection string Environment variable for Java
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONNECTION-STRING" --value $iotHubConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PFX-X509-THUMBPRINT" --value $iotHubThumbprint --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-PROXY-SERVER-ADDRESS" --value $proxyServerAddress --output none
 az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNAME" --value $farHubHostName --output none
@@ -630,6 +695,17 @@ az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-CONN-STRING-INV
 az keyvault secret set --vault-name $keyVaultName --name "PROVISIONING-CONNECTION-STRING-INVALIDCERT" --value "HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY=" --output none
 
 az keyvault secret set --vault-name $keyVaultName --name "E2E-IKEY" --value $instrumentationKey --output none
+
+# Below environment variables are used by .NET samples
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-DEVICE-CONN-STRING" --value $iotHubSasBasedDeviceConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-MODULE-CONN-STRING" --value $iotHubSasBasedModuleConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "PNP-TC-DEVICE-CONN-STRING" --value $temperatureControllerSampleDeviceConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "PNP-THERMOSTAT-DEVICE-CONN-STRING" --value $thermostatSampleDeviceConnectionString --output none
+az keyvault secret set --vault-name $keyVaultName --name "PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE" --value "csharp_devices_list.csv" --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-SAS-KEY" --value $iothubownerSasPrimaryKey --output none
+az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-SAS-KEY-NAME" --value $iothubownerSasPolicy --output none
+az keyvault secret set --vault-name $keyVaultName --name "DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID" --value $symmetricKeySampleEnrollmentRegistrationId --output none
+az keyvault secret set --vault-name $keyVaultName --name "DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY" --value $symmetricKeySampleEnrollmentPrimaryKey --output none
 
 ###################################################################################################################################
 # Run docker containers for TPM simulators and Proxy
