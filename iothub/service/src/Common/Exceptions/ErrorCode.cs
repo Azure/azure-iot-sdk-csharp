@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceInvalidResultCount = 400002,
 
@@ -32,47 +32,53 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceStorageEntitySerializationError = 400007,
 
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         BlobContainerValidationError = 400008,
 
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         ImportWarningExistsError = 400009,
 
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidSchemaVersion = 400010,
 
+        /// <summary>
+        /// A devices with the same Id was present multiple times in the input request for bulk device registry operations.
+        /// <para>
+        /// For more information <see href="https://docs.microsoft.com/rest/api/iothub/service/bulk-registry/update-registry"/> on bulk registry operations.
+        /// </para>
+        /// </summary>
         DeviceDefinedMultipleTimes = 400011,
 
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         DeserializationError = 400012,
 
         /// <summary>
         /// An error was encountered processing bulk registry operations.
-        /// </summary>
-        /// <remarks>
+        /// <para>
         /// As this error is in the 4xx HTTP status code range, the service would have detected a problem with the job
         /// request or user input.
-        /// </remarks>
+        /// </para>
+        /// </summary>
         //[Obsolete("This error does not appear to be returned by the service.")]
         //[EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
@@ -96,16 +102,16 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK. Replaced by <see cref="IotHubUnauthorizedAccess"/>
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubUnauthorized = 401003,
 
         // Forbidden - 403
-        
+
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubSuspended = 403001,
 
@@ -131,7 +137,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubMaxCbsTokenExceeded = 403005,
 
@@ -145,7 +151,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         JobNotFound = 404002,
 
@@ -166,7 +172,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ModuleAlreadyExistsOnDevice = 409301,
 
         /// <summary>
-        /// The etag in the request does not match the etag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>. The etag is controlled by the service and is based on the device identity it should not be updated in normal operations. 
+        /// The etag in the request does not match the etag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>. The etag is controlled by the service and is based on the device identity it should not be updated in normal operations.
         /// </summary>
         PreconditionFailed = 412001, // PreconditionFailed - 412
 
@@ -204,7 +210,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// IoT hub ran into a server side issue when attempting to throttle.
         /// For more information, <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidThrottleParameter = 500009,
 
