@@ -94,11 +94,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         IotHubUnauthorizedAccess = 401002,
 
         /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
+        /// Unused error code. Service does not return it and neither does the SDK. Replaced by <see cref="IotHubUnauthorizedAccess"/>
         /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        IotHubUnauthorized = 401003, // never thrown by service anymore. Replaced by IotHubUnauthorizedAccess
+        IotHubUnauthorized = 401003,
 
         // Forbidden - 403
         
