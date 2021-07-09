@@ -148,8 +148,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         JobNotFound = 404002,
-        
-        PartitionNotFound = 404003,
+
+        /// <summary>
+        /// The error is internal to IoT Hub and is likely transient. For more details, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
+        /// </summary>
+        PartitionNotFound = 503003, // We do not handle this error code in our SDK
+
         ModuleNotFound = 404010,
 
         // Conflict - 409
