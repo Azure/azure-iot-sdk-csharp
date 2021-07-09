@@ -17,27 +17,53 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // BadRequest - 400
         InvalidProtocolVersion = 400001,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceInvalidResultCount = 400002,
+
         InvalidOperation = 400003,
         ArgumentInvalid = 400004,
         ArgumentNull = 400005,
         IotHubFormatError = 400006,
+
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceStorageEntitySerializationError = 400007,
 
         /// <summary>
-        /// An error was encountered validating the storage blob container URI.
+        /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
-        /// <remarks>
-        /// As this error is in the 4xx HTTP status code range, the service would have detected a problem with the blob container
-        /// URI, such as does not exist, insufficient permissions, or SAS token expiry exceeded.
-        /// </remarks>
-        [Obsolete("This error does not appear to be returned by the service.")]
+        [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         BlobContainerValidationError = 400008,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         ImportWarningExistsError = 400009,
+
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidSchemaVersion = 400010,
+
         DeviceDefinedMultipleTimes = 400011,
+
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         DeserializationError = 400012,
 
         /// <summary>
@@ -51,20 +77,36 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         //[EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be returned by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         CannotRegisterModuleToModule = 400301,
 
         // Unauthorized - 401
         IotHubNotFound = 401001,
 
-        IotHubUnauthorizedAccess = 401002,
-
         /// <summary>
         /// The SAS token has expired or IoT hub couldn't authenticate the authentication header, rule, or key.
         /// For detailed information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized"/>.
         /// </summary>
+        IotHubUnauthorizedAccess = 401002,
+
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK. Replaced by <see cref="IotHubUnauthorizedAccess"/>
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubUnauthorized = 401003,
 
         // Forbidden - 403
+        
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubSuspended = 403001,
 
         /// <summary>
@@ -73,7 +115,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         IotHubQuotaExceeded = 403002,
 
         /// <summary>
-        /// The IoT Hub has exceeded the available quota for active jobs.
+        /// Unused error code. Service does not return it and neither does the SDK.
         /// </summary>
         [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -86,6 +128,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceMaximumQueueDepthExceeded = 403004,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubMaxCbsTokenExceeded = 403005,
 
         // NotFound - 404
@@ -95,7 +142,13 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceNotFound = 404001,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         JobNotFound = 404002,
+        
         PartitionNotFound = 404003,
         ModuleNotFound = 404010,
 
@@ -133,6 +186,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ThrottlingException = 429001,
 
         ThrottleBacklogLimitExceeded = 429002,
+
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidThrottleParameter = 429003,
 
         // InternalServerError - 500
