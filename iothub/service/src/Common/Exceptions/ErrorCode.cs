@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceAlreadyExists = 409001,
 
-        ModuleAlreadyExistsOnDevice = 409301, // not referenced in service code, but service does throw it?
+        ModuleAlreadyExistsOnDevice = 409301,
 
         // PreconditionFailed - 412
         PreconditionFailed = 412001,
