@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        JobNotFound = 404002, //unused
+        JobNotFound = 404002,
         
         PartitionNotFound = 404003,
         ModuleNotFound = 404010,
