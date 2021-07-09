@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.ComponentModel;
+
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
@@ -20,12 +23,34 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ArgumentNull = 400005,
         IotHubFormatError = 400006,
         DeviceStorageEntitySerializationError = 400007,
+
+        /// <summary>
+        /// An error was encountered validating the storage blob container URI.
+        /// </summary>
+        /// <remarks>
+        /// As this error is in the 4xx HTTP status code range, the service would have detected a problem with the blob container
+        /// URI, such as does not exist, insufficient permissions, or SAS token expiry exceeded.
+        /// </remarks>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         BlobContainerValidationError = 400008,
+
         ImportWarningExistsError = 400009,
         InvalidSchemaVersion = 400010,
         DeviceDefinedMultipleTimes = 400011,
         DeserializationError = 400012,
+
+        /// <summary>
+        /// An error was encountered processing bulk registry operations.
+        /// </summary>
+        /// <remarks>
+        /// As this error is in the 4xx HTTP status code range, the service would have detected a problem with the job
+        /// request or user input.
+        /// </remarks>
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
+
         CannotRegisterModuleToModule = 400301,
 
         // Unauthorized - 401
@@ -47,6 +72,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         IotHubQuotaExceeded = 403002,
 
+        /// <summary>
+        /// The IoT Hub has exceeded the available quota for active jobs.
+        /// </summary>
+        [Obsolete("This error does not appear to be thrown by the service, and would not apply to a device anyway.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         JobQuotaExceeded = 403003,
 
         /// <summary>
