@@ -45,14 +45,14 @@ namespace Microsoft.Azure.Devices
         public HttpClientHelper(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
+            IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             IWebProxy customHttpProxy,
             int connectionLeaseTimeoutMilliseconds)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
-            _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
+            _defaultErrorMapping = defaultErrorMapping;
             _defaultOperationTimeout = timeout;
 
             // We need two types of HttpClients, one with our default operation timeout, and one without. The one without will rely on
@@ -923,7 +923,6 @@ namespace Microsoft.Azure.Devices
 #endif
 #endif
 #pragma warning restore CA2000 // Dispose objects before losing scope
-
 
             if (webProxy != DefaultWebProxySettings.Instance)
             {
