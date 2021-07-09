@@ -7,8 +7,11 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when a message is sent to IoT Hub that exceeds the maximum allowed bytes in size.
+    /// The exception that is thrown when an attempt to send a message fails because the length of the message exceeds the maximum size allowed.
     /// </summary>
+    /// <remarks>
+    /// When the message is too large for IoT Hub you will receive this exception. You should attempt to reduce your message size and send again. For more information on message sizes, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT Hub quotas and throttling | Other limits</see>
+    /// </remarks>
     [Serializable]
     public sealed class MessageTooLargeException : IotHubException
     {
