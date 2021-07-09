@@ -176,6 +176,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         DeviceMessageLockLost = 412002,
 
         // RequestEntityTooLarge - 413
+        /// <summary>
+        /// When the message is too large for IoT Hub you will receive this error. You should attempt to reduce your message size and send again. For more information on message sizes, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT Hub quotas and throttling | Other limits</see>
+        /// </summary>
         MessageTooLarge = 413001,
 
         TooManyDevices = 413002,
@@ -185,7 +188,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.
-        /// For more information, <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>
+        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>
         /// </summary>
         ThrottlingException = 429001,
 
