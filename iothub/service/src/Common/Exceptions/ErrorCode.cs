@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// As this error is in the 4xx HTTP status code range, the service would have detected a problem with the blob container
         /// URI, such as does not exist, insufficient permissions, or SAS token expiry exceeded.
         /// </remarks>
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         BlobContainerValidationError = 400008,
 
@@ -47,8 +47,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// As this error is in the 4xx HTTP status code range, the service would have detected a problem with the job
         /// request or user input.
         /// </remarks>
-        [Obsolete("This error does not appear to be thrown by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        //[Obsolete("This error does not appear to be returned by the service.")]
+        //[EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
 
         CannotRegisterModuleToModule = 400301,
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// The IoT Hub has exceeded the available quota for active jobs.
         /// </summary>
-        [Obsolete("This error does not appear to be thrown by the service, and would not apply to a device anyway.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         JobQuotaExceeded = 403003,
 
