@@ -48,9 +48,18 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         [EditorBrowsable(EditorBrowsableState.Never)]
         DeserializationError = 400012,
 
+        /// <summary>
+        /// An error was encountered processing bulk registry operations.
+        /// </summary>
+        /// <remarks>
+        /// As this error is in the 4xx HTTP status code range, the service would have detected a problem with the job
+        /// request or user input.
+        /// </remarks>
+        //[Obsolete("This error does not appear to be returned by the service.")]
+        //[EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
 
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         CannotRegisterModuleToModule = 400301,
 
@@ -77,7 +86,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         IotHubQuotaExceeded = 403002,
 
-        [Obsolete("This error does not appear to be thrown by the service.")]
+        [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         JobQuotaExceeded = 403003,
 
