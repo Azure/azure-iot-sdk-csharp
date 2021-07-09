@@ -190,18 +190,23 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.
-        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>
+        /// For more information, <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-quotas-throttling">IoT Hub quotas and throttling</see>.
         /// </summary>
         ThrottlingException = 429001,
 
+        /// <summary>
+        /// IoT hub throttling limits have been exceeded for the requested operation.
+        /// For more information, <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-quotas-throttling">IoT Hub quotas and throttling</see>.
+        /// </summary>
         ThrottleBacklogLimitExceeded = 429002,
 
         /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
+        /// IoT hub ran into a server side issue when attempting to throttle.
+        /// For more information, <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>.
         /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        InvalidThrottleParameter = 429003,
+        InvalidThrottleParameter = 500009,
 
         // InternalServerError - 500
 
