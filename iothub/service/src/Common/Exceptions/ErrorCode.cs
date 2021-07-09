@@ -17,6 +17,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // BadRequest - 400
         InvalidProtocolVersion = 400001,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceInvalidResultCount = 400002,
@@ -26,24 +29,39 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ArgumentNull = 400005,
         IotHubFormatError = 400006,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceStorageEntitySerializationError = 400007,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         BlobContainerValidationError = 400008,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         ImportWarningExistsError = 400009,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidSchemaVersion = 400010,
 
         DeviceDefinedMultipleTimes = 400011,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         DeserializationError = 400012,
@@ -59,6 +77,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         //[EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         CannotRegisterModuleToModule = 400301,
@@ -72,11 +93,18 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         IotHubUnauthorizedAccess = 401002,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubUnauthorized = 401003, // never thrown by service anymore. Replaced by IotHubUnauthorizedAccess
 
         // Forbidden - 403
+        
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubSuspended = 403001,
@@ -86,6 +114,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         IotHubQuotaExceeded = 403002,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         JobQuotaExceeded = 403003,
@@ -97,6 +128,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceMaximumQueueDepthExceeded = 403004,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubMaxCbsTokenExceeded = 403005,
@@ -108,6 +142,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceNotFound = 404001,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         JobNotFound = 404002, //unused
@@ -150,6 +187,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         ThrottleBacklogLimitExceeded = 429002,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
         [Obsolete("This error does not appear to be thrown by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidThrottleParameter = 429003,
