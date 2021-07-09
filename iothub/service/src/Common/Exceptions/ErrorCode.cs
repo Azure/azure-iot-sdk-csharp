@@ -165,8 +165,10 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         ModuleAlreadyExistsOnDevice = 409301,
 
-        // PreconditionFailed - 412
-        PreconditionFailed = 412001,
+        /// <summary>
+        /// The etag in the request does not match the etag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>. The etag is controlled by the service and is based on the device identity it should not be updated in normal operations. 
+        /// </summary>
+        PreconditionFailed = 412001, // PreconditionFailed - 412
 
         /// <summary>
         /// When a device receives a cloud-to-device message from the queue (for example, using ReceiveAsync())
@@ -176,6 +178,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         DeviceMessageLockLost = 412002,
 
         // RequestEntityTooLarge - 413
+        /// <summary>
+        /// When the message is too large for IoT Hub you will receive this error. You should attempt to reduce your message size and send again. For more information on message sizes, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT Hub quotas and throttling | Other limits</see>
+        /// </summary>
         MessageTooLarge = 413001,
 
         TooManyDevices = 413002,
