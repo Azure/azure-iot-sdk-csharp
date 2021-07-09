@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.ComponentModel;
+
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
@@ -14,32 +17,59 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // BadRequest - 400
         InvalidProtocolVersion = 400001,
 
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceInvalidResultCount = 400002,
+
         InvalidOperation = 400003,
         ArgumentInvalid = 400004,
         ArgumentNull = 400005,
         IotHubFormatError = 400006,
+
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceStorageEntitySerializationError = 400007,
+
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         BlobContainerValidationError = 400008,
+
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         ImportWarningExistsError = 400009,
+
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidSchemaVersion = 400010,
+
         DeviceDefinedMultipleTimes = 400011,
+
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         DeserializationError = 400012,
+
         BulkRegistryOperationFailure = 400013,
+
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         CannotRegisterModuleToModule = 400301,
 
         // Unauthorized - 401
         IotHubNotFound = 401001,
 
-        IotHubUnauthorizedAccess = 401002,
-
         /// <summary>
         /// The SAS token has expired or IoT hub couldn't authenticate the authentication header, rule, or key.
         /// For detailed information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized"/>.
         /// </summary>
-        IotHubUnauthorized = 401003,
+        IotHubUnauthorizedAccess = 401002,
+
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        IotHubUnauthorized = 401003, // never thrown by service anymore. Replaced by IotHubUnauthorizedAccess
 
         // Forbidden - 403
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubSuspended = 403001,
 
         /// <summary>
@@ -47,6 +77,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         IotHubQuotaExceeded = 403002,
 
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         JobQuotaExceeded = 403003,
 
         /// <summary>
@@ -56,6 +88,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceMaximumQueueDepthExceeded = 403004,
 
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubMaxCbsTokenExceeded = 403005,
 
         // NotFound - 404
@@ -65,7 +99,10 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceNotFound = 404001,
 
-        JobNotFound = 404002,
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        JobNotFound = 404002, //unused
+        
         PartitionNotFound = 404003,
         ModuleNotFound = 404010,
 
@@ -76,7 +113,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceAlreadyExists = 409001,
 
-        ModuleAlreadyExistsOnDevice = 409301,
+        ModuleAlreadyExistsOnDevice = 409301, // not referenced in service code, but service does throw it?
 
         // PreconditionFailed - 412
         PreconditionFailed = 412001,
@@ -103,6 +140,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ThrottlingException = 429001,
 
         ThrottleBacklogLimitExceeded = 429002,
+
+        [Obsolete("This error does not appear to be thrown by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidThrottleParameter = 429003,
 
         // InternalServerError - 500
