@@ -35,6 +35,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// The SAS token has expired or IoT hub couldn't authenticate the authentication header, rule, or key.
+        /// For detailed information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized"/>.
         /// </summary>
         IotHubUnauthorized = 401003,
 
