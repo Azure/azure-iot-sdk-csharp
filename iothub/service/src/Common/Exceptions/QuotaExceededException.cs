@@ -7,8 +7,12 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when the allocated quota set by IoT Hub is exceeded.
+    /// The exception that is thrown by the service client when the daily message quota for the IoT hub is exceeded.
+    /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded">Troubleshoot Quota Exceeded</seealso>
     /// </summary>
+    /// <remarks>
+    /// To resolve this exception please review the <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded">Troubleshoot Quota Exceeded</see> guide.
+    /// </remarks>
     [Serializable]
     public sealed class QuotaExceededException : IotHubException
     {
