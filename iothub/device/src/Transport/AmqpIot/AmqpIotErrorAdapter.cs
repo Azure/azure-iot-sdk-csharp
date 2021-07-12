@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         public static readonly AmqpSymbol ArgumentError = AmqpIotConstants.Vendor + ":argument-error";
         public static readonly AmqpSymbol ArgumentOutOfRangeError = AmqpIotConstants.Vendor + ":argument-out-of-range";
         public static readonly AmqpSymbol DeviceContainerThrottled = AmqpIotConstants.Vendor + ":device-container-throttled";
-        public static readonly AmqpSymbol PartitionNotFound = AmqpIotConstants.Vendor + ":partition-not-found";
         public static readonly AmqpSymbol IotHubSuspended = AmqpIotConstants.Vendor + ":iot-hub-suspended";
 
         public static Exception GetExceptionFromOutcome(Outcome outcome)
