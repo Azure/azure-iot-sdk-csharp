@@ -1,24 +1,27 @@
-//Copyright(c) Microsoft.All rights reserved.
-//Microsoft would like to thank its contributors, a list
-//of whom are at http://aka.ms/entlib-contributors
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright(c) Microsoft.All rights reserved.
+// Microsoft would like to thank its contributors, a list
+// of whom are at http://aka.ms/entlib-contributors
 
 using System;
 
-//Licensed under the Apache License, Version 2.0 (the "License"); you
-//may not use this file except in compliance with the License. You may
-//obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you
+// may not use this file except in compliance with the License. You may
+// obtain a copy of the License at
 
 //http://www.apache.org/licenses/LICENSE-2.0
 
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-//implied. See the License for the specific language governing permissions
-//and limitations under the License.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+// implied. See the License for the specific language governing permissions
+// and limitations under the License.
 
 // THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
 // Change Log:
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
+// 7/12/2021 drwill Changed property+backing field to auto-property.
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
@@ -63,73 +66,57 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// </summary>
         public const bool DefaultFirstFastRetry = true;
 
-        private static readonly RetryStrategy s_noRetry = new FixedInterval(0, DefaultRetryInterval);
-
-        private static readonly RetryStrategy s_defaultFixed = new FixedInterval(DefaultClientRetryCount, DefaultRetryInterval);
-
-        private static readonly RetryStrategy s_defaultProgressive = new Incremental(DefaultClientRetryCount, DefaultRetryInterval, DefaultRetryIncrement);
-
-        private static readonly RetryStrategy s_defaultExponential = new ExponentialBackoff(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff);
-
-        /// <summary>
-        /// Returns a default policy that performs no retries, but invokes the action only once.
-        /// </summary>
-        public static RetryStrategy NoRetry => s_noRetry;
-
-        /// <summary>
-        /// Returns a default policy that implements a fixed retry interval configured with the <see cref="DefaultClientRetryCount" /> and <see cref="DefaultRetryInterval" /> parameters.
-        /// The default retry policy treats all caught exceptions as transient errors.
-        /// </summary>
-        public static RetryStrategy DefaultFixed => s_defaultFixed;
-
-        /// <summary>
-        /// Returns a default policy that implements a progressive retry interval configured with the 
-        /// <see cref="DefaultClientRetryCount" />, 
-        /// <see cref="DefaultRetryInterval" />, 
-        /// and <see cref="DefaultRetryIncrement" /> parameters.
-        /// The default retry policy treats all caught exceptions as transient errors.
-        /// </summary>
-        public static RetryStrategy DefaultProgressive => s_defaultProgressive;
-
-        /// <summary>
-        /// Returns a default policy that implements a random exponential retry interval configured with the 
-        /// <see cref="DefaultClientRetryCount" />,
-        /// <see cref="DefaultMinBackoff" />,
-        /// <see cref="DefaultMaxBackoff" />,
-        /// and <see cref="DefaultClientBackoff" /> parameters.
-        /// The default retry policy treats all caught exceptions as transient errors.
-        /// </summary>
-        public static RetryStrategy DefaultExponential => s_defaultExponential;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the first retry attempt will be made immediately,
-        /// whereas subsequent retries will remain subject to the retry interval.
-        /// </summary>
-        public bool FastFirstRetry
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets the name of the retry strategy.
-        /// </summary>
-        public string Name
-        {
-            get;
-            private set;
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RetryStrategy" /> class.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
-        /// <param name="firstFastRetry">true to immediately retry in the first attempt; otherwise, false. The subsequent retries will remain subject to the configured retry interval.</param>
+        /// <param name="firstFastRetry">
+        /// True to immediately retry in the first attempt; otherwise, false.
+        /// The subsequent retries will remain subject to the configured retry interval.
+        /// </param>
         protected RetryStrategy(string name, bool firstFastRetry)
         {
             Name = name;
             FastFirstRetry = firstFastRetry;
         }
+
+        /// <summary>
+        /// Returns a default policy that performs no retries, but invokes the action only once.
+        /// </summary>
+        public static RetryStrategy NoRetry { get; } = new FixedInterval(0, DefaultRetryInterval);
+
+        /// <summary>
+        /// Returns a default policy that implements a fixed retry interval configured with the <see cref="DefaultClientRetryCount" />
+        /// and <see cref="DefaultRetryInterval" /> parameters. The default retry policy treats all caught exceptions as transient errors.
+        /// </summary>
+        public static RetryStrategy DefaultFixed { get; } = new FixedInterval(DefaultClientRetryCount, DefaultRetryInterval);
+
+        /// <summary>
+        /// Returns a default policy that implements a progressive retry interval configured with the
+        /// <see cref="DefaultClientRetryCount" />,
+        /// <see cref="DefaultRetryInterval" />,
+        /// and <see cref="DefaultRetryIncrement" /> parameters.
+        /// The default retry policy treats all caught exceptions as transient errors.
+        /// </summary>
+        public static RetryStrategy DefaultProgressive { get; } = new Incremental(DefaultClientRetryCount, DefaultRetryInterval, DefaultRetryIncrement);
+
+        /// <summary>
+        /// Returns a default policy that implements a random exponential retry interval configured with the <see cref="DefaultClientRetryCount" />,
+        /// <see cref="DefaultMinBackoff" />, <see cref="DefaultMaxBackoff" />, and <see cref="DefaultClientBackoff" /> parameters.
+        /// The default retry policy treats all caught exceptions as transient errors.
+        /// </summary>
+        public static RetryStrategy DefaultExponential { get; } = new ExponentialBackoffRetryStrategy(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff);
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the first retry attempt will be made immediately,
+        /// whereas subsequent retries will remain subject to the retry interval.
+        /// </summary>
+        public bool FastFirstRetry { get; set; }
+
+        /// <summary>
+        /// Gets the name of the retry strategy.
+        /// </summary>
+        public string Name { get; private set; }
 
         /// <summary>
         /// Returns the corresponding ShouldRetry delegate.

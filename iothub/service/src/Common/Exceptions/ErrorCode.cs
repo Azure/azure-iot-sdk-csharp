@@ -7,14 +7,24 @@ using System.ComponentModel;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// Error Codes for common IoT hub exceptions.
+    /// Error codes for common IoT hub exceptions.
     /// </summary>
     public enum ErrorCode
     {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
+        /// <summary>
+        /// Used when the error code returned by the hub is unrecognized. If encountered, please report the issue so it can be added here.
+        /// </summary>
         InvalidErrorCode = 0,
 
         // BadRequest - 400
+
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be returned by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidProtocolVersion = 400001,
 
         /// <summary>

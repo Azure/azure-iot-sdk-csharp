@@ -17,86 +17,77 @@ namespace Microsoft.Azure.Devices
 {
     internal class ExceptionHandlingHelper
     {
-        public static IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping()
+        private static readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> s_mappings =
+            new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
         {
-            var mappings = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
-                {
-                    HttpStatusCode.NoContent,
-                    async (response) => new DeviceNotFoundException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
+                HttpStatusCode.NoContent,
+                async (response) => new DeviceNotFoundException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.NotFound,
+                async (response) => new DeviceNotFoundException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.Conflict,
+                async (response) => new DeviceAlreadyExistsException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.BadRequest, async (response) => new ArgumentException(
+                message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.Unauthorized,
+                async (response) => new UnauthorizedException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.Forbidden,
+                async (response) => new QuotaExceededException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.PreconditionFailed,
+                async (response) => new DeviceMessageLockLostException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.RequestEntityTooLarge,
+                async (response) => new MessageTooLargeException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.InternalServerError,
+                async (response) => new ServerErrorException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                HttpStatusCode.ServiceUnavailable,
+                async (response) => new ServerBusyException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            },
+            {
+                (HttpStatusCode)429,
+                async (response) => new ThrottlingException(
+                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
+                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
+            }
+        };
 
-                {
-                    HttpStatusCode.NotFound,
-                    async (response) => new DeviceNotFoundException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
-
-                {
-                    HttpStatusCode.Conflict,
-                    async (response) => new DeviceAlreadyExistsException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
-
-                { HttpStatusCode.BadRequest, async (response) => new ArgumentException(
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false)) },
-
-                {
-                    HttpStatusCode.Unauthorized,
-                    async (response) => new UnauthorizedException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
-
-                {
-                    HttpStatusCode.Forbidden,
-                    async (response) => new QuotaExceededException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
-
-                {
-                    HttpStatusCode.PreconditionFailed,
-                    async (response) => new DeviceMessageLockLostException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
-
-                {
-                    HttpStatusCode.RequestEntityTooLarge,
-                    async (response) => new MessageTooLargeException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
-
-                {
-                    HttpStatusCode.InternalServerError,
-                    async (response) => new ServerErrorException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
-
-                {
-                    HttpStatusCode.ServiceUnavailable,
-                    async (response) => new ServerBusyException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                },
-
-                {
-                    (HttpStatusCode)429,
-                    async (response) => new ThrottlingException(
-                        code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                        message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-                }
-            };
-
-            return mappings;
-        }
+        public static IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping() =>
+            s_mappings;
 
         public static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
         {
@@ -104,10 +95,10 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Get the fully qualified error code from the http response message, if exists
+        /// Get the fully-qualified error code from the HTTP response message, if exists.
         /// </summary>
-        /// <param name="response">The http response message</param>
-        /// <returns>The fully qualified error code, or the response status code if no error code was provided.</returns>
+        /// <param name="response">The HTTP response message</param>
+        /// <returns>The fully-qualified error code, or the response status code, if no error code was provided.</returns>
         public static async Task<ErrorCode> GetExceptionCodeAsync(HttpResponseMessage response)
         {
             // First we will attempt to retrieve the error code from the response content.
@@ -121,22 +112,16 @@ namespace Microsoft.Azure.Devices
             // to 'error code' enum mapping, the SDK will check if both values are a match. If so, the SDK will populate the exception with the proper Code. In the case where
             // there is a mismatch between the error code and the description, the SDK returns ErrorCode.InvalidErrorCode and log a warning.
 
-            int errorCode;
+            int errorCodeValue = (int)ErrorCode.InvalidErrorCode;
             try
             {
-                IoTHubExceptionResult responseContent = JsonConvert
-                    .DeserializeObject<IoTHubExceptionResult>(responseContentStr);
-                Dictionary<string, string> messageFields = JsonConvert
-                    .DeserializeObject<Dictionary<string, string>>(responseContent.Message);
+                IoTHubExceptionResult responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseContentStr);
+                Dictionary<string, string> messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
 
                 if (messageFields != null
                     && messageFields.TryGetValue(CommonConstants.ErrorCode, out string errorCodeObj))
                 {
-                    errorCode = Convert.ToInt32(errorCodeObj, CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    return ErrorCode.InvalidErrorCode;
+                    errorCodeValue = Convert.ToInt32(errorCodeObj, CultureInfo.InvariantCulture);
                 }
             }
             catch (JsonReaderException ex)
@@ -152,7 +137,7 @@ namespace Microsoft.Azure.Devices
             if (headerErrorCodeString != null
                 && Enum.TryParse(headerErrorCodeString, out ErrorCode headerErrorCode))
             {
-                if ((int)headerErrorCode == errorCode)
+                if ((int)headerErrorCode == errorCodeValue)
                 {
                     // We have a match. Therefore, return the proper error code.
                     return headerErrorCode;
@@ -160,7 +145,7 @@ namespace Microsoft.Azure.Devices
 
                 if (Logging.IsEnabled)
                     Logging.Error(null, $"There is a mismatch between the error code retrieved from the response content and the response header." +
-                        $"Content error code: {errorCode}. Header error code description: {(int)headerErrorCode}.");
+                        $"Content error code: {errorCodeValue}. Header error code description: {(int)headerErrorCode}.");
             }
 
             return ErrorCode.InvalidErrorCode;

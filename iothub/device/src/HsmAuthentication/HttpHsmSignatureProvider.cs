@@ -25,8 +25,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
         private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy = new ErrorDetectionStrategy();
 
-        private static readonly RetryStrategy s_transientRetryStrategy =
-            new TransientFaultHandling.ExponentialBackoff(retryCount: 3, minBackoff: TimeSpan.FromSeconds(2), maxBackoff: TimeSpan.FromSeconds(30), deltaBackoff: TimeSpan.FromSeconds(3));
+        private static readonly RetryStrategy s_transientRetryStrategy = new ExponentialBackoffRetryStrategy(
+            retryCount: 3,
+            minBackoff: TimeSpan.FromSeconds(2),
+            maxBackoff: TimeSpan.FromSeconds(30),
+            deltaBackoff: TimeSpan.FromSeconds(3));
 
         public HttpHsmSignatureProvider(string providerUri, string apiVersion)
         {
@@ -69,7 +72,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                     BaseUrl = HttpClientHelper.GetBaseUrl(_providerUri)
                 };
 
-                SignResponse response = await SignAsyncWithRetryAsync(hsmHttpClient, moduleId, generationId, signRequest).ConfigureAwait(false);
+                SignResponse response = await SignAsyncWithRetryAsync(hsmHttpClient, moduleId, generationId, signRequest)
+                    .ConfigureAwait(false);
 
                 return Convert.ToBase64String(response.Digest);
             }
@@ -91,10 +95,16 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             }
         }
 
-        private async Task<SignResponse> SignAsyncWithRetryAsync(HttpHsmClient hsmHttpClient, string moduleId, string generationId, SignRequest signRequest)
+        private async Task<SignResponse> SignAsyncWithRetryAsync(
+            HttpHsmClient hsmHttpClient,
+            string moduleId,
+            string generationId,
+            SignRequest signRequest)
         {
             var transientRetryPolicy = new RetryPolicy(s_transientErrorDetectionStrategy, s_transientRetryStrategy);
-            SignResponse response = await transientRetryPolicy.ExecuteAsync(() => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest)).ConfigureAwait(false);
+            SignResponse response = await transientRetryPolicy
+                .ExecuteAsync(() => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest))
+                .ConfigureAwait(false);
             return response;
         }
 
