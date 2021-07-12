@@ -50,6 +50,10 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // Note: one example found in logs is for invalid characters in a twin property name.
         ArgumentInvalid = 400004,
 
+        /// <summary>
+        /// Something in the payload is unexpectedly null. Check the error message for more information about what is invalid.
+        /// </summary>
+        // Note: an example suggested is null method payloads, but our client converts null to a JSON null, which is allowed.
         ArgumentNull = 400005,
 
         /// <summary>
