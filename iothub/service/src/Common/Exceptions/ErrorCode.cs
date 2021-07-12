@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// The underlying cause is that the number of cloud-to-device messages enqueued for the device exceeds the queue limit (50).
         /// You will need to receive and complete/reject the messages from the device-side before you can enqueue any additional messages.
         /// If you want to discard the currently enqueued messages,
-        /// you can <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/c76a64de272da986b6840251f482249e094a725c/iothub/service/src/ServiceClient.cs#L211">purge your device message queue</see>.
+        /// you can <see cref="ServiceClient.PurgeMessageQueueAsync(string, System.Threading.CancellationToken)">purge your device message queue</see>.
         /// </summary>
         DeviceMaximumQueueDepthExceeded = 403004,
 
