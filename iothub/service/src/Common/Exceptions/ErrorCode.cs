@@ -185,8 +185,10 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ModuleAlreadyExistsOnDevice = 409301,
 
         /// <summary>
-        /// The etag in the request does not match the etag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>.
-        /// The etag is controlled by the service and is based on the device identity it should not be updated in normal operations.
+        /// The ETag in the request does not match the ETag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>.
+        /// The ETag is a mechanism for protecting against the race conditions of multiple clients updating the same resource and overwriting each other.
+        /// In order to get the up-to-date ETag for a twin, see <see cref="RegistryManager.GetTwinAsync(string, System.Threading.CancellationToken)"/> or
+        /// <see cref="RegistryManager.GetTwinAsync(string, string, System.Threading.CancellationToken)"/>.
         /// </summary>
         PreconditionFailed = 412001, // PreconditionFailed - 412
 
