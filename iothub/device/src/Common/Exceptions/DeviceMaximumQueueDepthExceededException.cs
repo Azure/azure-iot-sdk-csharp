@@ -8,7 +8,9 @@ using Microsoft.Azure.Devices.Client.Extensions;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when an attempt to enqueue a message fails because the message queue for the device is already full.
+    /// This exception actually corresponds to IoTHubQuotaExceeded. For more information on what causes this error
+    /// and steps to resolve, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded"/>.
+    /// The exception type has not been changed to avoid breaking changes but the inner exception has the correct exception type.
     /// </summary>
     [Serializable]
     public sealed class DeviceMaximumQueueDepthExceededException : IotHubException

@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when the IoT Hub is busy.
     /// </summary>
     /// <remarks>
-    /// This exception typically means the service is unavilable due to high load or an unexpected error and is usually transient. The best course of action is to retry your operation after some time.
+    /// This exception typically means the service is unavailable due to high load or an unexpected error and is usually transient. The best course of action is to retry your operation after some time.
     /// </remarks>
     [Serializable]
     public sealed class ServerBusyException : IotHubException
