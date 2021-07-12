@@ -21,10 +21,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // BadRequest - 400
 
         /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
+        /// The API version used by the SDK is not supported by the IoT hub endpoint used in this connection.
+        /// Usually this would mean that the region of the hub doesn't yet support the API version. One should
+        /// consider downgrading to a previous version of the SDK that uses an older API version, or use a hub
+        /// in a region that supports it.
         /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
         InvalidProtocolVersion = 400001,
 
         /// <summary>
