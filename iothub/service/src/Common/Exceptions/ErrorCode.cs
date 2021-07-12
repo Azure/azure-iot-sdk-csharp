@@ -218,6 +218,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// the message is locked by IoT hub for a lock timeout duration of one minute.
         /// If the device tries to complete the message after the lock timeout expires, IoT hub throws this exception.
         /// </summary>
+        [Obsolete("This error should not be returned to a service application. This is relevant only for a device application.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceMessageLockLost = 412002,
 
         // RequestEntityTooLarge - 413
