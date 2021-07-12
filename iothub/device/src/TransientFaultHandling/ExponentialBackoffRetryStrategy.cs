@@ -102,8 +102,11 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             {
                 if (currentRetryCount < _retryCount)
                 {
-                    double exponentialInterval = (Math.Pow(2.0, currentRetryCount) - 1.0)
-                        * s_random.Next(
+                    Random random = new Random();
+
+                    double exponentialInterval =
+                        (Math.Pow(2.0, currentRetryCount) - 1.0)
+                        * random.Next(
                             (int)_deltaBackoff.TotalMilliseconds * 8 / 10,
                             (int)_deltaBackoff.TotalMilliseconds * 12 / 10)
                         + _minBackoff.TotalMilliseconds;
