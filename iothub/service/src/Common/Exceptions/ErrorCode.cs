@@ -139,10 +139,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         JobQuotaExceeded = 403003,
 
         /// <summary>
-        /// The underlying cause is that the number of cloud-to-device messages enqueued for the device exceeds the queue limit (50).
+        /// The underlying cause is that the number of cloud-to-device messages enqueued for the device exceeds the queue limit.
         /// You will need to receive and complete/reject the messages from the device-side before you can enqueue any additional messages.
         /// If you want to discard the currently enqueued messages,
         /// you can <see cref="ServiceClient.PurgeMessageQueueAsync(string, System.Threading.CancellationToken)">purge your device message queue</see>.
+        /// For more details on cloud-to-device message operations, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
         /// </summary>
         DeviceMaximumQueueDepthExceeded = 403004,
 
@@ -171,7 +172,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// The error is internal to IoT Hub and is likely transient.
         /// For more details, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
         /// </summary>
-        PartitionNotFound = 503003, // We do not handle this error code in our SDK
+        [Obsolete("This error does should not be returned by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        PartitionNotFound = 503003,
 
         ModuleNotFound = 404010,
 
