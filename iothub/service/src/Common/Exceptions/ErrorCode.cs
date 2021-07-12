@@ -90,8 +90,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// request or user input.
         /// </para>
         /// </summary>
-        //[Obsolete("This error does not appear to be returned by the service.")]
-        //[EditorBrowsable(EditorBrowsableState.Never)]
+        [Obsolete("This error does not appear to be returned by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
 
         /// <summary>
@@ -139,9 +139,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         JobQuotaExceeded = 403003,
 
         /// <summary>
-        /// The underlying cause is that the number of messages enqueued for the device exceeds the queue limit (50).
-        /// The most likely reason that you're running into this limit is because you're using HTTPS to receive the message,
-        /// which leads to continuous polling using ReceiveAsync, resulting in IoT hub throttling the request.
+        /// The underlying cause is that the number of cloud-to-device messages enqueued for the device exceeds the queue limit (50).
         /// </summary>
         DeviceMaximumQueueDepthExceeded = 403004,
 
@@ -167,7 +165,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         JobNotFound = 404002,
 
         /// <summary>
-        /// The error is internal to IoT Hub and is likely transient. For more details, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
+        /// The error is internal to IoT Hub and is likely transient.
+        /// For more details, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
         /// </summary>
         PartitionNotFound = 503003, // We do not handle this error code in our SDK
 
@@ -183,7 +182,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ModuleAlreadyExistsOnDevice = 409301,
 
         /// <summary>
-        /// The etag in the request does not match the etag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>. The etag is controlled by the service and is based on the device identity it should not be updated in normal operations.
+        /// The etag in the request does not match the etag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>.
+        /// The etag is controlled by the service and is based on the device identity it should not be updated in normal operations.
         /// </summary>
         PreconditionFailed = 412001, // PreconditionFailed - 412
 
@@ -196,7 +196,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         // RequestEntityTooLarge - 413
         /// <summary>
-        /// When the message is too large for IoT Hub you will receive this error. You should attempt to reduce your message size and send again. For more information on message sizes, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT Hub quotas and throttling | Other limits</see>
+        /// When the message is too large for IoT Hub you will receive this error. You should attempt to reduce your message size and send again.
+        /// For more information on message sizes, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT Hub quotas and throttling | Other limits</see>
         /// </summary>
         MessageTooLarge = 413001,
 
@@ -230,8 +231,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// IoT hub ran into a server side issue.
         /// There can be a number of causes for a 500xxx error response. In all cases, the issue is most likely transient.
-        /// IoT hub nodes can occasionally experience transient faults. When your device tries to connect to a node that is
-        /// having issues, you receive this error. To mitigate 500xxx errors, issue a retry from the device.
+        /// IoT hub nodes can occasionally experience transient faults. When your application tries to connect to a node that is
+        /// having issues, you receive this error. To mitigate 500xxx errors, issue a retry from your application.
         /// </summary>
         ServerError = 500001,
 
@@ -240,7 +241,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // ServiceUnavailable
 
         /// <summary>
-        /// IoT hub encountered an internal error.
+        /// IoT hub is currently busy and is unable to process the request. This is a transient, retryable error.
         /// </summary>
         ServiceUnavailable = 503001,
 

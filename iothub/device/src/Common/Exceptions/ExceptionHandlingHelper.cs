@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             mappings.Add(HttpStatusCode.RequestEntityTooLarge, async (response) => new MessageTooLargeException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
             mappings.Add(HttpStatusCode.InternalServerError, async (response) => new ServerErrorException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
             mappings.Add(HttpStatusCode.ServiceUnavailable, async (response) => new ServerBusyException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
-            mappings.Add((System.Net.HttpStatusCode)429, async (response) => new IotHubThrottledException(await GetExceptionMessageAsync(response).ConfigureAwait(false), null));
+            mappings.Add(HttpStatusCode.TooManyRequests, async (response) => new IotHubThrottledException(await GetExceptionMessageAsync(response).ConfigureAwait(false), null));
             return mappings;
         }
 
