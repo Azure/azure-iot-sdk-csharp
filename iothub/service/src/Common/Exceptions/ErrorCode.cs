@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ArgumentNull = 400005,
 
         /// <summary>
-        /// Returned by the service if a Json object provided by this library cannot be parsed. For instance, if the Json provided for
+        /// Returned by the service if a JSON object provided by this library cannot be parsed. For instance, if the JSON provided for
         /// <see cref="RegistryManager.UpdateTwinAsync(string, Shared.Twin, string)"/> is invalid.
         /// </summary>
         IotHubFormatError = 400006,
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // NotFound - 404
 
         /// <summary>
-        /// The operation failed because the device cannot be found by IoT Hub. The device is either not registered or disabled. May be thrown by operations such as 
+        /// The operation failed because the device cannot be found by IoT hub. The device is either not registered or disabled. May be thrown by operations such as 
         /// <see cref="RegistryManager.GetDeviceAsync(string)"/>.
         /// </summary>
         DeviceNotFound = 404001,
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         JobNotFound = 404002,
 
         /// <summary>
-        /// The error is internal to IoT Hub and is likely transient.
+        /// The error is internal to IoT hub and is likely transient.
         /// For more details, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
         /// </summary>
         [Obsolete("This error does should not be returned by the service.")]
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         PartitionNotFound = 503003,
 
         /// <summary>
-        /// The operation failed because the module cannot be found by IoT Hub. The module is either not registered or disabled. May be thrown by operations such as 
+        /// The operation failed because the module cannot be found by IoT hub. The module is either not registered or disabled. May be thrown by operations such as 
         /// <see cref="RegistryManager.GetModuleAsync(string, string)"/>.
         /// </summary>
         ModuleNotFound = 404010,
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// The operation failed because it attempted to add a module to a device when that device already has a module registered to it with the same Id. This issue can be
         /// fixed by removing the existing module from the device first with <see cref="RegistryManager.RemoveModuleAsync(Module)"/>. This error code is only returned from 
-        /// methods like <see cref="RegistryManager.AddModuleAsync(Module, System.Threading.CancellationToken)"/>
+        /// methods like <see cref="RegistryManager.AddModuleAsync(Module, System.Threading.CancellationToken)"/>.
         /// </summary>
         ModuleAlreadyExistsOnDevice = 409301,
 
@@ -230,8 +230,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         // RequestEntityTooLarge - 413
         /// <summary>
-        /// When the message is too large for IoT Hub you will receive this error. You should attempt to reduce your message size and send again.
-        /// For more information on message sizes, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT Hub quotas and throttling | Other limits</see>
+        /// When the message is too large for IoT hub you will receive this error. You should attempt to reduce your message size and send again.
+        /// For more information on message sizes, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT hub quotas and throttling | Other limits</see>
         /// </summary>
         MessageTooLarge = 413001,
 
@@ -242,13 +242,13 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.
-        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling">IoT Hub quotas and throttling</see>.
+        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling">IoT hub quotas and throttling</see>.
         /// </summary>
         ThrottlingException = 429001,
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.
-        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling">IoT Hub quotas and throttling</see>.
+        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling">IoT hub quotas and throttling</see>.
         /// </summary>
         ThrottleBacklogLimitExceeded = 429002,
 
