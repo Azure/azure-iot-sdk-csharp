@@ -10,7 +10,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when the IoT Hub returned an internal service error.
     /// </summary>
     /// <remarks>
-    /// This exception typically means the IoT Hub service has encountered an unexpected error and is usually transient. Please review the <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see> guide for more information. The best course of action is to retry your operation after some time.
+    /// This exception typically means the IoT Hub service has encountered an unexpected error and is usually transient.
+    /// Please review the <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>
+    /// guide for more information. The best course of action is to retry your operation after some time.
     /// </remarks>
     [Serializable]
     public sealed class ServerErrorException : IotHubException
