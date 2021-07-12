@@ -35,8 +35,21 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         [EditorBrowsable(EditorBrowsableState.Never)]
         DeviceInvalidResultCount = 400002,
 
+        /// <summary>
+        /// The client has requested an operation that the hub recognizes as invalid. Check the error message
+        /// for more information about what is invalid.
+        /// </summary>
+        // Note: although infrequent, this does appear in logs for "Amqp Message.Properties.To must contain the device identifier".
+        // and perhaps other cases.
         InvalidOperation = 400003,
+
+        /// <summary>
+        /// Something in the request payload is invalid. Check the error message for more information about what
+        /// is invalid.
+        /// </summary>
+        // Note: one example found in logs is for invalid characters in a twin property name.
         ArgumentInvalid = 400004,
+
         ArgumentNull = 400005,
         IotHubFormatError = 400006,
 
