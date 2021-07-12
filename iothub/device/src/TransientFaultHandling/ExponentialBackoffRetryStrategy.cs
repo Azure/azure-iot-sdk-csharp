@@ -29,12 +29,11 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     /// </summary>
     internal class ExponentialBackoffRetryStrategy : RetryStrategy
     {
+        private static readonly Random s_random = new Random();
+
         private readonly int _retryCount;
-
         private readonly TimeSpan _minBackoff;
-
-        private readonly TimeSpan _maxBackoff;
-
+|       private readonly TimeSpan _maxBackoff;
         private readonly TimeSpan _deltaBackoff;
 
         /// <summary>
@@ -103,11 +102,8 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             {
                 if (currentRetryCount < _retryCount)
                 {
-                    var random = new Random();
-
-                    double exponentialInterval =
-                        (Math.Pow(2.0, currentRetryCount) - 1.0)
-                        * random.Next(
+                    double exponentialInterval = (Math.Pow(2.0, currentRetryCount) - 1.0)
+                        * s_random.Next(
                             (int)_deltaBackoff.TotalMilliseconds * 8 / 10,
                             (int)_deltaBackoff.TotalMilliseconds * 12 / 10)
                         + _minBackoff.TotalMilliseconds;
