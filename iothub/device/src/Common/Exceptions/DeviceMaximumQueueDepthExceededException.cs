@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
     /// This exception actually corresponds to IoTHubQuotaExceeded. For more information on what causes this error
-    /// and steps to resolve, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded"/>.
+    /// and steps to resolve, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded"/>.
     /// The exception type has not been changed to avoid breaking changes but the inner exception has the correct exception type.
     /// </summary>
     [Serializable]

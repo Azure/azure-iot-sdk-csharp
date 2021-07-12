@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <remarks>
     /// An abandoned message will be re-enqueued in the per-device/module queue, and the <see cref="DeviceClient"/> instance will receive it again.
     /// A rejected message will be deleted from the queue and not received again by the device.
-    /// For more information on the cause for this error and how to resolve, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-412002-devicemessagelocklost"/>.
-    /// For more information on cloud-to-device message lifecycle, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
+    /// For more information on the cause for this error and how to resolve, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-412002-devicemessagelocklost"/>.
+    /// For more information on cloud-to-device message lifecycle, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
     /// </remarks>
     [Serializable]
     public class DeviceMessageLockLostException : IotHubException
