@@ -36,7 +36,21 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         DeviceInvalidResultCount = 400002,
 
         InvalidOperation = 400003,
+
+        /// <summary>
+        /// Returned by the service if a given method invocation request has an invalid argument in it.
+        /// <para>
+        /// For more information on direct methods and what arguments are allowed, <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods">this document</see> on direct methods.
+        /// </para>
+        /// </summary>
         ArgumentInvalid = 400004,
+
+        /// <summary>
+        /// Returned by the service if a given method invocation request has a null payload. This issue can be resolved by setting the direct method request's payload to a non-null value.
+        /// <para>
+        /// For more information on direct methods and what payloads are allowed, <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods">this document</see> on direct methods.
+        /// </para>
+        /// </summary>
         ArgumentNull = 400005,
         IotHubFormatError = 400006,
 
