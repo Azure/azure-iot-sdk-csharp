@@ -51,6 +51,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ArgumentInvalid = 400004,
 
         ArgumentNull = 400005,
+
+        /// <summary>
+        /// Returned by the service if a Json object provided by this library cannot be parsed. For instance, if the Json provided for
+        /// <see cref="RegistryManager.UpdateTwinAsync(string, Shared.Twin, string)"/> is invalid.
+        /// </summary>
         IotHubFormatError = 400006,
 
         /// <summary>
@@ -103,8 +108,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// request or user input.
         /// </para>
         /// </summary>
-        //[Obsolete("This error does not appear to be returned by the service.")]
-        //[EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
 
         /// <summary>
@@ -170,7 +173,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // NotFound - 404
 
         /// <summary>
-        /// The operation failed because the device cannot be found by IoT Hub. The device is either not registered or disabled.
+        /// The operation failed because the device cannot be found by IoT Hub. The device is either not registered or disabled. May be thrown by operations such as 
+        /// <see cref="RegistryManager.GetDeviceAsync(string)"/>.
         /// </summary>
         DeviceNotFound = 404001,
 
@@ -189,6 +193,10 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         [EditorBrowsable(EditorBrowsableState.Never)]
         PartitionNotFound = 503003,
 
+        /// <summary>
+        /// The operation failed because the module cannot be found by IoT Hub. The module is either not registered or disabled. May be thrown by operations such as 
+        /// <see cref="RegistryManager.GetModuleAsync(string, string)"/>.
+        /// </summary>
         ModuleNotFound = 404010,
 
         // Conflict - 409
@@ -198,6 +206,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceAlreadyExists = 409001,
 
+        /// <summary>
+        /// The operation failed because it attempted to add a module to a device when that device already has a module registered to it with the same Id. This issue can be
+        /// fixed by removing the existing module from the device first with <see cref="RegistryManager.RemoveModuleAsync(Module)"/>. This error code is only returned from 
+        /// methods like <see cref="RegistryManager.AddModuleAsync(Module, System.Threading.CancellationToken)"/>
+        /// </summary>
         ModuleAlreadyExistsOnDevice = 409301,
 
         /// <summary>
