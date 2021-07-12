@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // ServiceUnavailable
 
         /// <summary>
-        /// IoT hub is currently busy and is unable to process the request. This is a transient, retryable error.
+        /// IoT hub is currently unable to process the request. This is a transient, retryable error.
         /// </summary>
         ServiceUnavailable = 503001,
 
