@@ -90,8 +90,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// request or user input.
         /// </para>
         /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        //[Obsolete("This error does not appear to be returned by the service.")]
+        //[EditorBrowsable(EditorBrowsableState.Never)]
         BulkRegistryOperationFailure = 400013,
 
         /// <summary>
