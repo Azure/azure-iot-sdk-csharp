@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices
 #if NET451 || NET472 || NETSTANDARD2_0
                                 if (messageField.IndexOf(errorCodeDelimiter) >= 0)
 #else
-                                if (messageField.Contains(errorCodeDelimiter, StringComparison.OrdinalIgnoreCase))
+                                if (messageField.Contains(errorCodeDelimiter))
 #endif
                                 {
                                     string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
