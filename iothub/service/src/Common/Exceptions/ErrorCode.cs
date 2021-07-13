@@ -207,6 +207,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// There's already a device with the same device Id in the IoT hub.
+        /// This can be returned on calling <see cref="RegistryManager.AddDeviceAsync(Device)"/> with a device that already exists in the IoT hub.
         /// </summary>
         DeviceAlreadyExists = 409001,
 
