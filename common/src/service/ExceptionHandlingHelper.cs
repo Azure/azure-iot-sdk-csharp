@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices
                                 const char errorCodeDelimiter = ':';
 
 #if NET451 || NET472 || NETSTANDARD2_0
-                                if (messageField.IndexOf(errorCodeDelimiter, StringComparison.OrdinalIgnoreCase) >= 0)
+                                if (messageField.IndexOf(errorCodeDelimiter) >= 0)
 #else
                                 if (messageField.Contains(errorCodeDelimiter, StringComparison.OrdinalIgnoreCase))
 #endif
