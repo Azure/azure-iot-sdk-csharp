@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // NotFound - 404
 
         /// <summary>
-        /// The operation failed because the device cannot be found by IoT hub. The device is either not registered or disabled. May be thrown by operations such as 
+        /// The operation failed because the device cannot be found by IoT hub. The device is either not registered or disabled. May be thrown by operations such as
         /// <see cref="RegistryManager.GetDeviceAsync(string)"/>.
         /// </summary>
         DeviceNotFound = 404001,
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         PartitionNotFound = 503003,
 
         /// <summary>
-        /// The operation failed because the module cannot be found by IoT hub. The module is either not registered or disabled. May be thrown by operations such as 
+        /// The operation failed because the module cannot be found by IoT hub. The module is either not registered or disabled. May be thrown by operations such as
         /// <see cref="RegistryManager.GetModuleAsync(string, string)"/>.
         /// </summary>
         ModuleNotFound = 404010,
@@ -207,13 +207,14 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// There's already a device with the same device Id in the IoT hub.
-        /// This can be returned on calling <see cref="RegistryManager.AddDeviceAsync(Device)"/> with a device that already exists in the IoT hub.
+        /// This can be returned on calling <see cref="RegistryManager.AddDeviceAsync(Device, System.Threading.CancellationToken)"/>
+        /// with a device that already exists in the IoT hub.
         /// </summary>
         DeviceAlreadyExists = 409001,
 
         /// <summary>
         /// The operation failed because it attempted to add a module to a device when that device already has a module registered to it with the same Id. This issue can be
-        /// fixed by removing the existing module from the device first with <see cref="RegistryManager.RemoveModuleAsync(Module)"/>. This error code is only returned from 
+        /// fixed by removing the existing module from the device first with <see cref="RegistryManager.RemoveModuleAsync(Module)"/>. This error code is only returned from
         /// methods like <see cref="RegistryManager.AddModuleAsync(Module, System.Threading.CancellationToken)"/>.
         /// </summary>
         ModuleAlreadyExistsOnDevice = 409301,

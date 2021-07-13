@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -116,12 +117,56 @@ namespace Microsoft.Azure.Devices
             try
             {
                 IoTHubExceptionResult responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseContentStr);
-                Dictionary<string, string> messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
 
-                if (messageFields != null
-                    && messageFields.TryGetValue(CommonConstants.ErrorCode, out string errorCodeObj))
+                try
                 {
-                    errorCodeValue = Convert.ToInt32(errorCodeObj, CultureInfo.InvariantCulture);
+                    Dictionary<string, string> messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
+
+                    if (messageFields != null
+                        && messageFields.TryGetValue(CommonConstants.ErrorCode, out string errorCodeObj))
+                    {
+                        errorCodeValue = Convert.ToInt32(errorCodeObj, CultureInfo.InvariantCulture);
+                    }
+                }
+                catch (JsonReaderException ex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(null, $"Failed to deserialize error message into a dictionary: {ex}. Message body: '{responseContentStr}.'");
+
+                    // In some scenarios, the error response string is a ';' delimited string with the service-returned error code.
+                    const char errorFieldsDelimiter = ';';
+                    string[] messageFields = responseContent.Message.Split(errorFieldsDelimiter);
+
+                    if (messageFields != null)
+                    {
+                        _ = messageFields
+                            .Any(field =>
+                            {
+#if NET451 || NET472 || NETSTANDARD2_0
+                                if (field.IndexOf(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
+#else
+                                if (field.Contains(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase))
+#endif
+                                {
+                                    const char errorCodeDelimiter = ':';
+                                    string[] errorCodeFields = field.Split(errorCodeDelimiter);
+
+                                    if (Enum.TryParse(errorCodeFields[1], out ErrorCode errorCode))
+                                    {
+                                        errorCodeValue = (int)errorCode;
+                                    }
+                                }
+                                return true;
+                            });
+                    }
+                    else
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(null, $"Failed to deserialize error message into a dictionary and could not parse ';' delimited string either: {ex}." +
+                                $" Message body: '{responseContentStr}.'");
+
+                        return ErrorCode.InvalidErrorCode;
+                    }
                 }
             }
             catch (JsonReaderException ex)
