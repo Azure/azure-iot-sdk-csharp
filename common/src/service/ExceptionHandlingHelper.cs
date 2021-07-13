@@ -135,29 +135,35 @@ namespace Microsoft.Azure.Devices
 
                     // In some scenarios, the error response string is a ';' delimited string with the service-returned error code.
                     const char errorFieldsDelimiter = ';';
-                    string[] messageFields = responseContent.Message.Split(errorFieldsDelimiter);
+                    string[] messageFields = responseContent.Message?.Split(errorFieldsDelimiter);
 
                     if (messageFields != null)
                     {
-                        _ = messageFields
-                            .Any(field =>
-                            {
+                        foreach (string messageField in messageFields)
+                        {
 #if NET451 || NET472 || NETSTANDARD2_0
-                                if (field.IndexOf(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
+                            if (messageField.IndexOf(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
 #else
-                                if (field.Contains(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase))
+                            if (messageField.Contains(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase))
+#endif
+                            {
+                                const char errorCodeDelimiter = ':';
+
+#if NET451 || NET472 || NETSTANDARD2_0
+                                if (messageField.IndexOf(errorCodeDelimiter, StringComparison.OrdinalIgnoreCase) >= 0)
+#else
+                                if (messageField.Contains(errorCodeDelimiter, StringComparison.OrdinalIgnoreCase))
 #endif
                                 {
-                                    const char errorCodeDelimiter = ':';
-                                    string[] errorCodeFields = field.Split(errorCodeDelimiter);
-
+                                    string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
                                     if (Enum.TryParse(errorCodeFields[1], out ErrorCode errorCode))
                                     {
                                         errorCodeValue = (int)errorCode;
                                     }
                                 }
-                                return true;
-                            });
+                            }
+                            break;
+                        }
                     }
                     else
                     {
