@@ -125,7 +125,8 @@ namespace Microsoft.Azure.Devices
                     if (messageFields != null
                         && messageFields.TryGetValue(CommonConstants.ErrorCode, out string errorCodeObj))
                     {
-                        errorCodeValue = Convert.ToInt32(errorCodeObj, CultureInfo.InvariantCulture);
+                        // The result of TryParse is not being tracked since errorCodeValue has already been initialized to a default value of InvalidErrorCode.
+                        _ = int.TryParse(errorCodeObj, NumberStyles.Any, CultureInfo.InvariantCulture, out errorCodeValue);
                     }
                 }
                 catch (JsonReaderException ex)
