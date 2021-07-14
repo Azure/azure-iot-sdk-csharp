@@ -8,10 +8,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
 {

@@ -7,7 +7,8 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when a request is made against an IoT Hub that has been suspended.
+    /// This exception is thrown when the IoT hub has been suspended. This is likely due to exceeding Azure
+    /// spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
     /// </summary>
     [Serializable]
     public class IotHubSuspendedException : IotHubException

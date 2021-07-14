@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -10,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ExponentialBackoff : IRetryPolicy
     {
-        private readonly TransientFaultHandling.ExponentialBackoff _exponentialBackoffRetryStrategy;
+        private readonly ExponentialBackoffRetryStrategy _exponentialBackoffRetryStrategy;
 
         /// <summary>
         /// Creates an instance of ExponentialBackoff.
@@ -22,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public ExponentialBackoff(int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
         {
-            _exponentialBackoffRetryStrategy = new TransientFaultHandling.ExponentialBackoff(retryCount, minBackoff, maxBackoff, deltaBackoff);
+            _exponentialBackoffRetryStrategy = new ExponentialBackoffRetryStrategy(retryCount, minBackoff, maxBackoff, deltaBackoff);
         }
 
         /// <summary>

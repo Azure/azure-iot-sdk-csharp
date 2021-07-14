@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         public static readonly AmqpSymbol ArgumentError = AmqpIotConstants.Vendor + ":argument-error";
         public static readonly AmqpSymbol ArgumentOutOfRangeError = AmqpIotConstants.Vendor + ":argument-out-of-range";
         public static readonly AmqpSymbol DeviceContainerThrottled = AmqpIotConstants.Vendor + ":device-container-throttled";
-        public static readonly AmqpSymbol PartitionNotFound = AmqpIotConstants.Vendor + ":partition-not-found";
         public static readonly AmqpSymbol IotHubSuspended = AmqpIotConstants.Vendor + ":iot-hub-suspended";
 
         public static Exception GetExceptionFromOutcome(Outcome outcome)
@@ -240,8 +239,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {
                 // Note: The DeviceMaximumQueueDepthExceededException is not supposed to be thrown here as it is being mapped to the incorrect error code
-                // Error code 403004 is only applicable to C2D (Service client); see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-403004-devicemaximumqueuedepthexceeded
-                // Error code 403002 is applicable to D2C (Device client); see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded
+                // Error code 403004 is only applicable to C2D (Service client); see https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403004-devicemaximumqueuedepthexceeded
+                // Error code 403002 is applicable to D2C (Device client); see https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded
                 // We have opted not to change the exception type thrown here since it will be a breaking change, alternatively, we are adding the correct exception type
                 // as the inner exception.
                 retException = new DeviceMaximumQueueDepthExceededException(

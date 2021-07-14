@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices
         Scheduled,
 
         /// <summary>
-        /// Indicates that a Job is in the queue for execution (synonym for enqueued to be depricated)
+        /// Indicates that a Job is in the queue for execution (synonym for enqueued to be deprecated)
         /// </summary>
         [EnumMember(Value = "queued")]
         Queued

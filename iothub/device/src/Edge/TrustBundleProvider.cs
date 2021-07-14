@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy = new ErrorDetectionStrategy();
 
         private static readonly RetryStrategy s_transientRetryStrategy =
-            new TransientFaultHandling.ExponentialBackoff(
+            new ExponentialBackoffRetryStrategy(
                 retryCount: 3,
                 minBackoff: TimeSpan.FromSeconds(2),
                 maxBackoff: TimeSpan.FromSeconds(30),

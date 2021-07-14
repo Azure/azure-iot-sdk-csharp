@@ -43,7 +43,7 @@ docker run -d --restart unless-stopped --name azure-iot-tpmsim -p 127.0.0.1:2321
 
 Alternatives:
 
-- Stand-alone executable for Windows: https://www.microsoft.com/en-us/download/details.aspx?id=52507
+- Stand-alone executable for Windows: https://www.microsoft.com/download/details.aspx?id=52507
 
 ### Proxy Server
 

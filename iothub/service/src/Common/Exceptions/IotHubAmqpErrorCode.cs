@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         public static readonly AmqpSymbol DeviceAlreadyExists = AmqpConstants.Vendor + ":device-already-exists";
         public static readonly AmqpSymbol DeviceContainerThrottled = AmqpConstants.Vendor + ":device-container-throttled";
         public static readonly AmqpSymbol QuotaExceeded = AmqpConstants.Vendor + ":quota-exceeded";
-        public static readonly AmqpSymbol PartitionNotFound = AmqpConstants.Vendor + ":partition-not-found";
         public static readonly AmqpSymbol PreconditionFailed = AmqpConstants.Vendor + ":precondition-failed";
         public static readonly AmqpSymbol IotHubSuspended = AmqpConstants.Vendor + ":iot-hub-suspended";
     }

@@ -8,10 +8,15 @@ using Microsoft.Azure.Devices.Client.Extensions;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when an attempt to communicate with a device fails because the lock token was lost (if the connection is lost and regained for example). This timeout has the same effect as if the message was abandonned.
+    /// This exception is thrown when attempting to reject/abandon/complete a cloud-to-device message with a lock
+    /// token that has already expired. The lock token expires after the lock timeout set by the service, or if your
+    /// client connection was lost and regained while receiving the message but before you could reject/abandon/complete it.
     /// </summary>
     /// <remarks>
-    /// An abandoned message will be re-enqueued in the per-device queue, and the <see cref="DeviceClient"/> instance will receive it again. A rejected message will be deleted from the queue and not received again by the device.
+    /// An abandoned message will be re-enqueued in the per-device/module queue, and the <see cref="DeviceClient"/> instance will receive it again.
+    /// A rejected message will be deleted from the queue and not received again by the device.
+    /// For more information on the cause for this error and how to resolve, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-412002-devicemessagelocklost"/>.
+    /// For more information on cloud-to-device message lifecycle, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
     /// </remarks>
     [Serializable]
     public class DeviceMessageLockLostException : IotHubException
