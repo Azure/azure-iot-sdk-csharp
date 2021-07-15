@@ -141,13 +141,13 @@ public class ClientProperties : ClientPropertyCollection {
 public class ClientPropertyCollection : PayloadCollection {
     public ClientPropertyCollection();
     public long Version { get; protected set; }
-    public void Add(IDictionary<string, object> properties);
     public void AddComponentProperties(string componentName, IDictionary<string, object> properties);
     public void AddComponentProperty(string componentName, string propertyName, object propertyValue);
-    public void AddOrUpdate(IDictionary<string, object> properties);
     public void AddOrUpdateComponentProperties(string componentName, IDictionary<string, object> properties);
     public void AddOrUpdateComponentProperty(string componentName, string propertyName, object propertyValue);
+    public void AddOrUpdateRootProperties(IDictionary<string, object> properties);
     public void AddOrUpdateRootProperty(string propertyName, object propertyValue);
+    public void AddRootProperties(IDictionary<string, object> properties);
     public void AddRootProperty(string propertyName, object propertyValue);
     public bool Contains(string componentName, string propertyName);
     public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
