@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddRootProperty(string, object)" />
         /// <summary>
-        /// Adds the values to the collection.
+        /// Adds the collection of root-level property values to the collection.
         /// </summary>
         /// <remarks>
         /// If the collection already has a key matching a property name supplied this method will throw an <see cref="ArgumentException"/>.
@@ -69,16 +69,10 @@ namespace Microsoft.Azure.Devices.Client
         /// as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
         /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
-        /// <para>
-        /// This method directly adds the supplied <paramref name="properties"/> to the collection.
-        /// For component-level properties, either ensure that you include the component identifier markers {"__t": "c"} as a part of the supplied <paramref name="properties"/>,
-        /// or use the <see cref="AddComponentProperties(string, IDictionary{string, object})"/> convenience method instead.
-        /// For more information see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
-        /// </para>
         /// </remarks>
         /// <param name="properties">A collection of properties to add.</param>
         /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
-        public void Add(IDictionary<string, object> properties)
+        public void AddRootProperties(IDictionary<string, object> properties)
         {
             if (properties == null)
             {
@@ -127,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="Add(IDictionary{string, object})"/>
+        /// <inheritdoc path="/exception['ArgumentNullException']" cref="AddRootProperties(IDictionary{string, object})"/>
         /// <remarks>
         /// If the collection has a key that matches this will overwrite the current value. Otherwise it will attempt to add this to the collection.
         /// <para>
@@ -135,15 +129,9 @@ namespace Microsoft.Azure.Devices.Client
         /// as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
         /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
-        /// <para>
-        /// This method directly adds or updates the supplied <paramref name="properties"/> to the collection.
-        /// For component-level properties, either ensure that you include the component identifier markers {"__t": "c"} as a part of the supplied <paramref name="properties"/>,
-        /// or use the <see cref="AddOrUpdateComponentProperties(string, IDictionary{string, object})"/> convenience method instead.
-        /// For more information see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
-        /// </para>
         /// </remarks>
         /// <param name="properties">A collection of properties to add or update.</param>
-        public void AddOrUpdate(IDictionary<string, object> properties)
+        public void AddOrUpdateRootProperties(IDictionary<string, object> properties)
             => properties
                 .ToList()
                 .ForEach(entry => Collection[entry.Key] = entry.Value);
