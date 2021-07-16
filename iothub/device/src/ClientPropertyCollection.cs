@@ -170,14 +170,23 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
-        /// <param name="propertyValue">The value of the component-level property.</param>
-        /// <returns>true if the property collection contains a component level property with the specified key; otherwise, false.</returns>
+        /// <param name="propertyValue">When this method returns successfully, this contains the value of the component-level property.
+        /// When this method returns unsuccessfully, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns>True if a component-level property of type <c>T</c> with the specified key was found; otherwise, it returns false.</returns>
         public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
         {
             if (Logging.IsEnabled && Convention == null)
             {
                 Logging.Info(this, $"The convention for this collection is not set; this typically means this collection was not created by the client. " +
                     $"TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
+            }
+
+            // If either the component name or the property name is null, empty or whitespace,
+            // then return unsuccessfully (false) with the default value of the type <T> passed in.
+            if (string.IsNullOrWhiteSpace(componentName) || string.IsNullOrWhiteSpace(propertyName))
+            {
+                propertyValue = default;
+                return false;
             }
 
             if (Contains(componentName, propertyName))
@@ -188,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
                     {
-                        // If the value is null, go ahead and return it.
+                        // If the value associated with the key is null, then return successfully (true) with the default value of the type <T> passed in.
                         if (dictionaryElement == null)
                         {
                             propertyValue = default;
@@ -209,12 +218,14 @@ namespace Microsoft.Azure.Devices.Client
                     try
                     {
                         // If it's not, we need to try to convert it using the serializer.
+                        // If it can be successfully converted, go ahead and return it.
                         Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
                         return true;
                     }
                     catch
                     {
-                        // In case the value cannot be converted using the serializer, TryGetValue should return the default value.
+                        // In case the value cannot be converted using the serializer,
+                        // then return unsuccessfully (false) with the default value of the type <T> passed in.
                     }
                 }
             }

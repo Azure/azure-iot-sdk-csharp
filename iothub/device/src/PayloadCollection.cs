@@ -107,9 +107,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the value of the object from the collection.
         /// </summary>
-        /// <remarks>
-        /// This class is used for both sending and receiving properties for the device.
-        /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
         /// <param name="value">When this method returns successfully, this contains the value of the object from the collection.
@@ -123,8 +120,8 @@ namespace Microsoft.Azure.Devices.Client
                     $"TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
             }
 
-            // If the key is null, then return unsuccessfully (false) with the default value of the type <T> passed in.
-            if (key == null)
+            // If the key is null, empty or whitespace, then return unsuccessfully (false) with the default value of the type <T> passed in.
+            if (string.IsNullOrWhiteSpace(key))
             {
                 value = default;
                 return false;
