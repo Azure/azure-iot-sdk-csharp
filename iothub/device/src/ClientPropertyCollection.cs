@@ -206,9 +206,16 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    // If it's not, we need to try to convert it using the serializer.
-                    Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
-                    return true;
+                    try
+                    {
+                        // If it's not, we need to try to convert it using the serializer.
+                        Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
+                        return true;
+                    }
+                    catch
+                    {
+                        // In case the value cannot be converted using the serializer, TryGetValue should return the default value.
+                    }
                 }
             }
 

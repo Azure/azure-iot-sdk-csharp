@@ -139,9 +139,16 @@ namespace Microsoft.Azure.Devices.Client
                     return true;
                 }
 
-                // If it's not, we need to try to convert it using the serializer.
-                value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
-                return true;
+                try
+                {
+                    // If it's not, we need to try to convert it using the serializer.
+                    value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
+                    return true;
+                }
+                catch
+                {
+                    // In case the value cannot be converted using the serializer, TryGetValue should return the default value.
+                }
             }
 
             value = default;

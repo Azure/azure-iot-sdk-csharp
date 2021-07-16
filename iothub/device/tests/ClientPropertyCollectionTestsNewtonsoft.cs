@@ -235,6 +235,46 @@ namespace Microsoft.Azure.Devices.Client.Tests
             outValue.Should().Be(StringPropertyValue);
             componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
         }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueNotFound()
+        {
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+
+            bool isValueRetrieved = clientProperties.TryGetValue("thisPropertyDoesNotExist", out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default(int));
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueNotFound()
+        {
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, "thisPropertyDoesNotExist", out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default(int));
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
+        {
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+
+            bool isValueRetrieved = clientProperties.TryGetValue(StringPropertyName, out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default(int));
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueCouldNotBeDeserialized()
+        {
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, StringPropertyName, out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default(int));
+        }
     }
 
     internal class RootLevelProperties
