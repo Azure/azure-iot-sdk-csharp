@@ -112,8 +112,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
-        /// <param name="value">The value of the object from the collection.</param>
-        /// <returns>True if the collection contains an element with the specified key; otherwise, it returns false.</returns>
+        /// <param name="value">When this method returns successfully, this contains the value of the object from the collection.
+        /// When this method returns unsuccessfully, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns>True if a value of type <c>T</c> with the specified key was found; otherwise, it returns false.</returns>
         public bool TryGetValue<T>(string key, out T value)
         {
             if (Logging.IsEnabled && Convention == null)
@@ -122,9 +123,16 @@ namespace Microsoft.Azure.Devices.Client
                     $"TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
             }
 
+            // If the key is null, then return unsuccessfully (false) with the default value of the type <T> passed in.
+            if (key == null)
+            {
+                value = default;
+                return false;
+            }
+
             if (Collection.ContainsKey(key))
             {
-                // If the value is null, go ahead and return it.
+                // If the value associated with the key is null, then return successfully (true) with the default value of the type <T> passed in.
                 if (Collection[key] == null)
                 {
                     value = default;
@@ -142,12 +150,14 @@ namespace Microsoft.Azure.Devices.Client
                 try
                 {
                     // If it's not, we need to try to convert it using the serializer.
+                    // If it can be successfully converted, go ahead and return it.
                     value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
                     return true;
                 }
                 catch
                 {
-                    // In case the value cannot be converted using the serializer, TryGetValue should return the default value.
+                    // In case the value cannot be converted using the serializer,
+                    // then return unsuccessfully (false) with the default value of the type <T> passed in.
                 }
             }
 
