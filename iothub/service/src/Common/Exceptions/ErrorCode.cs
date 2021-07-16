@@ -7,12 +7,10 @@ using System.ComponentModel;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// Error codes for common IoT hub exceptions.
+    /// Error codes for common IoT hub response errors.
     /// </summary>
     public enum ErrorCode
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-
         /// <summary>
         /// Used when the error code returned by the hub is unrecognized. If encountered, please report the issue so it can be added here.
         /// </summary>
@@ -93,7 +91,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// A devices with the same Id was present multiple times in the input request for bulk device registry operations.
         /// <para>
-        /// For more information <see href="https://docs.microsoft.com/rest/api/iothub/service/bulk-registry/update-registry"/> on bulk registry operations.
+        /// For more information on bulk registry operations, see <see href="https://docs.microsoft.com/rest/api/iothub/service/bulk-registry/update-registry"/>.
         /// </para>
         /// </summary>
         DeviceDefinedMultipleTimes = 400011,
@@ -122,16 +120,23 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         CannotRegisterModuleToModule = 400301,
 
         // Unauthorized - 401
+
+        /// <summary>
+        /// The error is internal to IoT hub and is likely transient.
+        /// </summary>
+        [Obsolete("This error does should not be returned by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         IotHubNotFound = 401001,
 
         /// <summary>
         /// The SAS token has expired or IoT hub couldn't authenticate the authentication header, rule, or key.
-        /// For detailed information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized"/>.
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized"/>.
         /// </summary>
         IotHubUnauthorizedAccess = 401002,
 
         /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK. Replaced by <see cref="IotHubUnauthorizedAccess"/>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// Replaced by <see cref="IotHubUnauthorizedAccess"/>
         /// </summary>
         [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -147,7 +152,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         IotHubSuspended = 403001,
 
         /// <summary>
-        /// The daily message quota for the IoT hub is exceeded.
+        /// Total number of messages on the hub exceeded the allocated quota. Increase units for this hub to increase the quota.
+        /// For more information on quota, please refer to <see href="https://aka.ms/iothubthrottling"/>.
         /// </summary>
         IotHubQuotaExceeded = 403002,
 
@@ -163,7 +169,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// You will need to receive and complete/reject the messages from the device-side before you can enqueue any additional messages.
         /// If you want to discard the currently enqueued messages,
         /// you can <see cref="ServiceClient.PurgeMessageQueueAsync(string, System.Threading.CancellationToken)">purge your device message queue</see>.
-        /// For more details on cloud-to-device message operations, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
+        /// For more information on cloud-to-device message operations, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
         /// </summary>
         DeviceMaximumQueueDepthExceeded = 403004,
 
@@ -177,7 +183,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         // NotFound - 404
 
         /// <summary>
-        /// The operation failed because the device cannot be found by IoT hub. The device is either not registered or disabled. May be thrown by operations such as 
+        /// The operation failed because the device cannot be found by IoT hub. The device is either not registered or disabled. May be thrown by operations such as
         /// <see cref="RegistryManager.GetDeviceAsync(string)"/>.
         /// </summary>
         DeviceNotFound = 404001,
@@ -191,14 +197,14 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// The error is internal to IoT hub and is likely transient.
-        /// For more details, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
         /// </summary>
         [Obsolete("This error does should not be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         PartitionNotFound = 503003,
 
         /// <summary>
-        /// The operation failed because the module cannot be found by IoT hub. The module is either not registered or disabled. May be thrown by operations such as 
+        /// The operation failed because the module cannot be found by IoT hub. The module is either not registered or disabled. May be thrown by operations such as
         /// <see cref="RegistryManager.GetModuleAsync(string, string)"/>.
         /// </summary>
         ModuleNotFound = 404010,
@@ -212,7 +218,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// The operation failed because it attempted to add a module to a device when that device already has a module registered to it with the same Id. This issue can be
-        /// fixed by removing the existing module from the device first with <see cref="RegistryManager.RemoveModuleAsync(Module)"/>. This error code is only returned from 
+        /// fixed by removing the existing module from the device first with <see cref="RegistryManager.RemoveModuleAsync(Module)"/>. This error code is only returned from
         /// methods like <see cref="RegistryManager.AddModuleAsync(Module, System.Threading.CancellationToken)"/>.
         /// </summary>
         ModuleAlreadyExistsOnDevice = 409301,
@@ -233,32 +239,43 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         DeviceMessageLockLost = 412002,
 
         // RequestEntityTooLarge - 413
+
         /// <summary>
         /// When the message is too large for IoT hub you will receive this error. You should attempt to reduce your message size and send again.
-        /// For more information on message sizes, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT hub quotas and throttling | Other limits</see>
+        /// For more information on message sizes, see <see href="https://aka.ms/iothubthrottling#other-limits">IoT hub quotas and throttling | Other limits</see>
         /// </summary>
         MessageTooLarge = 413001,
 
+        /// <summary>
+        /// Too many devices were included in the bulk operation. Check the response for details.
+        /// For more information, see <see href="https://docs.microsoft.com/rest/api/iothub/service/bulk-registry/update-registry"/>.
+        /// </summary>
         TooManyDevices = 413002,
+
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be returned by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         TooManyModulesOnDevice = 413003,
 
         // Throttling Exception
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.
-        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling">IoT hub quotas and throttling</see>.
+        /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
         /// </summary>
         ThrottlingException = 429001,
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.
-        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling">IoT hub quotas and throttling</see>.
+        /// For more information, see <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
         /// </summary>
         ThrottleBacklogLimitExceeded = 429002,
 
         /// <summary>
         /// IoT hub ran into a server side issue when attempting to throttle.
-        /// For more information, <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>.
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>.
         /// </summary>
         [Obsolete("This error does not appear to be returned by the service.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -274,6 +291,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         ServerError = 500001,
 
+        /// <summary>
+        /// Unused error code. Service does not return it and neither does the SDK.
+        /// </summary>
+        [Obsolete("This error does not appear to be returned by the service.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         JobCancelled = 500002,
 
         // ServiceUnavailable
@@ -282,7 +304,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// IoT hub is currently unable to process the request. This is a transient, retryable error.
         /// </summary>
         ServiceUnavailable = 503001,
-
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }
