@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client
                     $"TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
             }
 
-            // If the key is null, empty or whitespace, then return unsuccessfully (false) with the default value of the type <T> passed in.
+            // If the key is null, empty or whitespace, then return false with the default value of the type <T> passed in.
             if (string.IsNullOrWhiteSpace(key))
             {
                 value = default;
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Collection.ContainsKey(key))
             {
-                // If the value associated with the key is null, then return successfully (true) with the default value of the type <T> passed in.
+                // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
                 if (Collection[key] == null)
                 {
                     value = default;
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client
                 catch
                 {
                     // In case the value cannot be converted using the serializer,
-                    // then return unsuccessfully (false) with the default value of the type <T> passed in.
+                    // then return false with the default value of the type <T> passed in.
                 }
             }
 

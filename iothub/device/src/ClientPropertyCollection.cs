@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // If either the component name or the property name is null, empty or whitespace,
-            // then return unsuccessfully (false) with the default value of the type <T> passed in.
+            // then return false with the default value of the type <T> passed in.
             if (string.IsNullOrWhiteSpace(componentName) || string.IsNullOrWhiteSpace(propertyName))
             {
                 propertyValue = default;
@@ -201,11 +201,11 @@ namespace Microsoft.Azure.Devices.Client
                     // First verify that the retrieved dictionary contains the component identifier { "__t": "c" }.
                     // If not, then the retrieved nested dictionary is actually a root-level property of type map.
                     if (nestedDictionary.TryGetValue(ConventionBasedConstants.ComponentIdentifierKey, out object componentIdentifierValue)
-                        && componentIdentifierValue.Equals(ConventionBasedConstants.ComponentIdentifierValue))
+                        && componentIdentifierValue == ConventionBasedConstants.ComponentIdentifierValue)
                     {
                         if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
                         {
-                            // If the value associated with the key is null, then return successfully (true) with the default value of the type <T> passed in.
+                            // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
                             if (dictionaryElement == null)
                             {
                                 propertyValue = default;
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.Client
                         if (Convention
                             .PayloadSerializer
                             .TryGetNestedObjectValue(componentProperties, ConventionBasedConstants.ComponentIdentifierKey, out string componentIdentifierValue)
-                            && componentIdentifierValue.Equals(ConventionBasedConstants.ComponentIdentifierValue))
+                            && componentIdentifierValue == ConventionBasedConstants.ComponentIdentifierValue)
                         {
                             // Since the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
                             // If it can be successfully converted, go ahead and return it.
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client
                     catch
                     {
                         // In case the value cannot be converted using the serializer,
-                        // then return unsuccessfully (false) with the default value of the type <T> passed in.
+                        // then return false with the default value of the type <T> passed in.
                     }
                 }
             }
