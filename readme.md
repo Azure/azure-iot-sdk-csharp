@@ -1,5 +1,21 @@
 # Microsoft Azure IoT SDK for .NET
 
+## Critical Upcoming Change Notice
+
+All Azure IoT SDK users are advised to be aware of upcoming certificate changes for IoT hub and Device Provisioning Service 
+that will impact the SDK's ability to connect. In October 2022, both services will migrate from the current 
+[Baltimore CyberTrust CA Root](https://baltimore-cybertrust-root.chain-demos.digicert.com/info/index.html) to the 
+[DigiCert Global G2 CA root](https://global-root-g2.chain-demos.digicert.com/info/index.html). There will be a 
+transition period beforehand where your IoT devices must have both the Baltimore and Digicert public certificates 
+installed in their certificate store in order to prevent connectivity issues. 
+
+**Devices with only the Baltimore public certificate installed will lose the ability to connect to IoT hub and Device Provisioning Service in October 2022.**
+
+To prepare for this change, make sure your device's certificate store has both of these public certificates installed.
+
+For a more in depth explanation as to why the service is doing this, please see
+[this article](https://techcommunity.microsoft.com/t5/internet-of-things/azure-iot-tls-critical-changes-are-almost-here-and-why-you/ba-p/2393169).
+
 ### Contents
 
 This repository contains the following:
