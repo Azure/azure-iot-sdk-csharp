@@ -170,8 +170,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
-        /// <param name="propertyValue">When this method returns successfully, this contains the value of the component-level property.
-        /// When this method returns unsuccessfully, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <param name="propertyValue">When this method returns true, this contains the value of the component-level property.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
         /// <returns>True if a component-level property of type <c>T</c> with the specified key was found; otherwise, it returns false.</returns>
         public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
         {

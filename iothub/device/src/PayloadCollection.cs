@@ -109,8 +109,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
-        /// <param name="value">When this method returns successfully, this contains the value of the object from the collection.
-        /// When this method returns unsuccessfully, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <param name="value">When this method returns true, this contains the value of the object from the collection.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
         /// <returns>True if a value of type <c>T</c> with the specified key was found; otherwise, it returns false.</returns>
         public bool TryGetValue<T>(string key, out T value)
         {
