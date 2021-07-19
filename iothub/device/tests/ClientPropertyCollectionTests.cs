@@ -359,9 +359,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddRootProperty(MapPropertyName, s_mapPropertyValue);
 
-            string incorrectComponentName = MapPropertyName;
-            string incorrectComponentPropertyName = "key1";
-            bool isValueRetrieved = clientProperties.TryGetValue(incorrectComponentName, incorrectComponentPropertyName, out object propertyValue);
+            string incorrectlyMappedComponentName = MapPropertyName;
+            string incorrectlyMappedComponentPropertyName = "key1";
+            bool isValueRetrieved = clientProperties.TryGetValue(incorrectlyMappedComponentName, incorrectlyMappedComponentPropertyName, out object propertyValue);
             isValueRetrieved.Should().BeFalse();
             propertyValue.Should().Be(default);
         }
