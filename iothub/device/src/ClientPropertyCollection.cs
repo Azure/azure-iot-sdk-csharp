@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client
                     // First verify that the retrieved dictionary contains the component identifier { "__t": "c" }.
                     // If not, then the retrieved nested dictionary is actually a root-level property of type map.
                     if (nestedDictionary.TryGetValue(ConventionBasedConstants.ComponentIdentifierKey, out object componentIdentifierValue)
-                        && componentIdentifierValue == ConventionBasedConstants.ComponentIdentifierValue)
+                        && componentIdentifierValue.ToString() == ConventionBasedConstants.ComponentIdentifierValue)
                     {
                         if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
                         {
