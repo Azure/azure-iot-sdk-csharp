@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             bool isValueRetrieved = clientProperties.TryGetValue("thisPropertyDoesNotExist", out int outIntValue);
             isValueRetrieved.Should().BeFalse();
-            outIntValue.Should().Be(default(int));
+            outIntValue.Should().Be(default);
         }
 
         [TestMethod]
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, "thisPropertyDoesNotExist", out int outIntValue);
             isValueRetrieved.Should().BeFalse();
-            outIntValue.Should().Be(default(int));
+            outIntValue.Should().Be(default);
         }
 
         [TestMethod]
@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             bool isValueRetrieved = clientProperties.TryGetValue(StringPropertyName, out int outIntValue);
             isValueRetrieved.Should().BeFalse();
-            outIntValue.Should().Be(default(int));
+            outIntValue.Should().Be(default);
         }
 
         [TestMethod]
@@ -273,7 +273,19 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, StringPropertyName, out int outIntValue);
             isValueRetrieved.Should().BeFalse();
-            outIntValue.Should().Be(default(int));
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfNotAComponent()
+        {
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+
+            string incorrectComponentName = MapPropertyName;
+            string incorrectComponentPropertyName = "key1";
+            bool isValueRetrieved = clientProperties.TryGetValue(incorrectComponentName, incorrectComponentPropertyName, out object propertyValue);
+            isValueRetrieved.Should().BeFalse();
+            propertyValue.Should().Be(default);
         }
     }
 

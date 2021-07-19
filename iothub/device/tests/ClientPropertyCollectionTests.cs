@@ -161,23 +161,45 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
+        public void ClientPropertyCollection_TryGetValueShouldReturnFalseIfValueNotFound()
+        {
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
+
+            bool isValueRetrieved = clientProperties.TryGetValue(IntPropertyName, out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
+        {
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
+
+            bool isValueRetrieved = clientProperties.TryGetValue(StringPropertyName, out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
         public void ClientPropertyCollection_CanAddSimpleObjectWithComponentAndGetBackWithoutDeviceClient()
         {
-            var clientProperties = new ClientPropertyCollection
+            var componentLevelProperties = new Dictionary<string, object>
             {
-                { ComponentName, new Dictionary<string, object> {
-                    { StringPropertyName, StringPropertyValue },
-                    { BoolPropertyName, BoolPropertyValue },
-                    { DoublePropertyName, DoublePropertyValue },
-                    { FloatPropertyName, FloatPropertyValue },
-                    { IntPropertyName, IntPropertyValue },
-                    { ShortPropertyName, ShortPropertyValue },
-                    { ObjectPropertyName, s_objectPropertyValue },
-                    { ArrayPropertyName, s_arrayPropertyValue },
-                    { MapPropertyName, s_mapPropertyValue },
-                    { DateTimePropertyName, s_dateTimePropertyValue } }
-                }
+                { StringPropertyName, StringPropertyValue },
+                { BoolPropertyName, BoolPropertyValue },
+                { DoublePropertyName, DoublePropertyValue },
+                { FloatPropertyName, FloatPropertyValue },
+                { IntPropertyName, IntPropertyValue },
+                { ShortPropertyName, ShortPropertyValue },
+                { ObjectPropertyName, s_objectPropertyValue },
+                { ArrayPropertyName, s_arrayPropertyValue },
+                { MapPropertyName, s_mapPropertyValue },
+                { DateTimePropertyName, s_dateTimePropertyValue }
             };
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddComponentProperties(ComponentName, componentLevelProperties);
 
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string stringOutValue);
             stringOutValue.Should().Be(StringPropertyValue);
@@ -307,6 +329,41 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             outValue.Should().Be(StringPropertyValue);
             componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnFalseIfValueNotFound()
+        {
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
+
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, IntPropertyName, out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnFalseIfValueCouldNotBeDeserialized()
+        {
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
+
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, StringPropertyName, out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnFalseIfNotAComponent()
+        {
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddRootProperty(MapPropertyName, s_mapPropertyValue);
+
+            string incorrectComponentName = MapPropertyName;
+            string incorrectComponentPropertyName = "key1";
+            bool isValueRetrieved = clientProperties.TryGetValue(incorrectComponentName, incorrectComponentPropertyName, out object propertyValue);
+            isValueRetrieved.Should().BeFalse();
+            propertyValue.Should().Be(default);
         }
     }
 
