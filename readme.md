@@ -147,7 +147,7 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 - [Set up your development environment](./doc/devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
 - [API reference documentation for .NET](https://docs.microsoft.com/dotnet/api/overview/azure/devices?view=azure-dotnet)
 - [Get Started with IoT Hub using .NET](https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
-- [Device connection and messaging reliability](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/DeviceConnectionAndReliabilityReadme.md)
+- [Device connection and messaging reliability](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/device_connection_and_reliability_readme.md)
 
 > Device Explorer is no longer supported. A replacement tool can be found [here](https://github.com/Azure/azure-iot-explorer).
 
