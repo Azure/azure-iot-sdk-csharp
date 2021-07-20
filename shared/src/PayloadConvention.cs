@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Shared
     /// The payload convention class.
     /// </summary>
     /// <remarks>The payload convention is used to define a specific serializer as well as a specific content encoding.
-    /// For example, IoT has a <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention">convention</see> that is designed
+    /// For example, IoT has a <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention">convention</see> that is designed
     /// to make it easier to get started with products that use specific conventions by default.</remarks>
     public abstract class PayloadConvention
     {

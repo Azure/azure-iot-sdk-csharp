@@ -19,29 +19,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/remarks" cref="ClientProperties" />
         public ClientProperties()
         {
-            ReportedFromClient = new ClientPropertyCollection();
             WritablePropertyRequests = new ClientPropertyCollection();
+            ReportedFromClient = new ClientPropertyCollection();
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="ClientProperties"/> with the specified collections.
         /// </summary>
-        /// <param name="requestedPropertyCollection">A collection of writable properties returned from IoT Hub.</param>
-        /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub.</param>
-        internal ClientProperties(ClientPropertyCollection requestedPropertyCollection, ClientPropertyCollection readOnlyPropertyCollection)
+        /// <param name="writablePropertyRequestCollection">A collection of writable property requests returned from IoT Hub.</param>
+        /// <param name="clientReportedPropertyCollection">A collection of client reported properties returned from IoT Hub.</param>
+        internal ClientProperties(ClientPropertyCollection writablePropertyRequestCollection, ClientPropertyCollection clientReportedPropertyCollection)
         {
-            ReportedFromClient = readOnlyPropertyCollection;
-            WritablePropertyRequests = requestedPropertyCollection;
+            WritablePropertyRequests = writablePropertyRequestCollection;
+            ReportedFromClient = clientReportedPropertyCollection;
         }
-
-        /// <summary>
-        /// The collection of properties reported by the client.
-        /// </summary>
-        /// <remarks>
-        /// Client reported properties can either be <see href="https://docs.microsoft.com/en-us/azure/iot-develop/concepts-convention#read-only-properties">Read-only properties</see>
-        /// or they can be <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see>.
-        /// </remarks>
-        public ClientPropertyCollection ReportedFromClient { get; private set; }
 
         /// <summary>
         /// The collection of writable property requests received from service.
@@ -50,5 +41,14 @@ namespace Microsoft.Azure.Devices.Client
         /// See the <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see> documentation for more information.
         /// </remarks>
         public ClientPropertyCollection WritablePropertyRequests { get; private set; }
+
+        /// <summary>
+        /// The collection of properties reported by the client.
+        /// </summary>
+        /// <remarks>
+        /// Client reported properties can either be <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#read-only-properties">Read-only properties</see>
+        /// or they can be <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see>.
+        /// </remarks>
+        public ClientPropertyCollection ReportedFromClient { get; private set; }
     }
 }
