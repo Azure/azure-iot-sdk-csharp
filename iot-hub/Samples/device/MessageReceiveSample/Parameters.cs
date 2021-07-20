@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             "TransportType",
             Default = TransportType.Mqtt,
             Required = false,
-            HelpText = "The transport to use to communicate with the IoT Hub. Possible values include Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_only, and Http1.")]
+            HelpText = "The transport to use to communicate with the IoT hub. Possible values include Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_Only, and Http1.")]
         public TransportType TransportType { get; set; }
 
         [Option(

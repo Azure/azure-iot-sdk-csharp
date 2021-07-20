@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     break;
 
                 case "connectionstring":
-                    s_logger.LogDebug($"Initializing via IoT Hub connection string");
+                    s_logger.LogDebug($"Initializing via IoT hub connection string");
                     deviceClient = InitializeDeviceClient(parameters.PrimaryConnectionString);
                     break;
 

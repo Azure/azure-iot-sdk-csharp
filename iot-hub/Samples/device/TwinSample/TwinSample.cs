@@ -3,6 +3,8 @@
 
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +22,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
+            Console.WriteLine("Press Control+C to quit the sample.");
+            using var cts = new CancellationTokenSource(sampleRunningTime);
+            Console.CancelKeyPress += (sender, eventArgs) =>
+            {
+                eventArgs.Cancel = true;
+                cts.Cancel();
+                Console.WriteLine("Cancellation requested; will exit.");
+            };
+
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync, null);
 
             Console.WriteLine("Retrieving twin...");
@@ -33,15 +44,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             reportedProperties["DateTimeLastAppLaunch"] = DateTime.UtcNow;
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-
-            Console.WriteLine("Press Control+C to quit the sample.");
-            using var cts = new CancellationTokenSource(sampleRunningTime);
-            Console.CancelKeyPress += (sender, eventArgs) =>
-            {
-                eventArgs.Cancel = true;
-                cts.Cancel();
-                Console.WriteLine("Cancellation requested; will exit.");
-            };
 
             var timer = Stopwatch.StartNew();
             Console.WriteLine($"Use the IoT Hub Azure Portal or IoT Explorer utility to change the twin desired properties.");
@@ -59,11 +61,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties, object userContext)
         {
-            Console.WriteLine("\tDesired property changed:");
+            var reportedProperties = new TwinCollection();
+
+            Console.WriteLine("\tDesired properties requested:");
             Console.WriteLine($"\t{desiredProperties.ToJson()}");
 
-            Console.WriteLine("\tSending current time as reported property");
-            TwinCollection reportedProperties = new TwinCollection();
+            // For the purpose of this sample, we'll blindly accept all twin property write requests.
+            foreach (KeyValuePair<string, object> desiredProperty in desiredProperties)
+            {
+                Console.WriteLine($"Setting {desiredProperty.Key} to {desiredProperty.Value}.");
+                reportedProperties[desiredProperty.Key] = desiredProperty.Value;
+            }
+
+            Console.WriteLine("\tAlso setting current time as reported property");
             reportedProperties["DateTimeLastDesiredPropertyChangeReceived"] = DateTime.UtcNow;
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
