@@ -28,18 +28,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
-            _deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
-
-            // Method Call processing will be enabled when the first method handler is added.
-            // Setup a callback for the 'WriteToConsole' method.
-            await _deviceClient.SetMethodHandlerAsync("WriteToConsole", WriteToConsoleAsync, null);
-
-            // Setup a callback for the 'GetDeviceName' method.
-            await _deviceClient.SetMethodHandlerAsync(
-                "GetDeviceName",
-                GetDeviceNameAsync,
-                new DeviceData { Name = "DeviceClientMethodSample" });
-
             Console.WriteLine("Press Control+C to quit the sample.");
             using var cts = new CancellationTokenSource(sampleRunningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
@@ -49,8 +37,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
+            _deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
+
+            // Method Call processing will be enabled when the first method handler is added.
+            // Setup a callback for the 'WriteToConsole' method.
+            await _deviceClient.SetMethodHandlerAsync("WriteToConsole", WriteToConsoleAsync, null, cts.Token);
+
+            // Setup a callback for the 'GetDeviceName' method.
+            await _deviceClient.SetMethodHandlerAsync(
+                "GetDeviceName",
+                GetDeviceNameAsync,
+                new DeviceData { Name = "DeviceClientMethodSample" },
+                cts.Token);
+
             var timer = Stopwatch.StartNew();
-            Console.WriteLine($"Use the IoT Hub Azure Portal to call methods GetDeviceName or WriteToConsole within this time.");
+            Console.WriteLine($"Use the IoT hub Azure Portal to call methods GetDeviceName or WriteToConsole within this time.");
 
             Console.WriteLine($"Waiting up to {sampleRunningTime} for IoT Hub method calls ...");
             while (!cts.IsCancellationRequested

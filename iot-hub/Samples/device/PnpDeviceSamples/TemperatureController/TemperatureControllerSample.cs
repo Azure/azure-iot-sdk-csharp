@@ -117,10 +117,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
                 await Task.Delay(delay * 1000);
 
+                _logger.LogDebug("\tRebooting...");
+
                 _temperature[Thermostat1] = _maxTemp[Thermostat1] = 0;
                 _temperature[Thermostat2] = _maxTemp[Thermostat2] = 0;
 
                 _temperatureReadingsDateTimeOffset.Clear();
+
+                _logger.LogDebug("\tRestored.");
             }
             catch (JsonReaderException ex)
             {

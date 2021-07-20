@@ -24,6 +24,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 .WithParsed(parsedParams =>
                 {
                     parameters = parsedParams;
+                    if (parameters.TransportType == TransportType.Http1)
+                    {
+                        Console.WriteLine("Twin operations aren't supported over HTTP.");
+                        Environment.Exit(1);
+                    }
                 })
                 .WithNotParsed(errors =>
                 {

@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class DeviceReconnectionSample
     {
+        private static readonly TransportType[] _amqpTransports = new[] { TransportType.Amqp, TransportType.Amqp_Tcp_Only, TransportType.Amqp_WebSocket_Only };
         private static readonly Random s_randomGenerator = new Random();
         private const int TemperatureThreshold = 30;
 
@@ -128,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // before attempting to initialize or dispose the device client instance.
         private async void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
         {
-            _logger.LogDebug($"Connection status changed: status={status}, reason={reason}");
+            _logger.LogInformation($"Connection status changed: status={status}, reason={reason}");
             s_connectionStatus = status;
 
             switch (status)
@@ -204,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 if (IsDeviceConnected)
                 {
-                    _logger.LogInformation($"Device sending message {++messageCount} to IoT Hub...");
+                    _logger.LogInformation($"\nDevice sending message {++messageCount} to IoT hub...");
 
                     (Message message, string payload) = PrepareMessage(messageCount);
                     while (true)
@@ -212,18 +213,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         try
                         {
                             await s_deviceClient.SendEventAsync(message);
-                            _logger.LogInformation($"Sent message {messageCount} of {payload}");
+                            _logger.LogInformation($"Sent message {messageCount} of {payload}\n");
                             message.Dispose();
                             break;
                         }
                         catch (IotHubException ex) when (ex.IsTransient)
                         {
                             // Inspect the exception to figure out if operation should be retried, or if user-input is required.
-                            _logger.LogError($"An IotHubException was caught, but will try to recover and retry: {ex}");
+                            _logger.LogWarning($"An IotHubException was caught, but will try to recover and retry: {ex}");
                         }
                         catch (Exception ex) when (ExceptionHelper.IsNetworkExceptionChain(ex))
                         {
-                            _logger.LogError($"A network related exception was caught, but will try to recover and retry: {ex}");
+                            _logger.LogWarning($"A network related exception was caught, but will try to recover and retry: {ex}");
                         }
                         catch (Exception ex)
                         {
@@ -248,9 +249,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await Task.Delay(s_sleepDuration);
                     continue;
                 }
+                else if (_transportType == TransportType.Http1)
+                {
+                    // The call to ReceiveAsync over HTTP completes immediately, rather than waiting up to the specified
+                    // time or when a cancellation token is signalled, so if we want it to poll at the same rate, we need
+                    // to add an explicit delay here.
+                    await Task.Delay(s_sleepDuration);
+                }
 
-                _logger.LogInformation($"Device waiting for C2D messages from the hub for {s_sleepDuration}...");
-                _logger.LogInformation("Use the IoT Hub Azure Portal or Azure IoT Explorer to send a message to this device.");
+                _logger.LogInformation($"\nDevice waiting for C2D messages from the hub for {s_sleepDuration}...");
+                _logger.LogInformation("Use the IoT Hub Azure Portal or Azure IoT Explorer to send a message to this device.\n");
 
                 try
                 {
@@ -291,24 +299,50 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task ReceiveMessageAndCompleteAsync()
         {
-            using Message receivedMessage = await s_deviceClient.ReceiveAsync(s_sleepDuration);
+            using var cts = new CancellationTokenSource(s_sleepDuration);
+            Message receivedMessage = null;
+            try
+            {
+                // AMQP library does not take a cancellation token but does take a time span
+                // so we'll call this API differently.
+                if (_amqpTransports.Contains(_transportType))
+                {
+                    receivedMessage = await s_deviceClient.ReceiveAsync(s_sleepDuration);
+                }
+                else
+                {
+                    receivedMessage = await s_deviceClient.ReceiveAsync(cts.Token);
+                }
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                _logger.LogInformation("Timed out waiting to receive a message.");
+            }
+
             if (receivedMessage == null)
             {
-                _logger.LogInformation("No message received; timed out.");
+                _logger.LogInformation("No message received.");
                 return;
             }
 
-            string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-            var formattedMessage = new StringBuilder($"Received message: [{messageData}]\n");
-
-            foreach (var prop in receivedMessage.Properties)
+            try
             {
-                formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
-            }
-            _logger.LogInformation(formattedMessage.ToString());
+                string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+                var formattedMessage = new StringBuilder($"Received message: [{messageData}]\n");
 
-            await s_deviceClient.CompleteAsync(receivedMessage);
-            _logger.LogInformation($"Completed message [{messageData}].");
+                foreach (var prop in receivedMessage.Properties)
+                {
+                    formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
+                }
+                _logger.LogInformation(formattedMessage.ToString());
+
+                await s_deviceClient.CompleteAsync(receivedMessage);
+                _logger.LogInformation($"Completed message [{messageData}].");
+            }
+            finally
+            {
+                receivedMessage.Dispose();
+            }
         }
 
         // If the client reports Connected status, it is already in operational state.
