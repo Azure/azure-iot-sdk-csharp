@@ -6,10 +6,10 @@ namespace Microsoft.Azure.Devices.Samples
     {
         [Option(
             'c',
-            "ConnectionString",
+            "IoTHubConnectionString",
             Required = true,
             HelpText = "The service connection string with permissions to manage devices.")]
-        public string ConnectionString { get; set; }
+        public string IoTHubConnectionString { get; set; }
 
         [Option(
             'p',

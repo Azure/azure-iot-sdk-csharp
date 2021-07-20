@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Samples
         public async Task RunSampleAsync()
         {
             using RegistryManager registryManager = RegistryManager
-                .CreateFromConnectionString(_parameters.ConnectionString);
+                .CreateFromConnectionString(_parameters.IoTHubConnectionString);
 
             try
             {
@@ -190,11 +190,11 @@ namespace Microsoft.Azure.Devices.Samples
             // Set a desired value for a property the device supports, with the corresponding data type
             var patch =
 @"{
-  ""properties"": {
+    ""properties"": {
     ""desired"": {
-      ""customKey"": ""customValue""
+        ""customKey"": ""customValue""
     }
-  }
+    }
 }";
             Console.WriteLine($"Using property patch of:\n{patch}");
 

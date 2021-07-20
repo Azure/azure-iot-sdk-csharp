@@ -2,9 +2,7 @@
   "profiles": {
     "ServiceClientSample": {
       "commandName": "Project",
-      "environmentVariables": {
-        "IOTHUB_CONNECTION_STRING": "<yourIoTHubConnectionString>"
-      }
+      "commandLineArgs": "-c <yourIoTHubConnectionString> -d <deviceId> -t <transportType>"
     }
   }
 }
