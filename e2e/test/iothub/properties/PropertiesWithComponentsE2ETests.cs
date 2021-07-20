@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.Writable.TryGetValue<T>(ComponentName, propName, out T propFromCollection);
+            bool isPropertyPresent = clientProperties.WritablePropertyRequests.TryGetValue<T>(ComponentName, propName, out T propFromCollection);
             isPropertyPresent.Should().BeTrue();
             propFromCollection.Should().BeEquivalentTo<T>(propValue);
 
@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.Writable.TryGetValue(ComponentName, propName, out string propFromCollection);
+            bool isPropertyPresent = clientProperties.WritablePropertyRequests.TryGetValue(ComponentName, propName, out string propFromCollection);
             isPropertyPresent.Should().BeTrue();
             propFromCollection.Should().Be(propValue);
 

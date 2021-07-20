@@ -19,7 +19,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/remarks" cref="ClientProperties" />
         public ClientProperties()
         {
-            Writable = new ClientPropertyCollection();
+            ReportedFromDevice = new ClientPropertyCollection();
+            WritablePropertyRequests = new ClientPropertyCollection();
         }
 
         /// <summary>
@@ -29,17 +30,25 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub.</param>
         internal ClientProperties(ClientPropertyCollection requestedPropertyCollection, ClientPropertyCollection readOnlyPropertyCollection)
         {
-            SetCollection(readOnlyPropertyCollection);
-            Version = readOnlyPropertyCollection.Version;
-            Writable = requestedPropertyCollection;
+            ReportedFromDevice = readOnlyPropertyCollection;
+            WritablePropertyRequests = requestedPropertyCollection;
         }
 
         /// <summary>
-        /// The collection of writable properties.
+        /// The collection of properties reported by the client.
         /// </summary>
         /// <remarks>
-        /// See the <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see> documentation for more information.
+        /// Client reported properties can either be <see href="https://docs.microsoft.com/en-us/azure/iot-develop/concepts-convention#read-only-properties">Read-only properties</see>
+        /// or they can be <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see>.
         /// </remarks>
-        public ClientPropertyCollection Writable { get; private set; }
+        public ClientPropertyCollection ReportedFromDevice { get; private set; }
+
+        /// <summary>
+        /// The collection of writable property requests received from service.
+        /// </summary>
+        /// <remarks>
+        /// See the <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see> documentation for more information.
+        /// </remarks>
+        public ClientPropertyCollection WritablePropertyRequests { get; private set; }
     }
 }

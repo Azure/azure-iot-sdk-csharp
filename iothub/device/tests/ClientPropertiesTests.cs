@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             }
 
             // These are the property values for which service has requested an update.
-            foreach (var updateRequestedKeyValuePairs in clientProperties.Writable)
+            foreach (var updateRequestedKeyValuePairs in clientProperties.WritablePropertyRequests)
             {
                 if (updateRequestedKeyValuePairs.Key.Equals(DoublePropertyName))
                 {
