@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// The <see cref="ClientProperties"/> class is not meant to be constructed by customer code.
     /// It is intended to be returned fully populated from the client method <see cref="InternalClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/>.
     /// </remarks>
-    public class ClientProperties : ClientPropertyCollection
+    public class ClientProperties
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ClientProperties"/>.
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/remarks" cref="ClientProperties" />
         public ClientProperties()
         {
-            ReportedFromDevice = new ClientPropertyCollection();
+            ReportedFromClient = new ClientPropertyCollection();
             WritablePropertyRequests = new ClientPropertyCollection();
         }
 
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="readOnlyPropertyCollection">A collection of read-only properties returned from IoT Hub.</param>
         internal ClientProperties(ClientPropertyCollection requestedPropertyCollection, ClientPropertyCollection readOnlyPropertyCollection)
         {
-            ReportedFromDevice = readOnlyPropertyCollection;
+            ReportedFromClient = readOnlyPropertyCollection;
             WritablePropertyRequests = requestedPropertyCollection;
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Client reported properties can either be <see href="https://docs.microsoft.com/en-us/azure/iot-develop/concepts-convention#read-only-properties">Read-only properties</see>
         /// or they can be <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see>.
         /// </remarks>
-        public ClientPropertyCollection ReportedFromDevice { get; private set; }
+        public ClientPropertyCollection ReportedFromClient { get; private set; }
 
         /// <summary>
         /// The collection of writable property requests received from service.

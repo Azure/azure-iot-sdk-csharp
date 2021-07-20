@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.TryGetValue<T>(propName, out T propFromCollection);
+            bool isPropertyPresent = clientProperties.ReportedFromClient.TryGetValue<T>(propName, out T propFromCollection);
             isPropertyPresent.Should().BeTrue();
             propFromCollection.Should().BeEquivalentTo<T>(propValue);
 
