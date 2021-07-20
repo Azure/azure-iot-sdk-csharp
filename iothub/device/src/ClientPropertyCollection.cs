@@ -170,8 +170,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
-        /// <param name="propertyValue">The value of the component-level property.</param>
-        /// <returns>true if the property collection contains a component level property with the specified key; otherwise, false.</returns>
+        /// <param name="propertyValue">When this method returns true, this contains the value of the component-level property.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns>True if a component-level property of type <c>T</c> with the specified key was found; otherwise, it returns false.</returns>
         public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
         {
             if (Logging.IsEnabled && Convention == null)
@@ -180,35 +181,72 @@ namespace Microsoft.Azure.Devices.Client
                     $"TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
             }
 
+            // If either the component name or the property name is null, empty or whitespace,
+            // then return false with the default value of the type <T> passed in.
+            if (string.IsNullOrWhiteSpace(componentName) || string.IsNullOrWhiteSpace(propertyName))
+            {
+                propertyValue = default;
+                return false;
+            }
+
             if (Contains(componentName, propertyName))
             {
                 object componentProperties = Collection[componentName];
 
+                // If the ClientPropertyCollection was constructed by the user application (eg. for updating the client properties)
+                // then the componentProperties are retrieved as a dictionary.
+                // The required property value can be fetched from the dictionary directly.
                 if (componentProperties is IDictionary<string, object> nestedDictionary)
                 {
-                    if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
+                    // First verify that the retrieved dictionary contains the component identifier { "__t": "c" }.
+                    // If not, then the retrieved nested dictionary is actually a root-level property of type map.
+                    if (nestedDictionary.TryGetValue(ConventionBasedConstants.ComponentIdentifierKey, out object componentIdentifierValue)
+                        && componentIdentifierValue.ToString() == ConventionBasedConstants.ComponentIdentifierValue)
                     {
-                        // If the value is null, go ahead and return it.
-                        if (dictionaryElement == null)
+                        if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
                         {
-                            propertyValue = default;
-                            return true;
-                        }
+                            // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
+                            if (dictionaryElement == null)
+                            {
+                                propertyValue = default;
+                                return true;
+                            }
 
-                        // If the object is of type T or can be cast to type T, go ahead and return it.
-                        if (dictionaryElement is T valueRef
-                            || NumericHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
-                        {
-                            propertyValue = valueRef;
-                            return true;
+                            // If the object is of type T or can be cast to type T, go ahead and return it.
+                            if (dictionaryElement is T valueRef
+                                || NumericHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
+                            {
+                                propertyValue = valueRef;
+                                return true;
+                            }
                         }
                     }
                 }
                 else
                 {
-                    // If it's not, we need to try to convert it using the serializer.
-                    Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
-                    return true;
+                    // If the ClientPropertyCollection was constructed by the SDK (eg. when retrieving the client properties)
+                    // then the componentProperties are retrieved as the json object that is defined in the PayloadConvention.
+                    // The required property value then needs to be deserialized accordingly.
+                    try
+                    {
+                        // First verify that the retrieved dictionary contains the component identifier { "__t": "c" }.
+                        // If not, then the retrieved nested dictionary is actually a root-level property of type map.
+                        if (Convention
+                            .PayloadSerializer
+                            .TryGetNestedObjectValue(componentProperties, ConventionBasedConstants.ComponentIdentifierKey, out string componentIdentifierValue)
+                            && componentIdentifierValue == ConventionBasedConstants.ComponentIdentifierValue)
+                        {
+                            // Since the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
+                            // If it can be successfully converted, go ahead and return it.
+                            Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
+                            return true;
+                        }
+                    }
+                    catch
+                    {
+                        // In case the value cannot be converted using the serializer,
+                        // then return false with the default value of the type <T> passed in.
+                    }
                 }
             }
 

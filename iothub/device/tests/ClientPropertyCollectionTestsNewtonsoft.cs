@@ -121,7 +121,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollectionNewtonsoft_CanGetValue()
         {
+            // arrange
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+
+            // act, assert
 
             clientProperties.TryGetValue(StringPropertyName, out string stringOutValue);
             stringOutValue.Should().Be(StringPropertyValue);
@@ -162,7 +165,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollectionNewtonsoft_CanGetValueWithComponent()
         {
+            // arrange
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+
+            // act, assert
 
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string stringOutValue);
             stringOutValue.Should().Be(StringPropertyValue);
@@ -203,9 +209,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollectionNewtonsoft_CanAddSimpleWritablePropertyAndGetBack()
         {
+            // arrange
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWritablePropertyToRoundTrip, DefaultPayloadConvention.Instance);
 
+            // act
             clientProperties.TryGetValue(StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
+
+            // assert
             outValue.Value.Should().Be(StringPropertyValue);
             outValue.AckCode.Should().Be(s_writablePropertyResponse.AckCode);
             outValue.AckVersion.Should().Be(s_writablePropertyResponse.AckVersion);
@@ -215,9 +225,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollectionNewtonsoft_CanAddWritablePropertyWithComponentAndGetBack()
         {
+            // arrange
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWritablePropertyWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
+            // act
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
+
+            // assert
             outValue.Value.Should().Be(StringPropertyValue);
             outValue.AckCode.Should().Be(s_writablePropertyResponse.AckCode);
             outValue.AckVersion.Should().Be(s_writablePropertyResponse.AckVersion);
@@ -227,13 +241,84 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollectionNewtonsoft_CanGetComponentIdentifier()
         {
+            // arrange
             var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
+            // act
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
             clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
 
+            // assert
             outValue.Should().Be(StringPropertyValue);
             componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueNotFound()
+        {
+            // arrange
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue("thisPropertyDoesNotExist", out int outIntValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueNotFound()
+        {
+            // arrange
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, "thisPropertyDoesNotExist", out int outIntValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
+        {
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+
+            bool isValueRetrieved = clientProperties.TryGetValue(StringPropertyName, out int outIntValue);
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueCouldNotBeDeserialized()
+        {
+            // arrange
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, StringPropertyName, out int outIntValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfNotAComponent()
+        {
+            // arrange
+            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+            string incorrectlyMappedComponentName = MapPropertyName;
+            string incorrectlyMappedComponentPropertyName = "key1";
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(incorrectlyMappedComponentName, incorrectlyMappedComponentPropertyName, out object propertyValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            propertyValue.Should().Be(default);
         }
     }
 

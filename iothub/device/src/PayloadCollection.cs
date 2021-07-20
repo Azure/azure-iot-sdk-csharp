@@ -107,13 +107,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the value of the object from the collection.
         /// </summary>
-        /// <remarks>
-        /// This class is used for both sending and receiving properties for the device.
-        /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
-        /// <param name="value">The value of the object from the collection.</param>
-        /// <returns>True if the collection contains an element with the specified key; otherwise, it returns false.</returns>
+        /// <param name="value">When this method returns true, this contains the value of the object from the collection.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns>True if a value of type <c>T</c> with the specified key was found; otherwise, it returns false.</returns>
         public bool TryGetValue<T>(string key, out T value)
         {
             if (Logging.IsEnabled && Convention == null)
@@ -122,9 +120,16 @@ namespace Microsoft.Azure.Devices.Client
                     $"TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
             }
 
+            // If the key is null, empty or whitespace, then return false with the default value of the type <T> passed in.
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                value = default;
+                return false;
+            }
+
             if (Collection.ContainsKey(key))
             {
-                // If the value is null, go ahead and return it.
+                // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
                 if (Collection[key] == null)
                 {
                     value = default;
@@ -139,9 +144,18 @@ namespace Microsoft.Azure.Devices.Client
                     return true;
                 }
 
-                // If it's not, we need to try to convert it using the serializer.
-                value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
-                return true;
+                try
+                {
+                    // If the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
+                    // If it can be successfully converted, go ahead and return it.
+                    value = Convention.PayloadSerializer.ConvertFromObject<T>(Collection[key]);
+                    return true;
+                }
+                catch
+                {
+                    // In case the value cannot be converted using the serializer,
+                    // then return false with the default value of the type <T> passed in.
+                }
             }
 
             value = default;
