@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Client.Tests
+namespace Microsoft.Azure.Devices.Client.Test
 {
     /// <summary>
     /// The timeout helper is a way of keeping track of how much time remains against a specified deadline.

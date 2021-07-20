@@ -193,20 +193,5 @@ namespace Microsoft.Azure.Devices.Client
         {
             return GetEnumerator();
         }
-
-        /// <summary>
-        /// Will set the underlying <see cref="Collection"/> of the payload collection.
-        /// </summary>
-        /// <param name="payloadCollection">The collection to get the underlying dictionary from.</param>
-        protected void SetCollection(PayloadCollection payloadCollection)
-        {
-            if (payloadCollection == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            Collection = payloadCollection.Collection;
-            Convention = payloadCollection.Convention;
-        }
     }
 }

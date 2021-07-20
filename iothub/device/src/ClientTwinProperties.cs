@@ -23,10 +23,10 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ClientProperties ToClientProperties(PayloadConvention payloadConvention)
         {
-            ClientPropertyCollection writablePropertyCollection = ClientPropertyCollection.FromClientTwinDictionary(Desired, payloadConvention);
-            ClientPropertyCollection propertyCollection = ClientPropertyCollection.FromClientTwinDictionary(Reported, payloadConvention);
+            ClientPropertyCollection writablePropertyRequestCollection = ClientPropertyCollection.FromClientTwinDictionary(Desired, payloadConvention);
+            ClientPropertyCollection clientReportedPropertyCollection = ClientPropertyCollection.FromClientTwinDictionary(Reported, payloadConvention);
 
-            return new ClientProperties(writablePropertyCollection, propertyCollection);
+            return new ClientProperties(writablePropertyRequestCollection, clientReportedPropertyCollection);
         }
     }
 }

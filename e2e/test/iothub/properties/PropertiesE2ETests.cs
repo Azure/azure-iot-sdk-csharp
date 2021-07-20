@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.TryGetValue<T>(propName, out T propFromCollection);
+            bool isPropertyPresent = clientProperties.ReportedFromClient.TryGetValue<T>(propName, out T propFromCollection);
             isPropertyPresent.Should().BeTrue();
             propFromCollection.Should().BeEquivalentTo<T>(propValue);
 
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Set a callback
             await deviceClient.
-                SubscribeToWritablePropertiesEventAsync(
+                SubscribeToWritablePropertyUpdateRequestsAsync(
                     (patch, context) =>
                     {
                         Assert.Fail("After having unsubscribed from receiving client property update notifications " +
@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Unsubscribe
             await deviceClient
-                .SubscribeToWritablePropertiesEventAsync(null, null)
+                .SubscribeToWritablePropertyUpdateRequestsAsync(null, null)
                 .ConfigureAwait(false);
 
             await RegistryManagerUpdateWritablePropertyAsync(testDevice.Id, propName, propValue)
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.Writable.TryGetValue<T>(propName, out T propValueFromCollection);
+            bool isPropertyPresent = clientProperties.WritablePropertyRequests.TryGetValue<T>(propName, out T propValueFromCollection);
             isPropertyPresent.Should().BeTrue();
             propValueFromCollection.Should().BeEquivalentTo<T>(propValue);
 
@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             string serializedActualPropertyValue = JsonConvert.SerializeObject(actualProp);
             serializedActualPropertyValue.Should().Be(JsonConvert.SerializeObject(propValue));
 
-            await deviceClient.SubscribeToWritablePropertiesEventAsync(null, null).ConfigureAwait(false);
+            await deviceClient.SubscribeToWritablePropertyUpdateRequestsAsync(null, null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.Writable.TryGetValue(propName, out string propFromCollection);
+            bool isPropertyPresent = clientProperties.WritablePropertyRequests.TryGetValue(propName, out string propFromCollection);
             isPropertyPresent.Should().BeTrue();
             propFromCollection.Should().Be(propValue);
 

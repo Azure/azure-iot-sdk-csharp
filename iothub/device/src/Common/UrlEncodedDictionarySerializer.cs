@@ -345,7 +345,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                 // '?' is not a valid character for message property names or values, but instead signifies the start of a query string
                 // in the case of an MQTT topic. For this reason, we'll replace the '?' from the property key before adding it into
                 // application properties collection.
-                // https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-construct
+                // https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-construct
                 string tokenValue = readCount == 0 ? null : value.Substring(position - readCount, readCount).Replace(QueryStringIdentifier, string.Empty);
 
                 return new Token(tokenType, tokenValue);

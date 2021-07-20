@@ -7,7 +7,7 @@ using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Tests
+namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             // These are the device reported property values.
-            foreach (var deviceReportedKeyValuePairs in clientProperties)
+            foreach (var deviceReportedKeyValuePairs in clientProperties.ReportedFromClient)
             {
                 if (deviceReportedKeyValuePairs.Key.Equals(StringPropertyName))
                 {
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             }
 
             // These are the property values for which service has requested an update.
-            foreach (var updateRequestedKeyValuePairs in clientProperties.Writable)
+            foreach (var updateRequestedKeyValuePairs in clientProperties.WritablePropertyRequests)
             {
                 if (updateRequestedKeyValuePairs.Key.Equals(DoublePropertyName))
                 {
