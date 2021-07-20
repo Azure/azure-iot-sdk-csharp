@@ -12,10 +12,10 @@ namespace Microsoft.Azure.Devices.Samples
     {
         [Option(
             'c',
-            "HubConnectionString",
+            "IoTHubConnectionString",
             Required = true,
             HelpText = "The connection string of the IoT Hub instance to connect to.")]
-        public string HubConnectionString { get; set; }
+        public string IoTHubConnectionString { get; set; }
 
         [Option(
             'd',
