@@ -1021,15 +1021,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             using Message message = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
 
-            bool requestIdPresent = message.Properties.TryGetValue(RequestIdKey, out string requestIdRetrieved);
-            bool versionPresent = message.Properties.TryGetValue(VersionKey, out string versionRetrievedAsString);
-
             var response = new ClientPropertiesUpdateResponse();
-            if (requestIdPresent)
+            if (message.Properties.TryGetValue(RequestIdKey, out string requestIdRetrieved))
             {
                 response.RequestId = requestIdRetrieved;
             }
-            if (versionPresent)
+            if (message.Properties.TryGetValue(VersionKey, out string versionRetrievedAsString))
             {
                 response.Version = long.Parse(versionRetrievedAsString, CultureInfo.InvariantCulture);
             }
