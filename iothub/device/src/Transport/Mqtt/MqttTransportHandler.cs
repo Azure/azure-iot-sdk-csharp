@@ -1020,11 +1020,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);
 
             using Message message = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
-            return new ClientPropertiesUpdateResponse
+
+            var response = new ClientPropertiesUpdateResponse();
+            if (message.Properties.TryGetValue(RequestIdKey, out string requestIdRetrieved))
             {
-                RequestId = message.Properties[RequestIdKey],
-                Version = long.Parse(message.Properties[VersionKey], CultureInfo.InvariantCulture)
-            };
+                response.RequestId = requestIdRetrieved;
+            }
+            if (message.Properties.TryGetValue(VersionKey, out string versionRetrievedAsString))
+            {
+                response.Version = long.Parse(versionRetrievedAsString, CultureInfo.InvariantCulture);
+            }
+
+            return response;
         }
 
         private async Task OpenInternalAsync(CancellationToken cancellationToken)
