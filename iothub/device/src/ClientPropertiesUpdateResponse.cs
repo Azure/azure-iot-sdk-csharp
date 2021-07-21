@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The updated version after the property patch has been applied.
         /// </summary>
         /// <remarks>
-        /// For clients communicating to IoT hub via IoT Edge, since the patch isn't applied immediately an updated version number is not returned.
+        /// For clients communicating with IoT hub via IoT Edge, since the patch isn't applied immediately an updated version number is not returned.
         /// You can call <see cref="ModuleClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/>
         /// and verify <see cref="ClientProperties.ReportedFromClient"/> to know when your patch is successfully applied.
         /// </remarks>
