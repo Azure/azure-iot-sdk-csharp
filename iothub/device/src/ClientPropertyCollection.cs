@@ -35,8 +35,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <inheritdoc path="/remarks" cref="AddRootProperty(string, object)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="AddRootProperty(string, object)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddRootProperty(string, object)" />
+        /// <inheritdoc path="/exception" cref="AddRootProperty(string, object)" />
         /// <summary>
         /// Adds the value to the collection.
         /// </summary>
@@ -48,17 +47,17 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <inheritdoc path="/remarks" cref="AddRootProperty(string, object)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddRootProperty(string, object)" />
         /// <summary>
         /// Adds the value to the collection.
         /// </summary>
         /// <param name="componentName">The component with the properties to add.</param>
         /// <param name="properties">A collection of properties to add.</param>
+        /// <exception cref="ArgumentException">A property name in <paramref name="properties"/> already exists in the collection.</exception>
         public void AddComponentProperties(string componentName, IDictionary<string, object> properties)
             => AddInternal(properties, componentName, true);
 
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddRootProperty(string, object)" />
+        /// <inheritdoc path="/exception" cref="AddRootProperty(string, object)" />
         /// <summary>
         /// Adds the collection of root-level property values to the collection.
         /// </summary>
@@ -87,19 +86,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="AddOrUpdateComponentProperties(string, IDictionary{string, object})" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="AddRootProperty(string, object)" />
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddOrUpdateRootProperty(string propertyName, object propertyValue)
             => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null, true);
 
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="AddOrUpdateComponentProperties(string, IDictionary{string, object})" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="AddRootProperty(string, object)" />
         /// <param name="componentName">The component with the property to add or update.</param>
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddOrUpdateComponentProperty(string componentName, string propertyName, object propertyValue)
             => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
 
@@ -120,8 +119,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="AddRootProperties(IDictionary{string, object})"/>
+        /// <inheritdoc path="/exception" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <remarks>
         /// If the collection has a key that matches this will overwrite the current value. Otherwise it will attempt to add this to the collection.
         /// <para>
@@ -131,6 +129,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </para>
         /// </remarks>
         /// <param name="properties">A collection of properties to add or update.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
         public void AddOrUpdateRootProperties(IDictionary<string, object> properties)
             => properties
                 .ToList()
