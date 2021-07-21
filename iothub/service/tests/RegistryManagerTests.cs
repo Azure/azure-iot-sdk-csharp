@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.GetAsync<Device>(It.IsAny<Uri>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), null, false, It.IsAny<CancellationToken>())).ReturnsAsync(deviceToReturn);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             var device = await registryManager.GetDeviceAsync(DeviceId).ConfigureAwait(false);
             Assert.AreSame(deviceToReturn, device);
             restOpMock.VerifyAll();
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task GetDeviceAsyncWithNullDeviceIdTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.GetDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("Calling GetDeviceAsync with null device id did not throw an exception.");
         }
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 true,
                 It.IsAny<CancellationToken>())).ReturnsAsync(devicesToReturn);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 
 #pragma warning disable CS0618 // Type or member is obsolete
             var returnedDevices = await registryManager.GetDevicesAsync(1).ConfigureAwait(false);
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<CancellationToken>())).ReturnsAsync(deviceToReturn);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             var returnedDevice = await registryManager.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreSame(deviceToReturn, returnedDevice);
             restOpMock.VerifyAll();
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceToReturn = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when bad deviceid was used.");
         }
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when ETag was set.");
         }
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task RegisterDeviceAsyncWithNullDeviceTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when the device parameter was null.");
         }
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task RegisterDeviceAsyncWithDeviceIdNullTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDeviceAsync(new Device()).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when the device's id was not set.");
         }
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             // '/' is not a valid character in DeviceId
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             // '/' is not a valid character in DeviceId
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when bad deviceid was used.");
         }
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when ETag was used.");
         }
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             Device badDevice = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             Device badDevice = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when Null device was used.");
         }
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task RegisterDevicesAsyncWithNullDeviceListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.AddDevicesAsync(new List<Device>()).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task RegisterDevices2AsyncWithNullDeviceListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDevices2Async(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when Null device list was used.");
         }
@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice = new Device();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice = new Device();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.AddDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when deviceId was null.");
         }
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<CancellationToken>())).ReturnsAsync(deviceToReturn);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             var returnedDevice = await registryManager.UpdateDeviceAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreSame(deviceToReturn, returnedDevice);
             restOpMock.VerifyAll();
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task UpdateDeviceWithNullDeviceTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the device parameter was null.");
         }
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task UpdateDeviceWithDeviceIdNullTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDeviceAsync(new Device() { ETag = "*" }).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the device's id was null.");
         }
@@ -314,7 +314,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task UpdateDeviceWithInvalidDeviceIdTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             // '/' is not a valid char in DeviceId
             await registryManager.UpdateDeviceAsync(new Device("/baddevice") { ETag = "*" }).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the deviceid was invalid.");
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -341,7 +341,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when bad deviceid was used.");
         }
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when ETag was null.");
         }
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             Device badDevice = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -393,7 +393,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             Device badDevice = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when Null device was used.");
         }
@@ -403,7 +403,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task UpdateDevicesAsyncWithNullDeviceListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.UpdateDevicesAsync(new List<Device>()).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task UpdateDevices2AsyncWithNullDeviceListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDevices2Async(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when Null device list was used.");
         }
@@ -427,7 +427,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var badDevice = new Device();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -441,7 +441,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var badDevice = new Device();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when deviceId was null.");
         }
@@ -453,7 +453,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.UpdateDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -467,7 +467,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDevices2Async(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -480,7 +480,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.UpdateDevicesAsync(new List<Device>() { badDevice1, badDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDevices2Async(new List<Device>() { badDevice1, badDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -507,7 +507,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.UpdateDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -521,7 +521,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateDevices2Async(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -532,7 +532,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             var mockETag = new ETagHolder() { ETag = "*" };
             restOpMock.Setup(restOp => restOp.DeleteAsync(It.IsAny<Uri>(), mockETag, It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), null, It.IsAny<CancellationToken>())).Returns(Task.FromResult(0));
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDeviceAsync(new Device()).ConfigureAwait(false);
             restOpMock.VerifyAll();
         }
@@ -542,7 +542,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task DeleteDeviceAsyncWithNullIdTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDeviceAsync(string.Empty).ConfigureAwait(false);
             Assert.Fail("Delete API did not throw exception when the device id was null.");
         }
@@ -554,7 +554,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when bad deviceid was used.");
         }
@@ -580,7 +580,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -594,7 +594,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when ETag was null.");
         }
@@ -606,7 +606,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             Device badDevice = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -620,7 +620,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             Device badDevice = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when Null device was used.");
         }
@@ -630,7 +630,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task DeleteDevicesAsyncWithNullDeviceListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.RemoveDevicesAsync(new List<Device>()).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -642,7 +642,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task DeleteDevices2AsyncWithNullDeviceListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDevices2Async(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when Null device list was used.");
         }
@@ -654,7 +654,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var badDevice = new Device();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -668,7 +668,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var badDevice = new Device();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDevices2Async(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when deviceId was null.");
         }
@@ -681,7 +681,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.RemoveDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -695,7 +695,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDevices2Async(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -708,7 +708,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.RemoveDevicesAsync(new List<Device>() { badDevice1, badDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -723,7 +723,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDevices2Async(new List<Device>() { badDevice1, badDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -735,7 +735,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<string[]>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<string[]>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
 #pragma warning disable CS0618 // Type or member is obsolete
             await registryManager.RemoveDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -749,7 +749,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.RemoveDevices2Async(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -760,7 +760,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodTwin = new Twin("123");
             var badTwin = new Twin("/badTwin");
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when bad deviceid was used.");
         }
@@ -772,7 +772,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin("234");
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when ETag was null.");
         }
@@ -784,7 +784,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodTwin = new Twin("123") { ETag = "234" };
             Twin badTwin = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin was used.");
         }
@@ -794,7 +794,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public async Task UpdateTwins2AsyncWithNullTwinListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateTwins2Async(new List<Twin>()).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin list was used.");
         }
@@ -806,7 +806,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when deviceId was null.");
         }
@@ -826,7 +826,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -846,7 +846,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateTwins2Async(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -865,7 +865,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -875,7 +875,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.Dispose());
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             registryManager.Dispose();
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Once());
         }
@@ -886,7 +886,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.Dispose());
 
-            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            var registryManager = new RegistryManager(IotHubName, restOpMock.Object);
             await registryManager.CloseAsync().ConfigureAwait(false);
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
         }
