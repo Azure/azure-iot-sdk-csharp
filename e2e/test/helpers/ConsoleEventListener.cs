@@ -14,7 +14,8 @@ namespace System.Diagnostics.Tracing
         // Since our ConsoleEventListener uses the OnEventSourceCreated callback to enable events, the event filter needs to be
         // initialized before OnEventSourceCreated is called. For this reason we cannot use ConsoleEventListener constructor
         // to initialize the event filter (base class constructors are called before derived class constructors).
-        // The OnEventSourceCreated can be triggered sooner than the filter is initialized in the ConsoleEventListener constructor.
+        // The OnEventSourceCreated will be triggered sooner than the filter is initialized in the ConsoleEventListener constructor.
+        // As a result we will need to define the event filter list as a static variable.
         // Link to EventListener sourcecode: https://github.com/dotnet/runtime/blob/6696065ab0f517f5a9e5f55c559df0010a816dbe/src/libraries/System.Private.CoreLib/src/System/Diagnostics/Tracing/EventSource.cs#L4009-L4018
         private static readonly string[] s_eventFilter = new string[] { "DotNetty-Default", "Microsoft-Azure-Devices", "Azure-Core", "Azure-Identity" };
 
