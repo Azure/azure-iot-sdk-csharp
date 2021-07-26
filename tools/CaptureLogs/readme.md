@@ -9,18 +9,13 @@ On Linux and OSX LTTNG and perfcollect can be used to collect traces. For more i
 ## Console logging
 Logging can be added to console. Note that this method will substantially slow down execution.
 
-  1. Add [`e2e\test\Helpers\ConsoleEventListener.cs`](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/e2e/test/Helpers/ConsoleEventListener.cs) to your project.
+  1. Add `e2e\test\Helpers\ConsoleEventListener.cs` to your project.
   2. Instantiate the listener. Add one or more filters (e.g. `Microsoft-Azure-` or `DotNetty-`):
 
-```csharp
-	private static readonly ConsoleEventListener _listener = new ConsoleEventListener();
+```C#
+	private readonly ConsoleEventListener _listener = new ConsoleEventListener("Microsoft-Azure-");
 ```
-> NOTE: 
-> 1. `static` fields are optimized for runtime performance and are initialized prior to their first usage. If `_listener` is the only static field initialized in your class, you'll need to provide a static constructor that initializes them when the class is loaded.
-> 2. `ConsoleEventListener.cs` logs the following events by default. If you want to log specific event providers, modify the [event filter](https://github.com/Azure/azure-iot-sdk-csharp/blob/60946f1b51bbdeb5bdcc07686b97c8e286ee1fb9/e2e/test/helpers/ConsoleEventListener.cs#L19) list to include only your desired event providers.
-> ```csharp
-> private static readonly string[] s_eventFilter = new string[] { "DotNetty-Default", "Microsoft-Azure-Devices", "Azure-Core", "Azure-Identity" };
-> ```
+  3. See the `ConsoleEventListener.cs` file to enable colorized logs within Visual Studio Code.
 
 ## Azure IoT SDK providers
 
