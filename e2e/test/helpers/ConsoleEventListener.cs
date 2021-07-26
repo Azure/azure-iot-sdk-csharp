@@ -9,7 +9,7 @@ namespace System.Diagnostics.Tracing
     public sealed class ConsoleEventListener : EventListener
     {
         // Configure this value to filter all the necessary events when OnEventSourceCreated is called.
-        // The EventListener base class constructor creates an event listener in which all events start off turned off.
+        // The EventListener base class constructor creates an event listener in which all events are disabled by default.
         // EventListener constructor also causes the OnEventSourceCreated callback to fire.
         // Since our ConsoleEventListener uses the OnEventSourceCreated callback to enable events, the event filter needs to be
         // initialized before OnEventSourceCreated is called. For this reason we cannot use ConsoleEventListener constructor
