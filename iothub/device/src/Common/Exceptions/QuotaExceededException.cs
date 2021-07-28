@@ -7,8 +7,11 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when an attempt to add a device fails because the maximum number of registered devices has been reached.
+    /// The exception that is thrown by the device client when the daily message quota for the IoT hub is exceeded.
     /// </summary>
+    /// <remarks>
+    /// To resolve this exception please review the <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded">Troubleshoot Quota Exceeded</see> guide.
+    /// </remarks>
     [Serializable]
     public sealed class QuotaExceededException : IotHubException
     {
