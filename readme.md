@@ -263,3 +263,4 @@ To learn more, review the [privacy statement](https://go.microsoft.com/fwlink/?L
 [pnp-service-prerelease]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.DigitalTwin.Service.svg?style=plastic
 [pnp-service-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.DigitalTwin.Service/
 [pnp-device-dev-guide]: https://docs.microsoft.com/azure/iot-pnp/concepts-developer-guide-device?pivots=programming-language-csharp
+
