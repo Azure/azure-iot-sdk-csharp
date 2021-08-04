@@ -68,6 +68,8 @@
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpBufferedStream.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
   </ItemGroup>
 
   <!-- net451 only -->
@@ -75,6 +77,8 @@
     <Compile Include="net451\IotHubClientWebSocket.cs" />
     <Compile Include="net451\Common\LegacyClientWebSocketTransport.cs" />
     <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -82,8 +86,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.7" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
