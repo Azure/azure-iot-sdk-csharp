@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     if ((((X509Attestation)value ?? throw new ArgumentNullException(nameof(value))).ClientCertificates == null) &&
                         (((X509Attestation)value).CAReferences == null))
                     {
-                        throw new ArgumentNullException($"{nameof(value)} do not contains client certificate or CA reference.");
+                        throw new ArgumentNullException(nameof(value), $"Value does not contains client certificate or CA reference.");
                     }
                 }
 
