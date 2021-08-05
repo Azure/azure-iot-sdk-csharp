@@ -288,28 +288,30 @@ try
         Write-Host
 
         # Tests categories to include
-        $testCategory = "("
-        $testCategory += "TestCategory=Unit"
-        $testCategory += "|"
-        $testCategory += "TestCategory=E2E"
-        $testCategory += "|"
-        $testCategory += "TestCategory=InvalidServiceCertificate"
-        $testCategory += ")"
+        #$testCategory = "("
+        #$testCategory += "TestCategory=Unit"
+        #$testCategory += "|"
+        #$testCategory += "TestCategory=E2E"
+        #$testCategory += "|"
+        #$testCategory += "TestCategory=InvalidServiceCertificate"
+        #$testCategory += ")"
 
         # test categories to exclude
-        $testCategory += "&TestCategory!=LongRunning"
-        $testCategory += "&TestCategory!=FaultInjection"
-        $testCategory += "&TestCategory!=Flaky"
+        #$testCategory += "&TestCategory!=LongRunning"
+        #$testCategory += "&TestCategory!=FaultInjection"
+        #$testCategory += "&TestCategory!=Flaky"
 
-        if ($skipIotHubTests)
-        {
-            $testCategory += "&TestCategory!=IoTHub"
-        }
+        #if ($skipIotHubTests)
+        #{
+        #    $testCategory += "&TestCategory!=IoTHub"
+        #}
 
-        if ($skipDPSTests)
-        {
-            $testCategory += "&TestCategory!=DPS"
-        }
+        #if ($skipDPSTests)
+        #{
+        #    $testCategory += "&TestCategory!=DPS"
+        #}
+
+        $testCategory = "TestCategory=MessageSendE2ETests"
 
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
     }
