@@ -6,7 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Options that allow configuration of the device or module client instance during initialization.
+    /// Options that allow configuration of the device or module client instance during initialization. 
     /// </summary>
     public class ClientOptions
     {
