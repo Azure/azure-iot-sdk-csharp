@@ -3,6 +3,8 @@
 ## Windows
 On Windows logman or PerfView can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/workflow/debugging/libraries/windows-instructions.md#traces
 
+We have provided the following convinience scripts for log collection using `logman`.
+
 1. Launch Powershell with administrator priviledges.
 2. To start capturing traces, invoke `iot_startlog.ps1`.
    1. Pass in the following required parameters:
