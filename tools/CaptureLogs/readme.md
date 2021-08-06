@@ -12,12 +12,20 @@ We have provided the following convenience scripts for log collection using `log
       2. `-Output` - the output log file that will be created. This should be a `.etl` file.
       3. `-ProviderFile` - The file listing multiple Event Trace providers to enable. The file should be a text file containing one provider per line.
         The Azure IoT SDK providers file is present [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/tools/CaptureLogs/iot_providers.txt). The providers list with their corresponding package details are present [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs#azure-iot-sdk-providers).
+   2. You can also pass in the following optional parameters:
+      1. `-Format` - The log format for the data collector. Acceptable values are:
+         1. `bin` - binary log format.
+         2. `bincirc` - binary circular log format.
+
+      The default format is `bin`.
+      
+      1. `-MaximumOutputSize` - The maximum log file size in MB.
 
   Sample usage:
 
   To create an event trace data collector called `IotTrace`, using the file `iot_providers.txt` for the list of event providers to be enabled, putting the results in a file `iot.etl` in the same folder from where the command is invoked, type:
   ```powersehll
-  .\iot_startlog.ps1 -Output iot.etl -ProviderFile .\iot_providers.txt -TraceName IotTrace
+  .\iot_startlog.ps1 -Output iot.etl -ProviderFile .\iot_providers.txt -TraceName IotTrace -Format bincirc -MaximumOutputSize 100
   ```
 
 3. To stop capturing traces, invoke `iot_stoplog.ps1`.
