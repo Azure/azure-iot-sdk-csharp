@@ -1,5 +1,27 @@
 # Capturing Traces
 
+1. Launch Powershell with administrator priviledges.
+2. To start capturing traces, invoke `iot_startlog.ps1`.
+   1. Pass in the following required parameters:
+      1. `-TraceName` - the name of the event trace data collector.
+      2. `-Output` - the output log file that will be created. This should be a `.etl` file.
+      3. `-ProviderFile` - The file listing multiple Event Trace providers to enable. The file should be a text file containing one provider per line.
+        The Azure IoT SDK providers file is present [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/tools/CaptureLogs/iot_providers.txt). The providers list with their corresponding package details are present [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs#azure-iot-sdk-providers).
+
+  Sample usage:
+  ```powersehll
+  .\iot_startlog.ps1 -Output iot.etl -ProviderFile .\iot_providers.txt -TraceName IotTrace
+  ```
+
+3. To stop capturing traces, invoke `iot_stoplog.ps1`.
+   1. Pass in the following required parameter:
+      1. `-TraceName` - the name of the event trace data collector. Same as the one used while starting trace capture.
+
+  Sample usage:
+  ```powersehll
+   .\iot_stoplog.ps1 -TraceName IotTrace
+  ```
+
 ## Windows
 On Windows logman or PerfView can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/workflow/debugging/libraries/windows-instructions.md#traces
 
