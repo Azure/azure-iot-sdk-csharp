@@ -37,24 +37,24 @@ namespace RoleBasedAuthenticationSample
         public TransportType TransportType { get; set; }
 
         [Option(
-            "clientId",
+            "ClientId",
             Required = true,
             HelpText = "The client Id of the Azure Active Directory application." +
-            " This sample uses ClientSecretCredential. For other ways to use role based authentication, see https://docs.microsoft.com/en-us/dotnet/api/azure.identity?view=azure-dotnet.")]
+            " This sample uses ClientSecretCredential. For other ways to use role based authentication, see https://docs.microsoft.com/dotnet/api/azure.identity?view=azure-dotnet.")]
         public string ClientId { get; set; }
 
         [Option(
-            "tenantId",
+            "TenantId",
             Required = true,
             HelpText = "The Azure Active Directory tenant (directory) Id." +
-            " This sample uses ClientSecretCredential. For other ways to use role based authentication, see https://docs.microsoft.com/en-us/dotnet/api/azure.identity?view=azure-dotnet.")]
+            " This sample uses ClientSecretCredential. For other ways to use role based authentication, see https://docs.microsoft.com/dotnet/api/azure.identity?view=azure-dotnet.")]
         public string TenantId { get; set; }
 
         [Option(
-            "clientSecret",
+            "ClientSecret",
             Required = true,
             HelpText = "A client secret that was generated for the application Registration used to authenticate the client." +
-            " This sample uses ClientSecretCredential. For other ways to use role based authentication, see https://docs.microsoft.com/en-us/dotnet/api/azure.identity?view=azure-dotnet.")]
+            " This sample uses ClientSecretCredential. For other ways to use role based authentication, see https://docs.microsoft.com/dotnet/api/azure.identity?view=azure-dotnet.")]
         public string ClientSecret { get; set; }
     }
 }
