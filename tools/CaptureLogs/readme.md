@@ -23,7 +23,7 @@ We have provided the following convenience scripts for log collection using `log
 
   Sample usage:
 
-  To create an event trace data collector called `IotTrace`, using the file `iot_providers.txt` for the list of event providers to be enabled, putting the results in a file `iot.etl` in the same folder from where the command is invoked, type:
+  To create an event trace data collector called `IotTrace`, using the file `iot_providers.txt` for the list of event providers to be enabled and enabling circular logging of maximum file size 100 MB, putting the results in a file `iot.etl` in the same folder from where the command is invoked, type:
   ```powersehll
   .\iot_startlog.ps1 -Output iot.etl -ProviderFile .\iot_providers.txt -TraceName IotTrace -Format bincirc -MaximumOutputSize 100
   ```
