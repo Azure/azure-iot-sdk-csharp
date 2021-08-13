@@ -14,6 +14,8 @@ urlFragment: azure-iot-pnp-device-samples-for-csharp-net
 
 # IoT Plug And Play device samples
 
+[![Documentation](../../../../docs/media/docs-link-buttons/azure-documentation.svg)](https://docs.microsoft.com/azure/iot-develop/)
+
 These samples demonstrate how a device that follows the [IoT Plug and Play conventions][pnp-convention] interacts with IoT Hub or IoT Central, to:
 
 - Send telemetry.
