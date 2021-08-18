@@ -256,7 +256,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
         /// </summary>
-        /// <remarks>This internal class is aware of the implementation of the TwinCollection.</remarks>
+        /// <remarks>This method is used to translate the twin desired properties into writable property update requests.
+        /// This internal class is aware of the implementation of the TwinCollection.</remarks>
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
         /// <returns>A new instance of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
@@ -274,7 +275,13 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
-                propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
+                var writableProperty = new WritableClientProperty
+                {
+                    Convention = payloadConvention,
+                    Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)),
+                    Version = twinCollection.Version,
+                };
+                propertyCollectionToReturn.Add(property.Key, writableProperty);
             }
             // The version information is not accessible via the enumerator, so assign it separately.
             propertyCollectionToReturn.Version = twinCollection.Version;
@@ -282,6 +289,7 @@ namespace Microsoft.Azure.Devices.Client
             return propertyCollectionToReturn;
         }
 
+        // This method is used to convert the received twin into client properties (reported + desired).
         internal static ClientPropertyCollection FromClientTwinDictionary(IDictionary<string, object> clientTwinPropertyDictionary, PayloadConvention payloadConvention)
         {
             if (clientTwinPropertyDictionary == null)
