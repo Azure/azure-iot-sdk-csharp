@@ -16,7 +16,7 @@ We have created a tool to send diagnostic traces logs to [Application Insights](
    2. Supply --connectionstring with a [connection string to Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string?tabs=net)
 
 ```
-logman create trace autosession\IotTrace -rt -pf .\iot_providers.txt
+logman create trace IotTrace -rt -pf .\iot_providers.txt
 ```
 
 ```
