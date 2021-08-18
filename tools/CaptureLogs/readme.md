@@ -10,10 +10,10 @@ We have created a tool to send diagnostic traces logs to [Application Insights](
 1. Download the TransmitETL.zip from this directory.
 2. Unzip the file into a location you can access
 3. Create a `logman` trace session for the IoT SDK trace providers using our providers file.
-4. Start the logman trace
+4. Start the `logman` trace
 5. Run `TransmitETL.exe` from the directory you created in step 2
-   1. Supply --sessionname with the session name created above
-   2. Supply --connectionstring with a [connection string to Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string?tabs=net)
+   1. Supply `--sessionname` with the session name created above
+   2. Supply `--connectionstring` with a [connection string to Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string?tabs=net)
 
 ```
 logman create trace IotTrace -rt -pf .\iot_providers.txt
