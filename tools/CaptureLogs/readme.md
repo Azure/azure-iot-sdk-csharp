@@ -3,39 +3,25 @@
 ## Windows
 On Windows logman or PerfView can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/workflow/debugging/libraries/windows-instructions.md#traces
 
-We have provided the following convenience scripts for log collection using `logman`.
+### Send Traces to Application Insights
 
-1. Launch Powershell with administrator privileges.
-2. To start capturing traces, invoke `iot_startlog.ps1`.
-   1. Pass in the following required parameters:
-      1. `-TraceName` - the name of the event trace data collector.  This can be any name that will be used to identity the collector created.
-      2. `-Output` - the output log file that will be created. This should be a `.etl` file.
-      3. `-ProviderFile` - The file listing multiple Event Trace providers to enable. The file should be a text file containing one provider per line.
-        The Azure IoT SDK providers file is present [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/tools/CaptureLogs/iot_providers.txt). The providers list with their corresponding package details are present [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs#azure-iot-sdk-providers).
-   2. You can also pass in the following optional parameters:
-      1. `-Format` - The log format for the data collector. Acceptable values are:
-         1. `bin` - binary log format.
-         2. `bincirc` - binary circular log format.
+We have created a tool to send diagnostic traces logs to [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) from the target machine without the need to add Application Insights to your target application. This tool takes advantage of the real time session and does not require disk space.
 
-      The default format is `bin`.
-      
-      1. `-MaximumOutputSize` - The maximum log file size in MB.
+1. Download the TransmitETL.zip from this directory.
+2. Unzip the file into a location you can access
+3. Create a `logman` trace session for the IoT SDK trace providers using our providers file.
+4. Start the logman trace
+5. Run `TransmitETL.exe` from the directory you created in step 2
+   1. Supply --sessionname with the session name created above
+   2. Supply --connectionstring with a [connection string to Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string?tabs=net)
 
-  Sample usage:
+```
+logman create trace autosession\IotTrace -rt -pf .\iot_providers.txt
+```
 
-  To create an event trace data collector called `IotTrace`, using the file `iot_providers.txt` for the list of event providers to be enabled and enabling circular logging of maximum file size 100 MB, putting the results in a file `iot.etl` in the same folder from where the command is invoked, type:
-  ```powersehll
-  .\iot_startlog.ps1 -Output iot.etl -ProviderFile .\iot_providers.txt -TraceName IotTrace -Format bincirc -MaximumOutputSize 100
-  ```
-
-3. To stop capturing traces, invoke `iot_stoplog.ps1`.
-   1. Pass in the following required parameter:
-      1. `-TraceName` - the name of the event trace data collector. Same as the one used while starting trace capture.
-
-  Sample usage:
-  ```powersehll
-   .\iot_stoplog.ps1 -TraceName IotTrace
-  ```
+```
+TransmitETL --sessionname IotTrace --connectionstring <<APPLICATIONINSIGHTS CONNECTION STRING>>
+```
 
 ## Linux
 On Linux and OSX LTTNG and perfcollect can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/project/linux-performance-tracing.md
