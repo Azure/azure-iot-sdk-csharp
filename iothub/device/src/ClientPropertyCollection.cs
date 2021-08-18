@@ -275,7 +275,13 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
-                propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
+                var writableProperty = new WritableClientProperty
+                {
+                    Convention = payloadConvention,
+                    Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)),
+                    Version = twinCollection.Version,
+                };
+                propertyCollectionToReturn.Add(property.Key, writableProperty);
             }
             // The version information is not accessible via the enumerator, so assign it separately.
             propertyCollectionToReturn.Version = twinCollection.Version;
