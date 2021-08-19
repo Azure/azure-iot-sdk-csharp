@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using System;
@@ -15,7 +16,7 @@ namespace TransmitETL
         public static long eventsProcessed = 0L;
         public static TelemetryClient tc = null;
         public static bool hasParameterErrors;
-
+        public static bool exitedGracefully;
 
         static void Main(string[] args)
         {
@@ -24,13 +25,33 @@ namespace TransmitETL
 
             // Parse application parameters
             Parameters parameters = null;
+            string offlineStorePath = string.Empty;
             ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
                 .WithParsed(parsedParams =>
                 {
                     parameters = parsedParams;
+                    if (!System.IO.Directory.Exists(parameters.OfflineStore))
+                    {
+                        Log($"Offline storage location {parameters.OfflineStore} does not exist. Creating it now.");
+                        try
+                        {
+                            var createdPath = System.IO.Directory.CreateDirectory(parameters.OfflineStore);
+                            Log($"Offline storage location {createdPath.FullName} was created succesfully.");
+
+                        }
+                        catch (Exception ex)
+                        {
+                            Log("Error creating the offline storage location. See exception for more details.");
+                            Log(ex.Message, false);
+                            Environment.Exit(1);
+                        }
+                    }
+                    offlineStorePath = parsedParams.OfflineStore;
                     Log($"Using session: {parameters.SessionName}");
                     Log($"Using Application Insights connection string: {parameters.ConnectionString}");
                     Log($"Using heartbeat interval: {parameters.HeartBeatInterval}s");
+                    Log($"Using offline storage path: {offlineStorePath}");
+                    Log($"Using offline storage limit of: {parameters.MaxStoreSize}MB");
                 })
                 .WithNotParsed(errors =>
                 {
@@ -39,12 +60,21 @@ namespace TransmitETL
                 });
 
 
+            // Create the offline telemetry channel
+            // This will allow data to be persisted in the event that the device goes offline
+            var offlineTelemetryChannel = new ServerTelemetryChannel
+            {
+                StorageFolder = offlineStorePath,
+                MaxTransmissionStorageCapacity = parameters.MaxStoreSize * 1024 * 1024
+            };
+
             // Create the telemetry client using the specified connection string from the command line
             try
             {
                 tc = new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration
                 {
-                    ConnectionString = parameters.ConnectionString
+                    ConnectionString = parameters.ConnectionString,
+                    TelemetryChannel = offlineTelemetryChannel
                 });
             }
             catch (Exception ex)
@@ -79,7 +109,7 @@ namespace TransmitETL
                         // Increment the events count for the heartbeat 
                         Interlocked.Increment(ref eventsProcessed);
                         var evtTelemetry = new EventTelemetry();
-                        evtTelemetry.Timestamp = data?.TimeStamp != null ? data.TimeStamp : DateTime.Now ;
+                        evtTelemetry.Timestamp = data?.TimeStamp != null ? data.TimeStamp : DateTime.Now;
                         evtTelemetry.Name = $"{ReturnDefaultString(data?.ProviderName)}/{ReturnDefaultString(data?.EventName)}";
                         foreach (var item in data?.PayloadNames)
                         {
@@ -89,6 +119,7 @@ namespace TransmitETL
                     };
                     Log($"Starting session processing.");
                     source.Process();
+                    Log($"Trace session {parameters.SessionName} has been stopped the applicaiton will exit.");
                 }
             }
             catch (Exception ex)

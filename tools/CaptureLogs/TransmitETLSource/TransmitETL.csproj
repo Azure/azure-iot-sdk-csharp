@@ -43,6 +43,9 @@
       <HintPath>.\packages\Microsoft.Diagnostics.Tracing.TraceEvent.2.0.71\lib\net45\Dia2Lib.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="Microsoft.AI.ServerTelemetryChannel, Version=2.18.0.315, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.18.0\lib\net452\Microsoft.AI.ServerTelemetryChannel.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.ApplicationInsights, Version=2.18.0.315, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>.\packages\Microsoft.ApplicationInsights.2.18.0\lib\net46\Microsoft.ApplicationInsights.dll</HintPath>
     </Reference>
@@ -73,6 +76,7 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>.\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -99,5 +103,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('.\packages\Microsoft.Diagnostics.Tracing.TraceEvent.2.0.71\build\Microsoft.Diagnostics.Tracing.TraceEvent.props')" Text="$([System.String]::Format('$(ErrorText)', '.\packages\Microsoft.Diagnostics.Tracing.TraceEvent.2.0.71\build\Microsoft.Diagnostics.Tracing.TraceEvent.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.18.0\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.18.0\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets'))" />
   </Target>
+  <Import Project="packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.18.0\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets" Condition="Exists('packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.18.0\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets')" />
 </Project>

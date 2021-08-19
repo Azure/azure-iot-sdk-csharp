@@ -17,6 +17,22 @@ namespace TransmitETL
         public string ConnectionString { get; set; }
 
         [Option(
+            "offlinestore",
+            Required = false,
+            Default = ".\\offlinestore",
+            HelpText = "Sets the directory for the Application Insights telemetry channel to store telemetry if the device is offline.")]
+            
+        public string OfflineStore { get; set; }
+
+        [Option(
+            "maxstoresizemb",
+            Required = false,
+            Default = "10",
+            HelpText = "Sets the maximum store size in MB for telemetry that is persisted if the device is offline.")]
+
+        public int MaxStoreSize { get; set; }
+
+        [Option(
             "heartbeatinterval",
             Required = false,
             Default = 300,
