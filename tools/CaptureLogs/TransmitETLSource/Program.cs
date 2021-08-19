@@ -30,28 +30,67 @@ namespace TransmitETL
                 .WithParsed(parsedParams =>
                 {
                     parameters = parsedParams;
-                    if (!System.IO.Directory.Exists(parameters.OfflineStore))
-                    {
-                        Log($"Offline storage location {parameters.OfflineStore} does not exist. Creating it now.");
-                        try
-                        {
-                            var createdPath = System.IO.Directory.CreateDirectory(parameters.OfflineStore);
-                            Log($"Offline storage location {createdPath.FullName} was created succesfully.");
 
-                        }
-                        catch (Exception ex)
+                    Log($"Using session: {parameters.SessionName}");
+
+                    if (parameters.UseInsightsConfig)
+                    {
+                        if (System.IO.File.Exists("ApplicationInsights.config"))
                         {
-                            Log("Error creating the offline storage location. See exception for more details.");
-                            Log(ex.Message, false);
+                            Log($"Using Application Insights configuration file.");
+                        }
+                        else
+                        {
+                            Log($"Application Insights configuration file not found. Exiting.");
                             Environment.Exit(1);
                         }
                     }
-                    offlineStorePath = parsedParams.OfflineStore;
-                    Log($"Using session: {parameters.SessionName}");
-                    Log($"Using Application Insights connection string: {parameters.ConnectionString}");
-                    Log($"Using heartbeat interval: {parameters.HeartBeatInterval}s");
-                    Log($"Using offline storage path: {offlineStorePath}");
-                    Log($"Using offline storage limit of: {parameters.MaxStoreSize}MB");
+                    else
+                    {
+                        Log($"Using Application Insights connection string: {parameters.ConnectionString}");
+                    }
+
+                    if (parameters.HeartBeatInterval <= 0)
+                    {
+                        Log($"Heartbeat is disabled.");
+                    }
+                    else
+                    {
+                        Log($"Using heartbeat interval: {parameters.HeartBeatInterval}s");
+                    }
+
+
+                    if (parameters.UseInsightsConfig)
+                    {
+                        Log($"Insights configuration file is being used. Ignoring offline storage options.");
+                    }
+                    else
+                    {
+                        offlineStorePath = System.IO.Path.GetFullPath(parameters.OfflineStore);
+                        if (!System.IO.Directory.Exists(offlineStorePath))
+                        {
+                            Log($"Offline storage location {offlineStorePath} does not exist. Creating it now.");
+                            try
+                            {
+                                var createdPath = System.IO.Directory.CreateDirectory(offlineStorePath);
+                                Log($"Offline storage location {createdPath.FullName} was created succesfully.");
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Log("Error creating the offline storage location. See exception for more details.");
+                                Log(ex.Message, false);
+                                Environment.Exit(1);
+                            }
+                        }
+                        else
+                        {
+                            offlineStorePath = System.IO.Path.GetFullPath(parameters.OfflineStore);
+                        }
+
+                        Log($"Using offline storage path: {offlineStorePath}");
+                        Log($"Using offline storage limit of: {parameters.MaxStoreSize}MB");
+                    }
                 })
                 .WithNotParsed(errors =>
                 {
@@ -60,22 +99,31 @@ namespace TransmitETL
                 });
 
 
-            // Create the offline telemetry channel
-            // This will allow data to be persisted in the event that the device goes offline
-            var offlineTelemetryChannel = new ServerTelemetryChannel
-            {
-                StorageFolder = offlineStorePath,
-                MaxTransmissionStorageCapacity = parameters.MaxStoreSize * 1024 * 1024
-            };
-
             // Create the telemetry client using the specified connection string from the command line
             try
             {
-                tc = new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration
+                if (parameters.UseInsightsConfig)
                 {
-                    ConnectionString = parameters.ConnectionString,
-                    TelemetryChannel = offlineTelemetryChannel
-                });
+                    var configFile = System.IO.Path.GetFullPath("ApplicationInsights.config");
+                    tc = new TelemetryClient(Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.CreateFromConfiguration(configFile));
+                }
+                else
+                {
+                    // Create the offline telemetry channel
+                    // This will allow data to be persisted in the event that the device goes offline
+                    var offlineTelemetryChannel = new ServerTelemetryChannel
+                    {
+                        StorageFolder = offlineStorePath,
+                        MaxTransmissionStorageCapacity = parameters.MaxStoreSize * 1024 * 1024
+                    };
+
+                    tc = new TelemetryClient(new Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration
+                    {
+                        ConnectionString = parameters.ConnectionString,
+                        TelemetryChannel = offlineTelemetryChannel
+                    });
+                }
+
             }
             catch (Exception ex)
             {
@@ -86,15 +134,18 @@ namespace TransmitETL
 
             // Create a heartbeat event that lets us know the application is running
             tc.TrackEvent("ApplicationStart");
-            Task.Run(async () =>
+            if (parameters.HeartBeatInterval > 0)
             {
-                while (true)
+                Task.Run(async () =>
                 {
-                    tc.TrackEvent("Heartbeat", metrics: new Dictionary<string, double> { ["eventsProcessed"] = eventsProcessed });
-                    Log($"Heartbeat, sent {eventsProcessed} events", false);
-                    await Task.Delay(TimeSpan.FromSeconds(parameters.HeartBeatInterval));
-                }
-            });
+                    while (true)
+                    {
+                        tc.TrackEvent("Heartbeat", metrics: new Dictionary<string, double> { ["eventsProcessed"] = eventsProcessed });
+                        Log($"Heartbeat, sent {eventsProcessed} events", false);
+                        await Task.Delay(TimeSpan.FromSeconds(parameters.HeartBeatInterval));
+                    }
+                });
+            }
 
             // Try to create the diagnostic listener that attaches to the specified session.
             try

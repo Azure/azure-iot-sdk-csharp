@@ -12,9 +12,15 @@ namespace TransmitETL
 
         [Option(
             "connectionstring",
-            Required = true,
+            Group = "insightsconfig",
             HelpText = "The Application Insights connection string.")]
         public string ConnectionString { get; set; }
+
+        [Option(
+            "useinsightsconfig",
+            Group = "insightsconfig",
+            HelpText = "This flag will attempt to use the ApplicationInsights.config file. The file must me in the same path as the tool.")]
+        public bool UseInsightsConfig { get; set; }
 
         [Option(
             "offlinestore",
@@ -27,7 +33,7 @@ namespace TransmitETL
         [Option(
             "maxstoresizemb",
             Required = false,
-            Default = "10",
+            Default = 10,
             HelpText = "Sets the maximum store size in MB for telemetry that is persisted if the device is offline.")]
 
         public int MaxStoreSize { get; set; }
@@ -36,7 +42,7 @@ namespace TransmitETL
             "heartbeatinterval",
             Required = false,
             Default = 300,
-            HelpText = "The interval in seconds to send the heartbeat.")]
+            HelpText = "The interval in seconds to send the heartbeat. Set to 0 to disable.")]
         public int HeartBeatInterval { get; set; }
     }
 }

@@ -5,7 +5,11 @@ A single purpose tool that will send any ETL traces to an Application Insights i
 The tool was written to help get ETL traces from a remote machine to Application Insights without having to add instrumentation or store ETL log files on the remote machine. To do this we use the [Microsoft.Diagnostics.Tracing.TraceEvent](https://github.com/microsoft/perfview/blob/7bc1b55ebf6773f8afcdf46a96d2e9ccc763aeee/documentation/TraceEvent/TraceEventLibrary.md) library to stream the real time session that is created with [logman](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/logman-create-trace).
 
 ## Operation
-There are two required command line parameters that set the session name and connection string. They are `--sessionname` and `--connectionstring` respectively. There is a third command line parameter called `--heartbeatinterval` that sets the amount of time between heartbeats for the application. This will be explained later.
+There are two required command line parameters that set the session name and connection string. They are `--sessionname` and `--connectionstring` respectively. 
+
+There are options to set the heartbeat interval called `--heartbeatinterval` that sets the amount of time between heartbeats for the application.
+
+There are also options to set the offline storage usd by Application Insights `--offlinestore` and `--maxstoresizemb` that sets the path and maximum size on disk the persistant storage will take.
 
 ### What is collected?
 The Azure IoT SDK emits data from event sources and can contain your event hub endpoint name. 
@@ -29,6 +33,10 @@ ERROR(S):
   --sessionname          Required. The trace session to attach to.
 
   --connectionstring     Required. The Application Insights connection string.
+
+  --offlinestore         (Default: .\offlinestore) Sets the directory for the Application Insights telemetry channel to store telemetry if the device is offline.
+
+  --maxstoresizemb       (Default: 10) Sets the maximum store size in MB for telemetry that is persisted if the device is offline.
 
   --heartbeatinterval    (Default: 300) The interval in seconds to send the heartbeat.
 
@@ -56,6 +64,15 @@ The tool will need to have a logman trace running before it starts. Follow the i
 logman create trace IotTrace -rt -pf .\iot_providers.txt
 ```
 
+## Additional Configuration
+
+### Heartbeat
+The tool will send a heartbeat at the specified interval (default: 300s) to application insights. You can use this heartbeat to determine if the tool is running and if there are events being sent. For example you can run the following query to see if the application is alive in Application Insights.
+
+If you need more granular reporting you can set the heartbeat as low as 1s. You can also set the interval to 0 to disable the heartbeat, however this is not recommended.
+
+### Offline Telemetry Store
+Application insights uses the []
 
 ## Errors
 
