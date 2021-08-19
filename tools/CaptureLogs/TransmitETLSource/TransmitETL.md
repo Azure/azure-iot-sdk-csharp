@@ -5,23 +5,22 @@ A single purpose tool that will send any ETL traces to an Application Insights i
 The tool was written to help get ETL traces from a remote machine to Application Insights without having to add instrumentation or store ETL log files on the remote machine. To do this we use the [Microsoft.Diagnostics.Tracing.TraceEvent](https://github.com/microsoft/perfview/blob/7bc1b55ebf6773f8afcdf46a96d2e9ccc763aeee/documentation/TraceEvent/TraceEventLibrary.md) library to stream the real time session that is created with [logman](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/logman-create-trace).
 
 ## Operation
-There are two required command line parameters that set the session name and connection string. They are `--sessionname` and `--connectionstring` respectively. 
+There are two required command line parameters that set the session name and connection string. They are `--sessionname` and `--connectionstring <<APPLICATIONINSIGHTS CONNECTION STRING>>` respectively. Or, preferably `--sessionname` and `--useinsightsconfig`
 
 There are options to set the heartbeat interval called `--heartbeatinterval` that sets the amount of time between heartbeats for the application.
 
-There are also options to set the offline storage usd by Application Insights `--offlinestore` and `--maxstoresizemb` that sets the path and maximum size on disk the persistant storage will take.
+There are also options to set the offline storage usd by Application Insights `--offlinestore` and `--maxstoresizemb` that sets the path and maximum size on disk the persistent storage will take.
 
-
-**Example**
+**Example for just a connection string**
 ```
 TransmitETL --sessionname <<SESSIONNAME>> --connectionstring <<APPLICATIONINSIGHTS CONNECTION STRING>>
 ```
+> NOTE: Using a connection string on the command line can be insecure and should only be used for testing or non-production scenarios. If you need to run this tool on a production machine you should consider using the `--useinsightsconfig` command line option to be able to use the `ApplicationInsights.config` file.
 
 **Standard Output**
 ```
-> TransmitETL.exe
+> TransmitETL.exe --help
 
-TransmitETL.exe --help
 TransmitETL 1.0.0.0
 Copyright c  2021
 
@@ -45,11 +44,10 @@ Copyright c  2021
 ### What is collected?
 The Azure IoT SDK emits data from event sources and can contain your event hub endpoint name and in some cases your device name. We do not log security keys or information regarding access tokens.
 
-
 ## Creating an Application Insights instance
 Follow [these instructions](https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-new-resource) on creating an Application Insights instance and get the [connection string](https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string?tabs=net).
 
-You will pass this connection string into the application
+You will update your ApplicationInsights.config file with this connection string. Alternatively for non-production scenriosn you can pass this connection string into the application via the command line.
 
 **Example connection string**
 ```
@@ -67,15 +65,31 @@ logman create trace IotTrace -rt -pf .\iot_providers.txt
 
 ## Additional Configuration
 
+### Use ApplicationInsights.config
+By default the tool will use a user supplied connection string 
+
+
+**Example for using a config file**
+```
+TransmitETL --sessionname <<SESSIONNAME>> --useinsightsconfig
+```
+
 ### Heartbeat
 The tool will send a heartbeat at the specified interval (default: 300s) to application insights. You can use this heartbeat to determine if the tool is running and if there are events being sent. For example you can run the following query to see if the application is alive in Application Insights.
 
 If you need more granular reporting you can set the heartbeat as low as 1s. You can also set the interval to 0 to disable the heartbeat, however this is not recommended.
 
 ### Offline Telemetry Store
-Application insights uses the []
+Application implements the [Server Telemetry Channel](https://docs.microsoft.com/en-us/azure/azure-monitor/app/telemetry-channels#operational-details-of-servertelemetrychannel) which allows for offline and persisted storage. This tool will use this channel by default to handle offline scenarios where the device is only periodically connected or has a unreliable connection.
 
-## Errors
+We only expose two configuration options to handle the most common scenarios where you would need to limit the amount of disk space used or if you need to change the directory to a specific one.
+
+**Example for settings offline store**
+```
+TransmitETL --sessionname <<SESSIONNAME>> --connectionstring <<APPLICATIONINSIGHTS CONNECTION STRING>> --offlinestore x:\offlinestorage\location1 --maxstoresizemb 100
+```
+
+## Common errors
 
 ### Logman Session Not Started
 
@@ -120,12 +134,39 @@ Process is exiting with code 1.
 At a minimum you will need to specify a connection string with the format `InstrumentationKey=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee`.
 
 ```
-TransmitETL.exe --sessionname invalid --connectionstring invalidstring
+>TransmitETL.exe --sessionname invalid --connectionstring invalidstring
 
 Using session: invalid
 Using Application Insights connection string: invalidstring
 Using heartbeat interval: 300s
 Error creating the Application Insights instance. See exception for more details.
 There was an error parsing the Connection String: Input contains invalid delimiters and cannot be parsed. Expected example: 'key1=value1;key2=value2;key3=value3'.
+Process is exiting with code 1.
+```
+### ApplicationInsights.config not found
+
+If you specify to use the ApplicationInsights.config file and it is not found you will get an error that looks like this.
+
+```
+> TransmitETL.exe --sessionname IotTrace --useinsightsconfig
+
+Using session: IotTrace
+Application Insights configuration file not found. Exiting.
+Process is exiting with code 1.
+```
+
+### Offline Store directory could not be created
+
+If you specify an invalid or inaccessible location you will see an error like the one below.
+
+```
+> TransmitETL.exe --sessionname IotTrace --connectionstring InstrumentationKey=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee --offlinestore x:\temp\offlinestore
+
+Using session: IotTrace
+Using Application Insights connection string: InstrumentationKey=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+Using heartbeat interval: 300s
+Offline storage location x:\temp\offlinestore does not exist. Creating it now.
+Error creating the offline storage location. See exception for more details.
+Could not find a part of the path 'x:\temp\offlinestore'.
 Process is exiting with code 1.
 ```
