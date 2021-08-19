@@ -3,9 +3,38 @@
 ## Windows
 On Windows logman or PerfView can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/workflow/debugging/libraries/windows-instructions.md#traces
 
-### Send Traces to Application Insights
+### Send traces to a cloud storage location
 
-We have created a tool to send diagnostic traces logs to [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) from the target machine without the need to add Application Insights to your target application. This tool takes advantage of the real time session and does not require disk space. For more details on the usage of the TransmitETL applcaition see the [documentation](TransmitETLSource/TransmitETL.md)
+In the simplest scenario it may be useful to create a logman trace and upload the files to a cloud storage location. You can use `azcopy copy` to upload files from your local machine to a cloud storage account. Please see the [azcopy copy documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-ref-azcopy-copy?toc=/azure/storage/blobs/toc.json) more detailed examples. See the [azcopy login documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-ref-azcopy-login?toc=/azure/storage/blobs/toc.json) for examples on how to configure authentication to your cloud storage location.
+
+There is also an excellent [Getting Started](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10?toc=/azure/storage/blobs/toc.json) guide that has examples on how to [Upload](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-blobs-upload?toc=/azure/storage/blobs/toc.json) in various ways.
+
+1. Download [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest) from the GitHub page
+2. Unzip the file into a location you can access
+3. Create a `logman` trace session for the IoT SDK trace providers using our providers file.
+4. Start the `logman` trace
+4. Run the IoT SDK Application to generate logs of the suspected issue
+6. Stop the `logman` trace
+7. Run `azcopy` against the etl log file locations to upload to a cloud
+
+**Example Commands**
+
+```
+logman create trace IotTrace -pf .\iot_providers.txt -o c:\perflogs\iot\iot.etl
+```
+
+```
+azcopy login
+azcopy make "https://[account].blob.core.windows.net/[container]"
+azcopy copy "c:\perflogs\iot" "https://[account].blob.core.windows.net/[container]/[path/to/directory]?[SAS]" --recursive
+azcopy logout
+```
+
+### Send traces to Application Insights in real time
+
+> **NOTE** For a more robust solution it is best to add Application Insights logging to your application. The tool below is for scenarios where you cannot deploy code changes, or don't need persistent monitoring.
+
+We have created a tool to send diagnostic traces logs to [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) from the target machine without the need to add Application Insights to your target application. This tool takes advantage of the real time session and does not require disk space. For more details on the usage of the TransmitETL application see the [documentation](TransmitETLSource/TransmitETL.md).
 
 1. Download the TransmitETL.zip from this directory.
 2. Unzip the file into a location you can access
@@ -15,6 +44,7 @@ We have created a tool to send diagnostic traces logs to [Application Insights](
    1. Supply `--sessionname` with the session name created above
    2. Supply `--connectionstring` with a [connection string to Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string?tabs=net)
 
+**Example Commands**
 ```
 logman create trace IotTrace -rt -pf .\iot_providers.txt
 ```

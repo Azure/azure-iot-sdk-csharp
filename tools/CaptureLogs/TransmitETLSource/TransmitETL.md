@@ -11,8 +11,6 @@ There are options to set the heartbeat interval called `--heartbeatinterval` tha
 
 There are also options to set the offline storage usd by Application Insights `--offlinestore` and `--maxstoresizemb` that sets the path and maximum size on disk the persistant storage will take.
 
-### What is collected?
-The Azure IoT SDK emits data from event sources and can contain your event hub endpoint name. 
 
 **Example**
 ```
@@ -23,27 +21,30 @@ TransmitETL --sessionname <<SESSIONNAME>> --connectionstring <<APPLICATIONINSIGH
 ```
 > TransmitETL.exe
 
+TransmitETL.exe --help
 TransmitETL 1.0.0.0
 Copyright c  2021
 
-ERROR(S):
-  Required option 'sessionname' is missing.
-  Required option 'connectionstring' is missing.
-
   --sessionname          Required. The trace session to attach to.
 
-  --connectionstring     Required. The Application Insights connection string.
+  --connectionstring     (Group: insightsconfig) The Application Insights connection string.
+
+  --useinsightsconfig    (Group: insightsconfig) This flag will attempt to use the ApplicationInsights.config file. The file must me in the same path as the tool.
 
   --offlinestore         (Default: .\offlinestore) Sets the directory for the Application Insights telemetry channel to store telemetry if the device is offline.
 
   --maxstoresizemb       (Default: 10) Sets the maximum store size in MB for telemetry that is persisted if the device is offline.
 
-  --heartbeatinterval    (Default: 300) The interval in seconds to send the heartbeat.
+  --heartbeatinterval    (Default: 300) The interval in seconds to send the heartbeat. Set to 0 to disable.
 
   --help                 Display this help screen.
 
   --version              Display version information.
 ```
+
+### What is collected?
+The Azure IoT SDK emits data from event sources and can contain your event hub endpoint name and in some cases your device name. We do not log security keys or information regarding access tokens.
+
 
 ## Creating an Application Insights instance
 Follow [these instructions](https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-new-resource) on creating an Application Insights instance and get the [connection string](https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string?tabs=net).
