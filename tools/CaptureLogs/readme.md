@@ -5,7 +5,7 @@ On Windows logman or PerfView can be used to collect traces. For more informatio
 
 ### Send Traces to Application Insights
 
-We have created a tool to send diagnostic traces logs to [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) from the target machine without the need to add Application Insights to your target application. This tool takes advantage of the real time session and does not require disk space.
+We have created a tool to send diagnostic traces logs to [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) from the target machine without the need to add Application Insights to your target application. This tool takes advantage of the real time session and does not require disk space. For more details on the usage of the TransmitETL applcaition see the [documentation](TransmitETLSource/TransmitETL.md)
 
 1. Download the TransmitETL.zip from this directory.
 2. Unzip the file into a location you can access

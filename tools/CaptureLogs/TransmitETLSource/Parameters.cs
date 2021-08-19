@@ -17,7 +17,7 @@ namespace TransmitETL
         public string ConnectionString { get; set; }
 
         [Option(
-            "heartbeatintervaal",
+            "heartbeatinterval",
             Required = false,
             Default = 300,
             HelpText = "The interval in seconds to send the heartbeat.")]
