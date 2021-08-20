@@ -1,16 +1,9 @@
-$ETLLogs = "c:\perflogs\iot"
-$AZCopyLocation = "<<PATH TO AZ COPY>>"
+$ETLLogs = "<<PATH TO ETL LOGS>>; ex. c:\perflogs\iot"
+$AZCopyLocation = "<<PATH TO AZ COPY>>; ex. c:\azcopy\azcopy.exe"
 $SASToken = "<<YOUR SAS TOKEN>>"
 $StorageContainerURI = "https://[account].blob.core.windows.net/[container]/[path/to/directory]"
 
 $combinedURI = "$StorageContainerURI?$SASToken"
-
-$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
-{
-    Write-Host -ForegroundColor Red "You must run this script as an elevated user. Exiting script." 
-    exit
-}
 
 $azcopy = Get-Command $AZCopyLocation -ErrorAction SilentlyContinue
 if ($null -eq $azcopy)
@@ -27,7 +20,7 @@ if (-not [System.Uri]::TryCreate(($combinedURI, "RelativeOrAbsolute", [ref] $ret
 }
 
 Write-Host "Starting azcopy." 
-$azcopySwitches = "copy", "$ETLLogs", "$StorageContainerURI?$SASToken", "--include-pattern", "*.etl", "--overwrite", "ifSourceNewer"
+$azcopySwitches = "copy", "$ETLLogs", "$combinedURI", "--include-pattern", "*.etl", "--overwrite", "ifSourceNewer"
 & $azcopy $azcopySwitches
 Write-Host "azcopy completed." 
 

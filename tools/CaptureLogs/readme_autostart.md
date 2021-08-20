@@ -54,3 +54,7 @@ This command creates a [scheduled task](https://docs.microsoft.com/en-us/windows
 ```
 schtasks /create /sc DAILY /tn IotTraceUpload /tr c:\azcopy\IotTraceScheduledTask.ps1 /ru system /st 22:00 /ENABLE
 ```
+
+## IotTraceScheduledTask.ps1
+
+This powershell will do two things. First it tries to upload all of the files in the ETL trace folder. It will only overwrite if the source is newer. It will then attempt to delete all but the last 24 hours of log files so there is not a lot of file space wasted.
