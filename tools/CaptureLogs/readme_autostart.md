@@ -63,6 +63,6 @@ schtasks /create /sc DAILY /tn IotTraceUpload /tr "powershell.exe -ExecutionPoli
 
 ## IotTraceScheduledTask.ps1
 
-This powershell will do two things. First it tries to upload all of the files in the ETL trace folder. It will only overwrite if the source is newer. It will then attempt to delete all but the last 24 hours of log files so there is not a lot of file space wasted.
+This powershell will do two things. First it tries to sync the files in the ETL trace folder. It will only overwrite if the source is newer. It will then attempt to delete all but the last 24 hours of log files so there is not a lot of file space wasted.
 
-**You should immediately test this script to ensure you have all of the folders and files setup before committing this to the scheduled task.**
+**You should immediately test this script once you've replaced the variables to ensure you have all of the folders and files setup before committing this to the scheduled task.**
