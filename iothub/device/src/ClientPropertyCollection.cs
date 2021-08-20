@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -275,13 +276,48 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
-                var writableProperty = new WritableClientProperty
+                // Since the twin collection was created using NewtonSoft.Json, each property value is a JObject.
+                var propertyValueAsJObject = (JObject)property.Value;
+
+                // Check if the property value is for a root property or a component property.
+                // A component property will have the "__t": "c" identifiers.
+                bool isComponentProperty = payloadConvention.PayloadSerializer.TryGetNestedObjectValue(property.Value, ConventionBasedConstants.ComponentIdentifierKey, out string _);
+
+                if (isComponentProperty)
                 {
-                    Convention = payloadConvention,
-                    Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)),
-                    Version = twinCollection.Version,
-                };
-                propertyCollectionToReturn.Add(property.Key, writableProperty);
+                    var collectionDictionary = new Dictionary<string, object>();
+
+                    // If this is a component property then each individual property is a WritableClientProperty
+                    foreach (KeyValuePair<string, JToken> componentProperty in propertyValueAsJObject)
+                    {
+                        object individualPropertyValue;
+                        if (componentProperty.Key == ConventionBasedConstants.ComponentIdentifierKey)
+                        {
+                            individualPropertyValue = componentProperty.Value;
+                        }
+                        else
+                        {
+                            individualPropertyValue = new WritableClientProperty
+                            {
+                                Convention = payloadConvention,
+                                Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(componentProperty.Value)),
+                                Version = twinCollection.Version,
+                            };
+                        }
+                        collectionDictionary.Add(componentProperty.Key, individualPropertyValue);
+                    }
+                    propertyCollectionToReturn.Add(property.Key, collectionDictionary);
+                }
+                else
+                {
+                    var writableProperty = new WritableClientProperty
+                    {
+                        Convention = payloadConvention,
+                        Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(propertyValueAsJObject)),
+                        Version = twinCollection.Version,
+                    };
+                    propertyCollectionToReturn.Add(property.Key, writableProperty);
+                }
             }
             // The version information is not accessible via the enumerator, so assign it separately.
             propertyCollectionToReturn.Version = twinCollection.Version;
