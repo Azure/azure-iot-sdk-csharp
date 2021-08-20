@@ -11,8 +11,8 @@ Instructions on how to create a trace session that is started on boot and will a
 ## Steps to complete
 
 1. Create a new Azure Storage account, or use an existing one
-2. Create container for log files
-3. Generate SAS Token
+2. Create a container for log files
+3. Generate a SAS Token
    * Make sure it has READ, WRITE, and CREATE permissions
    * Make sure the SAS token expiry is long enough to capture the failure scenario
 4. Copy azcopy to the **remote machine** (c:\azcopy in this example)
