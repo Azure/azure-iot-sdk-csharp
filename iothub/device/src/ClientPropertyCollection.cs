@@ -276,18 +276,20 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
-                // Since the twin collection was created using NewtonSoft.Json, each property value is a JObject.
-                var propertyValueAsJObject = (JObject)property.Value;
+                object propertyValueAsObject = property.Value;
 
                 // Check if the property value is for a root property or a component property.
-                // A component property will have the "__t": "c" identifiers.
-                bool isComponentProperty = payloadConvention.PayloadSerializer.TryGetNestedObjectValue(property.Value, ConventionBasedConstants.ComponentIdentifierKey, out string _);
+                // A component property be a JObject and will have the "__t": "c" identifiers.
+                bool isComponentProperty = propertyValueAsObject is JObject
+                    && payloadConvention.PayloadSerializer.TryGetNestedObjectValue(propertyValueAsObject, ConventionBasedConstants.ComponentIdentifierKey, out string _);
 
                 if (isComponentProperty)
                 {
                     var collectionDictionary = new Dictionary<string, object>();
 
-                    // If this is a component property then each individual property is a WritableClientProperty
+                    // If this is a component property then the collection is a JObject with each individual property as a writable property update request.
+                    var propertyValueAsJObject = (JObject)propertyValueAsObject;
+
                     foreach (KeyValuePair<string, JToken> componentProperty in propertyValueAsJObject)
                     {
                         object individualPropertyValue;
@@ -313,7 +315,7 @@ namespace Microsoft.Azure.Devices.Client
                     var writableProperty = new WritableClientProperty
                     {
                         Convention = payloadConvention,
-                        Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(propertyValueAsJObject)),
+                        Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(propertyValueAsObject)),
                         Version = twinCollection.Version,
                     };
                     propertyCollectionToReturn.Add(property.Key, writableProperty);
