@@ -21,6 +21,8 @@ Use the Azure Storage Explorer to [create a container](https://docs.microsoft.co
 
 Follow [these instructions](https://docs.microsoft.com/en-us/azure/cognitive-services/translator/document-translation/create-sas-tokens?tabs=Containers) on how to generate the SAS token. You will need this to replace the variable in the script.
 
+> **NOTE** You MUST generate the token with READ and WRITE permissions so we can use the overwrite feature.
+
 ## Install azcopy on remote machine
 
 Unzip the [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest) zip file obtained from the GitHub page to a location that can be accessed on the remote machine.
@@ -36,15 +38,19 @@ logman start IotTrace -ets
 
 ## Edit the powershell script to use the SAS token
 
-Edit the [IotTraceScheduledTask.ps1](IotTraceScheduledTask.ps1) script with the correct variables
+Edit the [IotTraceScheduledTask.ps1](IotTraceScheduledTask.ps1) script with the correct variables. If you have a pre-combined URI and SAS token you can just replace `combinedURI`
 
 Copy this script to a location that can be accessed on the remote machine. It would make sense to copy it to the same place you have `azcopy`.
 
 ```powershell
 $ETLLogs = "c:\perflogs\iot"
-$AZCopyLocation = "<<PATH TO AZ COPY>>"
-$SASToken = "<<YOUR SAS TOKEN>>"
-$StorageContainerURI = "https://[account].blob.core.windows.net/[container]/[path/to/directory]"
+$AZCopyLocation = "c:\azcopy\azcopy.exe"
+$SASToken = "<<your SAS token>>"
+$StorageContainerURI = "https://[account].blob.core.windows.net/[container]"
+
+# Optionally you can replace this variable with a pre combined SAS token URL
+$combinedURI = "$StorageContainerURI`?$SASToken"
+# $combinedURI = "https://[account].blob.core.windows.net/[container]?[SAS]"
 ```
 
 ## Create a Scheduled Task (elevated command prompt)
@@ -52,9 +58,11 @@ $StorageContainerURI = "https://[account].blob.core.windows.net/[container]/[pat
 This command creates a [scheduled task](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks) that runs the upload powershell script every day at 10pm. This also runs as SYSTEM so it will run regardless of a logged in user.
 
 ```
-schtasks /create /sc DAILY /tn IotTraceUpload /tr c:\azcopy\IotTraceScheduledTask.ps1 /ru system /st 22:00 /ENABLE
+schtasks /create /sc DAILY /tn IotTraceUpload /tr "powershell.exe -ExecutionPolicy Bypass -File c:\azcopy\IotTraceScheduledTask.ps1" /ru system /st 22:00
 ```
 
 ## IotTraceScheduledTask.ps1
 
 This powershell will do two things. First it tries to upload all of the files in the ETL trace folder. It will only overwrite if the source is newer. It will then attempt to delete all but the last 24 hours of log files so there is not a lot of file space wasted.
+
+**You should immediately test this script to ensure you have all of the folders and files setup before committing this to the scheduled task.**

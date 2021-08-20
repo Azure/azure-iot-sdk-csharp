@@ -1,9 +1,11 @@
-$ETLLogs = "<<PATH TO ETL LOGS>>; ex. c:\perflogs\iot"
-$AZCopyLocation = "<<PATH TO AZ COPY>>; ex. c:\azcopy\azcopy.exe"
-$SASToken = "<<YOUR SAS TOKEN>>"
-$StorageContainerURI = "https://[account].blob.core.windows.net/[container]/[path/to/directory]"
+$ETLLogs = "c:\perflogs\iot"
+$AZCopyLocation = "c:\azcopy\azcopy.exe"
+$SASToken = "<<your SAS token>>"
+$StorageContainerURI = "https://[account].blob.core.windows.net/[container]"
 
-$combinedURI = "$StorageContainerURI?$SASToken"
+# Optionally you can replace this variable with a pre combined SAS token URL
+$combinedURI = "$StorageContainerURI`?$SASToken"
+# $combinedURI = "https://[account].blob.core.windows.net/[container]?[SAS]"
 
 $azcopy = Get-Command $AZCopyLocation -ErrorAction SilentlyContinue
 if ($null -eq $azcopy)
@@ -13,14 +15,21 @@ if ($null -eq $azcopy)
 }
 
 $return = $null
-if (-not [System.Uri]::TryCreate(($combinedURI, "RelativeOrAbsolute", [ref] $return))
+if (-not [System.Uri]::TryCreate($combinedURI, "RelativeOrAbsolute", [ref] $return))
 {
     Write-Host -ForegroundColor Red "The combined Azure Storage URI was invalid. Please check the StorageContainerURI variable and the SASToken variable. Exiting script." 
+    Write-Host -ForegroundColor Green $combinedURI
+    exit
+}
+
+if (-not (Test-Path $ETLLogs))
+{
+    Write-Host -ForegroundColor Red "The ETL logs path is invalid. Please check the ETLLogs variable." 
     exit
 }
 
 Write-Host "Starting azcopy." 
-$azcopySwitches = "copy", "$ETLLogs", "$combinedURI", "--include-pattern", "*.etl", "--overwrite", "ifSourceNewer"
+$azcopySwitches = "copy", "$ETLLogs", "$combinedURI", "--include-pattern", "*.etl", "--overwrite", "ifSourceNewer", "--recursive"
 & $azcopy $azcopySwitches
 Write-Host "azcopy completed." 
 
