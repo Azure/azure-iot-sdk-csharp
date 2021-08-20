@@ -53,14 +53,20 @@ Follow [these instructions](https://docs.microsoft.com/en-us/azure/cognitive-ser
 
 Unzip the [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest) zip file obtained from the GitHub page to a location that can be accessed on the remote machine.
 
-## Create a logman autosession (elevated command prompt)
+## Create a logman trace session (elevated command prompt)
 
 These commands will create and start the logman session. The `autosession\` identifier will ensure that this trace session is started on boot. The `-cnf ... -v mmddhhmm` options will ensure that we're creating a new file every hour with the specified format.
 
 ```
-logman create trace autosession\IotTrace -pf c:\azcopy\iot_providers.txt -o c:\azcopy\iotlogs\iot.etl -cnf 01:00:00 -v mmddhhmm
-logman start IotTrace -ets
+logman create trace IotTrace -pf c:\azcopy\iot_providers.txt -o c:\azcopy\iotlogs\iot.etl -cnf 01:00:00 -v mmddhhmm
+logman start IotTrace
 ```
+
+## Create a Scheduled Task to start trace  (elevated command prompt)
+
+This command creates a [scheduled task](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks) that starts the specified trace on system boot.
+
+`schtasks /create /tn StartLogMan /tr "logman start IotTrace" /sc onstart /ru system`
 
 ## Edit the powershell script to use the SAS token
 
@@ -79,7 +85,7 @@ $combinedURI = "$StorageContainerURI`?$SASToken"
 # $combinedURI = "https://[account].blob.core.windows.net/[container]?[SAS]"
 ```
 
-## Create a Scheduled Task (elevated command prompt)
+## Create a Scheduled Task for upload  (elevated command prompt)
 
 This command creates a [scheduled task](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks) that runs the upload powershell script every day at 10pm. This also runs as SYSTEM so it will run regardless of a logged in user.
 
