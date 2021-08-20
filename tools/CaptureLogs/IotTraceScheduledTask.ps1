@@ -1,12 +1,16 @@
 #
 # Edit these variables with the values used when copying azcopy and creating the logman traces
 #
-$ETLLogs = "c:\aziot\iotlogs"
+# If you use the defaults from the readme the ETLLogs and AZCopyLocation will point to the correct locations
+#
+$ETLLogs = "c:\azcopy\iotlogs"
 $AZCopyLocation = "c:\azcopy\azcopy.exe"
 $SASToken = "<<your SAS token>>"
 
 # It may be useful to split the folders up into upload times so you can keep the root folder from getting overwhelming
 # To do that you would need to add on some identifier to the contiainer.
+# If you choose to use this method you must make sure that your SAS Token has CREATE capabilities since you will be adding a new container (folder)
+# Also note that depending on how many files you keep on the cleanup you may have duplicates in the folder.
 
 # Example
 # $StorageContainerURI = "https://[account].blob.core.windows.net/[container]/" + (Date).ToString("yyyyMMddHHmm")
@@ -49,8 +53,11 @@ Write-Host "azcopy completed."
 # Keep the last 24 hours of logs
 # azcopy will not overwrite the log files on the blob store as we've specified the sync command
 
-# NOTE, if you want to change the lookback peroid you can do so by changing the CreationTime value. 
-# Beware that if you set this value lower than the logman options you could delete the LIVE file and that could have an impact on logging.
+# If you want to change the lookback period you can do so by changing the CreationTime value. 
+# Beware that if you set this value lower than the logman options you could mark the LIVE file for deletion once the new file is created and that could have an impact on logging.
+# 
+# It is best to keep at minimum (logman time interval)*2 files back so you can ensure that you're not removing the live log file.
+# Example, if you are creating a new log file evey hour, you should keep 2 hours of data (preferably more)
 # 
 # Examples:
 # Leave the last 2 hours of logs

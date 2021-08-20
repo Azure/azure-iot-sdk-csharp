@@ -13,20 +13,21 @@ Instructions on how to create a trace session that is started on boot and will a
 1. Create a new Azure Storage account, or use an existing one
 2. Create container for log files
 3. Generate SAS Token
-   * Make sure it has READ and WRITE
+   * Make sure it has READ, WRITE, and CREATE permissions
    * Make sure the SAS token expiry is long enough to capture the failure scenario
 4. Copy azcopy to the **remote machine** (c:\azcopy in this example)
 5. Copy the [iot_providers.txt](iot_providers.txt) and [IotTraceScheduledTask.ps1](IotTraceScheduledTask.ps1) files to the **remote machine** (c:\azcopy in this example)
 6. Edit the IotTraceScheduledTask.ps1 variables on the **remote machine**
     * There will be instructions in the file
 7. Execute the following logman commands on the **remote machine**
-    * `logman create trace autosession\IotTrace -pf c:\azcopy\iot_providers.txt -o c:\azcopy\iotlogs\iot.etl -cnf 01:00:00 -v mmddhhmm`
+    * `logman create trace IotTrace -pf c:\azcopy\iot_providers.txt -o c:\azcopy\iotlogs\iot.etl -cnf 01:00:00 -v mmddhhmm`
+    * `logman start IotTrace`
 8. Execute the folloing schtasks command on the **remote machine**
     * This command runs daily see [this page](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-create) for more examples
-    * Change the `/st 22:00` to be a proper time to upload
+    * Change `/st 22:00` to be a proper time to upload
+    * `schtasks /create /tn StartLogMan /tr "logman start IotTrace" /sc onstart /ru system`
     * `schtasks /create /sc DAILY /tn IotTraceUpload /tr "powershell.exe -ExecutionPolicy Bypass -File c:\azcopy\IotTraceScheduledTask.ps1" /ru system /st 22:00`
-9. Reboot the machine
-    * This has to be completed or the logman session won't run
+
 
 > NOTE The `IotTraceScheduledTask.ps1` file was designed with a daily upload in mind. You can review the file for instructions on how to modify the commands to handle a different scheduling type.
 
