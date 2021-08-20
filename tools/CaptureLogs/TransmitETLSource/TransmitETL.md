@@ -66,7 +66,7 @@ logman create trace IotTrace -rt -pf .\iot_providers.txt
 ## Additional Configuration
 
 ### Use ApplicationInsights.config
-By default the tool will use a user supplied connection string 
+By default the tool will use a user supplied connection string. A more secure and configurable option would be to create and use your ApplicationInsights.config
 
 
 **Example for using a config file**

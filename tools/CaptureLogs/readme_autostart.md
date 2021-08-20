@@ -2,10 +2,10 @@
 Instructions on how to create a trace session that is started on boot and will automatically upload the files using a scheduled task.
 
 ## Prerequisites
-* [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest) from the GitHub page
-* [Azure Storage Explorer]
+* [Azure Storage Explorer](https://docs.microsoft.com/en-us/azure/vs-azure-tools-storage-manage-with-storage-explorer?tabs=windows)
 * Azure Storage Account
 * SAS Token for Storage Account
+* [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest) from the GitHub page
 * Elevated command prompt
 
 
@@ -27,7 +27,7 @@ Unzip the [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest
 
 ## Create a logman autosession (elevated command prompt)
 
-These commands will create and start the logman session. The `autosession\` identifier will ensure that this trace session is started on boot. This will also ensure that we're creating a new file every hour with the specified format.
+These commands will create and start the logman session. The `autosession\` identifier will ensure that this trace session is started on boot. The `-cnf ... -v mmddhhmm` options will ensure that we're creating a new file every hour with the specified format.
 
 ```
 logman create trace autosession\IotTrace -pf .\iot_providers.txt -o c:\perflogs\iot\iot.etl -cnf 01:00:00 -v mmddhhmm
@@ -49,7 +49,7 @@ $StorageContainerURI = "https://[account].blob.core.windows.net/[container]/[pat
 
 ## Create a Scheduled Task (elevated command prompt)
 
-This command creates a scheduled task that runs the upload powershell script every day at 10pm. This also runs as SYSTEM so it will run regardless of a logged in user.
+This command creates a [scheduled task](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks) that runs the upload powershell script every day at 10pm. This also runs as SYSTEM so it will run regardless of a logged in user.
 
 ```
 schtasks /create /sc DAILY /tn IotTraceUpload /tr c:\azcopy\IotTraceScheduledTask.ps1 /ru system /st 22:00 /ENABLE
