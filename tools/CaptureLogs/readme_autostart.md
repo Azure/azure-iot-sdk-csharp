@@ -8,6 +8,31 @@ Instructions on how to create a trace session that is started on boot and will a
 * [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest) from the GitHub page
 * Elevated command prompt
 
+## Steps to complete
+
+1. Create a new Azure Storage account, or use an existing one
+2. Create container for log files
+3. Generate SAS Token
+   * Make sure it has READ and WRITE
+   * Make sure the SAS token expiry is long enough to capture the failure scenario
+4. Copy azcopy to the **remote machine** (c:\azcopy in this example)
+5. Copy the [iot_providers.txt](iot_providers.txt) and [IotTraceScheduledTask.ps1](IotTraceScheduledTask.ps1) files to the **remote machine** (c:\azcopy in this example)
+6. Edit the IotTraceScheduledTask.ps1 variables on the **remote machine**
+    * There will be instructions in the file
+7. Execute the following logman commands on the **remote machine**
+    * `logman create trace autosession\IotTrace -pf c:\azcopy\iot_providers.txt -o c:\azcopy\iotlogs\iot.etl -cnf 01:00:00 -v mmddhhmm`
+8. Execute the folloing schtasks command on the **remote machine**
+    * This command runs daily see [this page](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-create) for more examples
+    * Change the `/st 22:00` to be a proper time to upload
+    * `schtasks /create /sc DAILY /tn IotTraceUpload /tr "powershell.exe -ExecutionPolicy Bypass -File c:\azcopy\IotTraceScheduledTask.ps1" /ru system /st 22:00`
+9. Reboot the machine
+    * This has to be completed or the logman session won't run
+
+> NOTE The `IotTraceScheduledTask.ps1` file was designed with a daily upload in mind. You can review the file for instructions on how to modify the commands to handle a different scheduling type.
+
+## Create Azure Storage Account
+
+See [Create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) for instructions.
 
 ## Install Azure Storage Explorer
 
@@ -32,7 +57,7 @@ Unzip the [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest
 These commands will create and start the logman session. The `autosession\` identifier will ensure that this trace session is started on boot. The `-cnf ... -v mmddhhmm` options will ensure that we're creating a new file every hour with the specified format.
 
 ```
-logman create trace autosession\IotTrace -pf .\iot_providers.txt -o c:\perflogs\iot\iot.etl -cnf 01:00:00 -v mmddhhmm
+logman create trace autosession\IotTrace -pf c:\azcopy\iot_providers.txt -o c:\azcopy\iotlogs\iot.etl -cnf 01:00:00 -v mmddhhmm
 logman start IotTrace -ets
 ```
 
@@ -57,8 +82,14 @@ $combinedURI = "$StorageContainerURI`?$SASToken"
 
 This command creates a [scheduled task](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks) that runs the upload powershell script every day at 10pm. This also runs as SYSTEM so it will run regardless of a logged in user.
 
+### Every day at 10:00pm
 ```
 schtasks /create /sc DAILY /tn IotTraceUpload /tr "powershell.exe -ExecutionPolicy Bypass -File c:\azcopy\IotTraceScheduledTask.ps1" /ru system /st 22:00
+```
+
+### Every 3 hours
+```
+schtasks /create /sc HOURLY /mo 3 /tn IotTraceUpload /tr "powershell.exe -ExecutionPolicy Bypass -File c:\azcopy\IotTraceScheduledTask.ps1" /ru system
 ```
 
 ## IotTraceScheduledTask.ps1
