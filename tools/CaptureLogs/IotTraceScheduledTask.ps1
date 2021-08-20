@@ -67,5 +67,5 @@ Write-Host "azcopy completed."
 # Get-ChildItem $ETLLogs -Filter *.etl | Where-Object {-not $_.PsIsContainer} | Where-Object {$_.CreationTime.TotalMinutes -gt 15} | Remove-Item -Force
 
 Write-Host "Removing previous 24 hours of logs." 
-Get-ChildItem $ETLLogs -Filter *.etl | Where-Object {-not $_.PsIsContainer} | Where-Object { $now = Date; $file = $_.CreationTime; $ts = New-TimeSpan -Start $file -End $now; $ts.TotalHours -gt 24} | Remove-Item -Force
+Get-ChildItem $ETLLogs -Filter *.etl | Where-Object {-not $_.PsIsContainer} | Where-Object { $now = Get-Date; $file = $_.CreationTime; $ts = New-TimeSpan -Start $file -End $now; $ts.TotalHours -gt 24} | Remove-Item -Force
 Write-Host "Previous 24 hours of logs removed." 

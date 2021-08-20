@@ -8,7 +8,7 @@ Instructions on how to create a trace session that is started on boot and will a
 * [azcopy](https://github.com/Azure/azure-storage-azcopy/releases/latest) from the GitHub page
 * Elevated command prompt
 
-## Steps to complete
+## Steps to enable logging
 
 1. Create a new Azure Storage account, or use an existing one
 2. Create a container for log files
@@ -27,6 +27,16 @@ Instructions on how to create a trace session that is started on boot and will a
     * Change `/st 22:00` to be a proper time to upload
     * `schtasks /create /tn StartLogMan /tr "logman start IotTrace" /sc onstart /ru system`
     * `schtasks /create /sc DAILY /tn IotTraceUpload /tr "powershell.exe -ExecutionPolicy Bypass -File c:\azcopy\IotTraceScheduledTask.ps1" /ru system /st 22:00`
+
+## Steps to disable logging
+
+1. Stop the logman trace
+    * `logman stop IotTrace`
+    * `logman delete IotTrace`
+2. Delete the two scheduled tasks
+   * `schtasks /delete /tn StartLogMan /F`
+   * `schtasks /delete /tn IotTraceUpload /F`
+3. Delete files in azcopy folder
 
 
 > NOTE The `IotTraceScheduledTask.ps1` file was designed with a daily upload in mind. You can review the file for instructions on how to modify the commands to handle a different scheduling type.
