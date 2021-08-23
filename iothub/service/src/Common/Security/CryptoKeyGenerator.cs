@@ -1,17 +1,20 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Linq;
 using System;
 using System.Text;
+using System.Security.Cryptography;
+
+#if NET451 || NET472
+
+using System.Web.Security;
+
+#endif
 
 #if !NET451
 
-using System.Security.Cryptography;
+using System.Linq;
 
-#else
-    using System.Web.Security;
-    using System.Security.Cryptography;
 #endif
 
 namespace Microsoft.Azure.Devices.Common
@@ -21,9 +24,9 @@ namespace Microsoft.Azure.Devices.Common
     /// </summary>
     static public class CryptoKeyGenerator
     {
-#if NET451
-        const int DefaultPasswordLength = 16;
-        const int GuidLength = 16;
+#if NET451 || NET472
+        private const int DefaultPasswordLength = 16;
+        private const int GuidLength = 16;
 #endif
 
         /// <summary>
@@ -38,20 +41,16 @@ namespace Microsoft.Azure.Devices.Common
         /// <returns>Byte array representing the key.</returns>
         public static byte[] GenerateKeyBytes(int keySize)
         {
-#if !NET451
-            var keyBytes = new byte[keySize];
-            using (var cyptoProvider = RandomNumberGenerator.Create())
-            {
-                while (keyBytes.Contains(byte.MinValue))
-                {
-                    cyptoProvider.GetBytes(keyBytes);
-                }
-            }
+#if NET451
+            byte[] keyBytes = new byte[keySize];
+            using var cyptoProvider = new RNGCryptoServiceProvider();
+            cyptoProvider.GetNonZeroBytes(keyBytes);
 #else
-            var keyBytes = new byte[keySize];
-            using (var cyptoProvider = new RNGCryptoServiceProvider())
+            byte[] keyBytes = new byte[keySize];
+            using var cyptoProvider = RandomNumberGenerator.Create();
+            while (keyBytes.Contains(byte.MinValue))
             {
-                cyptoProvider.GetNonZeroBytes(keyBytes);
+                cyptoProvider.GetBytes(keyBytes);
             }
 #endif
             return keyBytes;
@@ -67,19 +66,18 @@ namespace Microsoft.Azure.Devices.Common
             return Convert.ToBase64String(GenerateKeyBytes(keySize));
         }
 
-#if NET451
+#if NET451 || NET472
         /// <summary>
         /// Generate a hexadecimal key of the specified size.
         /// </summary>
         /// <param name="keySize">Desired key size.</param>
-        /// <returns>A generated hexadecimal key.</returns>        
+        /// <returns>A generated hexadecimal key.</returns>
         public static string GenerateKeyInHex(int keySize)
         {
-            var keyBytes = new byte[keySize];
-            using (var cyptoProvider = new RNGCryptoServiceProvider())
-            {
-                cyptoProvider.GetNonZeroBytes(keyBytes);
-            }
+            byte[] keyBytes = new byte[keySize];
+            using var cyptoProvider = new RNGCryptoServiceProvider();
+            cyptoProvider.GetNonZeroBytes(keyBytes);
+
             return BitConverter.ToString(keyBytes).Replace("-", "");
         }
 
@@ -90,20 +88,28 @@ namespace Microsoft.Azure.Devices.Common
         public static Guid GenerateGuid()
         {
             byte[] bytes = new byte[GuidLength];
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(bytes);
-            }
+            using var rng = new RNGCryptoServiceProvider();
+            rng.GetBytes(bytes);
 
-            var time = BitConverter.ToUInt32(bytes, 0);
-            var time_mid = BitConverter.ToUInt16(bytes, 4);
-            var time_hi_and_ver = BitConverter.ToUInt16(bytes, 6);
-            time_hi_and_ver = (ushort)((time_hi_and_ver | 0x4000) & 0x4FFF);
+            uint time = BitConverter.ToUInt32(bytes, 0);
+            ushort timeMid = BitConverter.ToUInt16(bytes, 4);
+            ushort timeHiAndVer = BitConverter.ToUInt16(bytes, 6);
+            timeHiAndVer = (ushort)((timeHiAndVer | 0x4000) & 0x4FFF);
 
             bytes[8] = (byte)((bytes[8] | 0x80) & 0xBF);
 
-            return new Guid(time, time_mid, time_hi_and_ver, bytes[8], bytes[9],
-                bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
+            return new Guid(
+                time,
+                timeMid,
+                timeHiAndVer,
+                bytes[8],
+                bytes[9],
+                bytes[10],
+                bytes[11],
+                bytes[12],
+                bytes[13],
+                bytes[14],
+                bytes[15]);
         }
 
         /// <summary>
@@ -123,7 +129,7 @@ namespace Microsoft.Azure.Devices.Common
         /// <returns>A generated password.</returns>
         public static string GeneratePassword(int length, bool base64Encoding)
         {
-            var password = Membership.GeneratePassword(length, length / 2);
+            string password = Membership.GeneratePassword(length, length / 2);
             if (base64Encoding)
             {
                 password = Convert.ToBase64String(Encoding.UTF8.GetBytes(password));

@@ -151,6 +151,7 @@
 
   <!-- net472 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Web" Version="4.0.0.0" />
     <PackageReference Include="System.Net.Requests" Version="4.3.0" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
