@@ -127,6 +127,16 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
+            // While retrieving the telemetry value from the collection, a simple dictionary indexer should work.
+            // While retrieving the property value from the collection:
+            // 1. A property collection constructed by the client application - can be retrieved using dictionary indexer.
+            // 2. Client property received through writable property update callbacks - stored internally as a WritableClientProperty.
+            // 3. Client property returned through GetClientProperties:
+            //  a. Writable property update request received - stored internally as a WritableClientProperty.
+            //  b. Client reported properties sent by the client application in response to writable property update requests - stored as a JSON object
+            //      and needs to be converted to an IWritablePropertyResponse implementation using the payload serializer.
+            //  c. Client reported properties sent by the client application - stored as a JSON object
+            //      and needs to be converted to the expected type using the payload serializer.
             if (Collection.ContainsKey(key))
             {
                 object retrievedPropertyValue = Collection[key];
@@ -138,9 +148,8 @@ namespace Microsoft.Azure.Devices.Client
                     return true;
                 }
 
+                // Case 1:
                 // If the object is of type T or can be cast to type T, go ahead and return it.
-                // This is the case where the collection has been constructed by the client application
-                // with each object in the required type.
                 if (TryCast(retrievedPropertyValue, out value))
                 {
                     return true;
@@ -148,18 +157,13 @@ namespace Microsoft.Azure.Devices.Client
 
                 try
                 {
-                    // For the cases where the required property was not added to the collection by the client application:
-                    // 1. It is a writable property update request stored as a WritableClientProperty. The required value is then WritableClientProperty.Value.
-                    // 2. It is a reported property ack for a writable property update request, stored as an IWritablePropertyResponse implementation.
-                    // 3. It is a reported property constructed by the client SDK (getClientProperties).
-                    //    It is stored as a JSON object and it needs to be converted to the expected type using the payload serializer.
-
                     try
                     {
+                        // Case 2, 3a:
                         // Check if the retrieved value is a writable property update request
                         if (retrievedPropertyValue is WritableClientProperty writableClientProperty)
                         {
-                            var writableClientPropertyValue = writableClientProperty.Value;
+                            object writableClientPropertyValue = writableClientProperty.Value;
 
                             // If the object is of type T or can be cast to type T, go ahead and return it.
                             if (TryCast(writableClientPropertyValue, out value))
@@ -180,6 +184,7 @@ namespace Microsoft.Azure.Devices.Client
 
                     try
                     {
+                        // Case 3b:
                         // Check if the retrieved value is a writable property update acknowledgment
                         var newtonsoftWritablePropertyResponse = Convention.PayloadSerializer.ConvertFromObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
 
@@ -213,6 +218,7 @@ namespace Microsoft.Azure.Devices.Client
                         // In case of an exception ignore it and continue.
                     }
 
+                    // Case 3c:
                     // If the value is neither a writable property nor can be cast to <T> directly, we need to try to convert it using the serializer.
                     // If it can be successfully converted, go ahead and return it.
                     value = Convention.PayloadSerializer.ConvertFromObject<T>(retrievedPropertyValue);
