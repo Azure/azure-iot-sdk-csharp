@@ -224,6 +224,12 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
+                    // For the cases where the required property was not added to the collection by the client application:
+                    // 1. It is a writable property update request stored as a WritableClientProperty. The required value is then WritableClientProperty.Value.
+                    // 2. It is a reported property ack for a writable property update request, stored as an IWritablePropertyResponse implementation.
+                    // 3. It is a reported property constructed by the client SDK (getClientProperties).
+                    //    It is stored as a JSON object and it needs to be converted to the expected type using the payload serializer.
+
                     // If the ClientPropertyCollection was constructed by the SDK (eg. when retrieving the client properties)
                     // then the componentProperties are retrieved as the json object that is defined in the PayloadConvention.
                     // The required property value then needs to be deserialized accordingly.
