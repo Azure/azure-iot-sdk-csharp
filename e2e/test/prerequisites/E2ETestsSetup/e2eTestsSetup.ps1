@@ -701,7 +701,6 @@ az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-DEVICE-CONN-STR
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-MODULE-CONN-STRING" --value $iotHubSasBasedModuleConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "PNP-TC-DEVICE-CONN-STRING" --value $temperatureControllerSampleDeviceConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "PNP-THERMOSTAT-DEVICE-CONN-STRING" --value $thermostatSampleDeviceConnectionString --output none
-az keyvault secret set --vault-name $keyVaultName --name "PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE" --value "csharp_devices_list.csv" --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-SAS-KEY" --value $iothubownerSasPrimaryKey --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-SAS-KEY-NAME" --value $iothubownerSasPolicy --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID" --value $symmetricKeySampleEnrollmentRegistrationId --output none
