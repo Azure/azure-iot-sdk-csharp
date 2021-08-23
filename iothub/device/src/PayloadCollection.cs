@@ -139,6 +139,8 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 // If the object is of type T or can be cast to type T, go ahead and return it.
+                // This is the case where the collection has been constructed by the client application
+                // with each object in the required type.
                 if (TryCast(retrievedPropertyValue, out value))
                 {
                     return true;
@@ -146,9 +148,12 @@ namespace Microsoft.Azure.Devices.Client
 
                 try
                 {
-                    // There are some special cases when dealing with writable property values:
-                    // writable property update requests are stored internally as WritableClientProperty.
-                    // writable property update acknowledgments are stored internally as IWritablePropertyResponse implementations.
+                    // For the cases where the required property was not added to the collection by the client application:
+                    // 1. It is a writable property update request stored as a WritableClientProperty. The required value is then WritableClientProperty.Value.
+                    // 2. It is a reported property ack for a writable property update request, stored as an IWritablePropertyResponse implementation.
+                    // 3. It is a reported property constructed by the client SDK (getClientProperties).
+                    //    It is stored as a JSON object and it needs to be converted to the expected type using the payload serializer.
+
                     try
                     {
                         // Check if the retrieved value is a writable property update request
