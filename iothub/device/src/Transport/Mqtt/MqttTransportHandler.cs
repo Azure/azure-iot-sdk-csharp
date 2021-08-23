@@ -977,7 +977,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
         }
 
-        public override async Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override async Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();

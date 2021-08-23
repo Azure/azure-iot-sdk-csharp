@@ -403,7 +403,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
-        public override Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             throw new NotImplementedException("Property operations are not supported over HTTP. Please use MQTT protocol instead.");
         }

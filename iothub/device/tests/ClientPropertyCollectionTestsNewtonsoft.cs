@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanGetValue()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
 
             // act, assert
 
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanGetValueWithComponent()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
             // act, assert
 
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanAddSimpleWritablePropertyAndGetBack()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWritablePropertyToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionWritablePropertyToRoundTrip, DefaultPayloadConvention.Instance);
 
             // act
             clientProperties.TryGetValue(StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanAddWritablePropertyWithComponentAndGetBack()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWritablePropertyWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionWritablePropertyWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
             // act
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanGetComponentIdentifier()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
             // act
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueNotFound()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue("thisPropertyDoesNotExist", out int outIntValue);
@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueNotFound()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, "thisPropertyDoesNotExist", out int outIntValue);
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
         {
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
 
             bool isValueRetrieved = clientProperties.TryGetValue(StringPropertyName, out int outIntValue);
             isValueRetrieved.Should().BeFalse();
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueCouldNotBeDeserialized()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, StringPropertyName, out int outIntValue);
@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfNotAComponent()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
             string incorrectlyMappedComponentName = MapPropertyName;
             string incorrectlyMappedComponentPropertyName = "key1";
 

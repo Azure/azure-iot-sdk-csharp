@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                return await InnerHandler.GetPropertiesAsync(PayloadConvention, cancellationToken).ConfigureAwait(false);
+                return await InnerHandler.GetClientPropertiesAsync(PayloadConvention, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
             {
                 // convert a TwinCollection to PropertyCollection
-                var propertyCollection = ClientPropertyCollection.FromTwinCollection(twinCollection, PayloadConvention);
+                var propertyCollection = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(twinCollection, PayloadConvention);
                 callback.Invoke(propertyCollection, userContext);
 
                 return TaskHelpers.CompletedTask;

@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
         /// <returns>A new instance of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
-        internal static ClientPropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
+        internal static ClientPropertyCollection WritablePropertyUpdateRequestsFromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
         {
             if (twinCollection == null)
             {
