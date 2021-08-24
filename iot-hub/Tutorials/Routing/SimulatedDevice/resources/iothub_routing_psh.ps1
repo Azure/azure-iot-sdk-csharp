@@ -14,7 +14,7 @@ $iotHubConsumerGroup = "ContosoConsumers"
 $containerName = "contosoresults"
 
 # Create the resource group to be used 
-#   for all resources for this tutorial.
+#   for all resources for this tutorial
 New-AzResourceGroup -Name $resourceGroup -Location $location
 
 # The IoT hub name must be globally unique, 
