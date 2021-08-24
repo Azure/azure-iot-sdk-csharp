@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Samples
             'd',
             "DevicePrefix",
             Required = false,
-            Default = "RegistryManagerSample-",
+            Default = "RegistryManagerSample_",
             HelpText = "The prefix to use when creating devices.")]
         public string DevicePrefix { get; set; }
     }

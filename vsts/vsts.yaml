@@ -53,6 +53,10 @@ jobs:
           IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
           DPS_IDSCOPE: $(DPS-IDSCOPE)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          # PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE is a variable configured on the pipeline. The possible values are: csharp_devices_list.csv, csharp_samples_devices_list.csv.
+          # The value of this variable determines whether to delete devices created by the sample or e2e tests.
+          # csharp_devices_list.csv contains the prefixes of devices created by e2e tests.
+          # csharp_samples_devices_list.csv contains the prefixes of devices created by samples.
           PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
           FAR_AWAY_IOTHUB_CONNECTION_STRING: $(FAR-AWAY-IOTHUB-CONNECTION-STRING)
@@ -104,6 +108,10 @@ jobs:
           IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
           DPS_IDSCOPE: $(DPS-IDSCOPE)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          # PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE is a variable configured on the pipeline. The possible values are: csharp_devices_list.csv, csharp_samples_devices_list.csv.
+          # The value of this variable determines whether to delete devices created by the sample or e2e tests.
+          # csharp_devices_list.csv contains the prefixes of devices created by e2e tests.
+          # csharp_samples_devices_list.csv contains the prefixes of devices created by samples.
           PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
           FAR_AWAY_IOTHUB_CONNECTION_STRING: $(FAR-AWAY-IOTHUB-CONNECTION-STRING)
