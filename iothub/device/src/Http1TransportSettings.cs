@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class Http1TransportSettings : ITransportSettings
     {
-        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Http1TransportSettings"/> class.
@@ -40,6 +40,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The time to wait for a receive operation. The default value is 1 minute.
         /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public TimeSpan DefaultReceiveTimeout => s_defaultOperationTimeout;
 
         /// <summary>

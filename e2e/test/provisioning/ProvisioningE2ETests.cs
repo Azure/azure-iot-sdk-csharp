@@ -470,9 +470,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
             }
-            catch (ProvisioningTransportException ex) when (ex.InnerException is SocketException && ((SocketException) ex.InnerException).SocketErrorCode == SocketError.TimedOut)
+            catch (OperationCanceledException)
             {
-                // The expected exception is a bit different in AMQP compared to MQTT/HTTPS
                 return; // expected exception was thrown, so exit the test
             }
 
