@@ -55,6 +55,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             TimeSpan timeout)
         {
+            if (TimeSpan.Zero.Equals(timeout))
+            {
+                throw new OperationCanceledException();
+            }
+
             return await RegisterAsync(message, timeout, CancellationToken.None).ConfigureAwait(false);
         }
 

@@ -156,8 +156,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string eTag,
             DeviceCapabilities capabilities)
         {
-            /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the
-                                                    provided parameters in JSON is not valid.] */
             if (attestation == null)
             {
                 throw new ProvisioningServiceClientException("Service respond an individualEnrollment without attestation.");
@@ -189,8 +187,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The <code>string</code> with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
-            string jsonPrettyPrint = Newtonsoft.Json.JsonConvert.SerializeObject(this, Formatting.Indented);
-            return jsonPrettyPrint;
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
 
         /// <summary>
@@ -201,46 +198,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="ArgumentException">if the provided string does not fit the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId")]
-        public string RegistrationId
-        {
-            get
-            {
-                return _registrationId;
-            }
-
-            private set
-            {
-                _registrationId = value;
-            }
-        }
-
-        private string _registrationId;
+        public string RegistrationId { get; private set; }
 
         /// <summary>
         /// Desired IoT Hub device Id (optional).
         /// </summary>
         [JsonProperty(PropertyName = "deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string DeviceId
-        {
-            get
-            {
-                return _deviceId;
-            }
-
-            set
-            {
-                if (value == null)
-                {
-                    _deviceId = null;
-                }
-                else
-                {
-                    _deviceId = value;
-                }
-            }
-        }
-
-        private string _deviceId;
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Current registration state.
@@ -260,19 +224,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonIgnore]
         public Attestation Attestation
         {
-            get
-            {
-                return _attestation.GetAttestation();
-            }
+            get => _attestation.GetAttestation();
 
             set
             {
-                if (value is X509Attestation)
+                if (value is X509Attestation attestation)
                 {
-                    if ((((X509Attestation)value ?? throw new ArgumentNullException(nameof(value))).ClientCertificates == null) &&
-                        (((X509Attestation)value).CAReferences == null))
+                    if ((attestation ?? throw new ArgumentNullException(nameof(value))).ClientCertificates == null
+                        && attestation.CAReferences == null)
                     {
-                        throw new ArgumentNullException($"{nameof(value)} do not contains client certificate or CA reference.");
+                        throw new ArgumentNullException(nameof(value), $"Value does not contain client certificate or CA reference.");
                     }
                 }
 

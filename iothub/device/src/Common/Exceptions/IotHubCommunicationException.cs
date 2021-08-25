@@ -7,8 +7,16 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when an attempt to communicate with the IoT Hub service fails.
+    /// This exception is thrown when an attempt to communicate with the IoT hub service fails due to transient
+    /// network errors after exhausting all the retries based on the retry policy set on the client or
+    /// due to operation timeouts.
     /// </summary>
+    /// <remarks>
+    /// By default, the SDK indefinitely retries dropped connections, unless the retry policy is overridden.
+    /// For more information on the SDK's retry policy and how to override it, see <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/master/iothub/device/devdoc/retrypolicy.md"/>.
+    /// When the exception is thrown due to operation timeouts, the inner exception will have OperationCanceledException.
+    /// Retrying operations failed due to timeouts could resolve the error.
+    /// </remarks>
     [Serializable]
     public sealed class IotHubCommunicationException : IotHubException
     {
