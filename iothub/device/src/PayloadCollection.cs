@@ -132,10 +132,11 @@ namespace Microsoft.Azure.Devices.Client
             // 1. A property collection constructed by the client application - can be retrieved using dictionary indexer.
             // 2. Client property received through writable property update callbacks - stored internally as a WritableClientProperty.
             // 3. Client property returned through GetClientProperties:
-            //  a. Writable property update request received - stored internally as a WritableClientProperty.
-            //  b. Client reported properties sent by the client application in response to writable property update requests - stored as a JSON object
+            //  a. Client reported properties sent by the client application in response to writable property update requests - stored as a JSON object
             //      and needs to be converted to an IWritablePropertyResponse implementation using the payload serializer.
-            //  c. Client reported properties sent by the client application - stored as a JSON object
+            //  b. Client reported properties sent by the client application - stored as a JSON object
+            //      and needs to be converted to the expected type using the payload serializer.
+            //  c. Writable property update request received - stored as a JSON object
             //      and needs to be converted to the expected type using the payload serializer.
             if (Collection.ContainsKey(key))
             {
@@ -150,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 // Case 1:
                 // If the object is of type T or can be cast to type T, go ahead and return it.
-                if (TryCast(retrievedPropertyValue, out value))
+                if (ObjectCastHelpers.TryCast(retrievedPropertyValue, out value))
                 {
                     return true;
                 }
@@ -159,14 +160,14 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     try
                     {
-                        // Case 2, 3a:
+                        // Case 2:
                         // Check if the retrieved value is a writable property update request
                         if (retrievedPropertyValue is WritableClientProperty writableClientProperty)
                         {
                             object writableClientPropertyValue = writableClientProperty.Value;
 
                             // If the object is of type T or can be cast to type T, go ahead and return it.
-                            if (TryCast(writableClientPropertyValue, out value))
+                            if (ObjectCastHelpers.TryCast(writableClientPropertyValue, out value))
                             {
                                 return true;
                             }
@@ -184,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client
 
                     try
                     {
-                        // Case 3b:
+                        // Case 3a:
                         // Check if the retrieved value is a writable property update acknowledgment
                         var newtonsoftWritablePropertyResponse = Convention.PayloadSerializer.ConvertFromObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
 
@@ -203,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client
                         var writablePropertyValue = newtonsoftWritablePropertyResponse.Value;
 
                         // If the object is of type T or can be cast to type T, go ahead and return it.
-                        if (TryCast(writablePropertyValue, out value))
+                        if (ObjectCastHelpers.TryCast(writablePropertyValue, out value))
                         {
                             return true;
                         }
@@ -218,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client
                         // In case of an exception ignore it and continue.
                     }
 
-                    // Case 3c:
+                    // Case 3b, 3c:
                     // If the value is neither a writable property nor can be cast to <T> directly, we need to try to convert it using the serializer.
                     // If it can be successfully converted, go ahead and return it.
                     value = Convention.PayloadSerializer.ConvertFromObject<T>(retrievedPropertyValue);
@@ -265,19 +266,6 @@ namespace Microsoft.Azure.Devices.Client
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        private static bool TryCast<T>(object objectToCast, out T value)
-        {
-            if (objectToCast is T valueRef
-                || NumericHelpers.TryCastNumericTo(objectToCast, out valueRef))
-            {
-                value = valueRef;
-                return true;
-            }
-
-            value = default;
-            return false;
         }
     }
 }
