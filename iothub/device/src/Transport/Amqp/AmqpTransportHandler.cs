@@ -523,7 +523,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Convention-based operations
 
-        public override Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             throw new NotImplementedException("This operation is currently not supported over AMQP, please use MQTT protocol instead. " +
                 "Note that you can still retrieve a client's properties using DeviceClient.GetTwinAsync(CancellationToken cancellationToken) or " +
