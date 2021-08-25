@@ -3,6 +3,32 @@
 ## Windows
 On Windows logman or PerfView can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/workflow/debugging/libraries/windows-instructions.md#traces
 
+We have provided the following convenience scripts for log collection using `logman`.
+
+1. Launch Powershell with administrator privileges.
+2. To start capturing traces, invoke `iot_startlog.ps1`.
+   1. Pass in the following required parameters:
+      1. `-TraceName` - the name of the event trace data collector.  This can be any name that will be used to identity the collector created.
+      2. `-Output` - the output log file that will be created. This should be a `.etl` file.
+      3. `-ProviderFile` - The file listing multiple Event Trace providers to enable. The file should be a text file containing one provider per line.
+        The Azure IoT SDK providers file is present [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/tools/CaptureLogs/iot_providers.txt). The providers list with their corresponding package details are present [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs#azure-iot-sdk-providers).
+
+  Sample usage:
+
+  To create an event trace data collector called `IotTrace`, using the file `iot_providers.txt` for the list of event providers to be enabled, putting the results in a file `iot.etl` in the same folder from where the command is invoked, type:
+  ```powersehll
+  .\iot_startlog.ps1 -Output iot.etl -ProviderFile .\iot_providers.txt -TraceName IotTrace
+  ```
+
+3. To stop capturing traces, invoke `iot_stoplog.ps1`.
+   1. Pass in the following required parameter:
+      1. `-TraceName` - the name of the event trace data collector. Same as the one used while starting trace capture.
+
+  Sample usage:
+  ```powersehll
+   .\iot_stoplog.ps1 -TraceName IotTrace
+  ```
+
 ## Linux
 On Linux and OSX LTTNG and perfcollect can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/project/linux-performance-tracing.md
 
