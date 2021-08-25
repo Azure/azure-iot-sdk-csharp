@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -188,6 +189,17 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
+            // While retrieving the property value from the collection:
+            // 1. A property collection constructed by the client application - can be retrieved using dictionary indexer.
+            // 2. Client property received through writable property update callbacks - stored internally as a WritableClientProperty.
+            // 3. Client property returned through GetClientProperties:
+            //  a. Client reported properties sent by the client application in response to writable property update requests - stored as a JSON object
+            //      and needs to be converted to an IWritablePropertyResponse implementation using the payload serializer.
+            //  b. Client reported properties sent by the client application - stored as a JSON object
+            //      and needs to be converted to the expected type using the payload serializer.
+            //  c. Writable property update request received - stored as a JSON object
+            //      and needs to be converted to the expected type using the payload serializer.
+
             if (Contains(componentName, propertyName))
             {
                 object componentProperties = Collection[componentName];
@@ -211,21 +223,44 @@ namespace Microsoft.Azure.Devices.Client
                                 return true;
                             }
 
+                            // Case 1:
                             // If the object is of type T or can be cast to type T, go ahead and return it.
                             if (dictionaryElement is T valueRef
-                                || NumericHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
+                                || ObjectCastHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
                             {
                                 propertyValue = valueRef;
                                 return true;
+                            }
+
+                            try
+                            {
+                                // Case 2:
+                                // Check if the retrieved value is a writable property update request
+                                if (dictionaryElement is WritableClientProperty writableClientProperty)
+                                {
+                                    object writableClientPropertyValue = writableClientProperty.Value;
+
+                                    // If the object is of type T or can be cast to type T, go ahead and return it.
+                                    if (ObjectCastHelpers.TryCast(writableClientPropertyValue, out propertyValue))
+                                    {
+                                        return true;
+                                    }
+
+                                    // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
+                                    // If it can be successfully converted, go ahead and return it.
+                                    propertyValue = Convention.PayloadSerializer.ConvertFromObject<T>(writableClientPropertyValue);
+                                    return true;
+                                }
+                            }
+                            catch
+                            {
+                                // In case of an exception ignore it and continue.
                             }
                         }
                     }
                 }
                 else
                 {
-                    // If the ClientPropertyCollection was constructed by the SDK (eg. when retrieving the client properties)
-                    // then the componentProperties are retrieved as the json object that is defined in the PayloadConvention.
-                    // The required property value then needs to be deserialized accordingly.
                     try
                     {
                         // First verify that the retrieved dictionary contains the component identifier { "__t": "c" }.
@@ -235,6 +270,45 @@ namespace Microsoft.Azure.Devices.Client
                             .TryGetNestedObjectValue(componentProperties, ConventionBasedConstants.ComponentIdentifierKey, out string componentIdentifierValue)
                             && componentIdentifierValue == ConventionBasedConstants.ComponentIdentifierValue)
                         {
+                            Convention.PayloadSerializer.TryGetNestedObjectValue(componentProperties, propertyName, out object retrievedPropertyValue);
+
+                            try
+                            {
+                                // Case 3a:
+                                // Check if the retrieved value is a writable property update acknowledgment
+                                var newtonsoftWritablePropertyResponse = Convention.PayloadSerializer.ConvertFromObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
+
+                                if (typeof(IWritablePropertyResponse).IsAssignableFrom(typeof(T)))
+                                {
+                                    // If T is IWritablePropertyResponse the property value should be of type IWritablePropertyResponse as defined in the PayloadSerializer.
+                                    // We'll convert the json object to NewtonsoftJsonWritablePropertyResponse and then convert it to the appropriate IWritablePropertyResponse object.
+                                    propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyResponse(
+                                        newtonsoftWritablePropertyResponse.Value,
+                                        newtonsoftWritablePropertyResponse.AckCode,
+                                        newtonsoftWritablePropertyResponse.AckVersion,
+                                        newtonsoftWritablePropertyResponse.AckDescription);
+                                    return true;
+                                }
+
+                                var writablePropertyValue = newtonsoftWritablePropertyResponse.Value;
+
+                                // If the object is of type T or can be cast to type T, go ahead and return it.
+                                if (ObjectCastHelpers.TryCast(writablePropertyValue, out propertyValue))
+                                {
+                                    return true;
+                                }
+
+                                // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
+                                // If it can be successfully converted, go ahead and return it.
+                                propertyValue = Convention.PayloadSerializer.ConvertFromObject<T>(writablePropertyValue);
+                                return true;
+                            }
+                            catch
+                            {
+                                // In case of an exception ignore it and continue.
+                            }
+
+                            // Case 3b, 3c:
                             // Since the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
                             // If it can be successfully converted, go ahead and return it.
                             Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
@@ -275,7 +349,50 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
-                propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
+                object propertyValueAsObject = property.Value;
+
+                // Check if the property value is for a root property or a component property.
+                // A component property be a JObject and will have the "__t": "c" identifiers.
+                bool isComponentProperty = propertyValueAsObject is JObject
+                    && payloadConvention.PayloadSerializer.TryGetNestedObjectValue(propertyValueAsObject, ConventionBasedConstants.ComponentIdentifierKey, out string _);
+
+                if (isComponentProperty)
+                {
+                    var collectionDictionary = new Dictionary<string, object>();
+
+                    // If this is a component property then the collection is a JObject with each individual property as a writable property update request.
+                    var propertyValueAsJObject = (JObject)propertyValueAsObject;
+
+                    foreach (KeyValuePair<string, JToken> componentProperty in propertyValueAsJObject)
+                    {
+                        object individualPropertyValue;
+                        if (componentProperty.Key == ConventionBasedConstants.ComponentIdentifierKey)
+                        {
+                            individualPropertyValue = componentProperty.Value;
+                        }
+                        else
+                        {
+                            individualPropertyValue = new WritableClientProperty
+                            {
+                                Convention = payloadConvention,
+                                Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(componentProperty.Value)),
+                                Version = twinCollection.Version,
+                            };
+                        }
+                        collectionDictionary.Add(componentProperty.Key, individualPropertyValue);
+                    }
+                    propertyCollectionToReturn.Add(property.Key, collectionDictionary);
+                }
+                else
+                {
+                    var writableProperty = new WritableClientProperty
+                    {
+                        Convention = payloadConvention,
+                        Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(propertyValueAsObject)),
+                        Version = twinCollection.Version,
+                    };
+                    propertyCollectionToReturn.Add(property.Key, writableProperty);
+                }
             }
             // The version information is not accessible via the enumerator, so assign it separately.
             propertyCollectionToReturn.Version = twinCollection.Version;

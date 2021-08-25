@@ -6,8 +6,21 @@ using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class NumericHelpers
+    internal class ObjectCastHelpers
     {
+        internal static bool TryCast<T>(object objectToCast, out T value)
+        {
+            if (objectToCast is T valueRef
+                || TryCastNumericTo(objectToCast, out valueRef))
+            {
+                value = valueRef;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
         internal static bool TryCastNumericTo<T>(object input, out T result)
         {
             if (TryGetNumeric(input))
