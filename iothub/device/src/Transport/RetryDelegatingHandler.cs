@@ -606,7 +606,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override async Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             try
             {
@@ -617,7 +617,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            return await base.GetPropertiesAsync(payloadConvention, cancellationToken).ConfigureAwait(false);
+                            return await base.GetClientPropertiesAsync(payloadConvention, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);

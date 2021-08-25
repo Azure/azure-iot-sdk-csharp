@@ -977,7 +977,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
         }
 
-        public override async Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override async Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
@@ -993,8 +993,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                ClientTwinProperties twinProperties = JsonConvert.DeserializeObject<ClientTwinProperties>(body);
-                var properties = twinProperties.ToClientProperties(payloadConvention);
+                ClientPropertiesAsDictionary clientPropertiesAsDictionary = JsonConvert.DeserializeObject<ClientPropertiesAsDictionary>(body);
+                var properties = clientPropertiesAsDictionary.ToClientProperties(payloadConvention);
                 return properties;
             }
             catch (JsonReaderException ex)

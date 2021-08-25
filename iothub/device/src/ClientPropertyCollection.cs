@@ -256,11 +256,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
         /// </summary>
-        /// <remarks>This internal class is aware of the implementation of the TwinCollection.</remarks>
+        /// <remarks>This method is used to translate the twin desired properties into writable property update requests.
+        /// This internal class is aware of the implementation of the TwinCollection.</remarks>
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
         /// <returns>A new instance of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
-        internal static ClientPropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
+        internal static ClientPropertyCollection WritablePropertyUpdateRequestsFromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
         {
             if (twinCollection == null)
             {
@@ -282,11 +283,12 @@ namespace Microsoft.Azure.Devices.Client
             return propertyCollectionToReturn;
         }
 
-        internal static ClientPropertyCollection FromClientTwinDictionary(IDictionary<string, object> clientTwinPropertyDictionary, PayloadConvention payloadConvention)
+        // This method is used to convert the received twin into client properties (reported + desired).
+        internal static ClientPropertyCollection FromClientPropertiesAsDictionary(IDictionary<string, object> clientProperties, PayloadConvention payloadConvention)
         {
-            if (clientTwinPropertyDictionary == null)
+            if (clientProperties == null)
             {
-                throw new ArgumentNullException(nameof(clientTwinPropertyDictionary));
+                throw new ArgumentNullException(nameof(clientProperties));
             }
 
             var propertyCollectionToReturn = new ClientPropertyCollection
@@ -294,7 +296,7 @@ namespace Microsoft.Azure.Devices.Client
                 Convention = payloadConvention,
             };
 
-            foreach (KeyValuePair<string, object> property in clientTwinPropertyDictionary)
+            foreach (KeyValuePair<string, object> property in clientProperties)
             {
                 // The version information should not be a part of the enumerable ProperyCollection, but rather should be
                 // accessible through its dedicated accessor.

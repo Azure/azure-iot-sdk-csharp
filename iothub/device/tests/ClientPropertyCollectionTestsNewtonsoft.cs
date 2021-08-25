@@ -16,20 +16,32 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     // These tests test the deserialization of the service response to a ClientPropertyCollection.
     // This flow is convention aware and uses NewtonSoft.Json for deserialization.
-    // For the purpose of these tests we will create an instance of a Twin class to simulate the service response.
     public class ClientPropertyCollectionTestsNewtonsoft
     {
-        internal const string BoolPropertyName = "boolPropertyName";
-        internal const string DoublePropertyName = "doublePropertyName";
-        internal const string FloatPropertyName = "floatPropertyName";
-        internal const string IntPropertyName = "intPropertyName";
-        internal const string ShortPropertyName = "shortPropertyName";
-        internal const string StringPropertyName = "stringPropertyName";
-        internal const string ObjectPropertyName = "objectPropertyName";
-        internal const string ArrayPropertyName = "arrayPropertyName";
-        internal const string MapPropertyName = "mapPropertyName";
-        internal const string DateTimePropertyName = "dateTimePropertyName";
+        internal const string RootBoolPropertyName = "rootBoolPropertyName";
+        internal const string RootDoublePropertyName = "rootDoublePropertyName";
+        internal const string RootFloatPropertyName = "rootFloatPropertyName";
+        internal const string RootIntPropertyName = "rootIntPropertyName";
+        internal const string RootShortPropertyName = "rootShortPropertyName";
+        internal const string RootStringPropertyName = "rootStringPropertyName";
+        internal const string RootObjectPropertyName = "rootObjectPropertyName";
+        internal const string RootArrayPropertyName = "rootArrayPropertyName";
+        internal const string RootMapPropertyName = "rootMapPropertyName";
+        internal const string RootDateTimePropertyName = "rootDateTimePropertyName";
+        internal const string RootWritablePropertyName = "rootWritablePropertyName";
+
         internal const string ComponentName = "testableComponent";
+        internal const string ComponentBoolPropertyName = "componentBoolPropertyName";
+        internal const string ComponentDoublePropertyName = "componentDoublePropertyName";
+        internal const string ComponentFloatPropertyName = "componentFloatPropertyName";
+        internal const string ComponentIntPropertyName = "componentIntPropertyName";
+        internal const string ComponentShortPropertyName = "componentShortPropertyName";
+        internal const string ComponentStringPropertyName = "componentStringPropertyName";
+        internal const string ComponentObjectPropertyName = "componentObjectPropertyName";
+        internal const string ComponentArrayPropertyName = "componentArrayPropertyName";
+        internal const string ComponentMapPropertyName = "componentMapPropertyName";
+        internal const string ComponentDateTimePropertyName = "componentDateTimePropertyName";
+        internal const string ComponentWritablePropertyName = "componentWritablePropertyName";
 
         private const bool BoolPropertyValue = false;
         private const double DoublePropertyValue = 1.001;
@@ -58,8 +70,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             { "key3", s_objectPropertyValue }
         };
 
-        // Create an object that represents all of the properties as top-level properties.
-        private static readonly RootLevelProperties s_rootLevelProperties = new RootLevelProperties
+        // Create a writable property response with the expected values.
+        private static readonly IWritablePropertyResponse s_writablePropertyResponse = new NewtonsoftJsonWritablePropertyResponse(
+            propertyValue: StringPropertyValue,
+            ackCode: CommonClientResponseCodes.OK,
+            ackVersion: 2,
+            ackDescription: "testableWritablePropertyDescription");
+
+        // Create an object that represents a client instance having top-level and component-level properties.
+        private static readonly TestProperties s_testClientProperties = new TestProperties
         {
             BooleanProperty = BoolPropertyValue,
             DoubleProperty = DoublePropertyValue,
@@ -70,14 +89,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             ObjectProperty = s_objectPropertyValue,
             ArrayProperty = s_arrayPropertyValue,
             MapProperty = s_mapPropertyValue,
-            DateTimeProperty = s_dateTimePropertyValue
-        };
-
-        // Create an object that represents all of the properties as component-level properties.
-        // This adds the "__t": "c" component identifier as a part of "ComponentProperties" class declaration.
-        private static readonly ComponentLevelProperties s_componentLevelProperties = new ComponentLevelProperties
-        {
-            Properties = new ComponentProperties
+            DateTimeProperty = s_dateTimePropertyValue,
+            WritablePropertyResponse = s_writablePropertyResponse,
+            ComponentProperties = new ComponentProperties
             {
                 BooleanProperty = BoolPropertyValue,
                 DoubleProperty = DoublePropertyValue,
@@ -88,77 +102,56 @@ namespace Microsoft.Azure.Devices.Client.Test
                 ObjectProperty = s_objectPropertyValue,
                 ArrayProperty = s_arrayPropertyValue,
                 MapProperty = s_mapPropertyValue,
-                DateTimeProperty = s_dateTimePropertyValue
-            },
+                DateTimeProperty = s_dateTimePropertyValue,
+                WritablePropertyResponse = s_writablePropertyResponse,
+            }
         };
 
-        // Create a writable property response with the expected values.
-        private static readonly IWritablePropertyResponse s_writablePropertyResponse = new NewtonsoftJsonWritablePropertyResponse(
-            propertyValue: StringPropertyValue,
-            ackCode: CommonClientResponseCodes.OK,
-            ackVersion: 2,
-            ackDescription: "testableWritablePropertyDescription");
+        private static string getClientPropertiesStringResponse = JsonConvert.SerializeObject(new Dictionary<string, object> { { "reported", s_testClientProperties } });
 
-        // Create a JObject instance that represents a writable property response sent for a top-level property.
-        private static readonly JObject s_writablePropertyResponseJObject = new JObject(
-            new JProperty(StringPropertyName, JObject.FromObject(s_writablePropertyResponse)));
-
-        // Create a JObject instance that represents a writable property response sent for a component-level property.
-        // This adds the "__t": "c" component identifier to the constructed JObject.
-        private static readonly JObject s_writablePropertyResponseWithComponentJObject = new JObject(
-            new JProperty(ComponentName, new JObject(
-                new JProperty(ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue),
-                new JProperty(StringPropertyName, JObject.FromObject(s_writablePropertyResponse)))));
-
-        // The above constructed json objects are used for initializing a twin response.
-        // This is because we are using a Twin instance to simulate the service response.
-
-        private static TwinCollection collectionToRoundTrip = new TwinCollection(JsonConvert.SerializeObject(s_rootLevelProperties));
-        private static TwinCollection collectionWithComponentToRoundTrip = new TwinCollection(JsonConvert.SerializeObject(s_componentLevelProperties));
-        private static TwinCollection collectionWritablePropertyToRoundTrip = new TwinCollection(s_writablePropertyResponseJObject, null);
-        private static TwinCollection collectionWritablePropertyWithComponentToRoundTrip = new TwinCollection(s_writablePropertyResponseWithComponentJObject, null);
+        private static ClientPropertiesAsDictionary clientPropertiesAsDictionary = JsonConvert.DeserializeObject<ClientPropertiesAsDictionary>(getClientPropertiesStringResponse);
 
         [TestMethod]
         public void ClientPropertyCollectionNewtonsoft_CanGetValue()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act, assert
 
-            clientProperties.TryGetValue(StringPropertyName, out string stringOutValue);
+            clientProperties.TryGetValue(RootStringPropertyName, out string stringOutValue);
             stringOutValue.Should().Be(StringPropertyValue);
 
-            clientProperties.TryGetValue(BoolPropertyName, out bool boolOutValue);
+            clientProperties.TryGetValue(RootBoolPropertyName, out bool boolOutValue);
             boolOutValue.Should().Be(BoolPropertyValue);
 
-            clientProperties.TryGetValue(DoublePropertyName, out double doubleOutValue);
+            clientProperties.TryGetValue(RootDoublePropertyName, out double doubleOutValue);
             doubleOutValue.Should().Be(DoublePropertyValue);
 
-            clientProperties.TryGetValue(FloatPropertyName, out float floatOutValue);
+            clientProperties.TryGetValue(RootFloatPropertyName, out float floatOutValue);
             floatOutValue.Should().Be(FloatPropertyValue);
 
-            clientProperties.TryGetValue(IntPropertyName, out int intOutValue);
+            clientProperties.TryGetValue(RootIntPropertyName, out int intOutValue);
             intOutValue.Should().Be(IntPropertyValue);
 
-            clientProperties.TryGetValue(ShortPropertyName, out short shortOutValue);
+            clientProperties.TryGetValue(RootShortPropertyName, out short shortOutValue);
             shortOutValue.Should().Be(ShortPropertyValue);
 
-            clientProperties.TryGetValue(ObjectPropertyName, out CustomClientProperty objectOutValue);
+            clientProperties.TryGetValue(RootObjectPropertyName, out CustomClientProperty objectOutValue);
             objectOutValue.Id.Should().Be(s_objectPropertyValue.Id);
             objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
 
             // The two lists won't be exactly equal since TryGetValue doesn't implement nested deserialization
             // => the complex object inside the list is deserialized to a JObject.
-            clientProperties.TryGetValue(ArrayPropertyName, out List<object> arrayOutValue);
+            clientProperties.TryGetValue(RootArrayPropertyName, out List<object> arrayOutValue);
             arrayOutValue.Should().HaveSameCount(s_arrayPropertyValue);
 
             // The two dictionaries won't be exactly equal since TryGetValue doesn't implement nested deserialization
             // => the complex object inside the dictionary is deserialized to a JObject.
-            clientProperties.TryGetValue(MapPropertyName, out Dictionary<string, object> mapOutValue);
+            clientProperties.TryGetValue(RootMapPropertyName, out Dictionary<string, object> mapOutValue);
             mapOutValue.Should().HaveSameCount(s_mapPropertyValue);
 
-            clientProperties.TryGetValue(DateTimePropertyName, out DateTimeOffset dateTimeOutValue);
+            clientProperties.TryGetValue(RootDateTimePropertyName, out DateTimeOffset dateTimeOutValue);
             dateTimeOutValue.Should().Be(s_dateTimePropertyValue);
         }
 
@@ -166,43 +159,43 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanGetValueWithComponent()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act, assert
 
-            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string stringOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentStringPropertyName, out string stringOutValue);
             stringOutValue.Should().Be(StringPropertyValue);
 
-            clientProperties.TryGetValue(ComponentName, BoolPropertyName, out bool boolOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentBoolPropertyName, out bool boolOutValue);
             boolOutValue.Should().Be(BoolPropertyValue);
 
-            clientProperties.TryGetValue(ComponentName, DoublePropertyName, out double doubleOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentDoublePropertyName, out double doubleOutValue);
             doubleOutValue.Should().Be(DoublePropertyValue);
 
-            clientProperties.TryGetValue(ComponentName, FloatPropertyName, out float floatOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentFloatPropertyName, out float floatOutValue);
             floatOutValue.Should().Be(FloatPropertyValue);
 
-            clientProperties.TryGetValue(ComponentName, IntPropertyName, out int intOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentIntPropertyName, out int intOutValue);
             intOutValue.Should().Be(IntPropertyValue);
 
-            clientProperties.TryGetValue(ComponentName, ShortPropertyName, out short shortOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentShortPropertyName, out short shortOutValue);
             shortOutValue.Should().Be(ShortPropertyValue);
 
-            clientProperties.TryGetValue(ComponentName, ObjectPropertyName, out CustomClientProperty objectOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentObjectPropertyName, out CustomClientProperty objectOutValue);
             objectOutValue.Id.Should().Be(s_objectPropertyValue.Id);
             objectOutValue.Name.Should().Be(s_objectPropertyValue.Name);
 
             // The two lists won't be exactly equal since TryGetValue doesn't implement nested deserialization
             // => the complex object inside the list is deserialized to a JObject.
-            clientProperties.TryGetValue(ComponentName, ArrayPropertyName, out List<object> arrayOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentArrayPropertyName, out List<object> arrayOutValue);
             arrayOutValue.Should().HaveSameCount(s_arrayPropertyValue);
 
             // The two dictionaries won't be exactly equal since TryGetValue doesn't implement nested deserialization
             // => the complex object inside the dictionary is deserialized to a JObject.
-            clientProperties.TryGetValue(ComponentName, MapPropertyName, out Dictionary<string, object> mapOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentMapPropertyName, out Dictionary<string, object> mapOutValue);
             mapOutValue.Should().HaveSameCount(s_mapPropertyValue);
 
-            clientProperties.TryGetValue(ComponentName, DateTimePropertyName, out DateTimeOffset dateTimeOutValue);
+            clientProperties.TryGetValue(ComponentName, ComponentDateTimePropertyName, out DateTimeOffset dateTimeOutValue);
             dateTimeOutValue.Should().Be(s_dateTimePropertyValue);
         }
 
@@ -210,10 +203,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanAddSimpleWritablePropertyAndGetBack()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWritablePropertyToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
-            clientProperties.TryGetValue(StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
+            clientProperties.TryGetValue(RootWritablePropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
 
             // assert
             outValue.Value.Should().Be(StringPropertyValue);
@@ -226,10 +219,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanAddWritablePropertyWithComponentAndGetBack()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWritablePropertyWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
-            clientProperties.TryGetValue(ComponentName, StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
+            clientProperties.TryGetValue(ComponentName, ComponentWritablePropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
 
             // assert
             outValue.Value.Should().Be(StringPropertyValue);
@@ -242,10 +235,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonsoft_CanGetComponentIdentifier()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
-            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
+            clientProperties.TryGetValue(ComponentName, ComponentStringPropertyName, out string outValue);
             clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
 
             // assert
@@ -257,7 +250,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueNotFound()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue("thisPropertyDoesNotExist", out int outIntValue);
@@ -271,7 +264,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueNotFound()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, "thisPropertyDoesNotExist", out int outIntValue);
@@ -284,9 +277,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
         {
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
+            // arrange
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
-            bool isValueRetrieved = clientProperties.TryGetValue(StringPropertyName, out int outIntValue);
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(RootStringPropertyName, out int outIntValue);
+
+            // assert
             isValueRetrieved.Should().BeFalse();
             outIntValue.Should().Be(default);
         }
@@ -295,10 +292,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueCouldNotBeDeserialized()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionWithComponentToRoundTrip, DefaultPayloadConvention.Instance);
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
-            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, StringPropertyName, out int outIntValue);
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, ComponentStringPropertyName, out int outIntValue);
 
             // assert
             isValueRetrieved.Should().BeFalse();
@@ -309,8 +306,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfNotAComponent()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromTwinCollection(collectionToRoundTrip, DefaultPayloadConvention.Instance);
-            string incorrectlyMappedComponentName = MapPropertyName;
+            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            string incorrectlyMappedComponentName = ComponentMapPropertyName;
             string incorrectlyMappedComponentPropertyName = "key1";
 
             // act
@@ -322,48 +319,81 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
     }
 
-    internal class RootLevelProperties
+    internal class TestProperties
     {
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.BoolPropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootBoolPropertyName)]
         public bool BooleanProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.DoublePropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootDoublePropertyName)]
         public double DoubleProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.FloatPropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootFloatPropertyName)]
         public float FloatProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.IntPropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootIntPropertyName)]
         public int IntProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ShortPropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootShortPropertyName)]
         public short ShortProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.StringPropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootStringPropertyName)]
         public string StringProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ObjectPropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootObjectPropertyName)]
         public object ObjectProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ArrayPropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootArrayPropertyName)]
         public IList ArrayProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.MapPropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootMapPropertyName)]
         public IDictionary MapProperty { get; set; }
 
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.DateTimePropertyName)]
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootDateTimePropertyName)]
         public DateTimeOffset DateTimeProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootWritablePropertyName)]
+        public IWritablePropertyResponse WritablePropertyResponse { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentName)]
+        public ComponentProperties ComponentProperties { get; set; }
     }
 
-    internal class ComponentProperties : RootLevelProperties
+    internal class ComponentProperties
     {
         [JsonProperty(ConventionBasedConstants.ComponentIdentifierKey)]
         public string ComponentIdentifier { get; } = ConventionBasedConstants.ComponentIdentifierValue;
-    }
 
-    internal class ComponentLevelProperties
-    {
-        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentName)]
-        public ComponentProperties Properties { get; set; }
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentBoolPropertyName)]
+        public bool BooleanProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentDoublePropertyName)]
+        public double DoubleProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentFloatPropertyName)]
+        public float FloatProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentIntPropertyName)]
+        public int IntProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentShortPropertyName)]
+        public short ShortProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentStringPropertyName)]
+        public string StringProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentObjectPropertyName)]
+        public object ObjectProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentArrayPropertyName)]
+        public IList ArrayProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentMapPropertyName)]
+        public IDictionary MapProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentDateTimePropertyName)]
+        public DateTimeOffset DateTimeProperty { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentWritablePropertyName)]
+        public IWritablePropertyResponse WritablePropertyResponse { get; set; }
     }
 }

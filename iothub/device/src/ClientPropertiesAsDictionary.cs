@@ -7,14 +7,8 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class ClientTwinProperties
+    internal class ClientPropertiesAsDictionary
     {
-        internal ClientTwinProperties()
-        {
-            Desired = new Dictionary<string, object>();
-            Reported = new Dictionary<string, object>();
-        }
-
         [JsonProperty(PropertyName = "desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
         internal IDictionary<string, object> Desired { get; set; }
 
@@ -23,8 +17,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ClientProperties ToClientProperties(PayloadConvention payloadConvention)
         {
-            ClientPropertyCollection writablePropertyRequestCollection = ClientPropertyCollection.FromClientTwinDictionary(Desired, payloadConvention);
-            ClientPropertyCollection clientReportedPropertyCollection = ClientPropertyCollection.FromClientTwinDictionary(Reported, payloadConvention);
+            ClientPropertyCollection writablePropertyRequestCollection = ClientPropertyCollection.FromClientPropertiesAsDictionary(Desired, payloadConvention);
+            ClientPropertyCollection clientReportedPropertyCollection = ClientPropertyCollection.FromClientPropertiesAsDictionary(Reported, payloadConvention);
 
             return new ClientProperties(writablePropertyRequestCollection, clientReportedPropertyCollection);
         }
