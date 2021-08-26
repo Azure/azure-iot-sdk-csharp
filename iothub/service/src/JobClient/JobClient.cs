@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="transportSettings">The HTTP transport settings.</param>
         /// <returns>An instance of <see cref="JobClient"/>.</returns>
         /// <remarks>
-        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
         /// </remarks>
         public static JobClient Create(
             string hostName,

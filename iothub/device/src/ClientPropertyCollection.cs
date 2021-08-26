@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
@@ -358,10 +359,9 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (isComponentProperty)
                 {
-                    var collectionDictionary = new Dictionary<string, object>();
-
                     // If this is a component property then the collection is a JObject with each individual property as a writable property update request.
                     var propertyValueAsJObject = (JObject)propertyValueAsObject;
+                    var collectionDictionary = new Dictionary<string, object>(propertyValueAsJObject.Count);
 
                     foreach (KeyValuePair<string, JToken> componentProperty in propertyValueAsJObject)
                     {
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client
                             individualPropertyValue = new WritableClientProperty
                             {
                                 Convention = payloadConvention,
-                                Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(componentProperty.Value)),
+                                Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(componentProperty.Value)),
                                 Version = twinCollection.Version,
                             };
                         }

@@ -35,7 +35,7 @@ OS name: "windows server 2016", version: "10.0", arch: "amd64", family: "windows
 
 ## Ubuntu 1604
 
-Note that, while we only directly test on Ubuntu 1604, we do generally support other [Linux distributions supported by .NET core](https://docs.microsoft.com/en-us/dotnet/core/install/linux). 
+Note that, while we only directly test on Ubuntu 1604, we do generally support other [Linux distributions supported by .NET core](https://docs.microsoft.com/dotnet/core/install/linux). 
 
 Nightly test platform details:
 
