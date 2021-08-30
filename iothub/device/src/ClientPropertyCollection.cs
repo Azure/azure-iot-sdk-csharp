@@ -351,11 +351,12 @@ namespace Microsoft.Azure.Devices.Client
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
                 object propertyValueAsObject = property.Value;
+                string propertyValueAsString = DefaultPayloadConvention.Instance.PayloadSerializer.SerializeToString(propertyValueAsObject);
 
                 // Check if the property value is for a root property or a component property.
                 // A component property be a JObject and will have the "__t": "c" identifiers.
                 bool isComponentProperty = propertyValueAsObject is JObject
-                    && payloadConvention.PayloadSerializer.TryGetNestedObjectValue(propertyValueAsObject, ConventionBasedConstants.ComponentIdentifierKey, out string _);
+                    && payloadConvention.PayloadSerializer.TryGetNestedObjectValue(propertyValueAsString, ConventionBasedConstants.ComponentIdentifierKey, out string _);
 
                 if (isComponentProperty)
                 {
