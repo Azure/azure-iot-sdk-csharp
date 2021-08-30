@@ -154,7 +154,6 @@ public class ClientPropertyCollection : PayloadCollection {
 }
 
 public class WritableClientProperty {
-    public WritableClientProperty();
     public object Value { get; internal set; }
     public long Version { get; internal set; }
     public IWritablePropertyResponse AcknowledgeWith(int statusCode, string description = null);
@@ -176,7 +175,6 @@ public sealed class NewtonsoftJsonWritablePropertyResponse : IWritablePropertyRe
 }
 
 public class ClientPropertiesUpdateResponse {
-    public ClientPropertiesUpdateResponse();
     public string RequestId { get; internal set; }
     public long Version { get; internal set; }
 }

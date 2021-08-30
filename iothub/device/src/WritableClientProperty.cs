@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         internal WritableClientProperty()
         {
-
         }
 
         /// <summary>
