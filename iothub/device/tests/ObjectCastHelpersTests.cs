@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private void TestNumericConversion<T>(object input, bool canConvertExpected, T resultExpected)
         {
-            bool canConvertActual = ObjectCastHelpers.TryCastNumericTo<T>(input, out T result);
+            bool canConvertActual = ObjectConversionHelpers.TryCastNumericTo<T>(input, out T result);
 
             canConvertActual.Should().Be(canConvertExpected);
             result.Should().Be(resultExpected);

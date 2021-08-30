@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client
                 object componentProperties = Collection[componentName];
 
                 // If the ClientPropertyCollection was constructed by the user application (eg. for updating the client properties)
-                // then the componentProperties are retrieved as a dictionary.
+                // or was returned by the application as a writable property update request then the componentProperties are retrieved as a dictionary.
                 // The required property value can be fetched from the dictionary directly.
                 if (componentProperties is IDictionary<string, object> nestedDictionary)
                 {
@@ -227,35 +227,23 @@ namespace Microsoft.Azure.Devices.Client
                             // Case 1:
                             // If the object is of type T or can be cast to type T, go ahead and return it.
                             if (dictionaryElement is T valueRef
-                                || ObjectCastHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
+                                || ObjectConversionHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
                             {
                                 propertyValue = valueRef;
                                 return true;
                             }
 
-                            try
+                            // Case 2:
+                            // Check if the retrieved value is a writable property update request
+                            if (dictionaryElement is WritableClientProperty writableClientProperty)
                             {
-                                // Case 2:
-                                // Check if the retrieved value is a writable property update request
-                                if (dictionaryElement is WritableClientProperty writableClientProperty)
+                                object writableClientPropertyValue = writableClientProperty.Value;
+
+                                // If the object is of type T or can be cast or converted to type T, go ahead and return it.
+                                if (ObjectConversionHelpers.TryCastOrConvert(writableClientPropertyValue, Convention, out propertyValue))
                                 {
-                                    object writableClientPropertyValue = writableClientProperty.Value;
-
-                                    // If the object is of type T or can be cast to type T, go ahead and return it.
-                                    if (ObjectCastHelpers.TryCast(writableClientPropertyValue, out propertyValue))
-                                    {
-                                        return true;
-                                    }
-
-                                    // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
-                                    // If it can be successfully converted, go ahead and return it.
-                                    propertyValue = Convention.PayloadSerializer.ConvertFromObject<T>(writableClientPropertyValue);
                                     return true;
                                 }
-                            }
-                            catch
-                            {
-                                // In case of an exception ignore it and continue.
                             }
                         }
                     }
@@ -291,18 +279,13 @@ namespace Microsoft.Azure.Devices.Client
                                     return true;
                                 }
 
-                                var writablePropertyValue = newtonsoftWritablePropertyResponse.Value;
+                                object writablePropertyValue = newtonsoftWritablePropertyResponse.Value;
 
-                                // If the object is of type T or can be cast to type T, go ahead and return it.
-                                if (ObjectCastHelpers.TryCast(writablePropertyValue, out propertyValue))
+                                // If the object is of type T or can be cast or converted to type T, go ahead and return it.
+                                if (ObjectConversionHelpers.TryCastOrConvert(writablePropertyValue, Convention, out propertyValue))
                                 {
                                     return true;
                                 }
-
-                                // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
-                                // If it can be successfully converted, go ahead and return it.
-                                propertyValue = Convention.PayloadSerializer.ConvertFromObject<T>(writablePropertyValue);
-                                return true;
                             }
                             catch
                             {

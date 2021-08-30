@@ -3,11 +3,35 @@
 
 using System;
 using System.Globalization;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class ObjectCastHelpers
+    internal class ObjectConversionHelpers
     {
+        internal static bool TryCastOrConvert<T>(object objectToCastOrConvert, PayloadConvention payloadConvention, out T value)
+        {
+            // If the object is of type T or can be cast to type T, go ahead and return it.
+            if (TryCast(objectToCastOrConvert, out value))
+            {
+                return true;
+            }
+
+            try
+            {
+                // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
+                // If it can be successfully converted, go ahead and return it.
+                value = payloadConvention.PayloadSerializer.ConvertFromObject<T>(objectToCastOrConvert);
+                return true;
+            }
+            catch
+            {
+            }
+
+            value = default;
+            return false;
+        }
+
         internal static bool TryCast<T>(object objectToCast, out T value)
         {
             if (objectToCast is T valueRef
