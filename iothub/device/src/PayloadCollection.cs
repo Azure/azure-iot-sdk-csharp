@@ -162,9 +162,19 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         // Case 2:
                         // Check if the retrieved value is a writable property update request
-                        if (retrievedPropertyValue is WritableClientProperty<T> writableClientProperty)
+                        if (retrievedPropertyValue is WritableClientProperty writableClientProperty)
                         {
-                            value = writableClientProperty.Value;
+                            object writableClientPropertyValue = writableClientProperty.Value;
+
+                            // If the object is of type T or can be cast to type T, go ahead and return it.
+                            if (ObjectCastHelpers.TryCast(writableClientPropertyValue, out value))
+                            {
+                                return true;
+                            }
+
+                            // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
+                            // If it can be successfully converted, go ahead and return it.
+                            value = Convention.PayloadSerializer.ConvertFromObject<T>(writableClientPropertyValue);
                             return true;
                         }
                     }
