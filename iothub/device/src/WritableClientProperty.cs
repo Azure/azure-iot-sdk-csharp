@@ -15,6 +15,11 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class WritableClientProperty
     {
+        internal WritableClientProperty()
+        {
+
+        }
+
         /// <summary>
         /// The value of the writable property update request.
         /// </summary>
