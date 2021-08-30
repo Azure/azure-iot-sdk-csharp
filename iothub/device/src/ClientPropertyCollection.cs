@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.Client
                     var writableProperty = new WritableClientProperty
                     {
                         Convention = payloadConvention,
-                        Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(propertyValueAsObject)),
+                        Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(propertyValueAsObject)),
                         Version = twinCollection.Version,
                     };
                     propertyCollectionToReturn.Add(property.Key, writableProperty);
@@ -407,7 +407,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
+                    propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(property.Value)));
                 }
             }
 
