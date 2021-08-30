@@ -13,12 +13,18 @@ namespace Microsoft.Azure.Devices.Client
     /// This type contains a convenience method to format the reported property as per IoT Plug and Play convention.
     /// For more details see <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties"/>.
     /// </remarks>
-    public class WritableClientProperty
+    public class WritableClientProperty<T>
     {
+        private T _value;
+
         /// <summary>
         /// The value of the writable property update request.
         /// </summary>
-        public object Value { get; internal set; }
+        public T Value
+        {
+            get => Convention.PayloadSerializer.ConvertFromObject<T>(_value);
+            internal set => _value = value;
+        }
 
         /// <summary>
         /// The version number associated with the writable property update request.
