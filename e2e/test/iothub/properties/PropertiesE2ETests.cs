@@ -119,6 +119,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         }
 
         [LoggedTestMethod]
+        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndResponds_Mqtt()
+        {
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndResponds_MqttWs()
+        {
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    Guid.NewGuid().ToString())
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEventAndResponds_Mqtt()
+        {
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    s_mapOfPropertyValues)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEventAndResponds_MqttWs()
+        {
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only,
+                    s_mapOfPropertyValues)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
         public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGet_Mqtt()
         {
             await Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGetAsync(
@@ -303,6 +339,82 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             await deviceClient.SubscribeToWritablePropertyUpdateRequestsAsync(null, null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync<T>(Client.TransportType transport, T propValue)
+        {
+            using var cts = new CancellationTokenSource(s_maxWaitTimeForCallback);
+            string propName = Guid.NewGuid().ToString();
+
+            Logger.Trace($"{nameof(Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+
+            var writablePropertyCallbackSemaphore = new SemaphoreSlim(0, 1);
+            await deviceClient
+                .SubscribeToWritablePropertyUpdateRequestsAsync(
+                    async (writableProperties, userContext) =>
+                    {
+                        try
+                        {
+                            bool isPropertyPresent = writableProperties.TryGetValue(propName, out T propertyFromCollection);
+
+                            isPropertyPresent.Should().BeTrue();
+                            propertyFromCollection.Should().BeEquivalentTo(propValue);
+                            userContext.Should().BeNull();
+
+                            var writablePropertyAcks = new ClientPropertyCollection();
+                            foreach (KeyValuePair<string, object> writableProperty in writableProperties)
+                            {
+                                if (writableProperty.Value is WritableClientProperty writableClientProperty)
+                                {
+                                    writablePropertyAcks.Add(writableProperty.Key, writableClientProperty.AcknowledgeWith(CommonClientResponseCodes.OK));
+                                }
+                            }
+
+                            await deviceClient.UpdateClientPropertiesAsync(writablePropertyAcks).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            writablePropertyCallbackSemaphore.Release();
+                        }
+                    },
+                    null,
+                    cts.Token)
+                .ConfigureAwait(false);
+
+            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
+
+            await Task
+                .WhenAll(
+                    RegistryManagerUpdateWritablePropertyAsync(testDevice.Id, propName, propValue),
+                    writablePropertyCallbackSemaphore.WaitAsync(cts.Token))
+                .ConfigureAwait(false);
+
+            // Validate the updated properties from the device-client
+            ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+
+            // Validate that the writable property update request was received
+            bool isWritablePropertyRequestPresent = clientProperties.WritablePropertyRequests.TryGetValue(propName, out T writablePropertyRequest);
+            isWritablePropertyRequestPresent.Should().BeTrue();
+            writablePropertyRequest.Should().BeEquivalentTo(propValue);
+
+            // Validate that the writable property update request was acknowledged
+
+            bool isWritablePropertyAckPresent = clientProperties.ReportedFromClient.TryGetValue(propName, out IWritablePropertyResponse writablePropertyAck);
+            isWritablePropertyAckPresent.Should().BeTrue();
+            // TryGetValue doesn't have nested deserialization, so we'll have to deserialize the retrieved value
+            deviceClient.PayloadConvention.PayloadSerializer.ConvertFromObject<T>(writablePropertyAck.Value).Should().BeEquivalentTo(propValue);
+
+            bool isWritablePropertyAckPresentSpecific = clientProperties.ReportedFromClient.TryGetValue(propName, out NewtonsoftJsonWritablePropertyResponse writablePropertyAckNewtonSoft);
+            isWritablePropertyAckPresentSpecific.Should().BeTrue();
+            // TryGetValue doesn't have nested deserialization, so we'll have to deserialize the retrieved value
+            deviceClient.PayloadConvention.PayloadSerializer.ConvertFromObject<T>(writablePropertyAckNewtonSoft.Value).Should().BeEquivalentTo(propValue);
+
+            bool isWritablePropertyAckPresentAsValue = clientProperties.ReportedFromClient.TryGetValue(propName, out T writablePropertyAckValue);
+            isWritablePropertyAckPresentAsValue.Should().BeTrue();
+            writablePropertyAckValue.Should().BeEquivalentTo(propValue);
         }
 
         private async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGetAsync(Client.TransportType transport)

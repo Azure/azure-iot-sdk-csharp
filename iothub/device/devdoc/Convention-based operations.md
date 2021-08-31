@@ -79,7 +79,6 @@ public abstract class PayloadCollection : IEnumerable, IEnumerable<KeyValuePair<
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator();
     public virtual byte[] GetPayloadObjectBytes();
     public virtual string GetSerializedString();
-    protected void SetCollection(PayloadCollection payloadCollection);
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
     public bool TryGetValue<T>(string key, out T value);
 }
@@ -127,15 +126,16 @@ public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPr
 /// <param name="callback">The global call back to handle all writable property updates.</param>
 /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default);
+public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default);
 ```
 
 #### All related types
 
 ```csharp
-public class ClientProperties : ClientPropertyCollection {
+public class ClientProperties {
     public ClientProperties();
-    public ClientPropertyCollection Writable { get; private set; }
+    public ClientPropertyCollection ReportedFromClient { get; private set; }
+    public ClientPropertyCollection WritablePropertyRequests { get; private set; }
 }
 
 public class ClientPropertyCollection : PayloadCollection {
@@ -151,6 +151,12 @@ public class ClientPropertyCollection : PayloadCollection {
     public void AddRootProperty(string propertyName, object propertyValue);
     public bool Contains(string componentName, string propertyName);
     public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
+}
+
+public class WritableClientProperty {
+    public object Value { get; internal set; }
+    public long Version { get; internal set; }
+    public IWritablePropertyResponse AcknowledgeWith(int statusCode, string description = null);
 }
 
 public interface IWritablePropertyResponse {
@@ -169,7 +175,6 @@ public sealed class NewtonsoftJsonWritablePropertyResponse : IWritablePropertyRe
 }
 
 public class ClientPropertiesUpdateResponse {
-    public ClientPropertiesUpdateResponse();
     public string RequestId { get; internal set; }
     public long Version { get; internal set; }
 }

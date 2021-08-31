@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
-        // For more details, see https://docs.microsoft.com/en-us/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
+        // For more details, see https://docs.microsoft.com/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
         [TestMethod]
         public void DeviceClient_Params_GatewayAuthMethod_Works()
         {
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
-        // For more details, see https://docs.microsoft.com/en-us/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
+        // For more details, see https://docs.microsoft.com/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
         [TestMethod]
         public void DeviceClient_ParamsGatewayAuthMethodTransport_Works()
         {
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
-        // For more details, see https://docs.microsoft.com/en-us/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
+        // For more details, see https://docs.microsoft.com/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
         [TestMethod]
         public void DeviceClient_ParamsGatewayAuthMethodTransportArray_Works()
         {

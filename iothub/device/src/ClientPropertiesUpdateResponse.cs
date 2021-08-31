@@ -8,6 +8,10 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ClientPropertiesUpdateResponse
     {
+        internal ClientPropertiesUpdateResponse()
+        {
+        }
+
         /// <summary>
         /// The request Id that is associated with the <see cref="InternalClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
         /// </summary>

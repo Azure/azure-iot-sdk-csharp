@@ -54,10 +54,23 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 return false;
             }
-            if (((JObject)nestedObject).TryGetValue(propertyName, out JToken element))
+
+            try
             {
-                outValue = element.ToObject<T>();
-                return true;
+                // The supplied nested object is either a JObject or the string representation of a JObject.
+                JObject nestedObjectAsJObject = nestedObject.GetType() == typeof(string)
+                    ? DeserializeToType<JObject>((string)nestedObject)
+                    : nestedObject as JObject;
+
+                if (nestedObjectAsJObject != null && nestedObjectAsJObject.TryGetValue(propertyName, out JToken element))
+                {
+                    outValue = element.ToObject<T>();
+                    return true;
+                }
+            }
+            catch
+            {
+                // Catch and ignore any exceptions caught
             }
             return false;
         }

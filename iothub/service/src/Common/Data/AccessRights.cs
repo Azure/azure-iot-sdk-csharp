@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Data
 {
     /// <summary>
     /// Shared access policy permissions of IoT hub.
-    /// For more information, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-security#iot-hub-permissions"/>.
+    /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-security#iot-hub-permissions"/>.
     /// </summary>
     [Flags]
     [JsonConverter(typeof(StringEnumConverter))]
@@ -19,14 +19,14 @@ namespace Microsoft.Azure.Devices.Common.Data
         /// <summary>
         /// Grants read access to the identity registry.
         /// Identity registry stores information about the devices and modules permitted to connect to the IoT hub.
-        /// For more information, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-identity-registry"/>.
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-identity-registry"/>.
         /// </summary>
         RegistryRead = 1,
 
         /// <summary>
         /// Grants read and write access to the identity registry.
         /// Identity registry stores information about the devices and modules permitted to connect to the IoT hub.
-        /// For more information, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-identity-registry"/>.
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-identity-registry"/>.
         /// </summary>
         RegistryWrite = RegistryRead | 2,
 
