@@ -823,7 +823,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_001:  `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_002:  `EnableMethodsAsync` shall wait for a SUBACK for the subscription request.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_003:  `EnableMethodsAsync` shall return failure if the subscription request fails.
-            await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(MethodPostTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+            await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(MethodPostTopicFilter, QualityOfService.AtLeastOnce))).ConfigureAwait(true);
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
@@ -887,7 +887,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_010: `EnableTwinPatchAsync` shall subscribe using the '$iothub/twin/PATCH/properties/desired/#' topic filter.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
-            await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinPatchTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+            await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinPatchTopicFilter, QualityOfService.AtLeastOnce))).ConfigureAwait(true);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, cancellationToken, nameof(EnableTwinPatchAsync));
@@ -1095,7 +1095,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     0,
                     new SubscriptionRequest(
                         TwinResponseTopicFilter,
-                        QualityOfService.AtMostOnce)));
+                        QualityOfService.AtLeastOnce)));
         }
 
         private bool ParseResponseTopic(string topicName, out string rid, out int status)
