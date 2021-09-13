@@ -134,11 +134,14 @@ $condition = 'level="critical"'
 # you have already set the variables before you get to this point.
 #
 # Pause for 90 seconds to allow previous steps to complete.
-# Then report it to the IoT team here: 
-# https://github.com/Azure/azure-powershell/issues
-#   pause for 90 seconds and then start again. 
-# This way, it if didn't get to finish before it tried to move on, 
-#   now it will have time to finish. 
+# You can report it to the IoT team here: 
+# https://github.com/Azure/azure-powershell/issues.
+# This will pause for 90 seconds and then start again. 
+# I put this in here because it's moving on in the script before it finishes.
+#   This way, it will wait 90 seconds before doing that, giving it enough time to finish.
+# The IoT Hub team could change this to make sure the prior command
+#   loops and checks to see if it's finished before it continues (like the create-iot-hub cmdlet does), 
+#    but in case they don't fix it, putting the Start-Sleep command in here make sure it works. 
    Start-Sleep -Seconds 90
 
 # This command is the one that sometimes doesn't work. It's as if it doesn't have time to
