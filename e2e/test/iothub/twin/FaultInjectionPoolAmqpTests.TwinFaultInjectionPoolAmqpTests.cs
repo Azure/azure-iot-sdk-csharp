@@ -1439,12 +1439,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
             }
 
-            async Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
+            async Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> _)
             {
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    deviceClient.Dispose();
-                }
+                deviceClients.ForEach(deviceClient => deviceClient.Dispose());
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
             }
 
@@ -1481,13 +1478,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyAddress = null)
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();
-            var testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
 
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
-                testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
-
                 var propName = Guid.NewGuid().ToString();
                 var propValue = Guid.NewGuid().ToString();
                 twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
@@ -1497,9 +1490,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                TestDeviceCallbackHandler testDeviceCallbackHandler = testDevicesWithCallbackHandler[testDevice.Id];
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
@@ -1515,21 +1507,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await Task.WhenAll(serviceSendTask, twinReceivedTask).ConfigureAwait(false);
             }
 
-            async Task CleanupOperationAsync(IList<DeviceClient> deviceClients)
+            async Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
             {
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    deviceClient.Dispose();
-                }
-
-                foreach (KeyValuePair<string, TestDeviceCallbackHandler> entry in testDevicesWithCallbackHandler)
-                {
-                    TestDeviceCallbackHandler testDeviceCallbackHandler = entry.Value;
-                    testDeviceCallbackHandler?.Dispose();
-                }
+                deviceClients.ForEach(deviceClient => deviceClient.Dispose());
+                testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());
 
                 twinPropertyMap.Clear();
-                testDevicesWithCallbackHandler.Clear();
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
             }
 

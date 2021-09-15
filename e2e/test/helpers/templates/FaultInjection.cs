@@ -93,14 +93,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     deviceClient.OperationTimeoutInMilliseconds = (uint)delayInSec.TotalMilliseconds;
                 }
 
-                await deviceClient
-                    .SendEventAsync(
-                        ComposeErrorInjectionProperties(
-                            faultType,
-                            reason,
-                            delayInSec,
-                            durationInSec))
-                    .ConfigureAwait(false);
+                using Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
+                    faultType,
+                    reason,
+                    delayInSec,
+                    durationInSec);
+
+                await deviceClient.SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex)
             {
@@ -144,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<Task> cleanupOperation,
             MsTestLogger logger)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
 
             ITransportSettings transportSettings = CreateTransportSettingsFromName(transport, proxyAddress);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(new ITransportSettings[] { transportSettings });
