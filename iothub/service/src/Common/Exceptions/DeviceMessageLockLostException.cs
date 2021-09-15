@@ -7,9 +7,8 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when an attempt to communicate with a device fails
-    /// because the lock token was lost (if the connection is lost and regained for example).
-    /// This timeout has the same effect as if the message was abandoned.
+    /// This exception is not directly returned by the service for ServiceClient operations. However, the status code
+    /// HttpStatusCode.PreconditionFailed is converted to this exception.
     /// </summary>
     [Serializable]
     public class DeviceMessageLockLostException : IotHubException

@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
         private readonly string _devicePrefix = $"{nameof(FileUploadE2ETests)}_";
-        private static readonly X509Certificate2 s_selfSignedCertificate = Configuration.IoTHub.GetCertificateWithPrivateKey();
+        private static readonly X509Certificate2 s_selfSignedCertificate = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var fileUploadTransportSettings = new Http1TransportSettings()
             {
-                Proxy = new WebProxy(Configuration.IoTHub.ProxyServerAddress)
+                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
             };
 
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
@@ -129,11 +129,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
-
-                // The X509 certificate being used for device authentication needs to be set into FileUploadTransportSettings as well,
-                // so that the HttpClient created for file upload operation has access to those certificates.
-                clientOptions.FileUploadTransportSettings.ClientCertificate = cert;
-                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, x509Auth, Client.TransportType.Http1, clientOptions);
+                
+                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, x509Auth, Client.TransportType.Http1);
             }
             else
             {

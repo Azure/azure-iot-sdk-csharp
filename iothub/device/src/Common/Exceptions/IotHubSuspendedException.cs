@@ -8,7 +8,8 @@ using Microsoft.Azure.Devices.Client.Extensions;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when the IoT Hub has been suspended.
+    /// This exception is thrown when the IoT hub has been suspended. This is likely due to exceeding Azure
+    /// spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
     /// </summary>
     [Serializable]
     public class IotHubSuspendedException : IotHubException

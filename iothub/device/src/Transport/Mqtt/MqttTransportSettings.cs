@@ -26,7 +26,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const int DefaultMaxPendingInboundMessages = 50;
         private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
         private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
-        private static readonly TimeSpan s_defaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
+
+        // The CONNACK timeout has been chosen to be 60 seconds to be in alignment with the service implemented timeout for processing connection requests.
+        private static readonly TimeSpan s_defaultConnectArrivalTimeout = TimeSpan.FromSeconds(60);
+
         private static readonly TimeSpan s_defaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
         private static readonly TimeSpan s_defaultReceiveTimeout = TimeSpan.FromMinutes(1);
 
@@ -96,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public bool DeviceReceiveAckCanTimeout { get; set; }
 
         /// <summary>
-        /// The time a device will wait, for an acknowledgment from service.
+        /// The time a device will wait for an acknowledgment from service.
         /// The default is 5 minutes.
         /// </summary>
         /// <remarks>
@@ -157,8 +160,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         /// <summary>
         /// The time to wait for receiving an acknowledgment for a CONNECT packet.
-        /// The default is 10 seconds.
+        /// The default is 60 seconds.
         /// </summary>
+        /// <remarks>
+        /// In the event that IoT Hub receives burst traffic, it will implement traffic shaping in order to process the incoming requests.
+        /// In such cases, during client connection the CONNECT requests can have a delay in being acknowledged and processed by IoT Hub.
+        /// The <c>ConnectArrivalTimeout</c> governs the duration the client will wait for a CONNACK packet before disconnecting and reopening the connection.
+        /// To know more about IoT Hub's throttling limits and traffic shaping feature, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#operation-throttles"/>.
+        /// </remarks>
         public TimeSpan ConnectArrivalTimeout { get; set; }
 
         /// <summary>
@@ -172,12 +182,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public bool CleanSession { get; set; }
 
         /// <summary>
-        /// The interval, in seconds, that the client establishes with the service, for sending keep alive pings.
+        /// The interval, in seconds, that the client establishes with the service, for sending keep-alive pings.
         /// The default is 300 seconds.
         /// </summary>
         /// <remarks>
         /// The client will send a ping request 4 times per keep-alive duration set.
         /// It will wait for 30 seconds for the ping response, else mark the connection as disconnected.
+        /// Setting a very low keep-alive value can cause aggressive reconnects, and might not give the
+        /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
         public int KeepAliveInSeconds { get; set; }
 

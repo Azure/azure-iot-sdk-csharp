@@ -6,7 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    public static partial class Configuration
+    public static partial class TestConfiguration
     {
         private static string GetValue(string envName, string defaultValue = null)
         {

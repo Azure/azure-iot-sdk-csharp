@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    public static partial class Configuration
+    public static partial class TestConfiguration
     {
         public static class AzureSecurityCenterForIoTLogAnalytics
         {

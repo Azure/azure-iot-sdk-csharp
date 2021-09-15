@@ -3,19 +3,50 @@
 ## Windows
 On Windows logman or PerfView can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/workflow/debugging/libraries/windows-instructions.md#traces
 
+We have provided the following convenience scripts for log collection using `logman`.
+
+1. Launch Powershell with administrator privileges.
+2. To start capturing traces, invoke `iot_startlog.ps1`.
+   1. Pass in the following required parameters:
+      1. `-TraceName` - the name of the event trace data collector.  This can be any name that will be used to identity the collector created.
+      2. `-Output` - the output log file that will be created. This should be a `.etl` file.
+      3. `-ProviderFile` - The file listing multiple Event Trace providers to enable. The file should be a text file containing one provider per line.
+        The Azure IoT SDK providers file is present [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/tools/CaptureLogs/iot_providers.txt). The providers list with their corresponding package details are present [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs#azure-iot-sdk-providers).
+
+  Sample usage:
+
+  To create an event trace data collector called `IotTrace`, using the file `iot_providers.txt` for the list of event providers to be enabled, putting the results in a file `iot.etl` in the same folder from where the command is invoked, type:
+  ```powersehll
+  .\iot_startlog.ps1 -Output iot.etl -ProviderFile .\iot_providers.txt -TraceName IotTrace
+  ```
+
+3. To stop capturing traces, invoke `iot_stoplog.ps1`.
+   1. Pass in the following required parameter:
+      1. `-TraceName` - the name of the event trace data collector. Same as the one used while starting trace capture.
+
+  Sample usage:
+  ```powersehll
+   .\iot_stoplog.ps1 -TraceName IotTrace
+  ```
+
 ## Linux
 On Linux and OSX LTTNG and perfcollect can be used to collect traces. For more information please see https://github.com/dotnet/runtime/blob/master/docs/project/linux-performance-tracing.md
 
 ## Console logging
 Logging can be added to console. Note that this method will substantially slow down execution.
 
-  1. Add `e2e\test\Helpers\ConsoleEventListener.cs` to your project.
+  1. Add [`e2e\test\helpers\ConsoleEventListener.cs`](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/e2e/test/helpers/ConsoleEventListener.cs) to your project.
   2. Instantiate the listener. Add one or more filters (e.g. `Microsoft-Azure-` or `DotNetty-`):
 
-```C#
-	private readonly ConsoleEventListener _listener = new ConsoleEventListener("Microsoft-Azure-");
+```csharp
+	private static readonly ConsoleEventListener _listener = new ConsoleEventListener();
 ```
-  3. See the `ConsoleEventListener.cs` file to enable colorized logs within Visual Studio Code.
+> NOTE: 
+> 1. `static` fields are optimized for runtime performance and are initialized prior to their first usage. If `_listener` is the only static field initialized in your class, you'll need to provide a static constructor that initializes them when the class is loaded.
+> 2. `ConsoleEventListener.cs` logs the following events by default. If you want to log specific event providers, modify the [event filter](https://github.com/Azure/azure-iot-sdk-csharp/blob/4b5e0147f3768761cacaf4913ab6be707425f9da/e2e/test/helpers/ConsoleEventListener.cs#L20) list to include only your desired event providers.
+> ```csharp
+> private static readonly string[] s_eventFilter = new string[] { "DotNetty-Default", "Microsoft-Azure-Devices", "Azure-Core", "Azure-Identity" };
+> ```
 
 ## Azure IoT SDK providers
 

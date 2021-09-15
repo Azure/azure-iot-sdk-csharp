@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private const string TemperatureControllerModelId = "dtmi:com:example:TemperatureController;1";
 
         private readonly string _devicePrefix = $"E2E_{nameof(DigitalTwinClientE2ETests)}_";
-        private static readonly string s_connectionString = Configuration.IoTHub.ConnectionString;
+        private static readonly string s_connectionString = TestConfiguration.IoTHub.ConnectionString;
 
         [LoggedTestMethod]
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
