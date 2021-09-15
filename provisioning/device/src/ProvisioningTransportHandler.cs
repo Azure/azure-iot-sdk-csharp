@@ -86,6 +86,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
+        /// Registers a device described by the message.
+        /// </summary>
+        /// <param name="message">The provisioning message.</param>
+        /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
+        /// <returns>The registration result.</returns>
+        public virtual Task<DeviceRegistrationResult> RegisterAsync(
+            ProvisioningTransportRegisterMessage message,
+            TimeSpan timeout)
+        {
+            return _innerHandler.RegisterAsync(message, timeout);
+        }
+
+        /// <summary>
         /// Releases the unmanaged resources and disposes of the managed resources used by the invoker.
         /// </summary>
         public void Dispose()

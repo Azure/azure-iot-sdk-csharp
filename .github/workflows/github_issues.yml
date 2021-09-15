@@ -12,7 +12,6 @@ jobs:
       - uses: danhellem/github-actions-issue-to-work-item@master
         env:
           ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
-          github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
           ado_organization: "${{ secrets.ADO_ORGANIZATION }}"
           ado_project: "${{ secrets.ADO_PROJECT }}"
           ado_area_path: "${{ secrets.ADO_AREA_PATH }}"
@@ -20,3 +19,4 @@ jobs:
           ado_new_state: "New"
           ado_close_state: "Done"
           ado_bypassrules: false
+          log_level: 300

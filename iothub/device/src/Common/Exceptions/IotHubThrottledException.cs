@@ -8,8 +8,12 @@ using Microsoft.Azure.Devices.Client.Extensions;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when the service requires exponential back-off because it has exceeded the maximum number of allowed active requests.
+    /// This exception is thrown when the requests to the IoT hub exceed the limits based on the tier of the hub.
+    /// Retrying with exponential back-off could resolve this error.
     /// </summary>
+    /// <remarks>
+    /// For information on the IoT hub quotas and throttling, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>.
+    /// </remarks>
     [Serializable]
     public sealed class IotHubThrottledException : IotHubException
     {

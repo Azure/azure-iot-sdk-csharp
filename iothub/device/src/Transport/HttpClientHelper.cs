@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private HttpClientHandler _httpClientHandler;
         private bool _isDisposed;
         private readonly ProductInfo _productInfo;
+        private readonly bool _isClientPrimaryTransportHandler;
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -51,7 +52,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             X509Certificate2 clientCert,
             HttpClientHandler httpClientHandler,
             ProductInfo productInfo,
-            IWebProxy proxy
+            IWebProxy proxy,
+            bool isClientPrimaryTransportHandler = false
             )
         {
             _baseAddress = baseAddress;
@@ -115,6 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             preRequestActionForAllRequests?.Invoke(_httpClientObj);
             _productInfo = productInfo;
+            _isClientPrimaryTransportHandler = isClientPrimaryTransportHandler;
         }
 
         public Task<T> GetAsync<T>(
@@ -536,6 +539,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     _httpClientHandler?.Dispose();
                     _httpClientHandler = null;
+                }
+
+                // The associated TokenRefresher should be disposed by the http client helper only when the http client
+                // is the primary transport handler.
+                // For eg. we create HttpTransportHandler instances for file upload operations even though the client might be
+                // initialized via MQTT/ AMQP. In those scenarios, since the shared TokenRefresher resource would be primarily used by the
+                // corresponding transport layers (MQTT/ AMQP), the diposal should be delegated to them and it should not be disposed here.
+                // The only scenario where the TokenRefresher should be disposed here is when the client has been initialized using HTTP.
+                if (_isClientPrimaryTransportHandler
+                    && _authenticationHeaderProvider is IotHubConnectionString iotHubConnectionString
+                    && iotHubConnectionString.TokenRefresher != null
+                    && iotHubConnectionString.TokenRefresher.DisposalWithClient)
+                {
+                    iotHubConnectionString.TokenRefresher.Dispose();
                 }
 
                 _isDisposed = true;

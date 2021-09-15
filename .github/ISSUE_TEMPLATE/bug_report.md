@@ -31,6 +31,8 @@ Please follow the instructions and template below to save us time requesting add
 
 Below is a generic bug report format. We recommend you use it as a template and replace the information below each header with your own. 
 
+Note that bugs that only affect unsupported platforms will likely be treated as feature requests, and may be closed as "won't fix" if we have no plans to support that platform. See [this document](../../supported_platforms.md) for details on which platforms are officially supported.
+
 ------------------------------- delete above -------------------------------
 
 
@@ -49,5 +51,5 @@ Please be as detailed as possible: which feature has a problem, how often does i
 Please remove any connection string information!
 
 ## Console log of the issue
-Consider setting the DEBUG environment variable to '*'. This will produce a much more verbose output that will help debugging
+Follow the instructions [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs) to capture SDK logs.
 Don't forget to remove any connection string information!

@@ -24,7 +24,9 @@ namespace Microsoft.Azure.Devices.Client
             string deviceId,
             IotHubConnectionString connectionString,
             TimeSpan sasTokenTimeToLive,
-            int sasTokenRenewalBuffer) : base(deviceId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer)
+            int sasTokenRenewalBuffer,
+            bool disposeWithClient)
+            : base(deviceId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer, disposeWithClient)
         {
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }

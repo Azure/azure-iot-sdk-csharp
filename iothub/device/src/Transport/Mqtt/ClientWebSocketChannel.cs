@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             public override Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
             {
-                throw new NotSupportedException("ClientWebSocketChannel does not support BindAsync()");
+                throw new NotSupportedException("ClientWebSocketChannel does not support ConnectAsync()");
             }
 
             protected override void Flush0()

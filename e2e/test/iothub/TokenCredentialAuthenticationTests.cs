@@ -21,7 +21,7 @@ using Azure.Identity;
 
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub
+namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     /// <summary>
     /// Tests to ensure authentication using Azure active directory succeeds in all the clients.
@@ -40,8 +40,8 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
         {
             // arrange
             using var registryManager = RegistryManager.Create(
-                Configuration.IoTHub.GetIotHubHostName(),
-                Configuration.IoTHub.GetClientSecretCredential());
+                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IoTHub.GetClientSecretCredential());
 
             var device = new Device(Guid.NewGuid().ToString());
 
@@ -60,8 +60,8 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
         {
             // arrange
             using var jobClient = JobClient.Create(
-                Configuration.IoTHub.GetIotHubHostName(),
-                Configuration.IoTHub.GetClientSecretCredential());
+                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IoTHub.GetClientSecretCredential());
 
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string jobDeviceId = "JobsSample_Device";
@@ -104,8 +104,8 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             using var digitalTwinClient = DigitalTwinClient.Create(
-                Configuration.IoTHub.GetIotHubHostName(),
-                Configuration.IoTHub.GetClientSecretCredential());
+                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IoTHub.GetClientSecretCredential());
 
             // act
             HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response = await digitalTwinClient
@@ -129,8 +129,8 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             using var serviceClient = ServiceClient.Create(
-                Configuration.IoTHub.GetIotHubHostName(),
-                Configuration.IoTHub.GetClientSecretCredential(),
+                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IoTHub.GetClientSecretCredential(),
                 TransportType.Amqp);
 
             // act

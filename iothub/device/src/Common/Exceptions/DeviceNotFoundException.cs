@@ -8,7 +8,13 @@ using Microsoft.Azure.Devices.Client.Extensions;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when an attempt to communicate with a device fails because the given device identifier cannot be found.
+    /// The exception is thrown when the device is disabled and will be used to set the status to device disabled in the
+    /// connection status handler. This exception also corresponds to the following error codes on operation responses:
+    /// <list>
+    /// <item>AmqpErrorCode.NotFound</item>
+    /// <item>HttpStatusCode.NotFound</item>
+    /// <item>HttpStatusCode.NoContent</item>
+    /// </list>
     /// </summary>
     [Serializable]
     public sealed class DeviceNotFoundException : IotHubException

@@ -15,17 +15,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 return new IotHubCommunicationException(exception.Message, exception);
             }
-            else if (exception is UnauthorizedAccessException)
+
+            if (exception is UnauthorizedAccessException)
             {
                 return new UnauthorizedException(exception.Message, exception);
             }
-            else
+
+            if (exception is OperationCanceledException
+                && exception.InnerException is AmqpException innerAmqpException
+                && innerAmqpException != null)
             {
-                var amqpException = exception as AmqpException;
-                return amqpException == null
-                    ? exception
-                    : AmqpIotErrorAdapter.ToIotHubClientContract(amqpException);
+                return AmqpIotErrorAdapter.ToIotHubClientContract(innerAmqpException);
             }
+
+            if (exception is AmqpException amqpException
+                && amqpException != null)
+            {
+                return AmqpIotErrorAdapter.ToIotHubClientContract(amqpException);
+            }
+
+            return exception;
         }
 
         internal static Exception ConvertToIotHubException(Exception exception, AmqpObject source)

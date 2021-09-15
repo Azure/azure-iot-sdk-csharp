@@ -28,10 +28,42 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class using default
         /// TTL and TTL buffer time settings.
         /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// </remarks>
         /// <param name="deviceId">The Id of the device.</param>
         /// <param name="moduleId">The Id of the module.</param>
         public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId)
             : this(deviceId, moduleId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This constructor will create an authentication method instance that will be disposed when its
+        /// associated module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
+        /// use <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// </remarks>
+        /// <param name="deviceId">The device Id.</param>
+        /// <param name="moduleId">The module Id.</param>
+        /// <param name="suggestedTimeToLiveSeconds">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        ///</param>
+        public ModuleAuthenticationWithTokenRefresh(
+            string deviceId,
+            string moduleId,
+            int suggestedTimeToLiveSeconds,
+            int timeBufferPercentage)
+            : this(deviceId, moduleId, suggestedTimeToLiveSeconds, timeBufferPercentage, true)
         {
         }
 
@@ -48,12 +80,17 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         ///</param>
+        ///<param name="disposeWithClient ">
+        ///<c>true</c> if the authentication method should be disposed of by the client
+        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
+        /// </param>
         public ModuleAuthenticationWithTokenRefresh(
             string deviceId,
             string moduleId,
             int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage)
-            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage))
+            int timeBufferPercentage,
+            bool disposeWithClient)
+            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage), disposeWithClient)
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
