@@ -102,11 +102,42 @@ private async Task OnC2dMessageReceived(Message receivedMessage, object userCont
 }
 
 // Subscribe to the receive message API.
-await deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceived, deviceClient);
+await deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceived, userContext);
 
 // Once you are done receiving telemetry messages sent to your device client,
 // you can unsubscribe from the receive callback by setting a null handler.
-await deviceClient.SetReceiveMessageHandlerAsync(null, deviceClient);
+await deviceClient.SetReceiveMessageHandlerAsync(null, null);
+```
+
+### Receive twin desired property update notifications and update device twin's reported properties:
+
+```csharp
+// This snippet shows you how to call the APIs for receiving twin desired property update notifications sent to your device client
+// and sending reported property updates from your device client.
+// In order to ensure that your client is resilient to disconnection events and exceptions,
+// refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
+private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest, object userContext)
+{
+    _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.ToJson()}");
+
+    // For the purpose of this sample, we'll blindly accept all twin property write requests.
+    var reportedProperties = new TwinCollection();
+    foreach (KeyValuePair<string, object> desiredProperty in twinUpdateRequest)
+    {
+        _logger.LogInformation($"Setting property {desiredProperty.Key} to {desiredProperty.Value}.");
+        reportedProperties[desiredProperty.Key] = desiredProperty.Value;
+    }
+
+    // The device app usually responds to a twin desired property update notification by sending a reported property update.
+    await deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
+}
+
+// Subscribe to the twin desired property update API.
+await deviceClient.SetDesiredPropertyUpdateCallbackAsync(HandleTwinUpdateNotificationsAsync, userContext);
+
+// Once you are done receiving twin desired property update notifications sent to your device client,
+// you can unsubscribe from the callback by setting a null handler.
+await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null, null);
 ```
 
 ### Connection status change behavior:
