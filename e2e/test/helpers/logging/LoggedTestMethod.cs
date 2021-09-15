@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public override TestResult[] Execute(ITestMethod testMethod)
         {
             TestResult[] results = base.Execute(testMethod);
-            var testFailureReason = results.First().TestFailureException?.Message;
+            string testFailureReason = results.First().TestFailureException?.Message;
 
             // Log only if there is an exception in the test run.
             if (!string.IsNullOrWhiteSpace(testFailureReason))

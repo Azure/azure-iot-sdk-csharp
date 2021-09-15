@@ -17,9 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SHA256THUMBPRINT = "validEnrollmentGroupId";
         private const string ISSUER_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
         private const string NOT_BEFORE_UTC_STRING = "2017-11-14T12:34:18.123Z";
-        private DateTime NOT_BEFORE_UTC = new DateTime(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
         private const string NOT_AFTER_UTC_STRING = "2017-11-14T12:34:18.321Z";
-        private DateTime NOT_AFTER_UTC = new DateTime(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private const string SERIAL_NUMBER = "000000000000000000";
         private const int VERSION = 3;
 
@@ -64,10 +62,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509CertificatesSucceedOnValidPrimaryX509Certificate()
         {
             // arrange
-            X509Certificate2 primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            using var primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
 
             // act
-            X509Certificates x509Certificates = new X509Certificates(primary);
+            var x509Certificates = new X509Certificates(primary);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -78,11 +76,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509CertificatesSucceedOnValidPrimaryAndSecondaryX509Certificate()
         {
             // arrange
-            X509Certificate2 primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
-            X509Certificate2 secondary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            using var primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            using var secondary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
 
             // act
-            X509Certificates x509Certificates = new X509Certificates(primary, secondary);
+            var x509Certificates = new X509Certificates(primary, secondary);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -96,7 +94,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
 
             // act
-            X509Certificates x509Certificates = new X509Certificates(primary);
+            var x509Certificates = new X509Certificates(primary);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -111,7 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = PUBLIC_KEY_CERTIFICATE_STRING;
 
             // act
-            X509Certificates x509Certificates = new X509Certificates(primary, secondary);
+            var x509Certificates = new X509Certificates(primary, secondary);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -129,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            X509Certificates x509Certificates = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Certificates>(json);
+            var x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -150,7 +148,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            X509Certificates x509Certificates = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Certificates>(json);
+            var x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -194,7 +192,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Certificates>(json));
+            TestAssert.Throws<ProvisioningServiceClientException>(() => JsonConvert.DeserializeObject<X509Certificates>(json));
         }
     }
 }

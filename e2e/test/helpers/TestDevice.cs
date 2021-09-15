@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         Device
     }
 
-    public class TestDevice
+    public class TestDevice : IDisposable
     {
         private const int MaxRetryCount = 5;
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ThrottlingException) };
@@ -34,6 +35,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             minBackoff: TimeSpan.FromMilliseconds(100),
             maxBackoff: TimeSpan.FromSeconds(10),
             deltaBackoff: TimeSpan.FromMilliseconds(100));
+
+        private X509Certificate2 _authCertificate;
 
         private static MsTestLogger s_logger;
 
@@ -72,12 +75,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
             // Delete existing devices named this way and create a new one.
-            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using RegistryManager rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             Client.IAuthenticationMethod auth = null;
 
             var requestDevice = new Device(deviceName);
+            X509Certificate2 authCertificate = null;
+
             if (type == TestDeviceType.X509)
             {
                 requestDevice.Authentication = new AuthenticationMechanism
@@ -88,7 +93,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     }
                 };
 
-                auth = new DeviceAuthenticationWithX509Certificate(deviceName, TestConfiguration.IoTHub.GetCertificateWithPrivateKey());
+#pragma warning disable CA2000 // Dispose objects before losing scope - X509Certificate and DeviceAuthenticationWithX509Certificate are disposed when TestDevice is disposed.
+                authCertificate = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
+                auth = new DeviceAuthenticationWithX509Certificate(deviceName, authCertificate);
+#pragma warning restore CA2000 // Dispose objects before losing scope - X509Certificate and DeviceAuthenticationWithX509Certificate are disposed when TestDevice is disposed.
             }
 
             Device device = null;
@@ -108,7 +116,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             return device == null
                 ? throw new Exception($"Exhausted attempts for creating device {device.Id}, requests got throttled.")
-                : new TestDevice(device, auth);
+                : new TestDevice(device, auth)
+                {
+                    _authCertificate = authCertificate,
+                };
         }
 
         /// <summary>
@@ -188,6 +199,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             await rm.RemoveDeviceAsync(Id).ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
+
+            // Normally we wouldn't be disposing the X509 Certificates here, but rather delegate that to whoever was creating the TestDevice.
+            // For the design that our test suite follows, it is ok to dispose the X509 certificate here since it won't be referenced by anyone else
+            // within the scope of the test using this TestDevice.
+            if (_authCertificate is IDisposable disposableCert)
+            {
+                disposableCert?.Dispose();
+            }
+            _authCertificate = null;
+
+            if (AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509Auth)
+            {
+                x509Auth?.Dispose();
+            }
+            AuthenticationMethod = null;
         }
     }
 }

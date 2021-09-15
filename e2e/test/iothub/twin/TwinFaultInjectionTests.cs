@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue)
         {
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
@@ -273,7 +273,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
-            var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             var propName = Guid.NewGuid().ToString();

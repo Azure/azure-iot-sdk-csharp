@@ -23,21 +23,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         private const int SimulatorPort = 2321;
         private const int TcpTpmDeviceTimeoutSeconds = 30;
 
+        private TcpTpmDevice _tpmDevice;
         private SecurityProviderTpmHsm _innerClient;
 
         public SecurityProviderTpmSimulator(string registrationId) : base(registrationId)
         {
-            var tpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
-            tpmDevice.Connect();
-            tpmDevice.SetSocketTimeout(TcpTpmDeviceTimeoutSeconds);
-            tpmDevice.PowerCycle();
+            _tpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
+            _tpmDevice.Connect();
+            _tpmDevice.SetSocketTimeout(TcpTpmDeviceTimeoutSeconds);
+            _tpmDevice.PowerCycle();
 
-            using (var tpm2 = new Tpm2(tpmDevice))
+            using (var tpm2 = new Tpm2(_tpmDevice))
             {
                 tpm2.Startup(Su.Clear);
             }
 
-            _innerClient = new SecurityProviderTpmHsm(GetRegistrationID(), tpmDevice);
+            _innerClient = new SecurityProviderTpmHsm(GetRegistrationID(), _tpmDevice);
         }
 
         public override void ActivateIdentityKey(byte[] encryptedKey)
@@ -62,7 +63,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 
         public static void StopSimulatorProcess()
         {
-            foreach (var process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)))
+            foreach (Process process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)))
             {
                 try
                 {
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
                 throw new InvalidOperationException($"TPM Simulator not found : {SimulatorExeName}");
             }
 
-            var simulatorProcess = new Process
+            using var simulatorProcess = new Process
             {
                 StartInfo =
                 {
@@ -123,7 +124,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         {
             if (disposing)
             {
-                _innerClient.Dispose();
+                _innerClient?.Dispose();
+                _innerClient = null;
+
+                _tpmDevice?.Dispose();
+                _tpmDevice = null;
             }
         }
     }

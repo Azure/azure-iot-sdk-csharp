@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	<!--netcoreapp2.1 target framework here is solely so that this library can use the SocketsHttpHandler class to handle connection lease timeout issues.-->
-	<!--See #1874 for additional details-->
-    <TargetFrameworks>netstandard2.1;netstandard2.0;net472;net451;netcoreapp2.1</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.1;netstandard2.0</TargetFrameworks>
+    <!--netcoreapp2.1 target framework here is solely so that this library can use the SocketsHttpHandler class to handle connection lease timeout issues.-->
+    <!--See #1874 for additional details-->
+    <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0;net472;net451;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <!-- TODO #176: Enable warnings as errors. -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -118,6 +118,8 @@
       <Link>Common\Utils.cs</Link>
     </Compile>
     <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
+    <Compile Include="$(Common)\HttpMessageHelper.cs" />
+    <Compile Include="$(Common)\HttpContentExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

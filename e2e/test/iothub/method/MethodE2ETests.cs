@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
             // setup
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
             methodInvocation.SetPayloadJson("10");
 
@@ -232,8 +232,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownModuleThrows()
         {
             // setup
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "ModuleNotFoundTest").ConfigureAwait(false);
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "ModuleNotFoundTest").ConfigureAwait(false);
+            using ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
             methodInvocation.SetPayloadJson("10");
 
@@ -571,8 +571,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             await subscribeAndUnsubscribeMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
 
@@ -587,8 +587,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
@@ -608,7 +608,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<ModuleClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
-            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport);
+            using ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(moduleClient, MethodName, Logger).ConfigureAwait(false);
 

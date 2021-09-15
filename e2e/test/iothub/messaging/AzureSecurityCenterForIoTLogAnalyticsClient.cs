@@ -49,6 +49,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly AuthenticationContext _authenticationContext;
         private readonly IClientAssertionCertificate _certificateAssertion;
 
+        private readonly X509Certificate2 _authCertificate;
+
         //These are used in NET451 instead of OperationalInsights SDK
         private readonly HttpClient _client;
 
@@ -65,8 +67,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             _queryUri = string.Format(CultureInfo.InvariantCulture, QueryUriTemplate, LogAnalyticsApiVersion, _workspaceId);
             string authority = string.Format(CultureInfo.InvariantCulture, AuthenticationAuthorityTemplate, _aadTenant);
             _authenticationContext = new AuthenticationContext(authority);
-            var cert = new X509Certificate2(Convert.FromBase64String(_appCertificate));
-            _certificateAssertion = new ClientAssertionCertificate(_appId, cert);
+            _authCertificate = new X509Certificate2(Convert.FromBase64String(_appCertificate));
+            _certificateAssertion = new ClientAssertionCertificate(_appId, _authCertificate);
         }
 
         public async Task<bool> IsRawEventExist(string deviceId, string eventId)
@@ -137,6 +139,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             if (disposing)
             {
                 _client?.Dispose();
+
+                // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
+                if (_authCertificate is IDisposable disposableCert)
+                {
+                    disposableCert?.Dispose();
+                }
             }
         }
     }

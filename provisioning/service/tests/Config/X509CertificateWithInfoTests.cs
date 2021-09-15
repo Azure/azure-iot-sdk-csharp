@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             X509Certificate2 certificateNull = null;
-            var certificateEmpty = new X509Certificate2();
+            using var certificateEmpty = new X509Certificate2();
             string certificateString = null;
             string certificateStringEmpty = "";
             string certificateStringInvalid =
@@ -109,10 +109,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509CertificateWithInfoConstructorSucceedOnValidX509Certificate()
         {
             // arrange
-            X509Certificate2 certificate = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE));
+            using var certificate = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE));
 
             // act
-            X509CertificateWithInfo x509CertificateWithInfo = new X509CertificateWithInfo(certificate);
+            var x509CertificateWithInfo = new X509CertificateWithInfo(certificate);
 
             // assert
             Assert.AreEqual(PUBLIC_KEY_CERTIFICATE_STRING, x509CertificateWithInfo.Certificate);
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string certificate = PUBLIC_KEY_CERTIFICATE;
 
             // act
-            X509CertificateWithInfo x509CertificateWithInfo = new X509CertificateWithInfo(certificate);
+            var x509CertificateWithInfo = new X509CertificateWithInfo(certificate);
 
             // assert
             Assert.AreEqual(PUBLIC_KEY_CERTIFICATE, x509CertificateWithInfo.Certificate);
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION);
 
             // act
-            X509CertificateWithInfo x509CertificateWithInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateWithInfo>(json);
+            var x509CertificateWithInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateWithInfo>(json);
 
             // assert
             Assert.IsNotNull(x509CertificateWithInfo.Info);
