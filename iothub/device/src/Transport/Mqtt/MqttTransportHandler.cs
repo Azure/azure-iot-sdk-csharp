@@ -21,7 +21,6 @@ using System.Web;
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
 using DotNetty.Codecs.Mqtt.Packets;
-using DotNetty.Common.Concurrency;
 using DotNetty.Handlers.Logging;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Bootstrapping;
@@ -32,6 +31,12 @@ using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+
+#if NET5_0
+using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
+#else
+using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
+#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -511,7 +516,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (TryStateTransition(TransportState.Opening, TransportState.Open))
             {
-                _connectCompletion.TryComplete();
+                _connectCompletion.TrySetResult();
             }
         }
 
@@ -1082,7 +1087,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .ConfigureAwait(true);
 
                 if (TryStateTransition(TransportState.Subscribing, TransportState.Receiving)
-                    && _subscribeCompletionSource.TryComplete())
+                    && _subscribeCompletionSource.TrySetResult())
                 {
                     return;
                 }

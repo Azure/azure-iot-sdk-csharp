@@ -51,5 +51,5 @@ Please be as detailed as possible: which feature has a problem, how often does i
 Please remove any connection string information!
 
 ## Console log of the issue
-Consider setting the DEBUG environment variable to '*'. This will produce a much more verbose output that will help debugging
+Follow the instructions [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs) to capture SDK logs.
 Don't forget to remove any connection string information!
