@@ -488,7 +488,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     OnTransportClosedGracefully();
 
                     await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
-                    await s_eventLoopGroup.Value.ShutdownGracefullyAsync().ConfigureAwait(true);
+                    var timeout = ((MqttTransportSettings)_transportSettings).GracefulEventLoopShutdownTimeout;
+                    await s_eventLoopGroup.Value.ShutdownGracefullyAsync(timeout, timeout).ConfigureAwait(true);
                 }
                 else if (State == TransportState.Error)
                 {

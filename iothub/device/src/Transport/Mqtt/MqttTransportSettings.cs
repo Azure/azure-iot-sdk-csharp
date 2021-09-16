@@ -250,5 +250,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
         /// </summary>
         internal string AuthenticationChain { get; set; }
+
+        /// <summary>
+        /// The DotNetty event loop GracefulShutdown timeout.
+        /// </summary>
+        /// <remarks>
+        /// The DotNetty Mqtt transport has a graceful shutdown of the event loop that can block the <see cref="DeviceClient.CloseAsync(System.Threading.CancellationToken)"/> method. This timeout allows you to configure how long the shutdown event will wait for before forcefully shutting down the event loop. Change this if you need your application to respond to the CloseAsync command faster.
+        /// </remarks>
+        public TimeSpan GracefulEventLoopShutdownTimeout { get; set; } = TimeSpan.FromSeconds(1);
     }
 }
