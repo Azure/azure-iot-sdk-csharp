@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -800,6 +801,31 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isValue2Retrieved = testPropertyCollection.TryGetValue<int>("testComponent", "abc", out int value2Retrieved);
             isValue2Retrieved.Should().BeTrue();
             value2Retrieved.Should().Be(2);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollect_AddRawClassSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            var propertyValues = new CustomClientProperty
+            {
+                Id = 12,
+                Name = "testProperty"
+            };
+            var propertyValuesAsDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(propertyValues));
+
+            // act
+            testPropertyCollection.AddRootProperties(propertyValuesAsDictionary);
+
+            // assert
+            bool isIdPresent = testPropertyCollection.TryGetValue<int>("Id", out int id);
+            isIdPresent.Should().BeTrue();
+            id.Should().Be(12);
+
+            bool isNamePresent = testPropertyCollection.TryGetValue<string>("Name", out string name);
+            isNamePresent.Should().BeTrue();
+            name.Should().Be("testProperty");
         }
     }
 
