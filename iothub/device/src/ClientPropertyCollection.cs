@@ -44,8 +44,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component with the property to add.</param>
         /// <param name="propertyName">The name of the property to add.</param>
         /// <param name="propertyValue">The value of the property to add.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or <paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddComponentProperty(string componentName, string propertyName, object propertyValue)
-            => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
+        {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
+        }
 
         /// <inheritdoc path="/remarks" cref="AddRootProperty(string, object)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -55,8 +63,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component with the properties to add.</param>
         /// <param name="properties">A collection of properties to add.</param>
         /// <exception cref="ArgumentException">A property name in <paramref name="properties"/> already exists in the collection.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or a property name in <paramref name="properties"/> is <c>null</c>.</exception>
         public void AddComponentProperties(string componentName, IDictionary<string, object> properties)
-            => AddInternal(properties, componentName, true);
+        {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            AddInternal(properties, componentName, false);
+        }
 
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/exception" cref="AddRootProperty(string, object)" />
@@ -100,9 +116,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component with the property to add or update.</param>
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or <paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddOrUpdateComponentProperty(string componentName, string propertyName, object propertyValue)
-            => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
+        {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
+        }
 
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -116,8 +139,16 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="properties">A collection of properties to add or update.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or a property name in <paramref name="properties"/> is <c>null</c>.</exception>
         public void AddOrUpdateComponentProperties(string componentName, IDictionary<string, object> properties)
-            => AddInternal(properties, componentName, true);
+        {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            AddInternal(properties, componentName, true);
+        }
 
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -133,9 +164,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
         public void AddOrUpdateRootProperties(IDictionary<string, object> properties)
-            => properties
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            properties
                 .ToList()
                 .ForEach(entry => Collection[entry.Key] = entry.Value);
+        }
 
         /// <summary>
         /// Determines whether the specified property is present.
@@ -426,14 +464,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior.
         /// Setting to true will simply overwrite the value. Setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
-        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c> for a top-level property operation.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
         private void AddInternal(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
             // If the componentName is null then simply add the key-value pair to Collection dictionary.
             // This will either insert a property or overwrite it if it already exists.
             if (componentName == null)
             {
-                // If both the component name and properties collection are null then throw a ArgumentNullException.
+                // If both the component name and properties collection are null then throw an ArgumentNullException.
                 // This is not a valid use-case.
                 if (properties == null)
                 {
@@ -442,6 +480,12 @@ namespace Microsoft.Azure.Devices.Client
 
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
+                    // A null property key is not allowed. Throw an ArgumentNullException.
+                    if (entry.Key == null)
+                    {
+                        throw new ArgumentNullException(nameof(entry.Key));
+                    }
+
                     if (forceUpdate)
                     {
                         Collection[entry.Key] = entry.Value;
@@ -471,6 +515,12 @@ namespace Microsoft.Azure.Devices.Client
 
                     foreach (KeyValuePair<string, object> entry in properties)
                     {
+                        // A null property key is not allowed. Throw an ArgumentNullException.
+                        if (entry.Key == null)
+                        {
+                            throw new ArgumentNullException(nameof(entry.Key));
+                        }
+
                         if (forceUpdate)
                         {
                             componentProperties[entry.Key] = entry.Value;
