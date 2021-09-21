@@ -42,11 +42,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonConstructor]
         internal X509CAReferences(string primary, string secondary = null)
         {
-            /* SRS_X509_CAREFERENCE_21_001: [The constructor shall throw ArgumentException if the primary CA reference is null or empty.] */
-            if(string.IsNullOrWhiteSpace(primary))
-            {
-                throw new ProvisioningServiceClientException("Primary CA reference cannot be null or empty");
-            }
             /* SRS_X509_CAREFERENCE_21_002: [The constructor shall store the primary and secondary CA references.] */
             Primary = primary;
             Secondary = secondary;
