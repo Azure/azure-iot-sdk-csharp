@@ -17,7 +17,7 @@ Service samples were moved to [Azure-Samples/azure-iot-samples-csharp][samples-r
 [samples-repo]: https://github.com/Azure-Samples/azure-iot-samples-csharp
 [service-samples]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service
 [adm-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/AutomaticDeviceManagementSample
-[device-streaming-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/DeviceStreamingSample
+[device-streaming-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/service/DeviceStreamingSample
 [edge-deployment-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/EdgeDeploymentSample
 [import-export-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/ImportExportDevicesSample
 [jobs-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/JobsSample
