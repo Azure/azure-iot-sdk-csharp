@@ -475,6 +475,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends an event to a hub
         /// </summary>
         /// <param name="message">The message to send. Should be disposed after sending.</param>
+        /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
+        /// <exception cref="TimeoutException">Thrown when the operation has been canceled or timed out.</exception>
         /// <returns>The task to await</returns>
         public Task SendEventAsync(Message message) => InternalClient.SendEventAsync(message);
 
@@ -483,6 +485,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message to send. Should be disposed after sending.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task to await</returns>
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => InternalClient.SendEventAsync(message, cancellationToken);
