@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerSendTwinGetAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTwinGetAsync(token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().GetClientTwinPropertiesAsync<TwinProperties>(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -383,7 +383,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
+            var twinPropertiesReturned = await transport.GetClientTwinPropertiesAsync<TwinProperties>(CancellationToken.None).ConfigureAwait(false);
+            var twinReturned = new Twin
+            {
+                Properties = twinPropertiesReturned,
+            };
 
             // assert
             Assert.AreEqual<string>(twin.Properties.Desired["foo"].ToString(), twinReturned.Properties.Desired["foo"].ToString());
@@ -413,7 +417,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.GetClientTwinPropertiesAsync<TwinProperties>(CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_020: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error
@@ -427,7 +431,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
+            var twinReturned = await transport.GetClientTwinPropertiesAsync<TwinProperties>(CancellationToken.None).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_022: `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request

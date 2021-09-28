@@ -178,12 +178,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return InnerHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
-        }
-
         public virtual Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -202,10 +196,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public virtual Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler?.GetClientPropertiesAsync(payloadConvention, cancellationToken) ?? Task.FromResult<ClientProperties>(null);
+            return InnerHandler?.GetClientTwinPropertiesAsync<T>(cancellationToken) ?? Task.FromResult<T>(default);
         }
 
         public virtual Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)

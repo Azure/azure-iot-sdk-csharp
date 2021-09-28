@@ -13,6 +13,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using System.ComponentModel;
+using System.Text;
+using Newtonsoft.Json;
 
 #if NET451
 
@@ -1167,12 +1169,16 @@ namespace Microsoft.Azure.Devices.Client
         /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <returns>The device twin object for the current device</returns>
-        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
+        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
         {
-            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state.
             try
             {
-                return InnerHandler.SendTwinGetAsync(cancellationToken);
+                TwinProperties twinProperties = await InnerHandler
+                    .GetClientTwinPropertiesAsync<TwinProperties>(cancellationToken).ConfigureAwait(false);
+                return new Twin
+                {
+                    Properties = twinProperties,
+                };
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {

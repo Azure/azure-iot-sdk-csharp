@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
@@ -21,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new object();
-        private ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<Stream>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Stream>>();
         private bool _closed;
 
         static AmqpTransportHandler()
@@ -347,20 +349,44 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        public override async Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
+            Logging.Enter(this, cancellationToken, nameof(GetClientTwinPropertiesAsync));
 
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                Twin twin = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken)
+                using Stream twin = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken)
                     .ConfigureAwait(false);
-                return twin ?? throw new InvalidOperationException("Service rejected the message");
+
+                if (twin != null)
+                {
+                    // We will use UTF-8 for decoding the service response. This is because UTF-8 is the only currently supported encoding format.
+                    using var reader = new StreamReader(twin, DefaultPayloadConvention.Instance.PayloadEncoder.ContentEncoding);
+                    string body = reader.ReadToEnd();
+
+                    try
+                    {
+                        // We will use NewtonSoft Json to deserialize the service response to the appropriate type; i.e. Twin for non-convention-based operation
+                        // and ClientProperties for convention-based operations.
+                        return JsonConvert.DeserializeObject<T>(body);
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+
+                        throw;
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException("Service rejected the message");
+                }
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(SendTwinGetAsync));
+                Logging.Exit(this, cancellationToken, nameof(GetClientTwinPropertiesAsync));
             }
         }
 
@@ -379,7 +405,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private async Task<Twin> RoundTripTwinMessageAsync(
+        private async Task<Stream> RoundTripTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
             TwinCollection reportedProperties,
             CancellationToken cancellationToken)
@@ -387,12 +413,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Logging.Enter(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
 
             string correlationId = amqpTwinMessageType + Guid.NewGuid().ToString();
-            Twin response = null;
+            Stream response = null;
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var taskCompletionSource = new TaskCompletionSource<Twin>();
+                var taskCompletionSource = new TaskCompletionSource<Stream>();
                 _twinResponseCompletions[correlationId] = taskCompletionSource;
 
                 await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, _operationTimeout).ConfigureAwait(false);
@@ -523,14 +549,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Convention-based operations
 
-        public override Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException("This operation is currently not supported over AMQP, please use MQTT protocol instead. " +
-                "Note that you can still retrieve a client's properties using DeviceClient.GetTwinAsync(CancellationToken cancellationToken) or " +
-                "ModuleClient.GetTwinAsync(CancellationToken cancellationToken) operations, but the properties will not be formatted " +
-                "as per DTDL terminology.");
-        }
-
         public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             throw new NotImplementedException("This operation is currently not supported over AMQP, please use MQTT protocol instead. " +
@@ -543,7 +561,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Helpers
 
-        private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
+        private void TwinMessageListener(Stream twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
         {
             if (correlationId == null)
             {
@@ -556,7 +574,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     // For Get and Patch, complete the task.
-                    if (_twinResponseCompletions.TryRemove(correlationId, out TaskCompletionSource<Twin> task))
+                    if (_twinResponseCompletions.TryRemove(correlationId, out TaskCompletionSource<Stream> task))
                     {
                         if (ex == default)
                         {

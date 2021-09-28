@@ -496,28 +496,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
-
-                return await _internalRetryPolicy
-                    .ExecuteAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            return await base.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                Logging.Exit(this, cancellationToken, nameof(SendTwinGetAsync));
-            }
-        }
-
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             try
@@ -606,25 +584,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override async Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
             try
             {
-                Logging.Enter(this, payloadConvention, cancellationToken, nameof(SendPropertyPatchAsync));
+                Logging.Enter(this, cancellationToken, nameof(SendPropertyPatchAsync));
 
                 return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            return await base.GetClientPropertiesAsync(payloadConvention, cancellationToken).ConfigureAwait(false);
+                            return await base.GetClientTwinPropertiesAsync<T>(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
             }
             finally
             {
-                Logging.Exit(this, payloadConvention, cancellationToken, nameof(SendPropertyPatchAsync));
+                Logging.Exit(this, cancellationToken, nameof(SendPropertyPatchAsync));
             }
         }
 

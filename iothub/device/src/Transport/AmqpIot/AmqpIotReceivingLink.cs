@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private Action<Message> _onEventsReceived;
         private Action<Message> _onDeviceMessageReceived;
         private Action<MethodRequestInternal> _onMethodReceived;
-        private Action<Twin, string, TwinCollection, IotHubException> _onTwinMessageReceived;
+        private Action<Stream, string, TwinCollection, IotHubException> _onTwinMessageReceived;
 
         public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink)
         {
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Twin handling
 
-        internal void RegisterTwinListener(Action<Twin, string, TwinCollection, IotHubException> onDesiredPropertyReceived)
+        internal void RegisterTwinListener(Action<Stream, string, TwinCollection, IotHubException> onDesiredPropertyReceived)
         {
             _onTwinMessageReceived = onDesiredPropertyReceived;
             _receivingAmqpLink.RegisterMessageListener(OnTwinChangesReceived);
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 string correlationId = amqpMessage.Properties?.CorrelationId?.ToString();
                 int status = GetStatus(amqpMessage);
 
-                Twin twin = null;
+                Stream twin = null;
                 TwinCollection twinProperties = null;
 
                 if (status >= 400)
@@ -310,10 +310,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         // This a response of a GET TWIN so return (set) the full twin
-                        using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
-                        string body = reader.ReadToEnd();
-                        TwinProperties properties = JsonConvert.DeserializeObject<TwinProperties>(body);
-                        twin = new Twin(properties);
+                        twin = amqpMessage.BodyStream;
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                     {

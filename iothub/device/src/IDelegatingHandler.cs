@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
         Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken);
 
         // Twin.
-        Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken);
+        Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken);
 
         Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken);
 
@@ -68,8 +68,6 @@ namespace Microsoft.Azure.Devices.Client
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
 
         // Convention driven operations.
-
-        Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken);
 
         Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken);
     }

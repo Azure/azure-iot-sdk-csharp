@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
             Func<MethodRequestInternal, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
+            Action<Stream, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)

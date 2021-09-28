@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinGetAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+                GetClientTwinPropertiesAsync<TwinProperties>(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties

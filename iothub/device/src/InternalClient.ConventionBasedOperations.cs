@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -64,11 +66,14 @@ namespace Microsoft.Azure.Devices.Client
             return SetMethodDefaultHandlerAsync(methodDefaultCallback, userContext, cancellationToken);
         }
 
-        internal async Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken)
+        internal async Task<ClientProperties> GetClientTwinPropertiesAsync(CancellationToken cancellationToken)
         {
             try
             {
-                return await InnerHandler.GetClientPropertiesAsync(PayloadConvention, cancellationToken).ConfigureAwait(false);
+                ClientPropertiesAsDictionary clientPropertiesDictionary = await InnerHandler
+                    .GetClientTwinPropertiesAsync<ClientPropertiesAsDictionary>(cancellationToken).ConfigureAwait(false);
+
+                return clientPropertiesDictionary.ToClientProperties(PayloadConvention);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {

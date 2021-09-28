@@ -912,46 +912,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
         }
 
-        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            EnsureValidState();
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_014:  `SendTwinGetAsync` shall allocate a `Message` object to hold the `GET` request
-            using var request = new Message();
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_015:  `SendTwinGetAsync` shall generate a GUID to use as the $rid property on the request
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_016:  `SendTwinGetAsync` shall set the `Message` topic to '$iothub/twin/GET/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated
-            string rid = Guid.NewGuid().ToString();
-            request.MqttTopicName = TwinGetTopic.FormatInvariant(rid);
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_017:  `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_019:  If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_020:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error
-            using Message response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_021:  If the response contains a success code, `SendTwinGetAsync` shall return success to the caller
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_018:  When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller
-            using var reader = new StreamReader(response.GetBodyStream(), System.Text.Encoding.UTF8);
-            string body = reader.ReadToEnd();
-
-            try
-            {
-                return new Twin
-                {
-                    Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
-                };
-            }
-            catch (JsonReaderException ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
-
-                throw;
-            }
-        }
-
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -977,7 +937,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
         }
 
-        public override async Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override async Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
@@ -988,14 +948,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             using Message response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
 
-            using var reader = new StreamReader(response.GetBodyStream(), payloadConvention.PayloadEncoder.ContentEncoding);
+            // We will use UTF-8 for decoding the service response. This is because UTF-8 is the only currently supported encoding format.
+            using var reader = new StreamReader(response.GetBodyStream(), DefaultPayloadConvention.Instance.PayloadEncoder.ContentEncoding);
             string body = reader.ReadToEnd();
 
             try
             {
-                ClientPropertiesAsDictionary clientPropertiesAsDictionary = JsonConvert.DeserializeObject<ClientPropertiesAsDictionary>(body);
-                var properties = clientPropertiesAsDictionary.ToClientProperties(payloadConvention);
-                return properties;
+                // We will use NewtonSoft Json to deserialize the service response to the appropriate type; i.e. Twin for non-convention-based operation
+                // and ClientProperties for convention-based operations.
+                return JsonConvert.DeserializeObject<T>(body);
             }
             catch (JsonReaderException ex)
             {
