@@ -912,31 +912,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
         }
 
-        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            EnsureValidState();
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_025:  `SendTwinPatchAsync` shall serialize the `reported` object into a JSON string
-            string body = JsonConvert.SerializeObject(reportedProperties);
-            using var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_022:  `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_026:  `SendTwinPatchAsync` shall set the body of the message to the JSON string
-            using var request = new Message(bodyStream);
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_023:  `SendTwinPatchAsync` shall generate a GUID to use as the $rid property on the request
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_024:  `SendTwinPatchAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated
-            string rid = Guid.NewGuid().ToString();
-            request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_027:  `SendTwinPatchAsync` shall wait for a response from the service with a matching $rid value
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_028:  If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_029:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_030:  If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller.
-            await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
-        }
-
         public override async Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -967,15 +942,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            byte[] body = reportedProperties.GetPayloadObjectBytes();
-            using var bodyStream = new MemoryStream(body);
-
-            using var request = new Message(bodyStream);
+            using var request = new Message(reportedProperties);
 
             string rid = Guid.NewGuid().ToString();
             request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);

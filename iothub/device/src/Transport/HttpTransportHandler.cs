@@ -403,9 +403,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             throw new NotImplementedException("This operation is not supported over HTTP. Please use MQTT protocol instead.");
         }
 
-        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("Property operations are not supported over HTTP. Please use MQTT protocol instead.");
+            throw new NotImplementedException("This operation is not supported over HTTP. Please use MQTT protocol instead.");
         }
 
         // This is for invoking methods from an edge module to another edge device or edge module.

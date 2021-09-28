@@ -1222,7 +1222,10 @@ namespace Microsoft.Azure.Devices.Client
             // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
             try
             {
-                return InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken);
+                string body = JsonConvert.SerializeObject(reportedProperties);
+                using var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+
+                return InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {

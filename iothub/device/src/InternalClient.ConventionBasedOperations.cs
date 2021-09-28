@@ -92,7 +92,10 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 clientProperties.Convention = PayloadConvention;
-                return await InnerHandler.SendPropertyPatchAsync(clientProperties, cancellationToken).ConfigureAwait(false);
+                byte[] body = clientProperties.GetPayloadObjectBytes();
+                using var bodyStream = new MemoryStream(body);
+
+                return await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {

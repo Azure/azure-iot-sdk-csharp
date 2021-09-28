@@ -390,24 +390,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+            Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendClientTwinPropertyPatchAsync));
 
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
+                using Stream updateResponse = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
+
+                // TODO
+                return new ClientPropertiesUpdateResponse();
             }
             finally
             {
-                Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+                Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendClientTwinPropertyPatchAsync));
             }
         }
 
         private async Task<Stream> RoundTripTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
-            TwinCollection reportedProperties,
+            Stream reportedProperties,
             CancellationToken cancellationToken)
         {
             Logging.Enter(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
@@ -546,18 +549,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         #endregion Accept-Dispose
-
-        #region Convention-based operations
-
-        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException("This operation is currently not supported over AMQP, please use MQTT protocol instead. " +
-                "Note that you can still retrieve a client's properties using DeviceClient.GetTwinAsync(CancellationToken cancellationToken) or " +
-                "ModuleClient.GetTwinAsync(CancellationToken cancellationToken) operations, but the properties will not be formatted " +
-                "as per DTDL terminology.");
-        }
-
-        #endregion Convention-based operations
 
         #region Helpers
 

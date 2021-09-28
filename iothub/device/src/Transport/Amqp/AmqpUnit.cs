@@ -762,7 +762,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public async Task SendTwinMessageAsync(AmqpTwinMessageType amqpTwinMessageType, string correlationId, TwinCollection reportedProperties, TimeSpan timeout)
+        public async Task SendTwinMessageAsync(AmqpTwinMessageType amqpTwinMessageType, string correlationId, Stream reportedProperties, TimeSpan timeout)
         {
             Logging.Enter(this, timeout, nameof(SendTwinMessageAsync));
 

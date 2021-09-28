@@ -6,6 +6,9 @@ using NSubstitute;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using System.IO;
+using System.Text;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -151,6 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
             var props = new TwinCollection();
+            string body = JsonConvert.SerializeObject(props);
 
             // act
             await client.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
@@ -158,7 +162,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinPatchAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+                SendClientTwinPropertyPatchAsync(
+                    Arg.Any<Stream>(),
+                    Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
