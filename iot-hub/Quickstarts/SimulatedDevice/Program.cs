@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // This application uses the Azure IoT Hub device SDK for .NET
-// For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/master/iothub/device/samples
+// For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples
 
 using Microsoft.Azure.Devices.Client;
 using System;
@@ -16,7 +16,7 @@ namespace SimulatedDevice
 {
     /// <summary>
     /// This sample illustrates the very basics of a device app sending telemetry. For a more comprehensive device app sample, please see
-    /// <see href="https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/DeviceReconnectionSample"/>.
+    /// <see href="https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/DeviceReconnectionSample"/>.
     /// </summary>
     internal class Program
     {

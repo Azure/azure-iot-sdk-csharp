@@ -49,9 +49,9 @@ using var security = new SecurityProviderX509Certificate(certificate);
 // ... (see sample for details)
 ```
 
-The SDK provides an extension model [SecurityProviderX509](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/src/SecurityProviderX509.cs) that allows hardware vendors to implement custom Hardware Security Modules that store the device certificates. On Windows, PKCS11 HSM devices are supported through the [Certificate Store](https://docs.microsoft.com/windows-hardware/drivers/install/certificate-stores).
+The SDK provides an extension model [SecurityProviderX509](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/shared/src/SecurityProviderX509.cs) that allows hardware vendors to implement custom Hardware Security Modules that store the device certificates. On Windows, PKCS11 HSM devices are supported through the [Certificate Store](https://docs.microsoft.com/windows-hardware/drivers/install/certificate-stores).
 
-An example of implementation for this extension module is the [SecurityProviderX509Certificate](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/src/SecurityProviderX509Certificate.cs) class.
+An example of implementation for this extension module is the [SecurityProviderX509Certificate](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/shared/src/SecurityProviderX509Certificate.cs) class.
 
 ### Provisioning devices using TPM-based attestation
 
@@ -64,7 +64,7 @@ using var security = new SecurityProviderTpmSimulator(RegistrationId);
 // ... (see sample for details)
 ```
 
-The SDK provides an extension model [SecurityProviderTpm](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/src/SecurityProviderTpm.cs) that allows hardware vendors to implement custom TPM v2.0 Hardware Security Modules.
+The SDK provides an extension model [SecurityProviderTpm](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/shared/src/SecurityProviderTpm.cs) that allows hardware vendors to implement custom TPM v2.0 Hardware Security Modules.
 
 The samples use a TPMv2.0 simulator that uses a loopback TCP connection for communication. This is provided for demonstration purposes only and does not provide any security.
 
