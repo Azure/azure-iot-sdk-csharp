@@ -89,11 +89,12 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(clientProperties));
             }
 
+            Stream bodyStream = null;
             try
             {
                 clientProperties.Convention = PayloadConvention;
                 byte[] body = clientProperties.GetPayloadObjectBytes();
-                using var bodyStream = new MemoryStream(body);
+                bodyStream = new MemoryStream(body);
 
                 return await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
             }
@@ -101,6 +102,10 @@ namespace Microsoft.Azure.Devices.Client
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
+            }
+            finally
+            {
+                bodyStream?.Dispose();
             }
         }
 

@@ -1211,7 +1211,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             // `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null.
             if (reportedProperties == null)
@@ -1220,17 +1220,22 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
+            Stream bodyStream = null;
             try
             {
                 string body = JsonConvert.SerializeObject(reportedProperties);
-                using var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+                bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
-                return InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken);
+                await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
+            }
+            finally
+            {
+                bodyStream?.Dispose();
             }
         }
 

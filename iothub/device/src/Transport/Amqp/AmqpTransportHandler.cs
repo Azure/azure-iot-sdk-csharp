@@ -5,8 +5,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Shared;
@@ -23,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new object();
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<Stream>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Stream>>();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
         private bool _closed;
 
         static AmqpTransportHandler()
@@ -356,13 +358,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                using Stream twin = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken)
+                AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (twin != null)
+                if (responseFromService != null)
                 {
                     // We will use UTF-8 for decoding the service response. This is because UTF-8 is the only currently supported encoding format.
-                    using var reader = new StreamReader(twin, DefaultPayloadConvention.Instance.PayloadEncoder.ContentEncoding);
+                    using var reader = new StreamReader(responseFromService.BodyStream, Encoding.UTF8);
                     string body = reader.ReadToEnd();
 
                     try
@@ -397,10 +399,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                using Stream updateResponse = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
+                AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
 
-                // TODO
-                return new ClientPropertiesUpdateResponse();
+                long updatedVersion = GetVersion(responseFromService);
+                return new ClientPropertiesUpdateResponse()
+                {
+                    Version = updatedVersion,
+                };
             }
             finally
             {
@@ -408,7 +413,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private async Task<Stream> RoundTripTwinMessageAsync(
+        private async Task<AmqpMessage> RoundTripTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
             Stream reportedProperties,
             CancellationToken cancellationToken)
@@ -416,12 +421,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Logging.Enter(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
 
             string correlationId = amqpTwinMessageType + Guid.NewGuid().ToString();
-            Stream response = null;
+            AmqpMessage response = default;
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var taskCompletionSource = new TaskCompletionSource<Stream>();
+                var taskCompletionSource = new TaskCompletionSource<AmqpMessage>();
                 _twinResponseCompletions[correlationId] = taskCompletionSource;
 
                 await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, _operationTimeout).ConfigureAwait(false);
@@ -552,37 +557,60 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Helpers
 
-        private void TwinMessageListener(Stream twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
+        private void TwinMessageListener(AmqpMessage responseFromService, string correlationId, IotHubException ex = default)
         {
             if (correlationId == null)
             {
-                // This is desired property updates, so call the callback with TwinCollection.
-                _onDesiredStatePatchListener(twinCollection);
+                // This is desired property updates, so invoke the callback with TwinCollection.
+                using var reader = new StreamReader(responseFromService.BodyStream, Encoding.UTF8);
+                string responseBody = reader.ReadToEnd();
+
+                _onDesiredStatePatchListener(JsonConvert.DeserializeObject<TwinCollection>(responseBody));
             }
-            else
+            else if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase)
+                || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase)
-                    || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
+                // For Get and Patch, complete the task.
+                if (_twinResponseCompletions.TryRemove(correlationId, out TaskCompletionSource<AmqpMessage> task))
                 {
-                    // For Get and Patch, complete the task.
-                    if (_twinResponseCompletions.TryRemove(correlationId, out TaskCompletionSource<Stream> task))
+                    if (ex == default)
                     {
-                        if (ex == default)
-                        {
-                            task.SetResult(twin);
-                        }
-                        else
-                        {
-                            task.SetException(ex);
-                        }
+                        task.SetResult(responseFromService);
                     }
                     else
                     {
-                        // This can happen if we received a message from service with correlation Id that was not set by SDK or does not exist in dictionary.
-                        Logging.Info("Could not remove correlation id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
+                        task.SetException(ex);
                     }
                 }
+                else
+                {
+                    // This can happen if we received a message from service with correlation Id that was not sent by SDK or does not exist in dictionary.
+                    Logging.Error("Could not remove correlation id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
+                }
             }
+            else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                // This is an acknowledgment received from service for subscribing to desired property updates.
+                Logging.Info("Subscribed for twin successfully", nameof(TwinMessageListener));
+            }
+            else
+            {
+                // This can happen if we received a message from service with correlation Id that was not sent by SDK or does not exist in dictionary.
+                Logging.Error("Received an unexpected response from service.", nameof(TwinMessageListener));
+            }
+        }
+
+        internal static long GetVersion(AmqpMessage response)
+        {
+            if (response != null)
+            {
+                if (response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseVersionName, out long version))
+                {
+                    return version;
+                }
+            }
+
+            return -1;
         }
 
         #endregion Helpers
