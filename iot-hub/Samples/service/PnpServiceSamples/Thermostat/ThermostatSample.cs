@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 _logger.LogWarning($"Unable to execute command {getMaxMinReportCommandName} on {_deviceId}." +
                     $"\nMake sure that the device sample Thermostat located in " +
-                    $"https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/PnpDeviceSamples/Thermostat " +
+                    $"https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples/Thermostat " +
                     $"is also running.");
             }
         }

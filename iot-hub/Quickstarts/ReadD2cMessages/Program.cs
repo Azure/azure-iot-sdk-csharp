@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // This application uses the Azure Event Hubs Client for .NET
-// For samples see: https://github.com/Azure/azure-sdk-for-net/blob/master/sdk/eventhub/Azure.Messaging.EventHubs/samples/README.md
+// For samples see: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/eventhub/Azure.Messaging.EventHubs/samples/README.md
 // For documentation see: https://docs.microsoft.com/azure/event-hubs/
 
 using Azure.Messaging.EventHubs.Consumer;
@@ -70,7 +70,7 @@ namespace ReadD2cMessages
 
             // Create the consumer using the default consumer group using a direct connection to the service.
             // Information on using the client with a proxy can be found in the README for this quick start, here:
-            // https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Quickstarts/ReadD2cMessages/README.md#websocket-and-proxy-support
+            // https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Quickstarts/ReadD2cMessages/README.md#websocket-and-proxy-support
             await using var consumer = new EventHubConsumerClient(
                 EventHubConsumerClient.DefaultConsumerGroupName,
                 connectionString,
@@ -89,7 +89,7 @@ namespace ReadD2cMessages
                 // "EventProcessorClient" from the "Azure.Messaging.EventHubs.Processor" package.
                 //
                 // More information on the "EventProcessorClient" and its benefits can be found here:
-                //   https://github.com/Azure/azure-sdk-for-net/blob/master/sdk/eventhub/Azure.Messaging.EventHubs.Processor/README.md
+                //   https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/eventhub/Azure.Messaging.EventHubs.Processor/README.md
                 await foreach (PartitionEvent partitionEvent in consumer.ReadEventsAsync(ct))
                 {
                     Console.WriteLine($"\nMessage received on partition {partitionEvent.Partition.PartitionId}:");

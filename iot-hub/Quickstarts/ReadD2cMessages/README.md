@@ -22,7 +22,7 @@ az iot hub show --query properties.eventHubEndpoints.events.path --name {your Io
 az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}
 ```
 
-If you can do neither of the above and need to programmatically get this information, the sample [How to request the IoT Hub built-in Event Hubs-compatible endpoint connection string](https://github.com/Azure/azure-sdk-for-net/blob/master/samples/iothub-connect-to-eventhubs/README.md) demonstrates how to do so.
+If you can do neither of the above and need to programmatically get this information, the sample [How to request the IoT Hub built-in Event Hubs-compatible endpoint connection string](https://github.com/Azure/azure-sdk-for-net/blob/main/samples/iothub-connect-to-eventhubs/README.md) demonstrates how to do so.
 
 ## WebSocket and proxy support
 
@@ -51,7 +51,7 @@ await using var consumer = new EventHubConsumerClient(consumerGroup, "<< CONNECT
 ## Additional Resources
 
 - [Event Hubs Product Documentation](https://docs.microsoft.com/azure/event-hubs/)
-- [Event Hubs Client Library Documentation](https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/eventhub/Azure.Messaging.EventHubs/README.md)
-- [Event Hubs Samples](https://github.com/Azure/azure-sdk-for-net/blob/master/sdk/eventhub/Azure.Messaging.EventHubs/samples/README.md)
-- [Event Processor Client Library Documentation](https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/eventhub/Azure.Messaging.EventHubs.Processor/README.md)
-- [Event Processor Samples](https://github.com/Azure/azure-sdk-for-net/blob/master/sdk/eventhub/Azure.Messaging.EventHubs.Processor/samples/README.md)
+- [Event Hubs Client Library Documentation](https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/eventhub/Azure.Messaging.EventHubs/README.md)
+- [Event Hubs Samples](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/eventhub/Azure.Messaging.EventHubs/samples/README.md)
+- [Event Processor Client Library Documentation](https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/eventhub/Azure.Messaging.EventHubs.Processor/README.md)
+- [Event Processor Samples](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/eventhub/Azure.Messaging.EventHubs.Processor/samples/README.md)

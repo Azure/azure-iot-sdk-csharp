@@ -35,7 +35,7 @@ deviceClient = DeviceClient.CreateFromConnectionString(connectionString, transpo
 
 ```csharp
 // This snippet shows you how to call the API for sending telemetry from your device client.
-// In order to ensure that your client is resilient to disconnection events and exceptions, refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
+// In order to ensure that your client is resilient to disconnection events and exceptions, refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
 var temperature = 25;
 var humidity = 70;
 string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
@@ -53,7 +53,7 @@ await deviceClient.SendEventAsync(message);
 
 ```csharp
 // This snippet shows you how to call the API for receiving telemetry sent to your device client.
-// In order to ensure that your client is resilient to disconnection events and exceptions, refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
+// In order to ensure that your client is resilient to disconnection events and exceptions, refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
 using Message receivedMessage = await deviceClient.ReceiveAsync();
 if (receivedMessage == null)
 {
@@ -82,7 +82,7 @@ await deviceClient.CompleteAsync(receivedMessage);
 ```csharp
 // This snippet shows you how to call the API for receiving telemetry sent to your device client.
 // In order to ensure that your client is resilient to disconnection events and exceptions,
-// refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
+// refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
 private async Task OnC2dMessageReceived(Message receivedMessage, object userContext)
 {
     string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
@@ -115,7 +115,7 @@ await deviceClient.SetReceiveMessageHandlerAsync(null, null);
 // This snippet shows you how to call the APIs for receiving twin desired property update notifications sent to your device client
 // and sending reported property updates from your device client.
 // In order to ensure that your client is resilient to disconnection events and exceptions,
-// refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
+// refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
 private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest, object userContext)
 {
     _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.ToJson()}");

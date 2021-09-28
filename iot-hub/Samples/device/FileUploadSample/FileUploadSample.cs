@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine($"Uploading file {fileName} using the Azure Storage SDK and the retrieved SAS URI for authentication");
 
                 // Note that other versions of the Azure Storage SDK can be used here. For the latest version, see
-                // https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/storage#azure-storage-libraries-for-net
+                // https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/storage#azure-storage-libraries-for-net
                 // NOTE: The UploadAsync operation overwrites the contents of the blob, creating a new block blob if none exists.
                 // Overwriting an existing block blob replaces any existing metadata on the blob.
                 // Set <see href="https://docs.microsoft.com/en-us/rest/api/storageservices/specifying-conditional-headers-for-blob-service-operations">

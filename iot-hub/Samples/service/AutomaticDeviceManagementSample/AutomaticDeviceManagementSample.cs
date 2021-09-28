@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Samples
 {
     /// <summary>
     /// This sample demonstrates automatic device management using device configurations.
-    /// For module configurations, refer to: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/EdgeDeploymentSample
+    /// For module configurations, refer to: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/service/EdgeDeploymentSample
     /// </summary>
     public class AutomaticDeviceManagementSample
     {

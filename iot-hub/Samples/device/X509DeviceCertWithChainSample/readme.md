@@ -16,7 +16,7 @@ Create a secure string password to use in creation of self-signed certificates.
 
 ### Step 3
 
-[AuthSetup.ps1](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/iot-hub/Samples/device/X509DeviceCertWithChainSample/AuthSetup.ps1) creates the root, intermediate and device certificates, and uploads and verifies the root certificate to your IoT Hub.
+[AuthSetup.ps1](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/X509DeviceCertWithChainSample/AuthSetup.ps1) creates the root, intermediate and device certificates, and uploads and verifies the root certificate to your IoT Hub.
 
 Run the following powershell command in admin mode.
 

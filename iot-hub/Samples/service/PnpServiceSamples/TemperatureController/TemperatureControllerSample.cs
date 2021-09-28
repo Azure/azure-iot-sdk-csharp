@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Samples
 
         private static readonly Random Random = new Random();
         private static readonly string DeviceSampleLink =
-            "https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/PnpDeviceSamples/TemperatureController";
+            "https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples/TemperatureController";
 
         private readonly ServiceClient _serviceClient;
         private readonly RegistryManager _registryManager;
