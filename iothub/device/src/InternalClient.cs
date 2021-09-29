@@ -1171,20 +1171,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The device twin object for the current device</returns>
         public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                TwinProperties twinProperties = await InnerHandler
+            TwinProperties twinProperties = await InnerHandler
                     .GetClientTwinPropertiesAsync<TwinProperties>(cancellationToken).ConfigureAwait(false);
-                return new Twin
-                {
-                    Properties = twinProperties,
-                };
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            return new Twin
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+                Properties = twinProperties,
+            };
         }
 
         /// <summary>
@@ -1227,11 +1219,6 @@ namespace Microsoft.Azure.Devices.Client
                 bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
                 await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
             }
             finally
             {
