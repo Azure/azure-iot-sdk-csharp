@@ -39,27 +39,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
         private static readonly TimeSpan s_defaultCommandTimeoutMinutes = TimeSpan.FromMinutes(1);
 
         [LoggedTestMethod]
-        public async Task Command_DeviceReceivesCommandAndResponse_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Command_DeviceReceivesCommandAndResponse(Client.TransportType transportType)
         {
-            await SendCommandAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveCommandAsync).ConfigureAwait(false);
+            await SendCommandAndRespondAsync(transportType, SetDeviceReceiveCommandAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Command_DeviceReceivesCommandAndResponse_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Command_DeviceReceivesCommandAndResponseWithComponent(Client.TransportType transportType)
         {
-            await SendCommandAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveCommandAsync).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Command_DeviceReceivesCommandAndResponseWithComponent_Mqtt()
-        {
-            await SendCommandAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveCommandAsync, withComponent: true).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Command_DeviceReceivesCommandAndResponseWithComponent_MqttWs()
-        {
-            await SendCommandAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveCommandAsync, withComponent: true).ConfigureAwait(false);
+            await SendCommandAndRespondAsync(transportType, SetDeviceReceiveCommandAsync, withComponent: true).ConfigureAwait(false);
         }
 
         public static async Task DigitalTwinsSendCommandAndVerifyResponseAsync(string deviceId, string componentName, string commandName, MsTestLogger logger)
