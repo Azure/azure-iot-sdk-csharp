@@ -570,6 +570,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase)
                 || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
             {
+                Logging.Info(this, $"Received a response for operation with correlation Id {correlationId}.", nameof(TwinMessageListener));
+
                 // For Get and Patch, complete the task.
                 if (_twinResponseCompletions.TryRemove(correlationId, out TaskCompletionSource<AmqpMessage> task))
                 {
@@ -585,18 +587,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 else
                 {
                     // This can happen if we received a message from service with correlation Id that was not sent by SDK or does not exist in dictionary.
-                    Logging.Error("Could not remove correlation id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
+                    Logging.Error(this, $"Could not remove correlation id {correlationId} to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
                 }
             }
             else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 // This is an acknowledgment received from service for subscribing to desired property updates.
-                Logging.Info("Subscribed for twin successfully", nameof(TwinMessageListener));
+                Logging.Info(this, $"Subscribed for twin successfully with a correlation Id of {correlationId}.", nameof(TwinMessageListener));
             }
             else
             {
                 // This can happen if we received a message from service with correlation Id that was not sent by SDK or does not exist in dictionary.
-                Logging.Error("Received an unexpected response from service.", nameof(TwinMessageListener));
+                Logging.Error(this, $"Received an unexpected response from service with correlation Id {correlationId}.", nameof(TwinMessageListener));
             }
         }
 
