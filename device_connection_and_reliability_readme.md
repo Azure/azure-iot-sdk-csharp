@@ -19,10 +19,10 @@ Authentication can be done using one of the following:
 - [TPM based authentication](https://azure.microsoft.com/blog/device-provisioning-identity-attestation-with-tpm/)
 
 Samples:
-- IoT hub device shared access key based authentication sample - [DeviceReconnectionSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs#L102)
-- Device provisioning service symmetric key based authentication sample - [ProvisioningDeviceClientSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/provisioning/Samples/device/SymmetricKeySample/ProvisioningDeviceClientSample.cs#L62)
-- x509 based authentication sample using CA-signed certificates - [X509DeviceCertWithChainSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/iot-hub/Samples/device/X509DeviceCertWithChainSample/Program.cs#L43)
-- TPM based authentication sample - [ProvisioningDeviceClientSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/master/provisioning/Samples/device/TpmSample/ProvisioningDeviceClientSample.cs#L49)
+- IoT hub device shared access key based authentication sample - [DeviceReconnectionSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs#L102)
+- Device provisioning service symmetric key based authentication sample - [ProvisioningDeviceClientSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/provisioning/Samples/device/SymmetricKeySample/ProvisioningDeviceClientSample.cs#L62)
+- x509 based authentication sample using CA-signed certificates - [X509DeviceCertWithChainSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/X509DeviceCertWithChainSample/Program.cs#L43)
+- TPM based authentication sample - [ProvisioningDeviceClientSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/provisioning/Samples/device/TpmSample/ProvisioningDeviceClientSample.cs#L49)
 
 When using SAS tokens, authentication can be done by:
 
@@ -64,7 +64,7 @@ For both AMQP and MQTT, the SDK will try to reconnect anytime there is any netwo
 
 > Note: The default retry policy has support for jitter, which ensures that if you have N devices that disconnected at the same time, all of them won't start reconnecting with the same delay.
 
-For more details on the default retry policy and how to override it, see [retry policy documentation](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/iothub/device/devdoc/retrypolicy.md).
+For more details on the default retry policy and how to override it, see [retry policy documentation](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/iothub/device/devdoc/retrypolicy.md).
 
 HTTP is a stateless protocol and will work whenever there is network connectivity.
 
