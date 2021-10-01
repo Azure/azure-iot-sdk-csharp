@@ -31,7 +31,7 @@ Due to security considerations, build logs are not publicly available.
 
 | Service Environment                                                   | Status                                                                                                                                                                                                                                                                                        |
 | ---                                                                   | ---                                                                                                                                                                                                                                                                                           |
-| [Master](https://github.com/Azure/azure-iot-sdk-csharp/tree/master)   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/CSharp%20Prod%20-%20West%20Central%20US?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=44&repositoryFilter=9&branchName=master)      |
+| [Main](https://github.com/Azure/azure-iot-sdk-csharp/tree/main)   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/CSharp%20Prod%20-%20West%20Central%20US?branchName=main)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=44&repositoryFilter=9&branchName=main)      |
 | [Preview](https://github.com/Azure/azure-iot-sdk-csharp/tree/preview) | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/CSharp%20Canary%20-%20Central%20US%20EUAP?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=402&repositoryFilter=9&branchName=preview) |
 
 ### Recommended NuGet packages
@@ -81,7 +81,7 @@ Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing appl
 
 Most of our samples are available at [Azure IoT Samples for C#](https://github.com/Azure-Samples/azure-iot-samples-csharp).
 
-If you are looking for a good device sample to get started with, please see the [device reconnection sample](https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/device/DeviceReconnectionSample).
+If you are looking for a good device sample to get started with, please see the [device reconnection sample](https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/DeviceReconnectionSample).
 It shows how to connect a device, handle disconnect events, cases to handle when making calls, and when to re-initialize the `DeviceClient`.
 
 ## Contribute to the Azure IoT C# SDK
@@ -165,7 +165,7 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 - [Set up your development environment](./doc/devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
 - [API reference documentation for .NET](https://docs.microsoft.com/dotnet/api/overview/azure/devices?view=azure-dotnet)
 - [Get Started with IoT Hub using .NET](https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
-- [Device connection and messaging reliability](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/device_connection_and_reliability_readme.md)
+- [Device connection and messaging reliability](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/device_connection_and_reliability_readme.md)
 
 > Device Explorer is no longer supported. A replacement tool can be found [here](https://github.com/Azure/azure-iot-explorer).
 

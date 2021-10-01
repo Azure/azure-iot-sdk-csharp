@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// </summary>
     /// <remarks>
     /// By default, the SDK indefinitely retries dropped connections, unless the retry policy is overridden.
-    /// For more information on the SDK's retry policy and how to override it, see <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/master/iothub/device/devdoc/retrypolicy.md"/>.
+    /// For more information on the SDK's retry policy and how to override it, see <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/main/iothub/device/devdoc/retrypolicy.md"/>.
     /// When the exception is thrown due to operation timeouts, the inner exception will have OperationCanceledException.
     /// Retrying operations failed due to timeouts could resolve the error.
     /// </remarks>

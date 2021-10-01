@@ -64,7 +64,7 @@ Param(
         })]
     # The path of the iot-sdk-internals repository (ex: c:\repo\iot-sdks-internals)
     [System.IO.FileInfo] $SDKInternalsPath = $null,
-    # Indicates you will compare the output to the last preview version instead of master
+    # Indicates you will compare the output to the last preview version instead of main
     [switch] $IsPreview
 )
 
@@ -137,7 +137,7 @@ else
 Write-Verbose "Using $internalRootPath for the internals sdk repository base directory."
 
 # If we specify to use the preview directory on the command line we will set it as such
-$compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\master"
+$compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\main"
 if ($IsPreview) 
 {
     $compareDirectory = Join-Path -Path $internalRootPath -Child "\sdk_design_docs\CSharp\preview"
@@ -302,15 +302,15 @@ Set-Location -Path $compareDirectory
 #
 # # https://git-scm.com/docs/git-diff 
 #
-# 9       3       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Client.md
-# 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Client.md
-# 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Security.Tpm.md
-# 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Service.md
-# 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Transport.Amqp.md
-# 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Transport.Http.md
-# 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.md
-# 2       0       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Shared.md
-# 7       9       sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.md
+# 9       3       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Client.md
+# 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Client.md
+# 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Security.Tpm.md
+# 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Service.md
+# 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Transport.Amqp.md
+# 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Transport.Http.md
+# 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.md
+# 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Shared.md
+# 7       9       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.md
 $gitDiffOutput = git diff --ignore-all-space --numstat
 Write-Verbose "Output off git diff --ignore-all-space --numstat"
 
