@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using System.Security.Cryptography;
 
-#if NET451 || NET472
+#if NET451
 
 using System.Web.Security;
 
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Common
     /// </summary>
     static public class CryptoKeyGenerator
     {
-#if NET451 || NET472
+#if NET451
         private const int DefaultPasswordLength = 16;
         private const int GuidLength = 16;
 #endif
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Common
             return Convert.ToBase64String(GenerateKeyBytes(keySize));
         }
 
-#if NET451 || NET472
+#if NET451
         /// <summary>
         /// Generate a hexadecimal key of the specified size.
         /// </summary>
