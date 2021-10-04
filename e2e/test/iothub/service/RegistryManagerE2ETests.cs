@@ -135,9 +135,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             foreach (Device device in devices)
             {
-                Device retrievedDevice = await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false);
-                
                 // After a bulk add, every device should be able to be retrieved
+                Device retrievedDevice = await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false);
                 Assert.IsNotNull(retrievedDevice.Id);
                 Assert.AreEqual(device.Scope, retrievedDevice.Scope);
                 Assert.AreEqual(1, retrievedDevice.ParentScopes.Count);
