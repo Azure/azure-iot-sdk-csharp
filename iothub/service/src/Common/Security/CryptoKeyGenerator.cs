@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Common
     /// <summary>
     /// Utility methods for generating cryptographically secure keys and passwords.
     /// </summary>
-    static public class CryptoKeyGenerator
+    public static class CryptoKeyGenerator
     {
 #if NET451
         private const int DefaultPasswordLength = 16;
