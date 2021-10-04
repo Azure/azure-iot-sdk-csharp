@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         /// <param name="keySize">The size of the key.</param>
         /// <returns>Byte array representing the key.</returns>
+        [Obsolete("This method will be deprecated in a future version.")]
         public static byte[] GenerateKeyBytes(int keySize)
         {
 #if NET451
@@ -61,6 +62,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         /// <param name="keySize">Desired key size.</param>
         /// <returns>A generated key.</returns>
+        [Obsolete("This method will be deprecated in a future version.")]
         public static string GenerateKey(int keySize)
         {
             return Convert.ToBase64String(GenerateKeyBytes(keySize));
@@ -72,6 +74,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         /// <param name="keySize">Desired key size.</param>
         /// <returns>A generated hexadecimal key.</returns>
+        [Obsolete("This method will not be carried forward to newer .NET targets.")]
         public static string GenerateKeyInHex(int keySize)
         {
             byte[] keyBytes = new byte[keySize];
@@ -85,6 +88,7 @@ namespace Microsoft.Azure.Devices.Common
         /// Generate a GUID using random bytes from the framework's cryptograpically strong RNG (Random Number Generator).
         /// </summary>
         /// <returns>A cryptographically secure GUID.</returns>
+        [Obsolete("This method will not be carried forward to newer .NET targets.")]
         public static Guid GenerateGuid()
         {
             byte[] bytes = new byte[GuidLength];
@@ -116,6 +120,7 @@ namespace Microsoft.Azure.Devices.Common
         /// Generate a unique password with a default length and without converting it to Base64String.
         /// </summary>
         /// <returns>A unique password.</returns>
+        [Obsolete("This method will not be carried forward to newer .NET targets.")]
         public static string GeneratePassword()
         {
             return GeneratePassword(DefaultPasswordLength, false);
@@ -127,6 +132,7 @@ namespace Microsoft.Azure.Devices.Common
         /// <param name="length">Desired length of the password.</param>
         /// <param name="base64Encoding">Encode the password if set to True. False otherwise.</param>
         /// <returns>A generated password.</returns>
+        [Obsolete("This method will not be carried forward to newer .NET targets.")]
         public static string GeneratePassword(int length, bool base64Encoding)
         {
             string password = Membership.GeneratePassword(length, length / 2);
