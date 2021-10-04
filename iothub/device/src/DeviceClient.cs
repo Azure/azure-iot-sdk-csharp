@@ -489,7 +489,7 @@ namespace Microsoft.Azure.Devices.Client
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
-        /// Please note that the above list is not exhaustive.
+        /// Please note that the list of exceptions is not exhaustive.
         /// </remarks>
         /// <returns>The task to await</returns>
         public Task SendEventAsync(Message message) => InternalClient.SendEventAsync(message);
