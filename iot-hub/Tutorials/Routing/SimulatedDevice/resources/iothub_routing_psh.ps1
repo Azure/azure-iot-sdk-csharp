@@ -94,7 +94,7 @@ Add-AzIotHubRoutingEndpoint `
   -EndpointSubscriptionId $subscriptionId `
   -ConnectionString $storageConnectionString  `
   -ContainerName $containerName `
-  -Encoding AVRO 
+  -Encoding JSON
 
 # Create the route for the storage endpoint.
 Add-AzIotHubRoute `
@@ -128,27 +128,22 @@ $endpointType = "servicebusqueue"
 $routeName = "ContosoSBQueueRoute"
 $condition = 'level="critical"'
 
-# if this script fails on the next statement (Add-AzIotHubRoutingEndpoint),
-# put the pause in and run it again. Note that if you're running it
-# interactively, you can just stop it and then run the rest, because
-# you have already set the variables before you get to this point.
-#
-# Pause for 90 seconds to allow previous steps to complete.
-# You can report it to the IoT team here: 
-# https://github.com/Azure/azure-powershell/issues.
-# This will pause for 90 seconds and then start again. 
-# I put this in here because it's moving on in the script before it finishes.
-#   This way, it will wait 90 seconds before doing that, giving it enough time to finish.
-# The IoT Hub team could change this to make sure the prior command
-#   loops and checks to see if it's finished before it continues (like the create-iot-hub cmdlet does), 
-#    but in case they don't fix it, putting the Start-Sleep command in here make sure it works. 
+# If you experience problems while running this command,
+#   it might be because it didn't have time to finish before
+#   running the next line. To fix this, include this pause for 90 
+#   seconds before continuing. This gives it enough time to finish.
+
+# The IoT Hub team could change this to make the prior command
+#   loop and check to see if it's finished before it continues (like the create-iot-hub cmdlet does), 
+#    but in case they don't fix it, putting the Start-Sleep command in here makes sure it works. 
    Start-Sleep -Seconds 90
 
 # This command is the one that sometimes doesn't work. It's as if it doesn't have time to
 #   finish before it moves to the next line.
 # The error from Add-AzIotHubRoutingEndpoint is "Operation returned an invalid status code 'BadRequest'".
+
 # This command adds the routing endpoint, using the connection string property from the key. 
-# This will definitely work if you do the Sleep command first (it's in the line above).
+# This will definitely work if you do the Sleep command first.
 Add-AzIotHubRoutingEndpoint `
   -ResourceGroupName $resourceGroup `
   -Name $iotHubName `
