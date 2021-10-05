@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -15,20 +16,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
         private static string s_connectionString = Environment.GetEnvironmentVariable("PROVISIONING_CONNECTION_STRING");
 
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             if (args.Length > 0)
             {
                 s_connectionString = args[0];
             }
 
-            using (var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(s_connectionString))
-            {
-                var sample = new CleanupEnrollmentsSample(provisioningServiceClient);
-                sample.RunSampleAsync().GetAwaiter().GetResult();
-            }
+            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(s_connectionString);
+            var sample = new CleanupEnrollmentsSample(provisioningServiceClient);
+            await sample.RunSampleAsync();
 
-            Console.WriteLine("Done.\n");
+            Console.WriteLine("Done.");
             return 0;
         }
     }
