@@ -4,14 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Edge;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
@@ -360,7 +365,7 @@ namespace Microsoft.Azure.Devices.Client
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
-        /// Please note that the above list is not exhaustive.
+        /// Please note that the list of exceptions is not exhaustive.
         /// </remarks>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(Message message) => InternalClient.SendEventAsync(message);
@@ -384,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
-        /// Please note that the above list is not exhaustive.
+        /// Please note that the list of exceptions is not exhaustive.
         /// </remarks>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => InternalClient.SendEventAsync(message, cancellationToken);
