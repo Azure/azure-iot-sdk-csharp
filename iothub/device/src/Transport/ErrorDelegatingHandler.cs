@@ -105,16 +105,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.DisableTwinPatchAsync(cancellationToken));
         }
 
-        public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.SendTwinGetAsync(cancellationToken));
-        }
-
-        public override Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken));
-        }
-
         public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.AbandonAsync(lockToken, cancellationToken));
@@ -145,14 +135,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }
 
-        public override Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.GetClientPropertiesAsync(payloadConvention, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.GetClientTwinPropertiesAsync<T>(cancellationToken));
         }
 
-        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.SendPropertyPatchAsync(reportedProperties, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.SendClientTwinPropertyPatchAsync(reportedProperties, cancellationToken));
         }
 
         private static bool IsNetworkExceptionChain(Exception exceptionChain)

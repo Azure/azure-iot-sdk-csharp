@@ -255,11 +255,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken).ConfigureAwait(false);
         }
 
-        public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException("Device twins are only supported with Mqtt protocol.");
-        }
-
         public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -403,14 +398,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken);
         }
 
-        public override Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
+        public override Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("Property operations are not supported over HTTP. Please use MQTT protocol instead.");
+            throw new NotImplementedException("This operation is not supported over HTTP. Please use MQTT protocol instead.");
         }
 
-        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("Property operations are not supported over HTTP. Please use MQTT protocol instead.");
+            throw new NotImplementedException("This operation is not supported over HTTP. Please use MQTT protocol instead.");
         }
 
         // This is for invoking methods from an edge module to another edge device or edge module.

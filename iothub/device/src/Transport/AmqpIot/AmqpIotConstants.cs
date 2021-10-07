@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         internal static readonly Accepted AcceptedOutcome = AmqpConstants.AcceptedOutcome;
 
         internal const string ResponseStatusName = "status";
+        internal const string ResponseVersionName = "version";
         internal const string TelemetrySenderLinkSuffix = "TelemetrySenderLink";
         internal const string TelemetryReceiveLinkSuffix = "TelemetryReceiverLink";
         internal const string EventsReceiverLinkSuffix = "EventsReceiverLink";

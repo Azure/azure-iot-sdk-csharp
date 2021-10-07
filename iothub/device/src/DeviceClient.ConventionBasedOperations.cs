@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The device properties.</returns>
         public Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken = default)
-            => InternalClient.GetClientPropertiesAsync(cancellationToken);
+            => InternalClient.GetClientTwinPropertiesAsync(cancellationToken);
 
         /// <summary>
         /// Update the client properties.

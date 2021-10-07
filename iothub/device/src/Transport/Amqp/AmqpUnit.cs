@@ -10,6 +10,8 @@ using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using System.IO;
+using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
@@ -19,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly DeviceIdentity _deviceIdentity;
 
         private readonly Func<MethodRequestInternal, Task> _onMethodCallback;
-        private readonly Action<Twin, string, TwinCollection, IotHubException> _twinMessageListener;
+        private readonly Action<AmqpMessage, string, IotHubException> _twinMessageListener;
         private readonly Func<string, Message, Task> _onModuleMessageReceivedCallback;
         private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
@@ -54,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             DeviceIdentity deviceIdentity,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
+            Action<AmqpMessage, string, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
@@ -747,21 +749,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
+        private void OnDesiredPropertyReceived(AmqpMessage responseFromService, string correlationId, IotHubException ex = default)
         {
-            Logging.Enter(this, twin, nameof(OnDesiredPropertyReceived));
+            Logging.Enter(this, responseFromService, nameof(OnDesiredPropertyReceived));
 
             try
             {
-                _twinMessageListener?.Invoke(twin, correlationId, twinCollection, ex);
+                _twinMessageListener?.Invoke(responseFromService, correlationId, ex);
             }
             finally
             {
-                Logging.Exit(this, twin, nameof(OnDesiredPropertyReceived));
+                Logging.Exit(this, responseFromService, nameof(OnDesiredPropertyReceived));
             }
         }
 
-        public async Task SendTwinMessageAsync(AmqpTwinMessageType amqpTwinMessageType, string correlationId, TwinCollection reportedProperties, TimeSpan timeout)
+        public async Task SendTwinMessageAsync(AmqpTwinMessageType amqpTwinMessageType, string correlationId, Stream reportedProperties, TimeSpan timeout)
         {
             Logging.Enter(this, timeout, nameof(SendTwinMessageAsync));
 

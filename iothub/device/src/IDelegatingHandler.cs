@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
@@ -59,18 +60,12 @@ namespace Microsoft.Azure.Devices.Client
         Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken);
 
         // Twin.
-        Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken);
+        Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken);
 
-        Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken);
+        Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken);
 
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
-
-        // Convention driven operations.
-
-        Task<ClientProperties> GetClientPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken);
-
-        Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken);
     }
 }

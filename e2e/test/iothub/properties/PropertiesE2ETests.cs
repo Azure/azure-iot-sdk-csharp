@@ -33,189 +33,113 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         };
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceSetsPropertyAndGetsItBack_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_DeviceSetsPropertyAndGetsItBack(Client.TransportType transportType)
         {
-            await Properties_DeviceSetsPropertyAndGetsItBackSingleDeviceAsync(
-                    Client.TransportType.Mqtt_Tcp_Only)
-                .ConfigureAwait(false);
+            await Properties_DeviceSetsPropertyAndGetsItBackSingleDeviceAsync(transportType).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceSetsPropertyAndGetsItBack_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_DeviceSetsPropertyMapAndGetsItBack(Client.TransportType transportType)
         {
-            await Properties_DeviceSetsPropertyAndGetsItBackSingleDeviceAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only)
-                .ConfigureAwait(false);
+            await Properties_DeviceSetsPropertyMapAndGetsItBackSingleDeviceAsync(transportType).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceSetsPropertyMapAndGetsItBack_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_ServiceSetsWritablePropertyAndDeviceUnsubscribes(Client.TransportType transportType)
         {
-            await Properties_DeviceSetsPropertyMapAndGetsItBackSingleDeviceAsync(
-                    Client.TransportType.Mqtt_Tcp_Only)
-                .ConfigureAwait(false);
+            await Properties_ServiceSetsWritablePropertyAndDeviceUnsubscribes(transportType, Guid.NewGuid().ToString()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceSetsPropertyMapAndGetsItBack_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEvent(Client.TransportType transportType)
         {
-            await Properties_DeviceSetsPropertyMapAndGetsItBackSingleDeviceAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only)
-                .ConfigureAwait(false);
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(transportType, Guid.NewGuid().ToString()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyAndDeviceUnsubscribes_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEvent(Client.TransportType transportType)
         {
-            await Properties_ServiceSetsWritablePropertyAndDeviceUnsubscribes(
-                    Client.TransportType.Mqtt_Tcp_Only,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(transportType, s_mapOfPropertyValues).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyAndDeviceUnsubscribes_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndResponds(Client.TransportType transportType)
         {
-            await Properties_ServiceSetsWritablePropertyAndDeviceUnsubscribes(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(transportType, Guid.NewGuid().ToString()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEvent_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEventAndResponds(Client.TransportType transportType)
         {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(transportType, s_mapOfPropertyValues).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEvent_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGet(Client.TransportType transportType)
         {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
+            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGetAsync(transportType).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEvent_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_DeviceSetsPropertyAndServiceReceivesIt(Client.TransportType transportType)
         {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
-                    s_mapOfPropertyValues)
-                .ConfigureAwait(false);
+            await Properties_DeviceSetsPropertyAndServiceReceivesItAsync(transportType).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEvent_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingIt(Client.TransportType transportType)
         {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    s_mapOfPropertyValues)
-                .ConfigureAwait(false);
+            await Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingItAsync(transportType).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndResponds_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_ClientHandlesRejectionInvalidPropertyName_Mqtt(Client.TransportType transportType)
         {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndResponds_MqttWs()
-        {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEventAndResponds_Mqtt()
-        {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
-                    s_mapOfPropertyValues)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyMapAndDeviceReceivesEventAndResponds_MqttWs()
-        {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesEventAndRespondsAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    s_mapOfPropertyValues)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGet_Mqtt()
-        {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGetAsync(
-                    Client.TransportType.Mqtt_Tcp_Only)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGet_MqttWs()
-        {
-            await Properties_ServiceSetsWritablePropertyAndDeviceReceivesItOnNextGetAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_DeviceSetsPropertyAndServiceReceivesIt_Mqtt()
-        {
-            await Properties_DeviceSetsPropertyAndServiceReceivesItAsync(
-                    Client.TransportType.Mqtt_Tcp_Only)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_DeviceSetsPropertyAndServiceReceivesIt_MqttWs()
-        {
-            await Properties_DeviceSetsPropertyAndServiceReceivesItAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingIt_Mqtt()
-        {
-            await Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingItAsync(
-                    Client.TransportType.Mqtt_Tcp_Only)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingIt_MqttWs()
-        {
-            await Properties_DeviceSendsNullValueForPropertyResultsServiceRemovingItAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_ClientHandlesRejectionInvalidPropertyName_Mqtt()
-        {
-            await Properties_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    Client.TransportType.Mqtt_Tcp_Only)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_ClientHandlesRejectionInvalidPropertyName_MqttWs()
-        {
-            await Properties_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only)
-                .ConfigureAwait(false);
+            await Properties_ClientHandlesRejectionInvalidPropertyNameAsync(transportType).ConfigureAwait(false);
         }
 
         private async Task Properties_DeviceSetsPropertyAndGetsItBackSingleDeviceAsync(Client.TransportType transport)

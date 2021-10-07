@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <remarks>
     /// The <see cref="ClientProperties"/> class is not meant to be constructed by customer code.
-    /// It is intended to be returned fully populated from the client method <see cref="InternalClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/>.
+    /// It is intended to be returned fully populated from the internal client method <see cref="InternalClient.GetClientTwinPropertiesAsync(System.Threading.CancellationToken)"/>.
     /// </remarks>
     public class ClientProperties
     {

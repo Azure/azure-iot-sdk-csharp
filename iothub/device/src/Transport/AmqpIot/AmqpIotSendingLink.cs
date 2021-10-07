@@ -223,17 +223,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(string correlationId, TwinCollection reportedProperties, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(string correlationId, Stream reportedProperties, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
             {
                 Logging.Enter(this, nameof(SendTwinPatchMessageAsync));
             }
 
-            string body = JsonConvert.SerializeObject(reportedProperties);
-            var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
-
-            using var amqpMessage = AmqpMessage.Create(bodyStream, true);
+            using var amqpMessage = AmqpMessage.Create(reportedProperties, true);
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.MessageAnnotations.Map["operation"] = "PATCH";
             amqpMessage.MessageAnnotations.Map["resource"] = "/properties/reported";
