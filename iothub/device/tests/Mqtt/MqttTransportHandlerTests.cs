@@ -456,7 +456,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Returns(msg =>
                 {
                     var request = msg.Arg<Message>();
-                    StreamReader reader = new StreamReader(request.GetBodyStream(), Encoding.UTF8);
+                    using StreamReader reader = new StreamReader(request.GetBodyStream(), Encoding.UTF8);
                     receivedBody = reader.ReadToEnd();
 
                     var response = new Message();

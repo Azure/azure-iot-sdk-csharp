@@ -71,7 +71,8 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 ClientPropertiesAsDictionary clientPropertiesDictionary = await InnerHandler
-                    .GetClientTwinPropertiesAsync<ClientPropertiesAsDictionary>(cancellationToken).ConfigureAwait(false);
+                    .GetClientTwinPropertiesAsync<ClientPropertiesAsDictionary>(cancellationToken)
+                    .ConfigureAwait(false);
 
                 return clientPropertiesDictionary.ToClientProperties(PayloadConvention);
             }
@@ -89,12 +90,11 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(clientProperties));
             }
 
-            Stream bodyStream = null;
             try
             {
                 clientProperties.Convention = PayloadConvention;
                 byte[] body = clientProperties.GetPayloadObjectBytes();
-                bodyStream = new MemoryStream(body);
+                using Stream bodyStream = new MemoryStream(body);
 
                 return await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
             }
@@ -102,10 +102,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
-            }
-            finally
-            {
-                bodyStream?.Dispose();
             }
         }
 

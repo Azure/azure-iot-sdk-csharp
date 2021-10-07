@@ -1211,19 +1211,10 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(reportedProperties));
             }
 
-            // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
-            Stream bodyStream = null;
-            try
-            {
-                string body = JsonConvert.SerializeObject(reportedProperties);
-                bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+            string body = JsonConvert.SerializeObject(reportedProperties);
+            using Stream bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
-                await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                bodyStream?.Dispose();
-            }
+            await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
         }
 
         //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.

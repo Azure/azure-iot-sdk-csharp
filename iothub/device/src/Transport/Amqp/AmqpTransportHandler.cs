@@ -361,29 +361,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (responseFromService != null)
-                {
-                    // We will use UTF-8 for decoding the service response. This is because UTF-8 is the only currently supported encoding format.
-                    using var reader = new StreamReader(responseFromService.BodyStream, Encoding.UTF8);
-                    string body = reader.ReadToEnd();
-
-                    try
-                    {
-                        // We will use NewtonSoft Json to deserialize the service response to the appropriate type; i.e. Twin for non-convention-based operation
-                        // and ClientProperties for convention-based operations.
-                        return JsonConvert.DeserializeObject<T>(body);
-                    }
-                    catch (JsonReaderException ex)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
-
-                        throw;
-                    }
-                }
-                else
+                if (responseFromService == null)
                 {
                     throw new InvalidOperationException("Service rejected the message");
+                }
+
+                // We will use UTF-8 for decoding the service response. This is because UTF-8 is the only currently supported encoding format.
+                using var reader = new StreamReader(responseFromService.BodyStream, Encoding.UTF8);
+                string body = reader.ReadToEnd();
+
+                try
+                {
+                    // We will use NewtonSoft Json to deserialize the service response to the appropriate type; i.e. Twin for non-convention-based operation
+                    // and ClientProperties for convention-based operations.
+                    return JsonConvert.DeserializeObject<T>(body);
+                }
+                catch (JsonReaderException ex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+
+                    throw;
                 }
             }
             finally
@@ -402,7 +400,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
 
                 long updatedVersion = GetVersion(responseFromService);
-                return new ClientPropertiesUpdateResponse()
+                return new ClientPropertiesUpdateResponse
                 {
                     Version = updatedVersion,
                 };
