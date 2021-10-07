@@ -82,14 +82,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Dispose the X509 certificate associated with this authentication method.
+        /// The <see cref="Certificate"/> managed resource should be disposed by the user.
+        /// This library intentionally does not dispose it here since the user might want to
+        /// reuse the certificate instance elsewhere for some other operation.
         /// </summary>
         public void Dispose()
         {
-#if !NET451
-            Certificate?.Dispose();
-            Certificate = null;
-#endif
         }
     }
 }

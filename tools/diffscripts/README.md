@@ -108,7 +108,7 @@ VERBOSE: Repository base path: C:\repos
 VERBOSE: AsmDiff executable: dotnet-asmdiff.exe
 VERBOSE: Using user supplied iot-sdk-internals repository.
 VERBOSE: Using C:\adtexplorer\ for the internals sdk repository base directory.
-VERBOSE: Directory where the SDK markdown files will be generated: C:\adtexplorer\sdk_design_docs\CSharp\master
+VERBOSE: Directory where the SDK markdown files will be generated: C:\adtexplorer\sdk_design_docs\CSharp\main
 ...
 ...
 ```
@@ -193,15 +193,15 @@ Creating markdown for C:\repos\azure-iot-sdk-csharp\provisioning\transport\http\
 Creating markdown for C:\repos\azure-iot-sdk-csharp\security\tpm\src\bin\Release\netstandard2.1\Microsoft.Azure.Devices.Provisioning.Security.Tpm.dll
 
 Changes have been detected. Verify each file listed below to be sure of the scope of changes.
-There have been 3 deletions and 9 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Client.md
-There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Client.md
-There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Security.Tpm.md
-There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Service.md
-There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Transport.Amqp.md
-There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Transport.Http.md
-There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.md
-There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.Shared.md
-There have been 9 deletions and 7 additions to sdk_design_docs/CSharp/master/Microsoft.Azure.Devices.md
+There have been 3 deletions and 9 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Client.md
+There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Client.md
+There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Security.Tpm.md
+There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Service.md
+There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Transport.Amqp.md
+There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Transport.Http.md
+There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.md
+There have been 0 deletions and 2 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Shared.md
+There have been 9 deletions and 7 additions to sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.md
 
 Finished generating the markdown files for comparison. Review the output above for release notes and to determine if there are version changes.
 ```

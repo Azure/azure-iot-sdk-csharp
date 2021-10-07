@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     }
 
                     response = new ContractApiResponse(
-                        await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false),
+                        await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false),
                         httpResponse.StatusCode,
                         httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
                         httpResponse.ReasonPhrase);

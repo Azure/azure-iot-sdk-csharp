@@ -22,11 +22,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private readonly SemaphoreSlim _twinCallbackSemaphore = new SemaphoreSlim(0, 1);
         private ExceptionDispatchInfo _twinExceptionDispatch;
-        private string _expectedTwinPropertyValue = null;
+        private string _expectedTwinPropertyValue;
 
         private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new SemaphoreSlim(0, 1);
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
-        private Message _expectedMessageSentByService = null;
+        private Message _expectedMessageSentByService;
 
         private readonly SemaphoreSlim _clientPropertyCallbackSemaphore = new SemaphoreSlim(0, 1);
         private ExceptionDispatchInfo _clientPropertyExceptionDispatch;

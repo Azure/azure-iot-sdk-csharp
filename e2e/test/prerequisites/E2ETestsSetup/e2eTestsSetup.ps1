@@ -659,7 +659,14 @@ az keyvault secret set --vault-name $keyVaultName --name "FAR-AWAY-IOTHUB-HOSTNA
 az keyvault secret set --vault-name $keyVaultName --name "DPS-IDSCOPE" --value $dpsIdScope --output none
 az keyvault secret set --vault-name $keyVaultName --name "PROVISIONING-CONNECTION-STRING" --value $dpsConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "CUSTOM-ALLOCATION-POLICY-WEBHOOK" --value $customAllocationPolicyWebhook --output none
-az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT" --value "global.azure-devices-provisioning.net" --output none
+
+$dpsEndpoint = "global.azure-devices-provisioning.net"
+if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
+{
+    $dpsEndpoint = "global-canary.azure-devices-provisioning.net"
+}
+az keyvault secret set --vault-name $keyVaultName --name "DPS-GLOBALDEVICEENDPOINT" --value $dpsEndpoint --output none
+
 az keyvault secret set --vault-name $keyVaultName --name "DPS-X509-PFX-CERTIFICATE-PASSWORD" --value $dpsX509PfxCertificatePassword --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-X509-PFX-CERTIFICATE" --value $iothubX509PfxCertificate --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-INDIVIDUALX509-PFX-CERTIFICATE" --value $dpsIndividualX509PfxCertificate --output none
@@ -701,7 +708,6 @@ az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-DEVICE-CONN-STR
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-MODULE-CONN-STRING" --value $iotHubSasBasedModuleConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "PNP-TC-DEVICE-CONN-STRING" --value $temperatureControllerSampleDeviceConnectionString --output none
 az keyvault secret set --vault-name $keyVaultName --name "PNP-THERMOSTAT-DEVICE-CONN-STRING" --value $thermostatSampleDeviceConnectionString --output none
-az keyvault secret set --vault-name $keyVaultName --name "PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE" --value "csharp_devices_list.csv" --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-SAS-KEY" --value $iothubownerSasPrimaryKey --output none
 az keyvault secret set --vault-name $keyVaultName --name "IOTHUB-SAS-KEY-NAME" --value $iothubownerSasPolicy --output none
 az keyvault secret set --vault-name $keyVaultName --name "DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID" --value $symmetricKeySampleEnrollmentRegistrationId --output none
