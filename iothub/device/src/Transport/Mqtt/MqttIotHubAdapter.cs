@@ -14,13 +14,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt.Packets;
-using DotNetty.Common.Concurrency;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
+
+#if NET5_0
+using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
+#else
+using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
+#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -640,7 +645,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_subscribeCompletions.TryRemove(packet.PacketId, out TaskCompletionSource task))
             {
-                task.TryComplete();
+                task.TrySetResult();
             }
 
             if (Logging.IsEnabled)
@@ -681,7 +686,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_unsubscribeCompletions.TryRemove(packet.PacketId, out TaskCompletionSource task))
             {
-                task.TryComplete();
+                task.TrySetResult();
             }
 
             if (Logging.IsEnabled)
@@ -795,7 +800,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, publish?.Value, nameof(ProcessAckAsync));
 
-            publish.Completion.Complete();
+            publish.Completion.SetResult();
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, context.Name, publish?.Value, nameof(ProcessAckAsync));
@@ -937,7 +942,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await WriteMessageAsync(context, publish.Value, s_shutdownOnWriteErrorHandler).ConfigureAwait(true);
                 if (publish.Value.QualityOfService == QualityOfService.AtMostOnce)
                 {
-                    publish.Completion.TryComplete();
+                    publish.Completion.TrySetResult();
                 }
             }
             catch (Exception ex)

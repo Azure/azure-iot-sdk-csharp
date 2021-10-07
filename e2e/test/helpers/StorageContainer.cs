@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     /// </summary>
     public class StorageContainer : IDisposable
     {
-        private bool _disposed = false;
+        private bool _disposed;
 
         public string ContainerName { get; }
         public Uri Uri { get; private set; }

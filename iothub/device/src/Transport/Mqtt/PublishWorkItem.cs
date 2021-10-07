@@ -3,7 +3,12 @@
 
 using System;
 using DotNetty.Codecs.Mqtt.Packets;
-using DotNetty.Common.Concurrency;
+
+#if NET5_0
+using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
+#else
+using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
+#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -15,12 +20,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public void Cancel()
         {
-            this.Completion.TrySetCanceled();
+            Completion.TrySetCanceled();
         }
 
         public void Abort(Exception exception)
         {
-            this.Completion.TrySetException(exception);
+            Completion.TrySetException(exception);
         }
     }
 }

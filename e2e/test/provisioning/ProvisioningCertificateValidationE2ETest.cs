@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -18,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(
+            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(
                 TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
             Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
                 new QuerySpecification("SELECT * FROM enrollmentGroups"));
@@ -96,8 +97,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private static async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
         {
-            using var security =
-                new SecurityProviderX509Certificate(TestConfiguration.Provisioning.GetIndividualEnrollmentCertificate());
+            using X509Certificate2 cert = TestConfiguration.Provisioning.GetIndividualEnrollmentCertificate();
+            using var security = new SecurityProviderX509Certificate(cert);
             ProvisioningDeviceClient provisioningDeviceClient = ProvisioningDeviceClient.Create(
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",

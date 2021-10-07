@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

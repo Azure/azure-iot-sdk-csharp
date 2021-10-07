@@ -85,9 +85,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             TimeSpan durationInSec = default,
             TimeSpan retryDurationInMilliSec = default)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             TimeSpan operationTimeout = retryDurationInMilliSec == TimeSpan.Zero ? FaultInjection.RecoveryTime : retryDurationInMilliSec;
             deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
@@ -119,7 +119,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec)).ConfigureAwait(false);
+                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
+                await deviceClient.SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
             }
             catch
             {

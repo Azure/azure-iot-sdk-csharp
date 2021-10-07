@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
@@ -114,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
         {
-            ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType, null, AllocationPolicy.Static, null, null, null);
 
             AttestationMechanism attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
@@ -144,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
         {
-            ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null);
 
@@ -174,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <returns>If the query succeeded, otherwise this method will throw</returns>
         private async Task ProvisioningServiceClient_IndividualEnrollments_Query_Ok(string proxyServerAddress)
         {
-            ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
+            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
             var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
             using (Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification))
             {
@@ -268,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     using (var tpmSim = new SecurityProviderTpmSimulator(registrationId))
                     {
                         string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-                        var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+                        using ProvisioningServiceClient provisioningService = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
                         individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek))
                         {
                             Capabilities = capabilities,

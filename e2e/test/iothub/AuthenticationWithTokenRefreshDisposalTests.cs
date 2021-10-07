@@ -120,6 +120,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<Task> act = async () => await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
             await act.Should().ThrowAsync<ObjectDisposedException>();
+
+            authenticationMethod.Dispose();
+            deviceClient2.Dispose();
         }
 
         private async Task ReuseAuthenticationMethod_SingleDevice(Client.TransportType transport)

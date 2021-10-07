@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, TransportType.Amqp, transportSettings))
             {
