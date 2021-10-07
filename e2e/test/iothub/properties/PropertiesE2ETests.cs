@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            var writablePropertyCallbackSemaphore = new SemaphoreSlim(0, 1);
+            using var writablePropertyCallbackSemaphore = new SemaphoreSlim(0, 1);
             await deviceClient
                 .SubscribeToWritablePropertyUpdateRequestsAsync(
                     async (writableProperties, userContext) =>
