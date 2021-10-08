@@ -6,7 +6,7 @@
 
 ### Examples
 
-You can familiarize yourself with different APIs using [samples for DigitalTwinClient](https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/iot-hub/Samples/service/DigitalTwinClientSamples).
+You can familiarize yourself with different APIs using [samples for DigitalTwinClient](https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/service/DigitalTwinClientSamples).
 
 ## Source code folder structure
 

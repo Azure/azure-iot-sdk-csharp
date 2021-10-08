@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string userContext = "myContext";
 
             await _deviceClient
-                .SubscribeToWritablePropertiesEventAsync(
+                .SubscribeToWritablePropertyUpdateRequestsAsync(
                     (patch, context) =>
                     {
                         _logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback property: WritableProperty: {patch}, {context}");

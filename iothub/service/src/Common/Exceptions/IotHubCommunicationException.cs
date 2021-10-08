@@ -7,7 +7,8 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when an attempt to communicate with the IoT Hub fails.
+    /// This exception is thrown when an attempt to communicate with the IoT hub service fails due to transient
+    /// network issues or operation timeouts. Retrying failed operations could resolve the error.
     /// </summary>
     [Serializable]
     public sealed class IotHubCommunicationException : IotHubException

@@ -9,20 +9,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
     [TestCategory("Unit")]
     public class X509CAReferencesTests
     {
-        /* SRS_X509_CAREFERENCE_21_001: [The constructor shall throw ArgumentException if the primary CA reference is null or empty.] */
-
-        [TestMethod]
-        public void X509CAReferencesThrowsOnInvalidPrimaryReferences()
-        {
-            // act and assert
-#pragma warning disable CA1806 // Do not ignore method results
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new X509CAReferences(null));
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new X509CAReferences(""));
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new X509CAReferences("   "));
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new X509CAReferences(null, "valid-ca-reference"));
-#pragma warning restore CA1806 // Do not ignore method results
-        }
-
         /* SRS_X509_CAREFERENCE_21_002: [The constructor shall store the primary and secondary CA references.] */
 
         [TestMethod]

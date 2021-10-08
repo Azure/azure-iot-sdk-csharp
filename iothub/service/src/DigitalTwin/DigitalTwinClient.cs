@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Creates an instance of <see cref="DigitalTwinClient"/>, provided for unit testing purposes only.
-        /// Use the CreateFromConnectionString method to create an instance to use the client.
+        /// Use the CreateFromConnectionString or Create method to create an instance to use the client.
         /// </summary>
         public DigitalTwinClient()
         {
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
         /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
         /// <remarks>
-        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
         /// </remarks>
         public static DigitalTwinClient Create(
             string hostName,
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Updates a digital twin.
-        /// <para>For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/></para>
+        /// <para>For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/></para>
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="digitalTwinUpdateOperations">The application/json-patch+json operations to be performed on the specified digital twin.</param>

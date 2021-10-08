@@ -91,13 +91,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerSendTwinGetAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTwinGetAsync(token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().GetClientTwinPropertiesAsync<TwinProperties>(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task MqttTransportHandlerSendTwinPatchAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTwinPatchAsync(new TwinCollection(), token)).ConfigureAwait(false);
+            using var bodyStream = new MemoryStream();
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendClientTwinPropertyPatchAsync(bodyStream, token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -383,7 +384,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
+            var twinPropertiesReturned = await transport.GetClientTwinPropertiesAsync<TwinProperties>(CancellationToken.None).ConfigureAwait(false);
+            var twinReturned = new Twin
+            {
+                Properties = twinPropertiesReturned,
+            };
 
             // assert
             Assert.AreEqual<string>(twin.Properties.Desired["foo"].ToString(), twinReturned.Properties.Desired["foo"].ToString());
@@ -413,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.GetClientTwinPropertiesAsync<TwinProperties>(CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_020: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error
@@ -427,7 +432,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
+            var twinReturned = await transport.GetClientTwinPropertiesAsync<TwinProperties>(CancellationToken.None).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_022: `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request
@@ -451,7 +456,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Returns(msg =>
                 {
                     var request = msg.Arg<Message>();
-                    StreamReader reader = new StreamReader(request.GetBodyStream(), System.Text.Encoding.UTF8);
+                    using StreamReader reader = new StreamReader(request.GetBodyStream(), Encoding.UTF8);
                     receivedBody = reader.ReadToEnd();
 
                     var response = new Message();
@@ -466,13 +471,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
                     return TaskHelpers.CompletedTask;
                 });
+            string expectedBody = JsonConvert.SerializeObject(props);
+            using var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(expectedBody));
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
+            await transport.SendClientTwinPropertyPatchAsync(bodyStream, CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            string expectedBody = JsonConvert.SerializeObject(props);
             Assert.AreEqual<string>(expectedBody, receivedBody);
         }
 
@@ -499,10 +505,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     transport.OnMessageReceived(response);
                     return TaskHelpers.CompletedTask;
                 });
+            string expectedBody = JsonConvert.SerializeObject(props);
+            using var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(expectedBody));
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.SendClientTwinPropertyPatchAsync(bodyStream, CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_029: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.
@@ -514,10 +522,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = this.CreateTransportHandlerWithMockChannel(out IChannel channel);
             transport.TwinTimeout = TimeSpan.FromMilliseconds(20);
             var props = new TwinCollection();
+            string expectedBody = JsonConvert.SerializeObject(props);
+            using var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(expectedBody));
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
+            await transport.SendClientTwinPropertyPatchAsync(bodyStream, CancellationToken.None).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_04: If OnError is triggered after OpenAsync is called, WaitForTransportClosedAsync shall be invoked.

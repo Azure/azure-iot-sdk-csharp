@@ -917,36 +917,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
         }
 
-        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        public override async Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
             EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_014:  `SendTwinGetAsync` shall allocate a `Message` object to hold the `GET` request
             using var request = new Message();
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_015:  `SendTwinGetAsync` shall generate a GUID to use as the $rid property on the request
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_016:  `SendTwinGetAsync` shall set the `Message` topic to '$iothub/twin/GET/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated
             string rid = Guid.NewGuid().ToString();
             request.MqttTopicName = TwinGetTopic.FormatInvariant(rid);
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_017:  `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_019:  If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_020:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error
             using Message response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_021:  If the response contains a success code, `SendTwinGetAsync` shall return success to the caller
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_018:  When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller
-            using var reader = new StreamReader(response.GetBodyStream(), System.Text.Encoding.UTF8);
+            // We will use UTF-8 for decoding the service response. This is because UTF-8 is the only currently supported encoding format.
+            using var reader = new StreamReader(response.GetBodyStream(), DefaultPayloadConvention.Instance.PayloadEncoder.ContentEncoding);
             string body = reader.ReadToEnd();
 
             try
             {
-                return new Twin
-                {
-                    Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
-                };
+                // We will use NewtonSoft Json to deserialize the service response to the appropriate type; i.e. Twin for non-convention-based operation
+                // and ClientProperties for convention-based operations.
+                return JsonConvert.DeserializeObject<T>(body);
             }
             catch (JsonReaderException ex)
             {
@@ -957,29 +947,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_025:  `SendTwinPatchAsync` shall serialize the `reported` object into a JSON string
-            string body = JsonConvert.SerializeObject(reportedProperties);
-            using var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
+            using var request = new Message(reportedProperties);
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_022:  `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_026:  `SendTwinPatchAsync` shall set the body of the message to the JSON string
-            using var request = new Message(bodyStream);
-
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_023:  `SendTwinPatchAsync` shall generate a GUID to use as the $rid property on the request
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_024:  `SendTwinPatchAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated
             string rid = Guid.NewGuid().ToString();
             request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_027:  `SendTwinPatchAsync` shall wait for a response from the service with a matching $rid value
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_028:  If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_029:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_030:  If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller.
-            await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+            using Message message = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+
+            var response = new ClientPropertiesUpdateResponse();
+            if (message.Properties.TryGetValue(RequestIdKey, out string requestIdRetrieved))
+            {
+                response.RequestId = requestIdRetrieved;
+            }
+            if (message.Properties.TryGetValue(VersionKey, out string versionRetrievedAsString))
+            {
+                response.Version = long.Parse(versionRetrievedAsString, CultureInfo.InvariantCulture);
+            }
+
+            return response;
         }
 
         public override async Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)

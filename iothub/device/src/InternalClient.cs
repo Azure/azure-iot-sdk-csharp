@@ -13,6 +13,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using System.ComponentModel;
+using System.Text;
+using Newtonsoft.Json;
 
 #if NET451
 
@@ -1167,18 +1169,14 @@ namespace Microsoft.Azure.Devices.Client
         /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <returns>The device twin object for the current device</returns>
-        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
+        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
         {
-            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state.
-            try
+            TwinProperties twinProperties = await InnerHandler
+                    .GetClientTwinPropertiesAsync<TwinProperties>(cancellationToken).ConfigureAwait(false);
+            return new Twin
             {
-                return InnerHandler.SendTwinGetAsync(cancellationToken);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+                Properties = twinProperties,
+            };
         }
 
         /// <summary>
@@ -1205,7 +1203,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             // `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null.
             if (reportedProperties == null)
@@ -1213,16 +1211,10 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(reportedProperties));
             }
 
-            // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
-            try
-            {
-                return InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            string body = JsonConvert.SerializeObject(reportedProperties);
+            using Stream bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+
+            await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
         }
 
         //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
@@ -1409,13 +1401,20 @@ namespace Microsoft.Azure.Devices.Client
             // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the
             // item1 and the read of the item2
             await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
-            ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
-            object callbackContext = _deviceReceiveMessageCallback?.Item2;
-            _deviceReceiveMessageSemaphore.Release();
 
-            if (callback != null)
+            try
             {
-                await callback.Invoke(message, callbackContext).ConfigureAwait(false);
+                ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
+                object callbackContext = _deviceReceiveMessageCallback?.Item2;
+
+                if (callback != null)
+                {
+                    _ = callback.Invoke(message, callbackContext);
+                }
+            }
+            finally
+            {
+                _deviceReceiveMessageSemaphore.Release();
             }
 
             if (Logging.IsEnabled)

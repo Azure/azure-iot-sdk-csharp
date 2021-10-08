@@ -19,27 +19,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Telemetry
         private readonly string ModulePrefix = $"{nameof(TelemetrySendE2ETests)}_";
 
         [LoggedTestMethod]
-        public async Task Telemetry_DeviceSendSingleTelemetry_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Telemetry_DeviceSendSingleTelemetry(Client.TransportType transportType)
         {
-            await SendTelemetryAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendTelemetryAsync(TestDeviceType.Sasl, transportType).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Telemetry_DeviceSendSingleTelemetry_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Telemetry_DeviceSendSingleTelemetryWithComponent(Client.TransportType transportType)
         {
-            await SendTelemetryAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Telemetry_DeviceSendSingleTelemetryWithComponent_Mqtt()
-        {
-            await SendTelemetryWithComponentAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Telemetry_DeviceSendSingleTelemetryWithComponent_MqttWs()
-        {
-            await SendTelemetryWithComponentAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendTelemetryWithComponentAsync(TestDeviceType.Sasl, transportType).ConfigureAwait(false);
         }
 
         private async Task SendTelemetryAsync(TestDeviceType type, Client.TransportType transport)
@@ -84,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Telemetry
             }
         }
 
-        public static (Client.TelemetryMessage message, string p1Value) ComposeTelemetryMessageWithComponent(MsTestLogger logger)
+        public static (TelemetryMessage message, string p1Value) ComposeTelemetryMessageWithComponent(MsTestLogger logger)
         {
             string messageId = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
@@ -106,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Telemetry
             return (message, p1Value);
         }
 
-        public static (Client.TelemetryMessage message, string p1Value) ComposeTelemetryMessage(MsTestLogger logger)
+        public static (TelemetryMessage message, string p1Value) ComposeTelemetryMessage(MsTestLogger logger)
         {
             string messageId = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
@@ -125,6 +121,5 @@ namespace Microsoft.Azure.Devices.E2ETests.Telemetry
 
             return (message, p1Value);
         }
-
     }
 }

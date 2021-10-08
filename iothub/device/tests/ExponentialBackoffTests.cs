@@ -16,7 +16,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("Unit")]
         public void ExponentialBackoffDoesNotUnderflow()
         {
-            var exponentialBackoff = new TransientFaultHandling.ExponentialBackoff(MAX_RETRY_ATTEMPTS, RetryStrategy.DefaultMinBackoff, RetryStrategy.DefaultMaxBackoff, RetryStrategy.DefaultClientBackoff);
+            var exponentialBackoff = new ExponentialBackoffRetryStrategy(
+                MAX_RETRY_ATTEMPTS,
+                RetryStrategy.DefaultMinBackoff,
+                RetryStrategy.DefaultMaxBackoff,
+                RetryStrategy.DefaultClientBackoff);
             ShouldRetry shouldRetry = exponentialBackoff.GetShouldRetry();
             for (int i = 1; i < MAX_RETRY_ATTEMPTS; i++)
             {

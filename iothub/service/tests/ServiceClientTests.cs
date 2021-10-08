@@ -49,11 +49,9 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
-
             Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
             Action<AmqpSession> onClose = _ => { };
-
-            // Instantiate ServiceClient with Mock IHttpClientHelper and IotHubConnection
+            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
             var serviceClient = new ServiceClient(connection, restOpMock.Object);
 
@@ -80,11 +78,9 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
-
             Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
             Action<AmqpSession> onClose = _ => { };
-
-            // Instantiate ServiceClient with Mock IHttpClientHelper and IotHubConnection
+            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
             var serviceClient = new ServiceClient(connection, restOpMock.Object);
 
@@ -103,7 +99,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Instantiate ServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
             var serviceClient = new ServiceClient(connection, restOpMock.Object);
-
             // This is required to cause onClose callback invocation.
             await connection.OpenAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             serviceClient.Dispose();
@@ -123,7 +118,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
             var serviceClient = new ServiceClient(connection, restOpMock.Object);
-
             // This is required to cause onClose callback invocation.
             await connection.OpenAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             await serviceClient.CloseAsync().ConfigureAwait(false);

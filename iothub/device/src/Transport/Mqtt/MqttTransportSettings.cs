@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public bool DeviceReceiveAckCanTimeout { get; set; }
 
         /// <summary>
-        /// The time a device will wait, for an acknowledgment from service.
+        /// The time a device will wait for an acknowledgment from service.
         /// The default is 5 minutes.
         /// </summary>
         /// <remarks>
@@ -182,12 +182,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public bool CleanSession { get; set; }
 
         /// <summary>
-        /// The interval, in seconds, that the client establishes with the service, for sending keep alive pings.
+        /// The interval, in seconds, that the client establishes with the service, for sending keep-alive pings.
         /// The default is 300 seconds.
         /// </summary>
         /// <remarks>
         /// The client will send a ping request 4 times per keep-alive duration set.
         /// It will wait for 30 seconds for the ping response, else mark the connection as disconnected.
+        /// Setting a very low keep-alive value can cause aggressive reconnects, and might not give the
+        /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
         public int KeepAliveInSeconds { get; set; }
 
@@ -198,7 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Setting a will message is a way for clients to notify other subscribed clients about ungraceful disconnects in an appropriate way.
         /// In response to the ungraceful disconnect, the service will send the last-will message to the configured telemetry channel.
         /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT Hub routing.
-        /// For more details, refer to https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
+        /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
         /// </remarks>
         public bool HasWill { get; set; }
 
@@ -207,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </summary>
         /// <remarks>
         /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT Hub routing.
-        /// For more details, refer to https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
+        /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
         /// </remarks>
         public IWillMessage WillMessage { get; set; }
 

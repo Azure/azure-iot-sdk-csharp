@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.Client
             ValidateFormat(DeviceId, DeviceIdPropertyName, s_idNameRegex);
             if (!string.IsNullOrEmpty(ModuleId))
             {
-                ValidateFormat(ModuleId, DeviceIdPropertyName, s_idNameRegex);
+                ValidateFormat(ModuleId, ModuleIdPropertyName, s_idNameRegex);
             }
 
             ValidateFormatIfSpecified(SharedAccessKeyName, SharedAccessKeyNamePropertyName, s_sharedAccessKeyNameRegex);

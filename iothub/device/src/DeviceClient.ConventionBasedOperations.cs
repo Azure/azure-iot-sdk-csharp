@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The device properties.</returns>
         public Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken = default)
-            => InternalClient.GetClientPropertiesAsync(cancellationToken);
+            => InternalClient.GetClientTwinPropertiesAsync(cancellationToken);
 
         /// <summary>
         /// Update the client properties.
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">The global call back to handle all writable property updates.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToWritablePropertiesEventAsync(callback, userContext, cancellationToken);
+        public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToWritablePropertyUpdateRequestsAsync(callback, userContext, cancellationToken);
     }
 }
