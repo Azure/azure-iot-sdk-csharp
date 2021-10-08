@@ -124,6 +124,12 @@ namespace Microsoft.Azure.Devices.Client
             if (string.IsNullOrWhiteSpace(key))
             {
                 value = default;
+                return false;
+            }
+
+            // While retrieving the telemetry value from the collection, a simple dictionary indexer should work.
+            // While retrieving the property value from the collection:
+            // 1. A property collection constructed by the client application - can be retrieved using dictionary indexer.
             // 2. Client property received through writable property update callbacks - stored internally as a WritableClientProperty.
             // 3. Client property returned through GetClientProperties:
             //  a. Client reported properties sent by the client application in response to writable property update requests - stored as a JSON object
