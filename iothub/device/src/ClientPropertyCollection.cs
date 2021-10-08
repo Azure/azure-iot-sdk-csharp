@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -35,32 +37,47 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <inheritdoc path="/remarks" cref="AddRootProperty(string, object)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="AddRootProperty(string, object)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddRootProperty(string, object)" />
+        /// <inheritdoc path="/exception" cref="AddRootProperty(string, object)" />
         /// <summary>
         /// Adds the value to the collection.
         /// </summary>
         /// <param name="componentName">The component with the property to add.</param>
         /// <param name="propertyName">The name of the property to add.</param>
         /// <param name="propertyValue">The value of the property to add.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or <paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddComponentProperty(string componentName, string propertyName, object propertyValue)
-            => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
+        {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
+        }
 
         /// <inheritdoc path="/remarks" cref="AddRootProperty(string, object)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddRootProperty(string, object)" />
         /// <summary>
         /// Adds the value to the collection.
         /// </summary>
         /// <param name="componentName">The component with the properties to add.</param>
         /// <param name="properties">A collection of properties to add.</param>
+        /// <exception cref="ArgumentException">A property name in <paramref name="properties"/> already exists in the collection.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or a property name in <paramref name="properties"/> is <c>null</c>.</exception>
         public void AddComponentProperties(string componentName, IDictionary<string, object> properties)
-            => AddInternal(properties, componentName, true);
+        {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            AddInternal(properties, componentName, false);
+        }
 
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddRootProperty(string, object)" />
+        /// <inheritdoc path="/exception" cref="AddRootProperty(string, object)" />
         /// <summary>
-        /// Adds the values to the collection.
+        /// Adds the collection of root-level property values to the collection.
         /// </summary>
         /// <remarks>
         /// If the collection already has a key matching a property name supplied this method will throw an <see cref="ArgumentException"/>.
@@ -69,16 +86,10 @@ namespace Microsoft.Azure.Devices.Client
         /// as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
         /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
-        /// <para>
-        /// This method directly adds the supplied <paramref name="properties"/> to the collection.
-        /// For component-level properties, either ensure that you include the component identifier markers {"__t": "c"} as a part of the supplied <paramref name="properties"/>,
-        /// or use the <see cref="AddComponentProperties(string, IDictionary{string, object})"/> convenience method instead.
-        /// For more information see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
-        /// </para>
         /// </remarks>
         /// <param name="properties">A collection of properties to add.</param>
         /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
-        public void Add(IDictionary<string, object> properties)
+        public void AddRootProperties(IDictionary<string, object> properties)
         {
             if (properties == null)
             {
@@ -93,21 +104,28 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="AddOrUpdateComponentProperties(string, IDictionary{string, object})" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="AddRootProperty(string, object)" />
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddOrUpdateRootProperty(string propertyName, object propertyValue)
             => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null, true);
 
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/remarks" cref="AddOrUpdateComponentProperties(string, IDictionary{string, object})" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="AddRootProperty(string, object)" />
         /// <param name="componentName">The component with the property to add or update.</param>
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or <paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddOrUpdateComponentProperty(string componentName, string propertyName, object propertyValue)
-            => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
+        {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
+        }
 
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
@@ -121,13 +139,20 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="properties">A collection of properties to add or update.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or a property name in <paramref name="properties"/> is <c>null</c>.</exception>
         public void AddOrUpdateComponentProperties(string componentName, IDictionary<string, object> properties)
-            => AddInternal(properties, componentName, true);
+        {
+            if (componentName == null)
+            {
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            AddInternal(properties, componentName, true);
+        }
 
         /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentException']" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception['ArgumentNullException']" cref="Add(IDictionary{string, object})"/>
+        /// <inheritdoc path="/exception" cref="AddInternal(IDictionary{string, object}, string, bool)" />
         /// <remarks>
         /// If the collection has a key that matches this will overwrite the current value. Otherwise it will attempt to add this to the collection.
         /// <para>
@@ -135,18 +160,20 @@ namespace Microsoft.Azure.Devices.Client
         /// as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
         /// to ensure the correct formatting is applied when the object is serialized.
         /// </para>
-        /// <para>
-        /// This method directly adds or updates the supplied <paramref name="properties"/> to the collection.
-        /// For component-level properties, either ensure that you include the component identifier markers {"__t": "c"} as a part of the supplied <paramref name="properties"/>,
-        /// or use the <see cref="AddOrUpdateComponentProperties(string, IDictionary{string, object})"/> convenience method instead.
-        /// For more information see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
-        /// </para>
         /// </remarks>
         /// <param name="properties">A collection of properties to add or update.</param>
-        public void AddOrUpdate(IDictionary<string, object> properties)
-            => properties
+        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
+        public void AddOrUpdateRootProperties(IDictionary<string, object> properties)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            properties
                 .ToList()
                 .ForEach(entry => Collection[entry.Key] = entry.Value);
+        }
 
         /// <summary>
         /// Determines whether the specified property is present.
@@ -182,8 +209,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
-        /// <param name="propertyValue">The value of the component-level property.</param>
-        /// <returns>true if the property collection contains a component level property with the specified key; otherwise, false.</returns>
+        /// <param name="propertyValue">When this method returns true, this contains the value of the component-level property.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns>True if a component-level property of type <c>T</c> with the specified key was found; otherwise, it returns false.</returns>
         public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
         {
             if (Logging.IsEnabled && Convention == null)
@@ -192,35 +220,130 @@ namespace Microsoft.Azure.Devices.Client
                     $"TryGetValue will attempt to get the property value but may not behave as expected.", nameof(TryGetValue));
             }
 
+            // If either the component name or the property name is null, empty or whitespace,
+            // then return false with the default value of the type <T> passed in.
+            if (string.IsNullOrWhiteSpace(componentName) || string.IsNullOrWhiteSpace(propertyName))
+            {
+                propertyValue = default;
+                return false;
+            }
+
+            // While retrieving the property value from the collection:
+            // 1. A property collection constructed by the client application - can be retrieved using dictionary indexer.
+            // 2. Client property received through writable property update callbacks - stored internally as a WritableClientProperty.
+            // 3. Client property returned through GetClientProperties:
+            //  a. Client reported properties sent by the client application in response to writable property update requests - stored as a JSON object
+            //      and needs to be converted to an IWritablePropertyResponse implementation using the payload serializer.
+            //  b. Client reported properties sent by the client application - stored as a JSON object
+            //      and needs to be converted to the expected type using the payload serializer.
+            //  c. Writable property update request received - stored as a JSON object
+            //      and needs to be converted to the expected type using the payload serializer.
+
             if (Contains(componentName, propertyName))
             {
                 object componentProperties = Collection[componentName];
 
+                // If the ClientPropertyCollection was constructed by the user application (eg. for updating the client properties)
+                // or was returned by the application as a writable property update request then the componentProperties are retrieved as a dictionary.
+                // The required property value can be fetched from the dictionary directly.
                 if (componentProperties is IDictionary<string, object> nestedDictionary)
                 {
-                    if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
+                    // First verify that the retrieved dictionary contains the component identifier { "__t": "c" }.
+                    // If not, then the retrieved nested dictionary is actually a root-level property of type map.
+                    if (nestedDictionary.TryGetValue(ConventionBasedConstants.ComponentIdentifierKey, out object componentIdentifierValue)
+                        && componentIdentifierValue.ToString() == ConventionBasedConstants.ComponentIdentifierValue)
                     {
-                        // If the value is null, go ahead and return it.
-                        if (dictionaryElement == null)
+                        if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
                         {
-                            propertyValue = default;
-                            return true;
-                        }
+                            // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
+                            if (dictionaryElement == null)
+                            {
+                                propertyValue = default;
+                                return true;
+                            }
 
-                        // If the object is of type T or can be cast to type T, go ahead and return it.
-                        if (dictionaryElement is T valueRef
-                            || NumericHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
-                        {
-                            propertyValue = valueRef;
-                            return true;
+                            // Case 1:
+                            // If the object is of type T or can be cast to type T, go ahead and return it.
+                            if (dictionaryElement is T valueRef
+                                || ObjectConversionHelpers.TryCastNumericTo(dictionaryElement, out valueRef))
+                            {
+                                propertyValue = valueRef;
+                                return true;
+                            }
+
+                            // Case 2:
+                            // Check if the retrieved value is a writable property update request
+                            if (dictionaryElement is WritableClientProperty writableClientProperty)
+                            {
+                                object writableClientPropertyValue = writableClientProperty.Value;
+
+                                // If the object is of type T or can be cast or converted to type T, go ahead and return it.
+                                if (ObjectConversionHelpers.TryCastOrConvert(writableClientPropertyValue, Convention, out propertyValue))
+                                {
+                                    return true;
+                                }
+                            }
                         }
                     }
                 }
                 else
                 {
-                    // If it's not, we need to try to convert it using the serializer.
-                    Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue);
-                    return true;
+                    try
+                    {
+                        // First verify that the retrieved dictionary contains the component identifier { "__t": "c" }.
+                        // If not, then the retrieved nested dictionary is actually a root-level property of type map.
+                        if (Convention
+                            .PayloadSerializer
+                            .TryGetNestedObjectValue(componentProperties, ConventionBasedConstants.ComponentIdentifierKey, out string componentIdentifierValue)
+                            && componentIdentifierValue == ConventionBasedConstants.ComponentIdentifierValue)
+                        {
+                            Convention.PayloadSerializer.TryGetNestedObjectValue(componentProperties, propertyName, out object retrievedPropertyValue);
+
+                            try
+                            {
+                                // Case 3a:
+                                // Check if the retrieved value is a writable property update acknowledgment
+                                var newtonsoftWritablePropertyResponse = Convention.PayloadSerializer.ConvertFromObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
+
+                                if (typeof(IWritablePropertyResponse).IsAssignableFrom(typeof(T)))
+                                {
+                                    // If T is IWritablePropertyResponse the property value should be of type IWritablePropertyResponse as defined in the PayloadSerializer.
+                                    // We'll convert the json object to NewtonsoftJsonWritablePropertyResponse and then convert it to the appropriate IWritablePropertyResponse object.
+                                    propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyResponse(
+                                        newtonsoftWritablePropertyResponse.Value,
+                                        newtonsoftWritablePropertyResponse.AckCode,
+                                        newtonsoftWritablePropertyResponse.AckVersion,
+                                        newtonsoftWritablePropertyResponse.AckDescription);
+                                    return true;
+                                }
+
+                                object writablePropertyValue = newtonsoftWritablePropertyResponse.Value;
+
+                                // If the object is of type T or can be cast or converted to type T, go ahead and return it.
+                                if (ObjectConversionHelpers.TryCastOrConvert(writablePropertyValue, Convention, out propertyValue))
+                                {
+                                    return true;
+                                }
+                            }
+                            catch
+                            {
+                                // In case of an exception ignore it and continue.
+                            }
+
+                            // Case 3b, 3c:
+                            // Since the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
+                            // If it can be successfully converted, go ahead and return it.
+                            if (Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // In case the value cannot be converted using the serializer,
+                        // then return false with the default value of the type <T> passed in.
+                    }
                 }
             }
 
@@ -231,11 +354,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
         /// </summary>
-        /// <remarks>This internal class is aware of the implementation of the TwinCollection.</remarks>
+        /// <remarks>This method is used to translate the twin desired properties into writable property update requests.
+        /// This internal class is aware of the implementation of the TwinCollection.</remarks>
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
         /// <returns>A new instance of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
-        internal static ClientPropertyCollection FromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
+        internal static ClientPropertyCollection WritablePropertyUpdateRequestsFromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
         {
             if (twinCollection == null)
             {
@@ -249,7 +373,50 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (KeyValuePair<string, object> property in twinCollection)
             {
-                propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
+                object propertyValueAsObject = property.Value;
+                string propertyValueAsString = DefaultPayloadConvention.Instance.PayloadSerializer.SerializeToString(propertyValueAsObject);
+
+                // Check if the property value is for a root property or a component property.
+                // A component property be a JObject and will have the "__t": "c" identifiers.
+                bool isComponentProperty = propertyValueAsObject is JObject
+                    && payloadConvention.PayloadSerializer.TryGetNestedObjectValue(propertyValueAsString, ConventionBasedConstants.ComponentIdentifierKey, out string _);
+
+                if (isComponentProperty)
+                {
+                    // If this is a component property then the collection is a JObject with each individual property as a writable property update request.
+                    var propertyValueAsJObject = (JObject)propertyValueAsObject;
+                    var collectionDictionary = new Dictionary<string, object>(propertyValueAsJObject.Count);
+
+                    foreach (KeyValuePair<string, JToken> componentProperty in propertyValueAsJObject)
+                    {
+                        object individualPropertyValue;
+                        if (componentProperty.Key == ConventionBasedConstants.ComponentIdentifierKey)
+                        {
+                            individualPropertyValue = componentProperty.Value;
+                        }
+                        else
+                        {
+                            individualPropertyValue = new WritableClientProperty
+                            {
+                                Convention = payloadConvention,
+                                Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(componentProperty.Value)),
+                                Version = twinCollection.Version,
+                            };
+                        }
+                        collectionDictionary.Add(componentProperty.Key, individualPropertyValue);
+                    }
+                    propertyCollectionToReturn.Add(property.Key, collectionDictionary);
+                }
+                else
+                {
+                    var writableProperty = new WritableClientProperty
+                    {
+                        Convention = payloadConvention,
+                        Value = payloadConvention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(propertyValueAsObject)),
+                        Version = twinCollection.Version,
+                    };
+                    propertyCollectionToReturn.Add(property.Key, writableProperty);
+                }
             }
             // The version information is not accessible via the enumerator, so assign it separately.
             propertyCollectionToReturn.Version = twinCollection.Version;
@@ -257,11 +424,12 @@ namespace Microsoft.Azure.Devices.Client
             return propertyCollectionToReturn;
         }
 
-        internal static ClientPropertyCollection FromClientTwinDictionary(IDictionary<string, object> clientTwinPropertyDictionary, PayloadConvention payloadConvention)
+        // This method is used to convert the received twin into client properties (reported + desired).
+        internal static ClientPropertyCollection FromClientPropertiesAsDictionary(IDictionary<string, object> clientProperties, PayloadConvention payloadConvention)
         {
-            if (clientTwinPropertyDictionary == null)
+            if (clientProperties == null)
             {
-                throw new ArgumentNullException(nameof(clientTwinPropertyDictionary));
+                throw new ArgumentNullException(nameof(clientProperties));
             }
 
             var propertyCollectionToReturn = new ClientPropertyCollection
@@ -269,7 +437,7 @@ namespace Microsoft.Azure.Devices.Client
                 Convention = payloadConvention,
             };
 
-            foreach (KeyValuePair<string, object> property in clientTwinPropertyDictionary)
+            foreach (KeyValuePair<string, object> property in clientProperties)
             {
                 // The version information should not be a part of the enumerable ProperyCollection, but rather should be
                 // accessible through its dedicated accessor.
@@ -279,7 +447,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(Newtonsoft.Json.JsonConvert.SerializeObject(property.Value)));
+                    propertyCollectionToReturn.Add(property.Key, payloadConvention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(property.Value)));
                 }
             }
 
@@ -296,14 +464,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component with the properties to add or update.</param>
         /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior.
         /// Setting to true will simply overwrite the value. Setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
-        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c> for a top-level property operation.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
         private void AddInternal(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
         {
             // If the componentName is null then simply add the key-value pair to Collection dictionary.
             // This will either insert a property or overwrite it if it already exists.
             if (componentName == null)
             {
-                // If both the component name and properties collection are null then throw a ArgumentNullException.
+                // If both the component name and properties collection are null then throw an ArgumentNullException.
                 // This is not a valid use-case.
                 if (properties == null)
                 {
@@ -312,6 +480,12 @@ namespace Microsoft.Azure.Devices.Client
 
                 foreach (KeyValuePair<string, object> entry in properties)
                 {
+                    // A null property key is not allowed. Throw an ArgumentNullException.
+                    if (entry.Key == null)
+                    {
+                        throw new ArgumentNullException(nameof(entry.Key));
+                    }
+
                     if (forceUpdate)
                     {
                         Collection[entry.Key] = entry.Value;
@@ -341,6 +515,12 @@ namespace Microsoft.Azure.Devices.Client
 
                     foreach (KeyValuePair<string, object> entry in properties)
                     {
+                        // A null property key is not allowed. Throw an ArgumentNullException.
+                        if (entry.Key == null)
+                        {
+                            throw new ArgumentNullException(nameof(entry.Key));
+                        }
+
                         if (forceUpdate)
                         {
                             componentProperties[entry.Key] = entry.Value;

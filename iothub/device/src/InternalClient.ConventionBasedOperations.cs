@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -64,11 +66,15 @@ namespace Microsoft.Azure.Devices.Client
             return SetMethodDefaultHandlerAsync(methodDefaultCallback, userContext, cancellationToken);
         }
 
-        internal async Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken)
+        internal async Task<ClientProperties> GetClientTwinPropertiesAsync(CancellationToken cancellationToken)
         {
             try
             {
-                return await InnerHandler.GetPropertiesAsync(PayloadConvention, cancellationToken).ConfigureAwait(false);
+                ClientPropertiesAsDictionary clientPropertiesDictionary = await InnerHandler
+                    .GetClientTwinPropertiesAsync<ClientPropertiesAsDictionary>(cancellationToken)
+                    .ConfigureAwait(false);
+
+                return clientPropertiesDictionary.ToClientProperties(PayloadConvention);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -87,7 +93,10 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 clientProperties.Convention = PayloadConvention;
-                return await InnerHandler.SendPropertyPatchAsync(clientProperties, cancellationToken).ConfigureAwait(false);
+                byte[] body = clientProperties.GetPayloadObjectBytes();
+                using Stream bodyStream = new MemoryStream(body);
+
+                return await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -96,13 +105,13 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertiesEventAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
         {
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
             {
                 // convert a TwinCollection to PropertyCollection
-                var propertyCollection = ClientPropertyCollection.FromTwinCollection(twinCollection, PayloadConvention);
+                var propertyCollection = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(twinCollection, PayloadConvention);
                 callback.Invoke(propertyCollection, userContext);
 
                 return TaskHelpers.CompletedTask;

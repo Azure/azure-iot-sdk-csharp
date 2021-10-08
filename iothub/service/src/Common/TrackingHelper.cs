@@ -220,10 +220,6 @@ namespace Microsoft.Azure.Devices.Common
             {
                 return ErrorCode.DeviceNotFound;
             }
-            if (ex.Condition.Equals(IotHubAmqpErrorCode.MessageLockLostError))
-            {
-                return ErrorCode.DeviceMessageLockLost;
-            }
             if (ex.Condition.Equals(IotHubAmqpErrorCode.IotHubSuspended))
             {
                 return ErrorCode.IotHubSuspended;

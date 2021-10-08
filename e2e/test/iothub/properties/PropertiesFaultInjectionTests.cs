@@ -22,10 +22,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         private static readonly string s_devicePrefix = $"E2E_{nameof(PropertiesFaultInjectionTests)}_";
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceUpdateClientPropertiesTcpConnRecovery_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_DeviceUpdateClientPropertiesTcpConnRecovery(Client.TransportType transportType)
         {
             await Properties_DeviceUpdateClientPropertiesRecoveryAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    transportType,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -33,21 +37,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceUpdateClientPropertiesTcpConnRecovery_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        public async Task Properties_DeviceUpdateClientPropertiesGracefulShutdownRecovery_Mqtt(Client.TransportType transportType)
         {
             await Properties_DeviceUpdateClientPropertiesRecoveryAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_DeviceUpdateClientPropertiesGracefulShutdownRecovery_Mqtt()
-        {
-            await Properties_DeviceUpdateClientPropertiesRecoveryAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    transportType,
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -55,21 +50,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceUpdateClientPropertiesGracefulShutdownRecovery_MqttWs()
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_DeviceUpdateClientPropertiesGracefulShutdownRecovery_Amqp(Client.TransportType transportType)
         {
             await Properties_DeviceUpdateClientPropertiesRecoveryAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    FaultInjection.FaultType_GracefulShutdownMqtt,
+                    transportType,
+                    FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceReceivePropertyUpdateTcpConnRecovery_Mqtt()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_DeviceReceivePropertyUpdateTcpConnRecovery(Client.TransportType transportType)
         {
             await Properties_DeviceReceivePropertyUpdateRecoveryAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    transportType,
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -77,21 +78,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceReceivePropertyUpdateTcpConnRecovery_MqttWs()
+        [DataRow(Client.TransportType.Mqtt_Tcp_Only)]
+        [DataRow(Client.TransportType.Mqtt_WebSocket_Only)]
+        public async Task Properties_DeviceReceivePropertyUpdateGracefulShutdownRecovery_Mqtt(Client.TransportType transportType)
         {
             await Properties_DeviceReceivePropertyUpdateRecoveryAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Properties_DeviceReceivePropertyUpdateGracefulShutdownRecovery_Mqtt()
-        {
-            await Properties_DeviceReceivePropertyUpdateRecoveryAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    transportType,
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -99,11 +91,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
         }
 
         [LoggedTestMethod]
-        public async Task Properties_DeviceReceivePropertyUpdateGracefulShutdownRecovery_MqttWs()
+        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
+        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        public async Task Properties_DeviceReceivePropertyUpdateGracefulShutdownRecovery_Amqp(Client.TransportType transportType)
         {
             await Properties_DeviceReceivePropertyUpdateRecoveryAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    FaultInjection.FaultType_GracefulShutdownMqtt,
+                    transportType,
+                    FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
@@ -129,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                 ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
                 clientProperties.Should().NotBeNull();
 
-                bool isPropertyPresent = clientProperties.TryGetValue(propName, out string propFromCollection);
+                bool isPropertyPresent = clientProperties.ReportedFromClient.TryGetValue(propName, out string propFromCollection);
                 isPropertyPresent.Should().BeTrue();
                 propFromCollection.Should().Be(propValue);
             }

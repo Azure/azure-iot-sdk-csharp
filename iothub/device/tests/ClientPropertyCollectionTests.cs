@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Tests
+namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -56,6 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_CanAddSimpleObjectsAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection
             {
                 { StringPropertyName, StringPropertyValue },
@@ -69,6 +71,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 { MapPropertyName, s_mapPropertyValue },
                 { DateTimePropertyName, s_dateTimePropertyValue }
             };
+
+            // act, assert
 
             clientProperties.TryGetValue(StringPropertyName, out string stringOutValue);
             stringOutValue.Should().Be(StringPropertyValue);
@@ -107,22 +111,30 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_AddSimpleObjectAgainThrowsException()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection
             {
                 { StringPropertyName, StringPropertyValue }
             };
 
+            // act
             Action act = () => clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
+
+            // assert
             act.Should().Throw<ArgumentException>("\"Add\" method does not support adding a key that already exists in the collection.");
         }
 
         [TestMethod]
         public void ClientPropertyCollection_CanUpdateSimpleObjectAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection
             {
                 { StringPropertyName, StringPropertyValue }
             };
+
+            // act, assert
+
             clientProperties.TryGetValue(StringPropertyName, out string outValue);
             outValue.Should().Be(StringPropertyValue);
 
@@ -134,10 +146,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_CanAddNullPropertyAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
             clientProperties.AddRootProperty(IntPropertyName, null);
 
+            // act, assert
             clientProperties.TryGetValue(StringPropertyName, out string outStringValue);
             outStringValue.Should().Be(StringPropertyValue);
 
@@ -149,9 +163,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_CanAddMultiplePropertyAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
             clientProperties.AddRootProperty(IntPropertyName, IntPropertyValue);
+
+            // act, assert
 
             clientProperties.TryGetValue(StringPropertyName, out string outStringValue);
             outStringValue.Should().Be(StringPropertyValue);
@@ -161,23 +178,56 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
+        public void ClientPropertyCollection_TryGetValueShouldReturnFalseIfValueNotFound()
+        {
+            // arrange
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(IntPropertyName, out int outIntValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
+        {
+            // arrange
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(StringPropertyName, out int outIntValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
         public void ClientPropertyCollection_CanAddSimpleObjectWithComponentAndGetBackWithoutDeviceClient()
         {
-            var clientProperties = new ClientPropertyCollection
+            // arrange
+            var componentLevelProperties = new Dictionary<string, object>
             {
-                { ComponentName, new Dictionary<string, object> {
-                    { StringPropertyName, StringPropertyValue },
-                    { BoolPropertyName, BoolPropertyValue },
-                    { DoublePropertyName, DoublePropertyValue },
-                    { FloatPropertyName, FloatPropertyValue },
-                    { IntPropertyName, IntPropertyValue },
-                    { ShortPropertyName, ShortPropertyValue },
-                    { ObjectPropertyName, s_objectPropertyValue },
-                    { ArrayPropertyName, s_arrayPropertyValue },
-                    { MapPropertyName, s_mapPropertyValue },
-                    { DateTimePropertyName, s_dateTimePropertyValue } }
-                }
+                { StringPropertyName, StringPropertyValue },
+                { BoolPropertyName, BoolPropertyValue },
+                { DoublePropertyName, DoublePropertyValue },
+                { FloatPropertyName, FloatPropertyValue },
+                { IntPropertyName, IntPropertyValue },
+                { ShortPropertyName, ShortPropertyValue },
+                { ObjectPropertyName, s_objectPropertyValue },
+                { ArrayPropertyName, s_arrayPropertyValue },
+                { MapPropertyName, s_mapPropertyValue },
+                { DateTimePropertyName, s_dateTimePropertyValue }
             };
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddComponentProperties(ComponentName, componentLevelProperties);
+
+            // act, assert
 
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string stringOutValue);
             stringOutValue.Should().Be(StringPropertyValue);
@@ -216,18 +266,25 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_AddSimpleObjectWithComponentAgainThrowsException()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
 
+            // act
             Action act = () => clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
+
+            // assert
             act.Should().Throw<ArgumentException>("\"Add\" method does not support adding a key that already exists in the collection.");
         }
 
         [TestMethod]
         public void ClientPropertyCollection_CanUpdateSimpleObjectWithComponentAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
+
+            // act, assert
 
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
             outValue.Should().Be(StringPropertyValue);
@@ -240,9 +297,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_CanAddNullPropertyWithComponentAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
             clientProperties.AddComponentProperty(ComponentName, IntPropertyName, null);
+
+            // act, assert
 
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outStringValue);
             outStringValue.Should().Be(StringPropertyValue);
@@ -255,9 +315,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_CanAddMultiplePropertyWithComponentAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
             clientProperties.AddComponentProperty(ComponentName, IntPropertyName, IntPropertyValue);
+
+            // act, assert
 
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outStringValue);
             outStringValue.Should().Be(StringPropertyValue);
@@ -269,12 +332,15 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_CanAddSimpleWritablePropertyAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
-
             var writableResponse = new NewtonsoftJsonWritablePropertyResponse(StringPropertyValue, CommonClientResponseCodes.OK, 2, WritablePropertyDescription);
             clientProperties.AddRootProperty(StringPropertyName, writableResponse);
 
+            // act
             clientProperties.TryGetValue(StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
+
+            // assert
             outValue.Value.Should().Be(writableResponse.Value);
             outValue.AckCode.Should().Be(writableResponse.AckCode);
             outValue.AckVersion.Should().Be(writableResponse.AckVersion);
@@ -284,12 +350,15 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_CanAddWritablePropertyWithComponentAndGetBackWithoutDeviceClient()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
-
             var writableResponse = new NewtonsoftJsonWritablePropertyResponse(StringPropertyValue, CommonClientResponseCodes.OK, 2, WritablePropertyDescription);
             clientProperties.AddComponentProperty(ComponentName, StringPropertyName, writableResponse);
 
+            // act
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
+
+            // assert
             outValue.Value.Should().Be(writableResponse.Value);
             outValue.AckCode.Should().Be(writableResponse.AckCode);
             outValue.AckVersion.Should().Be(writableResponse.AckVersion);
@@ -299,14 +368,463 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ClientPropertyCollection_AddingComponentAddsComponentIdentifier()
         {
+            // arrange
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
 
+            // act
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
             clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
 
+            // assert
             outValue.Should().Be(StringPropertyValue);
             componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnFalseIfValueNotFound()
+        {
+            // arrange
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, IntPropertyName, out int outIntValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnFalseIfValueCouldNotBeDeserialized()
+        {
+            // arrange
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, StringPropertyName, out int outIntValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            outIntValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnFalseIfNotAComponent()
+        {
+            // arrange
+            var clientProperties = new ClientPropertyCollection();
+            clientProperties.AddRootProperty(MapPropertyName, s_mapPropertyValue);
+            string incorrectlyMappedComponentName = MapPropertyName;
+            string incorrectlyMappedComponentPropertyName = "key1";
+
+            // act
+            bool isValueRetrieved = clientProperties.TryGetValue(incorrectlyMappedComponentName, incorrectlyMappedComponentPropertyName, out object propertyValue);
+
+            // assert
+            isValueRetrieved.Should().BeFalse();
+            propertyValue.Should().Be(default);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddNullPropertyNameThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            Action testAction = () => testPropertyCollection.AddRootProperty(null, 123);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateNullPropertyNameThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            Action testAction = () => testPropertyCollection.AddOrUpdateRootProperty(null, 123);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddNullPropertyValueSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            // This should add an entry in the dictionary with a null value.
+            // This patch would be interpreted by the service as the client wanting to remove property "abc" from its properties.
+            testPropertyCollection.AddRootProperty("abc", null);
+
+            // assert
+            bool isValueRetrieved = testPropertyCollection.TryGetValue<object>("abc", out object propertyValue);
+            isValueRetrieved.Should().BeTrue();
+            propertyValue.Should().BeNull();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateNullPropertyValueSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            // This should add an entry in the dictionary with a null value.
+            // This patch would be interpreted by the service as the client wanting to remove property "abc" from its properties.
+            testPropertyCollection.AddOrUpdateRootProperty("abc", null);
+
+            // assert
+            bool isValueRetrieved = testPropertyCollection.TryGetValue<object>("abc", out object propertyValue);
+            isValueRetrieved.Should().BeTrue();
+            propertyValue.Should().BeNull();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddPropertyValueAlreadyExistsThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddRootProperty("abc", 123);
+
+            // act
+            Action testAction = () => testPropertyCollection.AddRootProperty("abc", 1);
+
+            // assert
+            testAction.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdatePropertyValueAlreadyExistsSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddRootProperty("abc", 123);
+
+            // act
+            testPropertyCollection.AddOrUpdateRootProperty("abc", 1);
+
+            // assert
+            bool isValueRetrieved = testPropertyCollection.TryGetValue<int>("abc", out int propertyValue);
+            isValueRetrieved.Should().BeTrue();
+            propertyValue.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddNullClientPropertyCollectionThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            Action testAction = () => testPropertyCollection.AddRootProperties(null);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateNullClientPropertyCollectionThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            Action testAction = () => testPropertyCollection.AddOrUpdateRootProperties(null);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddClientPropertyCollectionAlreadyExistsThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddRootProperty("abc", 123);
+            var propertyValues = new Dictionary<string, object>
+            {
+                { "qwe", 98 },
+                { "abc", 2 },
+            };
+
+            // act
+            Action testAction = () => testPropertyCollection.AddRootProperties(propertyValues);
+
+            // assert
+            testAction.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateClientPropertyCollectionAlreadyExistsSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddRootProperty("abc", 123);
+            var propertyValues = new Dictionary<string, object>
+            {
+                { "qwe", 98 },
+                { "abc", 2 },
+            };
+
+            // act
+            testPropertyCollection.AddOrUpdateRootProperties(propertyValues);
+
+            // assert
+            bool isValue1Retrieved = testPropertyCollection.TryGetValue<int>("qwe", out int value1Retrieved);
+            isValue1Retrieved.Should().BeTrue();
+            value1Retrieved.Should().Be(98);
+
+            bool isValue2Retrieved = testPropertyCollection.TryGetValue<int>("abc", out int value2Retrieved);
+            isValue2Retrieved.Should().BeTrue();
+            value2Retrieved.Should().Be(2);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddNullPropertyNameWithComponentThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            Action testAction = () => testPropertyCollection.AddComponentProperty("testComponent", null, 123);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateNullPropertyNameWithComponentThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            Action testAction = () => testPropertyCollection.AddOrUpdateComponentProperty("testComponent", null, 123);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddNullComponentNameThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            Action testAction = () => testPropertyCollection.AddComponentProperty(null, "abc", 123);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateNullComponentNameThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+
+            // act
+            Action testAction = () => testPropertyCollection.AddOrUpdateComponentProperty(null, "abc", 123);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddNullPropertyValueWithComponentSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("testComponent", "qwe", 123);
+
+            // act
+            // This should add an entry in the dictionary with a null value.
+            // This patch would be interpreted by the service as the client wanting to remove property "abc" from its properties.
+            testPropertyCollection.AddComponentProperty("testComponent", "abc", null);
+
+            // assert
+            bool isValue1Retrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int property1Value);
+            isValue1Retrieved.Should().BeTrue();
+            property1Value.Should().Be(123);
+
+            bool isValue2Retrieved = testPropertyCollection.TryGetValue<object>("testComponent", "abc", out object property2Value);
+            isValue2Retrieved.Should().BeTrue();
+            property2Value.Should().BeNull();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateNullPropertyValueWithComponentSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("testComponent", "qwe", 123);
+
+            // act
+            // This should add an entry in the dictionary with a null value.
+            // This patch would be interpreted by the service as the client wanting to remove property "abc" from its properties.
+            testPropertyCollection.AddOrUpdateComponentProperty("testComponent", "abc", null);
+
+            // assert
+            bool isValue1Retrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int property1Value);
+            isValue1Retrieved.Should().BeTrue();
+            property1Value.Should().Be(123);
+
+            bool isValue2Retrieved = testPropertyCollection.TryGetValue<object>("testComponent", "abc", out object property2Value);
+            isValue2Retrieved.Should().BeTrue();
+            property2Value.Should().BeNull();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddNullClientPropertyCollectionWithComponentSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.Convention = DefaultPayloadConvention.Instance;
+            testPropertyCollection.AddComponentProperty("testComponent", "qwe", 98);
+
+            // act
+            // This should add an entry in the dictionary with a null value.
+            // This patch would be interpreted by the service as the client wanting to remove component "testComponent" from its properties.
+            testPropertyCollection.AddComponentProperties("testComponent", null);
+
+            // assert
+            bool iscomponentValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int property2Value);
+            iscomponentValueRetrieved.Should().BeFalse();
+
+            bool iscomponentRetrieved = testPropertyCollection.TryGetValue<object>("testComponent", out object componentValue);
+            iscomponentRetrieved.Should().BeTrue();
+            componentValue.Should().BeNull();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateNullClientPropertyCollectionWithComponentThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.Convention = DefaultPayloadConvention.Instance;
+            testPropertyCollection.AddComponentProperty("testComponent", "qwe", 98);
+
+            // act
+            // This should add an entry in the dictionary with a null value.
+            // This patch would be interpreted by the service as the client wanting to remove component "testComponent" from its properties.
+            testPropertyCollection.AddOrUpdateComponentProperties("testComponent", null);
+
+            // assert
+            bool iscomponentValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int property2Value);
+            iscomponentValueRetrieved.Should().BeFalse();
+
+            bool iscomponentRetrieved = testPropertyCollection.TryGetValue<object>("testComponent", out object componentValue);
+            iscomponentRetrieved.Should().BeTrue();
+            componentValue.Should().BeNull();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddPropertyValueAlreadyExistsWithComponentThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("testComponent", "abc", 123);
+
+            // act
+            Action testAction = () => testPropertyCollection.AddComponentProperty("testComponent", "abc", 1);
+
+            // assert
+            testAction.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdatePropertyValueAlreadyExistsWithComponentSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("testComponent", "abc", 123);
+
+            // act
+            testPropertyCollection.AddOrUpdateComponentProperty("testComponent", "abc", 1);
+
+            // assert
+            bool isValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "abc", out int propertyValue);
+            isValueRetrieved.Should().BeTrue();
+            propertyValue.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddClientPropertyCollectionAlreadyExistsWithComponentThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("testComponent", "abc", 123);
+            var propertyValues = new Dictionary<string, object>
+            {
+                { "qwe", 98 },
+                { "abc", 2 },
+            };
+
+            // act
+            Action testAction = () => testPropertyCollection.AddComponentProperties("testComponent", propertyValues);
+
+            // assert
+            testAction.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_AddOrUpdateClientPropertyCollectionAlreadyExistsWithComponentSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("testComponent", "abc", 123);
+            var propertyValues = new Dictionary<string, object>
+            {
+                { "qwe", 98 },
+                { "abc", 2 },
+            };
+
+            // act
+            testPropertyCollection.AddOrUpdateComponentProperties("testComponent", propertyValues);
+
+            // assert
+            bool isValue1Retrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int value1Retrieved);
+            isValue1Retrieved.Should().BeTrue();
+            value1Retrieved.Should().Be(98);
+
+            bool isValue2Retrieved = testPropertyCollection.TryGetValue<int>("testComponent", "abc", out int value2Retrieved);
+            isValue2Retrieved.Should().BeTrue();
+            value2Retrieved.Should().Be(2);
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollect_AddRawClassSuccess()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            var propertyValues = new CustomClientProperty
+            {
+                Id = 12,
+                Name = "testProperty"
+            };
+            var propertyValuesAsDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(propertyValues));
+
+            // act
+            testPropertyCollection.AddRootProperties(propertyValuesAsDictionary);
+
+            // assert
+            bool isIdPresent = testPropertyCollection.TryGetValue<int>("Id", out int id);
+            isIdPresent.Should().BeTrue();
+            id.Should().Be(12);
+
+            bool isNamePresent = testPropertyCollection.TryGetValue<string>("Name", out string name);
+            isNamePresent.Should().BeTrue();
+            name.Should().Be("testProperty");
         }
     }
 

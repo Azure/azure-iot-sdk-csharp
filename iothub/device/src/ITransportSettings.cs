@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         TransportType GetTransportType();
 
         /// <summary>
-        /// The default receive timeout.
+        /// The time to wait for a receive operation.
         /// </summary>
         TimeSpan DefaultReceiveTimeout { get; }
     }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
@@ -178,18 +179,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return InnerHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
-        }
-
-        public virtual Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return InnerHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskHelpers.CompletedTask;
-        }
-
         public virtual Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -200,6 +189,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.GetClientTwinPropertiesAsync<T>(cancellationToken) ?? Task.FromResult<T>(default);
+        }
+
+        public virtual Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.SendClientTwinPropertyPatchAsync(reportedProperties, cancellationToken) ?? Task.FromResult<ClientPropertiesUpdateResponse>(null);
         }
 
         public virtual Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)

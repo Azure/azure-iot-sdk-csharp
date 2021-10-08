@@ -1,11 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using NSubstitute;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -139,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinGetAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+                GetClientTwinPropertiesAsync<TwinProperties>(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
@@ -151,14 +156,24 @@ namespace Microsoft.Azure.Devices.Client.Test
             var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
             var props = new TwinCollection();
+            string body = JsonConvert.SerializeObject(props);
+
+            string receivedBody = null;
+            await innerHandler
+                .SendClientTwinPropertyPatchAsync(
+                    Arg.Do<Stream>(stream =>
+                    {
+                        using var streamReader = new StreamReader(stream, Encoding.UTF8);
+                        receivedBody = streamReader.ReadToEnd();
+                    }),
+                    Arg.Any<CancellationToken>())
+                .ConfigureAwait(false);
 
             // act
             await client.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                SendTwinPatchAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            receivedBody.Should().Be(body);
         }
 
         // Tests_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null

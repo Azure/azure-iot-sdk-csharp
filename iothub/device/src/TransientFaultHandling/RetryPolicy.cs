@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             TimeSpan minBackoff,
             TimeSpan maxBackoff,
             TimeSpan deltaBackoff)
-            : this(errorDetectionStrategy, new ExponentialBackoff(retryCount, minBackoff, maxBackoff, deltaBackoff))
+            : this(errorDetectionStrategy, new ExponentialBackoffRetryStrategy(retryCount, minBackoff, maxBackoff, deltaBackoff))
         {
         }
 

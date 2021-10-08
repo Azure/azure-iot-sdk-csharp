@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.PlugAndPlay
         /// </summary>
         /// <remarks>
         /// For more information on device provisioning service and plug and play compatibility,
-        /// and PnP device certification, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-certify-device"/>.
+        /// and PnP device certification, see <see href="https://docs.microsoft.com/azure/iot-pnp/howto-certify-device"/>.
         /// The DPS payload should be in the format:
         /// <code>
         /// {

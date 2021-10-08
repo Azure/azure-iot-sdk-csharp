@@ -4,7 +4,7 @@ trigger:
   batch: true
   branches:
     include:
-    - master
+    - main
   paths:
     exclude:
     - docs/*
@@ -332,7 +332,7 @@ jobs:
           notifyAlwaysV2: false
           instanceUrlForTsaV2: 'MSAZURE'
           projectNameMSAZURE: 'One'
-          areaPath: 'One\IoT\Developers and Devices\SDKs\Managed'
+          areaPath: 'One\IoT\Platform and Devices\IoT Devices\SDKs\Managed'
           iterationPath: 'One\IoT\Backlog'
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1

@@ -56,7 +56,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// An example of this would be a property under the component.
         /// </remarks>
         /// <typeparam name="T">The type to convert the retrieved property to.</typeparam>
-        /// <param name="nestedObject">The object that might contain the nested property.</param>
+        /// <param name="nestedObject">The object that might contain the nested property.
+        /// This needs to be in the json object equivalent format as required by the serializer or the string representation of it.</param>
         /// <param name="propertyName">The name of the property to be retrieved.</param>
         /// <returns>True if the nested object contains an element with the specified key; otherwise, it returns false.</returns>
         /// <param name="outValue"></param>

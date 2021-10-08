@@ -115,12 +115,18 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Specify client-side heartbeat interval.
+        /// The interval, that the client establishes with the service, for sending keep alive pings.
         /// The default value is 2 minutes.
         /// </summary>
+        /// <remarks>
+        /// The client will consider the connection as disconnected if the keep alive ping fails.
+        /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
+        /// client enough time to establish a connection before disconnecting and reconnecting.
+        /// </remarks>
         public TimeSpan IdleTimeout { get; set; }
 
         /// <summary>
-        /// The operation timeout
+        /// The time to wait for any operation to complete. The default is 1 minute.
         /// </summary>
         public TimeSpan OperationTimeout
         {
@@ -129,8 +135,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The open timeout
+        /// The open timeout. The default is 1 minute.
         /// </summary>
+        /// <remarks>
+        /// This property is currently unused.
+        /// </remarks>
         public TimeSpan OpenTimeout
         {
             get => _openTimeout;
@@ -172,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Returns the default current receive timeout
+        /// The time to wait for a receive operation. The default value is 1 minute.
         /// </summary>
         public TimeSpan DefaultReceiveTimeout => DefaultOperationTimeout;
 
