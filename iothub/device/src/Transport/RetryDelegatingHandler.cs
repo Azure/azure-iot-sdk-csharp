@@ -966,7 +966,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 _handleDisconnectCts?.Cancel();
                 _handleDisconnectCts?.Dispose();
-                _handlerSemaphore?.Release();
+                if (_handlerSemaphore != null && _handlerSemaphore.CurrentCount == 0)
+                {
+                    _handlerSemaphore.Release();
+                }
                 _handlerSemaphore?.Dispose();
                 _handlerSemaphore = null;
             }
