@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -324,7 +324,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -356,7 +356,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -388,7 +388,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -420,7 +420,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -484,7 +484,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -630,7 +630,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
-                _handlerSemaphore.Release();
+                _handlerSemaphore?.Release();
                 Dispose(true);
             }
         }
@@ -690,7 +690,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore.Release();
+                _handlerSemaphore?.Release();
             }
         }
 
@@ -743,7 +743,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore.Release();
+                _handlerSemaphore?.Release();
             }
         }
 
@@ -914,7 +914,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore.Release();
+                _handlerSemaphore?.Release();
             }
         }
 
@@ -966,7 +966,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 _handleDisconnectCts?.Cancel();
                 _handleDisconnectCts?.Dispose();
-
+                _handlerSemaphore?.Release();
                 _handlerSemaphore?.Dispose();
                 _handlerSemaphore = null;
             }
