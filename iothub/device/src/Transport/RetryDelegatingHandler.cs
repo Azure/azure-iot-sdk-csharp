@@ -73,12 +73,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the block below that retries sending the message
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
                             if (message.IsBodyCalled)
                             {
                                 message.ResetBody();
