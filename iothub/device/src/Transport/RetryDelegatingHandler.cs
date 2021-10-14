@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
                 // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
-                // in the block below that retries sending the message
+                // in the retry block below
                 await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
                 await _internalRetryPolicy
@@ -134,11 +134,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendMethodResponseAsync(method, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -155,12 +158,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
+                
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
                 return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             return await base.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -179,11 +185,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
 
                 using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cts.Token).ConfigureAwait(false);
+
                 return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(timeoutHelper).ConfigureAwait(false);
                             return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
                         },
                         cts.Token)
@@ -200,14 +210,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+                
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            // Ensure that the connection has been opened, before enabling the callback for receiving messages.
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
@@ -239,13 +250,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            // Ensure that the connection has been opened before returning pending messages to the callback.
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -275,13 +287,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            // Ensure that the connection has been opened, before disabling the callback for receiving messages.
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
@@ -311,12 +324,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -344,11 +359,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -376,11 +394,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -407,12 +428,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
+                
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -440,11 +464,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -472,11 +499,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -503,12 +533,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
+                
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
                 return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             return await base.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -526,11 +559,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -548,11 +584,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await base.CompleteAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -570,11 +609,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await base.AbandonAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -592,11 +634,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
 
+                // This function calls OpenInternalAsync which has a retry policy built in, so there is no need to include this function call
+                // in the retry block below
+                await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
                             await base.RejectAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
