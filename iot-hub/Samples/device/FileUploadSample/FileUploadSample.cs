@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"Uploading file {fileName}");
 
             var fileUploadTime = Stopwatch.StartNew();
-            
+
             var fileUploadSasUriRequest = new FileUploadSasUriRequest
             {
                 BlobName = fileName
