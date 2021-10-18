@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(timeoutHelper).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, timeoutHelper).ConfigureAwait(false);
                             return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
                         },
                         cts.Token)
@@ -694,7 +694,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private async Task EnsureOpenedAsync(TimeoutHelper timeoutHelper)
+        private async Task EnsureOpenedAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
             if (Volatile.Read(ref _opened))
             {
@@ -717,7 +717,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // we are returning the corresponding connection status change event => disconnected: retry_expired.
                     try
                     {
-                        await OpenInternalAsync(timeoutHelper).ConfigureAwait(false);
+                        await OpenInternalAsync(withRetry, timeoutHelper).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (!ex.IsFatal())
                     {
@@ -797,10 +797,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private async Task OpenInternalAsync(TimeoutHelper timeoutHelper)
+        private async Task OpenInternalAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
             using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-            await _internalRetryPolicy
+
+            if (withRetry)
+            {
+                await _internalRetryPolicy
                 .ExecuteAsync(
                     async () =>
                     {
@@ -824,6 +827,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     },
                     cts.Token)
                 .ConfigureAwait(false);
+            }
+            else
+            {
+                try
+                {
+                    Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
+
+                // Will throw on error.
+                await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
+                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    HandleConnectionStatusExceptions(ex);
+                    throw;
+                }
+                finally
+                {
+                    Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
+                }
+            }
+
+                
         }
 
         // Triggered from connection loss event
