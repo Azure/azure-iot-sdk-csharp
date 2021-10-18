@@ -74,6 +74,7 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     ReceivingAmqpLink deviceBoundReceivingLink = await faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
+                    // TODOAZAD: This method
                     disposeOutcome = await deviceBoundReceivingLink.DisposeMessageAsync(deliveryTag, outcome, batchable, IotHubConnection.DefaultOperationTimeout).ConfigureAwait(false);
                 }
                 catch (Exception exception)
