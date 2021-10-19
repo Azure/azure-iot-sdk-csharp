@@ -18,7 +18,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted Ubuntu 1604
+      vmImage: ubuntu-20.04
     steps:
       - task: DownloadBuildArtifacts@0
         inputs:
