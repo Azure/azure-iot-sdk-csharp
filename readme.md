@@ -206,8 +206,9 @@ LTS branches are named lts_*yyyy*_*mm*, where *mm* and *yyyy* are the month and 
 
 Below is a table showing the mapping of the LTS branches to the packages released.
 
-| Release                                                                                       | Github Branch | LTS Status  | LTS Start Date | Maintenance End Date | LTS End Date | 
-| :-------------------------------------------------------------------------------------------: | :-----------: | :--------:  | :------------: | :------------------: | :----------: | 
+| Release                                                                                       | Github Branch | LTS Status  | LTS Start Date | Maintenance End Date | LTS End Date |
+| :-------------------------------------------------------------------------------------------: | :-----------: | :--------:  | :------------: | :------------------: | :----------: |
+| [2021-10-19](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18-patch3)  | [lts_2021_03](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2021_03)   | Active      | 2021-10-19     | 2022-03-18           | 2024-03-17   |
 | [2021-8-12](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch2)  | [lts_2021_03](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2021_03)   | Active      | 2021-08-12     | 2022-03-18           | 2024-03-17   |
 | [2021-8-10](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch2)  | [lts_2020_08](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020_08)   | Active      | 2021-08-10     | 2021-08-19           | 2023-08-19   |
 | [2021-6-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch1)  | [lts_2021_03](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2021_03)   | Active      | 2020-06-23     | 2022-03-18           | 2024-03-17   |
