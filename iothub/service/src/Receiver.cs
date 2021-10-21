@@ -15,26 +15,29 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Receive a message using the default timeout.
         /// </summary>
-        /// <returns>The receive message or null if there was no message until the default timeout</returns>
+        /// <returns>The receive message or null if there was no message until the default timeout.</returns>
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public abstract Task<T> ReceiveAsync();
 
         /// <summary>
         /// Receives a message.
         /// </summary>
-        /// <param name="timeout">The timeout for receiving a message</param>
-        /// <returns>The receive message or null if there was no message until the specified timeout</returns>
+        /// <param name="timeout">The timeout for receiving a message.</param>
+        /// <returns>The receive message or null if there was no message until the specified timeout.</returns>
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public abstract Task<T> ReceiveAsync(TimeSpan timeout);
 
         /// <summary>
-        /// Receives a message
+        /// Receives a message.
         /// </summary>
-        /// <param name="cancellationToken">The Cancellation token</param>
-        /// <returns>The receive message or null if there was no message until the specified timeout</returns>
+        /// <param name="cancellationToken">The Cancellation token.</param>
+        /// <returns>The receive message or null if there was no message until the specified timeout.</returns>
         public abstract Task<T> ReceiveAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes a received message from the queue.
         /// </summary>
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public abstract Task CompleteAsync(T t);
 
         /// <summary>
@@ -45,8 +48,9 @@ namespace Microsoft.Azure.Devices
         public abstract Task CompleteAsync(T t, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Puts a received message back into the queue
+        /// Puts a received message back into the queue.
         /// </summary>
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public abstract Task AbandonAsync(T t);
 
         /// <summary>

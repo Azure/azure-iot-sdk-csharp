@@ -61,20 +61,13 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public override Task<FeedbackBatch> ReceiveAsync()
         {
-            Logging.Enter(this, OperationTimeout, nameof(ReceiveAsync));
-
-            try
-            {
-                return ReceiveAsync(OperationTimeout);
-            }
-            finally
-            {
-                Logging.Exit(this, OperationTimeout, nameof(ReceiveAsync));
-            }
+            return ReceiveAsync(OperationTimeout);
         }
 
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public override async Task<FeedbackBatch> ReceiveAsync(TimeSpan timeout)
         {
             using var cts = new CancellationTokenSource(timeout);
@@ -145,6 +138,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public override Task CompleteAsync(FeedbackBatch feedback)
         {
             return AmqpClientHelper.DisposeMessageAsync(
@@ -164,6 +158,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken);
         }
 
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public override Task AbandonAsync(FeedbackBatch feedback)
         {
             return AmqpClientHelper.DisposeMessageAsync(

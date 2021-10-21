@@ -92,11 +92,13 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     ReceivingAmqpLink deviceBoundReceivingLink = await faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                    disposeOutcome = await deviceBoundReceivingLink.DisposeMessageAsync(
-                        deliveryTag,
-                        outcome,
-                        batchable,
-                        cancellationToken).ConfigureAwait(false);
+                    disposeOutcome = await deviceBoundReceivingLink
+                        .DisposeMessageAsync(
+                            deliveryTag,
+                            outcome,
+                            batchable,
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
