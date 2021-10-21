@@ -85,6 +85,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 ReceivingAmqpLink receivingLink = await _faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
                 AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
 
