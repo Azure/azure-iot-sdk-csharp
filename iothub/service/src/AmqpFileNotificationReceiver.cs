@@ -61,16 +61,7 @@ namespace Microsoft.Azure.Devices
 
         public override Task<FileNotification> ReceiveAsync()
         {
-            Logging.Enter(this, OperationTimeout, nameof(ReceiveAsync));
-
-            try
-            {
-                return ReceiveAsync(OperationTimeout);
-            }
-            finally
-            {
-                Logging.Exit(this, OperationTimeout, nameof(ReceiveAsync));
-            }
+            return ReceiveAsync(OperationTimeout);
         }
 
         public override async Task<FileNotification> ReceiveAsync(TimeSpan timeout)
