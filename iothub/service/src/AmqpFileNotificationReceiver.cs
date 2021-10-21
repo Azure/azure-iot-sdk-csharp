@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Common;
@@ -58,28 +59,29 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public override Task<FileNotification> ReceiveAsync()
         {
-            Logging.Enter(this, OperationTimeout, nameof(ReceiveAsync));
-
-            try
-            {
-                return ReceiveAsync(OperationTimeout);
-            }
-            finally
-            {
-                Logging.Exit(this, OperationTimeout, nameof(ReceiveAsync));
-            }
+            return ReceiveAsync(OperationTimeout);
         }
 
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public override async Task<FileNotification> ReceiveAsync(TimeSpan timeout)
         {
-            Logging.Enter(this, timeout, nameof(ReceiveAsync));
+            using var cts = new CancellationTokenSource(timeout);
+            return await ReceiveAsync(cts.Token).ConfigureAwait(false);
+        }
+
+        public override async Task<FileNotification> ReceiveAsync(CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, nameof(ReceiveAsync));
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 ReceivingAmqpLink receivingLink = await _faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
 
                 Logging.Info(this, $"Message received is [{amqpMessage}]", nameof(ReceiveAsync));
 
@@ -111,7 +113,7 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, timeout, nameof(ReceiveAsync));
+                Logging.Exit(this, nameof(ReceiveAsync));
             }
         }
 
@@ -129,6 +131,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public override Task CompleteAsync(FileNotification fileNotification)
         {
             return AmqpClientHelper.DisposeMessageAsync(
@@ -138,6 +141,17 @@ namespace Microsoft.Azure.Devices
                 false);
         }
 
+        public override Task CompleteAsync(FileNotification fileNotification, CancellationToken cancellationToken)
+        {
+            return AmqpClientHelper.DisposeMessageAsync(
+                _faultTolerantReceivingLink,
+                fileNotification.LockToken,
+                AmqpConstants.AcceptedOutcome,
+                false,
+                cancellationToken);
+        }
+
+        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
         public override Task AbandonAsync(FileNotification fileNotification)
         {
             return AmqpClientHelper.DisposeMessageAsync(
@@ -146,7 +160,17 @@ namespace Microsoft.Azure.Devices
                 AmqpConstants.ReleasedOutcome,
                 false);
         }
-        
+
+        public override Task AbandonAsync(FileNotification fileNotification, CancellationToken cancellationToken)
+        {
+            return AmqpClientHelper.DisposeMessageAsync(
+                _faultTolerantReceivingLink,
+                fileNotification.LockToken,
+                AmqpConstants.ReleasedOutcome,
+                false,
+                cancellationToken);
+        }
+
         /// <inheritdoc/>
         public void Dispose()
         {

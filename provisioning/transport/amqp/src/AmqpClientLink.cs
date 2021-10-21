@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 throw new InvalidOperationException("Link does not support sending.");
             }
-
+            // TODOAZAD
             return await sendLink.SendMessageAsync(message,
                 deliveryTag,
                 AmqpConstants.NullBinary,
