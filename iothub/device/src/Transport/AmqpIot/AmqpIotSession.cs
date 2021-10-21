@@ -222,6 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
+            //TODO: azabbasi what is this property, do we need it?
             //amqpLinkSettings.AddProperty(AmqpIotErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
             amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
 
