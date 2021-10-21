@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Common;
@@ -76,12 +77,18 @@ namespace Microsoft.Azure.Devices
 
         public override async Task<FeedbackBatch> ReceiveAsync(TimeSpan timeout)
         {
-            Logging.Enter(this, timeout, nameof(ReceiveAsync));
+            using var cts = new CancellationTokenSource(timeout);
+            return await ReceiveAsync(cts.Token).ConfigureAwait(false);
+        }
+
+        public override async Task<FeedbackBatch> ReceiveAsync(CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, nameof(ReceiveAsync));
 
             try
             {
                 ReceivingAmqpLink receivingLink = await _faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
 
                 Logging.Info(this, $"Message received is [{amqpMessage}]", nameof(ReceiveAsync));
 
@@ -118,7 +125,7 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, timeout, nameof(ReceiveAsync));
+                Logging.Exit(this, nameof(ReceiveAsync));
             }
         }
 
@@ -145,6 +152,16 @@ namespace Microsoft.Azure.Devices
                 true);
         }
 
+        public override Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
+        {
+            return AmqpClientHelper.DisposeMessageAsync(
+                _faultTolerantReceivingLink,
+                feedback.LockToken,
+                AmqpConstants.AcceptedOutcome,
+                true,
+                cancellationToken);
+        }
+
         public override Task AbandonAsync(FeedbackBatch feedback)
         {
             return AmqpClientHelper.DisposeMessageAsync(
@@ -153,7 +170,17 @@ namespace Microsoft.Azure.Devices
                 AmqpConstants.ReleasedOutcome,
                 true);
         }
-        
+
+        public override Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
+        {
+            return AmqpClientHelper.DisposeMessageAsync(
+                _faultTolerantReceivingLink,
+                feedback.LockToken,
+                AmqpConstants.ReleasedOutcome,
+                true,
+                cancellationToken);
+        }
+
         /// <inheritdoc/>
         public void Dispose()
         {
