@@ -63,13 +63,22 @@ namespace Microsoft.Azure.Devices
             return path;
         }
 
-        internal static async Task DisposeMessageAsync(FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink, string lockToken, Outcome outcome, bool batchable)
+        internal static async Task DisposeMessageAsync(
+            FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
+            string lockToken,
+            Outcome outcome,
+            bool batchable)
         {
             using var cts = new CancellationTokenSource(IotHubConnection.DefaultOperationTimeout);
             await DisposeMessageAsync(faultTolerantReceivingLink, lockToken, outcome, batchable, cts.Token).ConfigureAwait(false);
         }
 
-        internal static async Task DisposeMessageAsync(FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink, string lockToken, Outcome outcome, bool batchable, CancellationToken cancellationToken)
+        internal static async Task DisposeMessageAsync(
+            FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
+            string lockToken,
+            Outcome outcome,
+            bool batchable,
+            CancellationToken cancellationToken)
         {
             Logging.Enter(faultTolerantReceivingLink, lockToken, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
 
@@ -83,7 +92,11 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     ReceivingAmqpLink deviceBoundReceivingLink = await faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                    disposeOutcome = await deviceBoundReceivingLink.DisposeMessageAsync(deliveryTag, outcome, batchable, cancellationToken).ConfigureAwait(false);
+                    disposeOutcome = await deviceBoundReceivingLink.DisposeMessageAsync(
+                        deliveryTag,
+                        outcome,
+                        batchable,
+                        cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
