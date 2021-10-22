@@ -39,11 +39,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private AmqpIotReceivingLink _eventReceivingLink;
         private readonly SemaphoreSlim _eventReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
 
-
         private AmqpIotSendingLink _methodSendingLink;
         private AmqpIotReceivingLink _methodReceivingLink;
         private readonly SemaphoreSlim _methodLinkSemaphore = new SemaphoreSlim(1, 1);
-
 
         private AmqpIotSendingLink _twinSendingLink;
         private AmqpIotReceivingLink _twinReceivingLink;
@@ -128,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     _messageSendingLink = await _amqpIotSession.OpenTelemetrySenderLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
                     _messageSendingLink.Closed += (obj, arg) =>
                     {
-                        amqpIotSession.SafeClose();
+                        _amqpIotSession.SafeClose();
                     };
 
                     Logging.Associate(this, _messageSendingLink, nameof(_messageSendingLink));
@@ -465,57 +463,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public async Task DisableEventReceiveAsync(TimeSpan timeout)
-        {
-            if (_closed)
-            {
-                throw new IotHubException("Device is now offline.", false);
-            }
-
-            Logging.Enter(this, timeout, nameof(DisableEventReceiveAsync));
-
-            try
-            {
-                // Wait to grab the semaphore, and then close the telemetry receiving link and set _isDeviceReceiveMessageCallbackSet  to false.
-                // Once _isDeviceReceiveMessageCallbackSet is set to false, all received c2d messages can be returned via the polling ReceiveAsync() call.
-                bool enteredSemaphore = await _eventReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
-                if (!enteredSemaphore)
-                {
-                    throw new TimeoutException("Failed to enter the semaphore required for ensuring that" +
-                        " AMQP event receiver links are closed.");
-                }
-                await DisableEventReceiveLinkAsync(timeout).ConfigureAwait(false);
-            }
-            finally
-            {
-                _eventReceivingLinkSemaphore.Release();
-                Logging.Exit(this, timeout, nameof(DisableEventReceiveAsync));
-            }
-        }
-
-        public async Task DisableEventReceiveLinkAsync(TimeSpan timeout)
-        {
-            Logging.Enter(this, timeout, nameof(DisableEventReceiveLinkAsync));
-
-            Debug.Assert(_eventReceivingLink != null);
-
-            bool enteredSemaphore = await _eventReceivingLinkSemaphore.WaitAsync(timeout).ConfigureAwait(false);
-            if (!enteredSemaphore)
-            {
-                throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP message receiver links are closed.");
-            }
-
-            try
-            {
-                await _eventReceivingLink.CloseAsync(timeout).ConfigureAwait(false);
-            }
-            finally
-            {
-                _eventReceivingLinkSemaphore.Release();
-                Logging.Exit(this, timeout, nameof(DisableEventReceiveLinkAsync));
-            }
-        }
-
         public async Task<AmqpIotOutcome> SendEventsAsync(IEnumerable<Message> messages, TimeSpan timeout)
         {
             Logging.Enter(this, messages, timeout, nameof(SendEventsAsync));
@@ -658,7 +605,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 ICollection<Task> tasks = new List<Task>();
-
                 if (_methodReceivingLink != null)
                 {
                     tasks.Add(_methodReceivingLink.CloseAsync(timeout));
