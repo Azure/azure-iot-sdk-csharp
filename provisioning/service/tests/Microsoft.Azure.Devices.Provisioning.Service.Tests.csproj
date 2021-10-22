@@ -8,6 +8,7 @@
     <!-- FXCop TODO: #176 re-enable warnings as errors. -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
