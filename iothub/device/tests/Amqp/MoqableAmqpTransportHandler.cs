@@ -1,0 +1,29 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information
+
+using System.Threading.Tasks;
+using System;
+using Microsoft.Azure.Devices.Client.Transport.Amqp;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+using Moq;
+
+namespace Microsoft.Azure.Devices.Client.Test.Transport
+{
+    class MoqableAmqpTransportHandler : AmqpTransportHandler
+    {
+        public MoqableAmqpTransportHandler() : this(new PipelineContext(),
+                IotHubConnectionStringExtensions.Parse("HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE="),
+                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only))
+        {
+        }
+
+        internal MoqableAmqpTransportHandler(IPipelineContext context, IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Func<MethodRequestInternal, Task> onMethodCallback = null, Action<TwinCollection> onDesiredStatePatchReceivedCallback = null, Func<string, Message, Task> onModuleMessageReceivedCallback = null, Func<Message, Task> onDeviceMessageReceivedCallback = null) : base(context, connectionString, transportSettings, onMethodCallback, onDesiredStatePatchReceivedCallback, onModuleMessageReceivedCallback, onDeviceMessageReceivedCallback)
+        {  
+            this._amqpUnit = new MoqableAmqpUnit();
+        }
+    }
+}

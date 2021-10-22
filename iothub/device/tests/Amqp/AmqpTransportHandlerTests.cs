@@ -5,11 +5,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
@@ -59,6 +61,41 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         public async Task AmqpTransportHandlerRejectAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task AmqpTransport_Select_CorrectReceiverLink_ForEdgeModule()
+        {
+            // Test that we do not call EnableReceiveMessageAsync when we call EnableEventReceiveAsync indicating this is an Edge Module 
+            var amqpTransport = CreateFromConnectionString();
+
+            var mockFirst = new Mock<MoqableAmqpTransportHandler>();
+
+            mockFirst.Setup(p => p.EnableEventReceiveAsync(true, default)).CallBase();
+            mockFirst.Setup(p => p.EnableReceiveMessageAsync(default)).Returns(Task.FromResult(0));
+            
+            await mockFirst.Object.EnableEventReceiveAsync(false, default);
+
+            var enableReceiveMessageAsyncWasCalled = mockFirst.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
+            
+            Assert.IsFalse(enableReceiveMessageAsyncWasCalled);
+        }
+
+        [TestMethod]
+        public async Task AmqpTransport_Select_CorrectReceiverLink_ForModuleTwin()
+        {
+            var amqpTransport = CreateFromConnectionString();
+
+            var mockFirst = new Mock<MoqableAmqpTransportHandler>();
+
+            mockFirst.Setup(p => p.EnableEventReceiveAsync(false, default)).CallBase();
+            mockFirst.Setup(p => p.EnableReceiveMessageAsync(default)).Returns(Task.FromResult(0));
+
+            await mockFirst.Object.EnableEventReceiveAsync(false, default);
+            
+            var enableReceiveMessageAsyncWasCalled = mockFirst.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
+
+            Assert.IsTrue(enableReceiveMessageAsyncWasCalled);
         }
 
         [TestMethod]

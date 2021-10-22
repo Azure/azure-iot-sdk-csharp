@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
-        private readonly AmqpUnit _amqpUnit;
+        protected AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new object();
         private ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
@@ -237,21 +237,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return TaskHelpers.CompletedTask;
         }
 
-        public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await _amqpUnit.DisableReceiveMessageAsync(_operationTimeout).ConfigureAwait(false);
-            }
-            finally
-            {
-                Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
-            }
-        }
-
         #endregion Telemetry
 
         #region Methods
@@ -455,29 +440,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
 
-        }
-
-        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            if (isAnEdgeModule)
-            {
-                Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
-
-                try
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await _amqpUnit.DisableEventReceiveAsync(_operationTimeout).ConfigureAwait(false);
-                }
-                finally
-                {
-                    Logging.Exit(this, cancellationToken, nameof(DisableEventReceiveAsync));
-                }
-            }
-            else
-            {
-                await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-            }
         }
 
         #endregion Events
