@@ -133,11 +133,11 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        public async Task ConnectAsync(string host, int port, string scheme, X509Certificate2 clientCertificate, TimeSpan timeout)
+        public async Task ConnectAsync(string host, int port, string scheme, X509Certificate2 clientCertificate, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, scheme, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
+                Logging.Enter(this, scheme, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
             }
 
             _host = host;
@@ -176,10 +176,8 @@ namespace Microsoft.Azure.Devices.Client
                 string upgradeRequest = BuildUpgradeRequest();
                 byte[] upgradeRequestBytes = Encoding.ASCII.GetBytes(upgradeRequest);
 
-                _tcpClient.Client.SendTimeout = GetSocketTimeoutInMilliSeconds(timeout);
-
                 // Send WebSocket Upgrade request
-                await _webSocketStream.WriteAsync(upgradeRequestBytes, 0, upgradeRequestBytes.Length).ConfigureAwait(false);
+                await _webSocketStream.WriteAsync(upgradeRequestBytes, 0, upgradeRequestBytes.Length, cancellationToken).ConfigureAwait(false);
 
                 // receive WebSocket Upgrade response
                 byte[] responseBuffer = new byte[8 * 1024];
@@ -187,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client
                 // The response object is not returned to the user so it can be disposed.
                 using var upgradeResponse = new HttpResponse(_tcpClient, _webSocketStream, responseBuffer);
 
-                await upgradeResponse.ReadAsync(timeout).ConfigureAwait(false);
+                await upgradeResponse.ReadAsync(cancellationToken).ConfigureAwait(false);
 
                 if (upgradeResponse.StatusCode != HttpStatusCode.SwitchingProtocols)
                 {
@@ -223,7 +221,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, scheme, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
+                    Logging.Exit(this, scheme, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
                 }
             }
         }
@@ -841,19 +839,20 @@ namespace Microsoft.Azure.Devices.Client
                 _stream = stream;
                 _buffer = buffer;
             }
+
             public HttpStatusCode StatusCode { get; private set; }
             public string StatusDescription { get; private set; }
             public WebHeaderCollection Headers { get; private set; }
 
-            public async Task ReadAsync(TimeSpan timeout)
+            public async Task ReadAsync(CancellationToken cancellationToken)
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
                 do
                 {
-                    _tcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeoutHelper.GetRemainingTime());
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     _bytesRead = 0;
 
-                    _bytesRead = await _stream.ReadAsync(_buffer, _totalBytesRead, _buffer.Length - _totalBytesRead).ConfigureAwait(false);
+                    _bytesRead = await _stream.ReadAsync(_buffer, _totalBytesRead, _buffer.Length - _totalBytesRead, cancellationToken).ConfigureAwait(false);
 
                     _totalBytesRead += _bytesRead;
                     if (_bytesRead == 0 || TryParseBuffer())

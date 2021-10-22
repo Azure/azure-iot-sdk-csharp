@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
@@ -58,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal async Task<AmqpIotSendingLink> OpenTelemetrySenderLinkAsync(
             DeviceIdentity deviceIdentity,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
                     deviceIdentity,
@@ -69,13 +70,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     CommonConstants.ModuleEventPathTemplate,
                     AmqpIotConstants.TelemetrySenderLinkSuffix,
                     null,
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMessageReceiverLinkAsync(
             DeviceIdentity deviceIdentity,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
                     deviceIdentity,
@@ -86,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     CommonConstants.ModuleBoundPathTemplate,
                     AmqpIotConstants.TelemetryReceiveLinkSuffix,
                     null,
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -96,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal async Task<AmqpIotReceivingLink> OpenEventsReceiverLinkAsync(
             DeviceIdentity deviceIdentity,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
                     deviceIdentity,
@@ -107,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     CommonConstants.ModuleEventPathTemplate,
                     AmqpIotConstants.EventsReceiverLinkSuffix,
                     null,
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -118,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         internal async Task<AmqpIotSendingLink> OpenMethodsSenderLinkAsync(
             DeviceIdentity deviceIdentity,
             string correlationIdSuffix,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
                     deviceIdentity,
@@ -129,14 +130,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     CommonConstants.ModuleMethodPathTemplate,
                     AmqpIotConstants.MethodsSenderLinkSuffix,
                     AmqpIotConstants.MethodCorrelationIdPrefix + correlationIdSuffix,
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMethodsReceiverLinkAsync(
             DeviceIdentity deviceIdentity,
             string correlationIdSuffix,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
                     deviceIdentity,
@@ -147,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     CommonConstants.ModuleMethodPathTemplate,
                     AmqpIotConstants.MethodsReceiverLinkSuffix,
                     AmqpIotConstants.MethodCorrelationIdPrefix + correlationIdSuffix,
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -158,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         internal async Task<AmqpIotReceivingLink> OpenTwinReceiverLinkAsync(
             DeviceIdentity deviceIdentity,
             string correlationIdSuffix,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
                     deviceIdentity,
@@ -169,14 +170,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     CommonConstants.ModuleTwinPathTemplate,
                     AmqpIotConstants.TwinReceiverLinkSuffix,
                     AmqpIotConstants.TwinCorrelationIdPrefix + correlationIdSuffix,
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
         internal async Task<AmqpIotSendingLink> OpenTwinSenderLinkAsync(
             DeviceIdentity deviceIdentity,
             string correlationIdSuffix,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
                     deviceIdentity,
@@ -187,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     CommonConstants.ModuleTwinPathTemplate,
                     AmqpIotConstants.TwinSenderLinkSuffix,
                     AmqpIotConstants.TwinCorrelationIdPrefix + correlationIdSuffix,
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -204,14 +205,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             string moduleTemplate,
             string linkSuffix,
             string correlationId,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
                 Logging.Enter(typeof(AmqpIotSession), deviceIdentity, nameof(OpenSendingAmqpLinkAsync));
             }
 
-            AmqpLinkSettings amqpLinkSettings = new AmqpLinkSettings
+            var amqpLinkSettings = new AmqpLinkSettings
             {
                 LinkName = linkSuffix,
                 Role = false,
@@ -221,7 +222,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
-            amqpLinkSettings.AddProperty(AmqpIotErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
+            //TODO: azabbasi what is this property, do we need it?
+            //amqpLinkSettings.AddProperty(AmqpIotErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
             amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
 
             if (correlationId != null)
@@ -235,7 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
 
             // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
-            // the SDK will enable plug and play features by setting the modelId to Amqp link settings.
+            // the SDK will enable plug and play features by setting the modelId to AMQP link settings.
             if (!string.IsNullOrWhiteSpace(deviceIdentity.Options?.ModelId))
             {
                 amqpLinkSettings.AddProperty(AmqpIotConstants.ModelId, deviceIdentity.Options.ModelId);
@@ -247,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 var sendingLink = new SendingAmqpLink(amqpLinkSettings);
                 sendingLink.AttachTo(amqpSession);
-                await sendingLink.OpenAsync(timeout).ConfigureAwait(false);
+                await sendingLink.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return new AmqpIotSendingLink(sendingLink);
             }
             catch (Exception e) when (!e.IsFatal())
@@ -285,7 +287,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             string moduleTemplate,
             string linkSuffix,
             string correlationId,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -305,7 +307,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
-            amqpLinkSettings.AddProperty(AmqpIotErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
+            //amqpLinkSettings.AddProperty(AmqpIotErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
             amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
             amqpLinkSettings.AddProperty(AmqpIotConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
 
@@ -323,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 var receivingLink = new ReceivingAmqpLink(amqpLinkSettings);
                 receivingLink.AttachTo(amqpSession);
-                await receivingLink.OpenAsync(timeout).ConfigureAwait(false);
+                await receivingLink.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return new AmqpIotReceivingLink(receivingLink);
             }
             catch (Exception e) when (!e.IsFatal())
