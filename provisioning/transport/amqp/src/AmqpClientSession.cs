@@ -4,6 +4,7 @@
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public bool IsSessionClosed => _isSessionClosed;
 
-        public async Task OpenAsync(TimeSpan timeout)
+        public async Task OpenAsync(CancellationToken cancellationToken)
         {
             // Create the Session
             var amqpTestLinkFactory = new AmqpLinkFactory();
@@ -38,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             AmqpSession = new AmqpSession(_amqpConnection.AmqpConnection, AmqpSessionSettings, amqpTestLinkFactory);
             _amqpConnection.AmqpConnection.AddSession(AmqpSession, new ushort?());
             AmqpSession.Closed += OnSessionClosed;
-            await AmqpSession.OpenAsync(timeout).ConfigureAwait(false);
+            await AmqpSession.OpenAsync(cancellationToken).ConfigureAwait(false);
             _isSessionClosed = false;
         }
 

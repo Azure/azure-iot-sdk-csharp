@@ -51,7 +51,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private ProtocolHeader _sentHeader;
 
-        public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert, IWebProxy proxy, RemoteCertificateValidationCallback remoteCerificateValidationCallback)
+        public async Task OpenAsync(
+            bool useWebSocket, 
+            X509Certificate2 clientCert, 
+            IWebProxy proxy, 
+            RemoteCertificateValidationCallback remoteCerificateValidationCallback, 
+            CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -70,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (useWebSocket)
             {
-                _transport = await CreateClientWebSocketTransportAsync(timeout, proxy).ConfigureAwait(false);
+                _transport = await CreateClientWebSocketTransportAsync(proxy, cancellationToken).ConfigureAwait(false);
                 SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
                 if (provider != null)
                 {
@@ -93,7 +98,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                     if (Logging.IsEnabled)
                     {
-                        Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
+                        Logging.Info(
+                            this, 
+                            $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: " +
+                            $"Sent Protocol Header: {_sentHeader} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
                     }
 
                     if (!operationPending)
@@ -102,18 +110,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     }
 
                     _transport = await _tcs.Task.ConfigureAwait(false);
-                    await _transport.OpenAsync(timeout).ConfigureAwait(false);
+                    await _transport.OpenAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
             else
             {
                 var tcpInitiator = new AmqpTransportInitiator(_amqpSettings, TransportSettings);
-                _transport = await tcpInitiator.ConnectTaskAsync(timeout).ConfigureAwait(false);
+                _transport = await tcpInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
             }
 
             AmqpConnection = new AmqpConnection(_transport, _amqpSettings, AmqpConnectionSettings);
             AmqpConnection.Closed += OnConnectionClosed;
-            await AmqpConnection.OpenAsync(timeout).ConfigureAwait(false);
+            await AmqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             IsConnectionClosed = false;
         }
 
@@ -147,7 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             IsConnectionClosed = true;
         }
 
-        private async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout, IWebProxy proxy)
+        private async Task<TransportBase> CreateClientWebSocketTransportAsync(IWebProxy proxy, CancellationToken cancellationToken)
         {
             var webSocketUriBuilder = new UriBuilder
             {
@@ -155,14 +163,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Host = _uri.Host,
                 Port = _uri.Port
             };
-            ClientWebSocket websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, timeout, proxy).ConfigureAwait(false);
+            ClientWebSocket websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, proxy, cancellationToken).ConfigureAwait(false);
             return new ClientWebSocketTransport(
                 websocket,
                 null,
                 null);
         }
 
-        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout, IWebProxy webProxy)
+        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, IWebProxy webProxy, CancellationToken cancellationToken)
         {
             var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
@@ -208,10 +216,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
             }
 #endif
-            using (var cancellationTokenSource = new CancellationTokenSource(timeout))
-            {
-                await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
-            }
+            await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
             return websocket;
         }
