@@ -26,7 +26,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public abstract AmqpSettings CreateAmqpSettings(string idScope);
 
-        public abstract Task OpenConnectionAsync(AmqpClientConnection connection, bool useWebSocket, IWebProxy proxy, RemoteCertificateValidationCallback remoteCertificateValidationCallback, CancellationToken cancellationToken);
+        public abstract Task OpenConnectionAsync(
+            AmqpClientConnection connection, 
+            bool useWebSocket, 
+            IWebProxy proxy, 
+            RemoteCertificateValidationCallback remoteCertificateValidationCallback, 
+            CancellationToken cancellationToken);
 
         public abstract void SaveCredentials(RegistrationOperationStatus status);
     }

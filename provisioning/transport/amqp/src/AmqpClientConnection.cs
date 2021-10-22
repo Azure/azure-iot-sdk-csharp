@@ -51,7 +51,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private ProtocolHeader _sentHeader;
 
-        public async Task OpenAsync(bool useWebSocket, X509Certificate2 clientCert, IWebProxy proxy, RemoteCertificateValidationCallback remoteCerificateValidationCallback, CancellationToken cancellationToken)
+        public async Task OpenAsync(
+            bool useWebSocket, 
+            X509Certificate2 clientCert, 
+            IWebProxy proxy, 
+            RemoteCertificateValidationCallback remoteCerificateValidationCallback, 
+            CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -93,7 +98,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                     if (Logging.IsEnabled)
                     {
-                        Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
+                        Logging.Info(
+                            this, 
+                            $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: " +
+                            $"Sent Protocol Header: {_sentHeader} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
                     }
 
                     if (!operationPending)

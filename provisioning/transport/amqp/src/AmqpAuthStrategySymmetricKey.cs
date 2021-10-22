@@ -43,7 +43,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return settings;
         }
 
-        public override Task OpenConnectionAsync(AmqpClientConnection connection, bool useWebSocket, IWebProxy proxy, RemoteCertificateValidationCallback remoteCertificateValidationCallback, CancellationToken cancellationToken)
+        public override Task OpenConnectionAsync(
+            AmqpClientConnection connection, 
+            bool useWebSocket, 
+            IWebProxy proxy, 
+            RemoteCertificateValidationCallback remoteCertificateValidationCallback, 
+            CancellationToken cancellationToken)
         {
             return connection.OpenAsync(useWebSocket, null, proxy, remoteCertificateValidationCallback, cancellationToken);
         }
