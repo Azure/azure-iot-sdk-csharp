@@ -15,6 +15,8 @@
     <!-- Don't auto-compile platform specific files: -->
     <DefaultItemExcludes>ModernDotNet/**;net451/**;DigitalTwin/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
+    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -51,6 +53,10 @@
   <PropertyGroup>
     <common>$(RootDir)\common\src</common>
     <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net5.0|AnyCPU'">
+    <NoWarn>1701;1702;1138</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
