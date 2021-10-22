@@ -34,15 +34,33 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
+        private bool _isEdgeModule;
         private readonly ICertificateValidator _certValidator;
 
         internal InternalClient InternalClient { get; private set; }
 
-        internal ModuleClient(InternalClient internalClient) : this(internalClient, NullCertificateValidator.Instance)
+        /// <summary>
+        /// Constructor for a module client to be created from an <see cref="InternalClient"/>.
+        /// </summary>
+        /// <param name="internalClient">The internal client to use for the commands.</param>
+        /// <param name="isEdgeModule">Sets if this module client is created for an edge module.</param>
+        /// <remarks>
+        /// For AMQP connections a Edge Module uses a different receiver than for a Module Twin. Setting the <paramref name="isEdgeModule"/> parameter will correctly select the correct AMQP link to create.
+        /// </remarks>
+        internal ModuleClient(InternalClient internalClient, bool isEdgeModule) : this(internalClient, NullCertificateValidator.Instance, isEdgeModule)
         {
         }
 
-        internal ModuleClient(InternalClient internalClient, ICertificateValidator certValidator)
+        /// <summary>
+        /// Constructor for a module client to be created from an <see cref="InternalClient"/>. With a specific certificate validator.
+        /// </summary>
+        /// <param name="internalClient">The internal client to use for the commands.</param>
+        /// <param name="certValidator">The custom certificate validator to use for connection.</param>
+        /// <param name="isEdgeModule">Sets if this module client is created for an edge module.</param>
+        /// <remarks>
+        /// For AMQP connections a Edge Module uses a different receiver than for a Module Twin. Setting the <paramref name="isEdgeModule"/> parameter will correctly select the correct AMQP link to create.
+        /// </remarks>
+        internal ModuleClient(InternalClient internalClient, ICertificateValidator certValidator, bool isEdgeModule)
         {
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
             _certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
@@ -51,6 +69,10 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentException("A valid module Id should be specified to create a ModuleClient");
             }
+
+            // There is a distinction between a Module Twin and and Edge module. We set this flag in order
+            // to correctly select the reciver link for AMQP on a Module Twin. This does not affect MQTT.
+            _isEdgeModule = isEdgeModule;
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, this, internalClient, nameof(ModuleClient));
@@ -211,7 +233,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private static ModuleClient Create(Func<InternalClient> internalClientCreator)
         {
-            return new ModuleClient(internalClientCreator());
+            return new ModuleClient(internalClientCreator(), false);
         }
 
         internal IDelegatingHandler InnerHandler
@@ -678,7 +700,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
         public Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext) =>
-            InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext);
+            InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, _isEdgeModule);
 
         /// <summary>
         /// Sets a new delegate for the particular input. If a delegate is already associated with
@@ -691,7 +713,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
         public Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext, CancellationToken cancellationToken) =>
-            InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, cancellationToken);
+            InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, _isEdgeModule, cancellationToken);
 
         /// <summary>
         /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
@@ -703,7 +725,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
         public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext) =>
-            InternalClient.SetMessageHandlerAsync(messageHandler, userContext);
+            InternalClient.SetMessageHandlerAsync(messageHandler, userContext, _isEdgeModule);
 
         /// <summary>
         /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
@@ -716,7 +738,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
         public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, CancellationToken cancellationToken) =>
-            InternalClient.SetMessageHandlerAsync(messageHandler, userContext, cancellationToken);
+            InternalClient.SetMessageHandlerAsync(messageHandler, userContext, _isEdgeModule, cancellationToken);
 
         /// <summary>
         /// Interactively invokes a method from an edge module to an edge device.

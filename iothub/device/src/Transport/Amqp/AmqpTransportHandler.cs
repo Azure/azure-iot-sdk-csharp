@@ -432,19 +432,51 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Events
 
-        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
-
-            try
+            // If an Amqp transport is opened as a Module Twin instead of an Edge Module we need
+            // to enable the deviceBound operations instead of the event receiver link
+            if (isAnEdgeModule)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
-                await _amqpUnit.EnableEventReceiveAsync(_operationTimeout).ConfigureAwait(false);
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    await _amqpUnit.EnableEventReceiveAsync(_operationTimeout).ConfigureAwait(false);
+                }
+                finally
+                {
+                    Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                }
+            } else
+            {
+                await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
-            finally
+
+        }
+
+        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
+        {
+            if (isAnEdgeModule)
             {
-                Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
+
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    await _amqpUnit.DisableEventReceiveAsync(_operationTimeout).ConfigureAwait(false);
+                }
+                finally
+                {
+                    Logging.Exit(this, cancellationToken, nameof(DisableEventReceiveAsync));
+                }
+            }
+            else
+            {
+                await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 

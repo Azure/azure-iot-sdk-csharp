@@ -87,71 +87,163 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
-        public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback()
+        public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            var transportType = TransportType.Mqtt_Tcp_Only;
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, transportType);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
             await moduleClient.SetInputMessageHandlerAsync("endpoint1", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
 
-            await innerHandler.Received().EnableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
         // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
-        public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback()
+        public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            var transportType = TransportType.Mqtt_Tcp_Only;
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, transportType);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
             await moduleClient.SetInputMessageHandlerAsync("endpoint1", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
             await moduleClient.SetInputMessageHandlerAsync("endpoint2", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
 
-            await innerHandler.Received(1).EnableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
             await moduleClient.SetInputMessageHandlerAsync("endpoint1", null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(default).ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, default).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+
 
             await moduleClient.SetInputMessageHandlerAsync("endpoint2", null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.Received(1).DisableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+
         }
 
         [TestMethod]
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
-        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback()
+        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            var transportType = TransportType.Mqtt_Tcp_Only;
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, transportType);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
             await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
 
-            await innerHandler.Received().EnableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
         // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
-        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback()
+        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            var transportType = TransportType.Mqtt_Tcp_Only;
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, transportType);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
             await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
 
-            await innerHandler.Received(1).EnableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
             await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.Received(1).DisableEventReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Amqp()
+        {
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Amqp_Tcp_Only);
+            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
+            moduleClient.InnerHandler = innerHandler;
+
+            await moduleClient.SetInputMessageHandlerAsync("endpoint1", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+
+            await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Amqp()
+        {
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Amqp_Tcp_Only);
+            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
+            moduleClient.InnerHandler = innerHandler;
+
+            await moduleClient.SetInputMessageHandlerAsync("endpoint1", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+            await moduleClient.SetInputMessageHandlerAsync("endpoint2", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+
+            await moduleClient.SetInputMessageHandlerAsync("endpoint1", null, null).ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+
+            await moduleClient.SetInputMessageHandlerAsync("endpoint2", null, null).ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Amqp()
+        {
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Amqp_Tcp_Only);
+            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
+            moduleClient.InnerHandler = innerHandler;
+
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+
+            await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Amqp()
+        {
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Amqp_Tcp_Only);
+            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
+            moduleClient.InnerHandler = innerHandler;
+
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+
+            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
+            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received(1).DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+
+
         }
 
         [TestMethod]

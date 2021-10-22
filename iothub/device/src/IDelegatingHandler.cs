@@ -46,10 +46,9 @@ namespace Microsoft.Azure.Devices.Client
 
         Task CompleteAsync(string lockToken, CancellationToken cancellationToken);
 
-        // Telemetry downlink for modules.
-        Task EnableEventReceiveAsync(CancellationToken cancellationToken);
+        Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken);
 
-        Task DisableEventReceiveAsync(CancellationToken cancellationToken);
+        Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken);
 
         // Methods.
         Task EnableMethodsAsync(CancellationToken cancellationToken);
