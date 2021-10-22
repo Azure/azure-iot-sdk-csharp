@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     _messageSendingLink = await _amqpIotSession.OpenTelemetrySenderLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
                     _messageSendingLink.Closed += (obj, arg) =>
                     {
-                        _amqpIotSession.SafeClose();
+                        amqpIotSession.SafeClose();
                     };
 
                     Logging.Associate(this, _messageSendingLink, nameof(_messageSendingLink));
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                     _messageReceivingLink.Closed += (obj, arg) =>
                     {
-                        _amqpIotSession.SafeClose();
+                        amqpIotSession.SafeClose();
                     };
                     Logging.Associate(this, this, _messageReceivingLink, nameof(EnsureMessageReceivingLinkIsOpenAsync));
                 }
@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     _eventReceivingLink = await amqpIotSession.OpenEventsReceiverLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
                     _eventReceivingLink.Closed += (obj, arg) =>
                     {
-                        _amqpIotSession.SafeClose();
+                        amqpIotSession.SafeClose();
                     };
                     _eventReceivingLink.RegisterEventListener(OnEventsReceived);
                     Logging.Associate(this, this, _eventReceivingLink, nameof(EnableEventReceiveAsync));
@@ -595,7 +595,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     .ConfigureAwait(false);
                 _methodReceivingLink.Closed += (obj, arg) =>
                 {
-                    _amqpIotSession.SafeClose();
+                    amqpIotSession.SafeClose();
                 };
                 _methodReceivingLink.RegisterMethodListener(OnMethodReceived);
                 Logging.Associate(this, _methodReceivingLink, nameof(_methodReceivingLink));
@@ -692,7 +692,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _methodSendingLink = await amqpIotSession.OpenMethodsSenderLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
                 _methodSendingLink.Closed += (obj, arg) =>
                 {
-                    _amqpIotSession.SafeClose();
+                    amqpIotSession.SafeClose();
                 };
                 Logging.Associate(this, _methodSendingLink, nameof(_methodSendingLink));
             }
@@ -777,7 +777,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     .ConfigureAwait(false);
                 _twinReceivingLink.Closed += (obj, arg) =>
                 {
-                    _amqpIotSession.SafeClose();
+                    amqpIotSession.SafeClose();
                 };
                 _twinReceivingLink.RegisterTwinListener(OnDesiredPropertyReceived);
                 Logging.Associate(this, _twinReceivingLink, nameof(_twinReceivingLink));
@@ -795,7 +795,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     .ConfigureAwait(false);
                 _twinSendingLink.Closed += (obj, arg) =>
                 {
-                    _amqpIotSession.SafeClose();
+                    amqpIotSession.SafeClose();
                 };
                 Logging.Associate(this, _twinSendingLink, nameof(_twinSendingLink));
             }
