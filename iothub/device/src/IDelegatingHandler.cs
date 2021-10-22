@@ -46,6 +46,12 @@ namespace Microsoft.Azure.Devices.Client
 
         Task CompleteAsync(string lockToken, CancellationToken cancellationToken);
 
+        // Edge Modules and Module Twins have different links to be used for the same function when communicating over AMQP
+        // We are setting the flag on these methods since the descision should be made at the Trasnport layer and not at the
+        // client layer.
+        //
+        // This means that all other transports will need to implement this method. However they do not need to use the flag
+        // if there is no behaivor change required.
         Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken);
 
         Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken);
