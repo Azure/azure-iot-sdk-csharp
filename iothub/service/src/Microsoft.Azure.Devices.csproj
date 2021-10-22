@@ -15,7 +15,7 @@
     <!-- Don't auto-compile platform specific files: -->
     <DefaultItemExcludes>ModernDotNet/**;net451/**;DigitalTwin/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
-    <!-- Set the CheckEolTargetFramework property to false to fix the warning -->
+    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 

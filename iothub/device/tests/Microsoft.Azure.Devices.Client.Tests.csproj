@@ -12,6 +12,7 @@
 
     <!-- Don't auto-compile platform specific files: -->
     <DefaultItemExcludes>HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 

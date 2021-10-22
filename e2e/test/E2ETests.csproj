@@ -8,6 +8,7 @@
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
+    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
