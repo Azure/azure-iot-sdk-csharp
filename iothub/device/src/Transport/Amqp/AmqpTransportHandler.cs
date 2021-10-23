@@ -419,7 +419,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            // If an Amqp transport is opened as a Module Twin instead of an Edge Module we need
+            // If an AMQP transport is opened as a module twin instead of an Edge module we need
             // to enable the deviceBound operations instead of the event receiver link
             if (isAnEdgeModule)
             {
