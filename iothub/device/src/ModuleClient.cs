@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="internalClient">The internal client to use for the commands.</param>
         /// <param name="isEdgeModule">Sets if this module client is created for an edge module.</param>
         /// <remarks>
-        /// For AMQP connections a Edge Module uses a different receiver than for a Module Twin. Setting the <paramref name="isEdgeModule"/> parameter will correctly select the correct AMQP link to create.
+        /// For AMQP connections an Edge module uses a different receiver than for a Module Twin. Setting the <paramref name="isEdgeModule"/> parameter will correctly select the correct AMQP link to create.
         /// </remarks>
         internal ModuleClient(InternalClient internalClient, bool isEdgeModule) : this(internalClient, NullCertificateValidator.Instance, isEdgeModule)
         {
