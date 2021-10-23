@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
@@ -13,15 +11,12 @@ using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Shared;
 
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
-
-    class MoqableAmqpUnit : AmqpUnit
+    internal class MoqableAmqpUnit : AmqpUnit
     {
-        public MoqableAmqpUnit() : this(new DeviceIdentity(IotHubConnectionStringExtensions.Parse("HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE="), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), new ProductInfo(), new ClientOptions()),
-            new AmqpConnectionHolder(new DeviceIdentity(IotHubConnectionStringExtensions.Parse("HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE="), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), new ProductInfo(), new ClientOptions())))
+        public MoqableAmqpUnit() : this(new DeviceIdentity(IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), new ProductInfo(), new ClientOptions()),
+            new AmqpConnectionHolder(new DeviceIdentity(IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), new ProductInfo(), new ClientOptions())))
         {
         }
 
@@ -38,13 +33,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         public new async Task EnableReceiveMessageAsync(TimeSpan timeout)
         {
-            await Task.Delay(1);
+            await Task.Yield();
         }
 
 
         public new async Task EnableEventReceiveAsync(TimeSpan timeout)
         {
-            await Task.Delay(1);
+            await Task.Yield();
         }
     }
 }

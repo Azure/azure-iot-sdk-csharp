@@ -16,9 +16,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
     [TestCategory("Unit")]
     public class EdgeModuleClientTest
     {
-        private readonly string serverUrl;
-        private readonly byte[] sasKey = System.Text.Encoding.UTF8.GetBytes("key");
-        private readonly string iotHubConnectionString;
+        private readonly string _serverUrl;
+        private readonly byte[] _sasKey = System.Text.Encoding.UTF8.GetBytes("key");
+        private readonly string _iotHubConnectionString;
 
         private const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
         private const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
         public EdgeModuleClientTest()
         {
-            this.serverUrl = "http://localhost:8080";
-            this.iotHubConnectionString = "Hostname=iothub.test;DeviceId=device1;ModuleId=module1;SharedAccessKey=" + Convert.ToBase64String(this.sasKey);
+            this._serverUrl = "http://localhost:8080";
+            this._iotHubConnectionString = "Hostname=iothub.test;DeviceId=device1;ModuleId=module1;SharedAccessKey=" + Convert.ToBase64String(this._sasKey);
         }
 
-        public ModuleClient CreateAmqpModuleClient()
+        public async Task<ModuleClient> CreateAmqpModuleClient()
         {
-            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this.serverUrl);
+            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
@@ -47,14 +47,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) };
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            ModuleClient dc = new EdgeModuleClientFactory(settings, trustBundle).CreateAsync().Result;
+            ModuleClient dc = await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync();
 
             return dc;
         }
         
-        public ModuleClient CreateMqttModuleClient()
+        public async Task<ModuleClient> CreateMqttModuleClient()
         {
-            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this.serverUrl);
+            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) };
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            ModuleClient dc = new EdgeModuleClientFactory(settings, trustBundle).CreateAsync().Result;
+            ModuleClient dc = await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync();
 
             return dc;
         }
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var moduleClient = CreateMqttModuleClient();
+            var moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var moduleClient = CreateMqttModuleClient();
+            var moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var moduleClient = CreateMqttModuleClient();
+            var moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var moduleClient = CreateMqttModuleClient();
+            var moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Amqp()
         {
-            var moduleClient = CreateAmqpModuleClient();
+            var moduleClient = await CreateAmqpModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Amqp()
         {
-            var moduleClient = CreateAmqpModuleClient();
+            var moduleClient = await CreateAmqpModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Amqp()
         {
-            var moduleClient = CreateAmqpModuleClient();
+            var moduleClient = await CreateAmqpModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Amqp()
         {
-            var moduleClient = CreateAmqpModuleClient();
+            var moduleClient = await CreateAmqpModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 

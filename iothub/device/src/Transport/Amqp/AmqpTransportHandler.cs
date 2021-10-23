@@ -435,7 +435,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
                 }
-            } else
+            } 
+            else
             {
                 await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }

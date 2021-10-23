@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FluentAssertions;
 using Moq;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
@@ -19,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     [TestCategory("Unit")]
     public class AmqpTransportHandlerTests
     {
-        private const string TestConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
+        public const string TestConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         [TestMethod]
         public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()
@@ -77,8 +78,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await mockFirst.Object.EnableEventReceiveAsync(false, default);
 
             var enableReceiveMessageAsyncWasCalled = mockFirst.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
-            
-            Assert.IsFalse(enableReceiveMessageAsyncWasCalled);
+
+            enableReceiveMessageAsyncWasCalled.Should().BeFalse();
         }
 
         [TestMethod]
@@ -95,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             
             var enableReceiveMessageAsyncWasCalled = mockFirst.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
 
-            Assert.IsTrue(enableReceiveMessageAsyncWasCalled);
+            enableReceiveMessageAsyncWasCalled.Should().BeTrue();
         }
 
         [TestMethod]

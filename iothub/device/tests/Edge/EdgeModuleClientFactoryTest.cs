@@ -14,9 +14,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
     [TestCategory("Unit")]
     public class EdgeModuleClientFactoryTest
     {
-        private readonly string serverUrl;
-        private readonly byte[] sasKey = System.Text.Encoding.UTF8.GetBytes("key");
-        private readonly string iotHubConnectionString;
+        private readonly string _serverUrl;
+        private readonly byte[] _sasKey = System.Text.Encoding.UTF8.GetBytes("key");
+        private readonly string _iotHubConnectionString;
 
         private const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
         private const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
@@ -29,15 +29,15 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
         public EdgeModuleClientFactoryTest()
         {
-            this.serverUrl = "http://localhost:8080";
-            this.iotHubConnectionString = "Hostname=iothub.test;DeviceId=device1;ModuleId=module1;SharedAccessKey=" + Convert.ToBase64String(this.sasKey);
+            this._serverUrl = "http://localhost:8080";
+            this._iotHubConnectionString = "Hostname=iothub.test;DeviceId=device1;ModuleId=module1;SharedAccessKey=" + Convert.ToBase64String(this._sasKey);
         }
 
         [TestMethod]
-        public void TestCreate_FromConnectionStringEnvironment_ShouldCreateClient()
+        public async void TestCreate_FromConnectionStringEnvironment_ShouldCreateClient()
         {
-            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
-            ModuleClient dc = ModuleClient.CreateFromEnvironmentAsync().Result;
+            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this._iotHubConnectionString);
+            ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync();
 
             Assert.IsNotNull(dc);
 
@@ -45,17 +45,17 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public void TestCreate_FromConnectionStringEnvironment_ShouldCreateClientWithOptions()
+        public async void TestCreate_FromConnectionStringEnvironment_ShouldCreateClientWithOptions()
         {
             // setup
             var clientOptions = new ClientOptions
             {
                 ModelId = "tempModuleId"
             };
-            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
+            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this._iotHubConnectionString);
 
             // act
-            ModuleClient dc = ModuleClient.CreateFromEnvironmentAsync(clientOptions).Result;
+            ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(clientOptions);
 
             Assert.IsNotNull(dc);
 
@@ -63,10 +63,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public void TestCreate_FromConnectionStringEnvironment_SetTransportType_ShouldCreateClient()
+        public async void TestCreate_FromConnectionStringEnvironment_SetTransportType_ShouldCreateClient()
         {
-            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
-            ModuleClient dc = ModuleClient.CreateFromEnvironmentAsync(TransportType.Mqtt_Tcp_Only).Result;
+            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this._iotHubConnectionString);
+            ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(TransportType.Mqtt_Tcp_Only);
 
             Assert.IsNotNull(dc);
 
@@ -74,10 +74,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public void TestCreate_FromConnectionStringEnvironment_SetTransportSettings_ShouldCreateClient()
+        public async void TestCreate_FromConnectionStringEnvironment_SetTransportSettings_ShouldCreateClient()
         {
-            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
-            ModuleClient dc = ModuleClient.CreateFromEnvironmentAsync(new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) }).Result;
+            Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this._iotHubConnectionString);
+            ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) });
 
             Assert.IsNotNull(dc);
 
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             var settings = new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) };
             await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle).CreateAsync()).ConfigureAwait(false);
 
-            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this.serverUrl);
+            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle).CreateAsync()).ConfigureAwait(false);
 
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task TestCreate_FromEnvironment_UnsupportedAuth_ShouldThrow()
         {
-            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this.serverUrl);
+            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
@@ -141,9 +141,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public void TestCreate_FromEnvironment_ShouldCreateClient()
+        public async void TestCreate_FromEnvironment_ShouldCreateClient()
         {
-            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this.serverUrl);
+            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) };
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            ModuleClient dc = new EdgeModuleClientFactory(settings, trustBundle).CreateAsync().Result;
+            ModuleClient dc = await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync();
 
             Assert.IsNotNull(dc);
 
@@ -166,9 +166,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public void TestCreate_FromEnvironment_SetTransportSettings_ShouldCreateClient()
+        public async void TestCreate_FromEnvironment_SetTransportSettings_ShouldCreateClient()
         {
-            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this.serverUrl);
+            Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) };
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            ModuleClient dc = new EdgeModuleClientFactory(settings, trustBundle).CreateAsync().Result;
+            ModuleClient dc = await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync();
 
             Assert.IsNotNull(dc);
 
