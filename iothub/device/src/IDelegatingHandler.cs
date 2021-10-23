@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
         // client layer.
         //
         // This means that all other transports will need to implement this method. However they do not need to use the flag
-        // if there is no behaivor change required.
+        // if there is no behavior change required.
         Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken);
 
         Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken);
