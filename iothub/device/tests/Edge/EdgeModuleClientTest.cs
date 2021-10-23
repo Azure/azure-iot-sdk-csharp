@@ -31,11 +31,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
         public EdgeModuleClientTest()
         {
-            this._serverUrl = "http://localhost:8080";
+            _serverUrl = "http://localhost:8080";
             this._iotHubConnectionString = "Hostname=iothub.test;DeviceId=device1;ModuleId=module1;SharedAccessKey=" + Convert.ToBase64String(this._sasKey);
         }
 
-        public async Task<ModuleClient> CreateAmqpModuleClient()
+        public async Task<ModuleClient> CreateAmqpModuleClientAsync()
         {
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");

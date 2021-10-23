@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             
             await mockFirst.Object.EnableEventReceiveAsync(false, default);
 
-            var enableReceiveMessageAsyncWasCalled = mockFirst.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
+            bool enableReceiveMessageAsyncWasCalled = mockFirst.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
 
             enableReceiveMessageAsyncWasCalled.Should().BeFalse();
         }
