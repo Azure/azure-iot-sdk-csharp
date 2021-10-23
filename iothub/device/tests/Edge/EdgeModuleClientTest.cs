@@ -111,7 +111,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.Received(1).DisableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-
         }
 
         [TestMethod]
