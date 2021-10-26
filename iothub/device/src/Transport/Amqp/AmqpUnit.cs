@@ -157,12 +157,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return _amqpIotSession;
         }
 
-        public async Task CloseAsync(TimeSpan timeout)
+        public async Task CloseAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, timeout, nameof(CloseAsync));
+            Logging.Enter(this, nameof(CloseAsync));
 
-            bool enteredSemaphore = await _sessionSemaphore.WaitAsync(timeout).ConfigureAwait(false);
-            if (!enteredSemaphore)
+            try
+            {
+                await _sessionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
             {
                 throw new TimeoutException("Failed to enter the semaphore required for closing an AMQP session.");
             }
@@ -173,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 {
                     try
                     {
-                        await _amqpIotSession.CloseAsync(timeout).ConfigureAwait(false);
+                        await _amqpIotSession.CloseAsync(cancellationToken).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -184,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 _closed = true;
-                Logging.Exit(this, timeout, nameof(CloseAsync));
+                Logging.Exit(this, nameof(CloseAsync));
 
                 _sessionSemaphore.Release();
             }

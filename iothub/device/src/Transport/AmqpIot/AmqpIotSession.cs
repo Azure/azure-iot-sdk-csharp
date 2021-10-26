@@ -40,9 +40,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal Task CloseAsync(TimeSpan timeout)
+        internal Task CloseAsync(CancellationToken cancellationToken)
         {
-            return _amqpSession.CloseAsync(timeout);
+            return _amqpSession.CloseAsync(cancellationToken);
         }
 
         internal void SafeClose()
@@ -222,8 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
-            //TODO: azabbasi what is this property, do we need it?
-            //amqpLinkSettings.AddProperty(AmqpIotErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
+
             amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
 
             if (correlationId != null)
@@ -307,7 +306,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
-            //amqpLinkSettings.AddProperty(AmqpIotErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
+
             amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
             amqpLinkSettings.AddProperty(AmqpIotConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
 

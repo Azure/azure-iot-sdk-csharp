@@ -43,15 +43,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             _isSessionClosed = false;
         }
 
-        public async Task CloseAsync(TimeSpan timeout)
-        {
-            var session = AmqpSession;
-            if (session != null)
-            {
-                await session.CloseAsync(timeout).ConfigureAwait(false);
-            }
-        }
-
         public AmqpClientLink CreateSendingLink(Address address)
         {
             SendingLink = CreateLink();
