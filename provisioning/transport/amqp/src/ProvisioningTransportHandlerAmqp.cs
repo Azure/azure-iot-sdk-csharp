@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             // AMQP library started supporting CancellationToken starting from version 2.5.5
             // To preserve current behavior, we will honor both the legacy timeout and the cancellation token parameter.
             using var timeoutTokenSource = new CancellationTokenSource(s_timeoutConstant);
-            using var cancellationTokenSourceBunlde = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
+            using var cancellationTokenSourceBundle = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
 
             CancellationToken bundleCancellationToken = cancellationTokenSourceBundle.Token;
 
