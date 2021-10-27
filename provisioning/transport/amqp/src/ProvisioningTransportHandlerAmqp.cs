@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             using var timeoutTokenSource = new CancellationTokenSource(s_timeoutConstant);
             using var cancellationTokenSourceBunlde = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
 
-            CancellationToken bundleCancellationToken = cancellationTokenSourceBunlde.Token;
+            CancellationToken bundleCancellationToken = cancellationTokenSourceBundle.Token;
 
             bundleCancellationToken.ThrowIfCancellationRequested();
 
