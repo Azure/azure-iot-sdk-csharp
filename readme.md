@@ -1,6 +1,6 @@
 # Microsoft Azure IoT SDK for .NET
 
-### Contents
+## Contents
 
 This repository contains the following:
 
@@ -25,7 +25,7 @@ To prepare for this change, make sure your device's certificate store has both o
 For a more in depth explanation as to why the IoT services are doing this, please see
 [this article](https://techcommunity.microsoft.com/t5/internet-of-things/azure-iot-tls-critical-changes-are-almost-here-and-why-you/ba-p/2393169).
 
-### Build status
+## Build status
 
 Due to security considerations, build logs are not publicly available.
 
@@ -34,7 +34,7 @@ Due to security considerations, build logs are not publicly available.
 | [Main](https://github.com/Azure/azure-iot-sdk-csharp/tree/main)   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/CSharp%20Prod%20-%20West%20Central%20US?branchName=main)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=44&repositoryFilter=9&branchName=main)      |
 | [Preview](https://github.com/Azure/azure-iot-sdk-csharp/tree/preview) | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/CSharp%20Canary%20-%20Central%20US%20EUAP?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=402&repositoryFilter=9&branchName=preview) |
 
-### Recommended NuGet packages
+## Recommended NuGet packages
 
 | Package Name                                          | Release Version                                           |
 | ---                                                   | ---                                                       |
@@ -64,7 +64,7 @@ Due to security considerations, build logs are not publicly available.
 The API reference documentation for .NET SDK is [here][dotnet-api-reference].
 
 To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
-For IoT Hub Management SDK in .NET, please visit [azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net) repository
+For IoT Hub Management SDK in .NET, please visit [azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net) repository.
 
 ## Need support?
 
@@ -90,9 +90,9 @@ If you would like to build or change the SDK source code, please follow the [dev
 
 ## OS platforms and hardware compatibility
 
-For an official list of all the operating systems and .NET platforms that we support, please see [this document](./supported_platforms.md)
+For an official list of all the operating systems and .NET platforms that we support, please see [this document](./supported_platforms.md).
 
-Note that you can configure your TLS protocol version and ciphers by following [this document](./configure_tls_protocol_version_and_ciphers.md)
+Note that you can configure your TLS protocol version and ciphers by following [this document](./configure_tls_protocol_version_and_ciphers.md).
 
 ## Key features and roadmap
 
@@ -182,46 +182,40 @@ A couple of examples:
 
 ### Additional Information
 
-For additional guidance and important information about certificates, please refer to [this blog post](https://techcommunity.microsoft.com/t5/internet-of-things/azure-iot-tls-changes-are-coming-and-why-you-should-care/ba-p/1658456) from the security team. 
+For additional guidance and important information about certificates, please refer to [this blog post](https://techcommunity.microsoft.com/t5/internet-of-things/azure-iot-tls-changes-are-coming-and-why-you-should-care/ba-p/1658456) from the security team.
 
-# Long-Term Support (LTS)
+## Long-Term Support (LTS)
 
-The project offers a Long Term Support (LTS) version to allow users that do not need the latest features to be shielded from unwanted changes.
+The project offers a Long-Term Support (LTS) releases to allow users that do not need the latest features to be shielded from unwanted changes.
 
-As of August 2020, the .NET SDK is shifting to a revised Long-Term Support strategy.
-The primary motivations for this change are to extend the support period and decrease the churn on LTS releases, while still maintaining a strategy that offers customers choice between new features and stability.
+LTS repo tags are to be named lts_*yyyy*-*mm*-*dd*, where *yyyy*, *mm*, and *dd* are the year, month, and day when the tag was created. An example of such a tag is *lts_2021-03-18*.
 
-We now will be releasing a new LTS branch yearly, and each LTS release will be supported for 3 years - 1 year of active maintenance with bugfixes, and 2 years of extended support for security fixes.
+The lifetime of an LTS release is 12 months. During this time, LTS releases may receive bug fixes that fall in these categories:
 
-LTS branches receive all bug fixes that fall in one of these categories:
+- security bug fixes
+- critical bug fixes (e.g., unavoidable/unrecoverable crashes, significant memory leaks)
 
-- security bugfixes
-- critical bugfixes (crashes, memory leaks, etc.)
+> No new features or improvements are in scope to be picked up in an LTS branch. A patch will not extend the maintenance or expiry date.
 
-No new features or improvements will be picked up in an LTS branch. A patch will not extend the maintenance or expiry date.
+LTS releases may include additional extended support for security bug fixes as listed in the LTS schedule.
 
-LTS branches are named lts_*yyyy*_*mm*, where *mm* and *yyyy* are the month and year when the branch was created. An example of such a branch is *lts_2018_01*.
+### Schedule
 
-## Schedule<sup>1</sup>
+This table shows previous LTS releases and end dates.
 
-Below is a table showing the mapping of the LTS branches to the packages released.
+| Release                                                                                                                        | LTS Start Date | Maintenance End Date | LTS End Date |
+| :----------------------------------------------------------------------------------------------------------------------------: | :------------: | :------------------: | :----------: |
+| [2021-10-19](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18-patch3) <sub>patch 3 of 2021-03-18</sub> | 2021-10-19     | 2022-03-18           | 2024-03-17   |
+| [2021-8-12](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch2) <sub>patch 2 of 2021-03-18</sub>  | 2021-08-12     | 2022-03-18           | 2024-03-17   |
+| [2021-8-10](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch2) <sub>patch 2 of 2021-08-19</sub>  | 2021-08-10     | 2021-08-19           | 2023-08-19   |
+| [2021-6-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch1) <sub>patch 1 of 2021-03-18        | 2020-06-23     | 2022-03-18           | 2024-03-17   |
+| [2021-3-18](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18)                                          | 2020-03-18     | 2022-03-18           | 2024-03-17   |
+| [2020-9-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch1) <sub>patch 1 of 2021-08-19</sub>  | 2020-09-23     | 2021-08-19           | 2023-08-19   |
+| [2020-8-19](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19)                                          | 2020-08-19     | 2021-08-19           | 2023-08-19   |
+| [2020-4-3](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31_patch1) <sub>patch 1 of 2020-01-31</sub>   | 2020-04-03     | 2021-01-30           | 2023-01-30   |
+| [2020-1-31](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31)                                          | 2020-01-31     | 2021-01-30           | 2023-01-30   |
 
-| Release                                                                                       | Github Branch | LTS Status  | LTS Start Date | Maintenance End Date | LTS End Date | 
-| :-------------------------------------------------------------------------------------------: | :-----------: | :--------:  | :------------: | :------------------: | :----------: | 
-| [2021-8-12](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch2)  | [lts_2021_03](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2021_03)   | Active      | 2021-08-12     | 2022-03-18           | 2024-03-17   |
-| [2021-8-10](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch2)  | [lts_2020_08](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020_08)   | Active      | 2021-08-10     | 2021-08-19           | 2023-08-19   |
-| [2021-6-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch1)  | [lts_2021_03](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2021_03)   | Active      | 2020-06-23     | 2022-03-18           | 2024-03-17   |
-| [2021-3-18](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18)         | [lts_2021_03](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2021_03)   | Active      | 2020-03-18     | 2022-03-18           | 2024-03-17   |
-| [2020-9-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch1)  | [lts_2020_08](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020_08)   | Active      | 2020-09-23     | 2021-08-19           | 2023-08-19   |
-| [2020-8-19](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19)         | [lts_2020_08](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020_08)   | Active      | 2020-08-19     | 2021-08-19           | 2023-08-19   |
-| [2020-4-3](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31_patch1)   | [lts_2020_01](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020_01)   | Deprecated  | 2020-04-03     | 2021-01-30           | 2023-01-30   |
-| [2020-1-31](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31)         | [lts_2020_01](https://github.com/Azure/azure-iot-sdk-csharp/tree/lts_2020_01)   | Deprecated  | 2020-01-31     | 2021-01-30           | 2023-01-30   |
-
-
-- <sup>1</sup> All scheduled dates are subject to change by the Azure IoT SDK team.
-
-### Planned release schedule
-![](./lts_branches.png)
+> Note some releases have extended end dates.
 
 ---
 
