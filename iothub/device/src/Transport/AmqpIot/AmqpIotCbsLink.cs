@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 // TODO: azabbasi: CBS link on AMQP library needs to support cancellation tokens.
                 return await _amqpCbsLink
-                    .SendTokenAsync(tokenProvider, namespaceAddress, audience, resource, requiredClaims, TimeSpan.MaxValue)
+                    .SendTokenAsync(tokenProvider, namespaceAddress, audience, resource, requiredClaims, AmqpTransportSettings.DefaultOperationTimeout)
                     .ConfigureAwait(false);
             }
             catch (AmqpException e) when (!e.IsFatal())

@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices
         /// Receive a message using the default timeout.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the default timeout.</returns>
-        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
+        [Obsolete("Use ReceiveAsync(CancellationToken cancellationToken).")]
         public abstract Task<T> ReceiveAsync();
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="timeout">The timeout for receiving a message.</param>
         /// <returns>The receive message or null if there was no message until the specified timeout.</returns>
-        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
+        [Obsolete("Use ReceiveAsync(CancellationToken cancellationToken).")]
         public abstract Task<T> ReceiveAsync(TimeSpan timeout);
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Deletes a received message from the queue.
         /// </summary>
-        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
+        [Obsolete("Use CompleteASync(T t, CancellationToken cancellationToken).")]
         public abstract Task CompleteAsync(T t);
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Puts a received message back into the queue.
         /// </summary>
-        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
+        [Obsolete("Use AbandonAsync(T t, CancellationToken cancellationToken).")]
         public abstract Task AbandonAsync(T t);
 
         /// <summary>

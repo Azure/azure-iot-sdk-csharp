@@ -59,13 +59,13 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
+        [Obsolete("Use ReceiveAsync(CancellationToken cancellationToken).")]
         public override Task<FileNotification> ReceiveAsync()
         {
             return ReceiveAsync(OperationTimeout);
         }
 
-        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
+        [Obsolete("Use ReceiveAsync(CancellationToken cancellationToken).")]
         public override async Task<FileNotification> ReceiveAsync(TimeSpan timeout)
         {
             using var cts = new CancellationTokenSource(timeout);
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
+        [Obsolete("Use CompleteAsync(FileNotification fileNotification, CancellationToken cancellationToken).")]
         public override Task CompleteAsync(FileNotification fileNotification)
         {
             return AmqpClientHelper.DisposeMessageAsync(
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken);
         }
 
-        [Obsolete("Deprecated in favor of method signature with CancellationToken.")]
+        [Obsolete("Use AbandonAsync(FileNotification fileNotification, CancellationToken cancellationToken).")]
         public override Task AbandonAsync(FileNotification fileNotification)
         {
             return AmqpClientHelper.DisposeMessageAsync(
