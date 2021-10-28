@@ -237,6 +237,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return TaskHelpers.CompletedTask;
         }
 
+        public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _amqpUnit.DisableReceiveMessageAsync(_operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+            }
+        }
+
         #endregion Telemetry
 
         #region Methods
