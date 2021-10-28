@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Devices.Client
             Audience = builder.HostName;
             IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
             HostName = IsUsingGateway
-                ? builder.HostName
-                : builder.GatewayHostName;
+                ? builder.GatewayHostName
+                : builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
             IotHubName = builder.IotHubName;
