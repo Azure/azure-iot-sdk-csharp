@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             Audience = builder.HostName;
-            HostName = string.IsNullOrEmpty(builder.GatewayHostName)
+            IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
+            HostName = IsUsingGateway
                 ? builder.HostName
                 : builder.GatewayHostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
@@ -110,5 +111,8 @@ namespace Microsoft.Azure.Devices.Client
         public string SharedAccessKey { get; private set; }
 
         public string SharedAccessSignature { get; private set; }
+
+        public bool IsUsingGateway { get; private set; }
+
     }
 }

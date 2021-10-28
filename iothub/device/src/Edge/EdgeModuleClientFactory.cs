@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 }
 
                 // We will set the isAnEdgeModule parameter of the ModuleClient class to true to indicate we should use the correct message path.
-                return new ModuleClient(CreateInternalClientFromConnectionString(connectionString, _options), certificateValidator, true);
+                return new ModuleClient(CreateInternalClientFromConnectionString(connectionString, _options), certificateValidator);
             }
             else
             {
@@ -112,8 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     certificateValidator = GetCertificateValidator(certs);
                 }
 
-                // We will set the isAnEdgeModule parameter of the ModuleClient class to true to indicate we should use the correct message path.
-                return new ModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod, _options), certificateValidator, true);
+                return new ModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod, _options), certificateValidator);
             }
         }
 

@@ -43,11 +43,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Constructor for a module client to be created from an <see cref="InternalClient"/>.
         /// </summary>
         /// <param name="internalClient">The internal client to use for the commands.</param>
-        /// <param name="isAnEdgeModule">Sets if this module client is created for an edge module.</param>
-        /// <remarks>
-        /// For AMQP connections a Edge Module uses a different receiver than for a Module Twin. Setting the <paramref name="isAnEdgeModule"/> parameter will correctly select the correct AMQP link to create.
-        /// </remarks>
-        internal ModuleClient(InternalClient internalClient, bool isAnEdgeModule) : this(internalClient, NullCertificateValidator.Instance, isAnEdgeModule)
+        internal ModuleClient(InternalClient internalClient) : this(internalClient, NullCertificateValidator.Instance)
         {
         }
 
@@ -56,11 +52,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="internalClient">The internal client to use for the commands.</param>
         /// <param name="certValidator">The custom certificate validator to use for connection.</param>
-        /// <param name="isAnEdgeModule">Sets if this module client is created for an edge module.</param>
-        /// <remarks>
-        /// For AMQP connections a Edge Module uses a different receiver than for a Module Twin. Setting the <paramref name="isAnEdgeModule"/> parameter will correctly select the correct AMQP link to create.
-        /// </remarks>
-        internal ModuleClient(InternalClient internalClient, ICertificateValidator certValidator, bool isAnEdgeModule)
+        internal ModuleClient(InternalClient internalClient, ICertificateValidator certValidator)
         {
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
             _certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
@@ -72,7 +64,8 @@ namespace Microsoft.Azure.Devices.Client
 
             // There is a distinction between a Module Twin and and Edge module. We set this flag in order
             // to correctly select the reciver link for AMQP on a Module Twin. This does not affect MQTT.
-            _isAnEdgeModule = isAnEdgeModule;
+            // We can determine that this is an edge module if the connection string is using a gateway host.
+            _isAnEdgeModule = internalClient.IotHubConnectionString.IsUsingGateway;
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, this, internalClient, nameof(ModuleClient));
@@ -233,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private static ModuleClient Create(Func<InternalClient> internalClientCreator)
         {
-            return new ModuleClient(internalClientCreator(), false);
+            return new ModuleClient(internalClientCreator());
         }
 
         internal IDelegatingHandler InnerHandler
