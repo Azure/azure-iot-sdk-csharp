@@ -75,6 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     certificateValidator = GetCertificateValidator(new List<X509Certificate2>() { expectedRoot });
                 }
 
+                // We will set the isAnEdgeModule parameter of the ModuleClient class to true to indicate we should use the correct message path.
                 return new ModuleClient(CreateInternalClientFromConnectionString(connectionString, _options), certificateValidator);
             }
             else

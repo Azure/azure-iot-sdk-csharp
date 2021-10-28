@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
-        private readonly AmqpUnit _amqpUnit;
+        protected AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new object();
         private ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
@@ -237,21 +237,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return TaskHelpers.CompletedTask;
         }
 
-        public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await _amqpUnit.DisableReceiveMessageAsync(_operationTimeout).ConfigureAwait(false);
-            }
-            finally
-            {
-                Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
-            }
-        }
-
         #endregion Telemetry
 
         #region Methods
@@ -432,20 +417,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Events
 
-        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
-
-            try
+            // If an AMQP transport is opened as a module twin instead of an Edge module we need
+            // to enable the deviceBound operations instead of the event receiver link
+            if (isAnEdgeModule)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
-                await _amqpUnit.EnableEventReceiveAsync(_operationTimeout).ConfigureAwait(false);
-            }
-            finally
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    await _amqpUnit.EnableEventReceiveAsync(_operationTimeout).ConfigureAwait(false);
+                }
+                finally
+                {
+                    Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                }
+            } 
+            else
             {
-                Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
+
         }
 
         #endregion Events
