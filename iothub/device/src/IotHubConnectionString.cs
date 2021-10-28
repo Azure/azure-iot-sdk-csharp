@@ -113,6 +113,5 @@ namespace Microsoft.Azure.Devices.Client
         public string SharedAccessSignature { get; private set; }
 
         public bool IsUsingGateway { get; private set; }
-
     }
 }
