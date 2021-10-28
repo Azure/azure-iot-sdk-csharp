@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         // For this sample either:
         // - pass this value as a command-prompt argument
-        // - set the PROVISIONING_CONNECTION_STRING environment variable 
+        // - set the PROVISIONING_CONNECTION_STRING environment variable
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
         private static string s_connectionString = Environment.GetEnvironmentVariable("PROVISIONING_CONNECTION_STRING");
 
