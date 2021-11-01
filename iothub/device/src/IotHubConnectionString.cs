@@ -20,9 +20,10 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             Audience = builder.HostName;
-            HostName = string.IsNullOrEmpty(builder.GatewayHostName)
-                ? builder.HostName
-                : builder.GatewayHostName;
+            IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
+            HostName = IsUsingGateway
+                ? builder.GatewayHostName
+                : builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
             IotHubName = builder.IotHubName;
@@ -110,5 +111,7 @@ namespace Microsoft.Azure.Devices.Client
         public string SharedAccessKey { get; private set; }
 
         public string SharedAccessSignature { get; private set; }
+
+        public bool IsUsingGateway { get; private set; }
     }
 }

@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _twinEnabled;
         private bool _eventsEnabled;
         private bool _deviceReceiveMessageEnabled;
+        private bool _isAnEdgeModule = true;
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
@@ -368,10 +369,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             try
             {
+                _isAnEdgeModule = isAnEdgeModule;
                 Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
                 await _internalRetryPolicy
@@ -382,7 +384,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
-                                await base.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
                                 Debug.Assert(!_eventsEnabled);
                                 _eventsEnabled = true;
                             }
@@ -400,10 +402,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             try
             {
+                _isAnEdgeModule = isAnEdgeModule;
                 Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
 
                 await _internalRetryPolicy
@@ -415,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             try
                             {
                                 Debug.Assert(_eventsEnabled);
-                                await base.DisableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
                                 _eventsEnabled = false;
                             }
                             finally
@@ -925,7 +928,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // This is to ensure that, if previously enabled, the callback to receive events for modules is recovered.
                     if (_eventsEnabled)
                     {
-                        tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
+                        tasks.Add(base.EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken));
                     }
 
                     // This is to ensure that, if previously enabled, the callback to receive C2D messages is recovered.
