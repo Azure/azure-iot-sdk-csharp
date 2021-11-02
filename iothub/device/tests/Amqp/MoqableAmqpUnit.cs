@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Test.ConnectionString;
@@ -31,13 +32,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
         }
 
-        public new async Task EnableReceiveMessageAsync(TimeSpan timeout)
+        public new async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             await Task.Yield();
         }
 
 
-        public new async Task EnableEventReceiveAsync(TimeSpan timeout)
+        public new async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
             await Task.Yield();
         }
