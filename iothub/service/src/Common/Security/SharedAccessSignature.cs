@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Azure.Devices.Common.Data;
 
 namespace Microsoft.Azure.Devices.Common.Security
 {
@@ -73,7 +72,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         public string Signature { get; private set; }
 
         /// <summary>
-        /// Parses a shared access signature string representation into a <see cref="SharedAccessSignature"/>./>
+        /// Parses a shared access signature string representation into a <see cref="SharedAccessSignature"/>.
         /// </summary>
         /// <param name="iotHubName">The IoT Hub name.</param>
         /// <param name="rawToken">The string representation of the SAS token to parse.</param>

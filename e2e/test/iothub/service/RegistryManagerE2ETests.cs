@@ -121,7 +121,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var devices = new List<Device>();
             for (int i = 0; i < bulkCount; i++)
             {
-                devices.Add(new Device(_devicePrefix + Guid.NewGuid()));
+                var device = new Device(_devicePrefix + Guid.NewGuid());
+                device.Scope = "someScope" + Guid.NewGuid();
+                device.ParentScopes.Add("someParentScope" + Guid.NewGuid());
+                devices.Add(device);
             }
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
@@ -133,7 +136,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             foreach (Device device in devices)
             {
                 // After a bulk add, every device should be able to be retrieved
-                Assert.IsNotNull(await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false));
+                Device retrievedDevice = await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false);
+                Assert.IsNotNull(retrievedDevice.Id);
+                Assert.AreEqual(device.Scope, retrievedDevice.Scope);
+                Assert.AreEqual(1, retrievedDevice.ParentScopes.Count);
+                Assert.AreEqual(device.ParentScopes.ElementAt(0), retrievedDevice.ParentScopes.ElementAt(0));
             }
 
             var twins = new List<Twin>();

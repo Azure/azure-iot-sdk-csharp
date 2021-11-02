@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.EnableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.EnableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
 
             // assert
             string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act & assert
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.EnableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.EnableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_021: `DisableEventReceiveAsync` shall unsubscribe using the 'devices/{0}/modules/{1}/#' topic filter.
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.DisableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.DisableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
 
             // assert
             await channel
@@ -282,7 +282,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act & assert
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.DisableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.DisableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_005: `SendMethodResponseAsync` shall allocate a `Message` object containing the method response.

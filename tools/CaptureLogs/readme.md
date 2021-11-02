@@ -11,7 +11,7 @@ We have provided the following convenience scripts for log collection using `log
       1. `-TraceName` - the name of the event trace data collector.  This can be any name that will be used to identity the collector created.
       2. `-Output` - the output log file that will be created. This should be a `.etl` file.
       3. `-ProviderFile` - The file listing multiple Event Trace providers to enable. The file should be a text file containing one provider per line.
-        The Azure IoT SDK providers file is present [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/tools/CaptureLogs/iot_providers.txt). The providers list with their corresponding package details are present [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs#azure-iot-sdk-providers).
+        The Azure IoT SDK providers file is present [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/tools/CaptureLogs/iot_providers.txt). The providers list with their corresponding package details are present [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/tools/CaptureLogs#azure-iot-sdk-providers).
 
   Sample usage:
 
@@ -35,7 +35,7 @@ On Linux and OSX LTTNG and perfcollect can be used to collect traces. For more i
 ## Console logging
 Logging can be added to console. Note that this method will substantially slow down execution.
 
-  1. Add [`e2e\test\helpers\ConsoleEventListener.cs`](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/e2e/test/helpers/ConsoleEventListener.cs) to your project.
+  1. Add [`e2e\test\helpers\ConsoleEventListener.cs`](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/e2e/test/helpers/ConsoleEventListener.cs) to your project.
   2. Instantiate the listener. Add one or more filters (e.g. `Microsoft-Azure-` or `DotNetty-`):
 
 ```csharp

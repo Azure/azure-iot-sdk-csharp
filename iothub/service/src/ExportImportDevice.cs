@@ -5,6 +5,7 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
@@ -64,6 +65,8 @@ namespace Microsoft.Azure.Devices
             StatusReason = device.StatusReason;
             Authentication = device.Authentication;
             Capabilities = device.Capabilities;
+            DeviceScope = device.Scope;
+            ParentScopes = device.ParentScopes;
         }
 
         /// <summary>
@@ -151,6 +154,21 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Include)]
         public string DeviceScope { get; set; }
+
+        /// <summary>
+        /// The scopes of the upper level edge devices if applicable.
+        /// </summary>
+        /// <remarks>
+        /// For edge devices, the value to set a parent edge device can be retrieved from the parent edge device's <see cref="DeviceScope"/> property.
+        ///
+        /// For leaf devices, this could be set to the same value as <see cref="DeviceScope"/> or left for the service to copy over.
+        ///
+        /// For now, this list can only have 1 element in the collection.
+        ///
+        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
+        /// </remarks>
+        [JsonProperty(PropertyName = "parentScopes", NullValueHandling = NullValueHandling.Ignore)]
+        public IList<string> ParentScopes { get; internal set; } = new List<string>();
 
         private static string SanitizeETag(string eTag)
         {

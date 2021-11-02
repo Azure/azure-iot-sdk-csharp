@@ -24,5 +24,5 @@ Please use your Azure subscription if you need to share any information from you
 
 ## Console log of the issue:
 <!-- Please share logs as possible, that will help debugging. -->
-<!-- See https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/CaptureLogs and
+<!-- See https://github.com/Azure/azure-iot-sdk-csharp/tree/main/tools/CaptureLogs and
          https://github.com/dotnet/corefx/blob/master/Documentation/debugging/windows-instructions.md#traces -->

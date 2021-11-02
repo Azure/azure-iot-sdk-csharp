@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <remarks>
         /// Because Intermediate Authorities may have been issued by the uploaded CA, the application must present the full chain of
         /// certificates from the one used during authentication to the one uploaded to the service.
-        /// See <see href="https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/provisioning/Samples/device#provisioning-devices-using-x509-certificate-based-attestation"/>
+        /// See <see href="https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/provisioning/Samples/device#provisioning-devices-using-x509-certificate-based-attestation"/>
         /// for more information.
         /// </remarks>
         /// <param name="certificates">The certificate chain to ensure is installed.</param>

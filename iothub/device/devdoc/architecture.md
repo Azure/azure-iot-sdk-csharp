@@ -138,7 +138,7 @@ Immediate cancellation is achieved by using `Dispose()` which closes and dispose
 | `(ConnectionStatus.Disabled, ConnectionStatusChangeReason.Client_Close)` | Application disposed the client. |
 | `(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Communication_Error)` | If no callback subscriptions exist, the client will not automatically connect. A future operation will attempt to reconnect the client. |
 | `(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error)` | If any callback subscriptions exist (methods, twin, events) and connectivity is lost, the client will try to reconnect. |
-| `(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired)` | Retry timeout. The `RetryDelegatingHandler` will attempt to recover links for a duration of `OperationTimeoutInMilliseconds` (default 4 minutes) according to [this retry policy](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/iothub/device/devdoc/requirements/retrypolicy.md). |
+| `(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired)` | Retry timeout. The `RetryDelegatingHandler` will attempt to recover links for a duration of `OperationTimeoutInMilliseconds` (default 4 minutes) according to [this retry policy](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/iothub/device/devdoc/requirements/retrypolicy.md). |
 | `(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Bad_Credential)` | UnauthorizedException during Retry. |
 | `(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Device_Disabled)` | DeviceDisabledException during Retry. |
 
