@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
@@ -45,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal async Task<AmqpIotSession> OpenSessionAsync(TimeSpan timeout)
+        internal async Task<AmqpIotSession> OpenSessionAsync(CancellationToken cancellationToken)
         {
             if (_amqpConnection.IsClosing())
             {
@@ -61,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 var amqpSession = new AmqpSession(_amqpConnection, amqpSessionSettings, AmqpIotLinkFactory.GetInstance());
                 _amqpConnection.AddSession(amqpSession, new ushort?());
-                await amqpSession.OpenAsync(timeout).ConfigureAwait(false);
+                await amqpSession.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return new AmqpIotSession(amqpSession);
             }
             catch (Exception e) when (!e.IsFatal())
@@ -83,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(DeviceIdentity deviceIdentity, CancellationToken cancellationToken)
         {
             if (_amqpConnection.IsClosing())
             {
@@ -92,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, _amqpIotCbsLink);
-                await amqpAuthenticator.InitLoopAsync(timeout).ConfigureAwait(false);
+                await amqpAuthenticator.InitLoopAsync(cancellationToken).ConfigureAwait(false);
                 return amqpAuthenticator;
             }
             catch (Exception e) when (!e.IsFatal())
