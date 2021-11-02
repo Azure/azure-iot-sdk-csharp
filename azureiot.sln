@@ -72,6 +72,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{719D18A7-E943-461B-B777-0AAEC43916F5}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.github\CODEOWNERS = .github\CODEOWNERS
 		configure_tls_protocol_version_and_ciphers.md = configure_tls_protocol_version_and_ciphers.md
 		device_connection_and_reliability_readme.md = device_connection_and_reliability_readme.md
 		readme.md = readme.md
