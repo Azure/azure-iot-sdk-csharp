@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
         private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
-        private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
+        private readonly IEventLoopGroup _eventLoopGroup = GetEventLoopGroup();
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
 
@@ -494,7 +494,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
                     var timeout = ((MqttTransportSettings)_transportSettings).GracefulEventLoopShutdownTimeout;
-                    await s_eventLoopGroup.Value.ShutdownGracefullyAsync(timeout, timeout).ConfigureAwait(true);
+                    await _eventLoopGroup.ShutdownGracefullyAsync(timeout, timeout).ConfigureAwait(true);
                 }
                 else if (State == TransportState.Error)
                 {
@@ -1211,7 +1211,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                      iotHubConnectionString.HostName);
 
                 Bootstrap bootstrap = new Bootstrap()
-                    .Group(s_eventLoopGroup.Value)
+                    .Group(_eventLoopGroup)
                     .Channel<TcpSocketChannel>()
                     .Option(ChannelOption.TcpNodelay, true)
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
@@ -1321,7 +1321,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         new LoggingHandler(LogLevel.DEBUG),
                         _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options));
 
-                await s_eventLoopGroup.Value.RegisterAsync(clientWebSocketChannel).ConfigureAwait(true);
+                await _eventLoopGroup.RegisterAsync(clientWebSocketChannel).ConfigureAwait(true);
 
                 return clientWebSocketChannel;
             };
