@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async void TestCreate_FromConnectionStringEnvironment_ShouldCreateClient()
+        public async Task TestCreate_FromConnectionStringEnvironment_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this._iotHubConnectionString);
             ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync();
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async void TestCreate_FromConnectionStringEnvironment_ShouldCreateClientWithOptions()
+        public async Task TestCreate_FromConnectionStringEnvironment_ShouldCreateClientWithOptions()
         {
             // setup
             var clientOptions = new ClientOptions
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async void TestCreate_FromConnectionStringEnvironment_SetTransportType_ShouldCreateClient()
+        public async Task TestCreate_FromConnectionStringEnvironment_SetTransportType_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this._iotHubConnectionString);
             ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(TransportType.Mqtt_Tcp_Only);
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async void TestCreate_FromConnectionStringEnvironment_SetTransportSettings_ShouldCreateClient()
+        public async Task TestCreate_FromConnectionStringEnvironment_SetTransportSettings_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this._iotHubConnectionString);
             ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) });
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async void TestCreate_FromEnvironment_ShouldCreateClient()
+        public async Task TestCreate_FromEnvironment_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async void TestCreate_FromEnvironment_SetTransportSettings_ShouldCreateClient()
+        public async Task TestCreate_FromEnvironment_SetTransportSettings_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this._serverUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
@@ -261,7 +261,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, default).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-
 
             await moduleClient.SetInputMessageHandlerAsync("endpoint2", null, null).ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
