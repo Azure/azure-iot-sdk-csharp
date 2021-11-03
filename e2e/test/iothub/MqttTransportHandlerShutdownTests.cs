@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task MqttTransport_Tcp_LongTimeout_OnCloseAsync()
         {
+            //arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             var transportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only);
             transportSettings.GracefulEventLoopShutdownTimeout = TimeSpan.FromSeconds(30);
@@ -31,15 +32,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(MqttTransport_Tcp_LongTimeout_OnCloseAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace($"{nameof(MqttTransport_Tcp_LongTimeout_OnCloseAsync)}: calling CloseAsync...");
+
+            //act
             var sw = Stopwatch.StartNew();
             await deviceClient.CloseAsync();
             sw.Stop();
+
+            //assert
             sw.Elapsed.Should().BeCloseTo(transportSettings.GracefulEventLoopShutdownTimeout, 1000);
         }
 
         [LoggedTestMethod]
         public async Task MqttTransport_Ws_LongTimeout_OnCloseAsync()
         {
+            //arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             var transportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             transportSettings.GracefulEventLoopShutdownTimeout = TimeSpan.FromSeconds(30);
@@ -50,15 +56,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(MqttTransport_Ws_LongTimeout_OnCloseAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace($"{nameof(MqttTransport_Ws_LongTimeout_OnCloseAsync)}: calling CloseAsync...");
+
+            //act
             var sw = Stopwatch.StartNew();
             await deviceClient.CloseAsync();
             sw.Stop();
+
+            //assert
             sw.Elapsed.Should().BeCloseTo(transportSettings.GracefulEventLoopShutdownTimeout, 1000);
         }
 
         [LoggedTestMethod]
         public async Task MqttTransport_Tcp_ShortTimeout_OnCloseAsync()
         {
+            //arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             var transportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only);
             transportSettings.GracefulEventLoopShutdownTimeout = TimeSpan.FromMilliseconds(100);
@@ -68,15 +79,21 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(MqttTransport_Tcp_ShortTimeout_OnCloseAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace($"{nameof(MqttTransport_Tcp_ShortTimeout_OnCloseAsync)}: calling CloseAsync...");
+
+            //act
             var sw = Stopwatch.StartNew();
             await deviceClient.CloseAsync();
             sw.Stop();
+
+            //assert
             sw.Elapsed.Should().BeCloseTo(transportSettings.GracefulEventLoopShutdownTimeout, 20);
         }
 
         [LoggedTestMethod]
         public async Task MqttTransport_Ws_ShortTimeout_OnCloseAsync()
         {
+
+            //arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             var transportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             transportSettings.GracefulEventLoopShutdownTimeout = TimeSpan.FromMilliseconds(100);
@@ -86,15 +103,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(MqttTransport_Ws_ShortTimeout_OnCloseAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace($"{nameof(MqttTransport_Ws_ShortTimeout_OnCloseAsync)}: calling CloseAsync...");
+
+            //act
             var sw = Stopwatch.StartNew();
             await deviceClient.CloseAsync();
             sw.Stop();
+
+            //assert
             sw.Elapsed.Should().BeCloseTo(transportSettings.GracefulEventLoopShutdownTimeout, 20);
         }
 
         [LoggedTestMethod]
         public async Task MqttTransport_Tcp_DefaultTimeout_OnCloseAsync()
         {
+            //arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt_Tcp_Only);
 
@@ -102,15 +124,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(MqttTransport_Tcp_DefaultTimeout_OnCloseAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace($"{nameof(MqttTransport_Tcp_DefaultTimeout_OnCloseAsync)}: calling CloseAsync...");
+            
+            //act
             var sw = Stopwatch.StartNew();
             await deviceClient.CloseAsync();
             sw.Stop();
+
+            //assert
             sw.Elapsed.Should().BeCloseTo(TimeSpan.FromSeconds(1), 200);
         }
 
         [LoggedTestMethod]
         public async Task MqttTransport_Ws_DefaultTimeout_OnCloseAsync()
         {
+            //arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt_WebSocket_Only);
 
@@ -118,9 +145,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(MqttTransport_Tcp_DefaultTimeout_OnCloseAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace($"{nameof(MqttTransport_Tcp_DefaultTimeout_OnCloseAsync)}: calling CloseAsync...");
+
+
+            //act
             var sw = Stopwatch.StartNew();
             await deviceClient.CloseAsync();
             sw.Stop();
+
+            //assert
             sw.Elapsed.Should().BeCloseTo(TimeSpan.FromSeconds(1), 200);
         }
     }
