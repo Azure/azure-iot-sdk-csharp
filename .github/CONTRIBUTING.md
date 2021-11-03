@@ -27,13 +27,13 @@ That is definitely something we want to hear about. Please open an issue on gith
 
 ## Contribute documentation
 
-For simple markdown files, we accept documentation pull requests submitted against the `master` branch, if it's about existing SDK features.
+For simple markdown files, we accept documentation pull requests submitted against the `main` branch, if it's about existing SDK features.
 If your PR is about future changes or has changes to the comments in the code itself, we'll treat is as a code change (see the next section).
 
 ## Contribute code
 Our SDKs are open-source and we do accept pull-requests if you feel like taking a stab at fixing the bug and maybe adding your name to our commit history :) Please mention any relevant issue number in the pull request description, and follow the contributing guidelines [below](#contributing-guidelines).
 
-Pull-requests for code are to be submitted against the `master` branch. We will review the request and once approved we will be running it in our gated build system. We try to maintain a high bar for code quality and maintainability, we insist on having tests associated with the code, and if necessary, additions/modifications to the requirement documents.
+Pull-requests for code are to be submitted against the `main` branch. We will review the request and once approved we will be running it in our gated build system. We try to maintain a high bar for code quality and maintainability, we insist on having tests associated with the code, and if necessary, additions/modifications to the requirement documents.
 
 Also, have you signed the [Contribution License Agreement](https://cla.microsoft.com/) ([CLA](https://cla.microsoft.com/))? A friendly bot will remind you about it when you submit your pull-request.
 
@@ -44,9 +44,9 @@ sure your plans and ours are in sync :) Just open an issue on github and tag it 
 1. If the change affects the public API, extract the updated public API surface and submit a PR for review. Make sure you get a signoff before you move to Step 2.
 2. Post API surface approval, follow the below guidelines for contributing code:
 
-    a) Follow the steps [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/doc/devbox_setup.md) for setting up your development environment.
+    a) Follow the steps [here](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/doc/devbox_setup.md) for setting up your development environment.
 
-    b) Follow the [C# Coding Style](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/doc/coding-style.md).
+    b) Follow the [C# Coding Style](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/doc/coding-style.md).
 
     c) Unit Tests:
     We write unit tests for any new function or block of application code that impacts the existing behavior of the code.
@@ -73,9 +73,9 @@ sure your plans and ours are in sync :) Just open an issue on github and tag it 
     ```
     d) E2E Tests:
     Any new feature or functionality added must have associated end-to-end tests.
-        1. Update/ Add the E2E tests [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/e2e/test).
-        2. In case environmental setup required for the application is changed, update the pre-requisites [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/e2e/test/prerequisites).
-        3. Run the E2E test suite and ensure that all the tests pass successfully. You can also test against the [CI script](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/jenkins/windows_csharp.cmd) that is used in our gated build system.
+        1. Update/ Add the E2E tests [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/e2e/test).
+        2. In case environmental setup required for the application is changed, update the pre-requisites [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/e2e/test/prerequisites).
+        3. Run the E2E test suite and ensure that all the tests pass successfully. You can also test against the [CI script](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/jenkins/windows_csharp.cmd) that is used in our gated build system.
 
     e) Samples:
     Add relevant samples to the [Azure IoT Samples for C# Repo](https://github.com/Azure-Samples/azure-iot-samples-csharp). Make sure to add a supporting readme file demonstrating the steps to run the sample.
@@ -100,7 +100,7 @@ sure your plans and ours are in sync :) Just open an issue on github and tag it 
         }
     }
     ```
-3. Post completion of all of the above steps, create a PR against `master`.
+3. Post completion of all of the above steps, create a PR against `main`.
 
 #### Commit Guidelines
 We have very precise rules over how our git commit messages can be formatted. This leads to more readable messages that are easy to follow when looking through the project history.
@@ -130,7 +130,7 @@ If the commit reverts a previous commit, it should begin with `revert:`, followe
 
 **Rebase and Squash**
 
-* Its manadatory to squash all your commits per scope (i.e package). It is also important to rebase your commits on master.
+* Its manadatory to squash all your commits per scope (i.e package). It is also important to rebase your commits on `main`.
 * Optionally you can split your commits on the basis of the package you are providing code to.
 
 **Type**

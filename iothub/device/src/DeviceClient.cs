@@ -3,9 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetty.Transport.Channels;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 
@@ -16,6 +21,9 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <threadsafety static="true" instance="true" />
     public class DeviceClient : IDisposable
+#if !NET451 && !NET472 && !NETSTANDARD2_0
+        , IAsyncDisposable
+#endif
     {
         /// <summary>
         /// Default operation timeout.
@@ -475,6 +483,22 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends an event to a hub
         /// </summary>
         /// <param name="message">The message to send. Should be disposed after sending.</param>
+        /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
+        /// <exception cref="TimeoutException">Thrown if the service does not respond to the request within the timeout specified for the operation.
+        /// The timeout values are largely transport protocol specific. Check the corresponding transport settings to see if they can be configured.
+        /// The operation timeout for the client can be set using <see cref="OperationTimeoutInMilliseconds"/>.</exception>
+        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
+        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
+        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
+        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <remarks>
+        /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
+        /// Please note that the list of exceptions is not exhaustive.
+        /// </remarks>
         /// <returns>The task to await</returns>
         public Task SendEventAsync(Message message) => InternalClient.SendEventAsync(message);
 
@@ -483,7 +507,22 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message to send. Should be disposed after sending.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if the service does not respond to the request before the expiration of the passed <see cref="CancellationToken"/>.
+        /// If a cancellation token is not supplied to the operation call, a cancellation token with an expiration time of 4 minutes is used.
+        /// </exception>
+        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
+        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
+        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
+        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <remarks>
+        /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
+        /// Please note that the list of exceptions is not exhaustive.
+        /// </remarks>
         /// <returns>The task to await</returns>
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => InternalClient.SendEventAsync(message, cancellationToken);
 
@@ -613,11 +652,49 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Releases the unmanaged resources used by the DeviceClient and optionally disposes of the managed resources.
         /// </summary>
+        /// <remarks>
+        /// The method <see cref="CloseAsync()"/> should be called before disposing.
+        /// </remarks>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+#if !NET451 && !NET472 && !NETSTANDARD2_0
+        // IAsyncDisposable is available in .NET Standard 2.1 and above
+
+        /// <summary>
+        /// Disposes the client in an async way. See <see cref="IAsyncDisposable"/> for more information.
+        /// </summary>
+        /// <remarks>
+        /// Includes a call to <see cref="CloseAsync()"/>.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// await using var client = DeviceClient.CreateFromConnectionString(...);
+        /// </code>
+        /// or
+        /// <code>
+        /// var client = DeviceClient.CreateFromConnectionString(...);
+        /// try
+        /// {
+        ///     // do work
+        /// }
+        /// finally
+        /// {
+        ///     await client.DisposeAsync();
+        /// }
+        /// </code>
+        /// </example>
+        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "SuppressFinalize is called by Dispose(), which this method calls.")]
+        public async ValueTask DisposeAsync()
+        {
+            await CloseAsync().ConfigureAwait(false);
+            Dispose();
+        }
+
+#endif
 
         /// <summary>
         /// Releases the unmanaged resources used by the DeviceClient and allows for any derived class to override and
@@ -636,7 +713,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// (desired or reported) from the service. This has the side-effect of subscribing
         /// to the PATCH topic on the service.
         /// </summary>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>

@@ -1,11 +1,11 @@
 
 # Azure IoT C# End-to-end test prerequisites
 
-The E2E tests require some Azure resources to be set up and configured. Running the [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1) powershell script is a convenient way of getting all the resources setup with the required configuration.
+The E2E tests require some Azure resources to be set up and configured. Running the [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1) powershell script is a convenient way of getting all the resources setup with the required configuration.
 
-Note: The [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1) script will setup all the resources necessary to run the full test suite. Ensure to delete these resources when not required as they will cost money. If you want to specifically create some resources, you can take a look at the script for help.
+Note: The [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1) script will setup all the resources necessary to run the full test suite. Ensure to delete these resources when not required as they will cost money. If you want to specifically create some resources, you can take a look at the script for help.
 
-- Navigate to [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1)
+- Navigate to [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1)
 
 - Open powershell in Administrator mode and run the following command by replacing the variables in brackets with your own preferred values.
   

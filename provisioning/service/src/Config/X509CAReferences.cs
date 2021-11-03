@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// This class creates a representation of an X509 CA references. It can receive primary and secondary
-    /// CA references, but only the primary is mandatory.
+    /// CA references.
     ///
     /// Users must provide the CA reference as a <code>String</code>. This class will encapsulate both in a
     /// single <see cref="X509Attestation"/>.
@@ -36,18 +36,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The CA reference is a <code>String</code> with the name that you gave for your certificate.
         /// </remarks>
         ///
-        /// <param name="primary">the <code>String</code> with the primary CA reference. It cannot be <code>null</code> or empty.</param>
-        /// <param name="secondary">the <code>String</code> with the secondary CA reference. It can be <code>null</code> or empty.</param>
-        /// <exception cref="ProvisioningServiceClientException">if the primary CA reference is <code>null</code> or empty.</exception>
+        /// <param name="primary">the <code>String</code> with the primary CA reference.</param>
+        /// <param name="secondary">the <code>String</code> with the secondary CA reference.</param>
         [JsonConstructor]
         internal X509CAReferences(string primary, string secondary = null)
         {
-            /* SRS_X509_CAREFERENCE_21_001: [The constructor shall throw ArgumentException if the primary CA reference is null or empty.] */
-            if(string.IsNullOrWhiteSpace(primary))
-            {
-                throw new ProvisioningServiceClientException("Primary CA reference cannot be null or empty");
-            }
-            /* SRS_X509_CAREFERENCE_21_002: [The constructor shall store the primary and secondary CA references.] */
             Primary = primary;
             Secondary = secondary;
         }

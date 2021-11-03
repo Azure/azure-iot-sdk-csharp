@@ -844,7 +844,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _channel.WriteAsync(new UnsubscribePacket(0, MethodPostTopicFilter)).ConfigureAwait(true);
         }
 
-        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
@@ -855,7 +855,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(_receiveEventMessageFilter, _qos))).ConfigureAwait(true);
         }
 
-        public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();

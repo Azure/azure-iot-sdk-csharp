@@ -8,6 +8,8 @@
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
+    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -18,7 +20,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.18.0</Version>
+    <Version>1.19.0</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
