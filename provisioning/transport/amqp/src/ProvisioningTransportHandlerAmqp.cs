@@ -60,20 +60,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 throw new OperationCanceledException();
             }
 
-            return await RegisterAsync(message, timeout, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Registers a device described by the message.
-        /// </summary>
-        /// <param name="message">The provisioning message.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The registration result.</returns>
-        public override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
-            CancellationToken cancellationToken)
-        {
-            return await RegisterAsync(message, s_timeoutConstant, cancellationToken).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(timeout);
+            return await RegisterAsync(message, cts.Token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -81,12 +69,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// will only be checked for cancellation between AMQP operations. The timeout will be respected during the AMQP operations.
         /// </summary>
         /// <param name="message">The provisioning message.</param>
-        /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        private async Task<DeviceRegistrationResult> RegisterAsync(
+        public override async Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterMessage message,
-            TimeSpan timeout,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -99,7 +85,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 throw new ArgumentNullException(nameof(message));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            // We need to create a LinkedTokenSource to include both the default timeout and the cancellation token
+            // AMQP library started supporting CancellationToken starting from version 2.5.5
+            // To preserve current behavior, we will honor both the legacy timeout and the cancellation token parameter.
+            using var timeoutTokenSource = new CancellationTokenSource(s_timeoutConstant);
+            using var cancellationTokenSourceBundle = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
+
+            CancellationToken bundleCancellationToken = cancellationTokenSourceBundle.Token;
+
+            bundleCancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -142,21 +136,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
                 using AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
-                await authStrategy.OpenConnectionAsync(connection, timeout, useWebSocket, Proxy, RemoteCertificateValidationCallback).ConfigureAwait(false);
-                cancellationToken.ThrowIfCancellationRequested();
+
+                await authStrategy.OpenConnectionAsync(connection, useWebSocket, Proxy, RemoteCertificateValidationCallback, bundleCancellationToken).ConfigureAwait(false);
+                bundleCancellationToken.ThrowIfCancellationRequested();
 
                 await CreateLinksAsync(
                     connection,
                     linkEndpoint,
                     message.ProductInfo,
-                    timeout).ConfigureAwait(false);
+                    bundleCancellationToken).ConfigureAwait(false);
 
-                cancellationToken.ThrowIfCancellationRequested();
+                bundleCancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
                 DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0) ? new DeviceRegistration { Payload = new JRaw(message.Payload) } : null;
 
-                RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration, timeout).ConfigureAwait(false);
+                RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration, bundleCancellationToken).ConfigureAwait(false);
 
                 // Poll with operationId until registration complete.
                 int attempts = 0;
@@ -166,19 +161,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0 ||
                        string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    bundleCancellationToken.ThrowIfCancellationRequested();
 
                     await Task.Delay(
                         operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval),
-                        cancellationToken).ConfigureAwait(false);
+                        bundleCancellationToken).ConfigureAwait(false);
 
                     try
                     {
                         operation = await OperationStatusLookupAsync(
-                        connection,
-                        operationId,
-                        correlationId,
-                        timeout).ConfigureAwait(false);
+                            connection,
+                            operationId,
+                            correlationId,
+                            bundleCancellationToken)
+                        .ConfigureAwait(false);
                     }
                     catch (ProvisioningTransportException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp amqp && e.IsTransient)
                     {
@@ -193,7 +189,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     authStrategy.SaveCredentials(operation);
                 }
 
-                await connection.CloseAsync(timeout).ConfigureAwait(false);
+                await connection.CloseAsync(bundleCancellationToken).ConfigureAwait(false);
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
@@ -218,31 +214,31 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo, TimeSpan timeout)
+        private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo, CancellationToken cancellationToken)
         {
             AmqpClientSession amqpDeviceSession = connection.CreateSession();
-            await amqpDeviceSession.OpenAsync(timeout).ConfigureAwait(false);
+            await amqpDeviceSession.OpenAsync(cancellationToken).ConfigureAwait(false);
 
             AmqpClientLink amqpReceivingLink = amqpDeviceSession.CreateReceivingLink(linkEndpoint);
 
             amqpReceivingLink.AddClientVersion(productInfo);
             amqpReceivingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
 
-            await amqpReceivingLink.OpenAsync(timeout).ConfigureAwait(false);
+            await amqpReceivingLink.OpenAsync(cancellationToken).ConfigureAwait(false);
 
             AmqpClientLink amqpSendingLink = amqpDeviceSession.CreateSendingLink(linkEndpoint);
 
             amqpSendingLink.AddClientVersion(productInfo);
             amqpSendingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
 
-            await amqpSendingLink.OpenAsync(timeout).ConfigureAwait(false);
+            await amqpSendingLink.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<RegistrationOperationStatus> RegisterDeviceAsync(
             AmqpClientConnection client,
             string correlationId,
             DeviceRegistration deviceRegistration,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             AmqpMessage amqpMessage = null;
 
@@ -266,11 +262,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     .SendMessageAsync(
                         amqpMessage,
                         new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
-                        timeout)
+                        cancellationToken)
                     .ConfigureAwait(false);
                 ValidateOutcome(outcome);
 
-                AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
                 client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
 
                 using var streamReader = new StreamReader(amqpResponse.BodyStream);
@@ -291,7 +287,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             AmqpClientConnection client,
             string operationId,
             string correlationId,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             using var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = DeviceOperations.GetOperationStatus });
 
@@ -304,12 +300,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 .SendMessageAsync(
                     amqpMessage,
                     new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             ValidateOutcome(outcome);
 
-            AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(timeout)
+            AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
