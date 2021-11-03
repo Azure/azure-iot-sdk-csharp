@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
     {
-        private static readonly MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
+        private readonly MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
 
         // TODO: Unify these constants with IoT Hub Device client.
         private const int MaxMessageSize = 256 * 1024;
@@ -171,6 +171,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 _webSocketChannel?.Dispose();
                 _webSocketChannel = null;
+                s_eventLoopGroup.ShutdownGracefullyAsync().ConfigureAwait(false);
             }
 
             base.Dispose(disposing);
