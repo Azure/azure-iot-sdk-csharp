@@ -123,6 +123,5 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Stop();
             sw.Elapsed.Should().BeCloseTo(TimeSpan.FromSeconds(1), 200);
         }
-
     }
 }
