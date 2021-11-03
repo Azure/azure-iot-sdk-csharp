@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             //arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             var transportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only);
-            transportSettings.GracefulEventLoopShutdownTimeout = TimeSpan.FromMilliseconds(100);
+            transportSettings.GracefulEventLoopShutdownTimeout = TimeSpan.FromMilliseconds(250);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ITransportSettings[] { transportSettings });
 
             Logger.Trace($"{nameof(MqttTransport_Tcp_ShortTimeout_OnCloseAsync)}: deviceId={testDevice.Id}");
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Stop();
 
             //assert
-            sw.Elapsed.Should().BeCloseTo(transportSettings.GracefulEventLoopShutdownTimeout, 20);
+            sw.Elapsed.Should().BeCloseTo(transportSettings.GracefulEventLoopShutdownTimeout, 150);
         }
 
         [LoggedTestMethod]
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             //arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             var transportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
-            transportSettings.GracefulEventLoopShutdownTimeout = TimeSpan.FromMilliseconds(100);
+            transportSettings.GracefulEventLoopShutdownTimeout = TimeSpan.FromMilliseconds(250);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ITransportSettings[] { transportSettings });
 
             Logger.Trace($"{nameof(MqttTransport_Ws_ShortTimeout_OnCloseAsync)}: deviceId={testDevice.Id}");
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Stop();
 
             //assert
-            sw.Elapsed.Should().BeCloseTo(transportSettings.GracefulEventLoopShutdownTimeout, 20);
+            sw.Elapsed.Should().BeCloseTo(transportSettings.GracefulEventLoopShutdownTimeout, 150);
         }
 
         [LoggedTestMethod]
