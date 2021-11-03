@@ -257,6 +257,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <remarks>
         /// The DotNetty Mqtt transport has a graceful shutdown of the event loop that can block the <see cref="DeviceClient.CloseAsync(System.Threading.CancellationToken)"/> method. This timeout allows you to configure how long the shutdown event will wait for before forcefully shutting down the event loop. Change this if you need your application to respond to the CloseAsync command faster.
         /// </remarks>
-        public TimeSpan GracefulEventLoopShutdownTimeout { get; set; } = TimeSpan.FromMilliseconds(1);
+        public TimeSpan GracefulEventLoopShutdownTimeout { get; set; } = TimeSpan.FromSeconds(1);
     }
 }
