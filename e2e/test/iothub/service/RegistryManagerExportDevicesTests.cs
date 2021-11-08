@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         [Timeout(120000)]
-        [DoNotParallelize]
+        [DoNotParallelize] // the number of jobs that can be run at a time are limited anyway
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, true)]
@@ -53,10 +53,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
 
-            StorageContainer storageContainer = null;
             string edgeId1 = $"{nameof(RegistryManager_ExportDevices)}-Edge-{StorageContainer.GetRandomSuffix(4)}";
             string edgeId2 = $"{nameof(RegistryManager_ExportDevices)}-Edge-{StorageContainer.GetRandomSuffix(4)}";
             string deviceId = $"{nameof(RegistryManager_ExportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
+            string devicesFileName = $"{nameof(RegistryManager_ExportDevices)}-devicesexport-{StorageContainer.GetRandomSuffix(4)}.txt";
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             Logger.Trace($"Using deviceId {deviceId}");
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             try
             {
                 string containerName = StorageContainer.BuildContainerName(nameof(RegistryManager_ExportDevices));
-                storageContainer = await StorageContainer
+                using StorageContainer storageContainer = await StorageContainer
                     .GetInstanceAsync(containerName)
                     .ConfigureAwait(false);
                 Logger.Trace($"Using container {storageContainer.Uri}");
@@ -119,15 +119,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                             };
                         }
 
-                        exportJobResponse = await registryManager
-                           .ExportDevicesAsync(
-                                JobProperties.CreateForExportJob(
-                                    containerUri.ToString(),
-                                    true,
-                                    null,
-                                    storageAuthenticationType,
-                                    identity))
-                           .ConfigureAwait(false);
+                        JobProperties jobProperties = JobProperties.CreateForExportJob(
+                            containerUri.ToString(),
+                            true,
+                            devicesFileName,
+                            storageAuthenticationType,
+                            identity);
+                        exportJobResponse = await registryManager.ExportDevicesAsync(jobProperties).ConfigureAwait(false);
                         break;
                     }
                     // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
@@ -139,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     }
                 }
 
-                // wait for job to complete
+                // Wait for job to complete
                 for (int i = 0; i < MaxIterationWait; ++i)
                 {
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
@@ -156,8 +154,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 exportJobResponse.Status.Should().Be(JobStatus.Completed, "Otherwise import failed");
                 exportJobResponse.FailureReason.Should().BeNullOrEmpty("Otherwise import failed");
 
-                string content = await DownloadFileAsync(storageContainer).ConfigureAwait(false);
-                string[] serializedDevices = content.Split(s_newlines, StringSplitOptions.RemoveEmptyEntries);
+                string devicesContent = await DownloadFileAsync(storageContainer, devicesFileName).ConfigureAwait(false);
+                string[] serializedDevices = devicesContent.Split(s_newlines, StringSplitOptions.RemoveEmptyEntries);
 
                 bool foundDeviceInExport = false;
                 bool foundEdgeInExport = false;
@@ -176,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     }
 
                     ExportImportDevice exportedDevice = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDevice);
-                    if (StringComparer.Ordinal.Equals(exportedDevice.Id, edgeId2))
+                    if (StringComparer.Ordinal.Equals(exportedDevice.Id, edgeId2) && exportedDevice.Capabilities.IotEdge)
                     {
                         Logger.Trace($"Found edge2 in export as [{serializedDevice}]");
                         foundEdgeInExport = true;
@@ -203,8 +201,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    storageContainer?.Dispose();
-
                     await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
                     await registryManager.RemoveDeviceAsync(edgeId2).ConfigureAwait(false);
                     await registryManager.RemoveDeviceAsync(edgeId1).ConfigureAwait(false);
@@ -216,10 +212,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        private static async Task<string> DownloadFileAsync(StorageContainer storageContainer)
+        private static async Task<string> DownloadFileAsync(StorageContainer storageContainer, string fileName)
         {
-            CloudBlockBlob exportFile = storageContainer.CloudBlobContainer.GetBlockBlobReference(ExportFileNameDefault);
-            return await exportFile.DownloadTextAsync().ConfigureAwait(false);
+            CloudBlockBlob exportFile = storageContainer.CloudBlobContainer.GetBlockBlobReference(fileName);
+            string fileContents = await exportFile.DownloadTextAsync().ConfigureAwait(false);
+
+            return fileContents;
         }
     }
 }
