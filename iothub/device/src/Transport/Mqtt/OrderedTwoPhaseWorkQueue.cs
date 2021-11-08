@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Func<TWork, TWorkId> _getWorkId;
         private readonly Func<IChannelHandlerContext, TWork, Task> _completeWorkAsync;
         private readonly Queue<IncompleteWorkItem> _incompleteQueue = new Queue<IncompleteWorkItem>();
-        private SemaphoreSlim _queueSemaphore = new SemaphoreSlim(0, 1);
+        private SemaphoreSlim _queueSemaphore = new SemaphoreSlim(1, 1);
 
         private bool _disposed;
 
