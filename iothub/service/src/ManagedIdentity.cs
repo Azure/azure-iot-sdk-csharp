@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -18,7 +17,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The user identity resource Id used to access the storage account for import and export jobs.
         /// </summary>
+        [Obsolete("Use UserAssignedIdentity instead")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [JsonIgnore]
+        public string userAssignedIdentity
+        {
+            get => UserAssignedIdentity;
+            set => UserAssignedIdentity = value;
+        }
+
+        /// <summary>
+        /// The user identity resource Id used to access the storage account for import and export jobs.
+        /// </summary>
         [JsonProperty(PropertyName = "userAssignedIdentity", NullValueHandling = NullValueHandling.Ignore)]
-        public string userAssignedIdentity { get; set; }
+        public string UserAssignedIdentity { get; set; }
     }
 }

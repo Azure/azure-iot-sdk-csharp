@@ -8,7 +8,8 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Contains properties of a Job.
-    /// See online <a href="https://docs.microsoft.com/en-us/rest/api/iothub/service/createimportexportjob">documentation</a> for more infomration.
+    /// See online <a href="https://docs.microsoft.com/en-us/rest/api/iothub/service/createimportexportjob">documentation</a>
+    /// for more infomration.
     /// </summary>
     public class JobProperties
     {
@@ -124,13 +125,31 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "identity", NullValueHandling = NullValueHandling.Ignore)]
         public ManagedIdentity Identity { get; set; }
 
+        /// <summary>
+        /// Whether or not to include configurations in the import or export job.
+        /// </summary>
+        /// <remarks>
+        /// The service assumes this is false, if not specified. If true, then configurations are included in the data export/import.
+        /// </remarks>
+        [JsonProperty(PropertyName = "includeConfigurations", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IncludeConfigurations { get; set; }
+
+        /// <summary>
+        /// Specifies the name of the blob to use when exporting/importing configurations.
+        /// </summary>
+        /// <remarks>
+        /// The service assumes this is configurations.txt, if not specified.
+        /// </remarks>
+        [JsonProperty(PropertyName = "configurationsBlobName", NullValueHandling = NullValueHandling.Ignore)]
+        public string ConfigurationsBlobName { get; set; }
+
 #pragma warning disable CA1054 // Uri parameters should not be strings
 
         /// <summary>
-        /// Creates an instance of JobProperties with parameters ready to start an Import job
+        /// Creates an instance of JobProperties with parameters ready to start an import job.
         /// </summary>
         /// <param name="inputBlobContainerUri">URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
-        /// <param name="outputBlobContainerUri">URI to a blob container.  This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
+        /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
         /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>
         /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
@@ -149,12 +168,12 @@ namespace Microsoft.Azure.Devices
                 OutputBlobContainerUri = outputBlobContainerUri,
                 InputBlobName = inputBlobName,
                 StorageAuthenticationType = storageAuthenticationType,
-                Identity = identity
+                Identity = identity,
             };
         }
 
         /// <summary>
-        /// Creates an instance of JobProperties with parameters ready to start an Import job
+        /// Creates an instance of JobProperties with parameters ready to start an export job.
         /// </summary>
         /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
         /// <param name="excludeKeysInExport">Indicates if authorization keys are included in export output</param>
@@ -176,7 +195,7 @@ namespace Microsoft.Azure.Devices
                 ExcludeKeysInExport = excludeKeysInExport,
                 OutputBlobName = outputBlobName,
                 StorageAuthenticationType = storageAuthenticationType,
-                Identity = identity
+                Identity = identity,
             };
         }
 

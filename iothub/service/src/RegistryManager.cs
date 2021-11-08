@@ -1410,6 +1410,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="jobParameters">Parameters for the job.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ExportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
@@ -1507,6 +1508,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="jobParameters">Parameters for the job.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ImportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
