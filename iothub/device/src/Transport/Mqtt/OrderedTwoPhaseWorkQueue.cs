@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -28,6 +29,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Func<TWork, TWorkId> _getWorkId;
         private readonly Func<IChannelHandlerContext, TWork, Task> _completeWorkAsync;
         private readonly Queue<IncompleteWorkItem> _incompleteQueue = new Queue<IncompleteWorkItem>();
+        private SemaphoreSlim _queueSemaphore = new SemaphoreSlim(0, 1);
+
+        private bool _disposed;
 
         public OrderedTwoPhaseWorkQueue(
             Func<IChannelHandlerContext, TWork, Task> workerAsync,
@@ -49,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IncompleteWorkItem incompleteWorkItem = _incompleteQueue.Peek();
             if (incompleteWorkItem.Id.Equals(workId))
             {
-                _incompleteQueue.Dequeue();
+                Dequeue();
                 return _completeWorkAsync(context, incompleteWorkItem.WorkItem);
             }
 
@@ -60,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override async Task DoWorkAsync(IChannelHandlerContext context, TWork work)
         {
-            _incompleteQueue.Enqueue(new IncompleteWorkItem(_getWorkId(work), work));
+            Enqueue(new IncompleteWorkItem(_getWorkId(work), work));
             await base.DoWorkAsync(context, work).ConfigureAwait(false);
         }
 
@@ -79,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 while (_incompleteQueue.Any())
                 {
-                    var workItem = _incompleteQueue.Dequeue().WorkItem as ICancellable;
+                    var workItem = Dequeue().WorkItem as ICancellable;
 
                     if (exception == null)
                     {
@@ -90,6 +94,42 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         workItem?.Abort(exception);
                     }
                 }
+            }
+        }
+
+        public override void Dispose()
+        {
+            if (!_disposed)
+            {
+                _queueSemaphore?.Dispose();
+                _queueSemaphore = null;
+                _disposed = true;
+            }
+        }
+
+        private void Enqueue(IncompleteWorkItem workItem)
+        {
+            try
+            {
+                _queueSemaphore.Wait();
+                _incompleteQueue.Enqueue(workItem);
+            }
+            finally
+            {
+                _queueSemaphore.Release();
+            }
+        }
+
+        private IncompleteWorkItem Dequeue()
+        {
+            try
+            {
+                _queueSemaphore.Wait();
+                return _incompleteQueue.Dequeue();
+            }
+            finally
+            {
+                _queueSemaphore.Release();
             }
         }
     }

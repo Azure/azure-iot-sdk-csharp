@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Common.Utilities;
 using DotNetty.Transport.Channels;
@@ -22,11 +23,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     /// Worker will resume work as soon as new work has arrived.
     /// </summary>
     /// <typeparam name="TWork">The work to perform.</typeparam>
-    internal class SimpleWorkQueue<TWork>
+    internal class SimpleWorkQueue<TWork> : IDisposable
     {
         private readonly Func<IChannelHandlerContext, TWork, Task> _workerAsync;
         private readonly Queue<TWork> _backlogQueue;
         private readonly TaskCompletionSource _completionSource;
+        private SemaphoreSlim _queueSemaphore = new SemaphoreSlim(0, 1);
+
+        private bool _disposed;
 
         public SimpleWorkQueue(Func<IChannelHandlerContext, TWork, Task> workerAsync)
         {
@@ -54,14 +58,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             switch (State)
             {
                 case States.Idle:
-                    _backlogQueue.Enqueue(workItem);
+                    Enqueue(workItem);
                     State = States.Processing;
                     StartWorkQueueProcessingAsync(context);
                     break;
 
                 case States.Processing:
                 case States.FinalProcessing:
-                    _backlogQueue.Enqueue(workItem);
+                    Enqueue(workItem);
                     break;
 
                 case States.Aborted:
@@ -113,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     while (_backlogQueue.Any())
                     {
-                        TWork workItem = _backlogQueue.Dequeue();
+                        TWork workItem = Dequeue();
                         ReferenceCountUtil.Release(workItem);
 
                         var cancellableWorkItem = workItem as ICancellable;
@@ -148,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 while (_backlogQueue.Any()
                     && State != States.Aborted)
                 {
-                    TWork workItem = _backlogQueue.Dequeue();
+                    TWork workItem = Dequeue();
                     await DoWorkAsync(context, workItem).ConfigureAwait(false);
                 }
 
@@ -171,6 +175,42 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 Abort();
                 _completionSource.TrySetException(new ChannelMessageProcessingException(ex, context));
+            }
+        }
+
+        public virtual void Dispose()
+        {
+            if (!_disposed)
+            {
+                _queueSemaphore?.Dispose();
+                _queueSemaphore = null;
+                _disposed = true;
+            }
+        }
+
+        private void Enqueue(TWork workItem)
+        {
+            try
+            {
+                _queueSemaphore.Wait();
+                _backlogQueue.Enqueue(workItem);
+            }
+            finally
+            {
+                _queueSemaphore.Release();
+            }
+        }
+
+        private TWork Dequeue()
+        {
+            try
+            {
+                _queueSemaphore.Wait();
+                return _backlogQueue.Dequeue();
+            }
+            finally
+            {
+                _queueSemaphore.Release();
             }
         }
 
