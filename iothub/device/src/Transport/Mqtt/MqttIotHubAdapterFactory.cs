@@ -7,11 +7,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     internal class MqttIotHubAdapterFactory
     {
-        private readonly MqttTransportSettings settings;
+        private readonly MqttTransportSettings _settings;
 
         public MqttIotHubAdapterFactory(MqttTransportSettings settings)
         {
-            this.settings = settings;
+            _settings = settings;
         }
 
         public MqttIotHubAdapter Create(
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             ProductInfo productInfo,
             ClientOptions options)
         {
-            IWillMessage willMessage = mqttTransportSettings.HasWill ? this.settings.WillMessage : null;
+            IWillMessage willMessage = mqttTransportSettings.HasWill ? _settings.WillMessage : null;
 
             return new MqttIotHubAdapter(
                 iotHubConnectionString.DeviceId,
