@@ -107,7 +107,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Func<IPAddress[], int, Task<IChannel>> _channelFactory;
         private readonly Queue<string> _completionQueue;
         private readonly MqttIotHubAdapterFactory _mqttIotHubAdapterFactory;
-        private MqttIotHubAdapter _mqttIotHubAdapter;
         private readonly QualityOfService _qos;
         private readonly bool _retainMessagesAcrossSessions;
         private readonly object _syncRoot = new object();
@@ -477,9 +476,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     disposableChannel.Dispose();
                     _channel = null;
                 }
-
-                _mqttIotHubAdapter?.Dispose();
-                _mqttIotHubAdapter = null;
             }
         }
 
@@ -1220,13 +1216,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Handler(new ActionChannelInitializer<ISocketChannel>(ch =>
                     {
                         var tlsHandler = new TlsHandler(streamFactory, clientTlsSettings);
-                        _mqttIotHubAdapter = _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options);
                         ch.Pipeline.AddLast(
                             tlsHandler,
                             MqttEncoder.Instance,
                             new MqttDecoder(false, MaxMessageSize),
                             new LoggingHandler(LogLevel.DEBUG),
-                            _mqttIotHubAdapter);
+                            _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options));
                     }));
 
                 foreach (IPAddress address in addresses)
@@ -1312,7 +1307,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
 
                 var clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
-                _mqttIotHubAdapter = _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options);
 
                 clientWebSocketChannel
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
@@ -1323,7 +1317,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
                         new LoggingHandler(LogLevel.DEBUG),
-                        _mqttIotHubAdapter);
+                        _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options););
 
                 await s_eventLoopGroup.Value.RegisterAsync(clientWebSocketChannel).ConfigureAwait(true);
 

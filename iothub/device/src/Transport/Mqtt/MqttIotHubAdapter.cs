@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     //
     // All awaited calls that happen within dotnetty's pipeline should be ConfigureAwait(true).
     //
-    internal sealed class MqttIotHubAdapter : ChannelHandlerAdapter, IDisposable
+    internal sealed class MqttIotHubAdapter : ChannelHandlerAdapter
     {
         [Flags]
         private enum StateFlags
@@ -77,19 +77,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly string _deviceId;
         private readonly string _moduleId;
-        private SimpleWorkQueue<PublishPacket> _deviceBoundOneWayProcessor;
-        private OrderedTwoPhaseWorkQueue<int, PublishPacket> _deviceBoundTwoWayProcessor;
+        private readonly SimpleWorkQueue<PublishPacket> _deviceBoundOneWayProcessor;
+        private readonly OrderedTwoPhaseWorkQueue<int, PublishPacket> _deviceBoundTwoWayProcessor;
         private readonly string _iotHubHostName;
         private readonly MqttTransportSettings _mqttTransportSettings;
         private readonly TimeSpan _pingRequestInterval;
         private readonly IAuthorizationProvider _passwordProvider;
-        private SimpleWorkQueue<PublishWorkItem> _serviceBoundOneWayProcessor;
-        private OrderedTwoPhaseWorkQueue<int, PublishWorkItem> _serviceBoundTwoWayProcessor;
+        private readonly SimpleWorkQueue<PublishWorkItem> _serviceBoundOneWayProcessor;
+        private readonly OrderedTwoPhaseWorkQueue<int, PublishWorkItem> _serviceBoundTwoWayProcessor;
         private readonly IWillMessage _willMessage;
 
         private DateTime _lastChannelActivityTime;
         private StateFlags _stateFlags;
-        private bool _disposed;
 
         private readonly ConcurrentDictionary<int, TaskCompletionSource> _subscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
         private readonly ConcurrentDictionary<int, TaskCompletionSource> _unsubscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
@@ -1426,25 +1425,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         #endregion helper methods
-
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _deviceBoundTwoWayProcessor?.Dispose();
-                _deviceBoundTwoWayProcessor = null;
-
-                _deviceBoundOneWayProcessor?.Dispose();
-                _deviceBoundOneWayProcessor = null;
-
-                _serviceBoundOneWayProcessor?.Dispose();
-                _serviceBoundOneWayProcessor = null;
-
-                _serviceBoundTwoWayProcessor?.Dispose();
-                _serviceBoundTwoWayProcessor = null;
-
-                _disposed = true;
-            }
-        }
     }
 }
