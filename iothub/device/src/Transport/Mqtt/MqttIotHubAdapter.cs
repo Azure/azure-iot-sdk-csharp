@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     //
     // All awaited calls that happen within dotnetty's pipeline should be ConfigureAwait(true).
     //
-    internal sealed class MqttIotHubAdapter : ChannelHandlerAdapter
+    internal sealed class MqttIotHubAdapter : ChannelHandlerAdapter, IDisposable
     {
         [Flags]
         private enum StateFlags
@@ -77,18 +77,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly string _deviceId;
         private readonly string _moduleId;
-        private readonly SimpleWorkQueue<PublishPacket> _deviceBoundOneWayProcessor;
-        private readonly OrderedTwoPhaseWorkQueue<int, PublishPacket> _deviceBoundTwoWayProcessor;
+        private SimpleWorkQueue<PublishPacket> _deviceBoundOneWayProcessor;
+        private OrderedTwoPhaseWorkQueue<int, PublishPacket> _deviceBoundTwoWayProcessor;
         private readonly string _iotHubHostName;
         private readonly MqttTransportSettings _mqttTransportSettings;
         private readonly TimeSpan _pingRequestInterval;
         private readonly IAuthorizationProvider _passwordProvider;
-        private readonly SimpleWorkQueue<PublishWorkItem> _serviceBoundOneWayProcessor;
-        private readonly OrderedTwoPhaseWorkQueue<int, PublishWorkItem> _serviceBoundTwoWayProcessor;
+        private SimpleWorkQueue<PublishWorkItem> _serviceBoundOneWayProcessor;
+        private OrderedTwoPhaseWorkQueue<int, PublishWorkItem> _serviceBoundTwoWayProcessor;
         private readonly IWillMessage _willMessage;
 
         private DateTime _lastChannelActivityTime;
         private StateFlags _stateFlags;
+        private bool _disposed;
 
         private readonly ConcurrentDictionary<int, TaskCompletionSource> _subscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
         private readonly ConcurrentDictionary<int, TaskCompletionSource> _unsubscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
@@ -235,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // If a message is received when the state is Connected or a CONNACK is received when the state is Connecting, then the message should be processed.
             if (IsInState(StateFlags.Connected) || IsInState(StateFlags.Connecting) && packet.PacketType == PacketType.CONNACK)
             {
-                ProcessMessage(context, packet);
+                ProcessMessageAsync(context, packet);
             }
             else
             {
@@ -697,10 +698,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         #region Receiving
 
-        private async void ProcessMessage(IChannelHandlerContext context, Packet packet)
+        private async void ProcessMessageAsync(IChannelHandlerContext context, Packet packet)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, context.Name, packet.PacketType, nameof(ProcessMessage));
+                Logging.Enter(this, context.Name, packet.PacketType, nameof(ProcessMessageAsync));
 
             try
             {
@@ -732,7 +733,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     default:
                         if (Logging.IsEnabled)
-                            Logging.Error(context, $"Received an unexpected packet type {packet.PacketType}, will shut down.", nameof(ProcessMessage));
+                            Logging.Error(context, $"Received an unexpected packet type {packet.PacketType}, will shut down.", nameof(ProcessMessageAsync));
 
                         ShutdownOnErrorAsync(context, new InvalidOperationException($"Unexpected packet type {packet.PacketType}"));
                         break;
@@ -741,14 +742,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             catch (Exception ex) when (!ex.IsFatal())
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(context, $"Received a non-fatal exception while processing a received packet of type {packet.PacketType}, will shut down: {ex}", nameof(ProcessMessage));
+                    Logging.Error(context, $"Received a non-fatal exception while processing a received packet of type {packet.PacketType}, will shut down: {ex}", nameof(ProcessMessageAsync));
 
                 ShutdownOnErrorAsync(context, ex);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, context.Name, packet.PacketType, nameof(ProcessMessage));
+                    Logging.Exit(this, context.Name, packet.PacketType, nameof(ProcessMessageAsync));
             }
         }
 
@@ -1425,5 +1426,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         #endregion helper methods
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _deviceBoundTwoWayProcessor?.Dispose();
+                _deviceBoundTwoWayProcessor = null;
+
+                _deviceBoundOneWayProcessor?.Dispose();
+                _deviceBoundOneWayProcessor = null;
+
+                _serviceBoundOneWayProcessor?.Dispose();
+                _serviceBoundOneWayProcessor = null;
+
+                _serviceBoundTwoWayProcessor?.Dispose();
+                _serviceBoundTwoWayProcessor = null;
+
+                _disposed = true;
+            }
+        }
     }
 }
