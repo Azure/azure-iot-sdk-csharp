@@ -1317,7 +1317,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
                         new LoggingHandler(LogLevel.DEBUG),
-                        _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options););
+                        _mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo, options));
 
                 await s_eventLoopGroup.Value.RegisterAsync(clientWebSocketChannel).ConfigureAwait(true);
 
