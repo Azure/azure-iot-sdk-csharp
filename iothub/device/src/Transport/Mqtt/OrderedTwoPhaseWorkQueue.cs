@@ -46,18 +46,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 throw new IotHubException("Nothing to complete.", isTransient: false);
             }
 
-            if (_incompleteQueue.TryPeek(out IncompleteWorkItem incompleteWorkItem)
-                && incompleteWorkItem.Id.Equals(workId))
+            if (_incompleteQueue.TryDequeue(out IncompleteWorkItem incompleteWorkItem))
             {
-                if (_incompleteQueue.TryDequeue(out _))
+                if (incompleteWorkItem.Id.Equals(workId))
                 {
                     return _completeWorkAsync(context, incompleteWorkItem.WorkItem);
                 }
-            }
 
-            throw new IotHubException(
-                $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
-                isTransient: false);
+                throw new IotHubException(
+                    $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
+                    isTransient: false);
+            }
+#if NET451
+            return Task.FromResult<object>(null);
+#else
+            return Task.CompletedTask;
+#endif
         }
 
         protected override async Task DoWorkAsync(IChannelHandlerContext context, TWork work)
