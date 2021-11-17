@@ -323,7 +323,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             TimeSpan timeout = timeoutHelper.GetRemainingTime();
             if (timeout > TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(timeoutHelper), "Http Protocol does not support a non-zero receive timeout");
+                throw new ArgumentOutOfRangeException(nameof(timeoutHelper), "HTTP Protocol does not support a non-zero receive timeout.");
             }
             else
             {
