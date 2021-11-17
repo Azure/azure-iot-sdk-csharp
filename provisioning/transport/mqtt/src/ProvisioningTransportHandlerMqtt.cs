@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 _webSocketChannel?.Dispose();
                 _webSocketChannel = null;
-                s_eventLoopGroup.ShutdownGracefullyAsync().ConfigureAwait(false);
+                s_eventLoopGroup.ShutdownGracefullyAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             }
 
             base.Dispose(disposing);
