@@ -94,9 +94,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
         private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
-        private readonly IEventLoopGroup _eventLoopGroup = GetEventLoopGroup();
+        private static readonly ReferenceCounter<IEventLoopGroup> _eventLoopGroupRefCounted = new ReferenceCounter<IEventLoopGroup>();
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
+        private static TimeSpan s_timeoutValueForEventLoop = TimeSpan.Zero;
+
+        private readonly bool _useSingleEventLoopGroup;
+        private readonly IEventLoopGroup _eventLoopGroup;
+        private readonly TimeSpan _timeoutValueForEventLoop = TimeSpan.Zero;
 
         private readonly string _generationId = Guid.NewGuid().ToString();
         private readonly string _receiveEventMessageFilter;
@@ -177,6 +182,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _retainMessagesAcrossSessions = !settings.CleanSession;
 
             _webProxy = settings.Proxy;
+
+            // If the customer chooses multiple groups we need to honor that here.
+            _useSingleEventLoopGroup = settings.UseSingleEventLoopGroup;
+            if (_useSingleEventLoopGroup)
+            {
+                // The value here is likely one that won't change often. And in the most common case there is usually only a single device that
+                // is created per process so we shouldn't have conflicting expectations.
+                s_timeoutValueForEventLoop = settings.GracefulEventLoopShutdownTimeout;
+                _eventLoopGroup = _eventLoopGroupRefCounted.CreateWithRemoveAction(GetEventLoopGroup, ShutdownEventLoop);
+            }
+            else
+            {
+                _timeoutValueForEventLoop = settings.GracefulEventLoopShutdownTimeout;
+                _eventLoopGroup = GetEventLoopGroup();
+            }
+
 
             if (channelFactory != null)
             {
@@ -457,6 +478,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (disposing)
             {
+                CloseAsync(CancellationToken.None).GetAwaiter().GetResult();
+
                 if (TryStop())
                 {
                     CleanUpAsync().GetAwaiter().GetResult();
@@ -493,8 +516,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     OnTransportClosedGracefully();
 
                     await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
-                    var timeout = ((MqttTransportSettings)_transportSettings).GracefulEventLoopShutdownTimeout;
-                    await _eventLoopGroup.ShutdownGracefullyAsync(timeout, timeout).ConfigureAwait(true);
+                    // If the customer chooses multiple groups we need to honor that here.
+                    if (_useSingleEventLoopGroup)
+                    {
+                        // The value here is likely one that won't change often. And in the most common case there is usually only a single device that
+                        // is created per process so we shouldn't have conflicting expectations.
+                        _eventLoopGroupRefCounted.Remove();
+                    }
+                    else
+                    {
+                        await _eventLoopGroup.ShutdownGracefullyAsync(_timeoutValueForEventLoop, _timeoutValueForEventLoop).ConfigureAwait(true);
+                    }
                 }
                 else if (State == TransportState.Error)
                 {
@@ -506,6 +538,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Exit(this, "", $"{nameof(MqttTransportHandler)}.{nameof(CloseAsync)}");
             }
+        }
+
+        private static async void ShutdownEventLoop(IEventLoopGroup group)
+        {
+            await group.ShutdownGracefullyAsync(s_timeoutValueForEventLoop, s_timeoutValueForEventLoop).ConfigureAwait(true);
         }
 
         #endregion Client operations
