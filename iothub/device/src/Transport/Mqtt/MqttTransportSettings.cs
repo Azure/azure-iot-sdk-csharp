@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Sets the MqttTransport to use a single Event Loop Group.
         /// </summary>
         /// <remarks>
-        /// This setting is to retain legacy behavior that will use a single Event Loop Group which is the threadpool model for DotNetty. If this is set to false a new group will be created per instnace of the Device Client.
+        /// This setting is to retain legacy behavior that will use a single Event Loop Group which is the thread pool model for DotNetty. If this is set to false a new group will be created per instance of the Device Client.
         /// </remarks>
         public bool UseSingleEventLoopGroup { get; set; } = true;
     }

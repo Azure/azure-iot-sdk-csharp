@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// Sets the internal object to null, clears the reference counter, and if <see cref="CreateWithRemoveAction"/> was used it will execute the removal function defined.
         /// </summary>
         /// <remarks>
-        /// This will only execute if there is atleast one reference count.
+        /// This will only execute if there is at least one reference count.
         /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Action{T})"/> method to create your reference counted object.
         /// </remarks>
         /// <example>
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Remove the refernce counted object or decrement the counter.
+        /// Remove the reference counted object or decrement the counter.
         /// </summary>
         /// <remarks>
         /// This will not dispose the underlying object. Instead when the reference counter reaches zero it will execute <see cref="Clear"/>. If this method is called more times than there are references there will be no failure.
