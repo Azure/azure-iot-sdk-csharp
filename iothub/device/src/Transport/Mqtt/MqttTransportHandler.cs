@@ -518,8 +518,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // If the customer chooses multiple groups we need to honor that here.
                     if (_useSingleEventLoopGroup)
                     {
-                        // The value here is likely one that won't change often. And in the most common case there is usually only a single device that
-                        // is created per process so we shouldn't have conflicting expectations.
                         _eventLoopGroupRefCounted.Remove();
                     }
                     else

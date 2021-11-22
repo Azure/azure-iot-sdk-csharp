@@ -120,7 +120,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <remarks>
         /// This will only execute if there is atleast one reference count.
-        /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Action{T})"/> method to create your reference counted object. The action will be called />
+        </remarks>
+        /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Action{T})"/> method to create your reference counted object.
         /// <example>
         /// <code> public class ContainerUsage
         /// {
@@ -134,7 +135,6 @@ namespace Microsoft.Azure.Devices.Shared
         /// }
         /// </code>
         /// </example>
-        /// </remarks>
         public void Clear()
         {
             ClearInternal(false);
@@ -155,7 +155,6 @@ namespace Microsoft.Azure.Devices.Shared
                 }
             }
         }
-
 
         /// <summary>
         /// Remove the refernce counted object or decrement the counter.
