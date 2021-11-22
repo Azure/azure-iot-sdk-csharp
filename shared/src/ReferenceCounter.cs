@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <remarks>
         /// This will only execute if there is atleast one reference count.
-        </remarks>
+        /// </remarks>
         /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Action{T})"/> method to create your reference counted object.
         /// <example>
         /// <code> public class ContainerUsage
