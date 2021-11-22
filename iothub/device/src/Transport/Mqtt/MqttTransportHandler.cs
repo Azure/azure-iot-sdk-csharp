@@ -198,7 +198,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _eventLoopGroup = GetEventLoopGroup();
             }
 
-
             if (channelFactory != null)
             {
                 _channelFactory = channelFactory;
