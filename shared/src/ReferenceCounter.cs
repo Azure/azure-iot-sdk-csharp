@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Shared
 
         private void CreateWithoutLocking(Func<T> objectToCreate)
         {
-            if (_obejctToCount == null && _referenceCount <= 0)
+            if (_obejctToCount == null && _referenceCount == 0)
             {
                 _obejctToCount = objectToCreate();
                 if (_obejctToCount == null)
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Shared
         {
             lock (_lockObject)
             {
-                if (_executeOnDispose == null && _referenceCount <= 0)
+                if (_executeOnDispose == null && _referenceCount == 0)
                 {
                     _executeOnDispose = executeOnLastRemoval;
                 }
