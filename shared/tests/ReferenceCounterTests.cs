@@ -71,7 +71,12 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             var refObject = new ReferenceCounter<MockableTestClass>();
 
             // act
-            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             refObject.Count.Should().Be(1);
@@ -90,18 +95,29 @@ namespace Microsoft.Azure.Devices.Shared.Tests
         [TestMethod()]
         public void ReferenceCounter_CreateTwoObjectsAndTestRemovalExecution()
         {
-            // arange
+            // arrange
             var refObject = new ReferenceCounter<MockableTestClass>();
 
-            // act 
-            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            // act
+            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             objectCreated.Should().BeSameAs(refObject.Value);
             refObject.Count.Should().Be(1);
 
             // act
-            var objectCreated2 = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            // act
+            var objectCreated2 = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             objectCreated.Should().BeSameAs(refObject.Value);
@@ -128,18 +144,30 @@ namespace Microsoft.Azure.Devices.Shared.Tests
         [TestMethod()]
         public void ReferenceCounter_ClearTest()
         {
-            // arange
+            // arrange
             var refObject = new ReferenceCounter<MockableTestClass>();
 
             // act 
-            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            // act
+            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             objectCreated.Should().BeSameAs(refObject.Value);
             refObject.Count.Should().Be(1);
 
             // act
-            var objectCreated2 = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            // act
+            var objectCreated2 = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             objectCreated.Should().BeSameAs(refObject.Value);
@@ -162,7 +190,13 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             var refObject = new ReferenceCounter<MockableTestClass>();
 
             // act
-            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            // act
+            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             refObject.Count.Should().Be(1);
@@ -203,7 +237,13 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             var refObject = new ReferenceCounter<MockableTestClass>();
 
             // act
-            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            // act
+            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             refObject.Count.Should().Be(1);
@@ -250,7 +290,13 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             var refObject = new ReferenceCounter<MockableTestClass>();
 
             // act
-            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            // act
+            var objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             refObject.Count.Should().Be(1);
@@ -266,7 +312,12 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             refObject.Value.Should().BeNull();
 
             // act
-            objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) => obj.BooleanProperty = true);
+            objectCreated = refObject.CreateWithRemoveAction(() => new MockableTestClass(), (obj) =>
+            {
+                var t = new Task(() => obj.BooleanProperty = true);
+                t.RunSynchronously();
+                return t;
+            });
 
             // assert
             refObject.Count.Should().Be(1);

@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
+    [Ignore] // Removed due to invalid cert service being shut down
     public class ProvisioningCertificateValidationE2ETest : E2EMsTestBase
     {
         [LoggedTestMethod]

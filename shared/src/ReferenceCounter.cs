@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Shared
 {
@@ -28,7 +29,7 @@ namespace Microsoft.Azure.Devices.Shared
 
         private object _lockObject = new object();
 
-        private Action<T> _executeOnDispose;
+        private Func<T, Task> _executeOnDispose;
 
         private volatile int _referenceCount;
 
@@ -97,7 +98,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// </remarks>
         /// <exception cref="InvalidOperationException">This will be thrown if the reference object is somehow out of sync.</exception>
         /// <exception cref="ArgumentException">This will be thrown if the creation method supplied to this method returns a null object.</exception>
-        public T CreateWithRemoveAction(Func<T> objectToCreate, Action<T> executeOnLastRemoval)
+        public T CreateWithRemoveAction(Func<T> objectToCreate, Func<T, Task> executeOnLastRemoval)
         {
             lock (_lockObject)
             {
@@ -120,7 +121,32 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <remarks>
         /// This will only execute if there is at least one reference count.
-        /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Action{T})"/> method to create your reference counted object.
+        /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Func{T, Task})"/> method to create your reference counted object.
+        /// </remarks>
+        /// <example>
+        /// <code> public class ContainerUsage
+        /// {
+        ///     private ReferenceCounter&lt;Stream&gt; _refObject = new ReferenceCounter&lt;Stream&gt;();
+        ///     
+        ///     public ContainerUsage()
+        ///     {
+        ///         _refObject.Create(() => new FileStream(), (teardown) => teardown.Dispose());
+        ///         await _refObject.ClearAsync();
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        public Task ClearAsync()
+        {
+            return ClearInternal(false);
+        }
+
+        /// <summary>
+        /// Sets the internal object to null, clears the reference counter, and if <see cref="CreateWithRemoveAction"/> was used it will execute the removal function defined.
+        /// </summary>
+        /// <remarks>
+        /// This will only execute if there is at least one reference count.
+        /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Func{T, Task})"/> method to create your reference counted object.
         /// </remarks>
         /// <example>
         /// <code> public class ContainerUsage
@@ -135,24 +161,41 @@ namespace Microsoft.Azure.Devices.Shared
         /// }
         /// </code>
         /// </example>
-        public void Clear()
+        public async void Clear()
         {
-            ClearInternal(false);
+            await ClearInternal(false);
         }
 
-        private void ClearInternal(bool calledFromDispose)
+        private Task ClearInternal(bool calledFromDispose)
         {
-            lock (_lockObject)
+            if (calledFromDispose || _referenceCount > 0)
             {
-                if (calledFromDispose || _referenceCount > 0)
+                T objectToSendToFunction = default;
+                lock (_lockObject)
                 {
-                    if (_executeOnDispose != null)
-                    {
-                        _executeOnDispose(_obejctToCount);
-                    }
+                    objectToSendToFunction = _obejctToCount;
                     _obejctToCount = null;
                     _referenceCount = 0;
                 }
+                if (_executeOnDispose != null)
+                {
+                    return _executeOnDispose(objectToSendToFunction);
+                }
+            }
+            return new Task(() => { });
+        }
+
+        /// <summary>
+        /// Remove the reference counted object or decrement the counter.
+        /// </summary>
+        /// <remarks>
+        /// This will not dispose the underlying object. Instead when the reference counter reaches zero it will execute <see cref="Clear"/>. If this method is called more times than there are references there will be no failure.
+        /// </remarks>
+        public async void Remove()
+        {
+            if (_referenceCount > 0 && Interlocked.Decrement(ref _referenceCount) == 0)
+            {
+                await ClearInternal(true);
             }
         }
 
@@ -162,12 +205,13 @@ namespace Microsoft.Azure.Devices.Shared
         /// <remarks>
         /// This will not dispose the underlying object. Instead when the reference counter reaches zero it will execute <see cref="Clear"/>. If this method is called more times than there are references there will be no failure.
         /// </remarks>
-        public void Remove()
+        public Task RemoveAsync()
         {
             if (_referenceCount > 0 && Interlocked.Decrement(ref _referenceCount) == 0)
             {
-                ClearInternal(true);
+                return ClearInternal(true);
             }
+            return new Task(() => { });
         }
     }
 }

@@ -247,6 +247,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 EnsureValidState(throwIfNotOpen: false);
 
                 await OpenInternalAsync(cancellationToken).ConfigureAwait(false);
+
+
             }
             finally
             {
@@ -477,11 +479,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (disposing)
             {
-                CloseAsync(CancellationToken.None).GetAwaiter().GetResult();
 
                 if (TryStop())
                 {
                     CleanUpAsync().GetAwaiter().GetResult();
+                    CloseAsync(CancellationToken.None).GetAwaiter().GetResult();
                 }
 
                 _disconnectAwaitersCancellationSource?.Dispose();
@@ -518,7 +520,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // If the customer chooses multiple groups we need to honor that here.
                     if (_useSingleEventLoopGroup)
                     {
-                        _eventLoopGroupRefCounted.Remove();
+                        await _eventLoopGroupRefCounted.RemoveAsync().ConfigureAwait(true);
                     }
                     else
                     {
@@ -537,9 +539,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private static async void ShutdownEventLoop(IEventLoopGroup group)
+        private static Task ShutdownEventLoop(IEventLoopGroup group)
         {
-            await group.ShutdownGracefullyAsync(s_timeoutValueForEventLoop, s_timeoutValueForEventLoop).ConfigureAwait(true);
+            return group.ShutdownGracefullyAsync(s_timeoutValueForEventLoop, s_timeoutValueForEventLoop);
         }
 
         #endregion Client operations
