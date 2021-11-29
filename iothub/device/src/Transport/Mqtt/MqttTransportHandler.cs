@@ -97,8 +97,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly ReferenceCounter<IEventLoopGroup> _eventLoopGroupRefCounted = new ReferenceCounter<IEventLoopGroup>();
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
-        private static TimeSpan s_timeoutValueForEventLoop = TimeSpan.Zero;
 
+        // Recommended use of DotNetty is to use a single event loop group. In order to allow more flexibility we can let the caller decice if they want to 
+        // use a single event loop group, or possibly use a group per instance of the client.
         private readonly bool _useSingleEventLoopGroup;
         private readonly IEventLoopGroup _eventLoopGroup;
         private readonly TimeSpan _timeoutValueForEventLoop = TimeSpan.Zero;
@@ -185,16 +186,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             // If the customer chooses multiple groups we need to honor that here.
             _useSingleEventLoopGroup = settings.UseSingleEventLoopGroup;
+
+            _timeoutValueForEventLoop = settings.GracefulEventLoopShutdownTimeout;
+
             if (_useSingleEventLoopGroup)
             {
-                // The value here is likely one that won't change often. And in the most common case there is usually only a single device that
-                // is created per process so we shouldn't have conflicting expectations.
-                s_timeoutValueForEventLoop = settings.GracefulEventLoopShutdownTimeout;
-                _eventLoopGroup = _eventLoopGroupRefCounted.CreateWithRemoveAction(GetEventLoopGroup, ShutdownEventLoop);
+                _eventLoopGroup = _eventLoopGroupRefCounted.Create(GetEventLoopGroup);
             }
             else
             {
-                _timeoutValueForEventLoop = settings.GracefulEventLoopShutdownTimeout;
                 _eventLoopGroup = GetEventLoopGroup();
             }
 
@@ -247,8 +247,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 EnsureValidState(throwIfNotOpen: false);
 
                 await OpenInternalAsync(cancellationToken).ConfigureAwait(false);
-
-
             }
             finally
             {
@@ -479,11 +477,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (disposing)
             {
-
                 if (TryStop())
                 {
                     CleanUpAsync().GetAwaiter().GetResult();
-                    CloseAsync(CancellationToken.None).GetAwaiter().GetResult();
                 }
 
                 _disconnectAwaitersCancellationSource?.Dispose();
@@ -500,9 +496,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     disposableChannel.Dispose();
                     _channel = null;
                 }
+
             }
         }
 
+        /// <summary>
+        /// Closes the MqttTransport
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>An awaitable task</returns>
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
             try
@@ -515,17 +517,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (TryStop())
                 {
                     OnTransportClosedGracefully();
-
                     await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
-                    // If the customer chooses multiple groups we need to honor that here.
-                    if (_useSingleEventLoopGroup)
-                    {
-                        await _eventLoopGroupRefCounted.RemoveAsync().ConfigureAwait(true);
-                    }
-                    else
-                    {
-                        await _eventLoopGroup.ShutdownGracefullyAsync(_timeoutValueForEventLoop, _timeoutValueForEventLoop).ConfigureAwait(true);
-                    }
                 }
                 else if (State == TransportState.Error)
                 {
@@ -539,9 +531,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private static Task ShutdownEventLoop(IEventLoopGroup group)
+        /// <summary>
+        /// Internal implementation of the close logic that can be reused in Dispose()
+        /// </summary>
+        /// <returns></returns>
+        private Task ShutdownEventLoopGroupInternal()
         {
-            return group.ShutdownGracefullyAsync(s_timeoutValueForEventLoop, s_timeoutValueForEventLoop);
+            // If the customer chooses multiple groups we need to honor that here.
+            // The remove method will only return an object if the reference count is zero or if there is no value for the object
+            if (_useSingleEventLoopGroup && _eventLoopGroupRefCounted.Remove() == null)
+            {
+                return TaskHelpers.CompletedTask;
+            }
+            return _eventLoopGroup?.ShutdownGracefullyAsync(_timeoutValueForEventLoop, _timeoutValueForEventLoop);
         }
 
         #endregion Client operations
@@ -1075,6 +1077,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         await _channel.CloseAsync().ConfigureAwait(true);
                     }
+
+                    await ShutdownEventLoopGroupInternal();
                 });
             }
 

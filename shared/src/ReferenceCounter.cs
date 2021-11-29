@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,12 +10,12 @@ namespace Microsoft.Azure.Devices.Shared
     /// A class that is used to handle an object that needs to be counted.
     /// </summary>
     /// <remarks>
-    /// Use of this class should be a static member variable inside of another class.
+    /// Use of this class should be a static member variable inside of another class. All of the public members will take in an object that will keep track of who has Created/Removed references
     /// </remarks>
     /// <example>
     /// <code> public class ContainerUsage
     /// {
-    ///     private ReferenceCounter&lt;object&gt; _refObject = new ReferenceCounter&lt;object&gt;();
+    ///     private static ReferenceCounter&lt;object&gt; _refObject = new ReferenceCounter&lt;object&gt;();
     ///     
     ///     public ContainerUsage()
     ///     {
@@ -25,18 +27,20 @@ namespace Microsoft.Azure.Devices.Shared
     /// <typeparam name="T">Any class based object type.</typeparam>
     public class ReferenceCounter<T> where T : class
     {
-        private T _obejctToCount;
+        private const int _mutextTimeout = Timeout.Infinite;
 
-        private object _lockObject = new object();
+        private WeakReference<T> _objectToCount;
 
-        private Func<T, Task> _executeOnDispose;
+        private Mutex _lockObject = new Mutex();
 
         private volatile int _referenceCount;
+
+        private IList<WeakReference> _weakRefList = new List<WeakReference>();
 
         /// <summary>
         /// The reference counted object.
         /// </summary>
-        public T Value => _obejctToCount;
+        public T Value { get { _objectToCount.TryGetTarget(out T target); return target; } }
 
         /// <summary>
         /// The current count.
@@ -53,42 +57,41 @@ namespace Microsoft.Azure.Devices.Shared
         /// 
         /// This will return a mutable object. It is possible to alter the object state which could cause unexpected behavior.
         /// </remarks>
+        /// <example>
+        /// <code> public class ContainerUsage
+        /// {
+        ///     private static ReferenceCounter&lt;object&gt; _refObject = new ReferenceCounter&lt;object&gt;();
+        ///     
+        ///     public ContainerUsage()
+        ///     {
+        ///         _refObject.Create(() => new object());
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
         /// <param name="objectToCreate">A function that generates the object to be counted. This must not return a null object.</param>
+        /// 
         /// <exception cref="InvalidOperationException">This will be thrown if the reference object is somehow out of sync.</exception>
         /// <exception cref="ArgumentException">This will be thrown if the creation method supplied to this method returns a null object.</exception>
-        /// <returns>The object created</returns>
-        public T Create(Func<T> objectToCreate)
+        /// <returns>The object created or the previously created object to be reference counted</returns>
+        public T Create(T objectToCreate)
         {
-            lock (_lockObject)
+            try
             {
+                EnterLock();
                 CreateWithoutLocking(objectToCreate);
-                Interlocked.Increment(ref _referenceCount);
-                return _obejctToCount;
+                _referenceCount++;
             }
-        }
-
-        private void CreateWithoutLocking(Func<T> objectToCreate)
-        {
-            if (_obejctToCount == null && _referenceCount == 0)
+            finally
             {
-                _obejctToCount = objectToCreate();
-                if (_obejctToCount == null)
-                {
-                    throw new ArgumentException("The value returned from the object creation method was null. Ensure the method returns a valid object.");
-                }
+                LeaveLock();
             }
-            else if (_obejctToCount == null && _referenceCount > 0)
-            {
-                throw new InvalidOperationException($"The reference count is {_referenceCount} but the object to count is null. The {nameof(ReferenceCounter<T>)} class should be ");
-            }
+            return Value;
         }
 
         /// <summary>
         /// Create the object or increment the counter.
         /// </summary>
-        /// <param name="objectToCreate">A function that generates the object to be counted. This must not return a null object.</param>
-        /// <param name="executeOnLastRemoval">An action that will receive the reference counted object so you can properly dispose of the object if needed. This method can be null.</param>
-        /// <returns>The object created</returns>
         /// <remarks>
         /// If the object is already set this will not execute the code in <paramref name="objectToCreate"/>. Instead it will return the object that was previously created.
         /// 
@@ -96,122 +99,144 @@ namespace Microsoft.Azure.Devices.Shared
         /// 
         /// This will return a mutable object. It is possible to alter the object state which could cause unexpected behavior.
         /// </remarks>
+        /// <example>
+        /// <code> public class ContainerUsage
+        /// {
+        ///     private static ReferenceCounter&lt;object&gt; _refObject = new ReferenceCounter&lt;object&gt;();
+        ///     
+        ///     public ContainerUsage()
+        ///     {
+        ///         _refObject.Create(() => new object());
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        /// <param name="objectToCreate">A function that generates the object to be counted. This must not return a null object.</param>
+        /// 
         /// <exception cref="InvalidOperationException">This will be thrown if the reference object is somehow out of sync.</exception>
         /// <exception cref="ArgumentException">This will be thrown if the creation method supplied to this method returns a null object.</exception>
-        public T CreateWithRemoveAction(Func<T> objectToCreate, Func<T, Task> executeOnLastRemoval)
+        /// <returns>The object created or the previously created object to be reference counted</returns>
+        public T Create(Func<T> objectToCreate)
         {
-            lock (_lockObject)
+            try
             {
-                if (_executeOnDispose == null && _referenceCount == 0)
+                EnterLock();
+                if (_objectToCount == null)
                 {
-                    _executeOnDispose = executeOnLastRemoval;
+                    CreateWithoutLocking(objectToCreate());
                 }
-                else if (_executeOnDispose == null && _referenceCount > 0)
+                _referenceCount++;
+            }
+            finally
+            {
+                LeaveLock();
+            }
+            return Value;
+        }
+
+        private void LeaveLock()
+        {
+            _lockObject.ReleaseMutex();
+        }
+
+        private void EnterLock()
+        {
+            _lockObject.WaitOne(_mutextTimeout);
+        }
+
+        private void CreateWithoutLocking(T objectToCreate)
+        {
+            if (_objectToCount == null && _referenceCount == 0)
+            {
+                if (objectToCreate == null)
                 {
-                    throw new InvalidOperationException($"The reference count is {_referenceCount} but the object to count is null. The {nameof(ReferenceCounter<T>)} class should be cleared.");
+                    throw new ArgumentException("The value returned from the object creation method was null. Ensure the method returns a valid object.");
                 }
-                CreateWithoutLocking(objectToCreate);
-                Interlocked.Increment(ref _referenceCount);
-                return _obejctToCount;
+                _objectToCount = new WeakReference<T>(objectToCreate);
+
+            }
+            else if (Value == null && _referenceCount > 0)
+            {
+                throw new InvalidOperationException($"The reference count is {_referenceCount} but the object to count is null. The {nameof(ReferenceCounter<T>)} class should be ");
             }
         }
 
         /// <summary>
-        /// Sets the internal object to null, clears the reference counter, and if <see cref="CreateWithRemoveAction"/> was used it will execute the removal function defined.
+        /// Sets the object to null, clears the reference counter.
         /// </summary>
         /// <remarks>
-        /// This will only execute if there is at least one reference count.
-        /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Func{T, Task})"/> method to create your reference counted object.
+        /// This will only execute if there is at least one reference count and will not throw an exception.
         /// </remarks>
         /// <example>
         /// <code> public class ContainerUsage
         /// {
-        ///     private ReferenceCounter&lt;Stream&gt; _refObject = new ReferenceCounter&lt;Stream&gt;();
+        ///     private static ReferenceCounter&lt;Stream&gt; _refObject = new ReferenceCounter&lt;Stream&gt;();
         ///     
         ///     public ContainerUsage()
         ///     {
-        ///         _refObject.Create(() => new FileStream(), (teardown) => teardown.Dispose());
-        ///         await _refObject.ClearAsync();
+        ///         _refObject.Create(() => new FileStream(), this);
+        ///         _refObject.Clear(this);
         ///     }
         /// }
         /// </code>
         /// </example>
-        public Task ClearAsync()
+        public T Clear()
         {
-            return ClearInternal(false);
-        }
-
-        /// <summary>
-        /// Sets the internal object to null, clears the reference counter, and if <see cref="CreateWithRemoveAction"/> was used it will execute the removal function defined.
-        /// </summary>
-        /// <remarks>
-        /// This will only execute if there is at least one reference count.
-        /// Take care to properly tear down your object. It is best to use the <see cref="CreateWithRemoveAction(Func{T}, Func{T, Task})"/> method to create your reference counted object.
-        /// </remarks>
-        /// <example>
-        /// <code> public class ContainerUsage
-        /// {
-        ///     private ReferenceCounter&lt;Stream&gt; _refObject = new ReferenceCounter&lt;Stream&gt;();
-        ///     
-        ///     public ContainerUsage()
-        ///     {
-        ///         _refObject.Create(() => new FileStream(), (teardown) => teardown.Dispose());
-        ///         _refObject.Clear();
-        ///     }
-        /// }
-        /// </code>
-        /// </example>
-        public async void Clear()
-        {
-            await ClearInternal(false);
-        }
-
-        private Task ClearInternal(bool calledFromDispose)
-        {
-            if (calledFromDispose || _referenceCount > 0)
+            try
             {
-                T objectToSendToFunction = default;
-                lock (_lockObject)
-                {
-                    objectToSendToFunction = _obejctToCount;
-                    _obejctToCount = null;
-                    _referenceCount = 0;
-                }
-                if (_executeOnDispose != null)
-                {
-                    return _executeOnDispose(objectToSendToFunction);
-                }
+                EnterLock();
+                return ClearInternal();
             }
-            return new Task(() => { });
+            finally
+            {
+                LeaveLock();
+            }
+        }
+
+        private T ClearInternal()
+        {
+            T objectToReturn = Value;
+            _objectToCount = null;
+            _referenceCount = 0;
+            _weakRefList.Clear();
+            return objectToReturn;
         }
 
         /// <summary>
         /// Remove the reference counted object or decrement the counter.
         /// </summary>
         /// <remarks>
-        /// This will not dispose the underlying object. Instead when the reference counter reaches zero it will execute <see cref="Clear"/>. If this method is called more times than there are references there will be no failure.
+        /// This will not dispose the underlying object and it is up to the caller to . Instead when the reference counter reaches zero it will execute <see cref="Clear"/>. If this method is called more times than there are references there will be no failure.
         /// </remarks>
-        public async void Remove()
+        /// /// <example>
+        /// <code> public class ContainerUsage
+        /// {
+        ///     private static ReferenceCounter&lt;object&gt; _refObject = new ReferenceCounter&lt;object&gt;();
+        ///     
+        ///     public ContainerUsage()
+        ///     {
+        ///         _refObject.Create(() => new object());
+        ///         var objectToCheck = _refObject.Remove();
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        /// <returns>If the counter reaches 0 when this method is called the reference counted object will be returned. Otherwise null</returns>
+        public T Remove()
         {
-            if (_referenceCount > 0 && Interlocked.Decrement(ref _referenceCount) == 0)
+            try
             {
-                await ClearInternal(true);
+                EnterLock();
+                if (_referenceCount > 0 && --_referenceCount == 0)
+                {
+                    return ClearInternal();
+                }
             }
-        }
-
-        /// <summary>
-        /// Remove the reference counted object or decrement the counter.
-        /// </summary>
-        /// <remarks>
-        /// This will not dispose the underlying object. Instead when the reference counter reaches zero it will execute <see cref="Clear"/>. If this method is called more times than there are references there will be no failure.
-        /// </remarks>
-        public Task RemoveAsync()
-        {
-            if (_referenceCount > 0 && Interlocked.Decrement(ref _referenceCount) == 0)
+            finally
             {
-                return ClearInternal(true);
+                LeaveLock();
             }
-            return new Task(() => { });
+            return null;
         }
     }
 }
