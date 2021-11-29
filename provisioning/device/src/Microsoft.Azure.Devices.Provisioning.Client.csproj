@@ -8,6 +8,8 @@
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
+    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -49,14 +51,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 </Project>

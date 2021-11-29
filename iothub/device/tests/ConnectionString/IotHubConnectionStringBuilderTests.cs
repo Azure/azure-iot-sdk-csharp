@@ -99,9 +99,11 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509False()
+        [DataRow("X509Cert")]
+        [DataRow("X509")]
+        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509False(string x509)
         {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey};X509Cert=false";
+            var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey};{x509}=false";
             var csBuilder = IotHubConnectionStringBuilder.Create(connectionString);
 
             csBuilder.SharedAccessKey.Should().Be(SharedAccessKey);
@@ -157,9 +159,39 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [DataRow("true")]
         [DataRow("True")]
         [DataRow("TRUE")]
-        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509(string value)
+        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509BoolCaseInsensitive(string value)
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};X509Cert={value}";
+            var csBuilder = IotHubConnectionStringBuilder.Create(connectionString);
+
+            csBuilder.UsingX509Cert.Should().BeTrue();
+
+            csBuilder.SharedAccessKey.Should().BeNull();
+            csBuilder.SharedAccessKeyName.Should().BeNull();
+            csBuilder.SharedAccessSignature.Should().BeNull();
+        }
+
+        /// <summary>
+        /// Ensure we support both and either x509Cert= and x509= in our connection string builder/parser, for backward compat and alignment with other SDKs.
+        /// If either is true, then we'll consider it true.
+        /// </summary>
+        [TestMethod]
+        [DataRow("true", "true")]
+        [DataRow("false", "true")]
+        [DataRow(null, "true")]
+        [DataRow("true", "false")]
+        [DataRow("true", null)]
+        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509Mix(string x509CertValue, string x509Value)
+        {
+            var connectionString = $"HostName={HostName};DeviceId={DeviceId}";
+            if (x509CertValue != null)
+            {
+                connectionString += $";X509Cert={x509CertValue}";
+            }
+            if (x509Value != null)
+            {
+                connectionString += $";x509={x509Value}";
+            }
             var csBuilder = IotHubConnectionStringBuilder.Create(connectionString);
 
             csBuilder.UsingX509Cert.Should().BeTrue();

@@ -179,16 +179,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public virtual Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler?.EnableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+            return InnerHandler?.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        public virtual Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+            return InnerHandler?.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)

@@ -46,7 +46,7 @@ Nightly test platform details:
 
 Default locale: en_US, platform encoding: UTF-8
 
-OS name: "linux", kernel version: "5.8.0-1040-azure", arch: "amd64", family: "unix"
+OS name: "linux", version: "5.8.0-1040-azure", arch: "amd64", family: "unix"
 
 ## Miscellaneous support notes
 

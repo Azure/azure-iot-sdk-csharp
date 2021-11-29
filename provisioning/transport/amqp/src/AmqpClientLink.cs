@@ -6,6 +6,7 @@ using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 using System;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
@@ -38,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public bool IsLinkClosed => _isLinkClosed;
 
-        public async Task OpenAsync(TimeSpan timeout)
+        public async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (Amqp.Extensions.IsReceiver(AmqpLinkSettings))
             {
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             AmqpLink.SafeAddClosed(OnLinkClosed);
-            await AmqpLink.OpenAsync(timeout).ConfigureAwait(false);
+            await AmqpLink.OpenAsync(cancellationToken).ConfigureAwait(false);
             _isLinkClosed = false;
         }
 
@@ -72,21 +73,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public async Task<Outcome> SendMessageAsync(
             AmqpMessage message,
             ArraySegment<byte> deliveryTag,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             var sendLink = AmqpLink as SendingAmqpLink;
+            
             if (sendLink == null)
             {
                 throw new InvalidOperationException("Link does not support sending.");
             }
 
-            return await sendLink.SendMessageAsync(message,
-                deliveryTag,
-                AmqpConstants.NullBinary,
-                timeout).ConfigureAwait(false);
+            return await sendLink
+                .SendMessageAsync(message,
+                    deliveryTag,
+                    AmqpConstants.NullBinary,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public async Task<AmqpMessage> ReceiveMessageAsync(TimeSpan timeout)
+        public async Task<AmqpMessage> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             var receiveLink = AmqpLink as ReceivingAmqpLink;
             if (receiveLink == null)
@@ -94,7 +98,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 throw new InvalidOperationException("Link does not support receiving.");
             }
 
-            return await receiveLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+            return await receiveLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public void AcceptMessage(AmqpMessage amqpMessage)
