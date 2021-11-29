@@ -9,6 +9,8 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
+    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -28,7 +30,11 @@
   </ItemGroup>
 
   <PropertyGroup>
+<<<<<<< HEAD
     <Version>1.14.0-preview-002</Version>
+=======
+    <Version>1.14.0</Version>
+>>>>>>> main
     <Title>Microsoft Azure IoT Provisioning Device Security TPM Client</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -49,13 +55,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
-
-    <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
+
+    <!-- FXCop -->
   </ItemGroup>
 
   <ItemGroup>

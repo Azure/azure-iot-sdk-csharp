@@ -1643,14 +1643,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the <see cref="ModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
         /// <returns>The task containing the event</returns>
-        public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext)
+        public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext, bool isAnEdgeModule)
         {
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
-                await SetInputMessageHandlerAsync(inputName, messageHandler, userContext, cts.Token).ConfigureAwait(false);
+                await SetInputMessageHandlerAsync(inputName, messageHandler, userContext, isAnEdgeModule, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1667,9 +1668,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the <see cref="ModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
-        public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext, CancellationToken cancellationToken)
+        public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext, bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -1685,8 +1687,9 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (messageHandler != null)
                 {
-                    // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
-                    await EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    // When using a device module we need to enable the 'deviceBound' message link
+                    await EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
+
                     // codes_SRS_DEVICECLIENT_33_005: [ It shall lazy-initialize the receiveEventEndpoints property. ]
                     if (_receiveEventEndpoints == null)
                     {
@@ -1707,7 +1710,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
 
                     // codes_SRS_DEVICECLIENT_33_004: [ It shall call DisableEventReceiveAsync when the last delegate has been removed. ]
-                    await DisableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    await DisableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -1729,14 +1732,15 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the <see cref="ModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
         /// <returns>The task containing the event</returns>
-        public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext)
+        public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, bool isAnEdgeModule)
         {
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_013: [The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
-                await SetMessageHandlerAsync(messageHandler, userContext, cts.Token).ConfigureAwait(false);
+                await SetMessageHandlerAsync(messageHandler, userContext, isAnEdgeModule, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
@@ -1753,9 +1757,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the <see cref="ModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
-        public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, CancellationToken cancellationToken)
+        public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -1770,14 +1775,14 @@ namespace Microsoft.Azure.Devices.Client
                 if (messageHandler != null)
                 {
                     // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
-                    await EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    await EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
                     _defaultEventCallback = new Tuple<MessageHandler, object>(messageHandler, userContext);
                 }
                 else
                 {
                     _defaultEventCallback = null;
                     // codes_SRS_DEVICECLIENT_33_004: [ It shall DisableEventReceiveAsync when the last delegate has been removed. ]
-                    await DisableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    await DisableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -1859,20 +1864,20 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         // Enable telemetry downlink for modules
-        private Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        private Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             // The telemetry downlink needs to be enabled only for the first time that the _defaultEventCallback delegate is set.
             return _receiveEventEndpoints == null && _defaultEventCallback == null
-                ? InnerHandler.EnableEventReceiveAsync(cancellationToken)
+                ? InnerHandler.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken)
                 : TaskHelpers.CompletedTask;
         }
 
         // Disable telemetry downlink for modules
-        private Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        private Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             // The telemetry downlink should be disabled only after _defaultEventCallback delegate has been removed.
             return _receiveEventEndpoints == null && _defaultEventCallback == null
-                ? InnerHandler.DisableEventReceiveAsync(cancellationToken)
+                ? InnerHandler.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken)
                 : TaskHelpers.CompletedTask;
         }
 

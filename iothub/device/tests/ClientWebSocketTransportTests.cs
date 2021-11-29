@@ -231,7 +231,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task LegacyWebSocketReadWriteTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, s_oneMinute).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(s_oneMinute);
+            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, cts.Token).ConfigureAwait(false);
 
             s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, s_oneMinute, null, null);
 
@@ -261,7 +262,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task LegacyWebSocketReadAfterCloseTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, s_oneMinute).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(s_oneMinute);
+            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, cts.Token).ConfigureAwait(false);
             s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, s_oneMinute, null, null);
             await s_legacyClientWebSocketTransport.CloseAsync(s_thirtySeconds).ConfigureAwait(false);
             var args = new TransportAsyncCallbackArgs();
@@ -276,7 +278,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task LegacyWebSocketWriteAfterCloseTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, s_oneMinute).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(s_oneMinute);
+            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, cts.Token).ConfigureAwait(false);
             s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, s_oneMinute, null, null);
             await s_legacyClientWebSocketTransport.CloseAsync(s_thirtySeconds).ConfigureAwait(false);
             var args = new TransportAsyncCallbackArgs();
@@ -290,7 +293,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task LegacyWebSocketReadAfterAbortTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, s_oneMinute).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(s_oneMinute);
+            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, cts.Token).ConfigureAwait(false);
             s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, s_oneMinute, null, null);
             s_legacyClientWebSocketTransport.Abort();
 
@@ -307,7 +311,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task LegacyWebSocketWriteAfterAbortTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, s_oneMinute).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(s_oneMinute);
+            await websocket.ConnectAsync(IotHubName, Port, "ws://", null, cts.Token).ConfigureAwait(false);
             s_legacyClientWebSocketTransport = new LegacyClientWebSocketTransport(websocket, s_oneMinute, null, null);
             s_legacyClientWebSocketTransport.Abort();
 

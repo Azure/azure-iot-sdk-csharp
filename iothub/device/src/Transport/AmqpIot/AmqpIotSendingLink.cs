@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
@@ -41,14 +42,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal Task CloseAsync(TimeSpan timeout)
+        internal Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
                 Logging.Enter(this, nameof(CloseAsync));
             }
 
-            return _sendingAmqpLink.CloseAsync(timeout);
+            return _sendingAmqpLink.CloseAsync(cancellationToken);
         }
 
         internal void SafeClose()
@@ -73,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Telemetry handling
 
-        internal async Task<AmqpIotOutcome> SendMessageAsync(MessageBase message, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendMessageAsync(MessageBase message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -83,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             // After this message is sent, we will return the outcome that has no references to the message
             // So it can safely be disposed.
             using AmqpMessage amqpMessage = AmqpIotMessageConverter.MessageToAmqpMessage(message);
-            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
             {
@@ -93,12 +94,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<MessageBase> messages, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<MessageBase> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
                 Logging.Enter(this, nameof(SendMessagesAsync));
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             // List to hold messages in AMQP friendly format
             var messageList = new List<Data>();
@@ -117,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             using (AmqpMessage amqpMessage = AmqpMessage.Create(messageList))
             {
                 amqpMessage.MessageFormat = AmqpConstants.AmqpBatchedMessageFormat;
-                outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+                outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
             }
 
             var amqpIotOutcome = new AmqpIotOutcome(outcome);
@@ -131,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return amqpIotOutcome;
         }
 
-        private async Task<Outcome> SendAmqpMessageAsync(AmqpMessage amqpMessage, TimeSpan timeout)
+        private async Task<Outcome> SendAmqpMessageAsync(AmqpMessage amqpMessage, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -145,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         amqpMessage,
                         new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
                         AmqpConstants.NullBinary,
-                        timeout)
+                        cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception e) when (!e.IsFatal())
@@ -178,17 +181,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Method handling
 
-        internal async Task<AmqpIotOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
                 Logging.Enter(this, methodResponse, nameof(SendMethodResponseAsync));
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             using AmqpMessage amqpMessage = AmqpIotMessageConverter.ConvertMethodResponseInternalToAmqpMessage(methodResponse);
             AmqpIotMessageConverter.PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponse);
 
-            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
             {
@@ -202,7 +207,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Twin handling
 
-        internal async Task<AmqpIotOutcome> SendTwinGetMessageAsync(string correlationId, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendTwinGetMessageAsync(string correlationId, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -213,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.MessageAnnotations.Map["operation"] = "GET";
 
-            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
             {
@@ -223,7 +228,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(string correlationId, Stream reportedProperties, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(
+            string correlationId,
+            Stream reportedProperties,
+            CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -236,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             amqpMessage.MessageAnnotations.Map["resource"] = "/properties/reported";
             amqpMessage.MessageAnnotations.Map["version"] = null;
 
-            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
             {
@@ -246,7 +254,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIotOutcome> SubscribeToDesiredPropertiesAsync(string correlationId, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> SubscribeToDesiredPropertiesAsync(string correlationId, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -259,7 +267,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             amqpMessage.MessageAnnotations.Map["resource"] = "/notifications/twin/properties/desired";
             amqpMessage.MessageAnnotations.Map["version"] = null;
 
-            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
             {

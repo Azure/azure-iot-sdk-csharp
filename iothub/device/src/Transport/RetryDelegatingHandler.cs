@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _twinEnabled;
         private bool _eventsEnabled;
         private bool _deviceReceiveMessageEnabled;
+        private bool _isAnEdgeModule = true;
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
@@ -78,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
                             if (message.IsBodyCalled)
                             {
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
                             foreach (Message m in messages)
                             {
@@ -137,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await base.SendMethodResponseAsync(method, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -159,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             return await base.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -182,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(timeoutHelper).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, timeoutHelper).ConfigureAwait(false);
                             return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
                         },
                         cts.Token)
@@ -205,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             // Ensure that the connection has been opened, before enabling the callback for receiving messages.
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -218,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -243,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             // Ensure that the connection has been opened before returning pending messages to the callback.
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -256,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -279,7 +280,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             // Ensure that the connection has been opened, before disabling the callback for receiving messages.
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -292,7 +293,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -314,7 +315,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
@@ -325,7 +326,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -347,7 +348,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -357,7 +358,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -369,27 +370,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             try
             {
+                _isAnEdgeModule = isAnEdgeModule;
                 Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
-                                await base.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
                                 Debug.Assert(!_eventsEnabled);
                                 _eventsEnabled = true;
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -401,27 +403,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             try
             {
+                _isAnEdgeModule = isAnEdgeModule;
                 Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
 
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_eventsEnabled);
-                                await base.DisableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
                                 _eventsEnabled = false;
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -443,7 +446,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -453,7 +456,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -475,7 +478,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -485,7 +488,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore.Release();
+                                _handlerSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -507,7 +510,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await base.CompleteAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -529,7 +532,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await base.AbandonAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -551,7 +554,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             await base.RejectAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -573,7 +576,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             return await base.GetClientTwinPropertiesAsync<T>(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -595,7 +598,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
                             return await base.SendClientTwinPropertyPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -653,7 +656,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
-            return EnsureOpenedAsync(cancellationToken);
+            return EnsureOpenedAsync(true, cancellationToken);
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
@@ -675,7 +678,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
-                _handlerSemaphore.Release();
+                _handlerSemaphore?.Release();
                 Dispose(true);
             }
         }
@@ -683,7 +686,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <summary>
         /// Implicit open handler.
         /// </summary>
-        private async Task EnsureOpenedAsync(CancellationToken cancellationToken)
+        private async Task EnsureOpenedAsync(bool withRetry, CancellationToken cancellationToken)
         {
             // If this object has already been disposed, we will throw an exception indicating that.
             // This is the entry point for interacting with the client and this safety check should be done here.
@@ -709,7 +712,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // we are returning the corresponding connection status change event => disconnected: retry_expired.
                     try
                     {
-                        await OpenInternalAsync(cancellationToken).ConfigureAwait(false);
+                        await OpenInternalAsync(withRetry, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (!ex.IsFatal())
                     {
@@ -735,11 +738,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore.Release();
+                _handlerSemaphore?.Release();
             }
         }
 
-        private async Task EnsureOpenedAsync(TimeoutHelper timeoutHelper)
+        private async Task EnsureOpenedAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
             if (Volatile.Read(ref _opened))
             {
@@ -762,7 +765,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // we are returning the corresponding connection status change event => disconnected: retry_expired.
                     try
                     {
-                        await OpenInternalAsync(timeoutHelper).ConfigureAwait(false);
+                        await OpenInternalAsync(withRetry, timeoutHelper).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (!ex.IsFatal())
                     {
@@ -788,41 +791,67 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore.Release();
+                _handlerSemaphore?.Release();
             }
         }
 
-        private Task OpenInternalAsync(CancellationToken cancellationToken)
+        private async Task OpenInternalAsync(bool withRetry, CancellationToken cancellationToken)
         {
-            return _internalRetryPolicy
-                .ExecuteAsync(
-                    async () =>
-                    {
-                        try
+            if (withRetry)
+            {
+                await _internalRetryPolicy
+                    .ExecuteAsync(
+                        async () =>
                         {
-                            Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+                            try
+                            {
+                                Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
-                            // Will throw on error.
-                            await base.OpenAsync(cancellationToken).ConfigureAwait(false);
-                            _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
-                        }
-                        catch (Exception ex) when (!ex.IsFatal())
-                        {
-                            HandleConnectionStatusExceptions(ex);
-                            throw;
-                        }
-                        finally
-                        {
-                            Logging.Exit(this, cancellationToken, nameof(OpenAsync));
-                        }
-                    },
-                    cancellationToken);
+                                // Will throw on error.
+                                await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                                _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                            }
+                            catch (Exception ex) when (!ex.IsFatal())
+                            {
+                                HandleConnectionStatusExceptions(ex);
+                                throw;
+                            }
+                            finally
+                            {
+                                Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                            }
+                        },
+                        cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                try
+                {
+                    Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+
+                    // Will throw on error.
+                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    HandleConnectionStatusExceptions(ex);
+                    throw;
+                }
+                finally
+                {
+                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                }
+            }
         }
 
-        private async Task OpenInternalAsync(TimeoutHelper timeoutHelper)
+        private async Task OpenInternalAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
             using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-            await _internalRetryPolicy
+
+            if (withRetry)
+            {
+                await _internalRetryPolicy
                 .ExecuteAsync(
                     async () =>
                     {
@@ -846,6 +875,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     },
                     cts.Token)
                 .ConfigureAwait(false);
+            }
+            else
+            {
+                try
+                {
+                    Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
+
+                // Will throw on error.
+                await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
+                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    HandleConnectionStatusExceptions(ex);
+                    throw;
+                }
+                finally
+                {
+                    Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
+                }
+            }
+
+                
         }
 
         // Triggered from connection loss event
@@ -921,7 +973,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // This is to ensure that, if previously enabled, the callback to receive events for modules is recovered.
                     if (_eventsEnabled)
                     {
-                        tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
+                        tasks.Add(base.EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken));
                     }
 
                     // This is to ensure that, if previously enabled, the callback to receive C2D messages is recovered.
@@ -959,7 +1011,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore.Release();
+                _handlerSemaphore?.Release();
             }
         }
 
@@ -1011,7 +1063,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 _handleDisconnectCts?.Cancel();
                 _handleDisconnectCts?.Dispose();
-
+                if (_handlerSemaphore != null && _handlerSemaphore.CurrentCount == 0)
+                {
+                    _handlerSemaphore.Release();
+                }
                 _handlerSemaphore?.Dispose();
                 _handlerSemaphore = null;
             }

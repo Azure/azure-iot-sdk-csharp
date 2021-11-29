@@ -18,8 +18,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly IotHubConnectionString _connectionString;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
-        private CancellationTokenSource _cancellationTokenSource;
-        private readonly TimeSpan _operationTimeout;
         private Task _refreshLoop;
         private bool _disposed;
 
@@ -27,7 +25,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _amqpIotCbsLink = amqpCbsLink;
             _connectionString = deviceIdentity.IotHubConnectionString;
-            _operationTimeout = deviceIdentity.AmqpTransportSettings.OperationTimeout;
             _audience = deviceIdentity.Audience;
             _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_connectionString);
 
@@ -42,18 +39,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task InitLoopAsync(TimeSpan timeout)
+        public async Task InitLoopAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(this, timeout, nameof(InitLoopAsync));
+                Logging.Enter(this, nameof(InitLoopAsync));
             }
-
-            CancellationTokenSource oldTokenSource = _cancellationTokenSource;
-            _cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken newToken = _cancellationTokenSource.Token;
-            oldTokenSource?.Cancel();
-            oldTokenSource?.Dispose();
 
             DateTime refreshOn = await _amqpIotCbsLink
                 .SendTokenAsync(
@@ -62,17 +53,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     _audience,
                     _audience,
                     s_accessRightsStringArray,
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             if (refreshOn < DateTime.MaxValue)
             {
-                StartLoop(refreshOn, newToken);
+                StartLoop(refreshOn, cancellationToken);
             }
 
             if (Logging.IsEnabled)
             {
-                Logging.Exit(this, timeout, nameof(InitLoopAsync));
+                Logging.Exit(this, nameof(InitLoopAsync));
             }
         }
 
@@ -119,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                                 _audience,
                                 _audience,
                                 s_accessRightsStringArray,
-                                _operationTimeout)
+                                cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch (IotHubCommunicationException ex)
@@ -148,8 +139,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 Logging.Info(this, nameof(StopLoop));
             }
-
-            _cancellationTokenSource?.Cancel();
         }
 
         public void Dispose()
@@ -173,9 +162,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (disposing)
             {
                 StopLoop();
-                _cancellationTokenSource?.Dispose();
-                _cancellationTokenSource = null;
-
                 _amqpIotCbsTokenProvider?.Dispose();
             }
 

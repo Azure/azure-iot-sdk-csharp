@@ -312,7 +312,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// If the registrationId do not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
-        /// <param name="registrationId">the <code>string} that identifies the individualEnrollment. It cannot be {@code null</code> or empty.</param>
+        /// <param name="registrationId">the <code>string</code> that identifies the individualEnrollment. It cannot be <code>null</code> or empty.</param>
         /// <returns>The <see cref="IndividualEnrollment"/> with the content of the individualEnrollment in the Provisioning Device Service.</returns>
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>

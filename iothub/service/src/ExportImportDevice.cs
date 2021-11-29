@@ -21,19 +21,18 @@ namespace Microsoft.Azure.Devices
         private string _twinETag;
 
         /// <summary>
-        /// Property container
+        /// Type definition for the <see cref="Properties"/> property.
         /// </summary>
-        [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Public property. No behavior changes allowed.")]
         public sealed class PropertyContainer
         {
             /// <summary>
-            /// Desired properties
+            /// Desired properties are requested updates by a service client.
             /// </summary>
             [JsonProperty(PropertyName = "desired", NullValueHandling = NullValueHandling.Ignore)]
             public TwinCollection DesiredProperties { get; set; }
 
             /// <summary>
-            /// Reported properties
+            /// Reported properties are the latest value reported by the device.
             /// </summary>
             [JsonProperty(PropertyName = "reported", NullValueHandling = NullValueHandling.Ignore)]
             public TwinCollection ReportedProperties { get; set; }
