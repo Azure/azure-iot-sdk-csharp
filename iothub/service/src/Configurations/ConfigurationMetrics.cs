@@ -8,31 +8,25 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Azure IOT Configuration Metrics
+    /// Metrics for device/module configurations.
     /// </summary>
+    /// <remarks>
+    /// See <see cref="Configuration"/> for more details.
+    /// </remarks>
     public class ConfigurationMetrics
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="ConfigurationMetrics"/>
-        /// </summary>
-        public ConfigurationMetrics()
-        {
-            Results = new Dictionary<string, long>();
-            Queries = new Dictionary<string, string>();
-        }
-
         /// <summary>
         /// Results of the metrics collection queries
         /// </summary>
         [JsonProperty("results")]
         [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
-        public IDictionary<string, long> Results { get; set; }
+        public IDictionary<string, long> Results { get; set; } = new Dictionary<string, long>();
 
         /// <summary>
         /// Queries used for metrics collection
         /// </summary>
         [JsonProperty("queries")]
         [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
-        public IDictionary<string, string> Queries { get; set; }
+        public IDictionary<string, string> Queries { get; set; } = new Dictionary<string, string>();
     }
 }

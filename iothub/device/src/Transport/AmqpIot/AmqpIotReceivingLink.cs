@@ -47,9 +47,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal Task CloseAsync(TimeSpan timeout)
+        internal Task CloseAsync(CancellationToken cancellationToken)
         {
-            return _receivingAmqpLink.CloseAsync(timeout);
+            return _receivingAmqpLink.CloseAsync(cancellationToken);
         }
 
         internal bool IsClosing()
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Receive Message
 
-        internal async Task<Message> ReceiveAmqpMessageAsync(TimeSpan timeout)
+        internal async Task<Message> ReceiveAmqpMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                AmqpMessage amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                AmqpMessage amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
                 Message message = null;
                 if (amqpMessage != null)
                 {
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal async Task<AmqpIotOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
+        internal async Task<AmqpIotOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     deliveryTag,
                     outcome,
                     batchable: true,
-                    timeout: timeout).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
             {

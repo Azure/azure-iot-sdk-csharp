@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKeyName=AllAccessKey"; 
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKeyName=AllAccessKey";
             var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
@@ -94,9 +94,9 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             }
             catch (FormatException fe)
             {
-                Assert.IsTrue(fe.Message.Contains("Malformed Token"), "Exception should mention 'Malformed Token' Actual :" + fe.Message);             
+                Assert.IsTrue(fe.Message.Contains("Malformed Token"), "Exception should mention 'Malformed Token' Actual :" + fe.Message);
             }
-         }
+        }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
@@ -126,15 +126,15 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringSASKeyX509CertExceptionTest()
         {
-            string connectionString = "HostName=acme.azure-devices.net;X509Cert=true;DeviceId=device;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;X509=true;DeviceId=device;SharedAccessKey=dGVzdFN0cmluZzE=";
             var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void DeviceClientConnectionStringSASSignatureX509ExceptionTest()
+        public void DeviceClientConnectionStringSasSignatureX509ExceptionTest()
         {
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;X509Cert=true;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey";
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;X509=true;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey";
             var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
@@ -147,4 +147,3 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
     }
 }
-

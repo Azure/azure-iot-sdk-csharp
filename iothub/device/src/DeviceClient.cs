@@ -676,7 +676,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </code>
         /// or
         /// <code>
-        /// var client = DeviceClient.CreateFromConnectionStirng(...);
+        /// var client = DeviceClient.CreateFromConnectionString(...);
         /// try
         /// {
         ///     // do work
@@ -713,7 +713,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// (desired or reported) from the service. This has the side-effect of subscribing
         /// to the PATCH topic on the service.
         /// </summary>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>

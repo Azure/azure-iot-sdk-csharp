@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         [DataTestMethod]
         [TestCategory("LongRunning")]
-        [Timeout(120000)]
+        [Timeout(120000)] // the number of jobs that can be run at a time are limited anyway
         [DoNotParallelize]
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]
@@ -47,25 +46,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
 
-            StorageContainer storageContainer = null;
-            string deviceId = $"{nameof(RegistryManager_ImportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
+            string deviceId = $"{nameof(RegistryManager_ImportDevices)}-device-{StorageContainer.GetRandomSuffix(4)}";
+            string devicesFileName = $"{nameof(RegistryManager_ImportDevices)}-{StorageContainer.GetRandomSuffix(4)}.txt";
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
-            Logger.Trace($"Using deviceId {deviceId}");
+            Logger.Trace($"Using deviceId {deviceId}.");
 
             try
             {
                 string containerName = StorageContainer.BuildContainerName(nameof(RegistryManager_ImportDevices));
-                storageContainer = await StorageContainer
-                    .GetInstanceAsync(containerName)
-                    .ConfigureAwait(false);
+                using StorageContainer storageContainer = await StorageContainer.GetInstanceAsync(containerName).ConfigureAwait(false);
                 Logger.Trace($"Using container {storageContainer.Uri}");
 
                 Uri containerUri = storageAuthenticationType == StorageAuthenticationType.KeyBased
                     ? storageContainer.SasUri
                     : storageContainer.Uri;
 
-                using Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(
+                using Stream devicesStream = ImportExportDevicesHelpers.BuildDevicesStream(
                     new List<ExportImportDevice>
                     {
                         new ExportImportDevice(
@@ -75,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                             },
                             ImportMode.Create),
                     });
-                await UploadFileAndConfirmAsync(storageContainer, devicesFile).ConfigureAwait(false);
+                await UploadFileAndConfirmAsync(storageContainer, devicesStream, devicesFileName).ConfigureAwait(false);
 
                 // act
 
@@ -100,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                                 JobProperties.CreateForImportJob(
                                     containerUri.ToString(),
                                     containerUri.ToString(),
-                                    null,
+                                    devicesFileName,
                                     storageAuthenticationType))
                             .ConfigureAwait(false);
                         break;
@@ -155,17 +152,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    storageContainer?.Dispose();
-
                     await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
                 }
                 catch { }
             }
         }
 
-        private static async Task UploadFileAndConfirmAsync(StorageContainer storageContainer, Stream devicesFile)
+        private static async Task UploadFileAndConfirmAsync(StorageContainer storageContainer, Stream devicesFile, string fileName)
         {
-            CloudBlockBlob cloudBlob = storageContainer.CloudBlobContainer.GetBlockBlobReference(ImportFileNameDefault);
+            CloudBlockBlob cloudBlob = storageContainer.CloudBlobContainer.GetBlockBlobReference(fileName);
             await cloudBlob.UploadFromStreamAsync(devicesFile).ConfigureAwait(false);
 
             // wait for blob to be written
@@ -179,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     break;
                 }
             }
-            foundBlob.Should().BeTrue($"Failed to find {ImportFileNameDefault} in storage container, required for test.");
+            foundBlob.Should().BeTrue($"Failed to find {fileName} in storage container, required for test.");
         }
     }
 }
