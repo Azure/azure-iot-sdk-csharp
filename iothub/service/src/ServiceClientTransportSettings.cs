@@ -21,13 +21,77 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The proxy settings to be used on the AMQP client.
+        /// The web proxy that will be used to connect to IoT Hub when using the AMQP over web sockets.
         /// </summary>
+        /// <value>
+        /// An instance of a class that implements <see cref="IWebProxy"/>.
+        /// </value>
+        /// <remarks>
+        /// This setting is to be used in conjunction with the <see cref="HttpProxy"/> property.
+        /// </remarks>
+        /// <example>
+        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
+        /// <code>
+        /// static ServiceClient GetServiceClient()
+        /// {
+        ///     try
+        ///     {
+        ///         var proxyHost = "localhost";
+        ///         var proxyPort = 8888;
+        ///         var proxy = new WebProxy(proxyHost, proxyPort);
+        ///         var transportSettings = new ServiceClientTransportSettings()
+        ///         {
+        ///             AmqpProxy = proxy,
+        ///             HttpProxy = proxy
+        ///         };
+        ///         var serviceClient = ServiceClient.CreateFromConnectionString("a connection string", Microsoft.Azure.Devices.TransportType.Amqp_WebSocket_Only, transportSettings );
+        ///         return serviceClient;
+        ///     }
+        ///     catch (Exception)
+        ///     {
+        ///         Console.WriteLine("Error creating client.");
+        ///         throw;
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
         public IWebProxy AmqpProxy { get; set; }
 
         /// <summary>
-        /// The proxy settings to be used on the HTTP client.
+        /// The web proxy that will be used to connect to IoT Hub when operations must execute over HTTP.
         /// </summary>
+        /// <value>
+        /// An instance of a class that implements <see cref="IWebProxy"/>.
+        /// </value>
+        /// <remarks>
+        /// Methods such as <see cref="ServiceClient.GetServiceStatisticsAsync(System.Threading.CancellationToken)"/> are executed over HTTP and not AMQP. This setting will ensure those methods are executed over the specified proxy. This setting is to be used in conjunction with the <see cref="AmqpProxy"/> property. 
+        /// </remarks>
+        /// <example>
+        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
+        /// <code>
+        /// static ServiceClient GetServiceClient()
+        /// {
+        ///     try
+        ///     {
+        ///         var proxyHost = "localhost";
+        ///         var proxyPort = 8888;
+        ///         var proxy = new WebProxy(proxyHost, proxyPort);
+        ///         var transportSettings = new ServiceClientTransportSettings()
+        ///         {
+        ///             AmqpProxy = proxy,
+        ///             HttpProxy = proxy
+        ///         };
+        ///         var serviceClient = ServiceClient.CreateFromConnectionString("a connection string", Microsoft.Azure.Devices.TransportType.Amqp_WebSocket_Only, transportSettings );
+        ///         return serviceClient;
+        ///     }
+        ///     catch (Exception)
+        ///     {
+        ///         Console.WriteLine("Error creating client.");
+        ///         throw;
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
         public IWebProxy HttpProxy { get; set; }
 
         /// <summary>

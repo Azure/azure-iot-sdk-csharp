@@ -20,12 +20,38 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Proxy information.
+        /// The web proxy that will be used to connect to IoT Hub when using the HTTP protocol.
         /// </summary>
+        /// <value>
+        /// An instance of a class that implements <see cref="IWebProxy"/>.
+        /// </value>
         /// <remarks>
-        /// This is used when a device is on a network that doesn't have direct internet access and needs to access it via a proxy,
-        /// especially when MQTT and AMQP ports are disallowed to the internet.
+        /// This setting is only valid for the <see cref="JobClient"/> or the <see cref="RegistryManager"/>.
         /// </remarks>
+        /// <example>
+        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
+        /// <code>
+        /// static JobClient GetJobClient()
+        /// {
+        ///     try
+        ///     {
+        ///         var proxyHost = "localhost";
+        ///         var proxyPort = 8888;
+        ///         var transportSettings = new HttpTransportSettings()
+        ///         {
+        ///             Proxy = new WebProxy(proxyHost, proxyPort)
+        ///         };
+        ///         var jobClient = JobClient.CreateFromConnectionString("a connection string", transportSettings);
+        ///         return jobClient;
+        ///     }
+        ///     catch (Exception)
+        ///     {
+        ///         Console.WriteLine("Error creating client.");
+        ///         throw;
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
         public IWebProxy Proxy { get; set; }
 
         /// <summary>
