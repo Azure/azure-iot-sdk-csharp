@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
         /// <remarks>
-        /// Methods such as <see cref="ServiceClient.GetServiceStatisticsAsync(System.Threading.CancellationToken)"/> are executed over HTTP and not AMQP. This setting will ensure those methods are executed over the specified proxy. This setting is to be used in conjunction with the <see cref="AmqpProxy"/> property. This setting is only valid if <see cref="TransportType.Amqp_WebSocket_Only"/> is set. Or, if <see cref="TransportFallbackType"/>
+        /// Methods such as <see cref="ServiceClient.GetServiceStatisticsAsync(System.Threading.CancellationToken)"/> are executed over HTTP and not AMQP. This setting will ensure those methods are executed over the specified proxy. This setting is to be used in conjunction with the <see cref="AmqpProxy"/> property.
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
