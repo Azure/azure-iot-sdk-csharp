@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
         /// <remarks>
-        /// This setting is to be used in conjunction with the <see cref="HttpProxy"/> property.
+        /// This setting will be used when the client attempts to connect over web sockets. For example, if the client attempts to connect to IoT hub using <see cref="TransportType.Amqp"/> the client will first try over TCP. If that fails, the client will fall back to using web sockets and will use the proxy setting. This setting is to be used in conjunction with the <see cref="HttpProxy"/> property.
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
         /// <remarks>
-        /// Methods such as <see cref="ServiceClient.GetServiceStatisticsAsync(System.Threading.CancellationToken)"/> are executed over HTTP and not AMQP. This setting will ensure those methods are executed over the specified proxy. This setting is to be used in conjunction with the <see cref="AmqpProxy"/> property. 
+        /// Methods such as <see cref="ServiceClient.GetServiceStatisticsAsync(System.Threading.CancellationToken)"/> are executed over HTTP and not AMQP. This setting will ensure those methods are executed over the specified proxy. This setting is to be used in conjunction with the <see cref="AmqpProxy"/> property. This setting is only valid if <see cref="TransportType.Amqp_WebSocket_Only"/> is set. Or, if <see cref="TransportFallbackType"/>
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.

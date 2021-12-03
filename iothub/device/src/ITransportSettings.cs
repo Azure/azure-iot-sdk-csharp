@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
         /// <remarks>
-        /// This setting is only valid for <see cref="TransportType.Amqp_WebSocket_Only"/>, <see cref="TransportType.Mqtt_WebSocket_Only"/>, or <see cref="TransportType.Http1"/>.
+        /// This setting will be used when the client attempts to connect over web sockets. For example, if the client attempts to connect to IoT hub using <see cref="TransportType.Amqp"/> or <see cref="TransportType.Mqtt"/> the client will first try over TCP. If that fails, the client will fall back to using web sockets and will use the proxy setting. The setting will also be used when <see cref="TransportType.Amqp_WebSocket_Only"/>, <see cref="TransportType.Mqtt_WebSocket_Only"/>, or <see cref="TransportType.Http1"/> is specified. 
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
@@ -41,7 +41,8 @@ namespace Microsoft.Azure.Devices.Client
         ///     {
         ///         var proxyHost = "localhost";
         ///         var proxyPort = 8888;
-        ///         var transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_WebSocket_Only)
+        ///         // In the event the AMQP ports are blocked from this device, we will fall back to AMQP over web sockets
+        ///         var transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp)
         ///         {
         ///             Proxy = new WebProxy(proxyHost, proxyPort)
         ///         };
