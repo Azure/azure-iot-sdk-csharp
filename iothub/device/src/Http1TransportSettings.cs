@@ -45,9 +45,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         public TimeSpan DefaultReceiveTimeout => s_defaultOperationTimeout;
 
-        /// <summary>
-        /// Proxy information.
-        /// </summary>
+        /// <inheritdoc/>
         public IWebProxy Proxy { get; set; }
     }
 }

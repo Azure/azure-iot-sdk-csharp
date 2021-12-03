@@ -156,9 +156,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public X509Certificate2 ClientCertificate { get; set; }
 
-        /// <summary>
-        /// The proxy
-        /// </summary>
+        /// <inheritdoc/>
         public IWebProxy Proxy { get; set; }
 
         /// <summary>
