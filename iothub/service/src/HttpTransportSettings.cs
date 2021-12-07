@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The web proxy that will be used to connect to IoT Hub when using the HTTP protocol.
+        /// The web proxy that will be used to connect to IoT hub when using the HTTP protocol.
         /// </summary>
         /// <value>
         /// An instance of a class that implements <see cref="IWebProxy"/>.
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices
         ///     {
         ///         var proxyHost = "localhost";
         ///         var proxyPort = 8888;
-        ///         var transportSettings = new HttpTransportSettings()
+        ///         var transportSettings = new HttpTransportSettings
         ///         {
         ///             Proxy = new WebProxy(proxyHost, proxyPort)
         ///         };

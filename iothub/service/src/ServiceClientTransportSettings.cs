@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The web proxy that will be used to connect to IoT Hub when using the AMQP over web sockets.
+        /// The web proxy that will be used to connect to IoT hub when using the AMQP over web sockets.
         /// </summary>
         /// <value>
         /// An instance of a class that implements <see cref="IWebProxy"/>.
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices
         ///         var proxyHost = "localhost";
         ///         var proxyPort = 8888;
         ///         var proxy = new WebProxy(proxyHost, proxyPort);
-        ///         var transportSettings = new ServiceClientTransportSettings()
+        ///         var transportSettings = new ServiceClientTransportSettings
         ///         {
         ///             AmqpProxy = proxy,
         ///             HttpProxy = proxy
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
         public IWebProxy AmqpProxy { get; set; }
 
         /// <summary>
-        /// The web proxy that will be used to connect to IoT Hub when operations must execute over HTTP.
+        /// The web proxy that will be used to connect to IoT hub when operations must execute over HTTP.
         /// </summary>
         /// <value>
         /// An instance of a class that implements <see cref="IWebProxy"/>.
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices
         ///         var proxyHost = "localhost";
         ///         var proxyPort = 8888;
         ///         var proxy = new WebProxy(proxyHost, proxyPort);
-        ///         var transportSettings = new ServiceClientTransportSettings()
+        ///         var transportSettings = new ServiceClientTransportSettings
         ///         {
         ///             AmqpProxy = proxy,
         ///             HttpProxy = proxy

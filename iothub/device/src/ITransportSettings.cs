@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         TimeSpan DefaultReceiveTimeout { get; }
 
         /// <summary>
-        /// The web proxy that will be used to connect to IoT Hub using a web socket connection for AMQP or MQTT; or when using the HTTP protocol.
+        /// The web proxy that will be used to connect to IoT hub using a web socket connection for AMQP, MQTT, or when using the HTTP protocol.
         /// </summary>
         /// <value>
         /// An instance of a class that implements <see cref="IWebProxy"/>.
