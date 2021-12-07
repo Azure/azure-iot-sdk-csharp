@@ -81,6 +81,7 @@ namespace Microsoft.Azure.Devices
         ///             AmqpProxy = proxy,
         ///             HttpProxy = proxy
         ///         };
+        ///         // Specify the WebProxy to be used for the web socket connection
         ///         var serviceClient = ServiceClient.CreateFromConnectionString("a connection string", Microsoft.Azure.Devices.TransportType.Amqp_WebSocket_Only, transportSettings );
         ///         return serviceClient;
         ///     }

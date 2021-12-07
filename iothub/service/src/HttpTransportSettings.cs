@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
         /// <remarks>
-        /// This setting is only valid for the <see cref="JobClient"/> or the <see cref="RegistryManager"/>.
+        /// The <see cref="HttpTransportSettings"/> class is only used for the <see cref="JobClient"/> or the <see cref="RegistryManager"/>; so the proxy set here will only be valid for those clients.
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices
         ///         {
         ///             Proxy = new WebProxy(proxyHost, proxyPort)
         ///         };
+        ///         // Specify the WebProxy to be used for the HTTP connection
         ///         var jobClient = JobClient.CreateFromConnectionString("a connection string", transportSettings);
         ///         return jobClient;
         ///     }

@@ -41,8 +41,8 @@ namespace Microsoft.Azure.Devices.Client
         ///     {
         ///         var proxyHost = "localhost";
         ///         var proxyPort = 8888;
-        ///         // In the event the AMQP ports are blocked from this device, we will fall back to AMQP over web sockets
-        ///         var transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp)
+        ///         // Specify the WebProxy to be used for the web socket connection
+        ///         var transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_WebSocket_Only)
         ///         {
         ///             Proxy = new WebProxy(proxyHost, proxyPort)
         ///         };
