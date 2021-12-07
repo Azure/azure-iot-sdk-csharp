@@ -229,8 +229,8 @@ namespace Microsoft.Azure.Devices
 
         private DigitalTwinClient(string hostName, DigitalTwinServiceClientCredentials credentials, params DelegatingHandler[] handlers)
         {
-            var httpsEndpoint = new UriBuilder(HttpsEndpointPrefix, hostName).Uri;
-            var httpMessageHandler = HttpClientHelper.CreateDefaultHttpMessageHandler(null, httpsEndpoint, ServicePointHelpers.DefaultConnectionLeaseTimeout);
+            Uri httpsEndpoint = new UriBuilder(HttpsEndpointPrefix, hostName).Uri;
+            HttpMessageHandler httpMessageHandler = HttpClientHelper.CreateDefaultHttpMessageHandler(null, httpsEndpoint, ServicePointHelpers.DefaultConnectionLeaseTimeout);
 #pragma warning disable CA2000 // Dispose objects before losing scope (httpMessageHandlerWithDelegatingHandlers is disposed when the http client owning it is disposed)
             HttpMessageHandler httpMessageHandlerWithDelegatingHandlers = CreateHttpHandlerPipeline(httpMessageHandler, handlers);
 #pragma warning restore CA2000 // Dispose objects before losing scope

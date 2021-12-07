@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         [TestMethod]
         public void constructorAllowsBase64EncodedKeys()
         {
-            SymmetricKeyAttestation symmetricKeyAttestation = new SymmetricKeyAttestation(validKeyValue, validKeyValue2);
+            var symmetricKeyAttestation = new SymmetricKeyAttestation(validKeyValue, validKeyValue2);
 
             Assert.AreEqual(validKeyValue, symmetricKeyAttestation.PrimaryKey);
             Assert.AreEqual(validKeyValue2, symmetricKeyAttestation.SecondaryKey);
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "\"secondaryKey\":\"" + validKeyValue2 + "\"" +
                 "}";
 
-            SymmetricKeyAttestation symmetricKeyAttestation = new SymmetricKeyAttestation(validKeyValue, validKeyValue2);
+            var symmetricKeyAttestation = new SymmetricKeyAttestation(validKeyValue, validKeyValue2);
 
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(symmetricKeyAttestation);
 

@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string storageRootKey = null;
 
             // act - assert
-            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
+            var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string storageRootKey = "";
 
             // act - assert
-            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
+            var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string endorsementKey = Key;
 
             // act
-            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey);
+            var tpmAttestation = new TpmAttestation(endorsementKey);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string storageRootKey = Key;
 
             // act
-            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
+            var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "  \"endorsementKey\":\""+endorsementKey+"\"," +
                 "  \"storageRootKey\":\"" + storageRootKey + "\"" +
                 "}";
-            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
+            var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // act
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "{" +
                 "  \"endorsementKey\":\"" + endorsementKey + "\"" +
                 "}";
-            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey);
+            var tpmAttestation = new TpmAttestation(endorsementKey);
 
             // act
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "  \"endorsementKey\":\"" + endorsementKey + "\"," +
                 "  \"storageRootKey\":\"" + storageRootKey + "\"" +
                 "}";
-            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
+            var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // act
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);

@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client
                         string[] typeNames = value as string[];
                         if (typeNames != null && typeNames.Length > 0)
                         {
-                            List<Type> types = new List<Type>(typeNames.Length);
+                            var types = new List<Type>(typeNames.Length);
                             for (int i = 0; i < typeNames.Length; i++)
                             {
                                 types.Add(Type.GetType(typeNames[i], false));

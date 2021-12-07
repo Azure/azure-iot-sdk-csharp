@@ -882,10 +882,10 @@ namespace Microsoft.Azure.Devices
 #pragma warning disable CA2000 // Dispose objects before losing scope (object is returned by this method, so the caller is responsible for disposing it)
 #if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
             // SocketsHttpHandler is only available in netcoreapp2.1 and onwards
-            SocketsHttpHandler httpMessageHandler = new SocketsHttpHandler();
+            var httpMessageHandler = new SocketsHttpHandler();
             httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
 #else
-            HttpClientHandler httpMessageHandler = new HttpClientHandler();
+            var httpMessageHandler = new HttpClientHandler();
 #if !NET451
             httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;

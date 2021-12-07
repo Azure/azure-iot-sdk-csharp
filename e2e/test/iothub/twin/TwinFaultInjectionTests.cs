@@ -219,12 +219,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             TimeSpan delayInSec,
             string proxyAddress = null)
         {
-            var propName = Guid.NewGuid().ToString();
+            string propName = Guid.NewGuid().ToString();
             var props = new TwinCollection();
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                var propValue = Guid.NewGuid().ToString();
+                string propValue = Guid.NewGuid().ToString();
                 props[propName] = propValue;
 
                 await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue)
         {
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
@@ -273,10 +273,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
-            var propName = Guid.NewGuid().ToString();
+            string propName = Guid.NewGuid().ToString();
             var props = new TwinCollection();
 
             // Configure the callback and start accepting twin changes.
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // Change the twin from the service side and verify the device received it.
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
-                var propValue = Guid.NewGuid().ToString();
+                string propValue = Guid.NewGuid().ToString();
                 testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
 
                 Logger.Trace($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryAsync)}: name={propName}, value={propValue}");

@@ -51,10 +51,6 @@
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
-    <NoWarn></NoWarn>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="$(Common)\Logging.Common.cs">
       <LinkBase>Common</LinkBase>

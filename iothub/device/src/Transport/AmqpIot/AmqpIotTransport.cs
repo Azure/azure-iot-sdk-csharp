@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     || (Environment.OSVersion.Version.Major == 6
                         && Environment.OSVersion.Version.Minor <= 1))
                 {
-                    var websocket = await CreateLegacyClientWebSocketAsync(
+                    IotHubClientWebSocket websocket = await CreateLegacyClientWebSocketAsync(
                             websocketUri,
                             this._amqpTransportSettings.ClientCertificate,
                             cancellationToken)

@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task<bool> DoQueryHttpClient(string query)
         {
             string accessToken = await GetAccessToken().ConfigureAwait(false);
-            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _queryUri))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, _queryUri))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
                 request.Content = CreateRequestContent(query);
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 {
                     response.IsSuccessStatusCode.Should().BeTrue();
                     string responseAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    JObject responseBody = JObject.Parse(responseAsString);
+                    var responseBody = JObject.Parse(responseAsString);
                     return responseBody["tables"][0]["rows"].HasValues;
                 }
             }
@@ -111,11 +111,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private StringContent CreateRequestContent(string query)
         {
-            JObject body = new JObject();
+            var body = new JObject();
             body["query"] = query;
             body["timespan"] = TimeSpan.FromHours(2);
 
-            StringContent content = new StringContent(JsonConvert.SerializeObject(body));
+            var content = new StringContent(JsonConvert.SerializeObject(body));
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             return content;

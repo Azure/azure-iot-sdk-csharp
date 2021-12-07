@@ -53,9 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             public bool IsTransient(Exception ex)
             {
-                return ex is IotHubException
-                    ? ((IotHubException)ex).IsTransient
-                    : false;
+                return ex is IotHubException exception && exception.IsTransient;
             }
         }
 
@@ -837,8 +835,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
 
-                // Will throw on error.
-                await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
+                    // Will throw on error.
+                    await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -852,7 +850,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-                
+
         }
 
         // Triggered from connection loss event
