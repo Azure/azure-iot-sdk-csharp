@@ -20,7 +20,12 @@ param(
     # Set this to true if you are generating resources for the DevOps test pipeline.
     # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
     [Parameter()]
-    [bool] $GenerateResourcesForDevOpsPipeline
+    [bool] $GenerateResourcesForDevOpsPipeline,
+
+    # Set this to true if you would like to enable security solutions for your IoT Hub.
+    # Security solution for IoT Hub enables you to route security messages to a specific Log Analytics Workspace.
+    [Parameter()]
+    [bool] $EnableIotHubSecuritySolution
 )
 
 $startTime = (Get-Date)
@@ -31,6 +36,14 @@ $startTime = (Get-Date)
 
 $ErrorActionPreference = "Stop"
 $WarningActionPreference = "Continue"
+
+########################################################################################################
+# Log the values of optional parameters passed
+########################################################################################################
+
+Write-Host "`nInstallDependencies $InstallDependencies"
+Write-Host "`nGenerateResourcesForDevOpsPipeline $GenerateResourcesForDevOpsPipeline"
+Write-Host "`nEnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
 
 ###########################################################################
 # Connect-AzureSubscription - gets current Azure context or triggers a 
@@ -390,7 +403,8 @@ az deployment group create `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
     DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
     HubUnitsCount=$iothubUnitsToBeCreated `
-    UserAssignedManagedIdentityName=$managedIdentityName
+    UserAssignedManagedIdentityName=$managedIdentityName `
+    EnableIotHubSecuritySolution=$EnableIotHubSecuritySolution
 
 if ($LastExitCode -ne 0)
 {
