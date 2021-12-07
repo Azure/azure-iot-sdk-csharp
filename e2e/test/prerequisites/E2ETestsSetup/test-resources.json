@@ -1,13 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "metadata": {
-    "_generator": {
-      "name": "bicep",
-      "version": "0.3.255.40792",
-      "templateHash": "14804106350601198061"
-    }
-  },
   "parameters": {
     "ApplicationInsightsName": {
       "type": "string",
@@ -151,6 +144,13 @@
       "type": "string",
       "metadata": {
         "description": "The name of the user assigned managed identity."
+      }
+    },
+    "EnableIotHubSecuritySolution": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Flag to indicate if IoT hub should have security solution enabled."
       }
     }
   },
@@ -369,6 +369,7 @@
       ]
     },
     {
+      "condition": "[parameters('EnableIotHubSecuritySolution')]",
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2017-03-15-preview",
       "name": "[parameters('OperationalInsightsName')]",
@@ -376,6 +377,7 @@
       "properties": {}
     },
     {
+      "condition": "[parameters('EnableIotHubSecuritySolution')]",
       "type": "Microsoft.Security/iotSecuritySolutions",
       "apiVersion": "2019-08-01",
       "name": "[parameters('SecuritySolutionName')]",
@@ -518,7 +520,7 @@
     },
     "workspaceId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId]"
+      "value": "[if(parameters('EnableIotHubSecuritySolution'), reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId, '')]"
     },
     "customAllocationPolicyWebhook": {
       "type": "string",
@@ -531,6 +533,13 @@
     "instrumentationKey": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName')), '2015-05-01').InstrumentationKey]"
+    }
+  },
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.3.1.62928",
+      "templateHash": "129270437041242196"
     }
   }
 }
