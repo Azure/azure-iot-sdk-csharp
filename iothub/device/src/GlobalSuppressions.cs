@@ -32,7 +32,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage(
     "Style",
     "IDE0011:Add braces",
-    Justification = "Agreement in the team to keep this style as is.",
+    Justification = "Agreement in the team to keep this style as is for logging methods only.",
     Scope = "module")]
 [assembly: SuppressMessage(
     "CodeQuality",
