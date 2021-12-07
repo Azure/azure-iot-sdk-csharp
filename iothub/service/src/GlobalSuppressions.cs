@@ -7,6 +7,18 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "Not localizing", Scope = "module")]
-[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "SDK hides non-actionable errors from user", Scope = "module")]
-[assembly: SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "SDK throws a more descriptive argument exception message.", Scope = "module")]
+[assembly: SuppressMessage(
+    "Globalization",
+    "CA1303:Do not pass literals as localized parameters",
+    Justification = "Not localizing",
+    Scope = "module")]
+[assembly: SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "SDK hides non-actionable errors from user",
+    Scope = "module")]
+[assembly: SuppressMessage(
+    "Usage",
+    "CA2208:Instantiate argument exceptions correctly",
+    Justification = "SDK throws a more descriptive argument exception message.",
+    Scope = "module")]

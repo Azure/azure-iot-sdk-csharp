@@ -5,5 +5,13 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Missing Async suffix on test method names. To maintain VSO history we will ignore these naming issues.", Scope = "module")]
-[assembly: SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "Each frameworks consider certain suppressions required by other frameworks unnecessary.", Scope = "module")]
+[assembly: SuppressMessage(
+    "Style",
+    "IDE1006:Naming Styles",
+    Justification = "Missing Async suffix on test method names. Test method names may be misleading when they have the Async suffix. Additionally, not changing test names help to maintain ADO history.",
+    Scope = "module")]
+[assembly: SuppressMessage(
+    "CodeQuality",
+    "IDE0079:Remove unnecessary suppression",
+    Justification = "Each frameworks consider certain suppressions required by other frameworks unnecessary.",
+    Scope = "module")]
