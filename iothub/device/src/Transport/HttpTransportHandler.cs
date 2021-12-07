@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             TimeSpan timeout = timeoutHelper.GetRemainingTime();
             if (timeout > TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(timeoutHelper), "Http Protocol does not support a non-zero receive timeout");
+                throw new ArgumentOutOfRangeException(nameof(timeoutHelper), "HTTP Protocol does not support a non-zero receive timeout.");
             }
             else
             {
@@ -400,12 +400,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task<T> GetClientTwinPropertiesAsync<T>(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("This operation is not supported over HTTP. Please use MQTT protocol instead.");
+            throw new NotImplementedException("This operation is not supported over HTTP. Please use MQTT or AMQP protocol instead.");
         }
 
         public override Task<ClientPropertiesUpdateResponse> SendClientTwinPropertyPatchAsync(Stream reportedProperties, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("This operation is not supported over HTTP. Please use MQTT protocol instead.");
+            throw new NotImplementedException("This operation is not supported over HTTP. Please use MQTT or AMQP protocol instead.");
         }
 
         // This is for invoking methods from an edge module to another edge device or edge module.

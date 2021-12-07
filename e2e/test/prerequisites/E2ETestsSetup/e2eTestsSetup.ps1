@@ -15,12 +15,17 @@ param(
 
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
-    [bool] $InstallDependencies,
+    [switch] $InstallDependencies,
 
-    # Set this to true if you are generating resources for the DevOps test pipeline.
+    # Set this if you are generating resources for the DevOps test pipeline.
     # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
     [Parameter()]
-    [bool] $GenerateResourcesForDevOpsPipeline
+    [switch] $GenerateResourcesForDevOpsPipeline,
+
+    # Set this if you would like to enable security solutions for your IoT Hub.
+    # Security solution for IoT Hub enables you to route security messages to a specific Log Analytics Workspace.
+    [Parameter()]
+    [switch] $EnableIotHubSecuritySolution
 )
 
 $startTime = (Get-Date)
@@ -31,6 +36,14 @@ $startTime = (Get-Date)
 
 $ErrorActionPreference = "Stop"
 $WarningActionPreference = "Continue"
+
+########################################################################################################
+# Log the values of optional parameters passed
+########################################################################################################
+
+Write-Host "`nInstallDependencies $InstallDependencies"
+Write-Host "`GenerateResourcesForDevOpsPipeline $GenerateResourcesForDevOpsPipeline"
+Write-Host "`EnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
 
 ###########################################################################
 # Connect-AzureSubscription - gets current Azure context or triggers a 
@@ -390,7 +403,8 @@ az deployment group create `
     DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
     DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
     HubUnitsCount=$iothubUnitsToBeCreated `
-    UserAssignedManagedIdentityName=$managedIdentityName
+    UserAssignedManagedIdentityName=$managedIdentityName `
+    EnableIotHubSecuritySolution=$EnableIotHubSecuritySolution
 
 if ($LastExitCode -ne 0)
 {
