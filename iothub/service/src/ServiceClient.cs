@@ -140,7 +140,6 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
         /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
         public static ServiceClient Create(
             string hostName,
             TokenCredential credential,
