@@ -272,7 +272,9 @@ namespace Microsoft.Azure.Devices
         {
             Logging.Enter(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
 
-            await _faultTolerantSendingLink.OpenAsync(_openTimeout).ConfigureAwait(false);
+            using var ctx = new CancellationTokenSource(_openTimeout);
+
+            await _faultTolerantSendingLink.OpenAsync(ctx.Token).ConfigureAwait(false);
             await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
 
             Logging.Exit(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
