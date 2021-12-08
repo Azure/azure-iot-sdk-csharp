@@ -232,9 +232,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </summary>
         public X509Certificate ClientCertificate { get; set; }
 
-        /// <summary>
-        /// The proxy settings to be used when communicating with IoT Hub.
-        /// </summary>
+        /// <inheritdoc/>
         public IWebProxy Proxy { get; set; }
 
         /// <summary>
