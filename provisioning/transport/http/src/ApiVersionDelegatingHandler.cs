@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Logging.Enter(this, $"{request.RequestUri}", nameof(SendAsync));
             }
 
-            var valueCollection = HttpUtility.ParseQueryString(request.RequestUri.Query);
+            System.Collections.Specialized.NameValueCollection valueCollection = HttpUtility.ParseQueryString(request.RequestUri.Query);
             valueCollection[ClientApiVersionHelper.ApiVersionName] = ClientApiVersionHelper.ApiVersion;
 
             var builder = new UriBuilder(request.RequestUri)

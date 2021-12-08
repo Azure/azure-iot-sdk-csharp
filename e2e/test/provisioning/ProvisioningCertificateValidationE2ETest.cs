@@ -20,12 +20,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
-            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(
+            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(
                 TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
             Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
                 new QuerySpecification("SELECT * FROM enrollmentGroups"));
 
-            var exception = await Assert.ThrowsExceptionAsync<ProvisioningServiceClientTransportException>(
+            ProvisioningServiceClientTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningServiceClientTransportException>(
                 () => q.NextAsync()).ConfigureAwait(false);
 
 #if NET472 || NET451
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly);
-            var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+            ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException, typeof(AuthenticationException));
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly);
-            var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+            ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
             if (exception.InnerException == null)
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateHttp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerHttp();
-            var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+            ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
 #if NET472 || NET451
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             using var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly);
-            var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+            ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             using var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly);
-            var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+            ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using X509Certificate2 cert = TestConfiguration.Provisioning.GetIndividualEnrollmentCertificate();
             using var security = new SecurityProviderX509Certificate(cert);
-            ProvisioningDeviceClient provisioningDeviceClient = ProvisioningDeviceClient.Create(
+            var provisioningDeviceClient = ProvisioningDeviceClient.Create(
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",
                 security,

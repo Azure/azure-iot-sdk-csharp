@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task RegistryManager_BadProxy_ThrowsException()
         {
             // arrange
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(
+            using var registryManager = RegistryManager.CreateFromConnectionString(
                 TestConfiguration.IoTHub.ConnectionString,
                 new HttpTransportSettings
                 {
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             string deviceId = _idPrefix + Guid.NewGuid();
 
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             var twin = new Twin
             {
                 Tags = new TwinCollection(@"{ companyId: 1234 }"),
@@ -120,13 +120,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var devices = new List<Device>();
             for (int i = 0; i < bulkCount; i++)
             {
-                var device = new Device(_idPrefix + Guid.NewGuid());
-                device.Scope = "someScope" + Guid.NewGuid();
+                var device = new Device(_idPrefix + Guid.NewGuid())
+                {
+                    Scope = "someScope" + Guid.NewGuid()
+                };
+
                 device.ParentScopes.Add("someParentScope" + Guid.NewGuid());
                 devices.Add(device);
             }
 
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             // Test that you can create devices in bulk
             BulkRegistryOperationResult bulkAddResult = await registryManager.AddDevices2Async(devices).ConfigureAwait(false);
@@ -183,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
             };
 
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, transportSettings);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, transportSettings);
             var device = new Device(deviceId);
             await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
         }
@@ -195,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             bool configCreated = false;
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
-            using RegistryManager client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -260,7 +263,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task RegistryManager_Query_Works()
         {
             // arrange
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             string deviceId = $"{_idPrefix}{Guid.NewGuid()}";
 
             try
@@ -312,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
 
             Device device = null;
-            using RegistryManager client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -355,7 +358,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
             string testModuleId = $"IdentityLifecycleModule{Guid.NewGuid()}";
 
-            using RegistryManager client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -398,7 +401,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task ModulesClient_DeviceTwinLifecycle()
         {
-            using RegistryManager client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             TestModule module = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix, Logger).ConfigureAwait(false);
 
             try
@@ -427,7 +430,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        private async Task CleanupAsync(RegistryManager client, string deviceId)
+        private static async Task CleanupAsync(RegistryManager client, string deviceId)
         {
             // cleanup
             try

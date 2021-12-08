@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Common
             if (wrapped)
             {
                 // Wrapped around the circular buffer.  Create a new, bigger IOThreadScheduler.
-                IOThreadScheduler next =
+                var next =
                     new IOThreadScheduler(Math.Min(this.slots.Length * 2, MaximumCapacity), this.slotsLowPri.Length);
                 Interlocked.CompareExchange<IOThreadScheduler>(ref IOThreadScheduler.current, next, this);
             }
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.Common
 
             if (wrapped)
             {
-                IOThreadScheduler next =
+                var next =
                     new IOThreadScheduler(this.slots.Length, Math.Min(this.slotsLowPri.Length * 2, MaximumCapacity));
                 Interlocked.CompareExchange<IOThreadScheduler>(ref IOThreadScheduler.current, next, this);
             }

@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         private async Task<Socket> GetConnectedSocketAsync()
         {
-            Socket socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+            var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
 
             // The Edge Agent uses unix sockets for communication with the modules deployed in docker for HSM.
             // For netstandard 2.0 there was no implementation for a Unix Domain Socket (UDS) so we used a version

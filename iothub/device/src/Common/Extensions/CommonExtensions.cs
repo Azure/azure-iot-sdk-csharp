@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             // note that this only works if we are hosted as an OWIN app
             if (requestMessage.Properties.ContainsKey("MS_OwinContext"))
             {
-                OwinContext owinContext = requestMessage.Properties["MS_OwinContext"] as OwinContext;
+                var owinContext = requestMessage.Properties["MS_OwinContext"] as OwinContext;
                 if (owinContext != null)
                 {
                     string remoteIpAddress = owinContext.Request.RemoteIpAddress;

@@ -118,10 +118,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryCertificate()
         {
             // arrange
-            X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromClientCertificates(primary);
+            var attestation = X509Attestation.CreateFromClientCertificates(primary);
             primary.Dispose();
 
             // assert
@@ -135,11 +135,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryCertificates()
         {
             // arrange
-            X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
-            X509Certificate2 secondary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var secondary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
+            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
             primary.Dispose();
             secondary.Dispose();
 
@@ -154,11 +154,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryNullCertificates()
         {
             // arrange
-            X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
             X509Certificate2 secondary = null;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
+            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
             primary.Dispose();
 
             // assert
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromClientCertificates(primary);
+            var attestation = X509Attestation.CreateFromClientCertificates(primary);
 
             // assert
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = PUBLIC_KEY_CERTIFICATE_STRING;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
+            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
 
             // assert
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = null;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
+            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
 
             // assert
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
@@ -223,10 +223,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryCertificate()
         {
             // arrange
-            X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromRootCertificates(primary);
+            var attestation = X509Attestation.CreateFromRootCertificates(primary);
             primary.Dispose();
 
             // assert
@@ -240,11 +240,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryCertificates()
         {
             // arrange
-            X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
-            X509Certificate2 secondary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var secondary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
+            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
             primary.Dispose();
             secondary.Dispose();
 
@@ -259,11 +259,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryNullCertificates()
         {
             // arrange
-            X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
             X509Certificate2 secondary = null;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
+            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
             primary.Dispose();
 
             // assert
@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromRootCertificates(primary);
+            var attestation = X509Attestation.CreateFromRootCertificates(primary);
 
             // assert
             Assert.IsNotNull(attestation.RootCertificates.Primary);
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = PUBLIC_KEY_CERTIFICATE_STRING;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
+            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
 
             // assert
             Assert.IsNotNull(attestation.RootCertificates.Primary);
@@ -314,7 +314,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = null;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
+            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
 
             // assert
             Assert.IsNotNull(attestation.RootCertificates.Primary);
@@ -345,7 +345,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string primary = CA_REFERENCE_STRING;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromCAReferences(primary);
+            var attestation = X509Attestation.CreateFromCAReferences(primary);
 
             // assert
             Assert.IsNotNull(attestation.CAReferences.Primary);
@@ -362,7 +362,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = CA_REFERENCE_STRING;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromCAReferences(primary, secondary);
+            var attestation = X509Attestation.CreateFromCAReferences(primary, secondary);
 
             // assert
             Assert.IsNotNull(attestation.CAReferences.Primary);
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = null;
 
             // act
-            X509Attestation attestation = X509Attestation.CreateFromCAReferences(primary, secondary);
+            var attestation = X509Attestation.CreateFromCAReferences(primary, secondary);
 
             // assert
             Assert.IsNotNull(attestation.CAReferences.Primary);

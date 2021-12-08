@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             unchecked
             {
-                var hashCode = _endorsementKey != null ? _endorsementKey.GetHashCode() : 0;
+                int hashCode = _endorsementKey != null ? _endorsementKey.GetHashCode() : 0;
                 hashCode = (hashCode * 397) ^ (_storageRootKey != null ? _storageRootKey.GetHashCode() : 0);
 #if NETSTANDARD2_1
                 hashCode = (hashCode * 397) ^ (_idScope != null ? _idScope.GetHashCode(StringComparison.Ordinal) : 0);
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override void OnChallenge(SaslChallenge challenge)
         {
-            var challengeAction = GetChallengeAction(challenge);
+            SaslChallengeAction challengeAction = GetChallengeAction(challenge);
 
             switch (challengeAction)
             {
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 _hostName,
                 _nonceBuffer);
 
-            var responseBuffer = new byte[sas.Length + 1];
+            byte[] responseBuffer = new byte[sas.Length + 1];
             responseBuffer[0] = 0x0;
             Buffer.BlockCopy(Encoding.UTF8.GetBytes(sas), 0, responseBuffer, 1, sas.Length);
 
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void SaveEncodedNonceSegment(SaslChallenge saslChallenge)
         {
-            var sequenceNumber = GetSequenceNumber(saslChallenge);
+            byte sequenceNumber = GetSequenceNumber(saslChallenge);
             if (_nextSequenceNumber != sequenceNumber)
             {
                 throw new AmqpException(AmqpErrorCode.InvalidField,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private byte[] CreateStorageRootKeyMessage()
         {
-            var responseBuffer = new byte[_storageRootKey.Length + 1];
+            byte[] responseBuffer = new byte[_storageRootKey.Length + 1];
             responseBuffer[0] = 0x0;
             Buffer.BlockCopy(_storageRootKey, 0, responseBuffer, 1, _storageRootKey.Length);
             return responseBuffer;
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private static SaslChallengeAction GetChallengeAction(SaslChallenge saslChallenge)
         {
-            var challengeBytes = saslChallenge.Challenge.Array;
+            byte[] challengeBytes = saslChallenge.Challenge.Array;
 
             if (challengeBytes == null || challengeBytes.Length == 0)
             {
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private byte[] CreateSaslInitMessage(SaslInit init)
         {
             init.HostName = _hostName;
-            StringBuilder initContent = new StringBuilder();
+            var initContent = new StringBuilder();
             initContent.Append(_idScope);
             initContent.Append('\0');
             initContent.Append(_security.GetRegistrationID());
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             byte[] initContentInBytes = Encoding.UTF8.GetBytes(initContent.ToString());
 
-            var responseBuffer = new byte[initContentInBytes.Length + _endorsementKey.Length + 1];
+            byte[] responseBuffer = new byte[initContentInBytes.Length + _endorsementKey.Length + 1];
             responseBuffer[0] = 0x0;
             Buffer.BlockCopy(initContentInBytes, 0, responseBuffer, 1, initContentInBytes.Length);
             Buffer.BlockCopy(_endorsementKey, 0, responseBuffer, initContentInBytes.Length + 1, _endorsementKey.Length);

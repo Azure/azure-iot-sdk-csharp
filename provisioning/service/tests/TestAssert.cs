@@ -98,8 +98,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             for (int index = 0; index < expectedJObject.Count; index++)
             {
-                var expectedItem = expectedJObject[index];
-                var actualItem = actualJObject[index];
+                JToken expectedItem = expectedJObject[index];
+                JToken actualItem = actualJObject[index];
                 if (expectedItem.Type == JTokenType.Object)
                 {
                     AreEqual((JObject)expectedItem, (JObject)actualItem);

@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 int secondsToWait;
                 if (int.TryParse(retryAfter.ToString(), out secondsToWait))
                 {
-                    TimeSpan serviceRecommendedDelay = TimeSpan.FromSeconds(secondsToWait);
+                    var serviceRecommendedDelay = TimeSpan.FromSeconds(secondsToWait);
 
                     if (serviceRecommendedDelay.TotalSeconds < defaultInterval.TotalSeconds)
                     {

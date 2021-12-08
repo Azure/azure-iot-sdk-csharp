@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.Shared
                         break;
 
                     case CapabilitiesJsonTag:
-                        var capabilitiesDictionary = serializer.Deserialize<Dictionary<string, object>>(reader);
+                        Dictionary<string, object> capabilitiesDictionary = serializer.Deserialize<Dictionary<string, object>>(reader);
                         twin.Capabilities = new DeviceCapabilities
                         {
                             IotEdge = capabilitiesDictionary.ContainsKey(IotEdgeName) && (bool)capabilitiesDictionary[IotEdgeName]
