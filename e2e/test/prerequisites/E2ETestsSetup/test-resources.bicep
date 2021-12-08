@@ -65,6 +65,9 @@ param ContainerName string = 'fileupload'
 @description('The name of the user assigned managed identity.')
 param UserAssignedManagedIdentityName string
 
+@description('Flag to indicate if IoT hub should have security solution enabled.')
+param EnableIotHubSecuritySolution bool = false
+
 var hubKeysId = resourceId('Microsoft.Devices/IotHubs/Iothubkeys', HubName, 'iothubowner')
 var farHubKeysId =  resourceId('Microsoft.Devices/IotHubs/Iothubkeys', FarHubName, 'iothubowner')
 var dpsKeysId = resourceId('Microsoft.Devices/ProvisioningServices/keys', DpsName, 'provisioningserviceowner')
@@ -254,14 +257,14 @@ resource provisioningService 'Microsoft.Devices/provisioningServices@2017-11-15'
   }
 }
 
-resource operationalInsightsWorkspaces 'Microsoft.OperationalInsights/workspaces@2017-03-15-preview' = {
+resource operationalInsightsWorkspaces 'Microsoft.OperationalInsights/workspaces@2017-03-15-preview' = if (EnableIotHubSecuritySolution) {
   name: OperationalInsightsName
   location: OperationInsightsLocation
   properties: {
   }
 }
 
-resource iotSecuritySolution 'Microsoft.Security/IoTSecuritySolutions@2019-08-01' = {
+resource iotSecuritySolution 'Microsoft.Security/IoTSecuritySolutions@2019-08-01' = if (EnableIotHubSecuritySolution) {
   name: SecuritySolutionName
   location: resourceGroup().location
   properties: {
@@ -366,7 +369,7 @@ output farHubConnectionString string = 'HostName=${FarHubName}.azure-devices.net
 output dpsName string = DpsName
 output dpsConnectionString string = 'HostName=${DpsName}.azure-devices-provisioning.net;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=${listkeys(dpsKeysId, '2017-11-15').primaryKey}'
 output storageAccountConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${StorageAccountName};AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value};EndpointSuffix=core.windows.net'
-output workspaceId string = '${reference(operationalInsightsWorkspaces.id, '2017-03-15-preview').customerId}'
+output workspaceId string = (EnableIotHubSecuritySolution) ? '${reference(operationalInsightsWorkspaces.id, '2017-03-15-preview').customerId}' : ''
 output customAllocationPolicyWebhook string = 'https://${WebsiteName}.azurewebsites.net/api/${DpsCustomAllocatorFunctionName}?code=${listkeys(functionKeysId, '2019-08-01').default}'
 output keyVaultName string = KeyVaultName
 output instrumentationKey string = reference(applicationInsights.id, '2015-05-01').InstrumentationKey
