@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
@@ -235,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // If a message is received when the state is Connected or a CONNACK is received when the state is Connecting, then the message should be processed.
             if (IsInState(StateFlags.Connected) || IsInState(StateFlags.Connecting) && packet.PacketType == PacketType.CONNACK)
             {
-                ProcessMessage(context, packet);
+                ProcessMessageAsync(context, packet);
             }
             else
             {
@@ -697,10 +698,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         #region Receiving
 
-        private async void ProcessMessage(IChannelHandlerContext context, Packet packet)
+        private async void ProcessMessageAsync(IChannelHandlerContext context, Packet packet)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, context.Name, packet.PacketType, nameof(ProcessMessage));
+                Logging.Enter(this, context.Name, packet.PacketType, nameof(ProcessMessageAsync));
 
             try
             {
@@ -732,7 +733,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     default:
                         if (Logging.IsEnabled)
-                            Logging.Error(context, $"Received an unexpected packet type {packet.PacketType}, will shut down.", nameof(ProcessMessage));
+                            Logging.Error(context, $"Received an unexpected packet type {packet.PacketType}, will shut down.", nameof(ProcessMessageAsync));
 
                         ShutdownOnErrorAsync(context, new InvalidOperationException($"Unexpected packet type {packet.PacketType}"));
                         break;
@@ -741,18 +742,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             catch (Exception ex) when (!ex.IsFatal())
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(context, $"Received a non-fatal exception while processing a received packet of type {packet.PacketType}, will shut down: {ex}", nameof(ProcessMessage));
+                    Logging.Error(context, $"Received a non-fatal exception while processing a received packet of type {packet.PacketType}, will shut down: {ex}", nameof(ProcessMessageAsync));
 
                 ShutdownOnErrorAsync(context, ex);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, context.Name, packet.PacketType, nameof(ProcessMessage));
+                    Logging.Exit(this, context.Name, packet.PacketType, nameof(ProcessMessageAsync));
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Reliability",
             "CA2000:Dispose objects before losing scope",
             Justification = "The created message is handed to the user and the user application is in charge of disposing the message.")]

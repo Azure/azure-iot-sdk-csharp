@@ -30,10 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public IDelegatingHandler InnerHandler
         {
-            get
-            {
-                return _innerHandler;
-            }
+            get => _innerHandler;
             protected set
             {
                 _innerHandler = value;

@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             Validate();
 
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, HostName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);

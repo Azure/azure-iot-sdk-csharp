@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices.Common
                 throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
             }
 
-            KeyValuePair<TKey, TValue>[] pairs = array as KeyValuePair<TKey, TValue>[];
+            var pairs = array as KeyValuePair<TKey, TValue>[];
             if (pairs != null)
             {
                 Dictionary.CopyTo(pairs, index);
@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.Common
 
                     try
                     {
-                        foreach (var item in Dictionary)
+                        foreach (KeyValuePair<TKey, TValue> item in Dictionary)
                         {
                             objects[index++] = new KeyValuePair<TKey, TValue>(item.Key, item.Value);
                         }

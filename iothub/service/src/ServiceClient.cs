@@ -49,10 +49,10 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class ServiceClient : IDisposable
     {
-        private const string _statisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string _purgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string _deviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string _moduleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrEmpty(hostName))
             {
-                throw new ArgumentNullException($"{nameof(hostName)},  Parameter cannot be null or empty");
+                throw new ArgumentNullException($"{nameof(hostName)}, Parameter cannot be null or empty");
             }
 
             if (credential == null)
@@ -607,25 +607,25 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetStatisticsUri()
         {
-            return new Uri(_statisticsUriFormat, UriKind.Relative);
+            return new Uri(StatisticsUriFormat, UriKind.Relative);
         }
 
         private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
         {
-            return new Uri(_purgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(_deviceMethodUriFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri(DeviceMethodUriFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
         private static Uri GetModuleMethodUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(_moduleMethodUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
+            return new Uri(ModuleMethodUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests
         public void RetryJitterGeneratedDelayLargerOrEqualToDefaultDelay()
         {
             int expectedMinimumDelay = 2;
-            TimeSpan DefaultDelay = TimeSpan.FromSeconds(expectedMinimumDelay);
+            var DefaultDelay = TimeSpan.FromSeconds(expectedMinimumDelay);
             TimeSpan GeneratedDelay = RetryJitter.GenerateDelayWithJitterForRetry(DefaultDelay);
             Assert.IsNotNull(GeneratedDelay);
             Assert.IsTrue(GeneratedDelay.Seconds >= DefaultDelay.Seconds);
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests
         {
             //current maximum jitter delay is 5 seconds, may change in the future
             int expectedMinimumDelay = 0;
-            TimeSpan DefaultDelay = TimeSpan.FromSeconds(expectedMinimumDelay);
+            var DefaultDelay = TimeSpan.FromSeconds(expectedMinimumDelay);
             TimeSpan GeneratedDelay = RetryJitter.GenerateDelayWithJitterForRetry(DefaultDelay);
             Assert.IsNotNull(GeneratedDelay);
             Assert.IsTrue(GeneratedDelay.Seconds <= 5);

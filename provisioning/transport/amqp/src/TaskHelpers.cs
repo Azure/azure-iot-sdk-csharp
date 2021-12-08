@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public static void EndAsyncResult(IAsyncResult asyncResult)
         {
-            Task task = asyncResult as Task;
+            var task = asyncResult as Task;
             if (task == null)
             {
                 throw new ArgumentException($"Given {nameof(asyncResult)} is not subclass of Task.");

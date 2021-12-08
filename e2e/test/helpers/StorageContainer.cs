@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private async Task InitializeAsync()
         {
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(TestConfiguration.Storage.ConnectionString);
+            var storageAccount = CloudStorageAccount.Parse(TestConfiguration.Storage.ConnectionString);
             CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
             CloudBlobContainer = cloudBlobClient.GetContainerReference(ContainerName);
             await CloudBlobContainer.CreateIfNotExistsAsync().ConfigureAwait(false);

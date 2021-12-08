@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void AttestationMechanismConstructorSucceedOnTPMAttestation()
         {
             // arrange - act
-            AttestationMechanism attestationMechanism = new AttestationMechanism(SampleTpmAttestation);
+            var attestationMechanism = new AttestationMechanism(SampleTpmAttestation);
 
             // assert
             Assert.IsNotNull(attestationMechanism);
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void AttestationMechanismConstructorThrowsOnUnknownAttestation()
         {
             // arrange
-            UnknownAttestation unknownAttestation = new UnknownAttestation();
+            var unknownAttestation = new UnknownAttestation();
 
             // act - assert
             TestAssert.Throws<ArgumentException>(() => new AttestationMechanism(unknownAttestation));
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void AttestationMechanismConstructorSucceedOnX509Attestation()
         {
             // arrange - act
-            AttestationMechanism attestationMechanism = new AttestationMechanism(SampleX509RootAttestation);
+            var attestationMechanism = new AttestationMechanism(SampleX509RootAttestation);
 
             // assert
             Assert.IsNotNull(attestationMechanism);
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestationMechanism);
             Assert.IsTrue(attestationMechanism.Type == AttestationMechanismType.SymmetricKey);
             Assert.IsTrue(attestationMechanism.GetAttestation() is SymmetricKeyAttestation);
-            SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation) attestationMechanism.GetAttestation();
+            var symmetricKeyAttestation = (SymmetricKeyAttestation) attestationMechanism.GetAttestation();
 
             Assert.AreEqual(samplePrimaryKey, symmetricKeyAttestation.PrimaryKey);
             Assert.AreEqual(sampleSecondaryKey, symmetricKeyAttestation.SecondaryKey);

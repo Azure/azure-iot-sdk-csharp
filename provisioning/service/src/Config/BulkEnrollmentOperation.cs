@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             /* SRS_BULK_OPERATION_21_002: [The toJson shall return a String with the mode and the collection of individualEnrollments 
                                             using a JSON format.] */
-            BulkOperation bulkOperation = new BulkOperation() { Mode = mode, Enrollments = individualEnrollments };
+            var bulkOperation = new BulkOperation() { Mode = mode, Enrollments = individualEnrollments };
             return Newtonsoft.Json.JsonConvert.SerializeObject(bulkOperation);
         }
     }

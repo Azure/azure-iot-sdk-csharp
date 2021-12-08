@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests
         public void GetRetryAfterFromApplicationPropertiesSuccess()
         {
             int expectedRetryAfter = 42;
-            using AmqpMessage amqpResponse = AmqpMessage.Create();
+            using var amqpResponse = AmqpMessage.Create();
             amqpResponse.ApplicationProperties = new ApplicationProperties();
             amqpResponse.ApplicationProperties.Map.Add(new MapKey("Retry-After"), expectedRetryAfter);
             TimeSpan? actual = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultInterval);
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests
         public void GetRetryAfterFromApplicationPropertiesReturnsDefaultIfRetryAfterValueIsNegative()
         {
             int expectedRetryAfter = -1;
-            using AmqpMessage amqpResponse = AmqpMessage.Create();
+            using var amqpResponse = AmqpMessage.Create();
             amqpResponse.ApplicationProperties = new ApplicationProperties();
             amqpResponse.ApplicationProperties.Map.Add(new MapKey("Retry-After"), expectedRetryAfter);
             TimeSpan? actual = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultInterval);
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests
         public void GetRetryAfterFromApplicationPropertiesReturnsDefaultIfRetryAfterValueIsZero()
         {
             int expectedRetryAfter = 0;
-            using AmqpMessage amqpResponse = AmqpMessage.Create();
+            using var amqpResponse = AmqpMessage.Create();
             amqpResponse.ApplicationProperties = new ApplicationProperties();
             amqpResponse.ApplicationProperties.Map.Add(new MapKey("Retry-After"), expectedRetryAfter);
             TimeSpan? actual = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultInterval);
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests
         [TestMethod]
         public void GetRetryAfterFromApplicationPropertiesReturnsNullIfNoRetryAfterApplicationProperty()
         {
-            using AmqpMessage amqpResponse = AmqpMessage.Create();
+            using var amqpResponse = AmqpMessage.Create();
             amqpResponse.ApplicationProperties = new ApplicationProperties();
             TimeSpan? actual = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultInterval);
             Assert.IsNull(actual);
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests
         [TestMethod]
         public void GetRetryAfterFromApplicationPropertiesReturnsNullIfNoApplicationProperties()
         {
-            using AmqpMessage amqpResponse = AmqpMessage.Create();
+            using var amqpResponse = AmqpMessage.Create();
             TimeSpan? actual = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultInterval);
             Assert.IsNull(actual);
         }

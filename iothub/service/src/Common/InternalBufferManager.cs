@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Common
             {
                 this.tuningLock = new object();
                 this.remainingMemory = maxMemoryToPool;
-                List<BufferPool> bufferPoolList = new List<BufferPool>();
+                var bufferPoolList = new List<BufferPool>();
 
                 for (int bufferSize = minBufferSize; ;)
                 {
@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices.Common
             {
                 BufferPool oldBufferPool = bufferPool;
                 int newLimit = oldBufferPool.Limit + delta;
-                BufferPool newBufferPool = BufferPool.CreatePool(oldBufferPool.BufferSize, newLimit);
+                var newBufferPool = BufferPool.CreatePool(oldBufferPool.BufferSize, newLimit);
                 for (int i = 0; i < newLimit; i++)
                 {
                     byte[] buffer = oldBufferPool.Take();

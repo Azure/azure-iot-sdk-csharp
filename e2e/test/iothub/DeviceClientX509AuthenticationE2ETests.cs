@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.IoTHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
-            using DeviceClient deviceClient = DeviceClient.Create(
+            using var deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
                 DeviceTransportType.Mqtt_Tcp_Only);
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.IoTHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
-            using DeviceClient deviceClient = DeviceClient.Create(
+            using var deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
                 DeviceTransportType.Amqp_Tcp_Only);
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using DeviceClient deviceClient = DeviceClient.Create(_hostName, auth, transportType);
+            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
 
             try
             {
@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using DeviceClient deviceClient = DeviceClient.Create(_hostName, auth, transportType);
+            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
 
             for (int i = 0; i < 2; i++)
             {

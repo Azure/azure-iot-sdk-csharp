@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION);
 
             // act
-            var x509CertificateWithInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateWithInfo>(json);
+            X509CertificateWithInfo x509CertificateWithInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateWithInfo>(json);
 
             // assert
             Assert.IsNotNull(x509CertificateWithInfo.Info);

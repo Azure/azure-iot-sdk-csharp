@@ -4,14 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
@@ -559,7 +557,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
-            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+            var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 security,
@@ -577,14 +575,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 try
                 {
-                    if (timeout != TimeSpan.MaxValue)
-                    {
-                        result = await provClient.RegisterAsync(timeout).ConfigureAwait(false);
-                    }
-                    else
-                    { 
-                        result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                    }
+                    result = timeout != TimeSpan.MaxValue
+                        ? await provClient.RegisterAsync(timeout).ConfigureAwait(false)
+                        : await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                     break;
                 }
                 // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
@@ -653,7 +646,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
-            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+            var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 security,
@@ -720,7 +713,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
             using SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid");
-            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+            var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 security,
@@ -829,7 +822,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
             using SecurityProvider security = await CreateSecurityProviderFromNameAsync(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
-            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+            var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 InvalidIdScope,
                 security,
@@ -837,7 +830,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-            var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+            ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
 
             Logger.Trace($"Exception: {exception}");
@@ -887,7 +880,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
             using SecurityProvider security = await CreateSecurityProviderFromNameAsync(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
 
-            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+            var provClient = ProvisioningDeviceClient.Create(
                 InvalidGlobalAddress,
                 TestConfiguration.Provisioning.IdScope,
                 security,
@@ -936,7 +929,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary
         private async Task ConfirmRegisteredDeviceWorksAsync(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, Client.TransportType transportProtocol, bool sendReportedPropertiesUpdate)
         {
-            using DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol);
+            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol);
             Logger.Trace("DeviceClient OpenAsync.");
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
@@ -955,14 +948,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await iotClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task ConfirmExpectedDeviceCapabilitiesAsync(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, DeviceCapabilities capabilities)
+        private static async Task ConfirmExpectedDeviceCapabilitiesAsync(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, DeviceCapabilities capabilities)
         {
             if (capabilities != null && capabilities.IotEdge)
             {
                 //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
-                Client.IotHubConnectionStringBuilder connectionStringBuilder = Client.IotHubConnectionStringBuilder.Create(result.AssignedHub, auth);
+                var connectionStringBuilder = Client.IotHubConnectionStringBuilder.Create(result.AssignedHub, auth);
                 string edgehubConnectionString = connectionStringBuilder.ToString() + ";ModuleId=$edgeHub";
-                using ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(edgehubConnectionString);
+                using var moduleClient = ModuleClient.CreateFromConnectionString(edgehubConnectionString);
                 await moduleClient.OpenAsync().ConfigureAwait(false);
             }
         }
@@ -971,7 +964,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");
 
-            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
 
             switch (attestationType)
             {
@@ -1016,7 +1009,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         case EnrollmentType.Group:
                             EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, AttestationMechanismType.SymmetricKey, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, capabilities).ConfigureAwait(false);
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
-                            SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
+                            var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
                             string registrationIdSymmetricKey = _idPrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;

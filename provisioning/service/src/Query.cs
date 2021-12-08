@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_QUERY_21_017: [The next shall set hasNext as true if the continuationToken is not null, or false if it is null.] */
             _hasNext = (ContinuationToken != null);
 
-            QueryResult result = new QueryResult(type, httpResponse.Body, ContinuationToken);
+            var result = new QueryResult(type, httpResponse.Body, ContinuationToken);
 
             return result;
         }

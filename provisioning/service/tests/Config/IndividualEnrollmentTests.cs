@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void IndividualEnrollmentConstructorSucceedOnTPM()
         {
             // arrange - act
-            IndividualEnrollment individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleTpmAttestation);
+            var individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleTpmAttestation);
 
             // assert
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void IndividualEnrollmentConstructorSucceedOnX509Client()
         {
             // arrange - act
-            IndividualEnrollment individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleX509ClientAttestation);
+            var individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleX509ClientAttestation);
 
             // assert
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void IndividualEnrollmentConstructorSucceedOnX509CAReference()
         {
             // arrange - act
-            IndividualEnrollment individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleX509CAReferenceAttestation);
+            var individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleX509CAReferenceAttestation);
 
             // assert
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
