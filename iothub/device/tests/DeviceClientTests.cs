@@ -1776,7 +1776,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
 
-        [Description("Testing current behavior, The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
+        [Description("Testing current behavior. The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
         [TestMethod]
         [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task DeviceClient_ReceiveAsync_Cancelled_ThrowsCorrectException()
@@ -1803,7 +1803,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.ReceiveAsync(cts.Token);
         }
 
-        [Description("Testing current behavior, The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
+        [Description("Testing current behavior. The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
         [TestMethod]
         [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task DeviceClient_CompleteAsync_Cancelled_ThrowsCorrectException()
@@ -1830,7 +1830,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.CompleteAsync("SomeToken", cts.Token);
         }
 
-        [Description("Testing current behavior, The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
+        [Description("Testing current behavior. The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
         [TestMethod]
         [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task DeviceClient_RejectAsync_Cancelled_ThrowsCorrectException()
@@ -1857,7 +1857,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.RejectAsync("SomeToken", cts.Token);
         }
 
-        [Description("Testing current behavior, The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
+        [Description("Testing current behavior. The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
         [TestMethod]
         [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task DeviceClient_SendAsync_Cancelled_ThrowsCorrectException()
@@ -1885,7 +1885,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SendEventAsync(message, cts.Token);
         }
 
-        [Description("Testing current behavior, The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
+        [Description("Testing current behavior. The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
         [TestMethod]
         [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task DeviceClient_OpenAsync_Cancelled_ThrowsCorrectException()
@@ -1912,7 +1912,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OpenAsync(cts.Token);
         }
 
-        [Description("Testing current behavior, The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
+        [Description("Testing current behavior. The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
         [TestMethod]
         [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task DeviceClient_AbandoneAsync_Cancelled_ThrowsCorrectException()
@@ -1939,7 +1939,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.AbandonAsync("SomeLockToken", cts.Token);
         }
 
-        [Description("Testing current behavior, The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
+        [Description("Testing current behavior. The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
         [TestMethod]
         [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task DeviceClient_UpdateReportedProperties_Cancelled_ThrowsCorrectException()
@@ -1966,7 +1966,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection(), cts.Token);
         }
 
-        [Description("Testing current behavior, The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
+        [Description("Testing current behavior. The logically correct expected exception should be OperationCancelledException but current expected exception is IotHubCommunicationException since we try to avoid behavior change.")]
         [TestMethod]
         [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task DeviceClient_GetTwinAsync_Cancelled_ThrowsCorrectException()
@@ -2020,7 +2020,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.CloseAsync(cts.Token);
         }
 
-        [Description("CloseAsync will not go through the ErrorDelegationHandler hence the exception will bubble up directly to the caller with no transformation.")]
         [TestMethod]
         [ExpectedException(typeof(TaskCanceledException))]
         public async Task DeviceClient_SetDesiredPropertyCallback_Cancelled_ThrowsCorrectException()
@@ -2056,6 +2055,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 deviceClient,
                 cts.Token);
         }
+
 
         private class TestDeviceAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh
         {
