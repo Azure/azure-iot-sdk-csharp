@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string edgeId2 = $"{nameof(RegistryManager_ExportDevices)}-Edge-{StorageContainer.GetRandomSuffix(4)}";
             string deviceId = $"{nameof(RegistryManager_ExportDevices)}-{StorageContainer.GetRandomSuffix(4)}";
             string devicesFileName = $"{nameof(RegistryManager_ExportDevices)}-devicesexport-{StorageContainer.GetRandomSuffix(4)}.txt";
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             Logger.Trace($"Using deviceId {deviceId}");
 
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     ? storageContainer.SasUri
                     : storageContainer.Uri;
 
-                var edge1 = await registryManager
+                Device edge1 = await registryManager
                     .AddDeviceAsync(
                         new Device(edgeId1)
                         {
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         })
                     .ConfigureAwait(false);
 
-                var edge2 = await registryManager
+                Device edge2 = await registryManager
                     .AddDeviceAsync(
                         new Device(edgeId2)
                         {
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                             };
                         }
 
-                        JobProperties jobProperties = JobProperties.CreateForExportJob(
+                        var jobProperties = JobProperties.CreateForExportJob(
                             containerUri.ToString(),
                             true,
                             devicesFileName,

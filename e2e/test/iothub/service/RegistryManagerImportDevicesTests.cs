@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             string deviceId = $"{nameof(RegistryManager_ImportDevices)}-device-{StorageContainer.GetRandomSuffix(4)}";
             string devicesFileName = $"{nameof(RegistryManager_ImportDevices)}-{StorageContainer.GetRandomSuffix(4)}.txt";
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             Logger.Trace($"Using deviceId {deviceId}.");
 

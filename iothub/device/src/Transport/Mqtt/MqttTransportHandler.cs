@@ -1389,7 +1389,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (!string.IsNullOrWhiteSpace(envValue))
                 {
                     string processorEventCountValue = Environment.ExpandEnvironmentVariables(envValue);
-                    if (int.TryParse(processorEventCountValue, out var processorThreadCount))
+                    if (int.TryParse(processorEventCountValue, out int processorThreadCount))
                     {
                         if (Logging.IsEnabled)
                             Logging.Info(null, $"EventLoopGroup threads count {processorThreadCount}.");

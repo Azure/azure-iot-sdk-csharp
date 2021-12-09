@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (_shouldTrace)
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>
+                var tracingParameters = new Dictionary<string, object>
                 {
                     { "registrationId", registrationId },
                     { "operationId", operationId },
@@ -110,8 +110,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ServiceClientTracing.Enter(_invocationId, this, "OperationStatusLookup", tracingParameters);
             }
             // Construct URL
-            var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new Uri(
+            string _baseUrl = Client.BaseUri.AbsoluteUri;
+            string _url = new Uri(
                 new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
                 "{idScope}/registrations/{registrationId}/operations/{operationId}").ToString();
 
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (customHeaders != null)
             {
-                foreach (var _header in customHeaders)
+                foreach (KeyValuePair<string, List<string>> _header in customHeaders)
                 {
                     if (_httpRequest.Headers.Contains(_header.Key))
                     {
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (_shouldTrace)
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>
+                var tracingParameters = new Dictionary<string, object>
                 {
                     { "registrationId", registrationId },
                     { "deviceRegistration", deviceRegistration },
@@ -302,8 +302,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ServiceClientTracing.Enter(_invocationId, this, "DeviceRegistrationStatusLookup", tracingParameters);
             }
             // Construct URL
-            var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new Uri(new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")), "{idScope}/registrations/{registrationId}").ToString();
+            string _baseUrl = Client.BaseUri.AbsoluteUri;
+            string _url = new Uri(new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")), "{idScope}/registrations/{registrationId}").ToString();
 
 #if NETSTANDARD2_1
             _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (customHeaders != null)
             {
-                foreach (var _header in customHeaders)
+                foreach (KeyValuePair<string, List<string>> _header in customHeaders)
                 {
                     if (_httpRequest.Headers.Contains(_header.Key))
                     {
@@ -473,7 +473,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (_shouldTrace)
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>
+                var tracingParameters = new Dictionary<string, object>
                 {
                     { "registrationId", registrationId },
                     { "deviceRegistration", deviceRegistration },
@@ -484,8 +484,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ServiceClientTracing.Enter(_invocationId, this, "RegisterDevice", tracingParameters);
             }
             // Construct URL
-            var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new Uri(new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")), "{idScope}/registrations/{registrationId}/register").ToString();
+            string _baseUrl = Client.BaseUri.AbsoluteUri;
+            string _url = new Uri(new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")), "{idScope}/registrations/{registrationId}/register").ToString();
 
 #if NETSTANDARD2_1
             _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope));
 #endif
 
-            List<string> _queryParameters = new List<string>();
+            var _queryParameters = new List<string>();
             if (forceRegistration != null)
             {
                 _queryParameters.Add(string.Format(
@@ -516,7 +516,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (customHeaders != null)
             {
-                foreach (var _header in customHeaders)
+                foreach (KeyValuePair<string, List<string>> _header in customHeaders)
                 {
                     if (_httpRequest.Headers.Contains(_header.Key))
                     {

@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices
             // Parse the SAS token to find the expiration date and time.
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiryInSecondsFromEpochTime>[&skn=<KeyName>]
             var tokenParts = _credential.Signature.Split('&').ToList();
-            var expiresAtTokenPart = tokenParts.Where(tokenPart => tokenPart.StartsWith("se=", StringComparison.OrdinalIgnoreCase));
+            IEnumerable<string> expiresAtTokenPart = tokenParts.Where(tokenPart => tokenPart.StartsWith("se=", StringComparison.OrdinalIgnoreCase));
 
             if (!expiresAtTokenPart.Any())
             {
@@ -70,8 +70,8 @@ namespace Microsoft.Azure.Devices
                 throw new InvalidOperationException($"Invalid seconds from epoch time on {nameof(AzureSasCredential)} signature.");
             }
 
-            DateTime epochTime = new DateTime(1970, 1, 1);
-            TimeSpan timeToLiveFromEpochTime = TimeSpan.FromSeconds(secondsFromEpochTime);
+            var epochTime = new DateTime(1970, 1, 1);
+            var timeToLiveFromEpochTime = TimeSpan.FromSeconds(secondsFromEpochTime);
             DateTime expiresAt = epochTime.Add(timeToLiveFromEpochTime);
 
             var token = new CbsToken(

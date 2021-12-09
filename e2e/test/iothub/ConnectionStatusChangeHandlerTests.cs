@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStatusChangeReason? statusChangeReason = null;
             int deviceDisabledReceivedCount = 0;
 
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, protocol))
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, protocol))
             {
                 ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
                 {
@@ -135,11 +135,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Receiving the module twin should succeed right now.
                 Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: DeviceClient GetTwinAsync.");
-                var twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Shared.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(twin);
 
                 // Delete/disable the device in IoT Hub. This should trigger the ConnectionStatusChangesHandler.
-                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
+                using (var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(registryManager, deviceId).ConfigureAwait(false);
                 }
@@ -168,8 +168,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
             Client.TransportType protocol, Func<RegistryManager, string, Task> registryManagerOperation)
         {
-            AmqpTransportSettings amqpTransportSettings = new AmqpTransportSettings(protocol);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+            var amqpTransportSettings = new AmqpTransportSettings(protocol);
+            var transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + $"_{Guid.NewGuid()}", ModulePrefix, Logger).ConfigureAwait(false);
             ConnectionStatus? status = null;
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))
+            using (var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))
             {
                 moduleClient.SetConnectionStatusChangesHandler(statusChangeHandler);
                 Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(ModuleClient)} with moduleId={testModule.Id}");
@@ -194,11 +194,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Receiving the module twin should succeed right now.
                 Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: ModuleClient GetTwinAsync.");
-                var twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
+                Shared.Twin twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(twin);
 
                 // Delete/disable the device in IoT Hub.
-                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
+                using (var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(registryManager, testModule.DeviceId).ConfigureAwait(false);
                 }

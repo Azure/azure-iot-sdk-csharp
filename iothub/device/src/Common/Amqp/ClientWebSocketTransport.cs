@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Amqp.Transport
 
         private static void HandleReadComplete(IAsyncResult result)
         {
-            Task<int> taskResult = (Task<int>)result;
+            var taskResult = (Task<int>)result;
             var args = (TransportAsyncCallbackArgs)taskResult.AsyncState;
 
             ReadTaskDone(taskResult, args);
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Amqp.Transport
 
         private static void HandleWriteComplete(IAsyncResult result)
         {
-            Task taskResult = (Task)result;
+            var taskResult = (Task)result;
             var args = (TransportAsyncCallbackArgs)taskResult.AsyncState;
             WriteTaskDone(taskResult, args);
             args.CompletedCallback(args);

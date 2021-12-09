@@ -38,13 +38,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 ModelId = TestModelId,
             };
-            using DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Mqtt_Tcp_Only, options);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Mqtt_Tcp_Only, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Act
 
             // Get device twin.
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             Twin twin = await registryManager.GetTwinAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
@@ -69,13 +69,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string hostName = HostNameHelper.GetHostName(TestConfiguration.IoTHub.ConnectionString);
             X509Certificate2 authCertificate = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
             using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, authCertificate);
-            using DeviceClient deviceClient = DeviceClient.Create(hostName, auth, Client.TransportType.Mqtt_Tcp_Only, options);
+            using var deviceClient = DeviceClient.Create(hostName, auth, Client.TransportType.Mqtt_Tcp_Only, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Act
 
             // Get device twin.
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             Twin twin = await registryManager.GetTwinAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
@@ -104,13 +104,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 ModelId = TestModelId,
             };
-            using ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, Client.TransportType.Mqtt_Tcp_Only, options);
+            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, Client.TransportType.Mqtt_Tcp_Only, options);
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             // Act
 
             // Get module twin.
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             Twin twin = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             // Assert
