@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     isTransient: false);
             }
 #if NET451
-            return Task.FromResult<object>(null);
+            return TaskHelpers.CompletedTask;
 #else
             return Task.CompletedTask;
 #endif

@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 case States.FinalProcessing:
                     State = States.Aborted;
 
-                    while (_backlogQueue.Any() && _backlogQueue.TryDequeue(out TWork workItem))
+                    while (_backlogQueue.TryDequeue(out TWork workItem))
                     {
                         ReferenceCountUtil.Release(workItem);
 

@@ -98,8 +98,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningTransportException(string message, Exception innerException, bool isTransient, ProvisioningErrorDetails errorDetails)
             : base(message, innerException)
         {
-            this.IsTransient = isTransient;
-            this.ErrorDetails = errorDetails;
+            IsTransient = isTransient;
+            ErrorDetails = errorDetails;
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue(IsTransientValueSerializationStoreName, this.IsTransient);
+            info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
-    [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Is instantiated by json convertor")]
+    [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Is instantiated by json converter")]
     internal class ProvisioningErrorDetailsAmqp : ProvisioningErrorDetails
     {
         /// <summary>
@@ -20,11 +20,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public static TimeSpan? GetRetryAfterFromApplicationProperties(AmqpMessage amqpResponse, TimeSpan defaultInterval)
         {
-            object retryAfter;
-            if (amqpResponse.ApplicationProperties != null && amqpResponse.ApplicationProperties.Map.TryGetValue(RetryAfterKey, out retryAfter))
+            if (amqpResponse.ApplicationProperties != null && amqpResponse.ApplicationProperties.Map.TryGetValue(RetryAfterKey, out object retryAfter))
             {
-                int secondsToWait;
-                if (int.TryParse(retryAfter.ToString(), out secondsToWait))
+                if (int.TryParse(retryAfter.ToString(), out int secondsToWait))
                 {
                     var serviceRecommendedDelay = TimeSpan.FromSeconds(secondsToWait);
 
@@ -46,23 +44,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             if (rejected.Error != null && rejected.Error.Info != null)
             {
-                object retryAfter;
-                if (rejected.Error.Info.TryGetValue(RetryAfterKey, out retryAfter))
+                if (rejected.Error.Info.TryGetValue(RetryAfterKey, out object retryAfter))
                 {
-                    int secondsToWait = 0;
-                    if (int.TryParse(retryAfter.ToString(), out secondsToWait))
+                    if (int.TryParse(retryAfter.ToString(), out int secondsToWait))
                     {
-                        if (secondsToWait < defaultInterval.Seconds)
-                        {
-                            return defaultInterval;
-                        }
-                        else
-                        {
-                            return TimeSpan.FromSeconds(secondsToWait);
-                        }
+                        return secondsToWait < defaultInterval.Seconds
+                            ? defaultInterval
+                            : TimeSpan.FromSeconds(secondsToWait);
                     }
                 }
-                
+
             }
 
             return null;
