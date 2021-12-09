@@ -122,12 +122,11 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
-#pragma warning disable CA2000 // This is returned to client so cannot be disposed here.
                 InternalClient dc = CreateFromConnectionString(
                     connectionStringBuilder.ToString(),
                     PopulateCertificateInTransportSettings(connectionStringBuilder, transportType),
                     options);
-#pragma warning restore CA2000
+
                 dc.Certificate = connectionStringBuilder.Certificate;
 
                 // Install all the intermediate certificates in the chain if specified.
@@ -438,7 +437,7 @@ namespace Microsoft.Azure.Devices.Client
                 builder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
             }
 
-            IotHubConnectionString iotHubConnectionString = builder.ToIotHubConnectionString();
+            var iotHubConnectionString = builder.ToIotHubConnectionString();
 
             foreach (ITransportSettings transportSetting in transportSettings)
             {
@@ -612,7 +611,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, ITransportSettings[] transportSettings)
         {
-            foreach (var transportSetting in transportSettings)
+            foreach (ITransportSettings transportSetting in transportSettings)
             {
                 switch (transportSetting.GetTransportType())
                 {

@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private static string GenerateEightRandomCharacters()
         {
-            var stringChars = new char[8];
+            char[] stringChars = new char[8];
             var random = new Random();
             for (int i = 0; i < stringChars.Length; i++)
             {

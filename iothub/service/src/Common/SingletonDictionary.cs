@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Common
             if (!this.disposed)
             {
                 this.disposed = true;
-                foreach (var kvp in this.dictionary)
+                foreach (System.Collections.Generic.KeyValuePair<TKey, TaskCompletionSource<TValue>> kvp in this.dictionary)
                 {
                     if (kvp.Value.Task.Status == TaskStatus.RanToCompletion)
                     {

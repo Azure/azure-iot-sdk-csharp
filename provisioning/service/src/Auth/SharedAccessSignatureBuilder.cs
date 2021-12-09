@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
-            List<string> fields = new List<string>();
+            var fields = new List<string>();
             fields.Add(audience);
             fields.Add(expiresOn);
 

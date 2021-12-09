@@ -1481,8 +1481,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                var propName = Guid.NewGuid().ToString();
-                var propValue = Guid.NewGuid().ToString();
+                string propName = Guid.NewGuid().ToString();
+                string propValue = Guid.NewGuid().ToString();
                 twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
 
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
@@ -1495,8 +1495,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
-                var propName = twinProperties[0];
-                var propValue = twinProperties[1];
+                string propName = twinProperties[0];
+                string propValue = twinProperties[1];
                 testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
 
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");

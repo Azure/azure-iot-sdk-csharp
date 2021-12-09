@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static void ValidateCertificate(string certificate)
         {
             byte[] certBytes = System.Text.Encoding.ASCII.GetBytes(certificate ?? throw new ArgumentException("Certificate cannot be null."));
-            X509Certificate2 cert = new X509Certificate2(certBytes);
+            var cert = new X509Certificate2(certBytes);
             ValidateCertificate(cert);
             cert.Dispose();
         }

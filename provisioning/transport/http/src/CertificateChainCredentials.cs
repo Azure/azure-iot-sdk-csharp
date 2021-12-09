@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             base.InitializeServiceClient(client);
             
-            HttpClientHandler httpClientHandler = client.HttpMessageHandlers.FirstOrDefault((handler) => handler is HttpClientHandler) as HttpClientHandler;
+            var httpClientHandler = client.HttpMessageHandlers.FirstOrDefault((handler) => handler is HttpClientHandler) as HttpClientHandler;
 
             Debug.Assert(httpClientHandler != null);
             httpClientHandler.ClientCertificates.AddRange(_certificateChain.ToArray());

@@ -33,16 +33,14 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (iotHubConnectionStringBuilder.SharedAccessSignature != null)
             {
-                if (iotHubConnectionStringBuilder.ModuleId != null)
-                {
-                    return new ModuleAuthenticationWithToken(
-                        iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.ModuleId, iotHubConnectionStringBuilder.SharedAccessSignature);
-                }
-                else
-                {
-                    return new DeviceAuthenticationWithToken(
-                        iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessSignature);
-                }
+                return iotHubConnectionStringBuilder.ModuleId != null
+                    ? new ModuleAuthenticationWithToken(
+                        iotHubConnectionStringBuilder.DeviceId,
+                        iotHubConnectionStringBuilder.ModuleId,
+                        iotHubConnectionStringBuilder.SharedAccessSignature)
+                    : (IAuthenticationMethod)new DeviceAuthenticationWithToken(
+                        iotHubConnectionStringBuilder.DeviceId,
+                        iotHubConnectionStringBuilder.SharedAccessSignature);
             }
             else if (iotHubConnectionStringBuilder.UsingX509Cert)
             {

@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string ComputeSignature(byte[] key)
         {
-            List<string> fields = new List<string>();
+            var fields = new List<string>();
             fields.Add(_encodedAudience);
             fields.Add(_expiry);
 

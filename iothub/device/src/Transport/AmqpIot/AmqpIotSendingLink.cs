@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
 
             Outcome outcome;
-            using (AmqpMessage amqpMessage = AmqpMessage.Create(messageList))
+            using (var amqpMessage = AmqpMessage.Create(messageList))
             {
                 amqpMessage.MessageFormat = AmqpConstants.AmqpBatchedMessageFormat;
                 outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
