@@ -114,66 +114,195 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task RegistryManager_BulkLifecycle()
+        public async Task RegistryManager_AddDevices2Async_Works()
         {
-            int bulkCount = 50;
-            var devices = new List<Device>();
-            for (int i = 0; i < bulkCount; i++)
-            {
-                var device = new Device(_idPrefix + Guid.NewGuid())
-                {
-                    Scope = "someScope" + Guid.NewGuid()
-                };
+            // arrange
 
-                device.ParentScopes.Add("someParentScope" + Guid.NewGuid());
-                devices.Add(device);
-            }
+            var edge = new Device(_idPrefix + Guid.NewGuid())
+            {
+                Scope = "someScope" + Guid.NewGuid(),
+            };
+            var device = new Device(_idPrefix + Guid.NewGuid())
+            {
+                Scope = edge.Scope,
+            };
 
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
-            // Test that you can create devices in bulk
-            BulkRegistryOperationResult bulkAddResult = await registryManager.AddDevices2Async(devices).ConfigureAwait(false);
-            Assert.IsTrue(bulkAddResult.IsSuccessful);
-
-            foreach (Device device in devices)
+            try
             {
-                // After a bulk add, every device should be able to be retrieved
-                Device retrievedDevice = await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false);
-                Assert.IsNotNull(retrievedDevice.Id);
-                Assert.AreEqual(device.Scope, retrievedDevice.Scope);
-                Assert.AreEqual(1, retrievedDevice.ParentScopes.Count);
-                Assert.AreEqual(device.ParentScopes.ElementAt(0), retrievedDevice.ParentScopes.ElementAt(0));
+                // act
+                BulkRegistryOperationResult bulkAddResult = await registryManager
+                    .AddDevices2Async(new List<Device> { edge, device })
+                    .ConfigureAwait(false);
+
+                // assert
+
+                bulkAddResult.IsSuccessful.Should().BeTrue();
+
+                Device actualEdge = await registryManager.GetDeviceAsync(edge.Id).ConfigureAwait(false);
+                actualEdge.Id.Should().Be(edge.Id);
+                actualEdge.Scope.Should().Be(edge.Scope);
+
+                Device actualDevice = await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false);
+                actualDevice.Id.Should().Be(device.Id);
+                actualDevice.Scope.Should().Be(device.Scope);
+                actualDevice.ParentScopes.Count.Should().Be(1);
+                actualDevice.ParentScopes.First().Should().Be(edge.Scope);
             }
-
-            var twins = new List<Twin>();
-            string expectedProperty = "someNewProperty";
-            string expectedPropertyValue = "someNewPropertyValue";
-            foreach (Device device in devices)
+            finally
             {
-                Twin twin = await registryManager.GetTwinAsync(device.Id).ConfigureAwait(false);
-                twin.Properties.Desired[expectedProperty] = expectedPropertyValue;
-                twins.Add(twin);
+                try
+                {
+                    await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
+                    await registryManager.RemoveDeviceAsync(edge.Id).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                }
             }
+        }
 
-            // Test that you can update twins in bulk
-            await registryManager.UpdateTwins2Async(twins).ConfigureAwait(false);
+        [LoggedTestMethod]
+        public async Task RegistryManager_UpdateDevices2Async_Works()
+        {
+            // arrange
 
-            foreach (Device device in devices)
+            var device1 = new Device(_idPrefix + Guid.NewGuid());
+            var device2 = new Device(_idPrefix + Guid.NewGuid());
+            var edge = new Device(_idPrefix + Guid.NewGuid());
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+
+            try
             {
-                Twin twin = await registryManager.GetTwinAsync(device.Id).ConfigureAwait(false);
-                Assert.IsNotNull(twin.Properties.Desired[expectedProperty]);
-                Assert.AreEqual(expectedPropertyValue, (string)twin.Properties.Desired[expectedProperty]);
+                Device addedDevice1 = await registryManager.AddDeviceAsync(device1).ConfigureAwait(false);
+                Device addedDevice2 = await registryManager.AddDeviceAsync(device2).ConfigureAwait(false);
+                Device addedEdge = await registryManager.AddDeviceAsync(edge).ConfigureAwait(false);
+
+                // act
+
+                addedDevice1.Scope = addedEdge.Scope;
+                addedDevice2.Scope = addedEdge.Scope;
+                BulkRegistryOperationResult result = await registryManager
+                    .UpdateDevices2Async(new[] { addedDevice1, addedDevice2 })
+                    .ConfigureAwait(false);
+
+                // assert
+
+                result.IsSuccessful.Should().BeTrue();
+
+                Device actualDevice1 = await registryManager.GetDeviceAsync(device1.Id).ConfigureAwait(false);
+                actualDevice1.Scope.Should().Be(addedEdge.Scope);
+
+                Device actualDevice2 = await registryManager.GetDeviceAsync(device2.Id).ConfigureAwait(false);
+                actualDevice2.Scope.Should().Be(addedEdge.Scope);
             }
-
-            // Test that you can delete device identities in bulk
-            BulkRegistryOperationResult bulkDeleteResult = await registryManager.RemoveDevices2Async(devices, true, default).ConfigureAwait(false);
-
-            Assert.IsTrue(bulkDeleteResult.IsSuccessful);
-
-            foreach (Device device in devices)
+            finally
             {
-                // After a bulk delete, every device should not be found
-                Assert.IsNull(await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false));
+                try
+                {
+                    await registryManager.RemoveDeviceAsync(device1.Id).ConfigureAwait(false);
+                    await registryManager.RemoveDeviceAsync(device2.Id).ConfigureAwait(false);
+                    await registryManager.RemoveDeviceAsync(edge.Id).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                }
+            }
+        }
+
+        [LoggedTestMethod]
+        public async Task RegistryManager_UpdateTwins2Async_Works()
+        {
+            // arrange
+
+            var device1 = new Device(_idPrefix + Guid.NewGuid());
+            var device2 = new Device(_idPrefix + Guid.NewGuid());
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+
+            try
+            {
+                await registryManager.AddDeviceAsync(device1).ConfigureAwait(false);
+                Twin twin1 = await registryManager.GetTwinAsync(device1.Id).ConfigureAwait(false);
+                await registryManager.AddDeviceAsync(device2).ConfigureAwait(false);
+                Twin twin2 = await registryManager.GetTwinAsync(device2.Id).ConfigureAwait(false);
+
+                // act
+
+                const string expectedProperty = "someNewProperty";
+                const string expectedPropertyValue = "someNewPropertyValue";
+
+                twin1.Properties.Desired[expectedProperty] = expectedPropertyValue;
+                twin2.Properties.Desired[expectedProperty] = expectedPropertyValue;
+
+                BulkRegistryOperationResult result = await registryManager
+                    .UpdateTwins2Async(new[] { twin1, twin2 })
+                    .ConfigureAwait(false);
+
+                // assert
+
+                result.IsSuccessful.Should().BeTrue();
+
+                var actualTwin1 = await registryManager.GetTwinAsync(device1.Id).ConfigureAwait(false);
+                ((string)actualTwin1.Properties.Desired[expectedProperty]).Should().Be(expectedPropertyValue);
+                var actualTwin2 = await registryManager.GetTwinAsync(device2.Id).ConfigureAwait(false);
+                ((string)(actualTwin2.Properties.Desired[expectedProperty])).Should().Be(expectedPropertyValue);
+            }
+            finally
+            {
+                try
+                {
+                    await registryManager.RemoveDeviceAsync(device1.Id).ConfigureAwait(false);
+                    await registryManager.RemoveDeviceAsync(device2.Id).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                }
+            }
+        }
+
+        [LoggedTestMethod]
+        public async Task RegistryManager_RemoveDevices2Async_Works()
+        {
+            // arrange
+
+            var device1 = new Device(_idPrefix + Guid.NewGuid());
+            var device2 = new Device(_idPrefix + Guid.NewGuid());
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+
+            try
+            {
+                await registryManager.AddDeviceAsync(device1).ConfigureAwait(false);
+                await registryManager.AddDeviceAsync(device2).ConfigureAwait(false);
+
+                // act
+
+                BulkRegistryOperationResult bulkDeleteResult = await registryManager
+                    .RemoveDevices2Async(new[] { device1, device2 }, true, default)
+                    .ConfigureAwait(false);
+
+                // assert
+
+                bulkDeleteResult.IsSuccessful.Should().BeTrue();
+                Device actualDevice1 = await registryManager.GetDeviceAsync(device1.Id).ConfigureAwait(false);
+                actualDevice1.Should().BeNull();
+                Device actualDevice2 = await registryManager.GetDeviceAsync(device1.Id).ConfigureAwait(false);
+                actualDevice2.Should().BeNull();
+            }
+            finally
+            {
+                try
+                {
+                    await registryManager.RemoveDeviceAsync(device1.Id).ConfigureAwait(false);
+                    await registryManager.RemoveDeviceAsync(device2.Id).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                }
             }
         }
 
