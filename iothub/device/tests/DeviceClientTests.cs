@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -27,13 +29,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         private static readonly IotHubConnectionString s_cs = new IotHubConnectionString(s_csBuilder);
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
 
-            using var deviceClient = DeviceClient.Create(hostName, authMethod, TransportType.Amqp_WebSocket_Only);
+            Action act = () => DeviceClient.Create(hostName, authMethod, TransportType.Amqp_WebSocket_Only);
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
@@ -146,10 +148,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void DeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
-            DeviceClient.CreateFromConnectionString(FakeConnectionStringWithModuleId);
+            Action act = () => DeviceClient.CreateFromConnectionString(FakeConnectionStringWithModuleId);
+            act.Should().Throw<ArgumentException>();
         }
 
         /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
@@ -1306,99 +1308,113 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task CompleteAsyncThrowsForNullMessage()
+        public void CompleteAsyncThrowsForNullMessage()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.CompleteAsync((Message)null);
+
+            Func<Task> act = async () => await client.CompleteAsync((Message)null);
+
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task CompleteAsyncWithCancellationTokenThrowsForNullMessage()
+        public void CompleteAsyncWithCancellationTokenThrowsForNullMessage()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.CompleteAsync((Message)null, CancellationToken.None);
+
+            Func<Task> act = async () => await client.CompleteAsync((Message)null, CancellationToken.None);
+
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task CompleteAsyncThrowsForNullLockToken()
+        public void CompleteAsyncThrowsForNullLockToken()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.CompleteAsync((string)null);
+
+            Func<Task> act = async () => await client.CompleteAsync((string)null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task CompleteAsyncWithCancellationTokenThrowsForNullLockToken()
+        public void CompleteAsyncWithCancellationTokenThrowsForNullLockToken()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.CompleteAsync((string)null, CancellationToken.None);
+
+            Func<Task> act = async () => await client.CompleteAsync((string)null, CancellationToken.None);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task RejectAsyncThrowsForNullMessage()
+        public void RejectAsyncThrowsForNullMessage()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.RejectAsync((Message)null);
+
+            Func<Task> act = async () => await client.RejectAsync((Message)null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task RejectAsyncWithCancellationTokenThrowsForNullMessage()
+        public void RejectAsyncWithCancellationTokenThrowsForNullMessage()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.RejectAsync((Message)null, CancellationToken.None);
+
+            Func<Task> act = async () => await client.RejectAsync((Message)null, CancellationToken.None);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task RejectAsyncThrowsForNullLockToken()
+        public void RejectAsyncThrowsForNullLockToken()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.RejectAsync((string)null);
+
+            Func<Task> act = async () => await client.RejectAsync((string)null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task RejectAsyncWithCancellationTokenThrowsForNullLockToken()
+        public void RejectAsyncWithCancellationTokenThrowsForNullLockToken()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.RejectAsync((string)null, CancellationToken.None);
+
+            Func<Task> act = async () => await client.RejectAsync((string)null, CancellationToken.None);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task AbandonAsyncThrowsForNullMessage()
+        public void AbandonAsyncThrowsForNullMessage()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.AbandonAsync((Message)null);
+
+            Func<Task> act = async () => await client.AbandonAsync((Message)null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task AbandonAsyncWithCancellationTokenThrowsForNullMessage()
+        public void AbandonAsyncWithCancellationTokenThrowsForNullMessage()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.AbandonAsync((Message)null, CancellationToken.None);
+
+            Func<Task> act = async () => await client.AbandonAsync((Message)null, CancellationToken.None);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task AbandonAsyncThrowsForNullLockToken()
+        public void AbandonAsyncThrowsForNullLockToken()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.AbandonAsync((string)null);
+
+            Func<Task> act = async () => await client.AbandonAsync((string)null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task AbandonAsyncWithCancellationTokenThrowsForNullLockToken()
+        public void AbandonAsyncWithCancellationTokenThrowsForNullLockToken()
         {
             DeviceClient client = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            await client.AbandonAsync((string)null, CancellationToken.None);
+
+            Func<Task> act = async () => await client.AbandonAsync((string)null, CancellationToken.None);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -1624,8 +1640,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
             var buffer = TimeSpan.FromSeconds(2);
 
-            // The initial expiration time calculated is (current utc time - sas ttl supplied).
-            // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas ttl supplied.
+            // The initial expiration time calculated is (current UTC time - sas TTL supplied).
+            // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas TTL supplied.
             var expectedExpirationTime = startTime.Add(-sasTokenTimeToLive);
             authMethod.ExpiresOn.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
 
@@ -1647,7 +1663,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             var pipelineBuilderSubstitute = Substitute.For<IDeviceClientPipelineBuilder>();
 
-            // This authentication method relies on the default sas token time to live and renewal buffer set by the sdk.
+            // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
             // These values are 1 hour for sas token expiration and renewed when 15% or less of its lifespan is left.
             var authMethod1 = new TestDeviceAuthenticationWithTokenRefresh();
             int sasExpirationTimeInSecondsSdkDefault = DeviceAuthenticationWithTokenRefresh.DefaultTimeToLiveSeconds;
@@ -1666,8 +1682,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
             var buffer = TimeSpan.FromSeconds(2);
 
-            // The initial expiration time calculated is (current utc time - sas ttl supplied).
-            // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas ttl supplied.
+            // The initial expiration time calculated is (current UTC time - sas TTL supplied).
+            // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas TTL supplied.
 
             var sasExpirationTimeFromClientOptions = startTime.Add(-sasTokenTimeToLive);
             authMethod.ExpiresOn.Should().NotBeCloseTo(sasExpirationTimeFromClientOptions, (int)buffer.TotalMilliseconds);
@@ -1773,9 +1789,347 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .NotThrow();
         }
 
+        [TestMethod]
+        public void DeviceClient_ReceiveAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            //arrange
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.ReceiveAsync(Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            // act
+
+            Func<Task> act = async () => await deviceClient.ReceiveAsync(cts.Token);
+
+            // assert
+
+            act.Should().Throw<IotHubCommunicationException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_CompleteAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            // arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.CompleteAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            // act
+
+            Func<Task> act = async () => await deviceClient.CompleteAsync("SomeToken", cts.Token);
+
+            // assert
+
+            act.Should().Throw<IotHubCommunicationException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_RejectAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            // arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.RejectAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // act
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            Func<Task> act = async () => await deviceClient.RejectAsync("SomeToken", cts.Token);
+
+            // assert
+
+            act.Should().Throw<IotHubCommunicationException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_SendEventAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            //arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // act
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            using var message = new Message();
+            Func<Task> act = async () => await deviceClient.SendEventAsync(message, cts.Token);
+
+            // assert
+
+            act.Should().Throw<IotHubCommunicationException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_OpenAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            // arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.OpenAsync(Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // act
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            Func<Task> act = async () => await deviceClient.OpenAsync(cts.Token);
+
+            // assert
+
+            act.Should().Throw<IotHubCommunicationException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_AbandonAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            // arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.AbandonAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // act
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            Func<Task> act = async () => await deviceClient.AbandonAsync("SomeLockToken", cts.Token);
+
+            // assert
+
+            act.Should().Throw<IotHubCommunicationException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_UpdateReportedPropertiesAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            //arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.SendTwinPatchAsync(Arg.Any<TwinCollection>(), Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // act
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            Func<Task> act = async () => await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection(), cts.Token);
+
+            // assert
+
+            act.Should().Throw<IotHubCommunicationException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_GetTwinAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            // arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.SendTwinGetAsync(Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // act
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            Func<Task> act = async () => await deviceClient.GetTwinAsync(cts.Token);
+
+            // assert
+
+            act.Should().Throw<IotHubCommunicationException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_CloseAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            // arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.CloseAsync(Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // act
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            Func<Task> act = async () => await deviceClient.CloseAsync(cts.Token);
+
+            // assert
+
+            act.Should().Throw<OperationCanceledException>();
+        }
+
+        [TestMethod]
+        public void DeviceClient_SetDesiredPropertyCallbackAsync_Cancelled_MaintainLegacyExecptionBehavior()
+        {
+            // arrange
+
+            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+
+            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            mainProtocolHandler
+                .When(x => x.EnableTwinPatchAsync(Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            mainProtocolHandler
+                .When(x => x.DisableTwinPatchAsync(Arg.Any<CancellationToken>()))
+                .Do(x => { throw new OperationCanceledException(); });
+
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+
+            deviceClient.InnerHandler = errorHandler;
+
+            // act
+
+            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
+            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            Func<Task> act = async () => await deviceClient.SetDesiredPropertyUpdateCallbackAsync(
+                (patch, context) => Task.FromResult(true),
+                deviceClient,
+                cts.Token);
+
+            // assert
+
+            act.Should().Throw<TaskCanceledException>();
+        }
+
+
         private class TestDeviceAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh
         {
-            // This authentication method relies on the default sas token time to live and renewal buffer set by the sdk.
+            // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
             public TestDeviceAuthenticationWithTokenRefresh() : base("someTestDevice")
             {
             }

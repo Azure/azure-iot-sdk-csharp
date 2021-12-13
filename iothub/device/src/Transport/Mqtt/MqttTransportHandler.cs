@@ -1216,7 +1216,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Handler(new ActionChannelInitializer<ISocketChannel>(ch =>
                     {
                         var tlsHandler = new TlsHandler(streamFactory, clientTlsSettings);
-
                         ch.Pipeline.AddLast(
                             tlsHandler,
                             MqttEncoder.Instance,
@@ -1308,6 +1307,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
 
                 var clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
+
                 clientWebSocketChannel
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
                     .Option(ChannelOption.AutoRead, false)
