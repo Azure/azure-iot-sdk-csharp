@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
 #if !NET451
         internal Query(
-            string path,
+            string hostName,
             IAuthorizationHeaderProvider headerProvider,
             string serviceName,
             QuerySpecification querySpecification,
@@ -133,9 +133,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken)
         {
             /* SRS_QUERY_21_001: [The constructor shall throw ArgumentNullException if the provided path is null.] */
-            if (path == null)
+            if (hostName == null)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentNullException(nameof(hostName));
             }
 
             /* SRS_QUERY_21_002: [The constructor shall throw ArgumentException if the provided serviceName is null or empty.] */
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             // TODO: Refactor ContractApiHttp being created again
             /* SRS_QUERY_21_005: [The constructor shall create and store a `contractApiHttp` using the provided path and Authorization Header Provider.] */
             _contractApiHttp = new ContractApiHttp(
-                new UriBuilder("https", path).Uri,
+                new UriBuilder("https", hostName).Uri,
                 headerProvider, httpTransportSettings);
 
             /* SRS_QUERY_21_006: [The constructor shall store the provided  `pageSize`, and `cancelationToken`.] */

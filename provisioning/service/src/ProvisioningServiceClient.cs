@@ -78,6 +78,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private readonly ProvisioningSasCredential _provisioningSasCredential;
         private readonly IContractApiHttp _contractApiHttp;
 
+        private string _hostName;
+
         /// <summary>
         /// Create a new instance of the <code>ProvisioningServiceClient</code> that exposes
         /// the API to the Device Provisioning Service.
@@ -116,34 +118,57 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
 #if !NET451
-        public static ProvisioningServiceClient Create(string path, TokenCredential credential)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <param name="credential"></param>
+        /// <returns></returns>
+        public static ProvisioningServiceClient Create(string hostName, TokenCredential credential)
         {
-            return ProvisioningServiceClient.Create(path, credential, new HttpTransportSettings());
+            return ProvisioningServiceClient.Create(hostName, credential, new HttpTransportSettings());
         }
-
-        public static ProvisioningServiceClient Create(string path, TokenCredential credential, HttpTransportSettings httpTransportSettings)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <param name="credential"></param>
+        /// <param name="httpTransportSettings"></param>
+        /// <returns></returns>
+        public static ProvisioningServiceClient Create(string hostName, TokenCredential credential, HttpTransportSettings httpTransportSettings)
         {
             if (credential == null)
             {
                 throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
-            return new ProvisioningServiceClient(path, credential, httpTransportSettings);
+            return new ProvisioningServiceClient(hostName, credential, httpTransportSettings);
         }
-
-        public static ProvisioningServiceClient Create(string path, AzureSasCredential azureSasCredential)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <param name="azureSasCredential"></param>
+        /// <returns></returns>
+        public static ProvisioningServiceClient Create(string hostName, AzureSasCredential azureSasCredential)
         {
-            return ProvisioningServiceClient.Create(path, azureSasCredential, new HttpTransportSettings());
+            return ProvisioningServiceClient.Create(hostName, azureSasCredential, new HttpTransportSettings());
         }
-
-        public static ProvisioningServiceClient Create(string path, AzureSasCredential azureSasCredential, HttpTransportSettings httpTransportSettings)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <param name="azureSasCredential"></param>
+        /// <param name="httpTransportSettings"></param>
+        /// <returns></returns>
+        public static ProvisioningServiceClient Create(string hostName, AzureSasCredential azureSasCredential, HttpTransportSettings httpTransportSettings)
         {
             if (azureSasCredential == null)
             {
                 throw new ArgumentNullException($"{nameof(azureSasCredential)},  Parameter cannot be null");
             }
 
-            return new ProvisioningServiceClient(path, azureSasCredential, httpTransportSettings);
+            return new ProvisioningServiceClient(hostName, azureSasCredential, httpTransportSettings);
         }
 
 #endif
@@ -165,6 +190,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_003: [The constructor shall throw ArgumentException if the ProvisioningConnectionString or one of the inner Managers failed to create a new instance.] */
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_004: [The constructor shall create a new instance of the ContractApiHttp class using the provided connectionString.] */
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
+            _hostName = _provisioningConnectionString.HostName;
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,
@@ -172,30 +198,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
 #if !NET451
-        private ProvisioningServiceClient(string path, TokenCredential credential, HttpTransportSettings httpTransportSettings)
+        private ProvisioningServiceClient(string hostName, TokenCredential credential, HttpTransportSettings httpTransportSettings)
         {
-            if (string.IsNullOrWhiteSpace(path ?? throw new ArgumentNullException(nameof(path))))
+            if (string.IsNullOrWhiteSpace(hostName ?? throw new ArgumentNullException(nameof(hostName))))
             {
-                throw new ArgumentException($"{nameof(path)} cannot be empty string");
+                throw new ArgumentException($"{nameof(hostName)} cannot be empty string");
             }
 
             _provisioningTokenCredential = new ProvisioningTokenCredential(credential);
+            _hostName = hostName;
             _contractApiHttp = new ContractApiHttp(
-                new UriBuilder("https", path).Uri,
+                new UriBuilder("https", _hostName).Uri,
                 _provisioningTokenCredential,
                 httpTransportSettings);
         }
 
-        private ProvisioningServiceClient(string path, AzureSasCredential azureSasCredential, HttpTransportSettings httpTransportSettings)
+        private ProvisioningServiceClient(string hostName, AzureSasCredential azureSasCredential, HttpTransportSettings httpTransportSettings)
         {
-            if (string.IsNullOrWhiteSpace(path ?? throw new ArgumentNullException(nameof(path))))
+            if (string.IsNullOrWhiteSpace(hostName ?? throw new ArgumentNullException(nameof(hostName))))
             {
-                throw new ArgumentException($"{nameof(path)} cannot be empty string");
+                throw new ArgumentException($"{nameof(hostName)} cannot be empty string");
             }
 
             _provisioningSasCredential = new ProvisioningSasCredential(azureSasCredential);
+            _hostName = hostName;
             _contractApiHttp = new ContractApiHttp(
-                new UriBuilder("https", path).Uri,
+                new UriBuilder("https", _hostName).Uri,
                 _provisioningSasCredential,
                 httpTransportSettings);
         }
@@ -545,7 +573,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None);
@@ -569,7 +598,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None);
@@ -593,7 +623,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken);
@@ -621,7 +652,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None,
@@ -651,7 +683,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken,
@@ -681,7 +714,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None,
@@ -928,7 +962,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None);
@@ -952,7 +987,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None);
@@ -976,7 +1012,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken);
@@ -1004,7 +1041,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None,
@@ -1034,7 +1072,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken,
@@ -1064,7 +1103,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.CreateQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None,
@@ -1251,7 +1291,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_027: [The createEnrollmentGroupRegistrationStateQuery shall create a new DeviceRegistrationState query by calling the createQuery in the registrationStatusManager.] */
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None,
@@ -1276,7 +1317,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_027: [The createEnrollmentGroupRegistrationStateQuery shall create a new DeviceRegistrationState query by calling the createQuery in the registrationStatusManager.] */
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None,
@@ -1304,7 +1346,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_027: [The createEnrollmentGroupRegistrationStateQuery shall create a new DeviceRegistrationState query by calling the createQuery in the registrationStatusManager.] */
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken,
@@ -1334,7 +1377,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_028: [The createEnrollmentGroupRegistrationStateQuery shall create a new DeviceRegistrationState query by calling the createQuery in the registrationStatusManager.] */
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None,
@@ -1370,7 +1414,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_028: [The createEnrollmentGroupRegistrationStateQuery shall create a new DeviceRegistrationState query by calling the createQuery in the registrationStatusManager.] */
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None,
@@ -1406,7 +1451,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_028: [The createEnrollmentGroupRegistrationStateQuery shall create a new DeviceRegistrationState query by calling the createQuery in the registrationStatusManager.] */
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
-                _provisioningConnectionString,
+                _hostName,
+                GetHeaderProvider(),
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken,
@@ -1440,6 +1486,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Task<AttestationMechanism> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.GetEnrollmentAttestationAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);
+        }
+
+        internal IAuthorizationHeaderProvider GetHeaderProvider()
+        {
+            if (_provisioningConnectionString != null)
+            {
+                return _provisioningConnectionString;
+            }
+            else if (_provisioningTokenCredential != null)
+            {
+                return _provisioningTokenCredential;
+            }
+            return _provisioningSasCredential;
         }
     }
 }
