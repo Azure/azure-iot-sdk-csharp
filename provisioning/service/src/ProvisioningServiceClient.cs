@@ -6,6 +6,15 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Service.Auth;
+using Microsoft.Azure.Devices.Provisioning.Service.Auth;
+
+#if !NET451
+
+using Azure;
+using Azure.Core;
+
+#endif
+
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -65,6 +74,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class ProvisioningServiceClient : IDisposable
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
+        private readonly ProvisioningTokenCredential _provisioningTokenCredential;
+        private readonly ProvisioningSasCredential _provisioningSasCredential;
         private readonly IContractApiHttp _contractApiHttp;
 
         /// <summary>
@@ -104,6 +115,39 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new ProvisioningServiceClient(connectionString, httpTransportSettings);
         }
 
+#if !NET451
+        public static ProvisioningServiceClient Create(string path, TokenCredential credential)
+        {
+            return ProvisioningServiceClient.Create(path, credential, new HttpTransportSettings());
+        }
+
+        public static ProvisioningServiceClient Create(string path, TokenCredential credential, HttpTransportSettings httpTransportSettings)
+        {
+            if (credential == null)
+            {
+                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+            }
+
+            return new ProvisioningServiceClient(path, credential, httpTransportSettings);
+        }
+
+        public static ProvisioningServiceClient Create(string path, AzureSasCredential azureSasCredential)
+        {
+            return ProvisioningServiceClient.Create(path, azureSasCredential, new HttpTransportSettings());
+        }
+
+        public static ProvisioningServiceClient Create(string path, AzureSasCredential azureSasCredential, HttpTransportSettings httpTransportSettings)
+        {
+            if (azureSasCredential == null)
+            {
+                throw new ArgumentNullException($"{nameof(azureSasCredential)},  Parameter cannot be null");
+            }
+
+            return new ProvisioningServiceClient(path, azureSasCredential, httpTransportSettings);
+        }
+
+#endif
+
         /// <summary>
         /// PRIVATE CONSTRUCTOR
         /// </summary>
@@ -127,6 +171,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 httpTransportSettings);
         }
 
+#if !NET451
+        private ProvisioningServiceClient(string path, TokenCredential credential, HttpTransportSettings httpTransportSettings)
+        {
+            if (string.IsNullOrWhiteSpace(path ?? throw new ArgumentNullException(nameof(path))))
+            {
+                throw new ArgumentException($"{nameof(path)} cannot be empty string");
+            }
+
+            _provisioningTokenCredential = new ProvisioningTokenCredential(credential);
+            _contractApiHttp = new ContractApiHttp(
+                new UriBuilder("https", path).Uri,
+                _provisioningTokenCredential,
+                httpTransportSettings);
+        }
+
+        private ProvisioningServiceClient(string path, AzureSasCredential azureSasCredential, HttpTransportSettings httpTransportSettings)
+        {
+            if (string.IsNullOrWhiteSpace(path ?? throw new ArgumentNullException(nameof(path))))
+            {
+                throw new ArgumentException($"{nameof(path)} cannot be empty string");
+            }
+
+            _provisioningSasCredential = new ProvisioningSasCredential(azureSasCredential);
+            _contractApiHttp = new ContractApiHttp(
+                new UriBuilder("https", path).Uri,
+                _provisioningSasCredential,
+                httpTransportSettings);
+        }
+#endif
         /// <summary>
         /// Dispose the Provisioning Service Client and its dependencies.
         /// </summary>

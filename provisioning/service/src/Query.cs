@@ -122,6 +122,64 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _hasNext = true;
         }
 
+#if !NET451
+        internal Query(
+            string path,
+            IAuthorizationHeaderProvider headerProvider,
+            string serviceName,
+            QuerySpecification querySpecification,
+            HttpTransportSettings httpTransportSettings,
+            int pageSize,
+            CancellationToken cancellationToken)
+        {
+            /* SRS_QUERY_21_001: [The constructor shall throw ArgumentNullException if the provided path is null.] */
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            /* SRS_QUERY_21_002: [The constructor shall throw ArgumentException if the provided serviceName is null or empty.] */
+            if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
+            {
+                throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
+            }
+
+            /* SRS_QUERY_21_003: [The constructor shall throw ArgumentException if the provided querySpecification is null.] */
+            if (querySpecification == null)
+            {
+                throw new ArgumentNullException(nameof(querySpecification));
+            }
+
+            /* SRS_QUERY_21_004: [The constructor shall throw ArgumentException if the provided pageSize is negative.] */
+            if (pageSize < 0)
+            {
+                throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
+            }
+
+            // TODO: Refactor ContractApiHttp being created again
+            /* SRS_QUERY_21_005: [The constructor shall create and store a `contractApiHttp` using the provided path and Authorization Header Provider.] */
+            _contractApiHttp = new ContractApiHttp(
+                new UriBuilder("https", path).Uri,
+                headerProvider, httpTransportSettings);
+
+            /* SRS_QUERY_21_006: [The constructor shall store the provided  `pageSize`, and `cancelationToken`.] */
+            PageSize = pageSize;
+            _cancellationToken = cancellationToken;
+
+            /* SRS_QUERY_21_007: [The constructor shall create and store a JSON from the provided querySpecification.] */
+            _querySpecificationJson = JsonConvert.SerializeObject(querySpecification);
+
+            /* SRS_QUERY_21_008: [The constructor shall create and store a queryPath adding `/query` to the provided `targetPath`.] */
+            _queryPath = GetQueryUri(serviceName);
+
+            /* SRS_QUERY_21_009: [The constructor shall set continuationToken and current as null.] */
+            ContinuationToken = null;
+
+            /* SRS_QUERY_21_010: [The constructor shall set hasNext as true.] */
+            _hasNext = true;
+        }
+#endif
+
         /// <summary>
         /// Getter for has next
         /// </summary>
