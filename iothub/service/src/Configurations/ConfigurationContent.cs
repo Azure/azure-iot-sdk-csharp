@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     public class ConfigurationContent
     {
         /// <summary>
-        /// Gets or sets the configurations to be applied.
+        /// The modules configuration content.
         /// </summary>
         /// <remarks>
         /// See <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2020-11#create-a-deployment-manifest"/>
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
-        /// Gets or sets the configurations to be applied on device modules
+        /// The device module configuration content.
         /// </summary>
         [JsonProperty(PropertyName = "moduleContent")]
 #pragma warning disable CA2227 // Collection properties should be read only
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
-        /// Gets or sets the configurations to be applied on devices.
+        /// The device configuration content.
         /// </summary>
         [JsonProperty(PropertyName = "deviceContent")]
 #pragma warning disable CA2227 // Collection properties should be read only
