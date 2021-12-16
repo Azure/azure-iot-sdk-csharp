@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
@@ -277,6 +278,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         internal DeviceIdentity GetDeviceIdentityOfAuthenticationProvider()
         {
             return _deviceIdentity;
+        }
+
+        internal bool IsEmpty()
+        {
+            return !_amqpUnits.Any();
         }
     }
 }
