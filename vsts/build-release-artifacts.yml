@@ -91,6 +91,11 @@ phases:
         ESRP_LOG_DIR: $(Build.StagingDirectory)/build-tools/csharp/new/logs
         AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/build-tools/csharp/nuget_local
 
+  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+    displayName: 'SBOM Generation Task'
+    inputs:
+      BuildDropPath: '$(Build.SourcesDirectory)/bin/pkg'
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Signed Nuget Packages'
     inputs:
