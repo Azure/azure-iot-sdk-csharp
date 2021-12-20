@@ -92,6 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         int index = GetDeviceIdentityIndex(deviceIdentity, amqpConnectionHolders.Length);
                         amqpConnectionHolders[index] = null;
+                        amqpConnectionHolder?.Dispose();
                     }
                 }
             }
