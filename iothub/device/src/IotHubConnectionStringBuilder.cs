@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubConnectionStringBuilder"/> class.
         /// </summary>
-        private IotHubConnectionStringBuilder()
+        internal IotHubConnectionStringBuilder()
         {
         }
 

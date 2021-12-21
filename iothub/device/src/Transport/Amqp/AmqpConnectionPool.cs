@@ -16,8 +16,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly IDictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new Dictionary<string, AmqpConnectionHolder[]>();
         private readonly object _lock = new object();
 
+        protected virtual IDictionary<string, AmqpConnectionHolder[]> GetAmqpSasGroupedPoolDictionary()
+        {
+            return _amqpSasGroupedPool;
+        }
+
         public AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
@@ -76,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Enter(this, amqpUnit, nameof(RemoveAmqpUnit));
             }
 
-            DeviceIdentity deviceIdentity = amqpUnit.GetDeviceIdentity();
+            IDeviceIdentity deviceIdentity = amqpUnit.GetDeviceIdentity();
             if (deviceIdentity.IsPooling())
             {
                 AmqpConnectionHolder amqpConnectionHolder;
@@ -103,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private AmqpConnectionHolder[] ResolveConnectionGroup(DeviceIdentity deviceIdentity)
+        private AmqpConnectionHolder[] ResolveConnectionGroup(IDeviceIdentity deviceIdentity)
         {
             if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
             {
@@ -117,18 +122,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 string scope = deviceIdentity.IotHubConnectionString.SharedAccessKeyName;
-                _amqpSasGroupedPool.TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
+                GetAmqpSasGroupedPoolDictionary().TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
                 if (amqpConnectionHolders == null)
                 {
                     amqpConnectionHolders = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
-                    _amqpSasGroupedPool.Add(scope, amqpConnectionHolders);
+                    GetAmqpSasGroupedPoolDictionary().Add(scope, amqpConnectionHolders);
                 }
 
                 return amqpConnectionHolders;
             }
         }
 
-        private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, DeviceIdentity deviceIdentity)
+        private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, IDeviceIdentity deviceIdentity)
         {
             if (Logging.IsEnabled)
             {
@@ -150,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return pool[index];
         }
 
-        private static int GetDeviceIdentityIndex(DeviceIdentity deviceIdentity, int poolLength)
+        private static int GetDeviceIdentityIndex(IDeviceIdentity deviceIdentity, int poolLength)
         {
             return deviceIdentity == null
                 ? throw new ArgumentNullException(nameof(deviceIdentity))
