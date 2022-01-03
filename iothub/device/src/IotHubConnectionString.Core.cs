@@ -19,11 +19,14 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Enter(this, $"{nameof(IotHubConnectionString)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
 
-                Debug.Assert(TokenRefresher != null);
+                Debug.Assert(
+                    !string.IsNullOrWhiteSpace(SharedAccessSignature)
+                        || TokenRefresher != null,
+                    "The token refresher and the shared access signature can't both be null");
 
                 return !string.IsNullOrWhiteSpace(SharedAccessSignature)
                     ? Task.FromResult(SharedAccessSignature)
-                    : TokenRefresher.GetTokenAsync(Audience);
+                    : TokenRefresher?.GetTokenAsync(Audience);
             }
             finally
             {
