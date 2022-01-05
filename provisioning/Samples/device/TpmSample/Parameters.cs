@@ -18,12 +18,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         public bool GetTpmEndorsementKey { get; set; }
 
         [Option(
-            'u',
-            "UseTpmSimulator",
-            HelpText = "Runs the TPM simulator - useful when the local device does not have a TPM chip.")]
-        public bool UseTpmSimulator { get; set; }
-
-        [Option(
             's',
             "IdScope",
             HelpText = "The Id Scope of the DPS instance. For normal runs, this is required.")]

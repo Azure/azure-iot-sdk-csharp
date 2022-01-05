@@ -70,6 +70,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             using var message = new Message(Encoding.UTF8.GetBytes("TestMessage"));
             await iotClient.SendEventAsync(message);
 
+            await iotClient.CloseAsync();
             Console.WriteLine("Finished.");
         }
 

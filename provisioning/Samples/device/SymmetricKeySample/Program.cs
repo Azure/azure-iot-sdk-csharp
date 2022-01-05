@@ -13,7 +13,7 @@ namespace SymmetricKeySample
     /// </summary>
     internal class Program
     {
-        public static async Task<int> Main(string[] args)
+        public static async Task Main(string[] args)
         {
             // Parse application parameters
             Parameters parameters = null;
@@ -29,8 +29,6 @@ namespace SymmetricKeySample
 
             var sample = new ProvisioningDeviceClientSample(parameters);
             await sample.RunSampleAsync();
-
-            return 0;
         }
     }
 }

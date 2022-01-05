@@ -27,7 +27,7 @@ Devices must have access to a single certificate with a private key. The private
 
 When Group Enrollment is used, both the _RegistrationID_ as well as the _DeviceId_ will be equal to the Common Name portion of the certificate Subject. (e.g. If the subject is `CN=mydevice O=Contoso C=US`, the RegistrationID and DeviceId will be `mydevice`.) The name must respect the [DeviceId naming constraints](https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-identity-registry).
 
-X.509 attestation comes in two flavors: 
+X.509 attestation comes in two flavors:
 
 1. Group Enrollment
 In this case, a single (Intermediate) Certificate Authority certificate is uploaded to the Provisioning Service. Devices have access to certificates issued by this CA. All devices will be using the same policies during IoT Hub provisioning.
@@ -55,18 +55,16 @@ An example of implementation for this extension module is the [SecurityProviderX
 
 ### Provisioning devices using TPM-based attestation
 
-In the case of TPM attestation, a RegistrationID must be supplied by the application.
+In the case of TPM attestation, a registration Id must be supplied by the application.
 
 The TPM attestation supports only Individual Enrollments. The [Endorsement Key](https://technet.microsoft.com/library/cc770443(v=ws.11).aspx) (EK) must be supplied to the service. During provisioning, the [Storage Root Key](https://technet.microsoft.com/library/cc753560(v=ws.11).aspx) (SRK) will also be used to ensure that TPM ownership changes result in devices provisioned to the correct owner.
 
 ```C#
-using var security = new SecurityProviderTpmSimulator(RegistrationId);
+using var security = new SecurityProviderTpmHsm(RegistrationId);
 // ... (see sample for details)
 ```
 
 The SDK provides an extension model [SecurityProviderTpm](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/shared/src/SecurityProviderTpm.cs) that allows hardware vendors to implement custom TPM v2.0 Hardware Security Modules.
-
-The samples use a TPMv2.0 simulator that uses a loopback TCP connection for communication. This is provided for demonstration purposes only and does not provide any security.
 
 ## List of samples
 
