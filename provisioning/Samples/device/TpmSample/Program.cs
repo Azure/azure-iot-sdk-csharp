@@ -3,7 +3,6 @@
 
 using CommandLine;
 using Microsoft.Azure.Devices.Provisioning.Security;
-using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using System;
 using System.Threading.Tasks;
 
@@ -31,19 +30,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             // This sample provides a way to get the endorsement key (EK) required in creation of the individual enrollment
             if (parameters.GetTpmEndorsementKey)
             {
-                if (parameters.UseTpmSimulator)
-                {
-                    Console.WriteLine("Starting TPM simulator...");
-                    SecurityProviderTpmSimulator.StartSimulatorProcess();
-                }
-
                 using var security = new SecurityProviderTpmHsm(null);
                 Console.WriteLine($"Your EK is {Convert.ToBase64String(security.GetEndorsementKey())}");
-
-                if (parameters.UseTpmSimulator)
-                {
-                    SecurityProviderTpmSimulator.StopSimulatorProcess();
-                }
 
                 return 0;
             }

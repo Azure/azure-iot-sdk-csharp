@@ -14,15 +14,15 @@ jobs:
     timeoutInMinutes: 60
     steps:
       - task: UseDotNet@2
-        displayName: 'Use .NET Core 5.0 SDK'
+        displayName: 'Use .NET 6.0 SDK'
         inputs:
-          version: 5.0.x
+          version: 6.0.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
       - task: UseDotNet@2
-        displayName: 'Use .NET Core 2.1 SDK'
+        displayName: 'Use .NET 5.0 SDK'
         inputs:
-          version: 2.1.x
+          version: 5.0.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
       - task: UseDotNet@2
@@ -31,17 +31,12 @@ jobs:
           version: 3.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
-      - task: Docker@1
-        displayName: 'Start TPM Simulator'
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core 2.1 SDK'
         inputs:
-          containerregistrytype: 'Container Registry'
-          command: 'Run an image'
-          imageName: aziotbld/testtpm
-          containerName: 'testtpm-instance'
-          ports: |  
-            127.0.0.1:2321:2321
-            127.0.0.1:2322:2322
-          restartPolicy: unlessStopped
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
       - powershell: ./build.ps1 -clean -configuration Release -build -run
         displayName: build and run
         env:
@@ -71,7 +66,7 @@ jobs:
     ### Windows build ###
   - job: WINDOWS
     displayName: Windows
-    # Since the samples run against the same Azure resources, CRUD operations will fight for the same resources. 
+    # Since the samples run against the same Azure resources, CRUD operations will fight for the same resources.
     # So, the builds have been serialized. Comment out the line below to run them in parallel.
     dependsOn: LINUX
     condition: succeeded()
@@ -80,21 +75,27 @@ jobs:
     timeoutInMinutes: 60
     steps:
       - task: UseDotNet@2
-        displayName: 'Use .NET Core 5.0 SDK'
+        displayName: 'Use .NET 6.0 SDK'
         inputs:
-          version: 5.0.x
+          version: 6.0.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
       - task: UseDotNet@2
-        displayName: 'Use .NET Core 2.1 SDK'
+        displayName: 'Use .NET 5.0 SDK'
         inputs:
-          version: 2.1.x
+          version: 5.0.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
       - task: UseDotNet@2
         displayName: 'Use .NET Core 3.1 SDK'
         inputs:
           version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core 2.1 SDK'
+        inputs:
+          version: 2.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
       - powershell: ./build.ps1 -clean -configuration Release -run
