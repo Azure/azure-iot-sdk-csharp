@@ -417,7 +417,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task ModulesClient_GetModulesOnDevice()
         {
-            int moduleCount = 5;
+            const int moduleCount = 2;
             string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
             string[] testModuleIds = new string[moduleCount];
             for (int i = 0; i < moduleCount; i++)
@@ -440,6 +440,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         new Module(testDeviceId, testModuleIds[i])).ConfigureAwait(false);
                 }
 
+                // Give the hub a moment
+                await Task.Delay(250).ConfigureAwait(false);
+
                 // List the modules on the test device
                 IEnumerable<Module> modulesOnDevice = await client.GetModulesOnDeviceAsync(testDeviceId).ConfigureAwait(false);
 
@@ -450,7 +453,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 Assert.AreEqual(moduleCount, moduleIdsOnDevice.Count);
                 for (int i = 0; i < moduleCount; i++)
                 {
-                    Assert.IsTrue(moduleIdsOnDevice.Contains(testModuleIds[i]));
+                    moduleIdsOnDevice.Should().Contain(testModuleIds[i]);
                 }
             }
             finally
