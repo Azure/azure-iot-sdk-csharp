@@ -43,6 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, true)]
+        [Ignore("Waiting on IcM 279379774 to be resolved, estimated early Jan 2022")]
         public async Task RegistryManager_ImportDevices(StorageAuthenticationType storageAuthenticationType, bool isUserAssignedMsi)
         {
             // arrange

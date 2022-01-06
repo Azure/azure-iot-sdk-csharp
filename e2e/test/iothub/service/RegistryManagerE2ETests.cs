@@ -392,44 +392,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task RegistryManager_Query_Works()
         {
             // arrange
+
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            string deviceId = $"{_idPrefix}{Guid.NewGuid()}";
+            string deviceId = TestConfiguration.IoTHub.X509ChainDeviceName;
 
-            try
-            {
-                Device device = await registryManager
-                    .AddDeviceAsync(new Device(deviceId))
-                    .ConfigureAwait(false);
+            Device device = await registryManager
+                .GetDeviceAsync(deviceId)
+                .ConfigureAwait(false);
+            device.Should().NotBeNull($"Device {deviceId} should already exist in hub setup for E2E tests");
 
-                // act
+            // act
 
-                IQuery query = null;
-                IEnumerable<Twin> twins = null;
-                for (int i = 0; i < 30; ++i)
-                {
-                    string queryText = $"select * from devices where deviceId = '{deviceId}'";
-                    query = registryManager.CreateQuery(queryText);
+            string queryText = $"select * from devices where deviceId = '{deviceId}'";
+            IQuery query = registryManager.CreateQuery(queryText);
+            IEnumerable<Twin> twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
 
-                    twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
+            // assert
 
-                    if (twins.Any())
-                    {
-                        break;
-                    }
-
-                    // A new device may not return immediately from a query, so give it some time and some retries to appear
-                    await Task.Delay(250).ConfigureAwait(false);
-                }
-
-                // assert
-                twins.Count().Should().Be(1, "only asked for 1 device by its Id");
-                twins.First().DeviceId.Should().Be(deviceId, "The Id of the device returned should match");
-                query.HasMoreResults.Should().BeFalse("We've processed the single, expected result");
-            }
-            finally
-            {
-                await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
-            }
+            twins.Count().Should().Be(1, "only asked for 1 device by its Id");
+            twins.First().DeviceId.Should().Be(deviceId, "The Id of the device returned should match");
+            query.HasMoreResults.Should().BeFalse("We've processed the single, expected result");
         }
 
         [LoggedTestMethod]
