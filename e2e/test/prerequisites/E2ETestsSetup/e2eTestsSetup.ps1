@@ -479,8 +479,8 @@ az role assignment create --assignee $systemIdentityPrincipal --role "Storage Bl
 # Uploading root CA certificate to IoT hub and verifying
 ##################################################################################################################################
 
-$certExits = az iot hub certificate list -g $ResourceGroup --hub-name $iotHubName --query "value[?name=='$hubUploadCertificateName']" --output tsv
-if ($certExits)
+$certExists = az iot hub certificate list -g $ResourceGroup --hub-name $iotHubName --query "value[?name=='$hubUploadCertificateName']" --output tsv
+if ($certExists)
 {
     Write-Host "`nDeleting existing certificate from IoT hub."
     $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
@@ -593,8 +593,8 @@ $symmetricKeySampleEnrollmentPrimaryKey = az iot dps enrollment show -g $Resourc
 ##################################################################################################################################
 
 $dpsIdScope = az iot dps show -g $ResourceGroup --name $dpsName --query 'properties.idScope' --output tsv
-$certExits = az iot dps certificate list -g $ResourceGroup --dps-name $dpsName --query "value[?name=='$uploadCertificateName']" --output tsv
-if ($certExits)
+$certExists = az iot dps certificate list -g $ResourceGroup --dps-name $dpsName --query "value[?name=='$uploadCertificateName']" --output tsv
+if ($certExists)
 {
     Write-Host "`nDeleting existing certificate from DPS."
     $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'etag'
@@ -653,24 +653,24 @@ az iot dps enrollment create `
 
 if ($EnableIotHubSecuritySolution)
 {
-    Write-Host "`nCreating a self-signed certificate and placing it in $ResourceGroup."
+    Write-Host "`nCreating a self-signed certificate lor LA and placing it in $ResourceGroup."
     az ad app credential reset --id $logAnalyticsAppId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
     Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup."
-}
 
-Write-Host "`nFetching the certificate binary."
-$selfSignedCerts = "$PSScriptRoot\selfSignedCerts"
-if (Test-Path $selfSignedCerts -PathType Leaf)
-{
+    Write-Host "`nFetching the certificate binary for LA."
+    $selfSignedCerts = "$PSScriptRoot\selfSignedCerts"
+    if (Test-Path $selfSignedCerts -PathType Leaf)
+    {
+        Remove-Item -r $selfSignedCerts
+    }
+
+    az keyvault secret download --file $selfSignedCerts --vault-name $keyVaultName -n $ResourceGroup --encoding base64
+    $fileContent = Get-Content $selfSignedCerts -AsByteStream
+    $fileContentB64String = [System.Convert]::ToBase64String($fileContent);
+
+    Write-Host "`nSuccessfully fetched the certificate bytes for LA. Removing the cert file from the disk."
     Remove-Item -r $selfSignedCerts
 }
-
-az keyvault secret download --file $selfSignedCerts --vault-name $keyVaultName -n $ResourceGroup --encoding base64
-$fileContent = Get-Content $selfSignedCerts -AsByteStream
-$fileContentB64String = [System.Convert]::ToBase64String($fileContent);
-
-Write-Host "`nSuccessfully fetched the certificate bytes. Removing the cert file from the disk."
-Remove-Item -r $selfSignedCerts
 
 ###################################################################################################################################
 # Store all secrets in a KeyVault - Values will be pulled down from here to configure environment variables
@@ -698,10 +698,8 @@ $keyvaultKvps = @{
     "DPS-GROUPX509-CERTIFICATE-CHAIN" = $dpsGroupX509CertificateChain;
     "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
     "MSFT-TENANT-ID" = "72f988bf-86f1-41af-91ab-2d7cd011db47";
-    "LA-AAD-APP-ID" = $logAnalyticsAppId;
     "IOTHUB-CLIENT-ID" = $iotHubAadTestAppId;
     "IOTHUB-CLIENT-SECRET" = $iotHubAadTestAppPassword;
-    "LA-AAD-APP-CERT-BASE64" = $fileContentB64String;
     "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" = "invalidcertgde1.westus.cloudapp.azure.com";
     "PIPELINE-ENVIRONMENT" = "prod";
     "HUB-CHAIN-DEVICE-PFX-CERTIFICATE" = $iothubX509ChainDevicePfxCertificate;
@@ -741,6 +739,8 @@ $keyvaultKvps = @{
 if ($EnableIotHubSecuritySolution)
 {
     $keyvaultKvps.Add("LA-WORKSPACE-ID", $workspaceId)
+    $keyvaultKvps.Add("LA-AAD-APP-CERT-BASE64", $fileContentB64String)
+    $keyvaultKvps.Add("LA-AAD-APP-ID", $logAnalyticsAppId)
 }
 
 Write-Host "`nWriting secrets to KeyVault $keyVaultName."
