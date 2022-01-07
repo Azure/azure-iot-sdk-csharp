@@ -22,6 +22,16 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
+        /// Name of device
+        /// </summary>
+        public string DeviceId { get; set; }
+
+        /// <summary>
+        /// Shared access signature generated using device's shared access key
+        /// </summary>
+        public string Token { get; set; }
+
+        /// <summary>
         /// Populates the builder with values needed to authenticate with device's shared access signature.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">The connection build object to populate.</param>
@@ -34,20 +44,10 @@ namespace Microsoft.Azure.Devices
             }
 
             iotHubConnectionStringBuilder.SharedAccessKey = null;
-            iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
-            iotHubConnectionStringBuilder.SharedAccessSignature = this.Token;
+            iotHubConnectionStringBuilder.DeviceId = DeviceId;
+            iotHubConnectionStringBuilder.SharedAccessSignature = Token;
 
             return iotHubConnectionStringBuilder;
         }
-
-        /// <summary>
-        /// Name of device
-        /// </summary>
-        public string DeviceId { get; set; }
-
-        /// <summary>
-        /// Shared access signature generated using device's shared access key
-        /// </summary>
-        public string Token { get; set; }
     }
 }

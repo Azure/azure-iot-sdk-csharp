@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
         public string PolicyName
         {
             get => _policyName;
-            set { SetPolicyName(value); }
+            set => SetPolicyName(value);
         }
 
         /// <summary>

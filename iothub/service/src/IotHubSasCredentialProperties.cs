@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using System.Globalization;
-using System.Linq;
-using Microsoft.Azure.Devices.Common.Data;
 
 #if !NET451
 
+using System.Collections.Generic;
+using System.Linq;
 using Azure;
+using Microsoft.Azure.Devices.Common.Data;
 
 #endif
 
