@@ -1497,15 +1497,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         internal IAuthorizationHeaderProvider GetHeaderProvider()
         {
-            if (_provisioningConnectionString != null)
-            {
-                return _provisioningConnectionString;
-            }
-            else if (_provisioningTokenCredential != null)
-            {
-                return _provisioningTokenCredential;
-            }
-            return _provisioningSasCredential;
+            return _provisioningConnectionString
+                   ?? (IAuthorizationHeaderProvider) _provisioningTokenCredential
+                   ?? _provisioningSasCredential;
         }
     }
 }
