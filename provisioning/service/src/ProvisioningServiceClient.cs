@@ -8,13 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Service.Auth;
 using Microsoft.Azure.Devices.Provisioning.Service.Auth;
 
-#if !NET451
-
 using Azure;
 using Azure.Core;
-
-#endif
-
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -117,7 +112,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new ProvisioningServiceClient(connectionString, httpTransportSettings);
         }
 
-#if !NET451
         /// <summary>
         /// 
         /// </summary>
@@ -154,6 +148,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             return ProvisioningServiceClient.Create(hostName, azureSasCredential, new HttpTransportSettings());
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -171,7 +166,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new ProvisioningServiceClient(hostName, azureSasCredential, httpTransportSettings);
         }
 
-#endif
 
         /// <summary>
         /// PRIVATE CONSTRUCTOR
@@ -197,7 +191,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 httpTransportSettings);
         }
 
-#if !NET451
         private ProvisioningServiceClient(string hostName, TokenCredential credential, HttpTransportSettings httpTransportSettings)
         {
             if (string.IsNullOrWhiteSpace(hostName ?? throw new ArgumentNullException(nameof(hostName))))
@@ -227,7 +220,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningSasCredential,
                 httpTransportSettings);
         }
-#endif
+
         /// <summary>
         /// Dispose the Provisioning Service Client and its dependencies.
         /// </summary>
