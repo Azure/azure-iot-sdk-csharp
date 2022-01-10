@@ -28,7 +28,7 @@ Note: The DNS name of an IoT Hub looks like `{your iot hub name}.azure-devices.n
         -rootCertPassword $password `
         -iotHubResourceGroup <IoT hub resource group> `
         -iotHubName <IoT hub name> `
-        -deviceId <device Id> 
+        -deviceId <device Id>
 ```
 
 ### Step 4
@@ -36,12 +36,12 @@ Note: The DNS name of an IoT Hub looks like `{your iot hub name}.azure-devices.n
 Run the sample with the following command line arguments.
 
 ```
-    "commandLineArgs": "-h <hostname of IoT hub> 
-                        -d <device Id> 
+    "commandLineArgs": "-h <hostname of IoT hub>
+                        -d <device Id>
                         --devicePfxPath <path to device cert>
-                        --devicePfxPassword (ConvertFrom-SecureString -SecureString $password -AsPlainText)  
-                        --rootCertPath <Path to rootCACert>  
-                        --intermediate1CertPath <Path to intermediateCert1> 
+                        --devicePfxPassword (ConvertFrom-SecureString -SecureString $password -AsPlainText)
+                        --rootCertPath <Path to rootCACert>
+                        --intermediate1CertPath <Path to intermediateCert1>
                         --intermediate2CertPath <Path to intermediateCert2>"
 ```
 

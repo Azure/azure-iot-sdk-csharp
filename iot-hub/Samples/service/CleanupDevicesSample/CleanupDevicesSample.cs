@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,11 +22,10 @@ namespace Microsoft.Azure.Devices.Samples
     /// </summary>
     public class CleanupDevicesSample
     {
-        private const string ImportExportDevicesFileName = "devices.txt";
-        private const int MaxIterationWait = 60;
-        private static readonly TimeSpan WaitDuration = TimeSpan.FromSeconds(10);
+        private static readonly string ImportExportDevicesFileName = $"delete-devices-{Guid.NewGuid()}.txt";
+        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan s_maxJobDuration = TimeSpan.FromHours(4);
 
-        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
         private static readonly IReadOnlyList<JobStatus> s_completedJobs = new[]
         {
             JobStatus.Completed,
@@ -48,146 +48,91 @@ namespace Microsoft.Azure.Devices.Samples
         public async Task RunCleanUpAsync()
         {
             // Get the count of ALL devices registered to this hub instance.
-            await PrintDeviceCountAsync();
+            int count = await PrintDeviceCountAsync();
 
             // Filter the devices that should be deleted (based on their prefix) and delete them.
-            await CleanupDevices();
+            await CleanupDevices(count);
         }
 
-        private async Task CleanupDevices()
+        private async Task CleanupDevices(int deviceCount)
         {
-            Console.WriteLine($"Using storage container {_blobContainerClient.Name}" +
-                $" for exporting devices identities to and importing device identities from.");
+            Console.WriteLine($"Using storage container {_blobContainerClient.Name} for importing device delete requests.");
 
-            // Retrieve the SAS Uri that will be used to grant access to the storage containers.
-            string storageAccountSasUri = GetStorageAccountSasUriForCleanupJob(_blobContainerClient).ToString();
+            // Step 1: Collect the devices that need to be deleted.
+            IReadOnlyList<ExportImportDevice> devicesToBeDeleted = await GetDeviceIdsToDeleteAsync(deviceCount);
+            Console.WriteLine($"Discovered {devicesToBeDeleted.Count} devices for deletion.");
 
-            // Step 1: Export all device identities.
-            JobProperties exportAllDevicesProperties = JobProperties
-                .CreateForExportJob(
-                    outputBlobContainerUri: storageAccountSasUri,
-                    excludeKeysInExport: true,
-                    storageAuthenticationType: StorageAuthenticationType.KeyBased);
-
-            JobProperties exportAllDevicesJob = null;
-            
-            int tryCount = 0;
-            while (true)
+            string currentJobId = null;
+            if (devicesToBeDeleted.Any())
             {
                 try
                 {
-                    exportAllDevicesJob = await _registryManager.ExportDevicesAsync(exportAllDevicesProperties);
-                    break;
-                }
-                // Wait for pending jobs to finish.
-                catch (JobQuotaExceededException) when (++tryCount < MaxIterationWait)
-                {
-                    Console.WriteLine($"JobQuotaExceededException... waiting.");
-                    await Task.Delay(WaitDuration);
-                }
-            }
+                    // Step 2: Write the new import data back to the blob.
+                    using Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(devicesToBeDeleted);
 
-            if (exportAllDevicesJob == null)
-            {
-                throw new Exception("Export devices job failed.");
-            }
-            
-            // Wait until the export job is finished.
-            while (true)
-            {
-                exportAllDevicesJob = await _registryManager.GetJobAsync(exportAllDevicesJob.JobId);
-                if (s_completedJobs.Contains(exportAllDevicesJob.Status))
-                {
-                    // Job has finished executing.
-                    break;
-                }
+                    // Retrieve the SAS Uri that will be used to grant access to the storage containers.
+                    BlobClient blobClient = _blobContainerClient.GetBlobClient(ImportExportDevicesFileName);
+                    var uploadResult = await blobClient.UploadAsync(devicesFile, overwrite: true);
+                    string storageAccountSasUri = GetStorageAccountSasUriForCleanupJob(_blobContainerClient).ToString();
 
-                Console.WriteLine($"Export job {exportAllDevicesJob.JobId} is {exportAllDevicesJob.Status} after {exportAllDevicesJob.StartTimeUtc - DateTime.UtcNow}");
-                await Task.Delay(s_waitDuration);
-            }
-            Console.WriteLine($"Job {exportAllDevicesJob.JobId} is {exportAllDevicesJob.Status}.");
+                    // Step 3: Call import using the same blob to delete all devices.
+                    JobProperties importDevicesToBeDeletedProperties = JobProperties
+                        .CreateForImportJob(
+                            inputBlobContainerUri: storageAccountSasUri,
+                            outputBlobContainerUri: storageAccountSasUri,
+                            inputBlobName: ImportExportDevicesFileName,
+                            storageAuthenticationType: StorageAuthenticationType.KeyBased);
 
-            if (exportAllDevicesJob.Status != JobStatus.Completed)
-            {
-                throw new Exception("Exporting devices failed; exiting.");
-            }
+                    JobProperties importDevicesToBeDeletedJob = null;
 
-            // Step 2: Download the exported devices list from the blob create in Step 1.
-            BlobClient blobClient = _blobContainerClient.GetBlobClient(ImportExportDevicesFileName);
-            BlobDownloadInfo download = await blobClient.DownloadAsync();
-            IEnumerable<ExportImportDevice> exportedDevices = ImportExportDevicesHelpers.BuildExportImportDeviceFromStream(download.Content);
-
-            // Step 3: Collect the devices that need to be deleted and update their ImportMode to be Delete.
-            // Thie step will create an ExportImportDevice identity for each device/ module identity registered on hub.
-            // If you hub instance has IoT Hub module or Edge module instances registered, then they will be counted as separate entities
-            // from the corresponding IoT Hub device/ Edge device that they are associated with.
-            // As a result, the count of ExportImportDevice identities to be deleted might be greater than the
-            // count of IoT hub devices retrieved in PrintDeviceCountAsync().
-            var devicesToBeDeleted = new List<ExportImportDevice>();
-            foreach (var device in exportedDevices)
-            {
-                string deviceId = device.Id;
-                foreach (string prefix in _deleteDevicesWithPrefix)
-                {
-                    if (deviceId.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    Stopwatch jobTimer = Stopwatch.StartNew();
+                    do
                     {
-                        devicesToBeDeleted.Add(device);
-                    }
-                }
-            }
-            devicesToBeDeleted.ForEach(device => device.ImportMode = ImportMode.Delete);
-            Console.WriteLine($"Discovered {devicesToBeDeleted.Count} devices for deletion.");
+                        try
+                        {
+                            importDevicesToBeDeletedJob = await _registryManager.ImportDevicesAsync(importDevicesToBeDeletedProperties);
+                            currentJobId = importDevicesToBeDeletedJob.JobId;
+                            break;
+                        }
+                        // Wait for pending jobs to finish.
+                        catch (JobQuotaExceededException)
+                        {
+                            Console.WriteLine($"JobQuotaExceededException... waiting.");
+                            await Task.Delay(s_waitDuration);
+                        }
+                    } while (jobTimer.Elapsed < s_maxJobDuration);
 
-            if (devicesToBeDeleted.Any())
-            {
-                // Step 3a: Write the new import data back to the blob.
-                using Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(devicesToBeDeleted);
-                await blobClient.UploadAsync(devicesFile, overwrite: true);
-
-                // Step 3b: Call import using the same blob to delete all devices.
-                JobProperties importDevicesToBeDeletedProperties = JobProperties
-                    .CreateForImportJob(
-                        inputBlobContainerUri: storageAccountSasUri,
-                        outputBlobContainerUri: storageAccountSasUri,
-                        storageAuthenticationType: StorageAuthenticationType.KeyBased);
-
-                JobProperties importDevicesToBeDeletedJob = null;
-
-                tryCount = 0;
-                while (true)
-                {
-                    try
+                    // Wait until job is finished.
+                    jobTimer.Restart();
+                    while (importDevicesToBeDeletedJob != null
+                        && jobTimer.Elapsed < s_maxJobDuration)
                     {
-                        importDevicesToBeDeletedJob = await _registryManager.ImportDevicesAsync(importDevicesToBeDeletedProperties);
-                        break;
-                    }
-                    // Wait for pending jobs to finish.
-                    catch (JobQuotaExceededException) when (++tryCount < MaxIterationWait)
-                    {
-                        Console.WriteLine($"JobQuotaExceededException... waiting.");
-                        await Task.Delay(WaitDuration);
-                    }
-                }
+                        importDevicesToBeDeletedJob = await _registryManager.GetJobAsync(importDevicesToBeDeletedJob.JobId);
+                        if (s_completedJobs.Contains(importDevicesToBeDeletedJob.Status))
+                        {
+                            // Job has finished executing.
+                            Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status}.");
+                            currentJobId = null;
+                            break;
+                        }
 
-                if (importDevicesToBeDeletedJob == null)
-                {
-                    throw new Exception("Import devices job failed.");
-                }
-
-                // Wait until job is finished.
-                while (true)
-                {
-                    importDevicesToBeDeletedJob = await _registryManager.GetJobAsync(importDevicesToBeDeletedJob.JobId);
-                    if (s_completedJobs.Contains(importDevicesToBeDeletedJob.Status))
-                    {
-                        // Job has finished executing.
-                        break;
+                        Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status} after {jobTimer.Elapsed}.");
+                        await Task.Delay(s_waitDuration);
                     }
 
-                    Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status} after {importDevicesToBeDeletedJob.StartTimeUtc - DateTime.UtcNow}");
-                    await Task.Delay(s_waitDuration);
+                    if (importDevicesToBeDeletedJob?.Status != JobStatus.Completed)
+                    {
+                        throw new Exception("Importing devices job failed; exiting.");
+                    }
                 }
-                Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status}.");
+                finally
+                {
+                    if (!String.IsNullOrWhiteSpace(currentJobId))
+                    {
+                        Console.WriteLine($"Cancelling job {currentJobId}");
+                        await _registryManager.CancelJobAsync(currentJobId);
+                    }
+                }
             }
 
             // Step 4: Delete the storage container created.
@@ -195,18 +140,60 @@ namespace Microsoft.Azure.Devices.Samples
             Console.WriteLine($"Storage container {_blobContainerClient.Name} deleted.");
         }
 
-        private async Task PrintDeviceCountAsync()
+        private async Task<int> PrintDeviceCountAsync()
         {
-            string countSqlQuery = "SELECT COUNT() AS numberOfDevices FROM devices";
-            IQuery countQuery = _registryManager.CreateQuery(countSqlQuery);
-            while (countQuery.HasMoreResults)
+            //{
+            //    "numberOfDevices": 10456
+            //}
+
+            string queryResultText = null;
+            int deviceCount = 0;
+
+            try
             {
-                IEnumerable<string> result = await countQuery.GetNextAsJsonAsync();
-                Console.WriteLine($"Total # of devices in the hub: \n{result.First()}");
+                string countSqlQuery = "select count() AS numberOfDevices from devices";
+                IQuery countQuery = _registryManager.CreateQuery(countSqlQuery);
+                IEnumerable<string> queryResult = await countQuery.GetNextAsJsonAsync();
+                queryResultText = queryResult.First();
+                var resultObject = JObject.Parse(queryResultText);
+                deviceCount = resultObject.Value<int>("numberOfDevices");
+                Console.WriteLine($"Total # of devices in the hub: \n{deviceCount}");
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to parse device count of {queryResultText} due to {ex}");
+            }
+
+            return deviceCount;
         }
 
-        private Uri GetStorageAccountSasUriForCleanupJob(BlobContainerClient blobContainerClient)
+        private async Task<IReadOnlyList<ExportImportDevice>> GetDeviceIdsToDeleteAsync(int maxCount)
+        {
+            var devicesToDelete = new List<ExportImportDevice>(maxCount);
+
+            const string queryText = "select deviceId FROM devices";
+            IQuery devicesQuery = _registryManager.CreateQuery(queryText);
+            while (devicesQuery.HasMoreResults)
+            {
+                IEnumerable<string> results = await devicesQuery.GetNextAsJsonAsync();
+                foreach (string result in results)
+                {
+                    var resultObject = JObject.Parse(result);
+                    string deviceId = resultObject.Value<string>("deviceId");
+                    foreach (string prefix in _deleteDevicesWithPrefix)
+                    {
+                        if (deviceId.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            devicesToDelete.Add(new ExportImportDevice(new Device(deviceId), ImportMode.Delete));
+                        }
+                    }
+                }
+            }
+
+            return devicesToDelete;
+        }
+
+        private static Uri GetStorageAccountSasUriForCleanupJob(BlobContainerClient blobContainerClient)
         {
             // We want to provide "Read", "Write" and "Delete" permissions to the storage container, so that it can
             // create a blob, read it and subsequently delete it.
@@ -214,7 +201,7 @@ namespace Microsoft.Azure.Devices.Samples
                 | BlobContainerSasPermissions.Read
                 | BlobContainerSasPermissions.Delete;
 
-            BlobSasBuilder sasBuilder = new BlobSasBuilder(sasPermissions, DateTimeOffset.UtcNow.AddHours(1))
+            var sasBuilder = new BlobSasBuilder(sasPermissions, DateTimeOffset.UtcNow.AddHours(1))
             {
                 BlobContainerName = blobContainerClient.Name,
             };
