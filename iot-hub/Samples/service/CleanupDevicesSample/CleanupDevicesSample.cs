@@ -102,14 +102,14 @@ namespace Microsoft.Azure.Devices.Samples
                     break;
                 }
 
-                Console.WriteLine($"Job {exportAllDevicesJob.JobId} is {exportAllDevicesJob.Status} with progress {exportAllDevicesJob.Progress}%");
+                Console.WriteLine($"Export job {exportAllDevicesJob.JobId} is {exportAllDevicesJob.Status} after {exportAllDevicesJob.StartTimeUtc - DateTime.UtcNow}");
                 await Task.Delay(s_waitDuration);
             }
             Console.WriteLine($"Job {exportAllDevicesJob.JobId} is {exportAllDevicesJob.Status}.");
 
             if (exportAllDevicesJob.Status != JobStatus.Completed)
             {
-                throw new Exception("Exporting devices failed, exiting.");
+                throw new Exception("Exporting devices failed; exiting.");
             }
 
             // Step 2: Download the exported devices list from the blob create in Step 1.
@@ -135,11 +135,10 @@ namespace Microsoft.Azure.Devices.Samples
                     }
                 }
             }
-            devicesToBeDeleted
-                .ForEach(device => device.ImportMode = ImportMode.Delete);
-            Console.WriteLine($"Retrieved {devicesToBeDeleted.Count} devices for deletion.");
+            devicesToBeDeleted.ForEach(device => device.ImportMode = ImportMode.Delete);
+            Console.WriteLine($"Discovered {devicesToBeDeleted.Count} devices for deletion.");
 
-            if (devicesToBeDeleted.Count > 0)
+            if (devicesToBeDeleted.Any())
             {
                 // Step 3a: Write the new import data back to the blob.
                 using Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(devicesToBeDeleted);
@@ -185,7 +184,7 @@ namespace Microsoft.Azure.Devices.Samples
                         break;
                     }
 
-                    Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status} with progress {importDevicesToBeDeletedJob.Progress}%");
+                    Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status} after {importDevicesToBeDeletedJob.StartTimeUtc - DateTime.UtcNow}");
                     await Task.Delay(s_waitDuration);
                 }
                 Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status}.");
