@@ -75,54 +75,43 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             int pageSize,
             CancellationToken cancellationToken)
         {
-            /* SRS_QUERY_21_001: [The constructor shall throw ArgumentNullException if the provided serviceConnectionString is null.] */
             if (serviceConnectionString == null)
             {
                 throw new ArgumentNullException(nameof(serviceConnectionString));
             }
 
-            /* SRS_QUERY_21_002: [The constructor shall throw ArgumentException if the provided serviceName is null or empty.] */
             if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
             {
                 throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
             }
 
-            /* SRS_QUERY_21_003: [The constructor shall throw ArgumentException if the provided querySpecification is null.] */
             if (querySpecification == null)
             {
                 throw new ArgumentNullException(nameof(querySpecification));
             }
 
-            /* SRS_QUERY_21_004: [The constructor shall throw ArgumentException if the provided pageSize is negative.] */
             if (pageSize < 0)
             {
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
             }
 
             // TODO: Refactor ContractApiHttp being created again
-            /* SRS_QUERY_21_005: [The constructor shall create and store a `contractApiHttp` using the provided Service Connection String.] */
             _contractApiHttp = new ContractApiHttp(
                 serviceConnectionString.HttpsEndpoint,
                 serviceConnectionString, httpTransportSettings);
 
-            /* SRS_QUERY_21_006: [The constructor shall store the provided  `pageSize`, and `cancelationToken`.] */
             PageSize = pageSize;
             _cancellationToken = cancellationToken;
 
-            /* SRS_QUERY_21_007: [The constructor shall create and store a JSON from the provided querySpecification.] */
             _querySpecificationJson = JsonConvert.SerializeObject(querySpecification);
 
-            /* SRS_QUERY_21_008: [The constructor shall create and store a queryPath adding `/query` to the provided `targetPath`.] */
             _queryPath = GetQueryUri(serviceName);
 
-            /* SRS_QUERY_21_009: [The constructor shall set continuationToken and current as null.] */
             ContinuationToken = null;
 
-            /* SRS_QUERY_21_010: [The constructor shall set hasNext as true.] */
             _hasNext = true;
         }
 
-#if !NET451
         internal Query(
             string hostName,
             IAuthorizationHeaderProvider headerProvider,
@@ -132,53 +121,42 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             int pageSize,
             CancellationToken cancellationToken)
         {
-            /* SRS_QUERY_21_001: [The constructor shall throw ArgumentNullException if the provided path is null.] */
             if (hostName == null)
             {
                 throw new ArgumentNullException(nameof(hostName));
             }
 
-            /* SRS_QUERY_21_002: [The constructor shall throw ArgumentException if the provided serviceName is null or empty.] */
             if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
             {
                 throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
             }
 
-            /* SRS_QUERY_21_003: [The constructor shall throw ArgumentException if the provided querySpecification is null.] */
             if (querySpecification == null)
             {
                 throw new ArgumentNullException(nameof(querySpecification));
             }
 
-            /* SRS_QUERY_21_004: [The constructor shall throw ArgumentException if the provided pageSize is negative.] */
             if (pageSize < 0)
             {
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
             }
 
             // TODO: Refactor ContractApiHttp being created again
-            /* SRS_QUERY_21_005: [The constructor shall create and store a `contractApiHttp` using the provided path and Authorization Header Provider.] */
             _contractApiHttp = new ContractApiHttp(
                 new UriBuilder("https", hostName).Uri,
                 headerProvider, httpTransportSettings);
 
-            /* SRS_QUERY_21_006: [The constructor shall store the provided  `pageSize`, and `cancelationToken`.] */
             PageSize = pageSize;
             _cancellationToken = cancellationToken;
 
-            /* SRS_QUERY_21_007: [The constructor shall create and store a JSON from the provided querySpecification.] */
             _querySpecificationJson = JsonConvert.SerializeObject(querySpecification);
 
-            /* SRS_QUERY_21_008: [The constructor shall create and store a queryPath adding `/query` to the provided `targetPath`.] */
             _queryPath = GetQueryUri(serviceName);
 
-            /* SRS_QUERY_21_009: [The constructor shall set continuationToken and current as null.] */
             ContinuationToken = null;
 
-            /* SRS_QUERY_21_010: [The constructor shall set hasNext as true.] */
             _hasNext = true;
         }
-#endif
 
         /// <summary>
         /// Getter for has next
@@ -213,17 +191,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="IndexOutOfRangeException">if the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync(string continuationToken)
         {
-            /* SRS_QUERY_21_011: [The next shall throw IndexOutOfRangeException if the provided continuationToken is null or empty.] */
             if (string.IsNullOrWhiteSpace(continuationToken))
             {
                 throw new IndexOutOfRangeException($"There is no {nameof(continuationToken)} to get pending elements.");
             }
 
-            /* SRS_QUERY_21_012: [The next shall store the provided continuationToken.] */
             ContinuationToken = continuationToken;
             _hasNext = true;
 
-            /* SRS_QUERY_21_013: [The next shall return the next page of results by calling the next().] */
             return await NextAsync().ConfigureAwait(false);
         }
 
@@ -234,25 +209,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="IndexOutOfRangeException">if the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync()
         {
-            /* SRS_QUERY_21_014: [The next shall throw IndexOutOfRangeException if the hasNext is false.] */
             if (!_hasNext)
             {
                 throw new IndexOutOfRangeException("There are no more pending elements");
             }
 
-            /* SRS_QUERY_21_015: [If the pageSize is not 0, the next shall send the HTTP request with `x-ms-max-item-count=[pageSize]` in the header.] */
             IDictionary<string, string> headerParameters = new Dictionary<string, string>();
             if (PageSize != 0)
             {
                 headerParameters.Add(PageSizeHeaderKey, PageSize.ToString(CultureInfo.InvariantCulture));
             }
-            /* SRS_QUERY_21_016: [If the continuationToken is not null or empty, the next shall send the HTTP request with `x-ms-continuation=[continuationToken]` in the header.] */
             if (!string.IsNullOrWhiteSpace(ContinuationToken))
             {
                 headerParameters.Add(ContinuationTokenHeaderKey, ContinuationToken);
             }
 
-            /* SRS_QUERY_21_017: [The next shall send a HTTP request with a HTTP verb `POST`.] */
             ContractApiResponse httpResponse = await _contractApiHttp.RequestAsync(
                 HttpMethod.Post,
                 _queryPath,
@@ -261,12 +232,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 null,
                 _cancellationToken).ConfigureAwait(false);
 
-            /* SRS_QUERY_21_018: [The next shall create and return a new instance of the QueryResult using the `x-ms-item-type` as type, `x-ms-continuation` as the next continuationToken, and the message body.] */
             httpResponse.Fields.TryGetValue(ItemTypeHeaderKey, out string type);
             httpResponse.Fields.TryGetValue(ContinuationTokenHeaderKey, out string continuationToken);
             ContinuationToken = continuationToken;
 
-            /* SRS_QUERY_21_017: [The next shall set hasNext as true if the continuationToken is not null, or false if it is null.] */
             _hasNext = (ContinuationToken != null);
 
             var result = new QueryResult(type, httpResponse.Body, ContinuationToken);

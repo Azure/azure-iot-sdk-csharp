@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Auth
     /// <summary>
     /// Allows authentication to the API using a Shared Access Key provided by custom implementation.
     /// The PnP client is auto generated from swagger and needs to implement a specific class to pass to the protocol layer
-    /// unlike the rest of the clients which are hand-written. So, this implementation for authentication is specific to digital twin (Pnp).
+    /// unlike the rest of the clients which are hand-written. So, this implementation for authentication is specific to digital twin (PnP).
     /// </summary>
     internal class ProvisioningSasCredential: IAuthorizationHeaderProvider
     {

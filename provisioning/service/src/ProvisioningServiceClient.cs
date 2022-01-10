@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common.Service.Auth;
-using Microsoft.Azure.Devices.Provisioning.Service.Auth;
-
 using Azure;
 using Azure.Core;
+using Microsoft.Azure.Devices.Common.Service.Auth;
+using Microsoft.Azure.Devices.Provisioning.Service.Auth;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -140,7 +139,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (credential == null)
             {
-                throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
+                throw new ArgumentNullException(nameof(credential),  "Parameter cannot be null");
             }
 
             return new ProvisioningServiceClient(hostName, credential, httpTransportSettings);
@@ -174,7 +173,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (azureSasCredential == null)
             {
-                throw new ArgumentNullException($"{nameof(azureSasCredential)},  Parameter cannot be null");
+                throw new ArgumentNullException(nameof(azureSasCredential),  "Parameter cannot be null");
             }
 
             return new ProvisioningServiceClient(hostName, azureSasCredential, httpTransportSettings);
