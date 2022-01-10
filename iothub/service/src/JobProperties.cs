@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices
         /// The service assumes this is false, if not specified. If true, then configurations are included in the data export/import.
         /// </remarks>
         [JsonProperty(PropertyName = "includeConfigurations", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? IncludeConfigurations { get; set; }
+        private bool? IncludeConfigurations { get; set; } // waiting for bug fix before publicizing
 
         /// <summary>
         /// Specifies the name of the blob to use when exporting/importing configurations.
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices
         /// The service assumes this is configurations.txt, if not specified.
         /// </remarks>
         [JsonProperty(PropertyName = "configurationsBlobName", NullValueHandling = NullValueHandling.Ignore)]
-        public string ConfigurationsBlobName { get; set; }
+        private string ConfigurationsBlobName { get; set; } // waiting for bug fix before publicizing
 
 #pragma warning disable CA1054 // Uri parameters should not be strings
 
