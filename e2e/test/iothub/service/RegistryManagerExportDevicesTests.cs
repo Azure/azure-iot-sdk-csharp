@@ -66,7 +66,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
-
             try
             {
                 string containerName = StorageContainer.BuildContainerName(idPrefix);
@@ -107,23 +106,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         })
                     .ConfigureAwait(false);
 
-                Configuration configuration = await registryManager
-                    .AddConfigurationAsync(
-                        new Configuration(configurationId)
-                        {
-                            Priority = 2,
-                            Labels = { { "labelName", "labelValue" } },
-                            TargetCondition = "*",
-                            Content =
-                            {
-                                DeviceContent = { { "properties.desired.x", 4L } },
-                            },
-                            Metrics =
-                            {
-                                Queries = { { "successfullyConfigured", "select deviceId from devices where properties.reported.x = 4" } }
-                            },
-                        })
-                    .ConfigureAwait(false);
+                //Configuration configuration = await registryManager
+                //    .AddConfigurationAsync(
+                //        new Configuration(configurationId)
+                //        {
+                //            Priority = 2,
+                //            Labels = { { "labelName", "labelValue" } },
+                //            TargetCondition = "*",
+                //            Content =
+                //            {
+                //                DeviceContent = { { "properties.desired.x", 4L } },
+                //            },
+                //            Metrics =
+                //            {
+                //                Queries = { { "successfullyConfigured", "select deviceId from devices where properties.reported.x = 4" } }
+                //            },
+                //        })
+                //    .ConfigureAwait(false);
 
                 // act
 
@@ -144,11 +143,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         edge2,
                         device)
                 .ConfigureAwait(false);
-                await ValidateConfigurationsAsync(
-                        configsFileName,
-                        storageContainer,
-                        configuration)
-                    .ConfigureAwait(false);
+                //await ValidateConfigurationsAsync(
+                //        configsFileName,
+                //        storageContainer,
+                //        configuration)
+                //    .ConfigureAwait(false);
             }
             finally
             {
@@ -179,8 +178,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 devicesFileName,
                 storageAuthenticationType,
                 identity);
-            exportJobResponse.IncludeConfigurations = true;
-            exportJobResponse.ConfigurationsBlobName = configsFileName;
+            //exportJobResponse.IncludeConfigurations = true;
+            //exportJobResponse.ConfigurationsBlobName = configsFileName;
 
             while (tryCount < MaxIterationWait)
             {
@@ -316,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
                 await registryManager.RemoveDeviceAsync(edgeId2).ConfigureAwait(false);
                 await registryManager.RemoveDeviceAsync(edgeId1).ConfigureAwait(false);
-                await registryManager.RemoveConfigurationAsync(configurationId).ConfigureAwait(false);
+                //await registryManager.RemoveConfigurationAsync(configurationId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
