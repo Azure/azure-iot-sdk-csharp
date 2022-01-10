@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region Telemetry links
 
         internal async Task<AmqpIotSendingLink> OpenTelemetrySenderLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMessageReceiverLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region EventLink
 
         internal async Task<AmqpIotReceivingLink> OpenEventsReceiverLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region MethodLink
 
         internal async Task<AmqpIotSendingLink> OpenMethodsSenderLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMethodsReceiverLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region TwinLink
 
         internal async Task<AmqpIotReceivingLink> OpenTwinReceiverLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotSendingLink> OpenTwinSenderLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region Common link handling
 
         private static async Task<AmqpIotSendingLink> OpenSendingAmqpLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             AmqpSession amqpSession,
             byte? senderSettleMode,
             byte? receiverSettleMode,
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         private static async Task<AmqpIotReceivingLink> OpenReceivingAmqpLinkAsync(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             AmqpSession amqpSession,
             byte? senderSettleMode,
             byte? receiverSettleMode,
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private static string BuildLinkAddress(DeviceIdentity deviceIdentity, string deviceTemplate, string moduleTemplate)
+        private static string BuildLinkAddress(IDeviceIdentity deviceIdentity, string deviceTemplate, string moduleTemplate)
         {
             string path = string.IsNullOrEmpty(deviceIdentity.IotHubConnectionString.ModuleId)
                 ? string.Format(
