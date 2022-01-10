@@ -653,7 +653,7 @@ az iot dps enrollment create `
 
 if ($EnableIotHubSecuritySolution)
 {
-    Write-Host "`nCreating a self-signed certificate lor LA and placing it in $ResourceGroup."
+    Write-Host "`nCreating a self-signed certificate for LA and placing it in $ResourceGroup."
     az ad app credential reset --id $logAnalyticsAppId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
     Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup."
 
