@@ -80,26 +80,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     });
                 await UploadFileAndConfirmAsync(storageContainer, devicesStream, devicesFileName).ConfigureAwait(false);
 
-                using Stream configsStream = ImportExportHelpers.BuildImportStream(
-                    new List<ImportConfiguration>
-                    {
-                        new ImportConfiguration(configId)
-                        {
-                            ImportMode = ConfigurationImportMode.CreateOrUpdateIfMatchETag,
-                            Priority = 3,
-                            Labels = { { "labelName", "labelValue" } },
-                            TargetCondition = "*",
-                            Content =
-                            {
-                                DeviceContent = { { "properties.desired.x", 5L } },
-                            },
-                            Metrics =
-                            {
-                                Queries = { { "successfullyConfigured", "select deviceId from devices where properties.reported.x = 5" } }
-                            },
-                        },
-                    });
-                await UploadFileAndConfirmAsync(storageContainer, configsStream, configsFileName).ConfigureAwait(false);
+                //using Stream configsStream = ImportExportHelpers.BuildImportStream(
+                //    new List<ImportConfiguration>
+                //    {
+                //        new ImportConfiguration(configId)
+                //        {
+                //            ImportMode = ConfigurationImportMode.CreateOrUpdateIfMatchETag,
+                //            Priority = 3,
+                //            Labels = { { "labelName", "labelValue" } },
+                //            TargetCondition = "*",
+                //            Content =
+                //            {
+                //                DeviceContent = { { "properties.desired.x", 5L } },
+                //            },
+                //            Metrics =
+                //            {
+                //                Queries = { { "successfullyConfigured", "select deviceId from devices where properties.reported.x = 5" } }
+                //            },
+                //        },
+                //    });
+                //await UploadFileAndConfirmAsync(storageContainer, configsStream, configsFileName).ConfigureAwait(false);
 
                 ManagedIdentity identity = isUserAssignedMsi
                     ? new ManagedIdentity
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     try
                     {
                         device = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
-                        config = await registryManager.GetConfigurationAsync(configId).ConfigureAwait(false);
+                        //config = await registryManager.GetConfigurationAsync(configId).ConfigureAwait(false);
                         break;
                     }
                     catch (Exception ex)
@@ -200,8 +200,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 devicesFileName,
                 storageAuthenticationType,
                 identity);
-            jobProperties.ConfigurationsBlobName = configsFileName;
-            jobProperties.IncludeConfigurations = true;
+            //jobProperties.ConfigurationsBlobName = configsFileName;
+            //jobProperties.IncludeConfigurations = true;
 
             while (tryCount < MaxIterationWait)
             {

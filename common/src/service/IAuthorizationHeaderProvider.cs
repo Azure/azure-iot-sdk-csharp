@@ -3,7 +3,10 @@
 
 namespace Microsoft.Azure.Devices
 {
-    interface IAuthorizationHeaderProvider
+    /// <summary>
+    /// Gets the authorization header for authenticated requests, regardless of choice of authentication.
+    /// </summary>
+    internal interface IAuthorizationHeaderProvider
     {
         string GetAuthorizationHeader();
     }
