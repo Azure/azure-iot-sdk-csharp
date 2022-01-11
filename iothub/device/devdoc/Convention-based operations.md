@@ -69,7 +69,7 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
 
 public abstract class PayloadCollection : IEnumerable, IEnumerable<KeyValuePair<string, object>> {
     protected PayloadCollection();
-    public IDictionary<string, object> Collection { get; private set; }
+    public IDictionary<string, object> Collection { get; }
     public PayloadConvention Convention { get; internal set; }
     public virtual object this[string key] { get; set; }
     public virtual void Add(string key, object value);
@@ -125,7 +125,7 @@ public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPr
 /// </summary>
 /// <param name="callback">The callback to handle all writable property updates for the client.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, CancellationToken cancellationToken = default);
+public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default);
 ```
 
 #### All related types
@@ -133,8 +133,8 @@ public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCo
 ```csharp
 public class ClientProperties {
     public ClientProperties();
-    public ClientPropertyCollection ReportedFromClient { get; private set; }
-    public ClientPropertyCollection WritablePropertyRequests { get; private set; }
+    public ClientPropertyCollection ReportedFromClient { get; }
+    public ClientPropertyCollection WritablePropertyRequests { get; }
 }
 
 public class ClientPropertyCollection : PayloadCollection {
@@ -213,28 +213,29 @@ public sealed class TelemetryMessage : MessageBase {
 
 ```csharp
 /// <summary>
-/// Set the global command callback handler.
+/// Sets the listener for command invocation requests.
 /// </summary>
-/// <param name="callback">A method implementation that will handle the incoming command.</param>
-/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="callback">The callback to handle all incoming commands for the client.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken = default);
+public Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken = default);
 ```
 #### All related types
 
 ```csharp
 public sealed class CommandRequest {
-    public string CommandName { get; private set; }
-    public string ComponentName { get; private set; }
-    public string DataAsJson { get; }
-    public T GetData<T>();
-    public byte[] GetDataAsBytes();
+    public CommandRequest();
+    public string CommandName { get; }
+    public string ComponentName { get; }
+    public T GetPayload<T>();
+    public ReadOnlyCollection<byte> GetPayloadAsBytes();
+    public string GetPayloadAsString();
 }
 
 public sealed class CommandResponse {
+    public CommandResponse();
     public CommandResponse(int status);
-    public CommandResponse(object result, int status);
-    public string ResultAsJson { get; }
-    public int Status { get; private set; }
+    public CommandResponse(object payload, int status);
+    public int Status { get; }
+    public object Payload { get; }
 }
 ```

@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// See the <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see> documentation for more information.
         /// </remarks>
-        public ClientPropertyCollection WritablePropertyRequests { get; private set; }
+        public ClientPropertyCollection WritablePropertyRequests { get; }
 
         /// <summary>
         /// The collection of properties reported by the client.
@@ -49,6 +49,6 @@ namespace Microsoft.Azure.Devices.Client
         /// Client reported properties can either be <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#read-only-properties">Read-only properties</see>
         /// or they can be <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see>.
         /// </remarks>
-        public ClientPropertyCollection ReportedFromClient { get; private set; }
+        public ClientPropertyCollection ReportedFromClient { get; }
     }
 }
