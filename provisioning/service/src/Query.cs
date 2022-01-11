@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     <item>
     ///         <description>
     ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)">IndividualEnrollment</see>
-        ///     </description>
-        ///     </item>
+    ///     </description>
+    ///     </item>
     ///     <item>
     ///         <description>
     ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)">EnrollmentGroup</see>
