@@ -82,7 +82,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [SuppressMessage("Microsoft.Design", "CA1068",
             Justification = "Public API cannot change parameter order.")]
         internal static Query CreateEnrollmentGroupQuery(
-            ServiceConnectionString provisioningConnectionString,
+            string hostName,
+            IAuthorizationHeaderProvider headerProvider,
             QuerySpecification querySpecification,
             HttpTransportSettings httpTransportSettings,
             CancellationToken cancellationToken,
@@ -102,7 +103,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             /* SRS_REGISTRATION_STATUS_MANAGER_28_010: [The CreateQuery shall return a new Query for DeviceRegistrationState.] */
             return new Query(
-                provisioningConnectionString, 
+                hostName,
+                headerProvider, 
                 GetGetDeviceRegistrationStatus(enrollmentGroupId),
                 querySpecification,
                 httpTransportSettings,
