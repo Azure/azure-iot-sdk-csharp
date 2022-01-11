@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using System.Net;
 using System.Net.Security;
+using System.Threading;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -31,15 +32,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             byte[] ekBuffer = _security.GetEndorsementKey();
             byte[] srkBuffer = _security.GetStorageRootKey();
-            SaslTpmHandler tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, _security);
+            var tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, _security);
             saslProvider.AddHandler(tpmHandler);
 
             return settings;
         }
 
-        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy, RemoteCertificateValidationCallback remoteCertificateValidationCallback)
+        public override Task OpenConnectionAsync(
+            AmqpClientConnection connection, 
+            bool useWebSocket, 
+            IWebProxy proxy, 
+            RemoteCertificateValidationCallback remoteCertificateValidationCallback, 
+            CancellationToken cancellationToken)
         {
-            return connection.OpenAsync(timeout, useWebSocket, null, proxy, remoteCertificateValidationCallback);
+            return connection.OpenAsync(useWebSocket, null, proxy, remoteCertificateValidationCallback, cancellationToken);
         }
 
         public override void SaveCredentials(RegistrationOperationStatus operation)

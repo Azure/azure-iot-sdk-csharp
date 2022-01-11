@@ -20,9 +20,10 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             Audience = builder.HostName;
-            HostName = string.IsNullOrEmpty(builder.GatewayHostName)
-                ? builder.HostName
-                : builder.GatewayHostName;
+            IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
+            HostName = IsUsingGateway
+                ? builder.GatewayHostName
+                : builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
             IotHubName = builder.IotHubName;
@@ -91,6 +92,33 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        // This constructor is only used for unit testing.
+        internal IotHubConnectionString(
+            string ioTHubName = null,
+            string deviceId = null,
+            string moduleId = null,
+            string hostName = null,
+            Uri httpsEndpoint = null,
+            Uri amqpEndpoint = null,
+            string audience = null,
+            string sharedAccessKeyName = null,
+            string sharedAccessKey = null,
+            string sharedAccessSignature = null,
+            bool isUsingGateway = false)
+        {
+            IotHubName = ioTHubName;
+            DeviceId = deviceId;
+            ModuleId = moduleId;
+            HostName = hostName;
+            HttpsEndpoint = httpsEndpoint;
+            AmqpEndpoint = amqpEndpoint;
+            Audience = audience;
+            SharedAccessKeyName = sharedAccessKeyName;
+            SharedAccessKey = sharedAccessKey;
+            SharedAccessSignature = sharedAccessSignature;
+            IsUsingGateway = isUsingGateway;
+        }
+
         public string IotHubName { get; private set; }
 
         public string DeviceId { get; private set; }
@@ -110,5 +138,7 @@ namespace Microsoft.Azure.Devices.Client
         public string SharedAccessKey { get; private set; }
 
         public string SharedAccessSignature { get; private set; }
+
+        public bool IsUsingGateway { get; private set; }
     }
 }

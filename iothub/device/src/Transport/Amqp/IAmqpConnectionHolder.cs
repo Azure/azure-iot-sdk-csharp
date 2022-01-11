@@ -3,17 +3,18 @@
 
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal interface IAmqpConnectionHolder : IDisposable
     {
-        Task<AmqpIotSession> OpenSessionAsync(DeviceIdentity deviceIdentity, TimeSpan timeout);
+        Task<AmqpIotSession> OpenSessionAsync(IDeviceIdentity deviceIdentity, CancellationToken cancellationToken);
 
-        Task<AmqpIotConnection> EnsureConnectionAsync(TimeSpan timeout);
+        Task<AmqpIotConnection> EnsureConnectionAsync(CancellationToken cancellationToken);
 
-        Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout);
+        Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IDeviceIdentity deviceIdentity, CancellationToken cancellationToken);
 
         void Shutdown();
     }

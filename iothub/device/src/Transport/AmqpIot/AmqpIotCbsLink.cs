@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Extensions;
+using System.Threading;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
@@ -24,17 +25,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             string audience,
             string resource,
             string[] requiredClaims,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {
                 Logging.Enter(this, nameof(SendTokenAsync));
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 return await _amqpCbsLink
-                    .SendTokenAsync(tokenProvider, namespaceAddress, audience, resource, requiredClaims, timeout)
+                    .SendTokenAsync(tokenProvider, namespaceAddress, audience, resource, requiredClaims, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (AmqpException e) when (!e.IsFatal())

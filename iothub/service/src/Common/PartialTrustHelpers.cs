@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Common
             throw new NotImplementedException();
 #else
             //Currently unrestricted permissions are required to create Etw provider. 
-            PermissionSet permissions = new PermissionSet(PermissionState.Unrestricted);
+            var permissions = new PermissionSet(PermissionState.Unrestricted);
             return CheckAppDomainPermissions(permissions);
 #endif
         }

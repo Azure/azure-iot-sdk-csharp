@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using System.Threading;
-using Microsoft.Azure.Devices.Common;
 
 #if !NET451
 
+using System.Threading;
 using Azure.Core;
+using Microsoft.Azure.Devices.Common;
 
 #endif
 
@@ -23,7 +22,7 @@ namespace Microsoft.Azure.Devices
         : IotHubConnectionProperties
     {
 #if !NET451
-        private const string _tokenType = "Bearer";
+        private const string TokenType = "Bearer";
         private readonly TokenCredential _credential;
         private readonly object _tokenLock = new object();
         private AccessToken? _cachedAccessToken;
@@ -63,8 +62,7 @@ namespace Microsoft.Azure.Devices
                 }
             }
 
-            return $"{_tokenType} {_cachedAccessToken.Value.Token}";
-
+            return $"{TokenType} {_cachedAccessToken.Value.Token}";
 #endif
         }
 
@@ -82,8 +80,8 @@ namespace Microsoft.Azure.Devices
                 new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
                 new CancellationToken()).ConfigureAwait(false);
             return new CbsToken(
-               $"{_tokenType} {token.Token}",
-                _tokenType,
+               $"{TokenType} {token.Token}",
+                TokenType,
                 token.ExpiresOn.UtcDateTime);
 #endif
         }

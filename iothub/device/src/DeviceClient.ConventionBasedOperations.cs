@@ -14,6 +14,9 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <threadsafety static="true" instance="true" />
     public partial class DeviceClient : IDisposable
+#if !NET451 && !NET472 && !NETSTANDARD2_0
+        , IAsyncDisposable
+#endif
     {
         /// <summary>
         /// The <see cref="PayloadConvention"/> that the client uses for convention-based operations.

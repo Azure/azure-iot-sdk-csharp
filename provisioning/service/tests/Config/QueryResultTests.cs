@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void QueryResultConstructorSucceedOnIndividualEnrollment()
         {
             // arrange - act
-            QueryResult queryResult = new QueryResult(SerializedNameEnrollment, SampleEnrollmentsJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameEnrollment, SampleEnrollmentsJSON, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void QueryResultConstructorSucceedOnEnrollmentGroup()
         {
             // arrange - act
-            QueryResult queryResult = new QueryResult(SerializedNameEnrollmentGroup, SampleEnrollmentGroupJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameEnrollmentGroup, SampleEnrollmentGroupJSON, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void QueryResultConstructorSucceedOnDeviceRegistration()
         {
             // arrange - act
-            QueryResult queryResult = new QueryResult(SerializedNameDeviceRegistration, SampleRegistrationStatusJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameDeviceRegistration, SampleRegistrationStatusJSON, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void QueryResultConstructorSucceedOnUnknownWithNullBody()
         {
             // arrange - act
-            QueryResult queryResult = new QueryResult(SerializedNameUnknown, null, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameUnknown, null, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void QueryResultConstructorSucceedOnUnknownWithObjectListBody()
         {
             // arrange - act
-            QueryResult queryResult = new QueryResult(SerializedNameUnknown, SampleListJObjectJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameUnknown, SampleListJObjectJSON, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void QueryResultConstructorSucceedOnUnknownWithIntegerListBody()
         {
             // arrange - act
-            QueryResult queryResult = new QueryResult(SerializedNameUnknown, SampleListIntJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameUnknown, SampleListIntJSON, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string body = "This is a non deserializable body";
 
             // act
-            QueryResult queryResult = new QueryResult(SerializedNameUnknown, body, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameUnknown, body, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
@@ -290,7 +290,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string body = "This is a non deserializable body";
 
             // act
-            QueryResult queryResult = new QueryResult(SerializedNameUnknown, body, null);
+            var queryResult = new QueryResult(SerializedNameUnknown, body, null);
 
             // assert
             Assert.IsNotNull(queryResult);
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string body = "This is a non deserializable body";
 
             // act
-            QueryResult queryResult = new QueryResult(SerializedNameUnknown, body, "");
+            var queryResult = new QueryResult(SerializedNameUnknown, body, "");
 
             // assert
             Assert.IsNotNull(queryResult);

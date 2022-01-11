@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string idScope, 
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var _result = await operations.OperationStatusLookupWithHttpMessagesAsync(
+            using (Rest.HttpOperationResponse<RegistrationOperationStatus> _result = await operations.OperationStatusLookupWithHttpMessagesAsync(
                                                         registrationId, 
                                                         operationId, 
                                                         idScope, 
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             DeviceRegistration deviceRegistration = default(DeviceRegistration), 
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var _result = await operations.DeviceRegistrationStatusLookupWithHttpMessagesAsync(
+            using (Rest.HttpOperationResponse<Models.DeviceRegistrationResult> _result = await operations.DeviceRegistrationStatusLookupWithHttpMessagesAsync(
                                                     registrationId, 
                                                     idScope, 
                                                     deviceRegistration, 
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             bool? forceRegistration = default(bool?), 
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var _result = await operations.RegisterDeviceWithHttpMessagesAsync(registrationId, idScope, deviceRegistration, forceRegistration, null, cancellationToken).ConfigureAwait(false))
+            using (Rest.HttpOperationResponse<RegistrationOperationStatus> _result = await operations.RegisterDeviceWithHttpMessagesAsync(registrationId, idScope, deviceRegistration, forceRegistration, null, cancellationToken).ConfigureAwait(false))
             {
                 _result.Body.RetryAfter = _result.Response.Headers.RetryAfter?.Delta;
                 return _result.Body;

@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            var x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
+            X509Certificates x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            var x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
+            X509Certificates x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);

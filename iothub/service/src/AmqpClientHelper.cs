@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
@@ -62,19 +63,42 @@ namespace Microsoft.Azure.Devices
             return path;
         }
 
-        internal static async Task DisposeMessageAsync(FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink, string lockToken, Outcome outcome, bool batchable)
+        internal static async Task DisposeMessageAsync(
+            FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
+            string lockToken,
+            Outcome outcome,
+            bool batchable)
+        {
+            using var cts = new CancellationTokenSource(IotHubConnection.DefaultOperationTimeout);
+            await DisposeMessageAsync(faultTolerantReceivingLink, lockToken, outcome, batchable, cts.Token).ConfigureAwait(false);
+        }
+
+        internal static async Task DisposeMessageAsync(
+            FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
+            string lockToken,
+            Outcome outcome,
+            bool batchable,
+            CancellationToken cancellationToken)
         {
             Logging.Enter(faultTolerantReceivingLink, lockToken, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 ArraySegment<byte> deliveryTag = IotHubConnection.ConvertToDeliveryTag(lockToken);
 
                 Outcome disposeOutcome;
                 try
                 {
                     ReceivingAmqpLink deviceBoundReceivingLink = await faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                    disposeOutcome = await deviceBoundReceivingLink.DisposeMessageAsync(deliveryTag, outcome, batchable, IotHubConnection.DefaultOperationTimeout).ConfigureAwait(false);
+                    disposeOutcome = await deviceBoundReceivingLink
+                        .DisposeMessageAsync(
+                            deliveryTag,
+                            outcome,
+                            batchable,
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
