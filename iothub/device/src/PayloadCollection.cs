@@ -28,18 +28,16 @@ namespace Microsoft.Azure.Devices.Client
         public PayloadConvention Convention { get; internal set; }
 
         /// <summary>
-        /// Get the value at the specified key.
+        /// Gets the value with the specified key.
         /// </summary>
         /// <remarks>
         /// This accessor is best used to access and cast to simple types.
         /// It is recommended to use <see cref="TryGetValue"/> to deserialize to a complex type.
         /// <para>
-        /// <remarks>
         /// For setting component-level property values see <see cref="ClientPropertyCollection.AddComponentProperty(string, string, object)"/>
-        /// and <see cref="ClientPropertyCollection.AddComponentProperties(string, IDictionary{string, object})"/> instead.
-        /// These convenience methods ensure that component-level properties include the component identifier markers { "__t": "c" }.
+        /// and <see cref="ClientPropertyCollection.AddComponentProperties(string, IDictionary{string, object})"/> instead
+        /// as these convenience methods ensure that component-level properties include the component identifier markers: { "__t": "c" }.
         /// For more information see <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
-        /// </remarks>
         /// </para>
         /// </remarks>
         /// <param name="key">Key of value.</param>
@@ -73,8 +71,8 @@ namespace Microsoft.Azure.Devices.Client
         /// For property operations see <see cref="ClientPropertyCollection.AddOrUpdateRootProperty(string, object)"/>
         /// and <see cref="ClientPropertyCollection.AddOrUpdateComponentProperties(string, IDictionary{string, object})"/> instead.
         /// </remarks>
-        /// <param name="key">The name of the telemetry.</param>
-        /// <param name="value">The value of the telemetry.</param>
+        /// <param name="key">The name of the key to be added to the collection.</param>
+        /// <param name="value">The value to be added to the collection.</param>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
         public virtual void AddOrUpdate(string key, object value)
         {
@@ -95,10 +93,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Determines whether the specified property is present.
+        /// Determines whether the specified key is present.
         /// </summary>
         /// <param name="key">The key in the collection to locate.</param>
-        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if the specified property is present, otherwise <c>false</c>.</returns>
         public bool Contains(string key)
         {
             return Collection.ContainsKey(key);

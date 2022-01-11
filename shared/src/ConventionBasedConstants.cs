@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// Container for common convention based constants.
+    /// Common convention based constants.
     /// </summary>
     public static class ConventionBasedConstants
     {
@@ -29,17 +29,17 @@ namespace Microsoft.Azure.Devices.Shared
         public const string ValuePropertyName = "value";
 
         /// <summary>
-        /// Represents the JSON document property name for the Ack Code of a writable property response.
+        /// Represents the JSON document property name for the acknowledgement code of a writable property response.
         /// </summary>
         public const string AckCodePropertyName = "ac";
 
         /// <summary>
-        /// Represents the JSON document property name for the Ack Version of a writable property response.
+        /// Represents the JSON document property name for the acknowledgement version of a writable property response.
         /// </summary>
         public const string AckVersionPropertyName = "av";
 
         /// <summary>
-        /// Represents the JSON document property name for the Ack Description of a writable property response.
+        /// Represents the JSON document property name for the acknowledgement description of a writable property response.
         /// </summary>
         public const string AckDescriptionPropertyName = "ad";
     }
