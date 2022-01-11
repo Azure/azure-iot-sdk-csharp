@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
+    [Ignore("TODO: Enable when invalid cert server is back online.")]
     public class IoTHubCertificateValidationE2ETest : E2EMsTestBase
     {
         [LoggedTestMethod]

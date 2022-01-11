@@ -20,8 +20,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <remarks>
     /// The <see cref="Query"/> iterator is the result of the query factory for
     /// <list type="bullet">
-    ///     <item><b>IndividualEnrollment:</b>
-    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)"/>
+    ///     <item>
+    ///         <description>
+    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)">IndividualEnrollment</see>
+    ///     </description>
+    ///     </item>
+    ///     <item>
+    ///         <description>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)">EnrollmentGroup</see>
+    ///         </description>
     ///     </item>
     ///     <item><b>EnrollmentGroup:</b>
     ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)"/>
