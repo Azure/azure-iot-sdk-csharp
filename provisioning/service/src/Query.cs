@@ -19,15 +19,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <remarks>
     /// The <see cref="Query"/> iterator is the result of the query factory for
     /// <list type="bullet">
-    ///     <item><term>
+    ///     <item>
+    ///         <description>
     ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)">IndividualEnrollment</see>
-    ///     </term></item>
-    ///     <item><term>
+        ///     </description>
+        ///     </item>
+    ///     <item>
+    ///         <description>
     ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)">EnrollmentGroup</see>
-    ///     </term></item>
-    ///     <item><term>
-    ///     <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, String, int)">RegistrationStatus</see>
-    ///     </term></item>
+    ///         </description>
+    ///     </item>
+    ///     <item>
+    ///         <description>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, String, int)">RegistrationStatus</see>
+    ///         </description>
+    ///     </item>
     /// </list>
     /// On all cases, the <see cref="QuerySpecification"/> contains a SQL query that must follow the
     ///     Query Language for the Device Provisioning Service.
