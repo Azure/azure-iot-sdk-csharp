@@ -128,36 +128,37 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
         {
             var commandCallReceived = new TaskCompletionSource<bool>();
 
-            await deviceClient.SubscribeToCommandsAsync(
-                (request, context) =>
-                {
-                    logger.Trace($"{nameof(SetDeviceReceiveCommandAsync)}: DeviceClient command: {request.CommandName}.");
-
-                    try
+            await deviceClient
+                .SubscribeToCommandsAsync(
+                    request =>
                     {
-                        var valueToTest = request.GetData<ServiceCommandRequestObject>();
-                        if (string.IsNullOrEmpty(componentName))
-                        {
-                            Assert.AreEqual(null, request.ComponentName, $"The expected component name should be null but was {request.ComponentName}");
-                        }
-                        else
-                        {
-                            Assert.AreEqual(componentName, request.ComponentName, $"The expected component name should be {componentName} but was {request.ComponentName}");
-                        }
-                        var assertionObject = new ServiceCommandRequestAssertion();
-                        string responseExpected = JsonConvert.SerializeObject(assertionObject);
-                        Assert.AreEqual(responseExpected, request.DataAsJson, $"The expected response payload should be {responseExpected} but was {request.DataAsJson}");
-                        Assert.AreEqual(assertionObject.A, valueToTest.A, $"The expected response object did not decode properly. Value a should be {assertionObject.A} but was {valueToTest?.A ?? int.MinValue}");
-                        commandCallReceived.SetResult(true);
-                    }
-                    catch (Exception ex)
-                    {
-                        commandCallReceived.SetException(ex);
-                    }
+                        logger.Trace($"{nameof(SetDeviceReceiveCommandAsync)}: DeviceClient command: {request.CommandName}.");
 
-                    return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
-                },
-                null).ConfigureAwait(false);
+                        try
+                        {
+                            var valueToTest = request.GetPayload<ServiceCommandRequestObject>();
+                            if (string.IsNullOrEmpty(componentName))
+                            {
+                                Assert.AreEqual(null, request.ComponentName, $"The expected component name should be null but was {request.ComponentName}");
+                            }
+                            else
+                            {
+                                Assert.AreEqual(componentName, request.ComponentName, $"The expected component name should be {componentName} but was {request.ComponentName}");
+                            }
+                            var assertionObject = new ServiceCommandRequestAssertion();
+                            string responseExpected = JsonConvert.SerializeObject(assertionObject);
+                            Assert.AreEqual(responseExpected, request.GetPayloadAsString(), $"The expected response payload should be {responseExpected} but was {request.GetPayloadAsString()}");
+                            Assert.AreEqual(assertionObject.A, valueToTest.A, $"The expected response object did not decode properly. Value a should be {assertionObject.A} but was {valueToTest?.A ?? int.MinValue}");
+                            commandCallReceived.SetResult(true);
+                        }
+                        catch (Exception ex)
+                        {
+                            commandCallReceived.SetException(ex);
+                        }
+
+                        return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
+                    })
+                .ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
             return commandCallReceived.Task;

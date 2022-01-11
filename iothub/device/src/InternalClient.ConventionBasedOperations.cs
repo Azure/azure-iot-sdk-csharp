@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
             return SendEventAsync(telemetryMessage, cancellationToken);
         }
 
-        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken)
+        internal Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken)
         {
             // Subscribe to methods default handler internally and use the callback received internally to invoke the user supplied command callback.
             var methodDefaultCallback = new MethodCallback(async (methodRequest, userContext) =>
@@ -56,14 +56,19 @@ namespace Microsoft.Azure.Devices.Client
                     commandRequest = new CommandRequest(payloadConvention: PayloadConvention, commandName: methodRequest.Name, data: methodRequest.Data);
                 }
 
-                CommandResponse commandResponse = await callback.Invoke(commandRequest, userContext).ConfigureAwait(false);
+                CommandResponse commandResponse = await callback.Invoke(commandRequest).ConfigureAwait(false);
                 commandResponse.PayloadConvention = PayloadConvention;
-                return commandResponse.ResultAsBytes != null
-                    ? new MethodResponse(commandResponse.ResultAsBytes, commandResponse.Status)
+                return commandResponse.GetPayloadAsBytes() != null
+                    ? new MethodResponse(commandResponse.GetPayloadAsBytes(), commandResponse.Status)
                     : new MethodResponse(commandResponse.Status);
             });
 
-            return SetMethodDefaultHandlerAsync(methodDefaultCallback, userContext, cancellationToken);
+            // We pass in a null context to the internal API because the updated SubscribeToCommandsAsync API
+            // does not require you to pass in a user context.
+            // Since SubscribeToCommandsAsync callback is invoked for all command invocations,
+            // the user context passed in would be the same for all scenarios.
+            // This user context can be set at a class level instead.
+            return SetMethodDefaultHandlerAsync(methodDefaultCallback, null, cancellationToken);
         }
 
         internal async Task<ClientProperties> GetClientTwinPropertiesAsync(CancellationToken cancellationToken)
@@ -118,7 +123,7 @@ namespace Microsoft.Azure.Devices.Client
             });
 
             // We pass in a null context to the internal API because the updated SubscribeToWritablePropertyUpdateRequestsAsync API
-            // no longer requires you to pass in a user context.
+            // does not require you to pass in a user context.
             // Since SubscribeToWritablePropertyUpdateRequestsAsync callback is invoked for all property update events,
             // the user context passed in would be the same for all scenarios.
             // This user context can be set at a class level instead.
