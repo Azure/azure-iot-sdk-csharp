@@ -1,9 +1,10 @@
 # update .csproj file versions and create a release branch/commit
 name: BumpVersion_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
+pool:
+    vmImage: windows-latest
 
-phases:
-
-- phase: Phase_1
+jobs:
+- job: Build
   steps:
   - task: EsrpClientTool@1
   - task: DownloadBuildArtifacts@0
@@ -18,7 +19,7 @@ phases:
 
   - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
     persistCredentials: 'true'  # set to 'true' to leave the OAuth token in the Git config after the initial fetch
-    clean: 'resources'
+    clean: true
 
   - task: DownloadSecureFile@1
     displayName: 'Download secure file - iothubsdksign-auth-base64.pfx'
@@ -90,6 +91,11 @@ phases:
         ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/build-tools/csharp/new/json
         ESRP_LOG_DIR: $(Build.StagingDirectory)/build-tools/csharp/new/logs
         AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/build-tools/csharp/nuget_local
+
+  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+    displayName: 'SBOM Generation Task'
+    inputs:
+      BuildDropPath: '$(Build.SourcesDirectory)/bin/pkg'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Signed Nuget Packages'
