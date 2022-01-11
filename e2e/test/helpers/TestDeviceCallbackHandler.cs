@@ -177,13 +177,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetClientPropertyUpdateCallbackHandlerAsync<T>(string expectedPropName, string componentName = default)
         {
-            string userContext = "myContext";
-
             await _deviceClient
                 .SubscribeToWritablePropertyUpdateRequestsAsync(
-                    (patch, context) =>
+                    patch =>
                     {
-                        _logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback property: WritableProperty: {patch}, {context}");
+                        _logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback property: WritableProperty: {patch}.");
 
                         try
                         {
@@ -193,7 +191,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                             isPropertyPresent.Should().BeTrue();
                             propertyFromCollection.Should().BeEquivalentTo((T)ExpectedClientPropertyValue);
-                            context.Should().Be(userContext);
                         }
                         catch (Exception ex)
                         {
@@ -206,8 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         }
 
                         return Task.FromResult(true);
-                    },
-                    userContext)
+                    })
                 .ConfigureAwait(false);
         }
 

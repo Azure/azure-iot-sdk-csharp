@@ -105,19 +105,24 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken)
         {
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
             var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
             {
                 // convert a TwinCollection to PropertyCollection
                 var propertyCollection = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(twinCollection, PayloadConvention);
-                callback.Invoke(propertyCollection, userContext);
+                callback.Invoke(propertyCollection);
 
                 return TaskHelpers.CompletedTask;
             });
 
-            return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
+            // We pass in a null context to the internal API because the updated SubscribeToWritablePropertyUpdateRequestsAsync API
+            // no longer requires you to pass in a user context.
+            // Since SubscribeToWritablePropertyUpdateRequestsAsync callback is invoked for all property update events,
+            // the user context passed in would be the same for all scenarios.
+            // This user context can be set at a class level instead.
+            return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, null, cancellationToken);
         }
     }
 }
