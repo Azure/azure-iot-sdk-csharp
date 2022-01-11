@@ -124,22 +124,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task Service_Amqp_TokenCredentialAuth_Success()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
+            string ghostDevice = $"{nameof(Service_Amqp_TokenCredentialAuth_Success)}_{Guid.NewGuid()}";
             using var serviceClient = ServiceClient.Create(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential(),
                 TransportType.Amqp);
-
-            // act
             await serviceClient.OpenAsync().ConfigureAwait(false);
             using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
-            await serviceClient.SendAsync(testDevice.Id, message);
 
-            // cleanup
-            await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
+            // act
+            Func<Task> act = async () => await serviceClient.SendAsync(ghostDevice, message).ConfigureAwait(false);
+
+            // assert
+            await act.Should().ThrowAsync<DeviceNotFoundException>();
         }
 
 #endif
