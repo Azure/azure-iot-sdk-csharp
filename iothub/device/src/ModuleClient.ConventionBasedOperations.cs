@@ -65,12 +65,11 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.UpdateClientPropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
-        /// Sets the global listener for writable property update events.
+        /// Sets the listener for writable property update events.
         /// </summary>
-        /// <param name="callback">The global call back to handle all writable property updates.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="callback">The callback to handle all writable property updates for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToWritablePropertyUpdateRequestsAsync(callback, userContext, cancellationToken);
+        public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToWritablePropertyUpdateRequestsAsync(callback, cancellationToken);
     }
 }
