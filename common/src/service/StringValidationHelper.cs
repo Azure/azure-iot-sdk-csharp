@@ -66,9 +66,9 @@ namespace Microsoft.Azure.Devices.Common
                 return false;
             }
 
-            var lengthNoPadding = value.Length;
+            int lengthNoPadding = value.Length;
             value = value.TrimEnd(Base64Padding);
-            var lengthPadding = value.Length;
+            int lengthPadding = value.Length;
 
             if ((lengthNoPadding - lengthPadding) > 2)
             {

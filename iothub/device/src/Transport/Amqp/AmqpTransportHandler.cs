@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
-        private readonly AmqpUnit _amqpUnit;
+        protected AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new object();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _operationTimeout = transportSettings.OperationTimeout;
             _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
-            var deviceIdentity = new DeviceIdentity(connectionString, transportSettings, context.Get<ProductInfo>(), context.Get<ClientOptions>());
+            IDeviceIdentity deviceIdentity = new DeviceIdentity(connectionString, transportSettings, context.Get<ProductInfo>(), context.Get<ClientOptions>());
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 deviceIdentity,
                 onMethodCallback,
@@ -98,7 +98,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             try
             {
-                await _amqpUnit.OpenAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
+                using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+                await _amqpUnit.OpenAsync(cts.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -123,7 +124,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             try
             {
-                await _amqpUnit.OpenAsync(_operationTimeout).ConfigureAwait(false);
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                await _amqpUnit.OpenAsync(ctb.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -143,7 +145,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _amqpUnit.CloseAsync(_operationTimeout).ConfigureAwait(false);
+
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                await _amqpUnit.CloseAsync(ctb.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -163,7 +167,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                AmqpIotOutcome amqpIotOutcome = await _amqpUnit.SendEventAsync(message, _operationTimeout).ConfigureAwait(false);
+
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                AmqpIotOutcome amqpIotOutcome = await _amqpUnit.SendEventAsync(message, ctb.Token).ConfigureAwait(false);
+
                 amqpIotOutcome?.ThrowIfNotAccepted();
             }
             finally
@@ -180,7 +187,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await _amqpUnit.SendEventsAsync(messages, _operationTimeout).ConfigureAwait(false);
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                await _amqpUnit.SendEventsAsync(messages, ctb.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -192,7 +200,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             Logging.Enter(this, timeoutHelper, timeoutHelper.GetRemainingTime(), nameof(ReceiveAsync));
 
-            Message message = await _amqpUnit.ReceiveMessageAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            Message message = await _amqpUnit.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
 
             Logging.Exit(this, timeoutHelper, timeoutHelper.GetRemainingTime(), nameof(ReceiveAsync));
 
@@ -207,7 +216,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                message = await _amqpUnit.ReceiveMessageAsync(_transportSettings.DefaultReceiveTimeout).ConfigureAwait(false);
+
+                using var ctb = new CancellationTokenBundle(_transportSettings.DefaultReceiveTimeout, cancellationToken);
+                message = await _amqpUnit.ReceiveMessageAsync(ctb.Token).ConfigureAwait(false);
+
                 if (message != null)
                 {
                     break;
@@ -226,7 +238,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _amqpUnit.EnableReceiveMessageAsync(_operationTimeout).ConfigureAwait(false);
+
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                await _amqpUnit.EnableReceiveMessageAsync(ctb.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -248,7 +262,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _amqpUnit.DisableReceiveMessageAsync(_operationTimeout).ConfigureAwait(false);
+
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                await _amqpUnit.DisableReceiveMessageAsync(ctb.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -267,8 +283,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
 
-                await _amqpUnit.EnableMethodsAsync(_operationTimeout).ConfigureAwait(false);
+                await _amqpUnit.EnableMethodsAsync(ctb.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -284,7 +301,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await _amqpUnit.DisableMethodsAsync(_operationTimeout).ConfigureAwait(false);
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                await _amqpUnit.DisableMethodsAsync(ctb.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -299,9 +317,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 AmqpIotOutcome amqpIotOutcome = await _amqpUnit
-                    .SendMethodResponseAsync(methodResponse, _operationTimeout)
+                    .SendMethodResponseAsync(methodResponse, ctb.Token)
                     .ConfigureAwait(false);
+
                 if (amqpIotOutcome != null)
                 {
                     amqpIotOutcome.ThrowIfNotAccepted();
@@ -325,8 +346,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 string correlationId = AmqpTwinMessageType.Put + Guid.NewGuid().ToString();
+
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 await _amqpUnit
-                    .SendTwinMessageAsync(AmqpTwinMessageType.Put, correlationId, null, _operationTimeout)
+                    .SendTwinMessageAsync(AmqpTwinMessageType.Put, correlationId, null, ctb.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -343,7 +366,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await _amqpUnit.DisableTwinLinksAsync(_operationTimeout).ConfigureAwait(false);
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                await _amqpUnit.DisableTwinLinksAsync(ctb.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -427,9 +451,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 var taskCompletionSource = new TaskCompletionSource<AmqpMessage>();
                 _twinResponseCompletions[correlationId] = taskCompletionSource;
 
-                await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, _operationTimeout).ConfigureAwait(false);
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+                await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, ctb.Token).ConfigureAwait(false);
 
-                var receivingTask = taskCompletionSource.Task;
+                Task<AmqpMessage> receivingTask = taskCompletionSource.Task;
 
                 if (await Task.WhenAny(
                     receivingTask,
@@ -442,7 +467,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                     // Task completed within timeout.
                     // Consider that the task may have faulted or been canceled.
-                    // We re-await the task so that any exceptions/cancellation is rethrown.
+                    // We re-await the task so that any exceptions/cancellation is re-thrown.
                     response = await receivingTask.ConfigureAwait(false);
                 }
                 else
@@ -464,20 +489,32 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Events
 
-        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
-
-            try
+            // If an AMQP transport is opened as a module twin instead of an Edge module we need
+            // to enable the deviceBound operations instead of the event receiver link
+            if (isAnEdgeModule)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
-                await _amqpUnit.EnableEventReceiveAsync(_operationTimeout).ConfigureAwait(false);
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+
+                    await _amqpUnit.EnableEventReceiveAsync(ctb.Token).ConfigureAwait(false);
+                }
+                finally
+                {
+                    Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                }
             }
-            finally
+            else
             {
-                Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
+
         }
 
         #endregion Events
@@ -491,7 +528,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Accepted);
+                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Accepted, cancellationToken);
             }
             finally
             {
@@ -506,7 +543,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Released);
+                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Released, cancellationToken);
             }
             finally
             {
@@ -521,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Rejected);
+                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Rejected, cancellationToken);
             }
             finally
             {
@@ -529,7 +566,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private async Task DisposeMessageAsync(string lockToken, AmqpIotDisposeActions outcome)
+        private async Task DisposeMessageAsync(string lockToken, AmqpIotDisposeActions outcome, CancellationToken cancellationToken)
         {
             Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
 
@@ -542,7 +579,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 // the DeviceBoundReceivingLink or the EventsReceivingLink.
                 // If this changes (i.e. modules are able to receive C2D messages, or devices are able to receive telemetry), this logic
                 // will have to be updated.
-                disposeOutcome = await _amqpUnit.DisposeMessageAsync(lockToken, outcome, _operationTimeout).ConfigureAwait(false);
+                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
+
+                disposeOutcome = await _amqpUnit.DisposeMessageAsync(lockToken, outcome, ctb.Token).ConfigureAwait(false);
                 disposeOutcome.ThrowIfError();
             }
             finally

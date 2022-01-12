@@ -28,7 +28,15 @@ namespace Microsoft.Azure.Devices.Client
         private const string SharedAccessKeyPropertyName = "SharedAccessKey";
         private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
         private const string GatewayHostNamePropertyName = "GatewayHostName";
+
+        // For some reason, the .NET SDK originally expected "X509Cert=true" in a connection string to inform the SDK that it would not
+        // include a shared access key, and to not error when parsing a connection string. However, the other SDK languages all followed
+        // the same key/value pair of "x509=true".
+        // So now we're adding support for it to work either way, so we stay compliant with the past but can improve documentation so all
+        // SDK languages refer to the same key/value pair naming.
         private const string X509CertPropertyName = "X509Cert";
+
+        private const string CommonX509CertPropertyName = "x509";
 
         private const RegexOptions CommonRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
@@ -45,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubConnectionStringBuilder"/> class.
         /// </summary>
-        private IotHubConnectionStringBuilder()
+        internal IotHubConnectionStringBuilder()
         {
         }
 
@@ -215,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignature);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(X509CertPropertyName, UsingX509Cert);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(CommonX509CertPropertyName, UsingX509Cert);
             stringBuilder.AppendKeyValuePairIfNotEmpty(GatewayHostNamePropertyName, GatewayHostName);
             if (stringBuilder.Length > 0)
             {
@@ -235,7 +243,8 @@ namespace Microsoft.Azure.Devices.Client
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
-            UsingX509Cert = GetConnectionStringOptionalValueOrDefault<bool>(map, X509CertPropertyName, ParseX509, true);
+            UsingX509Cert = GetConnectionStringOptionalValueOrDefault<bool>(map, X509CertPropertyName, ParseX509, true)
+                || GetConnectionStringOptionalValueOrDefault<bool>(map, CommonX509CertPropertyName, ParseX509, true);
             GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
 
             Validate();
@@ -397,9 +406,9 @@ namespace Microsoft.Azure.Devices.Client
             return iotHubName;
         }
 
-        private static bool ParseX509(string input, bool ignoreCase, out bool usingX509Cert)
+        private static bool ParseX509(string input, bool ignoreCase, out bool isUsingX509Cert)
         {
-            usingX509Cert = false;
+            isUsingX509Cert = false;
 
             bool isMatch = string.Equals(
                 input,
@@ -409,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client
                     : StringComparison.Ordinal);
             if (isMatch)
             {
-                usingX509Cert = true;
+                isUsingX509Cert = true;
             }
 
             // Always returns true, but must return a bool because it is used in a delegate that requires that return.

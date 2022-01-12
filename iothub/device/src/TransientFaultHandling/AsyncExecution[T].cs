@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 {
                     return this.previousTask;
                 }
-                TaskCompletionSource<TResult> taskCompletionSource = new TaskCompletionSource<TResult>();
+                var taskCompletionSource = new TaskCompletionSource<TResult>();
                 taskCompletionSource.TrySetCanceled();
                 return taskCompletionSource.Task;
             }
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                     {
                         throw;
                     }
-                    TaskCompletionSource<TResult> taskCompletionSource2 = new TaskCompletionSource<TResult>();
+                    var taskCompletionSource2 = new TaskCompletionSource<TResult>();
                     taskCompletionSource2.TrySetException(ex);
                     task = taskCompletionSource2.Task;
                 }

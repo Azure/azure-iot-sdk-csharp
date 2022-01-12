@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
@@ -34,9 +35,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _hostName = hostName;
         }
 
-        public async Task<AmqpIotConnection> OpenConnectionAsync(TimeSpan timeout)
+        public async Task<AmqpIotConnection> OpenConnectionAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, timeout, nameof(OpenConnectionAsync));
+            Logging.Enter(this, nameof(OpenConnectionAsync));
 
             var amqpTransportProvider = new AmqpTransportProvider();
             amqpTransportProvider.Versions.Add(s_amqpVersion_1_0_0);
@@ -54,15 +55,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             _amqpIotTransport = new AmqpIotTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
-            TransportBase transportBase = await _amqpIotTransport.InitializeAsync(timeout).ConfigureAwait(false);
+            TransportBase transportBase = await _amqpIotTransport.InitializeAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var amqpConnection = new AmqpConnection(transportBase, amqpSettings, amqpConnectionSettings);
                 var amqpIotConnection = new AmqpIotConnection(amqpConnection);
                 amqpConnection.Closed += amqpIotConnection.AmqpConnectionClosed;
-                await amqpConnection.OpenAsync(timeout).ConfigureAwait(false);
+                await amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
+                Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
 
                 return amqpIotConnection;
             }

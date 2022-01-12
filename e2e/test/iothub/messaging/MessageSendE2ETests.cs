@@ -68,18 +68,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats()
         {
-            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            var amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
             amqpTransportSettings.IdleTimeout = TimeSpan.FromMinutes(2);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+            var transportSettings = new ITransportSettings[] { amqpTransportSettings };
             await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_AmqpWs_WithHeartbeats()
         {
-            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            var amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
             amqpTransportSettings.IdleTimeout = TimeSpan.FromMinutes(2);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+            var transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
         }
@@ -89,9 +89,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
         {
-            Client.Http1TransportSettings httpTransportSettings = new Client.Http1TransportSettings();
+            var httpTransportSettings = new Client.Http1TransportSettings();
             httpTransportSettings.Proxy = new WebProxy(s_proxyServerAddress);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { httpTransportSettings };
+            var transportSettings = new ITransportSettings[] { httpTransportSettings };
 
             await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
         }
@@ -100,10 +100,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         public async Task Message_DeviceSendSingleMessage_Http_WithCustomProxy()
         {
-            Http1TransportSettings httpTransportSettings = new Http1TransportSettings();
-            CustomWebProxy proxy = new CustomWebProxy(Logger);
+            var httpTransportSettings = new Http1TransportSettings();
+            var proxy = new CustomWebProxy(Logger);
             httpTransportSettings.Proxy = proxy;
-            ITransportSettings[] transportSettings = new ITransportSettings[] { httpTransportSettings };
+            var transportSettings = new ITransportSettings[] { httpTransportSettings };
 
             await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
             Assert.AreNotEqual(proxy.Counter, 0);
@@ -114,9 +114,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_AmqpWs_WithProxy()
         {
-            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            var amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
             amqpTransportSettings.Proxy = new WebProxy(s_proxyServerAddress);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+            var transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
         }
@@ -125,10 +125,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         public async Task Message_DeviceSendSingleMessage_MqttWs_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+            var mqttTransportSettings =
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             mqttTransportSettings.Proxy = new WebProxy(s_proxyServerAddress);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+            var transportSettings = new ITransportSettings[] { mqttTransportSettings };
 
             await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
         }
@@ -137,9 +137,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         public async Task Message_ModuleSendSingleMessage_AmqpWs_WithProxy()
         {
-            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            var amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
             amqpTransportSettings.Proxy = new WebProxy(s_proxyServerAddress);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+            var transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
         }
@@ -148,10 +148,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+            var mqttTransportSettings =
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             mqttTransportSettings.Proxy = new WebProxy(s_proxyServerAddress);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+            var transportSettings = new ITransportSettings[] { mqttTransportSettings };
 
             await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
         }

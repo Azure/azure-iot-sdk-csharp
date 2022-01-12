@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
-            //initial OpenAsync to emulate Gatekeeper behaviour
+            //initial OpenAsync to emulate Gatekeeper behavior
             var cancellationToken = new CancellationToken();
             innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType).ConfigureAwait(false);
 
             //override outcome
-            setup[0] = true;//otherwise previosly setup call will happen and throw;
+            setup[0] = true;//otherwise previously setup call will happen and throw;
             mockSetup(innerHandler).Returns(new Message());
 
             //act
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
-            //initial OpenAsync to emulate Gatekeeper behaviour
+            //initial OpenAsync to emulate Gatekeeper behavior
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType).ConfigureAwait(false);
 
             //override outcome
-            setup[0] = true;//otherwise previosly setup call will happen and throw;
+            setup[0] = true;//otherwise previously setup call will happen and throw;
             mockSetup(innerHandler).Returns(TaskHelpers.CompletedTask);
 
             //act
@@ -310,7 +310,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType).ConfigureAwait(false);
 
             //override outcome
-            setup[0] = true;//otherwise previosly setup call will happen and throw;
+            setup[0] = true;//otherwise previously setup call will happen and throw;
             mockSetup(innerHandler).Returns(TaskHelpers.CompletedTask);
 
             //act

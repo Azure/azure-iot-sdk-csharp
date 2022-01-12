@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(dictionaries), "Provided dictionaries should not be null");
             }
 
-            Dictionary<TKey, TValue> result = dictionaries.SelectMany(dict => dict)
+            var result = dictionaries.SelectMany(dict => dict)
                 .ToLookup(pair => pair.Key, pair => pair.Value)
                 .ToDictionary(group => group.Key, group => group.First());
 

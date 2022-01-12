@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                         try
                         {
-                            var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
+                            ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
 
                             if (isTransient)
                             {
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 try
                 {
-                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
+                    ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
                     throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient, errorDetails);
                 }
                 catch (JsonException jex)

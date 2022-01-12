@@ -12,6 +12,8 @@
 
     <!-- Don't auto-compile platform specific files: -->
     <DefaultItemExcludes>HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
@@ -24,6 +26,8 @@
     <Compile Remove="ClientWebSocketTransportTests.cs" />
     <Compile Remove="Mqtt\ClientWebSocketChannelTests.cs" />
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
+    <!-- We will need to keep this reference to DotNetty.Common until the next release of DotNetty includes this dependency -->
+    <PackageReference Include="DotNetty.Common" Version="0.7.1" />
     <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
   </ItemGroup>
 

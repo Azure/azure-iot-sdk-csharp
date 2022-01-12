@@ -1410,6 +1410,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="jobParameters">Parameters for the job.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ExportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
@@ -1507,6 +1508,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="jobParameters">Parameters for the job.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ImportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
@@ -2382,20 +2384,20 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Applies configuration content to an IoTEdge device.
+        /// Applies configuration content to a device.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
-        /// <param name="content"><see cref="ConfigurationContent"/>The configuration of an IoTEdge device.</param>
+        /// <param name="content">The configuration of a device.</param>
         public virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content)
         {
             return ApplyConfigurationContentOnDeviceAsync(deviceId, content, CancellationToken.None);
         }
 
         /// <summary>
-        /// Applies configuration content to an IoTEdge device.
+        /// Applies configuration content to a device.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
-        /// <param name="content"><see cref="ConfigurationContent"/>The configuration of an IoTEdge device.</param>
+        /// <param name="content">The configuration of a device.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken)
         {

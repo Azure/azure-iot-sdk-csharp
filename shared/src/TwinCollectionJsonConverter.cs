@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Shared
                 return;
             }
 
-            TwinCollection properties = value as TwinCollection;
+            var properties = value as TwinCollection;
             if (properties == null)
             {
                 throw new InvalidOperationException("Object passed is not of type TwinCollection.");

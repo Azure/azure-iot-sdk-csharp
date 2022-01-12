@@ -13,6 +13,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Security;
+using System.Threading;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -33,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             saslProvider.Versions.Add(AmqpConstants.DefaultProtocolVersion);
             settings.TransportProviders.Add(saslProvider);
 
-            SaslPlainHandler saslHandler = new SaslPlainHandler();
+            var saslHandler = new SaslPlainHandler();
             saslHandler.AuthenticationIdentity = $"{idScope}/registrations/{_security.GetRegistrationID()}";
             string key = _security.GetPrimaryKey();
             saslHandler.Password = ProvisioningSasBuilder.BuildSasSignature("registration", key, saslHandler.AuthenticationIdentity, TimeSpan.FromDays(1));
@@ -42,9 +43,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return settings;
         }
 
-        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy, RemoteCertificateValidationCallback remoteCertificateValidationCallback)
+        public override Task OpenConnectionAsync(
+            AmqpClientConnection connection, 
+            bool useWebSocket, 
+            IWebProxy proxy, 
+            RemoteCertificateValidationCallback remoteCertificateValidationCallback, 
+            CancellationToken cancellationToken)
         {
-            return connection.OpenAsync(timeout, useWebSocket, null, proxy, remoteCertificateValidationCallback);
+            return connection.OpenAsync(useWebSocket, null, proxy, remoteCertificateValidationCallback, cancellationToken);
         }
 
         public override void SaveCredentials(RegistrationOperationStatus operation)

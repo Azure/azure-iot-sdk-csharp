@@ -75,37 +75,39 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _clientWebSocketTransport = null;
         }
 
-        internal async Task<TransportBase> InitializeAsync(TimeSpan timeout)
+        internal async Task<TransportBase> InitializeAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, timeout, nameof(InitializeAsync));
+            Logging.Enter(this, nameof(InitializeAsync));
 
             TransportBase transport;
 
             switch (_amqpTransportSettings.GetTransportType())
             {
                 case TransportType.Amqp_WebSocket_Only:
-                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(timeout)
+                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cancellationToken)
                         .ConfigureAwait(false);
                     break;
 
                 case TransportType.Amqp_Tcp_Only:
                     var amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
-                    transport = await amqpTransportInitiator.ConnectTaskAsync(timeout).ConfigureAwait(false);
+                    transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                     break;
 
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
-            Logging.Exit(this, timeout, nameof(InitializeAsync));
+            Logging.Exit(this, nameof(InitializeAsync));
 
             return transport;
         }
 
-        private async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
+        private async Task<TransportBase> CreateClientWebSocketTransportAsync(CancellationToken cancellationToken)
         {
             try
             {
-                Logging.Enter(this, timeout, nameof(CreateClientWebSocketTransportAsync));
+                cancellationToken.ThrowIfCancellationRequested();
+
+                Logging.Enter(this, nameof(CreateClientWebSocketTransportAsync));
 
                 string additionalQueryParams = "";
                 var websocketUri = new Uri($"{WebSocketConstants.Scheme}{_hostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
@@ -115,10 +117,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     || (Environment.OSVersion.Version.Major == 6
                         && Environment.OSVersion.Version.Minor <= 1))
                 {
-                    var websocket = await CreateLegacyClientWebSocketAsync(
+                    IotHubClientWebSocket websocket = await CreateLegacyClientWebSocketAsync(
                             websocketUri,
                             this._amqpTransportSettings.ClientCertificate,
-                            timeout)
+                            cancellationToken)
                         .ConfigureAwait(false);
                     return new LegacyClientWebSocketTransport(
                         websocket,
@@ -129,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 else
                 {
 #endif
-                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeout).ConfigureAwait(false);
+                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, cancellationToken).ConfigureAwait(false);
                 return new ClientWebSocketTransport(websocket, null, null);
 #if NET451
                 }
@@ -137,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             finally
             {
-                Logging.Exit(this, timeout, $"{nameof(CreateClientWebSocketTransportAsync)}");
+                Logging.Exit(this, $"{nameof(CreateClientWebSocketTransportAsync)}");
             }
         }
 
@@ -145,21 +147,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(
             Uri webSocketUri,
             X509Certificate2 clientCertificate,
-            TimeSpan timeout)
+            CancellationToken cancellationToken)
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket
-                .ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, timeout)
+                .ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, cancellationToken)
                 .ConfigureAwait(false);
             return websocket;
         }
 #endif
 
-        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
+        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, CancellationToken cancellationToken)
         {
             try
             {
-                Logging.Enter(this, timeout, nameof(CreateClientWebSocketAsync));
+                Logging.Enter(this, nameof(CreateClientWebSocketAsync));
 
                 var websocket = new ClientWebSocket();
 
@@ -197,17 +199,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
                 }
 #endif
-
-                using (var cancellationTokenSource = new CancellationTokenSource(timeout))
-                {
-                    await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
-                }
+                await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
                 return websocket;
             }
             finally
             {
-                Logging.Exit(this, timeout, nameof(CreateClientWebSocketAsync));
+                Logging.Exit(this, nameof(CreateClientWebSocketAsync));
             }
         }
 

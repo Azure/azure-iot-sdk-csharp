@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Devices.Client
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
         {
-            IDictionary d = Dictionary as IDictionary;
+            var d = Dictionary as IDictionary;
             if (d != null)
             {
                 return d.GetEnumerator();
@@ -352,17 +352,17 @@ namespace Microsoft.Azure.Devices.Client
                 throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
             }
 
-            KeyValuePair<TKey, TValue>[] pairs = array as KeyValuePair<TKey, TValue>[];
+            var pairs = array as KeyValuePair<TKey, TValue>[];
             if (pairs != null)
             {
                 Dictionary.CopyTo(pairs, index);
             }
             else
             {
-                DictionaryEntry[] dictEntryArray = array as DictionaryEntry[];
+                var dictEntryArray = array as DictionaryEntry[];
                 if (dictEntryArray != null)
                 {
-                    foreach (var item in Dictionary)
+                    foreach (KeyValuePair<TKey, TValue> item in Dictionary)
                     {
                         dictEntryArray[index++] = new DictionaryEntry(item.Key, item.Value);
                     }
@@ -377,7 +377,7 @@ namespace Microsoft.Azure.Devices.Client
 
                     try
                     {
-                        foreach (var item in Dictionary)
+                        foreach (KeyValuePair<TKey, TValue> item in Dictionary)
                         {
                             objects[index++] = new KeyValuePair<TKey, TValue>(item.Key, item.Value);
                         }
@@ -401,7 +401,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (_syncRoot == null)
                 {
-                    ICollection c = Dictionary as ICollection;
+                    var c = Dictionary as ICollection;
                     if (c != null)
                     {
                         _syncRoot = c.SyncRoot;
@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (_syncRoot == null)
                     {
-                        ICollection c = _collection as ICollection;
+                        var c = _collection as ICollection;
                         if (c != null)
                         {
                             _syncRoot = c.SyncRoot;
@@ -715,7 +715,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (m_syncRoot == null)
                     {
-                        ICollection c = m_collection as ICollection;
+                        var c = m_collection as ICollection;
                         if (c != null)
                         {
                             m_syncRoot = c.SyncRoot;

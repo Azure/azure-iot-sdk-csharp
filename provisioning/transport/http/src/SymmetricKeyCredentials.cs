@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public override Task ProcessHttpRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string audience = request.RequestUri.AbsolutePath.Trim('/');
-            var segments = audience.Split('/');
+            string[] segments = audience.Split('/');
 
             _sasToken = ProvisioningSasBuilder.BuildSasSignature(Registration, this.SymmetricKey, string.Concat(segments[0], '/', segments[1], '/', segments[2]), TimeSpan.FromDays(1));
             SetAuthorizationHeader(request, _sasToken);

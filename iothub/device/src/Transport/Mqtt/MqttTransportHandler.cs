@@ -847,7 +847,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _channel.WriteAsync(new UnsubscribePacket(0, MethodPostTopicFilter)).ConfigureAwait(true);
         }
 
-        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
@@ -858,7 +858,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(_receiveEventMessageFilter, _qos))).ConfigureAwait(true);
         }
 
-        public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
@@ -1209,7 +1209,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Handler(new ActionChannelInitializer<ISocketChannel>(ch =>
                     {
                         var tlsHandler = new TlsHandler(streamFactory, clientTlsSettings);
-
                         ch.Pipeline.AddLast(
                             tlsHandler,
                             MqttEncoder.Instance,
@@ -1301,6 +1300,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
 
                 var clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
+
                 clientWebSocketChannel
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
                     .Option(ChannelOption.AutoRead, false)
@@ -1382,7 +1382,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (!string.IsNullOrWhiteSpace(envValue))
                 {
                     string processorEventCountValue = Environment.ExpandEnvironmentVariables(envValue);
-                    if (int.TryParse(processorEventCountValue, out var processorThreadCount))
+                    if (int.TryParse(processorEventCountValue, out int processorThreadCount))
                     {
                         if (Logging.IsEnabled)
                             Logging.Info(null, $"EventLoopGroup threads count {processorThreadCount}.");

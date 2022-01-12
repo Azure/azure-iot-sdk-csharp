@@ -399,7 +399,6 @@ namespace Microsoft.Azure.Devices.Shared
         /// <param name="count">The number of bytes to log.</param>
         /// <param name="memberName">The calling member.</param>
         [NonEvent]
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "Parameters 'thisOrContextObject' and 'memberName' used in NET451; remove when no longer supported.")]
         public static unsafe void DumpBuffer(object thisOrContextObject, IntPtr bufferPtr, int count, [CallerMemberName] string memberName = null)
         {
             Debug.Assert(bufferPtr != IntPtr.Zero);

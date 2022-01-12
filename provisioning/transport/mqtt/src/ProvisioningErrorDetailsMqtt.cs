@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         int secondsToWait;
                         if (int.TryParse(queryKeyAndValue[1], out secondsToWait))
                         {
-                            TimeSpan serviceRecommendedDelay = TimeSpan.FromSeconds(secondsToWait);
+                            var serviceRecommendedDelay = TimeSpan.FromSeconds(secondsToWait);
 
                             if (serviceRecommendedDelay.TotalSeconds < defaultPoolingInterval.TotalSeconds)
                             {

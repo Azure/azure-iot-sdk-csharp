@@ -9,18 +9,22 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Azure IoT Edge Configurations.
+    /// The configuration for IoT hub device and module twins.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Naming",
-    "CA1724:Type names should not match namespaces",
-    Justification = "Cannot change type names as it is considered a breaking change.")]
+    /// <remarks>
+    /// Device configurations provide the ability to perform IoT device configuration at scale.
+    /// You can define configurations and summarize compliance as the configuration is applied.
+    /// See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/> for more details.
+    /// </remarks>
     public class Configuration : IETagHolder
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Configuration"/> class.
         /// </summary>
-        /// <param name="configurationId">configuration Id</param>
+        /// <param name="configurationId">
+        /// The configuration Id.
+        /// Lowercase and the following special characters are allowed: [-+%_*!'].
+        /// </param>
         public Configuration(string configurationId)
             : this()
         {
@@ -28,88 +32,90 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Configuration"/> class.
+        /// Initializes a new instance of the Configuration class.
         /// </summary>
         internal Configuration()
         {
             SchemaVersion = "1.0";
             ContentType = "assignment";
-            Metrics = new ConfigurationMetrics();
         }
 
         /// <summary>
-        /// Gets Identifier for the configuration
+        /// The unique identifier of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "id", Required = Required.Always)]
         public string Id { get; internal set; }
 
         /// <summary>
-        /// Gets Schema version for the configuration
+        /// The schema version of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "schemaVersion", NullValueHandling = NullValueHandling.Ignore)]
-        public string SchemaVersion { get; internal set; }
+        public string SchemaVersion { get; }
 
         /// <summary>
-        /// Gets or sets labels for the configuration
+        /// The key-value pairs used to describe the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "labels", NullValueHandling = NullValueHandling.Ignore)]
 #pragma warning disable CA2227 // Collection properties should be read only
-        public IDictionary<string, string> Labels { get; set; }
+        public IDictionary<string, string> Labels { get; set; } = new Dictionary<string, string>();
 
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
-        /// Gets or sets Content for the configuration
+        /// The content of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "content", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationContent Content { get; set; }
+        public ConfigurationContent Content { get; set; } = new ConfigurationContent();
 
         /// <summary>
         /// Gets the content type for configuration
         /// </summary>
         [JsonProperty(PropertyName = "contentType")]
-        public string ContentType { get; internal set; }
+        public string ContentType { get; }
 
         /// <summary>
-        /// Gets or sets Target Condition for the configuration
+        /// The query used to define the targeted devices or modules.
         /// </summary>
+        /// <remarks>
+        /// The query is based on twin tags and/or reported properties.
+        /// </remarks>
         [JsonProperty(PropertyName = "targetCondition")]
         public string TargetCondition { get; set; }
 
         /// <summary>
-        /// Gets creation time for the configuration
+        /// The creation date and time of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "createdTimeUtc")]
         public DateTime CreatedTimeUtc { get; internal set; }
 
         /// <summary>
-        /// Gets last update time for the configuration
+        /// The update date and time of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedTimeUtc")]
         public DateTime LastUpdatedTimeUtc { get; internal set; }
 
         /// <summary>
-        /// Gets or sets Priority for the configuration
+        /// The priority number assigned to the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "priority")]
         public int Priority { get; set; }
 
         /// <summary>
-        /// System Configuration Metrics
+        /// The system metrics computed by the IoT Hub that cannot be customized.
         /// </summary>
         [JsonProperty(PropertyName = "systemMetrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics SystemMetrics { get; internal set; }
+        public ConfigurationMetrics SystemMetrics { get; internal set; } = new ConfigurationMetrics();
 
         /// <summary>
-        /// Custom Configuration Metrics
+        /// The custom metrics specified by the developer as queries against twin reported properties.
         /// </summary>
         [JsonProperty(PropertyName = "metrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics Metrics { get; set; }
+        public ConfigurationMetrics Metrics { get; set; } = new ConfigurationMetrics();
 
         /// <summary>
-        /// Gets or sets configuration's ETag
+        /// The ETag of the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "etag")]
+        [JsonProperty(PropertyName = "etag", NullValueHandling = NullValueHandling.Ignore)]
         public string ETag { get; set; }
     }
 }
