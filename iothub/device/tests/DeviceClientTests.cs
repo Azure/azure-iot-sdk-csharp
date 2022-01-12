@@ -1991,7 +1991,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.GetClientTwinPropertiesAsync<object>(Arg.Any<CancellationToken>()))
+                .When(x => x.GetClientTwinPropertiesAsync<TwinProperties>(Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
 
             ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
