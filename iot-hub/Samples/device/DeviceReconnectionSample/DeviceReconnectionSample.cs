@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class DeviceReconnectionSample
     {
         private const int TemperatureThreshold = 30;
-        private static readonly TransportType[] _amqpTransports = new[] { TransportType.Amqp, TransportType.Amqp_Tcp_Only, TransportType.Amqp_WebSocket_Only };
         private static readonly Random s_randomGenerator = new Random();
         private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(5);
 
@@ -58,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogInformation($"Using {_transportType} transport.");
         }
 
-        private bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;
+        private static bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
@@ -77,6 +76,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
                 await Task.WhenAll(SendMessagesAsync(s_cancellationTokenSource.Token), ReceiveMessagesAsync(s_cancellationTokenSource.Token));
             }
+            catch (OperationCanceledException)
+            {
+                // User canceled the operation. Nothing to do here.
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Unrecoverable exception caught, user action is required, so exiting: \n{ex}");
@@ -92,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             if (ShouldClientBeInitialized(s_connectionStatus))
             {
                 // Allow a single thread to dispose and initialize the client instance.
-                await _initSemaphore.WaitAsync();
+                await _initSemaphore.WaitAsync(cancellationToken);
                 try
                 {
                     if (ShouldClientBeInitialized(s_connectionStatus))
@@ -102,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         // If the device client instance has been previously initialized, then dispose it.
                         if (s_deviceClient != null)
                         {
-                            await s_deviceClient.CloseAsync();
+                            await s_deviceClient.CloseAsync(cancellationToken);
                             s_deviceClient.Dispose();
                             s_deviceClient = null;
                         }
@@ -206,7 +209,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         default:
                             _logger.LogError("### This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.");
                             break;
-
                     }
 
                     break;
@@ -267,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogInformation($"Device sent message {messageCount} to IoT hub.");
                 }
 
-                await Task.Delay(s_sleepDuration);
+                await Task.Delay(s_sleepDuration, cancellationToken);
             }
         }
 
@@ -282,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 if (!IsDeviceConnected)
                 {
-                    await Task.Delay(s_sleepDuration);
+                    await Task.Delay(s_sleepDuration, cancellationToken);
                     continue;
                 }
                 else if (_transportType == TransportType.Http1)
@@ -290,7 +292,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     // The call to ReceiveAsync over HTTP completes immediately, rather than waiting up to the specified
                     // time or when a cancellation token is signaled, so if we want it to poll at the same rate, we need
                     // to add an explicit delay here.
-                    await Task.Delay(s_sleepDuration);
+                    await Task.Delay(s_sleepDuration, cancellationToken);
                 }
 
                 _logger.LogInformation($"Device waiting for C2D messages from the hub for {s_sleepDuration}." +
@@ -312,16 +314,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Message receivedMessage = null;
             try
             {
-                // AMQP library does not take a cancellation token but does take a time span
-                // so we'll call this API differently.
-                if (_amqpTransports.Contains(_transportType))
-                {
-                    receivedMessage = await s_deviceClient.ReceiveAsync(s_sleepDuration);
-                }
-                else
-                {
-                    receivedMessage = await s_deviceClient.ReceiveAsync(cts.Token);
-                }
+                receivedMessage = await s_deviceClient.ReceiveAsync(cts.Token);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -354,7 +347,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private Message PrepareMessage(int messageId)
+        private static Message PrepareMessage(int messageId)
         {
             var temperature = s_randomGenerator.Next(20, 35);
             var humidity = s_randomGenerator.Next(60, 80);

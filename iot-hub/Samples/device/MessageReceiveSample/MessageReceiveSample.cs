@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
     /// </summary>
     public class MessageReceiveSample
     {
-        private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(3);
         private readonly TimeSpan? _maxRunTime;
         private readonly DeviceClient _deviceClient;
         private readonly TransportType _transportType;
@@ -88,9 +87,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     break;
                 }
 
-                using Message receivedMessage = _transportType == TransportType.Http1
-                    ? await _deviceClient.ReceiveAsync()
-                    : await _deviceClient.ReceiveAsync(s_sleepDuration);
+                using Message receivedMessage = await _deviceClient.ReceiveAsync(ct);
+
                 if (receivedMessage == null)
                 {
                     continue;
@@ -99,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine($"{DateTime.Now}> Polling using ReceiveAsync() - received message with Id={receivedMessage.MessageId}");
                 PrintMessage(receivedMessage);
 
-                await _deviceClient.CompleteAsync(receivedMessage);
+                await _deviceClient.CompleteAsync(receivedMessage, ct);
                 Console.WriteLine($"{DateTime.Now}> Completed C2D message with Id={receivedMessage.MessageId}.");
             }
         }
@@ -115,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             receivedMessage.Dispose();
         }
 
-        private void PrintMessage(Message receivedMessage)
+        private static void PrintMessage(Message receivedMessage)
         {
             string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
             var formattedMessage = new StringBuilder($"Received message: [{messageData}]\n");

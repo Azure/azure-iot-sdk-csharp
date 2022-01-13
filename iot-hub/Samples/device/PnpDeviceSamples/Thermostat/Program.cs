@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 builder
                 .AddFilter(level => level >= LogLevel.Debug)
-                .AddConsole(options =>
+                .AddSystemdConsole(options =>
                 {
                     options.TimestampFormat = "[MM/dd/yyyy HH:mm:ss]";
                 });
