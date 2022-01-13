@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// A <see cref="JsonConvert"/> <see cref="PayloadSerializer"/> implementation.
+    /// A <see cref="JsonConvert"/> PayloadSerializer implementation.
     /// </summary>
     public class NewtonsoftJsonPayloadSerializer : PayloadSerializer
     {
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// The default instance of this class.
         /// </summary>
-        public static readonly NewtonsoftJsonPayloadSerializer Instance = new NewtonsoftJsonPayloadSerializer();
+        public static NewtonsoftJsonPayloadSerializer Instance { get; } = new NewtonsoftJsonPayloadSerializer();
 
         /// <inheritdoc/>
         public override string ContentType => ApplicationJson;
@@ -50,7 +50,8 @@ namespace Microsoft.Azure.Devices.Shared
         public override bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue)
         {
             outValue = default;
-            if (nestedObject == null || string.IsNullOrEmpty(propertyName))
+            if (nestedObject == null
+                || string.IsNullOrEmpty(propertyName))
             {
                 return false;
             }
@@ -62,7 +63,8 @@ namespace Microsoft.Azure.Devices.Shared
                     ? DeserializeToType<JObject>((string)nestedObject)
                     : nestedObject as JObject;
 
-                if (nestedObjectAsJObject != null && nestedObjectAsJObject.TryGetValue(propertyName, out JToken element))
+                if (nestedObjectAsJObject != null
+                    && nestedObjectAsJObject.TryGetValue(propertyName, out JToken element))
                 {
                     outValue = element.ToObject<T>();
                     return true;
@@ -72,6 +74,7 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 // Catch and ignore any exceptions caught
             }
+
             return false;
         }
 
