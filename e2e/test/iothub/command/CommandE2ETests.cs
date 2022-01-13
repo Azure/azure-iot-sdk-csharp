@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -120,8 +121,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
             digitalTwinClient.Dispose();
 #endif
             logger.Trace($"{nameof(DigitalTwinsSendCommandAndVerifyResponseAsync)}: Command status: {statusCode}.");
-            Assert.AreEqual(200, statusCode, $"The expected response status should be 200 but was {statusCode}");
-            Assert.AreEqual(responseExpected, payloadReceived, $"The expected response payload should be {responseExpected} but was {payloadReceived}");
+            statusCode.Should().Be(200, "The expected response status should be 200.");
+            payloadReceived.Should().Be(responseExpected);
         }
 
         public static async Task<Task> SetDeviceReceiveCommandAsync(DeviceClient deviceClient, string componentName, string commandName, MsTestLogger logger)
@@ -139,16 +140,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                             var valueToTest = request.GetPayload<ServiceCommandRequestObject>();
                             if (string.IsNullOrEmpty(componentName))
                             {
-                                Assert.AreEqual(null, request.ComponentName, $"The expected component name should be null but was {request.ComponentName}");
+                                request.ComponentName.Should().BeNull();
                             }
                             else
                             {
-                                Assert.AreEqual(componentName, request.ComponentName, $"The expected component name should be {componentName} but was {request.ComponentName}");
+                                request.ComponentName.Should().Be(componentName);
                             }
                             var assertionObject = new ServiceCommandRequestAssertion();
                             string responseExpected = JsonConvert.SerializeObject(assertionObject);
-                            Assert.AreEqual(responseExpected, request.GetPayloadAsString(), $"The expected response payload should be {responseExpected} but was {request.GetPayloadAsString()}");
-                            Assert.AreEqual(assertionObject.A, valueToTest.A, $"The expected response object did not decode properly. Value a should be {assertionObject.A} but was {valueToTest?.A ?? int.MinValue}");
+                            request.GetPayloadAsString().Should().Be(responseExpected);
+                            valueToTest.A.Should().Be(assertionObject.A, "The expected response object should decode properly.");
                             commandCallReceived.SetResult(true);
                         }
                         catch (Exception ex)
