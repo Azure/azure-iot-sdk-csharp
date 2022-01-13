@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The command data in Json format.
+        /// The command data as a string.
         /// </summary>
         public string GetPayloadAsString()
         {

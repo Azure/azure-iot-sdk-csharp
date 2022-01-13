@@ -113,13 +113,11 @@ namespace Microsoft.Azure.Devices.Client
         internal Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken)
         {
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
-            var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
+            var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback(async (twinCollection, userContext) =>
             {
                 // convert a TwinCollection to PropertyCollection
                 var propertyCollection = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(twinCollection, PayloadConvention);
-                callback.Invoke(propertyCollection);
-
-                return TaskHelpers.CompletedTask;
+                await callback.Invoke(propertyCollection).ConfigureAwait(false);
             });
 
             // We pass in a null context to the internal API because the updated SubscribeToWritablePropertyUpdateRequestsAsync API

@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The underlying collection for the payload.
         /// </summary>
-        public IDictionary<string, object> Collection { get; } = new Dictionary<string, object>();
+        internal IDictionary<string, object> Collection { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The convention to use with this payload.
