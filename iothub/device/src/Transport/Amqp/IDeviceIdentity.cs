@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         string Audience { get; }
 
         /// <summary>
-        /// Whether or not Device is part of a connection pooling.
+        /// Whether or not the device is part of a connection pooling.
         /// </summary>
         bool IsPooling();
     }
