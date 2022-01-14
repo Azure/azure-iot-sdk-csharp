@@ -7,7 +7,12 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+
+#if !NET451
+
 using Azure.Identity;
+
+#endif
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -25,13 +30,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 return connectionString.ProvisioningHostName;
             }
 
+#if !NET451
+
             public static ClientSecretCredential GetClientSecretCredential()
             {
                 return new ClientSecretCredential(
                     GetValue("MSFT_TENANT_ID"),
-                    GetValue("PROVISIONING_CLIENT_ID"),
-                    GetValue("PROVISIONING_CLIENT_SECRET"));
+                    GetValue("IOTHUB_CLIENT_ID"),
+                    GetValue("IOTHUB_CLIENT_SECRET"));
             }
+
+#endif
 
             public static string GetProvisioningSharedAccessSignature(TimeSpan timeToLive)
             {
