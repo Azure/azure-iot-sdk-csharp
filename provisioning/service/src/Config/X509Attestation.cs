@@ -19,14 +19,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// An X509 attestation can contains one of the 3 types of certificate:
     ///
     /// <list type="bullet">
-    ///     <item><b>Client or Alias certificate:</b>
-    ///           Called on this class as clientCertificates, this certificate can authenticate a single device.</item>
-    ///     <item><b>Signing or Root certificate:</b>
+    ///     <item>
+    ///     <description><b>Client or Alias certificate:</b>
+    ///         Called on this class as clientCertificates, this certificate can authenticate a single device.</description>
+    ///     </item>
+    ///     <item>
+    ///     <description><b>Signing or Root certificate:</b>
     ///           Called on this class as rootCertificates, this certificate can create multiple Client certificates
-    ///           to authenticate multiple devices.</item>
-    ///     <item><b>CA Reference:</b>
+    ///           to authenticate multiple devices.</description>
+    ///     </item>
+    ///     <item>
+    ///     <description><b>CA Reference:</b>
     ///           Called on this class as X509CAReferences, this is a CA reference for a rootCertificate that can
-    ///           creates multiple Client certificates to authenticate multiple devices.</item>
+    ///           creates multiple Client certificates to authenticate multiple devices.</description>
+    ///     </item>
     /// </list>
     ///
     /// The provisioning service allows user to create <see cref="IndividualEnrollment"/> and <see cref="EnrollmentGroup"/>. 
@@ -38,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     primary is mandatory, the secondary is optional.
     ///
     /// The provisioning service will process the provided certificates, but will never return it back. Instead of
-    ///     it, <see cref="X509Attestation.GetPrimaryX509CertificateInfo()"/> and <see cref="X509Attestation.GetSecondaryX509CertificateInfo()"/> 
+    ///     it, <see cref="GetPrimaryX509CertificateInfo()"/> and <see cref="GetSecondaryX509CertificateInfo()"/> 
     ///     will return the certificate information for the certificates.
     /// </remarks>
     public sealed class X509Attestation : Attestation
