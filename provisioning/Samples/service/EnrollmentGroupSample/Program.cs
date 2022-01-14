@@ -1,37 +1,44 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using CommandLine;
 using System;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
+
     public class Program
     {
-        // The Provisioning Service connection string. This is available under the "Shared access policies" in the Azure portal.
-
-        // For this sample either:
-        // - pass this value as a command-prompt argument
-        // - set the PROVISIONING_CONNECTION_STRING environment variable 
-        // - create a launchSettings.json (see launchSettings.json.template) containing the variable
-        private static string s_connectionString = Environment.GetEnvironmentVariable("PROVISIONING_CONNECTION_STRING");
-
+        /// <summary>
+        /// A sample to manage enrollment groups in device provisioning service.
+        /// </summary>
+        /// <param name="args">
+        /// Run with `--help` to see a list of required and optional parameters.
+        /// </param>
         public static int Main(string[] args)
         {
-            if (args.Length < 1)
+            // Parse application parameters
+            Parameters parameters = null;
+            ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
+                .WithParsed(parsedParams =>
+                {
+                    parameters = parsedParams;
+                })
+                .WithNotParsed(errors =>
+                {
+                    Environment.Exit(1);
+                });
+
+            if (string.IsNullOrWhiteSpace(parameters.ProvisioningConnectionString))
             {
-                Console.WriteLine("EnrollmentGroupSample <groupIssuerCertificate.cer>");
-                return 1;
+                Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(result, null, null));
+                Environment.Exit(1);
             }
 
-            X509Certificate2 certificate = new X509Certificate2(args[0]);
+            X509Certificate2 certificate = new X509Certificate2(parameters.CertificatePath);
 
-            if (string.IsNullOrEmpty(s_connectionString) && args.Length > 1)
-            {
-                s_connectionString = args[1];
-            }
-           
-            using (var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(s_connectionString))
+            using (var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString))
             {
                 var sample = new EnrollmentGroupSample(provisioningServiceClient, certificate);
                 sample.RunSampleAsync().GetAwaiter().GetResult();
