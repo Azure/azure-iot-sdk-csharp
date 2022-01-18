@@ -14,17 +14,6 @@
     <DefaultItemExcludes>HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
-    <Compile Include="HsmAuthentication\**" />
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
-    <Compile Remove="ClientWebSocketTransportTests.cs" />
-    <Compile Remove="Mqtt\ClientWebSocketChannelTests.cs" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
     <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
