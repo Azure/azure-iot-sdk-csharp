@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
+    [Ignore("TODO: Enable when invalid cert server is back online.")]
     public class ProvisioningCertificateValidationE2ETest : E2EMsTestBase
     {
         [LoggedTestMethod]

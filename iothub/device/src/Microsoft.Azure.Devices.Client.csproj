@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.36.3</Version>
+    <Version>1.36.4</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -69,6 +69,8 @@
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
+    <!-- We will need to keep this reference to DotNetty.Common until the next release of DotNetty includes this dependency -->
+    <PackageReference Include="DotNetty.Common" Version="0.7.1" />
     <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
   </ItemGroup>
 

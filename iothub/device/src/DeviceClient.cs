@@ -625,7 +625,6 @@ namespace Microsoft.Azure.Devices.Client
             if (disposing)
             {
                 InternalClient?.Dispose();
-                InternalClient = null;
             }
         }
 

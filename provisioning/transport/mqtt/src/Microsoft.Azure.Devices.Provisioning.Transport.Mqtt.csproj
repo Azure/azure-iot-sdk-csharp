@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.14.1</Version>
+    <Version>1.14.2</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client MQTT Transport</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -98,6 +98,8 @@
 
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
+    <!-- We will need to keep this reference to DotNetty.Common until the next release of DotNetty includes this dependency -->
+    <PackageReference Include="DotNetty.Common" Version="0.7.1" />
     <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
 
     <!-- FXCop -->
