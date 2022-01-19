@@ -20,13 +20,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
 
-        private readonly AzureSecurityCenterForIoTLogAnalyticsClient _logAnalyticsClient;
-
-        public AzureSecurityCenterForIoTSecurityMessageE2ETests()
-        {
-            _logAnalyticsClient = AzureSecurityCenterForIoTLogAnalyticsClient.CreateClient();
-        }
-
         [LoggedTestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
@@ -82,10 +75,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return TestSecurityMessageAsync(Client.TransportType.Http1);
         }
 
-        private Client.Message ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value)
+        private Client.Message ComposeD2CSecurityTestMessage()
         {
-            eventId = p1Value = Guid.NewGuid().ToString();
-            payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
+            string eventId = Guid.NewGuid().ToString();
+            string p1Value = eventId;
+            string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
 
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
@@ -130,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             try
             {
-                await SendSingleSecurityMessageAsync(deviceClient, testDevice.Id, _logAnalyticsClient).ConfigureAwait(false);
+                await SendSingleSecurityMessageAsync(deviceClient).ConfigureAwait(false);
             }
             finally
             {
@@ -146,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 try
                 {
-                    await SendSingleSecurityMessageModuleAsync(moduleClient, testModule.DeviceId, _logAnalyticsClient).ConfigureAwait(false);
+                    await SendSingleSecurityMessageModuleAsync(moduleClient).ConfigureAwait(false);
                 }
                 finally
                 {
@@ -156,46 +150,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         private async Task SendSingleSecurityMessageAsync(
-            DeviceClient deviceClient,
-            string deviceId,
-            AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+            DeviceClient deviceClient)
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
+            using Client.Message testMessage = ComposeD2CSecurityTestMessage();
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-            await ValidateEventAsync(deviceId, eventId, logAnalticsTestClient).ConfigureAwait(false);
         }
 
         private async Task SendSingleSecurityMessageModuleAsync(
-            ModuleClient moduleClient,
-            string deviceId,
-            AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+            ModuleClient moduleClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out _, out _);
+            using Client.Message testMessage = ComposeD2CSecurityTestMessage();
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-            await ValidateEventAsync(deviceId, eventId, logAnalticsTestClient).ConfigureAwait(false);
-        }
-
-        private async Task ValidateEventAsync(
-            string deviceId,
-            string eventId,
-            AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
-        {
-            bool isReceivedOms = await logAnalticsTestClient.IsRawEventExist(deviceId, eventId).ConfigureAwait(false);
-            Assert.IsTrue(isReceivedOms, "Security message was not received in customer log analytics");
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _logAnalyticsClient.Dispose();
-            }
-
             base.Dispose(disposing);
         }
     }
