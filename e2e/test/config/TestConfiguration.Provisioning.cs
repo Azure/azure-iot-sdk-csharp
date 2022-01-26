@@ -7,6 +7,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.Azure.Devices.E2ETests.provisioning;
 
 #if !NET451
 
