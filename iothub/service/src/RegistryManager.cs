@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices
         private IHttpClientHelper _httpClientHelper;
 
         /// <summary>
-        /// Creates an instance of <see cref="RegistryManager"/>, provided for unit testing purposes only.
+        /// Creates an instance of RegistryManager, provided for unit testing purposes only.
         /// Use the CreateFromConnectionString method to create an instance to use the client.
         /// </summary>
         public RegistryManager()
@@ -100,18 +100,19 @@ namespace Microsoft.Azure.Devices
         /// Creates a RegistryManager from the IoT Hub connection string.
         /// </summary>
         /// <param name="connectionString">The IoT Hub connection string.</param>
-        /// <returns>An RegistryManager instance.</returns>
+        /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager CreateFromConnectionString(string connectionString)
         {
             return CreateFromConnectionString(connectionString, new HttpTransportSettings());
         }
 
         /// <summary>
-        /// Creates a RegistryManager from the IoT Hub connection string and transport settings
+        /// Creates an instance of RegistryManager, authenticating using an IoT hub connection string, and specifying
+        /// HTTP transport settings.
         /// </summary>
-        /// <param name="connectionString">The IoT Hub connection string.</param>
+        /// <param name="connectionString">The IoT hub connection string.</param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>An RegistryManager instance.</returns>
+        /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
         {
             if (transportSettings == null)
@@ -127,15 +128,18 @@ namespace Microsoft.Azure.Devices
 #if !NET451
 
         /// <summary>
-        /// Creates an instance of RegistryManager.
+        /// Creates an instance of RegistryManager, authenticating using an identity in Azure Active Directory (AAD).
         /// </summary>
-        /// <param name="hostName">IoT hub host name.</param>
-        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
-        /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
         /// <remarks>
-        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
+        /// <see href="https://docs.microsoft.com/dotnet/api/overview/azure/identity-readme"/>.
+        /// For more information on configuring IoT hub with Azure Active Directory, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
         /// </remarks>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
+        /// <param name="transportSettings">The HTTP transport settings.</param>
+        /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager Create(
             string hostName,
             TokenCredential credential,
@@ -156,12 +160,17 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="RegistryManager"/>.
+        /// Creates an instance of RegistryManager using a shared access signature provided and refreshed as necessary by the caller.
         /// </summary>
+        /// <remarks>
+        /// Users may wish to build their own shared access signature (SAS) tokens rather than give the shared key to the SDK and let it manage signing and renewal.
+        /// The <see cref="AzureSasCredential"/> object gives the SDK access to the SAS token, while the caller can update it as necessary using the
+        /// <see cref="AzureSasCredential.Update(string)"/> method.
+        /// </remarks>
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
+        /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager Create(
             string hostName,
             AzureSasCredential credential,
