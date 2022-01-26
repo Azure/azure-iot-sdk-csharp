@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Azure;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
@@ -118,13 +119,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 TestConfiguration.Provisioning.GetProvisioningHostName(),
                 TestConfiguration.Provisioning.GetClientSecretCredential());
 
-            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, AttestationMechanismType.SymmetricKey, null, AllocationPolicy.Static, null, null, null);
+            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(
+                    provisioningServiceClient, 
+                    AttestationMechanismType.SymmetricKey, 
+                    null, 
+                    AllocationPolicy.Static, 
+                    null, 
+                    null, 
+                    null)
+                    .ConfigureAwait(false);
 
             //act
             IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
 
             //assert
-            Assert.IsNotNull(individualEnrollmentResult);
+            individualEnrollmentResult.Should().NotBeNull();
 
             //cleanup
             await provisioningServiceClient.DeleteIndividualEnrollmentAsync(individualEnrollment.RegistrationId);
@@ -138,13 +147,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 TestConfiguration.Provisioning.GetProvisioningHostName(),
                 new AzureSasCredential(signature));
 
-            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, AttestationMechanismType.SymmetricKey, null, AllocationPolicy.Static, null, null, null);
+            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(
+                    provisioningServiceClient, 
+                    AttestationMechanismType.SymmetricKey, 
+                    null, 
+                    AllocationPolicy.Static, 
+                    null, 
+                    null, 
+                    null)
+                    .ConfigureAwait(false);
 
             //act
             IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
 
             //assert
-            Assert.IsNotNull(individualEnrollmentResult);
+            individualEnrollmentResult.Should().NotBeNull();
 
             //cleanup
             await provisioningServiceClient.DeleteIndividualEnrollmentAsync(individualEnrollment.RegistrationId);

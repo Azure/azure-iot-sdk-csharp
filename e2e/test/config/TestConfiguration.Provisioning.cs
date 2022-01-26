@@ -105,48 +105,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 return token;
             }
-
-            public class ConnectionStringParser
-            {
-                public ConnectionStringParser(string connectionString)
-                {
-                    string[] parts = connectionString.Split(';');
-                    foreach (string part in parts)
-                    {
-                        string[] tv = part.Split('=');
-
-                        switch (tv[0].ToUpperInvariant())
-                        {
-                            case "HOSTNAME":
-                                ProvisioningHostName = part.Substring("HOSTNAME=".Length);
-                                break;
-
-                            case "SHAREDACCESSKEY":
-                                SharedAccessKey = part.Substring("SHAREDACCESSKEY=".Length);
-                                break;
-
-                            case "DEVICEID":
-                                DeviceID = part.Substring("DEVICEID=".Length);
-                                break;
-
-                            case "SHAREDACCESSKEYNAME":
-                                SharedAccessKeyName = part.Substring("SHAREDACCESSKEYNAME=".Length);
-                                break;
-
-                            default:
-                                throw new NotSupportedException("Unrecognized tag found in test ConnectionString.");
-                        }
-                    }
-                }
-
-                public string ProvisioningHostName { get; private set; }
-
-                public string DeviceID { get; private set; }
-
-                public string SharedAccessKey { get; private set; }
-
-                public string SharedAccessKeyName { get; private set; }
-            }
         }
     }
 }
