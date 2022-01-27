@@ -28,12 +28,12 @@ namespace Microsoft.Azure.Devices
     /// </remarks>
     public class JobClient : IDisposable
     {
-        private const string _jobsUriFormat = "/jobs/v2/{0}?{1}";
-        private const string _jobsQueryFormat = "/jobs/v2/query?{0}";
-        private const string _CancelJobUriFormat = "/jobs/v2/{0}/cancel?{1}";
+        private const string JobsUriFormat = "/jobs/v2/{0}?{1}";
+        private const string JobsQueryFormat = "/jobs/v2/query?{0}";
+        private const string CancelJobUriFormat = "/jobs/v2/{0}/cancel?{1}";
 
-        private const string _continuationTokenHeader = "x-ms-continuation";
-        private const string _pageSizeHeader = "x-ms-max-item-count";
+        private const string ContinuationTokenHeader = "x-ms-continuation";
+        private const string PageSizeHeader = "x-ms-max-item-count";
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices
                 EnsureInstanceNotClosed();
 
                 return _httpClientHelper.PostAsync<string, JobResponse>(
-                    new Uri(_CancelJobUriFormat.FormatInvariant(jobId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative),
+                    new Uri(CancelJobUriFormat.FormatInvariant(jobId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative),
                     null,
                     null,
                     null,
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetJobUri(string jobId)
         {
-            return new Uri(_jobsUriFormat.FormatInvariant(jobId ?? string.Empty, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(JobsUriFormat.FormatInvariant(jobId ?? string.Empty, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private Task<JobResponse> CreateJobAsync(JobRequest jobRequest, CancellationToken cancellationToken)
@@ -451,7 +451,7 @@ namespace Microsoft.Azure.Devices
 
         private static Uri BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
         {
-            var stringBuilder = new StringBuilder(_jobsQueryFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryString));
+            var stringBuilder = new StringBuilder(JobsQueryFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryString));
 
             if (jobType != null)
             {
@@ -477,12 +477,12 @@ namespace Microsoft.Azure.Devices
                 var customHeaders = new Dictionary<string, string>();
                 if (!string.IsNullOrWhiteSpace(continuationToken))
                 {
-                    customHeaders.Add(_continuationTokenHeader, continuationToken);
+                    customHeaders.Add(ContinuationTokenHeader, continuationToken);
                 }
 
                 if (pageSize != null)
                 {
-                    customHeaders.Add(_pageSizeHeader, pageSize.ToString());
+                    customHeaders.Add(PageSizeHeader, pageSize.ToString());
                 }
 
                 HttpResponseMessage response = await _httpClientHelper.GetAsync<HttpResponseMessage>(
