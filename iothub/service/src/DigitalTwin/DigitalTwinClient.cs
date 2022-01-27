@@ -19,8 +19,10 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The Digital Twins Service Client contains methods to retrieve and update digital twin information, and invoke commands on a digital twin device.
-    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
+    /// <remarks>
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
+    /// </remarks>
     public class DigitalTwinClient : IDisposable
     {
         private const string HttpsEndpointPrefix = "https";
@@ -29,16 +31,20 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Creates an instance of <see cref="DigitalTwinClient"/>, provided for unit testing purposes only.
-        /// Use the CreateFromConnectionString or Create method to create an instance to use the client.
         /// </summary>
         public DigitalTwinClient()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinClient"/> class.</summary>
+        /// Creates DigitalTwinClient from an IoT hub connection string.
+        /// </summary>
         /// <param name="connectionString">The IoT hub's connection string.</param>
-        /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
+        /// <param name="handlers">
+        /// The delegating handlers to add to the http client pipeline.
+        /// You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.
+        /// </param>
+        /// <returns>A DigitalTwinsClient instance.</returns>
         public static DigitalTwinClient CreateFromConnectionString(string connectionString, params DelegatingHandler[] handlers)
         {
             connectionString.ThrowIfNullOrWhiteSpace(nameof(connectionString));
@@ -49,15 +55,21 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="DigitalTwinClient"/>.
+        /// Creates DigitalTwinClient, authenticating using an identity in Azure Active Directory (AAD).
         /// </summary>
-        /// <param name="hostName">IoT hub host name.</param>
-        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
-        /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
-        /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
         /// <remarks>
-        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
+        /// <see href="https://docs.microsoft.com/dotnet/api/overview/azure/identity-readme"/>.
+        /// For more information on configuring IoT hub with Azure Active Directory, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
         /// </remarks>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="handlers">
+        /// The delegating handlers to add to the http client pipeline. You can add handlers for tracing,
+        /// implementing a retry strategy, routing requests through a proxy, etc.
+        /// </param>
+        /// <returns>A DigitalTwinsClient instance.</returns>
         public static DigitalTwinClient Create(
             string hostName,
             TokenCredential credential,
@@ -78,12 +90,17 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="DigitalTwinClient"/>.
+        /// Creates DigitalTwinClient using a shared access signature provided and refreshed as necessary by the caller.
         /// </summary>
+        /// <remarks>
+        /// Users may wish to build their own shared access signature (SAS) tokens rather than give the shared key to the SDK and let it manage signing and renewal.
+        /// The <see cref="AzureSasCredential"/> object gives the SDK access to the SAS token, while the caller can update it as necessary using the
+        /// <see cref="AzureSasCredential.Update(string)"/> method.
+        /// </remarks>
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="handlers">The delegating handlers to add to the http client pipeline. You can add handlers for tracing, implementing a retry strategy, routing requests through a proxy, etc.</param>
-        /// <returns>An instance of <see cref="DigitalTwinClient"/>.</returns>
+        /// <returns>A DigitalTwinsClient instance.</returns>
         public static DigitalTwinClient Create(
             string hostName,
             AzureSasCredential credential,
@@ -124,8 +141,10 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Updates a digital twin.
-        /// <para>For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/></para>
         /// </summary>
+        /// <remarks>
+        /// For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/>.
+        /// </remarks>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="digitalTwinUpdateOperations">The application/json-patch+json operations to be performed on the specified digital twin.</param>
         /// <param name="requestOptions">The optional settings for this request.</param>
@@ -183,7 +202,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="payload">The command payload.</param>
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>The application/json command invocation response and the http response. </returns>
+        /// <returns>The application/json command invocation response and the http response.</returns>
         public virtual async Task<HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders>> InvokeComponentCommandAsync(
             string digitalTwinId,
             string componentName,
