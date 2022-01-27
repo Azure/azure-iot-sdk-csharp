@@ -14,6 +14,7 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 #if !NET451
 
@@ -26,9 +27,11 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
-    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    /// <remarks>
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
+    /// </remarks>
+    [SuppressMessage(
         "Naming",
         "CA1716:Identifiers should not match keywords",
         Justification = "Cannot change parameter names as it is considered a breaking change.")]
@@ -71,7 +74,6 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Creates an instance of RegistryManager, provided for unit testing purposes only.
-        /// Use the CreateFromConnectionString method to create an instance to use the client.
         /// </summary>
         public RegistryManager()
         {
@@ -97,9 +99,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a RegistryManager from the IoT Hub connection string.
+        /// Creates RegistryManager from an IoT hub connection string.
         /// </summary>
-        /// <param name="connectionString">The IoT Hub connection string.</param>
+        /// <param name="connectionString">The IoT hub connection string.</param>
         /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager CreateFromConnectionString(string connectionString)
         {
@@ -128,7 +130,7 @@ namespace Microsoft.Azure.Devices
 #if !NET451
 
         /// <summary>
-        /// Creates an instance of RegistryManager, authenticating using an identity in Azure Active Directory (AAD).
+        /// Creates RegistryManager, authenticating using an identity in Azure Active Directory (AAD).
         /// </summary>
         /// <remarks>
         /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
@@ -160,7 +162,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates an instance of RegistryManager using a shared access signature provided and refreshed as necessary by the caller.
+        /// Creates RegistryManager using a shared access signature provided and refreshed as necessary by the caller.
         /// </summary>
         /// <remarks>
         /// Users may wish to build their own shared access signature (SAS) tokens rather than give the shared key to the SDK and let it manage signing and renewal.

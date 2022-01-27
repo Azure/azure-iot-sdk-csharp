@@ -45,8 +45,10 @@ namespace Microsoft.Azure.Devices
 
     /// <summary>
     /// Contains methods that services can use to send messages to devices
-    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
+    /// <remarks>
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
+    /// </remarks>
     public class ServiceClient : IDisposable
     {
         private const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
@@ -116,11 +118,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT Hub connection string.
+        /// Creates ServiceClient from an IoT hub connection string.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub.</param>
+        /// <param name="connectionString">Connection string for the IoT hub.</param>
         /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
-        /// <returns>An instance of ServiceClient.</returns>
+        /// <returns>A ServiceClient instance.</returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, ServiceClientOptions options = default)
         {
             return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
@@ -129,17 +131,20 @@ namespace Microsoft.Azure.Devices
 #if !NET451
 
         /// <summary>
-        /// Creates a <see cref="ServiceClient"/> using Azure Active Directory credentials and the specified transport type.
+        /// Creates ServiceClient, authenticating using an identity in Azure Active Directory (AAD).
         /// </summary>
+        /// <remarks>
+        /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
+        /// <see href="https://docs.microsoft.com/dotnet/api/overview/azure/identity-readme"/>.
+        /// For more information on configuring IoT hub with Azure Active Directory, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
         /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
         /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
-        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
-        /// <remarks>
-        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
-        /// </remarks>
+        /// <returns>A ServiceClient instance.</returns>
         public static ServiceClient Create(
             string hostName,
             TokenCredential credential,
@@ -168,14 +173,19 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a <see cref="ServiceClient"/> using SAS token and the specified transport type.
+        /// Creates ServiceClient using a shared access signature provided and refreshed as necessary by the caller.
         /// </summary>
+        /// <remarks>
+        /// Users may wish to build their own shared access signature (SAS) tokens rather than give the shared key to the SDK and let it manage signing and renewal.
+        /// The <see cref="AzureSasCredential"/> object gives the SDK access to the SAS token, while the caller can update it as necessary using the
+        /// <see cref="AzureSasCredential.Update(string)"/> method.
+        /// </remarks>
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
         /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
-        /// <returns>An instance of <see cref="ServiceClient"/>.</returns>
+        /// <returns>A ServiceClient instance.</returns>
         public static ServiceClient Create(
             string hostName,
             AzureSasCredential credential,
