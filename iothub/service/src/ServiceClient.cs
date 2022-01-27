@@ -70,8 +70,6 @@ namespace Microsoft.Azure.Devices
 
         private int _sendingDeliveryTag;
 
-        internal readonly IotHubConnection Connection;
-
         /// <summary>
         /// Creates an instance of <see cref="ServiceClient"/>, provided for unit testing purposes only.
         /// Use the CreateFromConnectionString method to create an instance to use the client.
@@ -214,6 +212,8 @@ namespace Microsoft.Azure.Devices
         }
 
 #endif
+
+        internal IotHubConnection Connection { get; }
 
         /// <inheritdoc />
         public void Dispose()
