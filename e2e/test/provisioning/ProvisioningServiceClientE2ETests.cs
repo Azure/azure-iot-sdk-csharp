@@ -115,55 +115,57 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod]
         public async Task ProvisioningServiceClient_TokenCredentialAuth_Success()
         {
+            // arrange
             using var provisioningServiceClient = ProvisioningServiceClient.Create(
                 TestConfiguration.Provisioning.GetProvisioningHostName(),
                 TestConfiguration.Provisioning.GetClientSecretCredential());
 
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(
-                    provisioningServiceClient, 
-                    AttestationMechanismType.SymmetricKey, 
-                    null, 
-                    AllocationPolicy.Static, 
-                    null, 
-                    null, 
+                    provisioningServiceClient,
+                    AttestationMechanismType.SymmetricKey,
+                    null,
+                    AllocationPolicy.Static,
+                    null,
+                    null,
                     null)
                     .ConfigureAwait(false);
 
-            //act
+            // act
             IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
 
-            //assert
+            // assert
             individualEnrollmentResult.Should().NotBeNull();
 
-            //cleanup
+            // cleanup
             await provisioningServiceClient.DeleteIndividualEnrollmentAsync(individualEnrollment.RegistrationId);
         }
 
         [LoggedTestMethod]
         public async Task ProvisioningServiceClient_AzureSasCredentialAuth_Success()
         {
+            // arrange
             string signature = TestConfiguration.Provisioning.GetProvisioningSharedAccessSignature(TimeSpan.FromHours(1));
             using var provisioningServiceClient = ProvisioningServiceClient.Create(
                 TestConfiguration.Provisioning.GetProvisioningHostName(),
                 new AzureSasCredential(signature));
 
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(
-                    provisioningServiceClient, 
-                    AttestationMechanismType.SymmetricKey, 
-                    null, 
-                    AllocationPolicy.Static, 
-                    null, 
-                    null, 
+                    provisioningServiceClient,
+                    AttestationMechanismType.SymmetricKey,
+                    null,
+                    AllocationPolicy.Static,
+                    null,
+                    null,
                     null)
                     .ConfigureAwait(false);
 
-            //act
+            // act
             IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
 
-            //assert
+            // assert
             individualEnrollmentResult.Should().NotBeNull();
 
-            //cleanup
+            // cleanup
             await provisioningServiceClient.DeleteIndividualEnrollmentAsync(individualEnrollment.RegistrationId);
         }
 
