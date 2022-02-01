@@ -67,6 +67,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "           }\n" +
             "       }\n" +
             "   },\n" +
+            "   \"optionalDeviceInformation\":{\n" +
+            "       \"tag1\":\"val1\",\n" +
+            "       \"tag2\":\"val2\"\n" +
+            "   },\n" +
             "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
             "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
             "   \"initialTwin\":{\n" +
@@ -266,6 +270,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
+            Assert.IsNotNull(individualEnrollment.OptionalDeviceInformation);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
@@ -286,6 +291,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
+            Assert.IsNotNull(individualEnrollment.OptionalDeviceInformation);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
@@ -306,6 +312,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
+            Assert.IsNotNull(individualEnrollment.OptionalDeviceInformation);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
