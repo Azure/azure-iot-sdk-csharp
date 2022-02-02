@@ -213,6 +213,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             _provisioningTokenCredential = new ProvisioningTokenCredential(credential);
             _hostName = hostName;
+            
+            // Create new ContractApiHttp using provided TokenCredential and hostname instead of standard connection string
             _contractApiHttp = new ContractApiHttp(
                 new UriBuilder("https", _hostName).Uri,
                 _provisioningTokenCredential,
@@ -228,6 +230,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             _provisioningSasCredential = new ProvisioningSasCredential(azureSasCredential);
             _hostName = hostName;
+
+            // Create new ContractApiHttp using provided AzureSasCredential and hostname instead of standard connection string
             _contractApiHttp = new ContractApiHttp(
                 new UriBuilder("https", _hostName).Uri,
                 _provisioningSasCredential,

@@ -80,6 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             private static string GenerateSasToken(string resourceUri, string sharedAccessKey, TimeSpan timeToLive, string policyName = default)
             {
+                // Calculate expiry value for token
                 var epochTime = new DateTime(1970, 1, 1);
                 DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
                 TimeSpan secondsFromEpochTime = expiresOn.Subtract(epochTime);
@@ -99,6 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     WebUtility.UrlEncode(signature),
                     expiry);
 
+                // add policy name only if user chooses to include it
                 if (!string.IsNullOrWhiteSpace(policyName))
                 {
                     token += "&skn=" + WebUtility.UrlEncode(policyName);

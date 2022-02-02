@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 throw new ArgumentException(nameof(connectionString), "Parameter cannot be null, empty, or whitespace.");
             }
 
+            // Connection string sections are demarcated with semicolon
             string[] parts = connectionString.Split(';');
 
             foreach (string part in parts)
@@ -35,6 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 switch (key.ToUpperInvariant())
                 {
                     case "HOSTNAME":
+                        // Gives the correct Host Name to send requests to
                         ProvisioningHostName = value;
                         break;
 
