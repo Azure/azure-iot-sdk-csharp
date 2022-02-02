@@ -58,6 +58,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public EnrollmentStatus Status { get; internal set; }
 
         /// <summary>
+        /// Substatus for 'Assigned' devices.
+        /// </summary>
+        [JsonProperty(PropertyName = "substatus")]
+        public ProvisioningServiceClientSubstatus Substatus { get; internal set; }
+
+        /// <summary>
         /// Error code.
         /// </summary>
         [JsonProperty(PropertyName = "errorCode", DefaultValueHandling = DefaultValueHandling.Ignore)]
