@@ -610,14 +610,13 @@ if ($certExists)
     az iot dps certificate delete -g $ResourceGroup --dps-name $dpsName --name $uploadCertificateName --etag $etag
 }
 Write-Host "`nUploading new certificate to DPS."
-az iot dps certificate create -g $ResourceGroup --path $rootCertPath --dps-name $dpsName --certificate-name $uploadCertificateName
+az iot dps certificate create -g $ResourceGroup --path $rootCertPath --dps-name $dpsName --certificate-name $uploadCertificateName --output none
 
 $isVerified = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'properties.isVerified' --output tsv
 if ($isVerified -eq 'false')
 {
     Write-Host "`nVerifying certificate uploaded to DPS."
     $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'etag'
-    Write-Host "`n az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName -e $etag --query 'properties.verificationCode'"
     $requestedCommonName = az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
         "-DnsName"             = $requestedCommonName;
