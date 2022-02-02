@@ -15,6 +15,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleDeviceId = "valid-device-id";
         private const string SampleIotHubHostName = "ContosoIoTHub.azure-devices.net";
         private const ProvisioningStatus SampleProvisioningStatus = ProvisioningStatus.Enabled;
+        private const string SampleOptionalDeviceInformation = 
+            "   {\n" +
+            "       \"tag1\":\"val1\",\n" +
+            "       \"tag2\":\"val2\"\n" +
+            "   }";
         private const string SampleCreateDateTimeUTCString = "2017-11-14T12:34:18.123Z";
         private DateTime SampleCreateDateTimeUTC = new DateTime(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
@@ -67,10 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "           }\n" +
             "       }\n" +
             "   },\n" +
-            "   \"optionalDeviceInformation\":{\n" +
-            "       \"tag1\":\"val1\",\n" +
-            "       \"tag2\":\"val2\"\n" +
-            "   },\n" +
+            "   \"optionalDeviceInformation\":" + SampleOptionalDeviceInformation + ",\n" +
             "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
             "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
             "   \"initialTwin\":{\n" +
@@ -271,6 +273,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.OptionalDeviceInformation);
+            TestAssert.AreEqualJson(individualEnrollment.OptionalDeviceInformation.ToJson(), SampleOptionalDeviceInformation);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
@@ -292,6 +295,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.OptionalDeviceInformation);
+            TestAssert.AreEqualJson(individualEnrollment.OptionalDeviceInformation.ToJson(), SampleOptionalDeviceInformation);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
@@ -313,6 +317,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.OptionalDeviceInformation);
+            TestAssert.AreEqualJson(individualEnrollment.OptionalDeviceInformation.ToJson(), SampleOptionalDeviceInformation);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
