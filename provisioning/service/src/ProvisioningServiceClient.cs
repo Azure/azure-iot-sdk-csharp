@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_002: [The constructor shall throw ArgumentException if the provided connectionString is null or empty.] */
             if (string.IsNullOrWhiteSpace(connectionString ?? throw new ArgumentNullException(nameof(connectionString))))
             {
-                throw new ArgumentException($"{nameof(connectionString)} cannot be empty string");
+                throw new ArgumentException("Connection string cannot be empty", nameof(connectionString));
             }
 
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_003: [The constructor shall throw ArgumentException if the ProvisioningConnectionString or one of the inner Managers failed to create a new instance.] */
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (string.IsNullOrWhiteSpace(hostName ?? throw new ArgumentNullException(nameof(hostName))))
             {
-                throw new ArgumentException($"{nameof(hostName)} cannot be empty string");
+                throw new ArgumentException("Host name cannot be empty", nameof(hostName));
             }
 
             _provisioningTokenCredential = new ProvisioningTokenCredential(credential);
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (string.IsNullOrWhiteSpace(hostName ?? throw new ArgumentNullException(nameof(hostName))))
             {
-                throw new ArgumentException($"{nameof(hostName)} cannot be empty string");
+                throw new ArgumentException("Host name cannot be empty", nameof(hostName));
             }
 
             _provisioningSasCredential = new ProvisioningSasCredential(azureSasCredential);

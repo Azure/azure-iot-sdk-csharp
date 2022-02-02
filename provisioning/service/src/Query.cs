@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
             {
-                throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
+                throw new ArgumentException("Service name cannot be empty", nameof(serviceName));
             }
 
             if (querySpecification == null)
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (pageSize < 0)
             {
-                throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
+                throw new ArgumentException("Page size cannot be negative.", nameof(pageSize));
             }
 
             // TODO: Refactor ContractApiHttp being created again
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
             {
-                throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
+                throw new ArgumentException("Service name cannot be empty", nameof(serviceName);
             }
 
             if (querySpecification == null)
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (pageSize < 0)
             {
-                throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
+                throw new ArgumentException("Page size cannot be negative.", nameof(pageSize));
             }
 
             // TODO: Refactor ContractApiHttp being created again
