@@ -213,12 +213,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public DeviceRegistrationState RegistrationState { get; private set; }
 
         /// <summary>
-        /// Optional Device Information.
-        /// </summary>
-        [JsonProperty(PropertyName = "optionalDeviceInformation")]
-        public TwinCollection OptionalDeviceInformation { get; set; }
-
-        /// <summary>
         /// Attestation Mechanism
         /// </summary>
         [JsonProperty(PropertyName = "attestation")]
